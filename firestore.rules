@@ -45,7 +45,7 @@ service cloud.firestore {
              (data.get('translit', '') is string) &&
              (data.get('definition', '') is string) &&
              (data.get('language', '') is string) &&
-             data.status in ["Seen Once", "Learning", "Familiar", "Known"] &&
+             data.status in ["Seen Once", "Learning", "Familiar", "Known", "Ignored"] &&
              data.nextReview is timestamp &&
              data.interval is number &&
              data.ease is number &&

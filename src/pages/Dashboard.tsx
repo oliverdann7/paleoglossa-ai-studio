@@ -1,9 +1,12 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { BookOpen, GraduationCap, ArrowRight, Brain, CheckCircle2, Eye, Flag, Flame, Target, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { texts } from '../data/texts';
+import { auth, db } from '@/lib/firebase';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
-const StatCard = ({ label, value, colorType }: { label: string, value: string, colorType?: 'gold' | 'jade' | 'amber' | 'blue' | 'ruby' }) => (
+const StatCard = ({ label, value, colorType }: { label: string, value: string | number, colorType?: 'gold' | 'jade' | 'amber' | 'blue' | 'ruby' }) => (
   <div className="card px-6 py-5 flex flex-col justify-between hover:shadow-sm transition-shadow">
     <div className="text-[32px] font-serif font-light mb-1 tracking-tight text-ink">
       {value}
@@ -37,9 +40,41 @@ const VocabChip = ({ form, translit, gloss, status, language }: { form: string, 
   );
 };
 
-export const Dashboard = ({ onSelectText }: { onSelectText: (text: any) => void }) => {
+export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: any) => void, onNavigate?: (path: string) => void }) => {
   const recentTexts = texts.slice(3, 6);
   const hour = new Date().getHours();
+  const [dueCount, setDueCount] = useState<number | string>("...");
+  const [learningCount, setLearningCount] = useState<number | string>("...");
+  const [knownCount, setKnownCount] = useState<number | string>("...");
+  
+  useEffect(() => {
+    if (!auth.currentUser) {
+      setDueCount(142);
+      setLearningCount(315);
+      setKnownCount("1,284");
+      return;
+    }
+    
+    // Fetch counts realtime
+    const vocabQuery = query(collection(db, 'vocabulary'), where('userId', '==', auth.currentUser.uid));
+    const unsub = onSnapshot(vocabQuery, (snap) => {
+      let due = 0;
+      let learning = 0;
+      let known = 0;
+      const now = new Date();
+      snap.forEach(d => {
+        const data = d.data();
+        if (data.status === 'Learning') learning++;
+        if (data.status === 'Known' || data.status === 'Familiar') known++;
+        if (data.nextReview && data.nextReview.toDate() <= now) due++;
+      });
+      setDueCount(due);
+      setLearningCount(learning);
+      setKnownCount(known);
+    });
+    return () => unsub();
+  }, []);
+
   let greeting = "Good evening";
   if (hour < 12) greeting = "Good morning";
   else if (hour < 18) greeting = "Good afternoon";
@@ -57,7 +92,7 @@ export const Dashboard = ({ onSelectText }: { onSelectText: (text: any) => void 
           </motion.h2>
         </div>
         <div className="flex items-center gap-4">
-          <div className="card border-amber/20 bg-amberxl p-3 flexItems-center gap-3">
+          <div className="card border-amber/20 bg-amberxl p-3 flex items-center gap-3">
              <div className="flex items-center gap-2">
                <span className="text-xl">🔥</span>
                <div className="flex flex-col">
@@ -88,11 +123,11 @@ export const Dashboard = ({ onSelectText }: { onSelectText: (text: any) => void 
              style={{ background: 'linear-gradient(140deg, #1E3D6E 0%, #0F2040 100%)' }}>
           <div className="relative z-10">
             <span className="eyebrow text-bluexl opacity-70 mb-2 block">Review queue</span>
-            <div className="text-[48px] font-serif font-light text-white leading-none mb-3">142</div>
-            <p className="text-sm text-bluexl opacity-80 font-body">42 due · 100 new · 86% accuracy</p>
+            <div className="text-[48px] font-serif font-light text-white leading-none mb-3">{dueCount}</div>
+            <p className="text-sm text-bluexl opacity-80 font-body">{dueCount} due</p>
           </div>
           <div className="relative z-10 mt-6 md:mt-0">
-             <button className="bg-white/10 hover:bg-white/20 text-white border border-white/20 py-2 px-5 rounded-xl font-bold font-sans text-sm transition-all focus:outline-none">
+             <button onClick={() => onNavigate && onNavigate('review')} className="bg-white/10 hover:bg-white/20 text-white border border-white/20 py-2 px-5 rounded-xl font-bold font-sans text-sm transition-all focus:outline-none">
                Start review →
              </button>
           </div>
@@ -125,8 +160,8 @@ export const Dashboard = ({ onSelectText }: { onSelectText: (text: any) => void 
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <StatCard label="Known" value="1,284" />
-        <StatCard label="Learning" value="315" />
+        <StatCard label="Known" value={knownCount} />
+        <StatCard label="Learning" value={learningCount} />
         <StatCard label="Read This Week" value="4,092" />
         <StatCard label="Accuracy" value="86%" />
       </div>

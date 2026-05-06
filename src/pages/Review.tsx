@@ -2,21 +2,52 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { ArrowLeft } from 'lucide-react';
+import { db, auth } from '@/lib/firebase';
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 
 const dummyReviewQueue = [
-  { id: 1, term: 'λόγος', translit: 'logos', definition: 'word, reason, account', context: 'Ἐν ἀρχῇ ἦν ὁ λόγος...', contextTranslation: "In the beginning was the Word...", source: '— Mark 1:2 (from your reading, 3 days ago)', language: 'Greek', type: 'FORM → MEANING' },
-  { id: 2, term: 'בְּרֵאשִׁית', translit: 'bereshit', definition: 'in the beginning', context: 'בְּרֵאשִׁית בָּרָא אֱלֹהִים...', contextTranslation: "In the beginning, God created...", source: '— Genesis 1:1 (from your reading, 1 week ago)', language: 'Hebrew', type: 'FORM → MEANING' },
+  { id: '1', term: 'λόγος', translit: 'logos', definition: 'word, reason, account', context: 'Ἐν ἀρχῇ ἦν ὁ λόγος...', contextTranslation: "In the beginning was the Word...", source: '— Mark 1:2 (from your reading, 3 days ago)', language: 'Greek', type: 'FORM → MEANING' },
+  { id: '2', term: 'בְּרֵאשִׁית', translit: 'bereshit', definition: 'in the beginning', context: 'בְּרֵאשִׁית בָּרָא אֱלֹהִים...', contextTranslation: "In the beginning, God created...", source: '— Genesis 1:1 (from your reading, 1 week ago)', language: 'Hebrew', type: 'FORM → MEANING' },
 ];
 
 export const Review = ({ onBack }: { onBack?: () => void }) => {
-  const [queue, setQueue] = useState(dummyReviewQueue);
+  const [queue, setQueue] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [stats, setStats] = useState({ correct: 0, hard: 0, again: 0 });
 
+  useEffect(() => {
+    const fetchQueue = async () => {
+      if (!auth.currentUser) {
+        setQueue(dummyReviewQueue);
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        const vocabQuery = query(collection(db, 'vocabulary'), 
+          where('userId', '==', auth.currentUser.uid),
+          where('nextReview', '<=', new Date())
+        );
+        const snap = await getDocs(vocabQuery);
+        const fetchedCards: any[] = [];
+        snap.forEach(d => {
+          fetchedCards.push({ id: d.id, ...d.data(), type: 'FORM → MEANING' });
+        });
+        setQueue(fetchedCards.length > 0 ? fetchedCards : dummyReviewQueue);
+      } catch (err) {
+        console.error(err);
+        setQueue(dummyReviewQueue);
+      }
+      setIsLoading(false);
+    };
+    fetchQueue();
+  }, []);
+
   const currentCard = queue[currentIndex];
-  const total = dummyReviewQueue.length;
-  const isHebrew = currentCard?.language.includes('Hebrew') || currentCard?.language.includes('Aramaic');
+  const total = queue.length;
+  const isHebrew = currentCard?.language?.includes('Hebrew') || currentCard?.language?.includes('Aramaic');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,7 +67,7 @@ export const Review = ({ onBack }: { onBack?: () => void }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFlipped, currentCard]);
 
-  const handleRate = (rating: 'again' | 'hard' | 'good' | 'easy') => {
+  const handleRate = async (rating: 'again' | 'hard' | 'good' | 'easy') => {
     setStats(prev => ({ 
       ...prev, 
       correct: (rating === 'good' || rating === 'easy') ? prev.correct + 1 : prev.correct,
@@ -44,6 +75,41 @@ export const Review = ({ onBack }: { onBack?: () => void }) => {
       again: rating === 'again' ? prev.again + 1 : prev.again,
     }));
     
+    // Update firestore if real card
+    if (auth.currentUser && currentCard.userId) {
+      try {
+        let newInterval = currentCard.interval || 1;
+        let newEase = currentCard.ease || 2.5;
+
+        // Simplified SuperMemo-2 algorithm
+        if (rating === 'again') {
+          newInterval = 1;
+          newEase = Math.max(1.3, newEase - 0.2);
+        } else if (rating === 'hard') {
+          newInterval = Math.max(1, newInterval * 1.2);
+          newEase = Math.max(1.3, newEase - 0.15);
+        } else if (rating === 'good') {
+          newInterval = Math.max(1, (newInterval * newEase));
+        } else if (rating === 'easy') {
+          newInterval = Math.max(1, (newInterval * newEase * 1.3));
+          newEase += 0.15;
+        }
+
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + Math.round(newInterval));
+        
+        await setDoc(doc(db, 'vocabulary', currentCard.id), {
+          ...currentCard,
+          interval: newInterval,
+          ease: newEase,
+          nextReview: nextDate,
+          updatedAt: new Date()
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     setTimeout(() => {
       setIsFlipped(false);
       setCurrentIndex(prev => prev + 1);
@@ -51,6 +117,10 @@ export const Review = ({ onBack }: { onBack?: () => void }) => {
   };
 
   const progress = (currentIndex / total) * 100;
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-parch2 flex items-center justify-center font-serif text-ink text-xl">Loading Lexicon...</div>;
+  }
 
   if (currentIndex >= total) {
     return (
@@ -129,11 +199,17 @@ export const Review = ({ onBack }: { onBack?: () => void }) => {
                   
                   <div className="bg-parch p-5 rounded-xl border border-bdr/50">
                     <div className={cn("font-body italic text-[17px] text-ink2 leading-relaxed mb-1 text-center")} dir={isHebrew ? "rtl" : "ltr"}>
-                      "{getContextElement(currentCard.context, currentCard.term)}"
+                      {currentCard.context ? (
+                        <>"{getContextElement(currentCard.context, currentCard.term)}"</>
+                      ) : (
+                        <span className="opacity-50">Context not saved</span>
+                      )}
                     </div>
-                    <div className="font-mono text-[10px] text-muted text-center mt-3 uppercase tracking-widest">
-                       {currentCard.source}
-                    </div>
+                    {currentCard.source && (
+                      <div className="font-mono text-[10px] text-muted text-center mt-3 uppercase tracking-widest">
+                         {currentCard.source}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}

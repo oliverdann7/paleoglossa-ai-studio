@@ -22,7 +22,7 @@
         "translit": { "type": "string" },
         "definition": { "type": "string" },
         "language": { "type": "string" },
-        "status": { "type": "string", "enum": ["Seen Once", "Learning", "Familiar", "Known"] },
+        "status": { "type": "string", "enum": ["Seen Once", "Learning", "Familiar", "Known", "Ignored"] },
         "nextReview": { "type": "string" },
         "interval": { "type": "number" },
         "ease": { "type": "number" },
