@@ -174,6 +174,22 @@ export const copticTokens = [
   { id: 80303, text: "ⲓⲏⲥⲟⲩⲥ", lemma: "Iēsous", gloss: "Jesus", morphology: { part: "Noun" }, language: "Coptic", status: "Known" },
 ];
 
+export const iliadTokens = [
+  { id: 10601, text: "Μῆνιν", lemma: "μῆνις", gloss: "wrath", morphology: { part: "Noun", case: "Accusative" }, language: "Greek", status: "New" },
+  { id: 10602, text: "ἄειδε", lemma: "ἀείδω", gloss: "sing", morphology: { part: "Verb", mood: "Imperative" }, language: "Greek", status: "New" },
+  { id: 10603, text: "θεὰ", lemma: "θεά", gloss: "goddess", morphology: { part: "Noun", case: "Vocative" }, language: "Greek", status: "New" },
+  { id: 10604, text: "Πηληϊάδεω", lemma: "Πηληϊάδης", gloss: "of Peleus' son", morphology: { part: "Noun", case: "Genitive" }, language: "Greek", status: "New" },
+  { id: 10605, text: "Ἀχιλῆος", lemma: "Ἀχιλλεύς", gloss: "Achilles", morphology: { part: "Noun", case: "Genitive" }, language: "Greek", status: "New" },
+];
+
+export const odysseyTokens = [
+  { id: 10701, text: "Ἄνδρα", lemma: "ἀνήρ", gloss: "man", morphology: { part: "Noun", case: "Accusative" }, language: "Greek", status: "New" },
+  { id: 10702, text: "μοι", lemma: "ἐγώ", gloss: "to me", morphology: { part: "Pronoun", case: "Dative" }, language: "Greek", status: "New" },
+  { id: 10703, text: "ἔννεπε,", lemma: "ἐνέπω", gloss: "tell of", morphology: { part: "Verb", mood: "Imperative" }, language: "Greek", status: "New" },
+  { id: 10704, text: "Μοῦσα,", lemma: "Μοῦσα", gloss: "Muse", morphology: { part: "Noun", case: "Vocative" }, language: "Greek", status: "New" },
+  { id: 10705, text: "πολύτροπον,", lemma: "πολύτροπος", gloss: "of many turns", morphology: { part: "Adjective", case: "Accusative" }, language: "Greek", status: "New" },
+];
+
 export const nextCopticTokens = [
   { id: 80304, text: "ϫⲉ", lemma: "je", gloss: "that [quote]", morphology: { part: "Conjunction" }, language: "Coptic", status: "New" },
   { id: 80305, text: "ⲡⲉⲧⲛⲁϩⲉ", lemma: "he", gloss: "He who will find", morphology: { part: "Verb" }, language: "Coptic", status: "New" },
@@ -295,6 +311,14 @@ export const nextGreekTokens = [
   { id: 10322, text: "πρὸς", lemma: "πρός", gloss: "with", morphology: { part: "Preposition", case: "Accusative" }, language: "Greek", status: "New" },
   { id: 10323, text: "τὸν", lemma: "ὁ", gloss: "the", morphology: { part: "Article", case: "Accusative" }, language: "Greek", status: "New" },
   { id: 10324, text: "θεόν.", lemma: "θεός", gloss: "God", morphology: { part: "Noun", case: "Accusative" }, language: "Greek", status: "Known" },
+];
+
+export const genesisTokens = [
+  { id: 20401, text: "בְּרֵאשִׁית", lemma: "רֵאשִׁית", gloss: "In the beginning", morphology: { part: "Noun", prefix: "Preposition" }, language: "Hebrew", status: "Seen Once" },
+  { id: 20402, text: "בָּרָא", lemma: "בָּרָא", gloss: "created", morphology: { part: "Verb", tense: "Perfect" }, language: "Hebrew", status: "New" },
+  { id: 20403, text: "אֱלֹהִים", lemma: "אֱלֹהִים", gloss: "God", morphology: { part: "Noun" }, language: "Hebrew", status: "Known" },
+  { id: 20404, text: "אֵת", lemma: "אֵת", gloss: "direct object marker", morphology: { part: "Particle" }, language: "Hebrew", status: "New" },
+  { id: 20405, text: "הַשָּׁמַיִם", lemma: "שָׁמַיִם", gloss: "the heavens", morphology: { part: "Noun", prefix: "Article" }, language: "Hebrew", status: "Familiar" },
 ];
 
 export const hebrewTokens = [
