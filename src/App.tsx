@@ -140,7 +140,7 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
-              <Dashboard onSelectText={handleTextSelect} />
+              <Dashboard onSelectText={handleTextSelect} onNavigate={setActiveTab} />
             </motion.div>
           )}
 
@@ -200,7 +200,7 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
-              <Vocabulary />
+              <Vocabulary onNavigate={setActiveTab} />
             </motion.div>
           )}
 

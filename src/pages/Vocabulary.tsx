@@ -13,7 +13,7 @@ import {
 import { db, auth } from '@/lib/firebase';
 import { handleFirestoreError, OperationType } from '@/lib/db';
 
-export const Vocabulary = () => {
+export const Vocabulary = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [showSettings, setShowSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,7 +91,10 @@ export const Vocabulary = () => {
           >
             <Settings2 className="w-4 h-4" />
           </button>
-          <button className="btn-primary px-6 py-2.5">
+          <button 
+            onClick={() => onNavigate && onNavigate('review')}
+            className="btn-primary px-6 py-2.5"
+          >
             Start Review
           </button>
         </div>

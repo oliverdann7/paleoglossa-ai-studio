@@ -4,7 +4,7 @@ import { ArrowLeft, Languages, Maximize2, ChevronRight, ChevronLeft, Search, Boo
 import { cn } from '@/lib/utils';
 import { getChapters } from '../data/chapters';
 import { auth, db } from '@/lib/firebase';
-import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, deleteDoc, writeBatch } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/db';
 
 export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
@@ -150,6 +150,77 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
     }
   };
 
+  const handleMarkAllKnownAndAdvance = async () => {
+    const tokensToMark = currentTokens.filter(t => !t.status || t.status === 'New');
+    
+    // Optimistic UI update
+    setCurrentTokens(prev => prev.map(t => {
+      if (!t.status || t.status === 'New') {
+        return { ...t, status: 'Known' };
+      }
+      return t;
+    }));
+
+    if (auth.currentUser) {
+      try {
+        const batch = writeBatch(db);
+        let count = 0;
+        
+        // We need to keep track of unique lemmas so we don't try to write the same doc twice in a batch
+        const uniqueLemmas = new Set<string>();
+
+        for (const token of tokensToMark) {
+          const lemmaStr = token.lemma || token.text;
+          if (uniqueLemmas.has(lemmaStr)) continue;
+          uniqueLemmas.add(lemmaStr);
+
+          const key = `${text?.language || 'Lang'}_${lemmaStr}`;
+          const termId = key.replace(/[^a-zA-Z0-9_\-]/g, '_').substring(0, 50);
+          
+          const docRef = doc(db, 'vocabulary', `${auth.currentUser.uid}_${termId}`);
+          batch.set(docRef, {
+            userId: auth.currentUser.uid,
+            term: lemmaStr,
+            translit: token.translit || '',
+            definition: token.gloss || '',
+            language: text?.language || 'Unknown',
+            status: 'Known',
+            nextReview: new Date(Date.now() + 86400000), // tomorrow
+            interval: 1,
+            ease: 2.5,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+          
+          count++;
+          if (count >= 500) break; // max batch size
+        }
+        if (count > 0) {
+          await batch.commit();
+        }
+      } catch (e) {
+        handleFirestoreError(e, OperationType.WRITE, 'vocabulary');
+      }
+    } else {
+      const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
+      let savedStatuses: Record<string, string> = {};
+      if (savedStatusesStr) {
+        try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
+      }
+      for (const token of tokensToMark) {
+        const key = `${text?.language || 'Lang'}_${token.lemma || token.text}`;
+        savedStatuses[key] = 'Known';
+      }
+      localStorage.setItem('user_vocab_statuses', JSON.stringify(savedStatuses));
+    }
+    
+    // Advance to next chapter if available
+    if (currentChapterIndex < chapters.length - 1) {
+       setCurrentChapterIndex(currentChapterIndex + 1);
+       setSelectedWord(null);
+    }
+  };
+
   const getWordClasses = (token: any, isSelected: boolean) => {
     const base = "cursor-pointer transition-colors px-0.5 rounded-sm inline-block";
     
@@ -161,6 +232,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
         case 'New': styleClass = "underline decoration-[#6894C0] decoration-2 underline-offset-4 decoration-dashed hover:bg-[#1E3D6E0f]"; break;
         case 'Learning': styleClass = "underline decoration-amber decoration-2 underline-offset-4 hover:bg-[#1E3D6E0f]"; break;
         case 'Familiar': styleClass = "underline decoration-jade decoration-2 underline-offset-4 hover:bg-[#1E3D6E0f]"; break;
+        case 'Ignored': styleClass = "opacity-50 hover:bg-[#1E3D6E0f]"; break;
         case 'Known': styleClass = "hover:bg-[#1E3D6E0f]"; break;
         default: styleClass = "underline decoration-[#6894C0] decoration-2 underline-offset-4 decoration-dashed hover:bg-[#1E3D6E0f]";
       }
@@ -326,6 +398,13 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
                >
                  Prev Section
                </button>
+               <div className="hidden md:block w-px h-4 bg-bdr mx-1" />
+               <button 
+                 onClick={handleMarkAllKnownAndAdvance}
+                 className="pill bg-[#1E3D6E0f] text-blue hover:bg-bluexl px-2.5 py-1 font-medium transition-colors hidden md:flex items-center gap-1 opacity-90 hover:opacity-100"
+               >
+                 Mark page read <ChevronRight className="w-3 h-3" />
+               </button>
                <button 
                  onClick={() => currentChapterIndex < chapters.length - 1 && setCurrentChapterIndex(currentChapterIndex + 1)}
                  className={cn("hover:text-blue transition-colors font-medium", currentChapterIndex === chapters.length - 1 ? "text-muted cursor-not-allowed" : "text-blue")}
@@ -364,69 +443,91 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
                  <div className={cn("text-[32px] font-serif leading-none mb-1 text-ink", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
                    {selectedWord.text}
                  </div>
-                 <div className="font-mono italic text-xs text-muted mb-4">{selectedWord.translit || "logos"}</div>
+                 {selectedWord.translit && <div className="font-mono italic text-xs text-muted mb-4">{selectedWord.translit}</div>}
                  
                  <div className="flex items-center gap-2 mb-1">
                    <span className="eyebrow">Lemma</span>
                    <span className={cn("font-serif text-[17px] text-blue", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>{selectedWord.lemma || selectedWord.text}</span>
                  </div>
-                 <div className="font-mono text-[9px] text-muted tracking-widest uppercase">Strong's G3056</div>
+                 {selectedWord.strongs && <div className="font-mono text-[9px] text-muted tracking-widest uppercase">Strong's {selectedWord.strongs}</div>}
               </div>
 
               {/* Meaning Section */}
               <div className="mb-6 border-t border-bdr/50 pt-5">
                  <div className="eyebrow mb-2">Meaning</div>
                  <div className="font-body text-[13.5px] font-medium text-ink mb-1">
-                   {selectedWord.gloss || "word, speech, divine expression"}
+                   {selectedWord.gloss || "Translation not available"}
                  </div>
-                 <div className="font-body italic text-[12.5px] text-ink2 pl-3 border-l-2 border-parch3 mb-2">
-                   a word, uttered by a living voice, embodies a conception or idea
-                 </div>
-                 <div className="font-body text-[12.5px] text-ink3 mb-2">
-                   <span className="italic mr-1">Also:</span> statement, reckoning, reason
-                 </div>
-                 <div className="font-mono text-[9px] text-muted">BDAG · LSJ</div>
+                 {selectedWord.extendedMeaning && (
+                   <div className="font-body italic text-[12.5px] text-ink2 pl-3 border-l-2 border-parch3 mb-2">
+                     {selectedWord.extendedMeaning}
+                   </div>
+                 )}
+                 {selectedWord.synonyms && (
+                   <div className="font-body text-[12.5px] text-ink3 mb-2">
+                     <span className="italic mr-1">Also:</span> {selectedWord.synonyms}
+                   </div>
+                 )}
+                 {selectedWord.lexicons && <div className="font-mono text-[9px] text-muted">{selectedWord.lexicons}</div>}
               </div>
 
               {/* Morphology Section */}
-              <div className="mb-6 border-t border-bdr/50 pt-5">
-                  <div className="eyebrow mb-2">Morphology</div>
-                  <div className="inline-block bg-bluexl text-blue border border-blue/20 rounded px-1.5 py-0.5 font-mono text-[10px] mb-3">
-                    N-NSM
-                  </div>
-                  <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-                    <div className="flex flex-col"><span className="text-[9px] font-mono text-muted uppercase">POS</span><span className="text-[11.5px] font-sans text-ink">Noun</span></div>
-                    <div className="flex flex-col"><span className="text-[9px] font-mono text-muted uppercase">Case</span><span className="text-[11.5px] font-sans text-ink">Nominative</span></div>
-                    <div className="flex flex-col"><span className="text-[9px] font-mono text-muted uppercase">Gender</span><span className="text-[11.5px] font-sans text-ink">Masculine</span></div>
-                    <div className="flex flex-col"><span className="text-[9px] font-mono text-muted uppercase">Number</span><span className="text-[11.5px] font-sans text-ink">Singular</span></div>
-                  </div>
-              </div>
+              {selectedWord.morphology && (
+                <div className="mb-6 border-t border-bdr/50 pt-5">
+                    <div className="eyebrow mb-2">Morphology</div>
+                    {selectedWord.morphology.code && (
+                      <div className="inline-block bg-bluexl text-blue border border-blue/20 rounded px-1.5 py-0.5 font-mono text-[10px] mb-3">
+                        {selectedWord.morphology.code}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                      {Object.entries(selectedWord.morphology).map(([key, val]) => {
+                        if (key === 'code') return null;
+                        return (
+                          <div key={key} className="flex flex-col">
+                            <span className="text-[9px] font-mono text-muted uppercase">{key}</span>
+                            <span className="text-[11.5px] font-sans text-ink">{val as string}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                </div>
+              )}
 
               {/* Frequency Stats */}
-              <div className="mb-6 flex gap-3">
-                 <div className="flex-1 bg-parch2 rounded-xl p-3 border border-bdr text-center">
-                    <div className="text-[17px] font-serif text-ink mb-0.5">330</div>
-                    <div className="text-[9px] font-mono uppercase text-muted tracking-widest">Occurrences</div>
-                 </div>
-                 <div className="flex-1 bg-parch2 rounded-xl p-3 border border-bdr text-center">
-                    <div className="text-[17px] font-sans font-medium text-amber mb-0.5">A1</div>
-                    <div className="text-[9px] font-mono uppercase text-muted tracking-widest">Frequency Tier</div>
-                 </div>
-              </div>
+              {(selectedWord.occurrences || selectedWord.frequencyTier) && (
+                <div className="mb-6 flex gap-3">
+                   {selectedWord.occurrences && (
+                     <div className="flex-1 bg-parch2 rounded-xl p-3 border border-bdr text-center">
+                        <div className="text-[17px] font-serif text-ink mb-0.5">{selectedWord.occurrences}</div>
+                        <div className="text-[9px] font-mono uppercase text-muted tracking-widest">Occurrences</div>
+                     </div>
+                   )}
+                   {selectedWord.frequencyTier && (
+                     <div className="flex-1 bg-parch2 rounded-xl p-3 border border-bdr text-center">
+                        <div className="text-[17px] font-sans font-medium text-amber mb-0.5">{selectedWord.frequencyTier}</div>
+                        <div className="text-[9px] font-mono uppercase text-muted tracking-widest">Frequency Tier</div>
+                     </div>
+                   )}
+                </div>
+              )}
 
               {/* Grammar Ref */}
-              <div className="mb-8">
-                 <button className="pill bg-bluexl text-blue border-blue/20 py-1.5 px-3 w-auto flex items-center gap-2 hover:bg-blue/10 transition-colors">
-                   <Bookmark className="w-3 h-3"/> Second Declension Nouns
-                 </button>
-              </div>
+              {selectedWord.grammarNote && (
+                <div className="mb-8">
+                   <button className="pill bg-bluexl text-blue border-blue/20 py-1.5 px-3 w-auto flex items-center gap-2 hover:bg-blue/10 transition-colors">
+                     <Bookmark className="w-3 h-3"/> {selectedWord.grammarNote}
+                   </button>
+                </div>
+              )}
 
               {/* Vocab Status Toggle */}
               <div className="mb-6">
                 <div className="flex p-1 bg-parch border border-bdr rounded-full mb-3 shadow-[0_1px_2px_rgba(35,20,10,0.02)_inset]">
-                   {['Learning', 'Familiar', 'Known'].map(status => {
+                   {['Ignored', 'Learning', 'Familiar', 'Known'].map(status => {
                      const isActive = (selectedWord.status === status) || (status === 'Learning' && (!selectedWord.status || selectedWord.status === 'New'));
                      let activeClass = "";
+                     if (status === 'Ignored') activeClass = "bg-parch3 text-ink2 border-bdr ring-1 ring-bdr/50 shadow-sm";
                      if (status === 'Learning') activeClass = "bg-amberxl text-amber ring-2 ring-amber/30 border-amber/20 shadow-sm";
                      if (status === 'Familiar') activeClass = "bg-jadexl text-jade ring-2 ring-jade/30 border-jade/20 shadow-sm";
                      if (status === 'Known') activeClass = "bg-bluexl text-blue ring-2 ring-blue/30 border-blue/20 shadow-sm";
