@@ -18,15 +18,6 @@ import { cn } from '@/lib/utils';
 export default function App() {
   const [activeTab, setActiveTab] = useState('landing');
   const [selectedText, setSelectedText] = useState<any>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   useEffect(() => {
     // Check for password reset hash in URL
@@ -48,17 +39,12 @@ export default function App() {
   const isFullScreen = activeTab === 'landing' || activeTab === 'onboarding' || isAuthScreen;
 
   return (
-    <div className={cn("min-h-screen", isDarkMode && "dark")}>
+    <div className="min-h-screen">
       {!isFullScreen && (
-        <Navbar 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-          isDarkMode={isDarkMode}
-          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-        />
+        <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
       )}
       
-      <main className={!isFullScreen ? "pl-72" : ""}>
+      <main className={!isFullScreen ? "md:pl-[220px] pb-20 md:pb-0 min-h-screen" : "min-h-screen"}>
         <AnimatePresence mode="wait">
           {activeTab === 'landing' && (
             <motion.div
@@ -66,7 +52,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Landing onEnter={() => setActiveTab('signin')} />
             </motion.div>
@@ -78,12 +64,9 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
-              <SignIn 
-                onNavigate={setActiveTab} 
-                onSuccess={() => setActiveTab('onboarding')} 
-              />
+              <SignIn onNavigate={setActiveTab} onSuccess={() => setActiveTab('onboarding')} />
             </motion.div>
           )}
 
@@ -93,12 +76,9 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
-              <SignUp 
-                onNavigate={setActiveTab} 
-                onSuccess={() => setActiveTab('onboarding')} 
-              />
+              <SignUp onNavigate={setActiveTab} onSuccess={() => setActiveTab('onboarding')} />
             </motion.div>
           )}
 
@@ -108,7 +88,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <ForgotPassword onNavigate={setActiveTab} />
             </motion.div>
@@ -120,7 +100,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <ResetPassword onSuccess={() => setActiveTab('dashboard')} />
             </motion.div>
@@ -132,7 +112,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Onboarding onComplete={handleOnboardingComplete} />
             </motion.div>
@@ -141,10 +121,10 @@ export default function App() {
           {activeTab === 'dashboard' && (
             <motion.div
               key="dashboard"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Dashboard onSelectText={handleTextSelect} />
             </motion.div>
@@ -153,10 +133,10 @@ export default function App() {
           {activeTab === 'library' && (
             <motion.div
               key="library"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Library onSelectText={handleTextSelect} />
             </motion.div>
@@ -165,10 +145,10 @@ export default function App() {
           {activeTab === 'import' && (
             <motion.div
               key="import"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Import />
             </motion.div>
@@ -177,22 +157,22 @@ export default function App() {
           {activeTab === 'review' && (
             <motion.div
               key="review"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
-              <Review />
+              <Review onBack={() => setActiveTab('dashboard')} />
             </motion.div>
           )}
 
           {activeTab === 'vocabulary' && (
             <motion.div
               key="vocabulary"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Vocabulary />
             </motion.div>
@@ -201,10 +181,10 @@ export default function App() {
           {activeTab === 'reader' && (
             <motion.div
               key="reader"
-              initial={{ opacity: 0, scale: 0.98 }}
+              initial={{ opacity: 0, scale: 0.99 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.02 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, scale: 1.01 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Reader text={selectedText} onBack={() => setActiveTab('library')} />
             </motion.div>
