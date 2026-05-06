@@ -10,8 +10,7 @@ import {
   deleteDoc,
   doc
 } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
-import { handleFirestoreError, OperationType } from '@/lib/db';
+import { db, auth, handleFirestoreError, OperationType } from '@/lib/firebase';
 
 export const Vocabulary = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
   const [activeFilter, setActiveFilter] = useState('All');

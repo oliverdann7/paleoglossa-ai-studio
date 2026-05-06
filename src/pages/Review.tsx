@@ -2,13 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { ArrowLeft } from 'lucide-react';
-import { db, auth } from '@/lib/firebase';
+import { db, auth, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
-
-const dummyReviewQueue = [
-  { id: '1', term: 'λόγος', translit: 'logos', definition: 'word, reason, account', context: 'Ἐν ἀρχῇ ἦν ὁ λόγος...', contextTranslation: "In the beginning was the Word...", source: '— Mark 1:2 (from your reading, 3 days ago)', language: 'Greek', type: 'FORM → MEANING' },
-  { id: '2', term: 'בְּרֵאשִׁית', translit: 'bereshit', definition: 'in the beginning', context: 'בְּרֵאשִׁית בָּרָא אֱלֹהִים...', contextTranslation: "In the beginning, God created...", source: '— Genesis 1:1 (from your reading, 1 week ago)', language: 'Hebrew', type: 'FORM → MEANING' },
-];
 
 export const Review = ({ onBack }: { onBack?: () => void }) => {
   const [queue, setQueue] = useState<any[]>([]);
@@ -20,7 +15,7 @@ export const Review = ({ onBack }: { onBack?: () => void }) => {
   useEffect(() => {
     const fetchQueue = async () => {
       if (!auth.currentUser) {
-        setQueue(dummyReviewQueue);
+        setQueue([]);
         setIsLoading(false);
         return;
       }
@@ -35,10 +30,9 @@ export const Review = ({ onBack }: { onBack?: () => void }) => {
         snap.forEach(d => {
           fetchedCards.push({ id: d.id, ...d.data(), type: 'FORM → MEANING' });
         });
-        setQueue(fetchedCards.length > 0 ? fetchedCards : dummyReviewQueue);
+        setQueue(fetchedCards);
       } catch (err) {
-        console.error(err);
-        setQueue(dummyReviewQueue);
+        handleFirestoreError(err, OperationType.LIST, 'vocabulary');
       }
       setIsLoading(false);
     };
@@ -106,7 +100,7 @@ export const Review = ({ onBack }: { onBack?: () => void }) => {
           updatedAt: new Date()
         });
       } catch (e) {
-        console.error(e);
+        handleFirestoreError(e, OperationType.UPDATE, 'vocabulary');
       }
     }
 

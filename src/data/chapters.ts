@@ -1,9 +1,6 @@
 import { Chapter } from '../types/library';
 import * as tokens from './tokens';
 
-import { Chapter } from '../types/library';
-import * as tokens from './tokens';
-
 export const getChapters = (textId: number): Chapter[] => {
   const languageMap: Record<number, { title: string, translation: string, tokens: any[] }[]> = {
     // Ancient Greek

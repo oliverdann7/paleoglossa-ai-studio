@@ -5,22 +5,21 @@ service cloud.firestore {
       allow read, write: if false;
     }
     
-    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
-    function isSignedIn() { return request.auth != null; }
+    function isSignedIn() { return request.auth != null && request.auth.token.email_verified == true; }
     
+    // User validation
     function isValidUser(data) {
       return data.keys().hasAll(['email', 'createdAt', 'currentPlan']) &&
-             data.email is string && data.email.size() <= 256 &&
+             data.keys().size() <= 4 && // email, createdAt, currentPlan, displayName
+             data.email == request.auth.token.email &&
              (data.get('displayName', '') is string) &&
              data.createdAt == request.time &&
              data.currentPlan in ['free', 'pro'];
-    }
-
-    function isValidUserUpdate(data) {
-      return (data.get('displayName', '') is string) &&
-             (data.get('currentPlan', 'free') in ['free', 'pro']);
     }
 
     match /users/{userId} {
@@ -32,20 +31,23 @@ service cloud.firestore {
       
       allow update: if isSignedIn() && 
                     request.auth.uid == userId &&
-                    isValidUserUpdate(incoming()) &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'currentPlan']) &&
+                    (incoming().get('displayName', '') is string) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName']) &&
                     incoming().email == existing().email &&
-                    incoming().createdAt == existing().createdAt;
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().currentPlan == existing().currentPlan; // Users can't change plan directly
     }
 
+    // Vocabulary validation
     function isValidVocabItem(data, isCreate) {
-      return data.keys().hasAll(['userId', 'term', 'status', 'nextReview', 'interval', 'ease', 'createdAt', 'updatedAt']) &&
+      return (data.keys().hasAll(['userId', 'term', 'status', 'nextReview', 'interval', 'ease', 'createdAt', 'updatedAt', 'language']) ||
+              data.keys().hasAll(['userId', 'term', 'definition', 'status', 'nextReview', 'interval', 'ease', 'createdAt', 'updatedAt', 'language'])) &&
              data.userId == request.auth.uid &&
-             data.term is string && data.term.size() <= 256 &&
+             data.term is string && data.term.size() > 0 && data.term.size() <= 256 &&
              (data.get('translit', '') is string) &&
              (data.get('definition', '') is string) &&
              (data.get('language', '') is string) &&
-             data.status in ["Seen Once", "Learning", "Familiar", "Known", "Ignored"] &&
+             data.status in ["Seen Once", "Learning", "Familiar", "Known", "Ignored", "New"] &&
              data.nextReview is timestamp &&
              data.interval is number &&
              data.ease is number &&
@@ -55,6 +57,7 @@ service cloud.firestore {
 
     match /vocabulary/{itemId} {
       allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      // Secure List Queries (The "Query Enforcer")
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
       
       allow create: if isSignedIn() &&
@@ -64,7 +67,8 @@ service cloud.firestore {
       allow update: if isSignedIn() &&
                     existing().userId == request.auth.uid &&
                     isValidVocabItem(incoming(), false) &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'nextReview', 'interval', 'ease', 'updatedAt']);
+                    // Restrict updates
+                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'nextReview', 'interval', 'ease', 'updatedAt', 'translit', 'definition', 'term']);
                     
       allow delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
