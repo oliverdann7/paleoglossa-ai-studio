@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal } from 'lucide-react';
+import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItemProps {
@@ -75,6 +75,7 @@ export const Navbar = ({
           <div className="nav-label px-3 mb-1 mt-6">Manage</div>
           <DesktopNavItem icon={PlusCircle} label="Import" isActive={activeTab === 'import'} onClick={() => onTabChange('import')} />
           <DesktopNavItem icon={Settings} label="Settings" isActive={activeTab === 'settings'} onClick={() => onTabChange('settings')} />
+          <DesktopNavItem icon={Crown} label="Upgrade" isActive={activeTab === 'subscription'} onClick={() => onTabChange('subscription')} />
         </div>
 
         <div className="p-4 border-t border-bdr">
@@ -93,13 +94,13 @@ export const Navbar = ({
             <p className="text-[10px] text-ink3 font-sans">2.4k words to B2</p>
           </div>
           
-          <button onClick={() => onTabChange('profile')} className="flex items-center gap-3 w-full p-2 hover:bg-parch3 rounded-lg transition-colors group">
+          <button onClick={() => onTabChange('subscription')} className="flex items-center gap-3 w-full p-2 hover:bg-parch3 rounded-lg transition-colors group">
             <div className="w-8 h-8 rounded-full bg-parch3 border border-bdr flex items-center justify-center overflow-hidden">
                <User className="w-4 h-4 text-ink3 group-hover:text-blue" />
             </div>
             <div className="flex flex-col items-start">
               <span className="text-[12.5px] font-bold font-sans text-ink">E. L. Scholar</span>
-              <span className="text-[10px] font-sans text-muted">Free Plan</span>
+              <span className="text-[10px] font-sans text-muted group-hover:text-amber transition-colors">Free Plan →</span>
             </div>
           </button>
         </div>
@@ -111,7 +112,7 @@ export const Navbar = ({
         <MobileNavItem icon={Library} label="Library" isActive={activeTab === 'library'} onClick={() => onTabChange('library')} />
         <MobileNavItem icon={Brain} label="Review" isActive={activeTab === 'review'} onClick={() => onTabChange('review')} />
         <MobileNavItem icon={GraduationCap} label="Words" isActive={activeTab === 'vocabulary'} onClick={() => onTabChange('vocabulary')} />
-        <MobileNavItem icon={MoreHorizontal} label="More" isActive={['import', 'settings', 'profile'].includes(activeTab)} onClick={() => onTabChange('settings')} />
+        <MobileNavItem icon={MoreHorizontal} label="More" isActive={['import', 'settings', 'profile', 'subscription'].includes(activeTab)} onClick={() => onTabChange('settings')} />
       </nav>
     </>
   );

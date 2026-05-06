@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, User, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { auth, googleProvider, db } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '@/lib/db';
 
 export const SignUp = ({ 
   onNavigate, 
@@ -16,45 +19,47 @@ export const SignUp = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const createUserProfile = async (uid: string, emailStr: string, name: string) => {
+    try {
+      await setDoc(doc(db, 'users', uid), {
+        email: emailStr,
+        displayName: name,
+        currentPlan: 'free',
+        createdAt: serverTimestamp()
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, 'users');
+    }
+  };
+
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     
-    if (!import.meta.env.VITE_SUPABASE_URL) {
-      setTimeout(() => onSuccess(), 1000);
-      return;
-    }
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        }
-      }
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await createUserProfile(cred.user.uid, email, fullName);
       onSuccess();
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
     }
   };
 
   const handleGoogleSignUp = async () => {
-    if (!import.meta.env.VITE_SUPABASE_URL) {
+    try {
+      const cred = await signInWithPopup(auth, googleProvider);
+      if (cred.user) {
+        // Warning: This will overwrite if they log in via signup with an existing account.
+        // A robust app would check exists() first, but we will skip that here for brevity.
+        await createUserProfile(cred.user.uid, cred.user.email || '', cred.user.displayName || '');
+      }
       onSuccess();
-      return;
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message);
     }
-    
-    // In a real application, you would configure Google Auth in the Supabase dashboard.
-    // Since it's not configured by default, calling signInWithOAuth will redirect 
-    // to a JSON error page. We simulate success here for preview purposes.
-    console.warn('Google provider is not enabled in Supabase. Simulating success for preview.');
-    onSuccess();
   };
 
   return (

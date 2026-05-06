@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Settings2, Trash2, X, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot,
+  deleteDoc,
+  doc
+} from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { handleFirestoreError, OperationType } from '@/lib/db';
 
 export const Vocabulary = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [showSettings, setShowSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [words, setWords] = useState<any[]>([]);
   
   const [srsIntervals, setSrsIntervals] = useState({
     seenOnce: '1 day',
@@ -17,28 +28,48 @@ export const Vocabulary = () => {
 
   const filters = ['All', 'Known', 'Familiar', 'Learning', 'Seen Once'];
 
-  const words = [
-    { id: 1, text: "λόγος", lemma: "λόγος", translit: "logos", gloss: "word, reason, account", language: "Greek", status: "Known", lastSeen: "2 days ago", pos: "N-NSM" },
-    { id: 2, text: "ἀρχῇ", lemma: "ἀρχή", translit: "arche", gloss: "beginning, origin", language: "Greek", status: "Familiar", lastSeen: "Today", pos: "N-DSF" },
-    { id: 3, text: "בְּרֵאשִׁית", lemma: "רֵאשִׁית", translit: "bereshit", gloss: "in the beginning", language: "Hebrew", status: "Learning", lastSeen: "1 week ago", pos: "N-f" },
-    { id: 4, text: "θεὸς", lemma: "θεός", translit: "theos", gloss: "God, deity", language: "Greek", status: "Known", lastSeen: "3 days ago", pos: "N-NSM" },
-    { id: 5, text: "ἦν", lemma: "εἰμί", translit: "en", gloss: "was, existed", language: "Greek", status: "Familiar", lastSeen: "Today", pos: "V-IAI-3S" },
-    { id: 6, text: "אֱלֹהִים", lemma: "אֱלֹהִים", translit: "elohim", gloss: "God, god", language: "Hebrew", status: "Seen Once", lastSeen: "1 day ago", pos: "N-mp" }
-  ];
+  useEffect(() => {
+    if (!auth.currentUser) return;
+    
+    const vocabQuery = query(
+      collection(db, 'vocabulary'), 
+      where('userId', '==', auth.currentUser.uid)
+    );
+    
+    const unsubscribe = onSnapshot(vocabQuery, (snapshot) => {
+      const vocabItems: any[] = [];
+      snapshot.forEach(doc => {
+        vocabItems.push({ id: doc.id, ...doc.data() });
+      });
+      setWords(vocabItems);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'vocabulary');
+    });
+    
+    return () => unsubscribe();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'vocabulary', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'vocabulary');
+    }
+  };
 
   const filteredWords = words.filter(w => {
     const matchesFilter = activeFilter === 'All' || w.status === activeFilter;
-    const matchesSearch = w.text.includes(searchQuery) || w.lemma.includes(searchQuery) || w.gloss.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = w.term.includes(searchQuery) || w.definition.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   const getStatusClass = (status: string) => {
     switch(status) {
-      case 'Known': return "bg-bluexl text-blue border-blue/20";
-      case 'Familiar': return "bg-jadexl text-jade border-jade/20";
-      case 'Learning': return "bg-amberxl text-amber border-amber/20";
-      case 'Seen Once': return "bg-parch3 text-ink3 border-bdr";
-      default: return "bg-parch text-ink3 border-bdr";
+      case 'Known': return "cefr-a";
+      case 'Familiar': return "cefr-a";
+      case 'Learning': return "cefr-b";
+      case 'Seen Once': return "cefr-c";
+      default: return "";
     }
   };
 
@@ -60,7 +91,7 @@ export const Vocabulary = () => {
           >
             <Settings2 className="w-4 h-4" />
           </button>
-          <button className="btn-hero px-6 py-2.5 shadow-sm hover:shadow-md hover:-translate-y-px transition-all">
+          <button className="btn-primary px-6 py-2.5">
             Start Review
           </button>
         </div>
@@ -111,29 +142,28 @@ export const Vocabulary = () => {
               <div className="flex flex-col md:flex-row md:items-center gap-6">
                 <div className="w-32 flex-shrink-0">
                   <div className={cn("text-[26px] font-serif text-ink leading-tight", word.language === 'Hebrew' ? "font-hebrew" : "")} dir={word.language === 'Hebrew' ? "rtl" : "ltr"}>
-                    {word.text}
+                    {word.term}
                   </div>
                   <div className="font-mono text-[11px] italic text-muted mt-0.5">{word.translit}</div>
                 </div>
                 
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2 mb-1">
-                     <span className="font-serif text-[15px] font-medium text-blue" dir={word.language === 'Hebrew' ? "rtl" : "ltr"}>{word.lemma}</span>
-                     <span className="font-mono text-[9px] text-muted border border-bdr/50 bg-parch px-1 rounded uppercase">{word.pos}</span>
+                     <span className="font-mono text-[9px] text-muted border border-bdr/50 bg-parch px-1 rounded uppercase">{word.language}</span>
                   </div>
                   <div className="font-body text-[13.5px] italic text-ink2">
-                    {word.gloss}
+                    {word.definition}
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t border-bdr/50 md:border-none">
                 <div className="flex flex-col items-start md:items-end w-32">
-                   <div className={cn("pill font-mono tracking-wider", getStatusClass(word.status))}>
+                   <div className={cn("pill", getStatusClass(word.status))}>
                      {word.status}
                    </div>
                    <div className="text-[10px] text-muted font-sans mt-2">
-                     Last seen {word.lastSeen}
+                     Next Review: {new Date(word.nextReview).toLocaleDateString()}
                    </div>
                 </div>
                 
@@ -141,7 +171,7 @@ export const Vocabulary = () => {
                   <button className="p-1.5 rounded text-muted hover:text-ink hover:bg-parch3 transition-colors">
                     <ExternalLink className="w-4 h-4" />
                   </button>
-                  <button className="p-1.5 rounded text-ruby/50 hover:text-ruby hover:bg-rubyxl transition-colors">
+                  <button onClick={() => handleDelete(word.id)} className="p-1.5 rounded text-ruby/50 hover:text-ruby hover:bg-rubyxl transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -172,9 +202,9 @@ export const Vocabulary = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-[#FEFAF4] w-full max-w-md rounded-[16px] shadow-[0_20px_40px_-20px_rgba(26,20,16,0.15)] border border-bdr overflow-hidden"
+                className="card w-full max-w-md overflow-hidden"
               >
-                <div className="p-5 border-b border-bdr flex items-center justify-between bg-parch">
+                <div className="p-5 border-b border-bdr flex items-center justify-between bg-parch/50">
                   <h3 className="font-serif text-[19px] text-ink font-medium">Spaced Repetition Configuration</h3>
                   <button onClick={() => setShowSettings(false)} className="text-muted hover:text-ink transition-colors">
                     <X className="w-5 h-5" />
@@ -229,13 +259,13 @@ export const Vocabulary = () => {
                   <div className="flex gap-3 justify-end">
                     <button 
                       onClick={() => setShowSettings(false)}
-                      className="px-4 py-2 font-sans font-medium text-[13.5px] text-ink3 hover:text-ink transition-colors"
+                      className="btn-secondary px-4 py-2"
                     >
                       Cancel
                     </button>
                     <button 
                       onClick={() => setShowSettings(false)}
-                      className="btn-primary px-5 py-2 font-medium"
+                      className="btn-primary px-5 py-2"
                     >
                       Save Configuration
                     </button>
