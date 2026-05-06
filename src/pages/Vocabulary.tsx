@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, Filter, GraduationCap, Clock, TrendingUp, Star, Trash2, ExternalLink, Brain, CheckCircle2, Eye } from 'lucide-react';
+import { Search, GraduationCap, Star, Trash2, ExternalLink, Brain, CheckCircle2, Eye, Settings2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const Vocabulary = () => {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [showSettings, setShowSettings] = useState(false);
+  const [srsIntervals, setSrsIntervals] = useState({
+    seenOnce: '1 day',
+    familiar: '3 days',
+    known: '1 week'
+  });
   const filters = ['All', 'Known', 'Familiar', 'Seen Once'];
 
   const words = [
@@ -38,6 +44,12 @@ export const Vocabulary = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setShowSettings(true)}
+            className="p-3 rounded-full bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-gold-500/30 transition-all text-obsidian-900/60 dark:text-vellum-100/60"
+          >
+            <Settings2 className="w-5 h-5" />
+          </button>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-obsidian-900/40 dark:text-vellum-100/40" />
             <input 
@@ -136,6 +148,77 @@ export const Vocabulary = () => {
           </div>
         )}
       </div>
+
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-vellum-50 dark:bg-obsidian-900 rounded-3xl p-8 max-w-md w-full border border-black/10 dark:border-white/10 shadow-2xl relative"
+          >
+            <button 
+              onClick={() => setShowSettings(false)}
+              className="absolute top-6 right-6 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-2xl font-serif font-bold mb-2">SRS Settings</h3>
+            <p className="text-sm font-medium text-obsidian-900/60 dark:text-vellum-100/60 mb-8">
+              Customize the spaced repetition intervals for your vocabulary mastery levels.
+            </p>
+
+            <div className="space-y-6">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40 mb-2 block">Seen Once Interval</label>
+                <select 
+                  value={srsIntervals.seenOnce}
+                  onChange={(e) => setSrsIntervals(prev => ({...prev, seenOnce: e.target.value}))}
+                  className="w-full bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-gold-500 text-obsidian-900 dark:text-vellum-50"
+                >
+                  <option value="12 hours">12 hours</option>
+                  <option value="1 day">1 day</option>
+                  <option value="2 days">2 days</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40 mb-2 block">Familiar Interval</label>
+                <select 
+                  value={srsIntervals.familiar}
+                  onChange={(e) => setSrsIntervals(prev => ({...prev, familiar: e.target.value}))}
+                  className="w-full bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-gold-500 text-obsidian-900 dark:text-vellum-50"
+                >
+                  <option value="3 days">3 days</option>
+                  <option value="5 days">5 days</option>
+                  <option value="1 week">1 week</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40 mb-2 block">Known Interval</label>
+                <select 
+                  value={srsIntervals.known}
+                  onChange={(e) => setSrsIntervals(prev => ({...prev, known: e.target.value}))}
+                  className="w-full bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-gold-500 text-obsidian-900 dark:text-vellum-50"
+                >
+                  <option value="1 week">1 week</option>
+                  <option value="2 weeks">2 weeks</option>
+                  <option value="1 month">1 month</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-end">
+              <button 
+                onClick={() => setShowSettings(false)}
+                className="px-6 py-3 bg-obsidian-900 dark:bg-vellum-100 text-vellum-50 dark:text-obsidian-950 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition-transform"
+              >
+                Save Preferences
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

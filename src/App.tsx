@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Landing } from './pages/Landing';
@@ -12,7 +12,6 @@ import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/lib/supabase';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('landing');
@@ -39,7 +38,7 @@ export default function App() {
     setActiveTab('reader');
   };
 
-  const handleOnboardingComplete = (lang: string) => {
+  const handleOnboardingComplete = () => {
     setActiveTab('dashboard');
   };
 

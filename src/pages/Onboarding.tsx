@@ -1,6 +1,4 @@
-import React from 'react';
 import { motion } from 'motion/react';
-import { cn } from '@/lib/utils';
 
 const languages = [
   { id: 'hieroglyphs', glyph: '𓊹', label: 'Egyptian Hieroglyphs', desc: 'The sacred writing of the Pharaohs and ancient Egypt.' },
