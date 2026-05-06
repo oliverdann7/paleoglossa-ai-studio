@@ -8,7 +8,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
   const [activeFilter, setActiveFilter] = useState('All');
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const filters = ['All', 'Egyptian', 'Sanskrit', 'Greek', 'Koine Greek', 'Hebrew', 'Aramaic', 'Coptic', 'Akkadian', 'Latin', 'Syriac', 'Hittite'];
+  const filters = ['All', 'Egyptian Hieroglyphs', 'Akkadian', 'Vedic Sanskrit', 'Ancient Greek', 'Koine Greek', 'Biblical Hebrew', 'Aramaic', 'Classical Latin', 'Classical Syriac', 'Coptic', 'Hittite'];
 
   const allTags = Array.from(new Set(texts.flatMap(t => t.tags || []))).sort();
 
