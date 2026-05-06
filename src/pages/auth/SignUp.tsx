@@ -4,7 +4,7 @@ import { ArrowRight, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { auth, googleProvider, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '@/lib/db';
+import { handleFirestoreError, OperationType } from '@/lib/firebase';
 
 export const SignUp = ({ 
   onNavigate, 

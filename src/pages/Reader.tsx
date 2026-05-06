@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Languages, Maximize2, ChevronRight, ChevronLeft, Search, Bookmark } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getChapters } from '../data/chapters';
+import { CorpusDB } from '../data/corpus';
 import { auth, db } from '@/lib/firebase';
-import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, deleteDoc, writeBatch } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '@/lib/db';
+import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '@/lib/firebase';
 
 export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const [selectedWord, setSelectedWord] = useState<any>(null);
@@ -15,7 +16,37 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const [fontSize, setFontSize] = useState(21);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  const chapters = useMemo(() => getChapters(text?.id || 104), [text?.id]);
+  const chapters = useMemo(() => {
+    // If this is a real Corpus DB text (string IDs like 'Mt' or 'Gen')
+    if (typeof text?.id === 'string' && CorpusDB.getText(text.id)) {
+      const realText = CorpusDB.getText(text.id);
+      return realText?.sectionsPreview?.map(preview => {
+        const section = CorpusDB.getSection(preview.id);
+        if (!section) return { id: preview.id, title: preview.label, tokens: [], translation: '' };
+        // Flatten sentences into tokens array for Reader
+        const tokens = section.sentences.flatMap((s: any) => s.tokens.map((t: any) => ({
+          id: t.id,
+          text: t.surface,
+          lemma: t.lemma,
+          gloss: t.gloss,
+          morphology: t.morphology,
+          translit: t.transliteration,
+          status: 'New', // default
+          punctBefore: t.punctBefore || '',
+          punctAfter: t.punctAfter || ' '
+        })));
+        return {
+           id: section.id,
+           title: section.label,
+           tokens,
+           translation: section.sentences.map(s => s.translation).filter(Boolean).join(' ')
+        };
+      }) || [];
+    }
+    // Fallback to legacy mock data
+    return getChapters(text?.id || 104);
+  }, [text?.id]);
+
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
     const saved = localStorage.getItem(`reader_chapter_${text?.id}`);
     return saved ? parseInt(saved, 10) || 0 : 0;
@@ -23,7 +54,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const chapter = chapters[currentChapterIndex] || chapters[0];
   const [currentTokens, setCurrentTokens] = useState<any[]>([]);
 
-  const isHebrew = text?.language === 'Biblical Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac';
+  const isHebrew = text?.language === 'Biblical Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac' || text?.language === 'hbo';
 
   useEffect(() => {
     if (text?.id) {
@@ -332,16 +363,19 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
               Corpus <span className="mx-1.5 opacity-40">•</span> {text?.language} <span className="mx-1.5 opacity-40">•</span> {chapter.title}
             </div>
             
-            <div className={cn("font-serif leading-[2.1] tracking-[0.008em]", isHebrew ? "font-hebrew text-right" : "")} dir={isHebrew ? "rtl" : "ltr"}>
+            <div className={cn("font-serif leading-[2.1] tracking-[0.008em] pb-12", isHebrew ? "font-hebrew text-right" : "")} dir={isHebrew ? "rtl" : "ltr"}>
                {currentTokens.map((token: any) => (
-                  <span
-                    key={token.id}
-                    id={`word-${token.id}`}
-                    onClick={() => setSelectedWord(token)}
-                    className={getWordClasses(token, selectedWord?.id === token.id)}
-                    style={{ fontSize: `${fontSize}px` }}
-                  >
-                     {token.text}{' '}
+                  <span key={token.id} className="inline whitespace-pre-wrap">
+                    {token.punctBefore && <span>{token.punctBefore}</span>}
+                    <span
+                      id={`word-${token.id}`}
+                      onClick={() => setSelectedWord(token)}
+                      className={getWordClasses(token, selectedWord?.id === token.id)}
+                      style={{ fontSize: `${fontSize}px` }}
+                    >
+                       {token.text}
+                    </span>
+                    {token.punctAfter ? <span>{token.punctAfter}</span> : <span> </span>}
                   </span>
                ))}
                <span className="text-muted ml-2 opacity-50 text-[18px]">❧</span>

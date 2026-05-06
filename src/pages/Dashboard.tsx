@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { BookOpen, GraduationCap, ArrowRight, Brain, CheckCircle2, Eye, Flag, Flame, Target, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { texts } from '../data/texts';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
-const StatCard = ({ label, value, colorType }: { label: string, value: string | number, colorType?: 'gold' | 'jade' | 'amber' | 'blue' | 'ruby' }) => (
+const StatCard = ({ label, value }: { label: string, value: string | number }) => (
   <div className="card px-6 py-5 flex flex-col justify-between hover:shadow-sm transition-shadow">
     <div className="text-[32px] font-serif font-light mb-1 tracking-tight text-ink">
       {value}
@@ -46,12 +45,19 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
   const [dueCount, setDueCount] = useState<number | string>("...");
   const [learningCount, setLearningCount] = useState<number | string>("...");
   const [knownCount, setKnownCount] = useState<number | string>("...");
+  const [recentVocab, setRecentVocab] = useState<any[]>([]);
   
   useEffect(() => {
     if (!auth.currentUser) {
       setDueCount(142);
       setLearningCount(315);
       setKnownCount("1,284");
+      // Add a couple placeholder cards for non-logged in state
+      setRecentVocab([
+        { id: '1', term: 'λόγος', translit: 'logos', definition: 'word, reason, account', status: 'Learning', language: 'Ancient Greek' },
+        { id: '2', term: 'בָּרָא', translit: 'bara', definition: 'to create, shape', status: 'New', language: 'Biblical Hebrew' },
+        { id: '3', term: 'ἀρχή', translit: 'archē', definition: 'beginning, origin, ruler', status: 'Familiar', language: 'Ancient Greek' }
+      ]);
       return;
     }
     
@@ -62,15 +68,23 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
       let learning = 0;
       let known = 0;
       const now = new Date();
+      const allVocab: any[] = [];
       snap.forEach(d => {
         const data = d.data();
+        allVocab.push({ id: d.id, ...data });
         if (data.status === 'Learning') learning++;
         if (data.status === 'Known' || data.status === 'Familiar') known++;
         if (data.nextReview && data.nextReview.toDate() <= now) due++;
       });
+      
+      allVocab.sort((a, b) => b.updatedAt?.toMillis?.() - a.updatedAt?.toMillis?.() || 0);
+      setRecentVocab(allVocab.slice(0, 6));
+
       setDueCount(due);
       setLearningCount(learning);
       setKnownCount(known);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'vocabulary');
     });
     return () => unsub();
   }, []);
@@ -172,12 +186,20 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
             <h3 className="text-xl font-serif text-ink font-medium">Recent Vocabulary</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <VocabChip form="λόγος" translit="logos" gloss="word, reason, account" status="learning" language="Ancient Greek" />
-            <VocabChip form="θεὀς" translit="theos" gloss="god, deity" status="known" language="Ancient Greek" />
-            <VocabChip form="ἀρχή" translit="archē" gloss="beginning, origin, ruler" status="familiar" language="Ancient Greek" />
-            <VocabChip form="בָּרָא" translit="bara" gloss="to create, shape" status="new" language="Biblical Hebrew" />
-            <VocabChip form="אֱלֹהִים" translit="elohim" gloss="God, gods" status="known" language="Biblical Hebrew" />
-            <VocabChip form="אֶרֶץ" translit="erets" gloss="earth, land" status="learning" language="Biblical Hebrew" />
+            {recentVocab.length > 0 ? (
+              recentVocab.map(w => (
+                <VocabChip 
+                  key={w.id} 
+                  form={w.term} 
+                  translit={w.translit} 
+                  gloss={w.definition} 
+                  status={w.status?.toLowerCase() || 'new'} 
+                  language={w.language} 
+                />
+              ))
+            ) : (
+              <div className="col-span-full py-8 text-center text-ink3 italic">No recent vocabulary.</div>
+            )}
           </div>
         </section>
 

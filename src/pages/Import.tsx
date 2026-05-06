@@ -10,7 +10,7 @@ export const Import = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleImport = () => {
-    // Make dummy import logic clear input
+    // Clear inputs upon successful simulation
     setContent('');
     setTitle('');
     setIsSuccess(true);

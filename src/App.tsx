@@ -14,18 +14,14 @@ import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
-import { cn } from '@/lib/utils';
 import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('landing');
   const [selectedText, setSelectedText] = useState<any>(null);
-  const [user, setUser] = useState<User | null>(null);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
       if (currentUser && activeTab === 'landing') {
         setActiveTab('dashboard'); // could also be onboarding if new
       }

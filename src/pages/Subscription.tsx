@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
 import { Check, Sparkles, BookOpen, Crown, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
