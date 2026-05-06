@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, Filter, BookOpen, Clock, Star } from 'lucide-react';
+import { Search, Filter, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const Library = ({ onSelectText }: { onSelectText: (text: any) => void }) => {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const filters = ['All', 'Egyptian', 'Sanskrit', 'Greek', 'Koine Greek', 'Hebrew', 'Aramaic', 'Coptic', 'Akkadian', 'Latin', 'Syriac', 'Hittite'];
 
   const texts = [
@@ -44,9 +45,11 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
 
     // Latin
     { id: 501, title: "Latin Alphabet & Pronunciation", author: "Foundations", language: "Latin", level: "A1", era: "Ancient", image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=400" },
-    { id: 502, title: "Gallic War", author: "Julius Caesar", language: "Latin", level: "B1", era: "1st c. BC", image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=400" },
-    { id: 503, title: "Odes", author: "Horace", language: "Latin", level: "B2", era: "1st c. BC", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=400" },
-    { id: 504, title: "Aeneid", author: "Virgil", language: "Latin", level: "C2", era: "1st c. BC", image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=400" },
+    { id: 502, title: "Vulgate", author: "Jerome", language: "Latin", level: "A2", era: "4th c. AD", image: "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&q=80&w=400" },
+    { id: 503, title: "Gallic War", author: "Julius Caesar", language: "Latin", level: "B1", era: "1st c. BC", image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=400" },
+    { id: 504, title: "Odes", author: "Horace", language: "Latin", level: "B2", era: "1st c. BC", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=400" },
+    { id: 505, title: "Metamorphoses", author: "Ovid", language: "Latin", level: "C1", era: "1st c. AD", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=400" },
+    { id: 506, title: "Aeneid", author: "Virgil", language: "Latin", level: "C2", era: "1st c. BC", image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=400" },
     // Koine Greek
     { id: 601, title: "Koine Alphabet & Sounds", author: "Foundations", language: "Koine Greek", level: "A1", era: "1st c. AD", image: "https://images.unsplash.com/photo-1544640808-32ca72ac7f37?auto=format&fit=crop&q=80&w=400" },
     { id: 602, title: "Basic Vocabulary", author: "Foundations", language: "Koine Greek", level: "A1", era: "1st c. AD", image: "https://images.unsplash.com/photo-1544640808-32ca72ac7f37?auto=format&fit=crop&q=80&w=400" },
@@ -82,9 +85,32 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
     { id: 905, title: "Enuma Elish", author: "Unknown", language: "Akkadian", level: "B2", era: "12th c. BC", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
     { id: 906, title: "Epic of Gilgamesh", author: "Sin-leqi-unninni", language: "Akkadian", level: "C1", era: "13th c. BC", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
     { id: 907, title: "Atra-Hasis", author: "Unknown", language: "Akkadian", level: "C2", era: "18th c. BC", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
+
+    // Syriac
+    { id: 1001, title: "Estrangelo Alphabet", author: "Foundations", language: "Syriac", level: "A1", era: "Ancient", image: "https://images.unsplash.com/photo-1596700889247-49f3900ca5ae?auto=format&fit=crop&q=80&w=400" },
+    { id: 1002, title: "Basic Vocabulary", author: "Foundations", language: "Syriac", level: "A1", era: "Ancient", image: "https://images.unsplash.com/photo-1596700889247-49f3900ca5ae?auto=format&fit=crop&q=80&w=400" },
+    { id: 1003, title: "Peshitta Gospels", author: "Various", language: "Syriac", level: "A2", era: "5th c. AD", image: "https://images.unsplash.com/photo-1596700889247-49f3900ca5ae?auto=format&fit=crop&q=80&w=400" },
+    { id: 1004, title: "Odes of Solomon", author: "Unknown", language: "Syriac", level: "B1", era: "2nd c. AD", image: "https://images.unsplash.com/photo-1596700889247-49f3900ca5ae?auto=format&fit=crop&q=80&w=400" },
+    { id: 1005, title: "Hymns of Ephrem", author: "Ephrem the Syrian", language: "Syriac", level: "B2", era: "4th c. AD", image: "https://images.unsplash.com/photo-1596700889247-49f3900ca5ae?auto=format&fit=crop&q=80&w=400" },
+    { id: 1006, title: "Chronicle of Edessa", author: "Unknown", language: "Syriac", level: "C1", era: "6th c. AD", image: "https://images.unsplash.com/photo-1596700889247-49f3900ca5ae?auto=format&fit=crop&q=80&w=400" },
+    { id: 1007, title: "Isaac of Nineveh", author: "Isaac of Nineveh", language: "Syriac", level: "C2", era: "7th c. AD", image: "https://images.unsplash.com/photo-1596700889247-49f3900ca5ae?auto=format&fit=crop&q=80&w=400" },
+
+    // Hittite
+    { id: 1101, title: "Cuneiform Basics", author: "Foundations", language: "Hittite", level: "A1", era: "Ancient", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
+    { id: 1102, title: "Basic Vocabulary", author: "Foundations", language: "Hittite", level: "A1", era: "Ancient", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
+    { id: 1103, title: "Ritual of Tunnawiya", author: "Tunnawiya", language: "Hittite", level: "A2", era: "14th c. BC", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
+    { id: 1104, title: "Illuyanka Myth", author: "Unknown", language: "Hittite", level: "B1", era: "15th c. BC", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
+    { id: 1105, title: "Song of Kumarbi", author: "Unknown", language: "Hittite", level: "B2", era: "14th c. BC", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
+    { id: 1106, title: "Annals of Mursili II", author: "Mursili II", language: "Hittite", level: "C1", era: "14th c. BC", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
+    { id: 1107, title: "Apology of Hattusili III", author: "Hattusili III", language: "Hittite", level: "C2", era: "13th c. BC", image: "https://images.unsplash.com/photo-1563216839-44439c09bf8f?auto=format&fit=crop&q=80&w=400" },
   ];
 
-  const filteredTexts = activeFilter === 'All' ? texts : texts.filter(t => t.language === activeFilter);
+  const filteredTexts = texts.filter(t => {
+    const matchesFilter = activeFilter === 'All' || t.language === activeFilter;
+    const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          t.author.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   return (
     <div className="p-12 max-w-7xl mx-auto">
@@ -102,6 +128,8 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
             <input 
               type="text" 
               placeholder="Search texts..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-12 pr-6 py-3 bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-full text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gold-500/20 transition-all w-64"
             />
           </div>

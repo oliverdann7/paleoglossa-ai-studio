@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'motion/react';
 import { BookOpen, GraduationCap, Clock, TrendingUp, ArrowRight, Brain, CheckCircle2, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
