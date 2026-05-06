@@ -114,7 +114,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
                         </span>
                       </div>
                     </div>
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start mb-3">
                       <div>
                         <h4 className="text-2xl font-serif font-bold mb-1 group-hover:text-gold-600 transition-colors">{text.title}</h4>
                         <p className="text-sm font-medium text-obsidian-900/40 dark:text-vellum-100/40">{text.author}</p>
@@ -123,6 +123,28 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
                         <Star className="w-5 h-5 text-obsidian-900/20 dark:text-vellum-100/20" />
                       </button>
                     </div>
+
+                    {text.knownCoverage !== undefined && (
+                      <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-obsidian-900/60 dark:text-vellum-100/60">Readability</span>
+                          <span className="text-[10px] font-bold text-green-600 dark:text-green-400">{text.knownCoverage}% Known</span>
+                        </div>
+                        <div className="w-full bg-black/5 dark:bg-white/5 rounded-full h-1.5 mb-3 overflow-hidden">
+                          <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${text.knownCoverage}%` }}></div>
+                        </div>
+                        <div className="flex gap-4">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40">New Words</span>
+                            <span className="text-sm font-bold">{text.unknownLemmas}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40">Learning</span>
+                            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{text.learningWords}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 ))}
               </div>
