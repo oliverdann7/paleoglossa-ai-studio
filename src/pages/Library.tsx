@@ -6,14 +6,18 @@ import { texts } from '../data/texts';
 
 export const Library = ({ onSelectText }: { onSelectText: (text: any) => void }) => {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const filters = ['All', 'Egyptian', 'Sanskrit', 'Greek', 'Koine Greek', 'Hebrew', 'Aramaic', 'Coptic', 'Akkadian', 'Latin', 'Syriac', 'Hittite'];
 
+  const allTags = Array.from(new Set(texts.flatMap(t => t.tags || []))).sort();
+
   const filteredTexts = texts.filter(t => {
     const matchesFilter = activeFilter === 'All' || t.language === activeFilter;
+    const matchesTag = !activeTagFilter || (t.tags && t.tags.includes(activeTagFilter));
     const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           t.author.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+    return matchesFilter && matchesTag && matchesSearch;
   });
 
   return (
@@ -43,21 +47,43 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
         </div>
       </header>
 
-      <div className="flex gap-4 mb-12 overflow-x-auto pb-4 no-scrollbar">
-        {filters.map(filter => (
-          <button
-            key={filter}
-            onClick={() => setActiveFilter(filter)}
-            className={cn(
-              "px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300",
-              activeFilter === filter
-                ? "bg-obsidian-900 text-vellum-50 dark:bg-vellum-100 dark:text-obsidian-950 shadow-lg"
-                : "bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5"
-            )}
-          >
-            {filter}
-          </button>
-        ))}
+      <div className="flex flex-col gap-4 mb-12">
+        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+          {filters.map(filter => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={cn(
+                "px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap",
+                activeFilter === filter
+                  ? "bg-obsidian-900 text-vellum-50 dark:bg-vellum-100 dark:text-obsidian-950 shadow-lg"
+                  : "bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5"
+              )}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+        
+        {allTags.length > 0 && (
+          <div className="flex gap-2 mb-2 flex-wrap pb-2">
+            <span className="py-1.5 pr-2 text-xs font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40">Tags:</span>
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setActiveTagFilter(activeTagFilter === tag ? null : tag)}
+                className={cn(
+                  "px-3 py-1 bg-black/5 dark:bg-white/5 rounded text-[10px] font-bold uppercase tracking-widest border transition-colors",
+                  activeTagFilter === tag 
+                    ? "border-gold-600/50 text-gold-600 bg-gold-500/10" 
+                    : "border-transparent hover:border-black/10 dark:hover:border-white/10 text-obsidian-900/60 dark:text-vellum-100/60"
+                )}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="space-y-24">
@@ -108,10 +134,15 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
                           Open Text
                         </button>
                       </div>
-                      <div className="absolute top-6 left-6 flex gap-2">
+                      <div className="absolute top-6 left-6 flex flex-wrap gap-2 pr-6">
                         <span className="px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-[10px] font-bold text-vellum-50 uppercase tracking-widest border border-white/10">
                           {text.language}
                         </span>
+                        {text.tags && text.tags.map(tag => (
+                          <span key={tag} className="px-3 py-1 bg-black/20 backdrop-blur-md rounded-full text-[10px] font-bold text-vellum-50/80 uppercase tracking-widest border border-white/5">
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     </div>
                     <div className="flex justify-between items-start mb-3">

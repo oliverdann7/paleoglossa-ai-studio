@@ -6,6 +6,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Reader } from './pages/Reader';
 import { Library } from './pages/Library';
 import { Vocabulary } from './pages/Vocabulary';
+import { Import } from './pages/Import';
+import { Review } from './pages/Review';
 import { Onboarding } from './pages/Onboarding';
 import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
@@ -157,6 +159,30 @@ export default function App() {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
               <Library onSelectText={handleTextSelect} />
+            </motion.div>
+          )}
+
+          {activeTab === 'import' && (
+            <motion.div
+              key="import"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Import />
+            </motion.div>
+          )}
+
+          {activeTab === 'review' && (
+            <motion.div
+              key="review"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Review />
             </motion.div>
           )}
 

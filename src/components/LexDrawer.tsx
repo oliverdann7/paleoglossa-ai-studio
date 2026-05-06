@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Volume2, Bookmark, Share2, Eye, Brain, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -7,11 +6,10 @@ interface LexDrawerProps {
   word: any;
   isOpen: boolean;
   onClose: () => void;
+  onStatusChange?: (wordId: number, status: string) => void;
 }
 
-export const LexDrawer = ({ word, isOpen, onClose }: LexDrawerProps) => {
-  // In a real app this would come from a database/context
-  const [proficiency, setProficiency] = useState<string>('New');
+export const LexDrawer = ({ word, isOpen, onClose, onStatusChange }: LexDrawerProps) => {
 
   if (!word) return null;
 
@@ -79,12 +77,12 @@ export const LexDrawer = ({ word, isOpen, onClose }: LexDrawerProps) => {
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-4">Mastery Level</h4>
               <div className="flex flex-col gap-2">
                 {proficiencyLevels.map((level) => {
-                  const isSelected = proficiency === level.id;
+                  const isSelected = (word.status || 'New') === level.id;
                   const Icon = level.icon;
                   return (
                     <button
                       key={level.id}
-                      onClick={() => setProficiency(level.id)}
+                      onClick={() => onStatusChange?.(word.id, level.id)}
                       className={cn(
                         "w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-300",
                         isSelected 
