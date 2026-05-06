@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Volume2, Bookmark, Share2, ExternalLink, GraduationCap } from 'lucide-react';
+import { X, Volume2, Bookmark, Share2, Eye, Brain, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LexDrawerProps {
@@ -10,7 +10,16 @@ interface LexDrawerProps {
 }
 
 export const LexDrawer = ({ word, isOpen, onClose }: LexDrawerProps) => {
+  // In a real app this would come from a database/context
+  const [proficiency, setProficiency] = useState<'new' | 'seen' | 'familiar' | 'known'>('new');
+
   if (!word) return null;
+
+  const proficiencyLevels = [
+    { id: 'seen', label: 'Seen Once', icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { id: 'familiar', label: 'Familiar', icon: Brain, color: 'text-gold-500', bg: 'bg-gold-500/10' },
+    { id: 'known', label: 'Known', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' }
+  ] as const;
 
   return (
     <AnimatePresence>
@@ -37,7 +46,7 @@ export const LexDrawer = ({ word, isOpen, onClose }: LexDrawerProps) => {
               <X className="w-5 h-5" />
             </button>
 
-            <header className="mb-12">
+            <header className="mb-12 mt-4">
               <div className="flex items-center gap-4 mb-6">
                 <h3 className={cn(
                   "text-5xl font-serif font-bold tracking-tight",
@@ -64,7 +73,42 @@ export const LexDrawer = ({ word, isOpen, onClose }: LexDrawerProps) => {
               </p>
             </header>
 
-            <section className="mb-12">
+            <section className="mb-10">
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-4">Mastery Level</h4>
+              <div className="flex flex-col gap-2">
+                {proficiencyLevels.map((level) => {
+                  const isSelected = proficiency === level.id;
+                  const Icon = level.icon;
+                  return (
+                    <button
+                      key={level.id}
+                      onClick={() => setProficiency(level.id)}
+                      className={cn(
+                        "w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-300",
+                        isSelected 
+                          ? cn("border-transparent", level.bg)
+                          : "border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10 bg-white/50 dark:bg-white/5"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={cn("w-5 h-5", isSelected ? level.color : "text-obsidian-900/40 dark:text-vellum-100/40")} />
+                        <span className={cn(
+                          "text-sm font-bold",
+                          isSelected ? level.color : "text-obsidian-900/60 dark:text-vellum-100/60"
+                        )}>
+                          {level.label}
+                        </span>
+                      </div>
+                      {isSelected && (
+                        <motion.div layoutId="activeProficiency" className={cn("w-2 h-2 rounded-full", level.bg.replace('/10', ''))} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="mb-10">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">Morphology</h4>
               <div className="grid grid-cols-2 gap-4">
                 {Object.entries(word.morphology || {}).map(([key, value]: [string, any]) => (
@@ -86,21 +130,15 @@ export const LexDrawer = ({ word, isOpen, onClose }: LexDrawerProps) => {
               </div>
             </section>
 
-            <div className="flex flex-col gap-3">
-              <button className="w-full py-4 bg-obsidian-900 dark:bg-vellum-100 text-vellum-50 dark:text-obsidian-950 rounded-xl font-bold text-sm shadow-xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform">
-                <GraduationCap className="w-4 h-4" />
-                Save to Vocabulary
+            <div className="grid grid-cols-2 gap-3">
+              <button className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <Bookmark className="w-3 h-3" />
+                Annotate
               </button>
-              <div className="grid grid-cols-2 gap-3">
-                <button className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                  <Bookmark className="w-3 h-3" />
-                  Annotate
-                </button>
-                <button className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                  <Share2 className="w-3 h-3" />
-                  Share
-                </button>
-              </div>
+              <button className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <Share2 className="w-3 h-3" />
+                Share
+              </button>
             </div>
           </motion.div>
         </>

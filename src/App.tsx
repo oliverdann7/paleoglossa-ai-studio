@@ -20,6 +20,14 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  useEffect(() => {
     // Check for password reset hash in URL
     if (window.location.hash && window.location.hash.includes('type=recovery')) {
       setActiveTab('reset-password');
