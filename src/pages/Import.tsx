@@ -18,10 +18,10 @@ export const Import = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-8">
-      <div className="mb-12">
-        <h1 className="text-4xl font-serif font-bold tracking-tight mb-4">Import Text</h1>
-        <p className="text-obsidian-900/60 dark:text-vellum-100/60">
+    <div className="max-w-4xl mx-auto py-12 px-6 md:px-12 font-sans min-h-screen">
+      <div className="mb-10">
+        <h1 className="text-[32px] font-serif font-light tracking-tight mb-3 text-ink">Import Text</h1>
+        <p className="font-body text-[15px] italic text-ink2 leading-relaxed max-w-2xl">
             Bring in your own reading material to study. We currently support all texts written in Egyptian Hieroglyphs, Akkadian, Vedic Sanskrit, Ancient Greek, Koine Greek, Biblical Hebrew, Aramaic, Classical Latin, Classical Syriac, Coptic, and Hittite.
         </p>
       </div>
@@ -30,21 +30,21 @@ export const Import = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 p-4 bg-gold-500/10 text-gold-600 dark:text-gold-400 border border-gold-500/20 rounded-xl font-bold flex items-center justify-center gap-2"
+          className="mb-8 p-4 bg-jadexl text-jade border border-jade/20 rounded font-medium flex items-center justify-center gap-2 shadow-sm text-[13px]"
         >
           Text imported successfully! You can find it in your Library.
         </motion.div>
       )}
 
-      <div className="bg-white dark:bg-obsidian-900 border border-black/5 dark:border-white/5 rounded-3xl p-8 mb-8 shadow-sm">
-        <div className="flex gap-4 mb-8 border-b border-black/5 dark:border-white/5 pb-4">
+      <div className="card p-8 mb-8">
+        <div className="flex gap-2 mb-8 border-b border-bdr pb-4 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('text')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-colors",
+              "flex items-center gap-2 px-4 py-2 rounded text-[13px] font-medium transition-colors whitespace-nowrap",
               activeTab === 'text' 
-                ? "bg-black/5 dark:bg-white/5" 
-                : "text-obsidian-900/40 dark:text-vellum-100/40 hover:text-obsidian-900 dark:hover:text-vellum-100"
+                ? "bg-bluexl text-blue border border-blue/20" 
+                : "text-ink3 hover:text-ink hover:bg-parch2"
             )}
           >
             <Type className="w-4 h-4" />
@@ -53,10 +53,10 @@ export const Import = () => {
           <button
             onClick={() => setActiveTab('file')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-colors",
-              activeTab === 'file' 
-                ? "bg-black/5 dark:bg-white/5" 
-                : "text-obsidian-900/40 dark:text-vellum-100/40 hover:text-obsidian-900 dark:hover:text-vellum-100"
+               "flex items-center gap-2 px-4 py-2 rounded text-[13px] font-medium transition-colors whitespace-nowrap",
+               activeTab === 'file' 
+                 ? "bg-bluexl text-blue border border-blue/20" 
+                 : "text-ink3 hover:text-ink hover:bg-parch2"
             )}
           >
             <FileText className="w-4 h-4" />
@@ -65,10 +65,10 @@ export const Import = () => {
           <button
             onClick={() => setActiveTab('url')}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-colors",
-              activeTab === 'url' 
-                ? "bg-black/5 dark:bg-white/5" 
-                : "text-obsidian-900/40 dark:text-vellum-100/40 hover:text-obsidian-900 dark:hover:text-vellum-100"
+               "flex items-center gap-2 px-4 py-2 rounded text-[13px] font-medium transition-colors whitespace-nowrap",
+               activeTab === 'url' 
+                 ? "bg-bluexl text-blue border border-blue/20" 
+                 : "text-ink3 hover:text-ink hover:bg-parch2"
             )}
           >
             <LinkIcon className="w-4 h-4" />
@@ -78,20 +78,20 @@ export const Import = () => {
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-bold tracking-tight px-1">Title</label>
+            <label className="eyebrow block px-1">Title</label>
             <input 
               type="text" 
               placeholder="e.g. Moby Dick, Chapter 1"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-black/10 dark:border-white/10 bg-transparent focus:outline-none focus:ring-2 focus:ring-gold-500/50"
+              className="w-full px-4 py-3 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue transition-colors shadow-sm"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
              <div className="space-y-2">
-              <label className="text-sm font-bold tracking-tight px-1">Language</label>
-              <select className="w-full px-4 py-3 rounded-xl border border-black/10 dark:border-white/10 bg-transparent focus:outline-none focus:ring-2 focus:ring-gold-500/50 appearance-none">
+              <label className="eyebrow block px-1">Language</label>
+              <select className="w-full px-4 py-3 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue transition-colors shadow-sm appearance-none">
                 <option value="egyptian">Egyptian Hieroglyphs</option>
                 <option value="akkadian">Akkadian</option>
                 <option value="sanskrit">Vedic Sanskrit</option>
@@ -106,8 +106,8 @@ export const Import = () => {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold tracking-tight px-1">Level (Optional)</label>
-              <select className="w-full px-4 py-3 rounded-xl border border-black/10 dark:border-white/10 bg-transparent focus:outline-none focus:ring-2 focus:ring-gold-500/50 appearance-none">
+              <label className="eyebrow block px-1">Level (Optional)</label>
+              <select className="w-full px-4 py-3 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue transition-colors shadow-sm appearance-none">
                 <option value="">Any</option>
                 <option value="A1">Beginner (A1)</option>
                 <option value="A2">Elementary (A2)</option>
@@ -120,23 +120,23 @@ export const Import = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold tracking-tight px-1">Content</label>
+            <label className="eyebrow block px-1">Content</label>
             {activeTab === 'text' && (
               <textarea 
                 placeholder="Paste your text here..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                rows={12}
-                className="w-full px-4 py-3 text-lg leading-relaxed rounded-xl border border-black/10 dark:border-white/10 bg-transparent focus:outline-none focus:ring-2 focus:ring-gold-500/50 resize-y"
+                rows={10}
+                className="w-full px-4 py-4 bg-white border border-bdr rounded-[8px] text-[14px] font-serif leading-[1.8] focus:outline-none focus:border-blue transition-colors shadow-sm resize-y"
               />
             )}
             
             {activeTab === 'file' && (
-              <div className="border-2 border-dashed border-black/10 dark:border-white/10 rounded-2xl py-24 flex flex-col items-center justify-center gap-4 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 hover:border-gold-500 transition-colors cursor-pointer">
-                <Upload className="w-8 h-8 text-black/40 dark:text-white/40" />
+              <div className="border-2 border-dashed border-bdr rounded-xl py-24 flex flex-col items-center justify-center gap-4 bg-parch2 hover:bg-parch3 hover:border-blue transition-colors cursor-pointer">
+                <Upload className="w-8 h-8 text-muted" />
                 <div className="text-center space-y-1">
-                  <p className="font-bold">Click to upload or drag and drop</p>
-                  <p className="text-sm text-obsidian-900/60 dark:text-vellum-100/60">PDF, EPUB, TXT, or DOCX (max. 10MB)</p>
+                  <p className="font-medium text-14px text-ink">Click to upload or drag and drop</p>
+                  <p className="text-[12px] text-ink3 italic font-body">PDF, EPUB, TXT, or DOCX (max. 10MB)</p>
                 </div>
               </div>
             )}
@@ -147,7 +147,7 @@ export const Import = () => {
                 placeholder="https://example.com/article"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-black/10 dark:border-white/10 bg-transparent focus:outline-none focus:ring-2 focus:ring-gold-500/50"
+                className="w-full px-4 py-3 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue transition-colors shadow-sm"
               />
             )}
           </div>
@@ -157,7 +157,7 @@ export const Import = () => {
           <button 
             onClick={handleImport}
             disabled={!title || (activeTab !== 'file' && !content)}
-            className="px-8 py-3 bg-obsidian-900 dark:bg-vellum-100 text-vellum-50 dark:text-obsidian-950 font-bold rounded-xl disabled:opacity-50 transition-opacity"
+            className="btn-primary py-2.5 px-8 disabled:opacity-50"
           >
             Import Text
           </button>

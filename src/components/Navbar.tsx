@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Library, BookOpen, GraduationCap, Settings, User, Moon, Sun, Brain, PlusCircle } from 'lucide-react';
+import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItemProps {
@@ -10,79 +10,109 @@ interface NavItemProps {
   onClick: () => void;
 }
 
-const NavItem = ({ icon: Icon, label, isActive, onClick }: NavItemProps) => (
+const DesktopNavItem = ({ icon: Icon, label, isActive, onClick }: NavItemProps) => (
   <button
     onClick={onClick}
     className={cn(
-      "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group",
+      "flex items-center gap-3 px-3 py-2 transition-all duration-150 group text-[12.5px] font-sans font-medium w-full text-left",
       isActive 
-        ? "bg-obsidian-900 text-vellum-50 dark:bg-vellum-100 dark:text-obsidian-950 shadow-lg" 
-        : "text-obsidian-900/60 hover:text-obsidian-900 dark:text-vellum-100/60 dark:hover:text-vellum-100 hover:bg-black/5 dark:hover:bg-white/5"
+        ? "bg-bluexl text-blue border-l-2 border-blue font-bold shadow-sm" 
+        : "text-ink3 hover:bg-parch3 hover:text-ink border-l-2 border-transparent"
     )}
   >
-    <Icon className={cn("w-5 h-5", isActive ? "scale-110" : "group-hover:scale-110")} strokeWidth={1.5} />
-    <span className="text-sm font-medium tracking-tight">{label}</span>
+    <Icon className={cn("w-4 h-4", isActive ? "scale-110 text-blue" : "group-hover:scale-110 text-muted")} strokeWidth={isActive ? 2 : 1.5} />
+    <span>{label}</span>
+  </button>
+);
+
+const MobileNavItem = ({ icon: Icon, label, isActive, onClick }: NavItemProps) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "flex flex-col items-center gap-1 p-2 flex-1 transition-all duration-150",
+      isActive ? "text-blue" : "text-muted hover:text-ink3"
+    )}
+  >
+    <Icon className={cn("w-5 h-5", isActive && "fill-bluexl")} strokeWidth={isActive ? 2 : 1.5} />
+    <span className="text-[10px] font-medium font-sans">{label}</span>
   </button>
 );
 
 export const Navbar = ({ 
   activeTab, 
   onTabChange, 
-  isDarkMode, 
-  onToggleDarkMode 
 }: { 
   activeTab: string, 
   onTabChange: (tab: string) => void,
-  isDarkMode: boolean,
-  onToggleDarkMode: () => void
 }) => {
   return (
-    <nav className="fixed left-0 top-0 h-full w-72 border-r border-black/5 dark:border-white/5 p-8 flex flex-col gap-12 z-50 bg-vellum-50/80 dark:bg-obsidian-950/80 backdrop-blur-2xl">
-      <div className="flex items-center justify-between px-2">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-gold-500 rounded-xl flex items-center justify-center shadow-lg shadow-gold-500/20">
-            <span className="text-vellum-50 font-serif font-bold text-2xl">P</span>
-          </div>
-          <h1 className="text-2xl font-serif font-bold tracking-tighter">Paleoglossa</h1>
-        </div>
-        <button 
-          onClick={onToggleDarkMode}
-          className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-        >
-          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-3 flex-1">
-        <div className="text-[10px] font-bold text-obsidian-900/30 dark:text-vellum-100/30 uppercase tracking-[0.3em] mb-2 px-4">Main Menu</div>
-        <NavItem icon={BookOpen} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} />
-        <NavItem icon={Library} label="Library" isActive={activeTab === 'library'} onClick={() => onTabChange('library')} />
-        <NavItem icon={Brain} label="Review" isActive={activeTab === 'review'} onClick={() => onTabChange('review')} />
-        <NavItem icon={GraduationCap} label="Vocabulary" isActive={activeTab === 'vocabulary'} onClick={() => onTabChange('vocabulary')} />
-        <NavItem icon={PlusCircle} label="Import" isActive={activeTab === 'import'} onClick={() => onTabChange('import')} />
-      </div>
-
-      <div className="flex flex-col gap-6">
-        <div className="p-6 rounded-2xl bg-gold-500/5 border border-gold-500/10">
-          <div className="flex justify-between items-end mb-3">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gold-600">Daily Goal</span>
-            <span className="text-xs font-bold">85%</span>
-          </div>
-          <div className="h-1.5 w-full bg-gold-500/10 rounded-full overflow-hidden">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: '85%' }}
-              className="h-full bg-gold-500"
-            />
-          </div>
-          <p className="text-[10px] text-obsidian-900/40 dark:text-vellum-100/40 mt-3 font-medium">15 mins left to reach your goal.</p>
+    <>
+      <nav className="hidden md:flex fixed left-0 top-0 h-full w-[220px] border-r border-bdr bg-parch2 flex-col z-50 overflow-y-auto">
+        <div className="p-5 flex flex-col gap-1">
+          <h1 className="text-[17px] font-serif font-semibold text-blue flex items-center gap-2">
+            Παλαιόγλωσσα
+          </h1>
+          <span className="eyebrow" style={{fontSize: '9px', textTransform: 'none'}}>Where ancient texts come alive</span>
         </div>
 
-        <div className="flex flex-col gap-2 pt-6 border-t border-black/5 dark:border-white/5">
-          <NavItem icon={Settings} label="Settings" isActive={activeTab === 'settings'} onClick={() => onTabChange('settings')} />
-          <NavItem icon={User} label="Profile" isActive={activeTab === 'profile'} onClick={() => onTabChange('profile')} />
+        <div className="px-4 mb-6">
+          <button className="w-full flex items-center justify-between px-3 py-1.5 bg-parch border border-bdr rounded-md text-ink3 hover:shadow-sm transition-all group">
+            <div className="flex items-center gap-2">
+              <Search className="w-3.5 h-3.5 text-muted group-hover:text-ink3" />
+              <span className="text-[12.5px] font-sans">Search...</span>
+            </div>
+            <span className="font-mono text-[10px] text-muted">⌘K</span>
+          </button>
         </div>
-      </div>
-    </nav>
+
+        <div className="flex flex-col gap-1 flex-1 px-2">
+          <div className="nav-label px-3 mb-1 mt-2">Study</div>
+          <DesktopNavItem icon={BookOpen} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} />
+          <DesktopNavItem icon={Library} label="Library" isActive={activeTab === 'library'} onClick={() => onTabChange('library')} />
+          <DesktopNavItem icon={Brain} label="Review" isActive={activeTab === 'review'} onClick={() => onTabChange('review')} />
+          <DesktopNavItem icon={GraduationCap} label="Vocabulary" isActive={activeTab === 'vocabulary'} onClick={() => onTabChange('vocabulary')} />
+          
+          <div className="nav-label px-3 mb-1 mt-6">Manage</div>
+          <DesktopNavItem icon={PlusCircle} label="Import" isActive={activeTab === 'import'} onClick={() => onTabChange('import')} />
+          <DesktopNavItem icon={Settings} label="Settings" isActive={activeTab === 'settings'} onClick={() => onTabChange('settings')} />
+        </div>
+
+        <div className="p-4 border-t border-bdr">
+          <div className="card shadow-none border-amberxl bg-[#FFF8E1] p-3 mb-3">
+            <div className="flex justify-between items-start mb-2">
+              <span className="font-mono text-[9px] uppercase tracking-widest text-amber">Reading Level</span>
+              <span className="pill cefr-b" style={{fontSize: '9px', padding: '1px 4px'}}>B1</span>
+            </div>
+            <div className="h-1 w-full bg-amberxl rounded-full overflow-hidden mb-1">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: '65%' }}
+                className="h-full bg-amber"
+              />
+            </div>
+            <p className="text-[10px] text-ink3 font-sans">2.4k words to B2</p>
+          </div>
+          
+          <button onClick={() => onTabChange('profile')} className="flex items-center gap-3 w-full p-2 hover:bg-parch3 rounded-lg transition-colors group">
+            <div className="w-8 h-8 rounded-full bg-parch3 border border-bdr flex items-center justify-center overflow-hidden">
+               <User className="w-4 h-4 text-ink3 group-hover:text-blue" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-[12.5px] font-bold font-sans text-ink">E. L. Scholar</span>
+              <span className="text-[10px] font-sans text-muted">Free Plan</span>
+            </div>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Tab Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full border-t border-bdr bg-parch2/90 backdrop-blur-md pb-safe z-50 flex justify-around px-2 py-1">
+        <MobileNavItem icon={BookOpen} label="Home" isActive={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} />
+        <MobileNavItem icon={Library} label="Library" isActive={activeTab === 'library'} onClick={() => onTabChange('library')} />
+        <MobileNavItem icon={Brain} label="Review" isActive={activeTab === 'review'} onClick={() => onTabChange('review')} />
+        <MobileNavItem icon={GraduationCap} label="Words" isActive={activeTab === 'vocabulary'} onClick={() => onTabChange('vocabulary')} />
+        <MobileNavItem icon={MoreHorizontal} label="More" isActive={['import', 'settings', 'profile'].includes(activeTab)} onClick={() => onTabChange('settings')} />
+      </nav>
+    </>
   );
 };

@@ -1,54 +1,63 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Languages, Eye, Maximize2, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ArrowLeft, Languages, Maximize2, ChevronRight, ChevronLeft, Search, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { FastWordPopup } from '../components/FastWordPopup';
-import { LexDrawer } from '../components/LexDrawer';
-import { getChapter } from '../data/chapters';
+import { getChapters } from '../data/chapters';
 
 export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const [selectedWord, setSelectedWord] = useState<any>(null);
-  const [panelWord, setPanelWord] = useState<any>(null);
+  const [showHistory, setShowHistory] = useState(true);
   const [showTranslation, setShowTranslation] = useState(false);
-  const [fontSize, setFontSize] = useState(28);
-  const [focusMode, setFocusMode] = useState(false);
+  const [showTranslit, setShowTranslit] = useState(false);
+  const [fontSize, setFontSize] = useState(21);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  const chapter = getChapter(text?.id || 104);
-  const [currentTokens, setCurrentTokens] = useState<any[]>(chapter.tokens);
+  const chapters = useMemo(() => getChapters(text?.id || 104), [text?.id]);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
+    const saved = localStorage.getItem(`reader_chapter_${text?.id}`);
+    return saved ? parseInt(saved, 10) || 0 : 0;
+  });
+  const chapter = chapters[currentChapterIndex] || chapters[0];
+  const [currentTokens, setCurrentTokens] = useState<any[]>([]);
 
-  let isRTL = text?.language === 'Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac';
-  let fontClass = "font-greek";
-  if (text?.language === 'Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac') fontClass = "font-hebrew";
-  else if (text?.language === 'Egyptian' || text?.language === 'Sanskrit' || text?.language === 'Latin' || text?.language === 'Akkadian' || text?.language === 'Coptic' || text?.language === 'Hittite') fontClass = "font-sans";
-
-  let translationText = chapter.translation;
-
-  useEffect(() => {
-    setCurrentTokens(chapter.tokens);
-  }, [text?.id]);
-
-  const handleStatusChange = (wordId: number, status: string) => {
-    setCurrentTokens(prev => prev.map(t => t.id === wordId ? { ...t, status } : t));
-    if (selectedWord?.id === wordId) setSelectedWord((prev: any) => ({ ...prev, status }));
-  };
+  const isHebrew = text?.language === 'Biblical Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac';
 
   useEffect(() => {
-    if (selectedWord) {
-      const el = document.getElementById(`word-${selectedWord.id}`);
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        const isInView = (
-          rect.top >= 100 &&
-          rect.bottom <= (window.innerHeight - 200)
-        );
-        if (!isInView) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
+    if (text?.id) {
+      localStorage.setItem(`reader_chapter_${text.id}`, currentChapterIndex.toString());
     }
-  }, [selectedWord]);
+  }, [currentChapterIndex, text?.id]);
 
+  useEffect(() => {
+    const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
+    let savedStatuses: Record<string, string> = {};
+    if (savedStatusesStr) {
+      try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
+    }
+
+    const initialTokens = chapter.tokens.map((t: any) => {
+      const key = `${text?.language || 'Lang'}_${t.lemma || t.text}`;
+      return { ...t, status: savedStatuses[key] || t.status };
+    });
+    
+    setCurrentTokens(initialTokens);
+    setScrollProgress(0);
+  }, [chapter, text?.id]);
+
+  useEffect(() => {
+    const handleScroll = (e: any) => {
+      const el = e.target;
+      const progress = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100;
+      setScrollProgress(progress || 0);
+    };
+    const scrollContainer = document.getElementById('reading-area-scroll');
+    if (scrollContainer) scrollContainer.addEventListener('scroll', handleScroll);
+    return () => {
+      if (scrollContainer) scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [chapter]);
+
+  // Adjust handleKeyDown to match UI components
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedWord && e.key === 'ArrowRight') {
@@ -56,326 +65,363 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
         if (firstToken) setSelectedWord(firstToken);
         return;
       }
-      
       if (selectedWord) {
         const currentIndex = currentTokens.findIndex(t => t.id === selectedWord.id);
-        
         if (e.key === 'ArrowRight') {
           e.preventDefault();
-          if (currentIndex < currentTokens.length - 1) {
-            setSelectedWord(currentTokens[currentIndex + 1]);
-          }
+          if (currentIndex < currentTokens.length - 1) setSelectedWord(currentTokens[currentIndex + 1]);
         } else if (e.key === 'ArrowLeft') {
           e.preventDefault();
-          if (currentIndex > 0) {
-            setSelectedWord(currentTokens[currentIndex - 1]);
-          }
+          if (currentIndex > 0) setSelectedWord(currentTokens[currentIndex - 1]);
         } else if (e.key === 'Escape') {
           setSelectedWord(null);
-          setPanelWord(null);
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          if (!panelWord) setPanelWord(selectedWord);
-        } else if (['1', '2', '3', '4', '5'].includes(e.key)) {
-          e.preventDefault();
-          const statusMap: Record<string, string> = {
-            '1': 'New',
-            '2': 'Seen Once',
-            '3': 'Learning',
-            '4': 'Familiar',
-            '5': 'Known'
-          };
-          const newStatus = statusMap[e.key];
-          if (newStatus) {
-            handleStatusChange(selectedWord.id, newStatus);
-            // Auto advance
-            if (currentIndex < currentTokens.length - 1) {
-              setSelectedWord(currentTokens[currentIndex + 1]);
-            } else {
-              setSelectedWord(null);
-            }
-          }
         }
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedWord, currentTokens, panelWord]);
+  }, [selectedWord, currentTokens]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = (totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0);
-      setScrollProgress(progress);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const handleStatusChange = (wordId: number, status: string) => {
+    let affectedToken: any = null;
+    setCurrentTokens(prev => prev.map(t => {
+      if (t.id === wordId) {
+         affectedToken = { ...t, status };
+         return affectedToken;
+      } return t;
+    }));
+    
+    if (selectedWord?.id === wordId) setSelectedWord((prev: any) => ({ ...prev, status }));
 
-  const getStatusColor = (status: string, isSelected: boolean) => {
-    if (isSelected) return "text-gold-600 bg-black/5 dark:bg-white/5";
-    switch(status) {
-      case 'New': return "text-blue-600 dark:text-blue-400 font-semibold";
-      case 'Seen Once': return "text-blue-400 dark:text-blue-300";
-      case 'Learning': return "text-amber-600 dark:text-amber-400";
-      case 'Familiar': return "text-gold-600 dark:text-gold-400";
-      case 'Known': return "text-obsidian-900 dark:text-vellum-100"; // clean reading
-      case 'Ignored': return "text-obsidian-900/40 dark:text-vellum-100/40"; // faded
-      default: return "text-blue-600 dark:text-blue-400"; // assume new by default
-    }
+    setTimeout(() => {
+      if (affectedToken) {
+        const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
+        let savedStatuses: Record<string, string> = {};
+        if (savedStatusesStr) {
+          try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
+        }
+        const key = `${text?.language || 'Lang'}_${affectedToken.lemma || affectedToken.text}`;
+        savedStatuses[key] = status;
+        localStorage.setItem('user_vocab_statuses', JSON.stringify(savedStatuses));
+      }
+    }, 0);
   };
 
+  const getWordClasses = (token: any, isSelected: boolean) => {
+    const base = "cursor-pointer transition-colors px-0.5 rounded-sm inline-block";
+    
+    let styleClass = "";
+    if (isSelected) {
+      styleClass = "bg-bluexl underline decoration-blue decoration-2 underline-offset-4";
+    } else {
+      switch(token.status) {
+        case 'New': styleClass = "underline decoration-[#6894C0] decoration-2 underline-offset-4 decoration-dashed hover:bg-[#1E3D6E0f]"; break;
+        case 'Learning': styleClass = "underline decoration-amber decoration-2 underline-offset-4 hover:bg-[#1E3D6E0f]"; break;
+        case 'Familiar': styleClass = "underline decoration-jade decoration-2 underline-offset-4 hover:bg-[#1E3D6E0f]"; break;
+        case 'Known': styleClass = "hover:bg-[#1E3D6E0f]"; break;
+        default: styleClass = "underline decoration-[#6894C0] decoration-2 underline-offset-4 decoration-dashed hover:bg-[#1E3D6E0f]";
+      }
+    }
+    return cn(base, styleClass);
+  };
+
+  const isMobile = window.innerWidth < 768;
+
   return (
-    <div className={cn(
-      "min-h-screen transition-all duration-1000 ease-in-out",
-      focusMode ? "bg-vellum-100 dark:bg-obsidian-950" : "bg-vellum-50 dark:bg-obsidian-950"
-    )}>
-      {/* Scroll Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1 bg-black/5 dark:bg-white/5 z-[100]">
-        <motion.div 
-          className="h-full bg-gold-500"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </div>
-
-      {/* Top Bar */}
+    <div className="flex h-screen bg-parch text-ink font-sans overflow-hidden">
+      
+      {/* History Sidebar */}
       <AnimatePresence>
-        {!focusMode && (
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            className="fixed top-0 left-64 right-0 h-24 border-b border-black/5 dark:border-white/5 flex items-center justify-between px-12 z-50 bg-vellum-50/80 dark:bg-obsidian-950/80 backdrop-blur-xl"
+        {(showHistory) && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: isMobile ? '100%' : 220, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            className={cn(
+              "border-r border-bdr bg-parch2 flex flex-col z-40 overflow-hidden flex-shrink-0",
+              isMobile ? "absolute inset-0" : ""
+            )}
           >
-            <div className="flex items-center gap-8">
-              <button 
-                onClick={onBack}
-                className="p-3 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-all active:scale-95"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="flex flex-col">
-                <h2 className="text-xl font-serif font-bold tracking-tight">{text?.title || "Gospel of John"}</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-gold-600 uppercase tracking-[0.2em]">Book I • Chapter 1</span>
-                  <span className="w-1 h-1 rounded-full bg-black/10 dark:bg-white/10" />
-                  <span className="text-[10px] font-bold text-obsidian-900/40 dark:text-vellum-100/40 uppercase tracking-[0.2em]">{text?.language}</span>
-                </div>
+            <div className="p-4 border-b border-bdr flex justify-between items-center">
+              <span className="font-serif font-medium text-[15px]">📜 Text history</span>
+              <button className="text-muted hover:text-ink transition-colors" onClick={() => setShowHistory(false)}>✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 border-b border-bdr">
+                <div className="eyebrow text-gold mb-2">Author</div>
+                <p className="font-body text-[11.5px] leading-[1.55] text-ink2">{text?.author || "Traditional"}</p>
+              </div>
+              <div className="p-4 border-b border-bdr">
+                <div className="eyebrow text-gold mb-2">Historical Context</div>
+                <p className="font-body text-[11.5px] leading-[1.55] text-ink2">
+                  Written during the {text?.era || "ancient period"}, tracking the development of cultural and theological understanding within its original audience.
+                </p>
+              </div>
+              <div className="p-4 border-b border-bdr">
+                <div className="eyebrow text-gold mb-2">Why It Matters</div>
+                <p className="font-body text-[11.5px] leading-[1.55] text-ink2">
+                  Considered foundational literature, offering insight into narrative conventions and linguistic shifts over time in the {text?.language} corpus.
+                </p>
               </div>
             </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex bg-black/5 dark:bg-white/5 rounded-full p-1 border border-black/5 dark:border-white/5">
-                <button 
-                  onClick={() => setFontSize(Math.max(16, fontSize - 2))}
-                  className="p-2.5 rounded-full hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm active:scale-90"
-                >
-                  <span className="text-xs font-bold">A</span>
-                </button>
-                <button 
-                  onClick={() => setFontSize(Math.min(64, fontSize + 2))}
-                  className="p-2.5 rounded-full hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm active:scale-90"
-                >
-                  <span className="text-lg font-bold leading-none">A</span>
-                </button>
-              </div>
-              <button 
-                onClick={() => setShowTranslation(!showTranslation)}
-                className={cn(
-                  "p-3.5 rounded-full transition-all border border-black/5 dark:border-white/5 active:scale-95",
-                  showTranslation ? "bg-gold-500 text-vellum-50 shadow-lg shadow-gold-500/20" : "bg-black/5 dark:bg-white/5"
-                )}
-              >
-                <Languages className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => setFocusMode(!focusMode)}
-                className="p-3.5 bg-black/5 dark:bg-white/5 rounded-full border border-black/5 dark:border-white/5 active:scale-95"
-              >
-                <Maximize2 className="w-5 h-5" />
-              </button>
+            <div className="p-4 pt-3 flex justify-center border-t border-bdr bg-parch2 mt-auto">
+               <span className="pill bg-jadexl text-jade border-jade/20 font-mono" style={{fontSize: '9px'}}>✓ Complete Survival</span>
             </div>
-          </motion.header>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Reading Canvas */}
-      <main className={cn(
-        "editorial-container pt-56 pb-64 transition-all duration-1000 ease-in-out",
-        focusMode ? "max-w-2xl" : "max-w-4xl"
-      )}>
-        <div className="relative">
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: { opacity: 1, transition: { staggerChildren: 0.03 } }
-            }}
-            className={cn(
-              "flex flex-wrap gap-x-3 gap-y-12 leading-[2.5] justify-center px-4 sm:px-8",
-              fontClass
-            )} dir={isRTL ? "rtl" : "ltr"}>
-            {currentTokens.map((token: any) => (
-              <motion.span
-                key={token.id}
-                id={`word-${token.id}`}
-                variants={{
-                  hidden: { opacity: 0, y: 10, filter: 'blur(2px)' },
-                  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, ease: "easeOut" } }
-                }}
-                whileHover={{ y: -3, scale: 1.02, color: 'var(--tw-colors-gold-600)' }}
-                onClick={() => setSelectedWord(token)}
-                className={cn(
-                  "cursor-pointer transition-colors duration-300 relative group px-2 py-1 rounded-xl hover:bg-black/5 dark:hover:bg-white/5",
-                  "font-medium tracking-normal",
-                  getStatusColor(token.status, selectedWord?.id === token.id)
-                )}
-                style={{ fontSize: `${fontSize}px` }}
-              >
-                {token.text}
-                <span className={cn(
-                  "absolute -bottom-1 left-1 w-[calc(100%-8px)] h-0.5 bg-gold-500/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 rounded-full",
-                  selectedWord?.id === token.id && "scale-x-100 bg-gold-500"
-                )} />
-              </motion.span>
-            ))}
-          </motion.div>
-
-          <AnimatePresence>
-            {showTranslation && (
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 40 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-32 p-16 rounded-[40px] bg-gold-500/5 border border-gold-500/10 relative overflow-hidden paper-texture"
-              >
-                <div className="absolute top-0 left-0 w-full h-1 bg-gold-500/20" />
-                <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold-600 mb-8 flex items-center gap-3">
-                  <Eye className="w-4 h-4" />
-                  Parallel Translation
-                </h4>
-                <p className="text-3xl font-serif italic text-obsidian-900/70 dark:text-vellum-100/70 leading-relaxed tracking-tight">
-                  {translationText}
-                </p>
-              </motion.div>
+      {/* Main Reading Area */}
+      <div className="flex-1 flex flex-col relative z-20 overflow-hidden bg-parch paper-texture">
+        
+        {/* Top Bar */}
+        <div className="h-12 border-b border-bdr flex items-center justify-between px-4 bg-parch2/90 backdrop-blur-sm z-10 shrink-0">
+          <div className="flex items-center gap-2">
+            <button onClick={onBack} className="p-1 text-muted hover:text-ink transition-colors mr-2">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div className="text-[11px] font-sans text-ink3 flex items-center">
+              Library <span className="mx-1 text-muted">›</span> 
+              <span className="font-medium text-ink truncate max-w-[120px] md:max-w-xs">{text?.title || "Unknown"}</span>
+              <span className="mx-1 text-muted">›</span> 
+              <span className="truncate max-w-[80px]">{chapter.title}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {!showHistory && (
+              <button onClick={() => setShowHistory(true)} className="pill bg-parch text-ink3 border-bdr hover:bg-parch2 text-[10px] py-1 px-2.5 hidden md:block">
+                📜 History
+              </button>
             )}
-          </AnimatePresence>
+            <button onClick={() => setShowTranslation(!showTranslation)} className={cn("pill border text-[10px] py-1 px-2.5 transition-colors", showTranslation ? "bg-bluexl text-blue border-blue/20" : "bg-parch text-ink3 border-bdr hover:bg-parch2")}>
+              Translation
+            </button>
+            <button onClick={() => setShowTranslit(!showTranslit)} className={cn("pill border text-[10px] py-1 px-2.5 transition-colors hidden sm:block", showTranslit ? "bg-bluexl text-blue border-blue/20" : "bg-parch text-ink3 border-bdr hover:bg-parch2")}>
+              Translit.
+            </button>
+            <div className="flex bg-parch2 rounded-full border border-bdr overflow-hidden ml-1">
+              <button className="px-2 py-0.5 text-ink3 hover:bg-parch3 hover:text-ink" onClick={() => setFontSize(Math.max(16, fontSize - 2))}>
+                <span className="text-[10px] font-serif font-bold">A-</span>
+              </button>
+              <button className="px-2 py-0.5 text-ink3 hover:bg-parch3 hover:text-ink" onClick={() => setFontSize(Math.min(48, fontSize + 2))}>
+                <span className="text-[11px] font-serif font-bold">A+</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Section Completion & Stats */}
-        <div className="mt-32 p-12 bg-white dark:bg-obsidian-900 rounded-[32px] border border-black/5 dark:border-white/5 shadow-xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
-            <div>
-              <h3 className="text-2xl font-serif font-bold mb-2">Section Completed</h3>
-              <p className="text-obsidian-900/60 dark:text-vellum-100/60">You've reached the end of this chapter.</p>
+        {/* Text Pane */}
+        <div id="reading-area-scroll" className="flex-1 overflow-y-auto px-7 md:px-10 lg:px-14 py-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="eyebrow mb-8 text-center md:text-left">
+              Corpus <span className="mx-1.5 opacity-40">•</span> {text?.language} <span className="mx-1.5 opacity-40">•</span> {chapter.title}
             </div>
             
-            <div className="flex gap-6">
-              <div className="flex flex-col items-center">
-                <span className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  {Math.round((currentTokens.filter(t => t.status === 'Known' || t.status === 'Familiar').length / currentTokens.length) * 100) || 0}%
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Known</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
-                  {currentTokens.filter(t => t.status === 'Learning').length}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Learning</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {currentTokens.filter(t => t.status === 'New' || !t.status).length}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">New</span>
-              </div>
+            <div className={cn("font-serif leading-[2.1] tracking-[0.008em]", isHebrew ? "font-hebrew text-right" : "")} dir={isHebrew ? "rtl" : "ltr"}>
+               {currentTokens.map((token: any) => (
+                  <span
+                    key={token.id}
+                    id={`word-${token.id}`}
+                    onClick={() => setSelectedWord(token)}
+                    className={getWordClasses(token, selectedWord?.id === token.id)}
+                    style={{ fontSize: `${fontSize}px` }}
+                  >
+                     {token.text}{' '}
+                  </span>
+               ))}
+               <span className="text-muted ml-2 opacity-50 text-[18px]">❧</span>
             </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-4">
-            <button className="px-6 py-3 bg-gold-500 text-vellum-50 rounded-full text-sm font-bold shadow-lg hover:bg-gold-600 transition-colors">
-              Continue to Next Section
-            </button>
-            <button className="px-6 py-3 bg-obsidian-900 text-vellum-50 dark:bg-vellum-100 dark:text-obsidian-950 rounded-full text-sm font-bold hover:opacity-90 transition-opacity">
-              Review New Words
-            </button>
-            <button 
-              onClick={() => setCurrentTokens(prev => prev.map(t => (!t.status || t.status === 'New' ? { ...t, status: 'Known' } : t)))}
-              className="px-6 py-3 border border-black/10 dark:border-white/10 rounded-full text-sm font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-            >
-              Mark Remaining as Known
-            </button>
+
+            {showTranslation && (
+              <div className="mt-12 pt-6 border-t border-bdr/40">
+                <p className="font-body italic text-[14px] text-ink2 leading-[1.7]">
+                  {chapter.translation}
+                </p>
+                <div className="font-mono text-[9px] text-muted mt-2 uppercase tracking-widest text-right">
+                   Source: Standard Edition Translation
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Navigation Controls */}
-        <div className="mt-48 flex justify-between items-center pt-16 border-t border-black/5 dark:border-white/5">
-          <button className="group flex items-center gap-3 text-xs font-bold text-obsidian-900/40 dark:text-vellum-100/40 hover:text-gold-600 transition-all uppercase tracking-widest">
-            <div className="p-2 rounded-full border border-black/5 dark:border-white/5 group-hover:border-gold-500/30 transition-colors">
-              <ChevronLeft className="w-4 h-4" />
-            </div>
-            Previous Chapter
-          </button>
-          <button className="group flex items-center gap-3 text-xs font-bold text-obsidian-900/40 dark:text-vellum-100/40 hover:text-gold-600 transition-all uppercase tracking-widest">
-            Next Chapter
-            <div className="p-2 rounded-full border border-black/5 dark:border-white/5 group-hover:border-gold-500/30 transition-colors">
-              <ChevronRight className="w-4 h-4" />
-            </div>
-          </button>
+        {/* Footer / Legend / Progress */}
+        <div className="shrink-0 bg-parch2 border-t border-bdr flex flex-col z-30">
+          <div className="h-6 flex items-center justify-between px-4 border-b border-bdr/50 bg-parch">
+             <div className="flex gap-4">
+               <div className="flex items-center gap-1.5">
+                 <span className="w-3 h-px border-b-2 border-dashed border-[#6894C0]"></span>
+                 <span className="text-[9px] uppercase font-mono text-muted hidden sm:inline">New</span>
+               </div>
+               <div className="flex items-center gap-1.5">
+                 <span className="w-3 h-0.5 border-b-2 border-solid border-amber"></span>
+                 <span className="text-[9px] uppercase font-mono text-muted hidden sm:inline">Learning</span>
+               </div>
+               <div className="flex items-center gap-1.5">
+                 <span className="w-3 h-0.5 border-b-2 border-solid border-jade"></span>
+                 <span className="text-[9px] uppercase font-mono text-muted hidden sm:inline">Familiar</span>
+               </div>
+               <div className="flex items-center gap-1.5">
+                 <span className="w-3 h-0.5 border-b-2 border-solid border-transparent"></span>
+                 <span className="text-[9px] uppercase font-mono text-muted hidden sm:inline">Known</span>
+               </div>
+             </div>
+             <div className="text-[9px] font-mono text-muted uppercase">← → keys to navigate</div>
+          </div>
+          <div className="h-0.5 w-full bg-parch3 flex items-center">
+            <div className="h-full bg-blue transition-all duration-300" style={{ width: `${scrollProgress}%` }} />
+          </div>
+          <div className="h-10 flex items-center justify-between px-4 text-[11px] font-sans">
+             <div className="flex items-center gap-4">
+               <span className="text-ink3 font-medium hidden sm:inline">{chapter.title}</span>
+               <span className="text-muted font-mono">{Math.round(scrollProgress)}% Complete</span>
+             </div>
+             <div className="flex items-center gap-3">
+               <button 
+                 onClick={() => currentChapterIndex > 0 && setCurrentChapterIndex(currentChapterIndex - 1)}
+                 className={cn("hover:text-blue transition-colors", currentChapterIndex === 0 ? "text-muted cursor-not-allowed" : "text-ink2")}
+               >
+                 Prev Section
+               </button>
+               <button 
+                 onClick={() => currentChapterIndex < chapters.length - 1 && setCurrentChapterIndex(currentChapterIndex + 1)}
+                 className={cn("hover:text-blue transition-colors font-medium", currentChapterIndex === chapters.length - 1 ? "text-muted cursor-not-allowed" : "text-blue")}
+               >
+                 Next Section
+               </button>
+             </div>
+          </div>
         </div>
-      </main>
+      </div>
 
-      {/* Fast Word Popup */}
-      <FastWordPopup
-        word={selectedWord}
-        isOpen={!!selectedWord && !panelWord}
-        onClose={() => setSelectedWord(null)}
-        onOpenPanel={() => setPanelWord(selectedWord)}
-        onStatusChange={(wordId, status) => {
-          handleStatusChange(wordId, status);
-          
-          // Auto advance to next word on status change
-          const currentIndex = currentTokens.findIndex(t => t.id === wordId);
-          if (currentIndex !== -1 && currentIndex < currentTokens.length - 1) {
-            setTimeout(() => {
-              setSelectedWord(currentTokens[currentIndex + 1]);
-            }, 50);
-          } else {
-             setTimeout(() => {
-              setSelectedWord(null);
-            }, 50);
-          }
-        }}
-      />
-
-      {/* Lexical Deep Panel */}
-      <LexDrawer 
-        word={panelWord} 
-        isOpen={!!panelWord} 
-        onClose={() => setPanelWord(null)} 
-        onStatusChange={(wordId, status) => {
-          handleStatusChange(wordId, status);
-          if (panelWord?.id === wordId) setPanelWord({ ...panelWord, status });
-        }}
-      />
-
-      {/* Focus Mode Toggle (Floating) */}
+      {/* Word Panel */}
       <AnimatePresence>
-        {focusMode && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            onClick={() => setFocusMode(false)}
-            className="fixed bottom-12 right-12 p-5 bg-obsidian-900 dark:bg-vellum-100 text-vellum-50 dark:text-obsidian-950 rounded-full shadow-2xl z-[100] hover:scale-110 active:scale-95 transition-all"
+        {(selectedWord) && (
+          <motion.div
+            initial={{ width: 0, opacity: 0, x: isMobile ? 0 : 50, y: isMobile ? 100 : 0 }}
+            animate={{ width: isMobile ? '100%' : 280, opacity: 1, x: 0, y: 0 }}
+            exit={{ width: 0, opacity: 0, x: isMobile ? 0 : 50, y: isMobile ? 100 : 0 }}
+            className={cn(
+               "bg-[#FEFAF4] border-l border-bdr flex flex-col z-50 overflow-hidden flex-shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.03)]",
+               isMobile ? "absolute bottom-0 left-0 h-[50%] rounded-t-2xl border-t border-l-0 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] w-full" : "h-full"
+            )}
           >
-            <Maximize2 className="w-6 h-6" />
-          </motion.button>
+            {/* Header */}
+            <div className="h-12 border-b border-bdr flex items-center justify-between px-3 bg-parch shrink-0">
+               <div className="flex gap-2 text-ink3">
+                  <button className="p-1 hover:bg-parch3 rounded transition-colors"><ChevronLeft className="w-4 h-4"/></button>
+                  <button className="p-1 hover:bg-parch3 rounded transition-colors"><ChevronRight className="w-4 h-4"/></button>
+               </div>
+               <button onClick={() => setSelectedWord(null)} className="text-muted hover:text-ink"><span className="text-sm font-bold">✕</span></button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-6">
+              {/* Form Section */}
+              <div className="mb-6">
+                 <div className={cn("text-[32px] font-serif leading-none mb-1 text-ink", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
+                   {selectedWord.text}
+                 </div>
+                 <div className="font-mono italic text-xs text-muted mb-4">{selectedWord.translit || "logos"}</div>
+                 
+                 <div className="flex items-center gap-2 mb-1">
+                   <span className="eyebrow">Lemma</span>
+                   <span className={cn("font-serif text-[17px] text-blue", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>{selectedWord.lemma || selectedWord.text}</span>
+                 </div>
+                 <div className="font-mono text-[9px] text-muted tracking-widest uppercase">Strong's G3056</div>
+              </div>
+
+              {/* Meaning Section */}
+              <div className="mb-6 border-t border-bdr/50 pt-5">
+                 <div className="eyebrow mb-2">Meaning</div>
+                 <div className="font-body text-[13.5px] font-medium text-ink mb-1">
+                   {selectedWord.gloss || "word, speech, divine expression"}
+                 </div>
+                 <div className="font-body italic text-[12.5px] text-ink2 pl-3 border-l-2 border-parch3 mb-2">
+                   a word, uttered by a living voice, embodies a conception or idea
+                 </div>
+                 <div className="font-body text-[12.5px] text-ink3 mb-2">
+                   <span className="italic mr-1">Also:</span> statement, reckoning, reason
+                 </div>
+                 <div className="font-mono text-[9px] text-muted">BDAG · LSJ</div>
+              </div>
+
+              {/* Morphology Section */}
+              <div className="mb-6 border-t border-bdr/50 pt-5">
+                  <div className="eyebrow mb-2">Morphology</div>
+                  <div className="inline-block bg-bluexl text-blue border border-blue/20 rounded px-1.5 py-0.5 font-mono text-[10px] mb-3">
+                    N-NSM
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                    <div className="flex flex-col"><span className="text-[9px] font-mono text-muted uppercase">POS</span><span className="text-[11.5px] font-sans text-ink">Noun</span></div>
+                    <div className="flex flex-col"><span className="text-[9px] font-mono text-muted uppercase">Case</span><span className="text-[11.5px] font-sans text-ink">Nominative</span></div>
+                    <div className="flex flex-col"><span className="text-[9px] font-mono text-muted uppercase">Gender</span><span className="text-[11.5px] font-sans text-ink">Masculine</span></div>
+                    <div className="flex flex-col"><span className="text-[9px] font-mono text-muted uppercase">Number</span><span className="text-[11.5px] font-sans text-ink">Singular</span></div>
+                  </div>
+              </div>
+
+              {/* Frequency Stats */}
+              <div className="mb-6 flex gap-3">
+                 <div className="flex-1 bg-parch2 rounded-xl p-3 border border-bdr text-center">
+                    <div className="text-[17px] font-serif text-ink mb-0.5">330</div>
+                    <div className="text-[9px] font-mono uppercase text-muted tracking-widest">Occurrences</div>
+                 </div>
+                 <div className="flex-1 bg-parch2 rounded-xl p-3 border border-bdr text-center">
+                    <div className="text-[17px] font-sans font-medium text-amber mb-0.5">A1</div>
+                    <div className="text-[9px] font-mono uppercase text-muted tracking-widest">Frequency Tier</div>
+                 </div>
+              </div>
+
+              {/* Grammar Ref */}
+              <div className="mb-8">
+                 <button className="pill bg-bluexl text-blue border-blue/20 py-1.5 px-3 w-auto flex items-center gap-2 hover:bg-blue/10 transition-colors">
+                   <Bookmark className="w-3 h-3"/> Second Declension Nouns
+                 </button>
+              </div>
+
+              {/* Vocab Status Toggle */}
+              <div className="mb-6">
+                <div className="flex p-1 bg-parch border border-bdr rounded-full mb-3 shadow-[0_1px_2px_rgba(35,20,10,0.02)_inset]">
+                   {['Learning', 'Familiar', 'Known'].map(status => {
+                     const isActive = (selectedWord.status === status) || (status === 'Learning' && (!selectedWord.status || selectedWord.status === 'New'));
+                     let activeClass = "";
+                     if (status === 'Learning') activeClass = "bg-amberxl text-amber ring-2 ring-amber/30 border-amber/20 shadow-sm";
+                     if (status === 'Familiar') activeClass = "bg-jadexl text-jade ring-2 ring-jade/30 border-jade/20 shadow-sm";
+                     if (status === 'Known') activeClass = "bg-bluexl text-blue ring-2 ring-blue/30 border-blue/20 shadow-sm";
+                     
+                     return (
+                       <button 
+                         key={status}
+                         onClick={() => handleStatusChange(selectedWord.id, status)}
+                         className={cn(
+                           "flex-1 text-[10px] font-bold uppercase tracking-widest py-1.5 rounded-full transition-all text-center",
+                           isActive ? activeClass : "text-muted hover:text-ink border border-transparent"
+                         )}
+                       >
+                         {status}
+                       </button>
+                     );
+                   })}
+                </div>
+                <button className={cn(
+                  "w-full text-center py-2.5 rounded-xl font-bold font-sans text-[13px] transition-colors border",
+                  selectedWord.status !== 'Known' ? "bg-blue text-white border-blue shadow-sm hover:shadow-md hover:-translate-y-px" : "bg-jadexl text-jade border-jade/30"
+                )}>
+                  {selectedWord.status !== 'Known' ? "Add to review queue" : "✓ In review queue"}
+                </button>
+              </div>
+
+              {/* Notes Section */}
+              <div className="border-t border-bdr/50 pt-5 pb-8">
+                <button className="w-full py-3 border border-dashed border-bdr text-ink3 text-[12.5px] font-sans font-medium rounded-xl hover:bg-parch2 transition-colors flex items-center justify-center gap-2">
+                  <span className="text-muted">✎</span> Add a note about this word
+                </button>
+              </div>
+
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };

@@ -3,69 +3,109 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Geist Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Newsreader", "EB Garamond", ui-serif, Georgia, serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-parch: #F8F3E8;
+  --color-parch2: #F0E9D5;
+  --color-parch3: #E4D8BE;
+  --color-bdr: #CFC0A0;
+  --color-ink: #1A1410;
+  --color-ink2: #3D3020;
+  --color-ink3: #6B5C48;
+  --color-muted: #9A8A72;
+  --color-gold: #B8842A;
+  --color-blue: #1E3D6E;
+  --color-jade: #1E5C38;
+  --color-amber: #A06820;
+  --color-ruby: #8C1C1C;
 
-  --color-vellum-50: #fdfcfb;
-  --color-vellum-100: #f9f7f4;
-  --color-vellum-200: #f3f0ea;
-  --color-obsidian-800: #292524;
-  --color-obsidian-900: #1c1917;
-  --color-obsidian-950: #0c0a09;
-  --color-gold-400: #e5c07b;
-  --color-gold-500: #d4af37;
-  --color-gold-600: #b8962e;
+  --color-bluexl: #EEF3F8;
+  --color-jadexl: #EBF5EE;
+  --color-amberxl: #FEF0D8;
+  --color-goldxl: #FEF0D8;
+  --color-rubyxl: #FDEAE8;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Crimson Pro', Georgia, serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-hebrew: 'Noto Serif Hebrew', 'SBL Hebrew', serif;
 }
 
 @layer base {
-  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=SBL+Greek&family=SBL+Hebrew&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Noto+Serif+Hebrew:wght@400;500;600&display=swap');
+
+  :root {
+    --parch: #F8F3E8;
+    --parch2: #F0E9D5;
+    --parch3: #E4D8BE;
+    --bdr: #CFC0A0;
+    --ink: #1A1410;
+    --ink2: #3D3020;
+    --ink3: #6B5C48;
+    --muted: #9A8A72;
+    --gold: #B8842A;
+    --blue: #1E3D6E;
+    --jade: #1E5C38;
+    --amber: #A06820;
+    --ruby: #8C1C1C;
+    --bluexl: #EEF3F8;
+    --jadexl: #EBF5EE;
+    --amberxl: #FEF0D8;
+    --goldxl: #FEF0D8;
+    --rubyxl: #FDEAE8;
+  }
 
   body {
-    @apply bg-vellum-50 text-obsidian-900 font-sans selection:bg-gold-500/20;
+    background:
+      radial-gradient(ellipse 1200px 600px at 20% 0%, #EDE5D0 0%, transparent 55%),
+      radial-gradient(ellipse 900px 500px at 80% 100%, #E8DEC4 0%, transparent 55%),
+      linear-gradient(180deg, #F0E9D5 0%, #E4D8BE 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
-  .dark body {
-    @apply bg-obsidian-950 text-vellum-100;
-  }
-
-  /* Grain Overlay */
+  /* SVG Turbulence Noise Overlay */
   body::before {
     content: "";
-    @apply fixed inset-0 pointer-events-none opacity-[0.04] z-[9999];
-    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-    filter: contrast(150%) brightness(100%);
-  }
-
-  /* Paper Texture */
-  .paper-texture {
-    background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+    @apply fixed inset-0 pointer-events-none z-[9999];
+    opacity: 0.04;
+    background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="6" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
   }
 }
 
 @layer components {
-  .editorial-container {
-    @apply max-w-5xl mx-auto px-8 md:px-16 lg:px-24;
+  .card {
+    @apply bg-parch border border-bdr rounded-[16px];
+    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 24px 48px -20px rgba(35,20,10,0.22), 0 2px 8px rgba(35,20,10,0.06);
   }
 
-  .glass-card {
-    @apply bg-white/40 backdrop-blur-md border border-black/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+  .eyebrow {
+    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted font-normal;
   }
 
-  .dark .glass-card {
-    @apply bg-obsidian-900/40 border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.2)];
+  .nav-label {
+    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted;
   }
 
-  .premium-shadow {
-    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
+  .btn-primary {
+    @apply bg-blue text-white rounded-xl font-bold font-sans transition-transform hover:-translate-y-[1px] hover:shadow-md outline-none;
   }
 
-  .dark .premium-shadow {
-    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+  .btn-secondary {
+    @apply bg-transparent border border-bdr text-ink3 rounded-xl font-bold font-sans transition-transform hover:-translate-y-[1px] outline-none;
   }
+
+  .pill {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-mono border whitespace-nowrap;
+  }
+
+  .cefr-a { @apply bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]; }
+  .cefr-b { @apply bg-[#FFF8E1] text-[#E65100] border-[#FFE082]; }
+  .cefr-c { @apply bg-[#EDE7F6] text-[#4527A0] border-[#CE93D8]; }
 }
 
-.font-greek { font-family: 'SBL Greek', 'Newsreader', serif; }
-.font-hebrew { font-family: 'SBL Hebrew', serif; direction: rtl; }
+.font-greek { font-family: 'Cormorant Garamond', Georgia, serif; }
+.font-hebrew { font-family: 'Noto Serif Hebrew', 'SBL Hebrew', serif; direction: rtl; }
+
