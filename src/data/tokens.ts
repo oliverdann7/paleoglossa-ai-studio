@@ -130,48 +130,95 @@ export const latinTokens = [
   { id: 50308, text: "oris", lemma: "ora", gloss: "shores", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "New" },
 ];
 
-export const nextLatinTokens = [
-  { id: 50309, text: "Italiam,", lemma: "Italia", gloss: "to Italy", morphology: { part: "Noun", case: "Accusative" }, language: "Latin", status: "New" },
-  { id: 50310, text: "fato", lemma: "fatum", gloss: "by fate", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "Familiar" },
-  { id: 50311, text: "profugus", lemma: "profugus", gloss: "exiled", morphology: { part: "Adjective", case: "Nominative" }, language: "Latin", status: "New" },
-  { id: 50312, text: "Laviniaque", lemma: "Lavinius", gloss: "and Lavinian", morphology: { part: "Adjective", case: "Accusative" }, language: "Latin", status: "New" },
-  { id: 50313, text: "venit", lemma: "venio", gloss: "came", morphology: { part: "Verb", tense: "Perfect", person: "3rd" }, language: "Latin", status: "Known" },
-  { id: 50314, text: "litora,", lemma: "litus", gloss: "shores", morphology: { part: "Noun", case: "Accusative" }, language: "Latin", status: "New" },
+export const aeneidNextTokens = [
+  { id: 50609, text: "Italiam,", lemma: "Italia", gloss: "to Italy", morphology: { part: "Noun", case: "Accusative" }, language: "Latin", status: "New" },
+  { id: 50610, text: "fato", lemma: "fatum", gloss: "by fate", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "Familiar" },
+  { id: 50611, text: "profugus", lemma: "profugus", gloss: "exiled", morphology: { part: "Adjective", case: "Nominative" }, language: "Latin", status: "New" },
+  { id: 50612, text: "Laviniaque", lemma: "Lavinius", gloss: "and Lavinian", morphology: { part: "Adjective", case: "Accusative" }, language: "Latin", status: "New" },
+  { id: 50613, text: "venit", lemma: "venio", gloss: "came", morphology: { part: "Verb", tense: "Perfect", person: "3rd" }, language: "Latin", status: "Known" },
+  { id: 50614, text: "litora,", lemma: "litus", gloss: "shores", morphology: { part: "Noun", case: "Accusative" }, language: "Latin", status: "New" },
 ];
 
-export const koineGreekTokens = [
-  { id: 60301, text: "Παῦλος", lemma: "Παῦλος", gloss: "Paul", morphology: { part: "Noun", case: "Nominative" }, language: "Koine Greek", status: "New" },
-  { id: 60302, text: "δοῦλος", lemma: "δοῦλος", gloss: "servant", morphology: { part: "Noun", case: "Nominative" }, language: "Koine Greek", status: "Familiar" },
-  { id: 60303, text: "Χριστοῦ", lemma: "Χριστός", gloss: "of Christ", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
-  { id: 60304, text: "Ἰησοῦ", lemma: "Ἰησοῦς", gloss: "Jesus", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+export const didacheTokens = [
+  { id: 60301, text: "Ὁδοὶ", lemma: "ὁδός", gloss: "Ways", morphology: { part: "Noun", case: "Nominative", number: "Plural" }, language: "Koine Greek", status: "New" },
+  { id: 60302, text: "δύο", lemma: "δύο", gloss: "two", morphology: { part: "Numeral", case: "Nominative" }, language: "Koine Greek", status: "Familiar" },
+  { id: 60303, text: "εἰσί,", lemma: "εἰμί", gloss: "are", morphology: { part: "Verb", tense: "Present", person: "3rd", number: "Plural" }, language: "Koine Greek", status: "Known" },
+  { id: 60304, text: "μία", lemma: "εἷς", gloss: "one", morphology: { part: "Numeral", case: "Nominative", gender: "Feminine" }, language: "Koine Greek", status: "Known" },
+  { id: 60305, text: "τῆς", lemma: "ὁ", gloss: "of", morphology: { part: "Article", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60306, text: "ζωῆς", lemma: "ζωή", gloss: "life", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "New" },
+  { id: 60307, text: "καὶ", lemma: "καί", gloss: "and", morphology: { part: "Conjunction" }, language: "Koine Greek", status: "Known" },
+  { id: 60308, text: "μία", lemma: "εἷς", gloss: "one", morphology: { part: "Numeral", case: "Nominative", gender: "Feminine" }, language: "Koine Greek", status: "Known" },
+  { id: 60309, text: "τοῦ", lemma: "ὁ", gloss: "of", morphology: { part: "Article", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60310, text: "θανάτου,", lemma: "θάνατος", gloss: "death", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "New" },
 ];
 
-export const nextKoineGreekTokens = [
-  { id: 60305, text: "κλητὸς", lemma: "κλητός", gloss: "called", morphology: { part: "Adjective", case: "Nominative" }, language: "Koine Greek", status: "New" },
-  { id: 60306, text: "ἀπόστολος", lemma: "ἀπόστολος", gloss: "apostle", morphology: { part: "Noun", case: "Nominative" }, language: "Koine Greek", status: "Familiar" },
-  { id: 60307, text: "ἀφωρισμένος", lemma: "ἀφορίζω", gloss: "set apart", morphology: { part: "Participle", case: "Nominative" }, language: "Koine Greek", status: "New" },
-  { id: 60308, text: "εἰς", lemma: "εἰς", gloss: "unto", morphology: { part: "Preposition" }, language: "Koine Greek", status: "Known" },
-  { id: 60309, text: "εὐαγγέλιον", lemma: "εὐαγγέλιον", gloss: "gospel", morphology: { part: "Noun", case: "Accusative" }, language: "Koine Greek", status: "Familiar" },
-  { id: 60310, text: "θεοῦ", lemma: "θεός", gloss: "of God", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+export const markTokens = [
+  { id: 60401, text: "Ἀρχὴ", lemma: "ἀρχή", gloss: "Beginning", morphology: { part: "Noun", case: "Nominative" }, language: "Koine Greek", status: "Known" },
+  { id: 60402, text: "τοῦ", lemma: "ὁ", gloss: "of the", morphology: { part: "Article", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60403, text: "εὐαγγελίου", lemma: "εὐαγγέλιον", gloss: "gospel", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "New" },
+  { id: 60404, text: "Ἰησοῦ", lemma: "Ἰησοῦς", gloss: "of Jesus", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60405, text: "Χριστοῦ,", lemma: "Χριστός", gloss: "Christ", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60406, text: "υἱοῦ", lemma: "υἱός", gloss: "Son", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Familiar" },
+  { id: 60407, text: "τοῦ", lemma: "ὁ", gloss: "of (the)", morphology: { part: "Article", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60408, text: "θεοῦ.", lemma: "θεός", gloss: "God", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
 ];
 
-export const aramaicTokens = [
+export const paulTokens = [
+  { id: 60601, text: "Παῦλος", lemma: "Παῦλος", gloss: "Paul", morphology: { part: "Noun", case: "Nominative" }, language: "Koine Greek", status: "New" },
+  { id: 60602, text: "δοῦλος", lemma: "δοῦλος", gloss: "servant", morphology: { part: "Noun", case: "Nominative" }, language: "Koine Greek", status: "Familiar" },
+  { id: 60603, text: "Χριστοῦ", lemma: "Χριστός", gloss: "of Christ", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60604, text: "Ἰησοῦ", lemma: "Ἰησοῦς", gloss: "Jesus", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+];
+
+export const paulNextTokens = [
+  { id: 60605, text: "κλητὸς", lemma: "κλητός", gloss: "called", morphology: { part: "Adjective", case: "Nominative" }, language: "Koine Greek", status: "New" },
+  { id: 60606, text: "ἀπόστολος", lemma: "ἀπόστολος", gloss: "apostle", morphology: { part: "Noun", case: "Nominative" }, language: "Koine Greek", status: "Familiar" },
+  { id: 60607, text: "ἀφωρισμένος", lemma: "ἀφορίζω", gloss: "set apart", morphology: { part: "Participle", case: "Nominative" }, language: "Koine Greek", status: "New" },
+  { id: 60608, text: "εἰς", lemma: "εἰς", gloss: "unto", morphology: { part: "Preposition" }, language: "Koine Greek", status: "Known" },
+  { id: 60609, text: "εὐαγγέλιον", lemma: "εὐαγγέλιον", gloss: "gospel", morphology: { part: "Noun", case: "Accusative" }, language: "Koine Greek", status: "Familiar" },
+  { id: 60610, text: "θεοῦ", lemma: "θεός", gloss: "of God", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+];
+
+export const elephantineTokens = [
+  { id: 70301, text: "אֶל", lemma: "אֶל", gloss: "To", morphology: { part: "Preposition" }, language: "Aramaic", status: "Known" },
+  { id: 70302, text: "מָרֵאן", lemma: "מָרֵא", gloss: "our lord", morphology: { part: "Noun", suffix: "1cp" }, language: "Aramaic", status: "New" },
+  { id: 70303, text: "בַּגֹּהִי", lemma: "בַּגֹּהִי", gloss: "Bagoas", morphology: { part: "Proper Noun" }, language: "Aramaic", status: "New" },
+  { id: 70304, text: "פַּחַת", lemma: "פֶּחָה", gloss: "governor of", morphology: { part: "Noun", state: "Construct" }, language: "Aramaic", status: "New" },
+  { id: 70305, text: "יְהוּד", lemma: "יְהוּד", gloss: "Yehud", morphology: { part: "Proper Noun" }, language: "Aramaic", status: "Familiar" },
+];
+
+export const danielTokens = [
   { id: 70301, text: "בֵּאדַיִן", lemma: "אֱדַיִן", gloss: "Then", morphology: { part: "Adverb" }, language: "Aramaic", status: "New" },
   { id: 70302, text: "דָּנִיֵּאל", lemma: "דָּנִיֵּאל", gloss: "Daniel", morphology: { part: "Noun" }, language: "Aramaic", status: "Known" },
   { id: 70303, text: "לְמַלְכָּא", lemma: "מֶלֶךְ", gloss: "to the king", morphology: { part: "Noun", state: "Emphatic" }, language: "Aramaic", status: "Familiar" },
   { id: 70304, text: "מַלִּל", lemma: "מְלַל", gloss: "spoke", morphology: { part: "Verb" }, language: "Aramaic", status: "New" },
 ];
 
-export const nextAramaicTokens = [
+export const danielNextTokens = [
   { id: 70305, text: "מַלְכָּא", lemma: "מֶלֶךְ", gloss: "O king,", morphology: { part: "Noun", state: "Emphatic" }, language: "Aramaic", status: "Familiar" },
   { id: 70306, text: "לְעָלְמִין", lemma: "עָלַם", gloss: "forever", morphology: { part: "Noun", state: "Absolute" }, language: "Aramaic", status: "New" },
   { id: 70307, text: "חֱיִי", lemma: "חֲיָא", gloss: "live!", morphology: { part: "Verb" }, language: "Aramaic", status: "New" },
 ];
 
-export const copticTokens = [
+export const thomasTokens = [
   { id: 80301, text: "ⲡⲉϫⲁϥ", lemma: "peja", gloss: "He said:", morphology: { part: "Verb" }, language: "Coptic", status: "New" },
   { id: 80302, text: "ⲛϭⲓ", lemma: "nci", gloss: "[subject marker]", morphology: { part: "Particle" }, language: "Coptic", status: "Familiar" },
   { id: 80303, text: "ⲓⲏⲥⲟⲩⲥ", lemma: "Iēsous", gloss: "Jesus", morphology: { part: "Noun" }, language: "Coptic", status: "Known" },
+];
+
+export const anabasisTokens = [
+  { id: 10501, text: "Δαρείου", lemma: "Δαρεῖος", gloss: "of Darius", morphology: { part: "Noun", case: "Genitive" }, language: "Greek", status: "New" },
+  { id: 10502, text: "καὶ", lemma: "καί", gloss: "and", morphology: { part: "Conjunction" }, language: "Greek", status: "Known" },
+  { id: 10503, text: "Παρυσάτιδος", lemma: "Παρύσατις", gloss: "of Parysatis", morphology: { part: "Noun", case: "Genitive" }, language: "Greek", status: "New" },
+  { id: 10504, text: "γίγνονται", lemma: "γίγνομαι", gloss: "are born", morphology: { part: "Verb", tense: "Present", mood: "Indicative" }, language: "Greek", status: "New" },
+  { id: 10505, text: "παῖδες", lemma: "παῖς", gloss: "children", morphology: { part: "Noun", case: "Nominative", number: "Plural" }, language: "Greek", status: "Known" },
+  { id: 10506, text: "δύο,", lemma: "δύο", gloss: "two", morphology: { part: "Numeral", case: "Nominative" }, language: "Greek", status: "New" },
+  { id: 10507, text: "πρεσβύτερος", lemma: "πρέσβυς", gloss: "older", morphology: { part: "Adjective", case: "Nominative", degree: "Comparative" }, language: "Greek", status: "New" },
+  { id: 10508, text: "μὲν", lemma: "μέν", gloss: "on the one hand", morphology: { part: "Particle" }, language: "Greek", status: "New" },
+  { id: 10509, text: "Ἀρταξέρξης,", lemma: "Ἀρταξέρξης", gloss: "Artaxerxes", morphology: { part: "Noun", case: "Nominative" }, language: "Greek", status: "New" },
+  { id: 10510, text: "νεώτερος", lemma: "νέος", gloss: "younger", morphology: { part: "Adjective", case: "Nominative", degree: "Comparative" }, language: "Greek", status: "New" },
+  { id: 10511, text: "δὲ", lemma: "δέ", gloss: "but", morphology: { part: "Particle" }, language: "Greek", status: "Known" },
+  { id: 10512, text: "Κῦρος.", lemma: "Κῦρος", gloss: "Cyrus", morphology: { part: "Noun", case: "Nominative" }, language: "Greek", status: "New" }
 ];
 
 export const iliadTokens = [
@@ -190,7 +237,7 @@ export const odysseyTokens = [
   { id: 10705, text: "πολύτροπον,", lemma: "πολύτροπος", gloss: "of many turns", morphology: { part: "Adjective", case: "Accusative" }, language: "Greek", status: "New" },
 ];
 
-export const nextCopticTokens = [
+export const thomasNextTokens = [
   { id: 80304, text: "ϫⲉ", lemma: "je", gloss: "that [quote]", morphology: { part: "Conjunction" }, language: "Coptic", status: "New" },
   { id: 80305, text: "ⲡⲉⲧⲛⲁϩⲉ", lemma: "he", gloss: "He who will find", morphology: { part: "Verb" }, language: "Coptic", status: "New" },
   { id: 80306, text: "ⲉⲑⲉⲣⲙⲏⲛⲉⲓⲁ", lemma: "hermēneia", gloss: "the interpretation", morphology: { part: "Noun" }, language: "Coptic", status: "New" },
@@ -199,13 +246,52 @@ export const nextCopticTokens = [
   { id: 80309, text: "ⲙⲡⲙⲟⲩ", lemma: "mou", gloss: "death.", morphology: { part: "Noun" }, language: "Coptic", status: "Known" },
 ];
 
-export const akkadianTokens = [
+export const desertFathersTokens = [
+  { id: 80350, text: "ⲁⲡⲁ", lemma: "apa", gloss: "Abba", morphology: { part: "Noun" }, language: "Coptic", status: "New" },
+  { id: 80351, text: "ⲁⲛⲧⲱⲛⲓⲟⲥ", lemma: "Antōnios", gloss: "Anthony", morphology: { part: "Proper Noun" }, language: "Coptic", status: "New" },
+  { id: 80352, text: "ϫⲟⲟⲥ", lemma: "jō", gloss: "said", morphology: { part: "Verb" }, language: "Coptic", status: "Familiar" },
+];
+
+export const amarnaTokens = [
+  { id: 90301, text: "𒀀𒈾", lemma: "ana", gloss: "To", morphology: { part: "Preposition" }, language: "Akkadian", status: "Known" },
+  { id: 90302, text: "𒈗", lemma: "šarrum", gloss: "the king", morphology: { part: "Noun", case: "Genitive" }, language: "Akkadian", status: "Known" },
+  { id: 90303, text: "𒂗", lemma: "bēlum", gloss: "my lord", morphology: { part: "Noun", suffix: "1cs" }, language: "Akkadian", status: "Known" },
+  { id: 90304, text: "𒆠𒉈𒈠", lemma: "qabûm", gloss: "say,", morphology: { part: "Verb", mood: "Imperative" }, language: "Akkadian", status: "New" },
+];
+
+export const hammurabiTokens = [
+  { id: 90401, text: "𒋳𒈠", lemma: "šumma", gloss: "If", morphology: { part: "Conjunction" }, language: "Akkadian", status: "New" },
+  { id: 90402, text: "𒀀𒉿𒈝", lemma: "awīlum", gloss: "a man", morphology: { part: "Noun", case: "Nominative" }, language: "Akkadian", status: "New" },
+  { id: 90403, text: "𒄿 عين", lemma: "īnum", gloss: "the eye", morphology: { part: "Noun", case: "Accusative" }, language: "Akkadian", status: "New" },
+  { id: 90404, text: "𒀀𒉿𒅆", lemma: "awīlum", gloss: "of (another) man", morphology: { part: "Noun", case: "Genitive" }, language: "Akkadian", status: "Familiar" },
+  { id: 90405, text: "უხ𒋰𒉿ﺩ", lemma: "huppudum", gloss: "destroys,", morphology: { part: "Verb", tense: "Perfect" }, language: "Akkadian", status: "New" },
+  { id: 90406, text: " عين𒋗", lemma: "īnum", gloss: "his eye", morphology: { part: "Noun", suffix: "3ms" }, language: "Akkadian", status: "New" },
+  { id: 90407, text: "𒌑𒄩𒀊𒉺𒁺", lemma: "huppudum", gloss: "they shall destroy.", morphology: { part: "Verb", tense: "Present" }, language: "Akkadian", status: "New" },
+];
+
+export const enumaTokens = [
+  { id: 90501, text: "𒂊𒉡𒈠", lemma: "inūma", gloss: "When", morphology: { part: "Conjunction" }, language: "Akkadian", status: "New" },
+  { id: 90502, text: "𒂊𒇺", lemma: "eliš", gloss: "on high", morphology: { part: "Adverb" }, language: "Akkadian", status: "New" },
+  { id: 90503, text: "𒆷", lemma: "lā", gloss: "not", morphology: { part: "Particle" }, language: "Akkadian", status: "New" },
+  { id: 90504, text: "𒈾𒁍𒌑", lemma: "nabûm", gloss: "were named", morphology: { part: "Verb", tense: "Stative" }, language: "Akkadian", status: "New" },
+  { id: 90505, text: "𒊭𒈠𒈬", lemma: "šamāmu", gloss: "the heavens", morphology: { part: "Noun", case: "Nominative" }, language: "Akkadian", status: "New" },
+];
+
+export const atrahasisTokens = [
+  { id: 90701, text: "𒄿𒉡𒈠", lemma: "inūma", gloss: "When", morphology: { part: "Conjunction" }, language: "Akkadian", status: "Familiar" },
+  { id: 90702, text: "𒀭", lemma: "ilu", gloss: "the gods", morphology: { part: "Noun", number: "Plural" }, language: "Akkadian", status: "New" },
+  { id: 90703, text: "𒀀𒉿𒈝", lemma: "awīlum", gloss: "like men", morphology: { part: "Noun" }, language: "Akkadian", status: "Familiar" },
+  { id: 90704, text: "𒌒𒍪", lemma: "wabālum", gloss: "bore", morphology: { part: "Verb", tense: "Preterite" }, language: "Akkadian", status: "New" },
+  { id: 90705, text: "ﺩուлля", lemma: "dullum", gloss: "the work", morphology: { part: "Noun", case: "Accusative" }, language: "Akkadian", status: "New" },
+];
+
+export const gilgameshTokens = [
   { id: 90301, text: "𒊭", lemma: "ša", gloss: "He who", morphology: { part: "Pronoun" }, language: "Akkadian", status: "New" },
   { id: 90302, text: "𒈾𒀝𒁀", lemma: "nagbu", gloss: "the deep", morphology: { part: "Noun", case: "Accusative" }, language: "Akkadian", status: "New" },
   { id: 90303, text: "𒄿𒈬𒊒", lemma: "amārum", gloss: "saw", morphology: { part: "Verb", tense: "Preterite" }, language: "Akkadian", status: "Familiar" },
 ];
 
-export const nextAkkadianTokens = [
+export const gilgameshNextTokens = [
   { id: 90304, text: "𒅖𒁲", lemma: "išdu", gloss: "the foundation", morphology: { part: "Noun" }, language: "Akkadian", status: "New" },
   { id: 90305, text: "𒈠𒀀𒋾", lemma: "mātum", gloss: "of the land", morphology: { part: "Noun", case: "Genitive" }, language: "Akkadian", status: "Known" },
   { id: 90306, text: "𒄿𒁲", lemma: "edûm", gloss: "he knew", morphology: { part: "Verb" }, language: "Akkadian", status: "New" },
@@ -225,20 +311,51 @@ export const syriacBasicVocabTokens = [
   { id: 100203, text: "ܐܚܝ", lemma: "ܐܚܐ", gloss: "my brothers", morphology: { part: "Noun", suffix: "1cs" }, language: "Syriac", status: "New" },
 ];
 
-export const syriacTokens = [
+export const peshittaTokens = [
   { id: 100301, text: "ܒܪܫܝܬ", lemma: "ܪܝܫܝܬܐ", gloss: "In the beginning", morphology: { part: "Noun", prefix: "Preposition" }, language: "Syriac", status: "New" },
   { id: 100302, text: "ܐܝܬܘܗܝ", lemma: "ܐܝܬ", gloss: "was", morphology: { part: "Particle", suffix: "3ms" }, language: "Syriac", status: "Known" },
   { id: 100303, text: "ܗܘܐ", lemma: "ܗܘܐ", gloss: "[he] was", morphology: { part: "Verb", tense: "Perfect" }, language: "Syriac", status: "New" },
   { id: 100304, text: "ܡܠܬܐ", lemma: "ܡܠܬܐ", gloss: "the Word", morphology: { part: "Noun", state: "Emphatic" }, language: "Syriac", status: "New" },
 ];
 
-export const nextSyriacTokens = [
+export const peshittaNextTokens = [
   { id: 100305, text: "ܘܗܘ", lemma: "ܗܘ", gloss: "and he", morphology: { part: "Pronoun", prefix: "Conjunction" }, language: "Syriac", status: "Familiar" },
   { id: 100306, text: "ܡܠܬܐ", lemma: "ܡܠܬܐ", gloss: "the Word", morphology: { part: "Noun", state: "Emphatic" }, language: "Syriac", status: "Known" },
   { id: 100307, text: "ܐܝܬܘܗܝ", lemma: "ܐܝܬ", gloss: "was", morphology: { part: "Particle" }, language: "Syriac", status: "Known" },
   { id: 100308, text: "ܗܘܐ", lemma: "ܗܘܐ", gloss: "[he] was", morphology: { part: "Verb" }, language: "Syriac", status: "Known" },
   { id: 100309, text: "ܠܘܬ", lemma: "ܠܘܬ", gloss: "with", morphology: { part: "Preposition" }, language: "Syriac", status: "New" },
   { id: 100310, text: "ܐܠܗܐ", lemma: "ܐܠܗܐ", gloss: "God", morphology: { part: "Noun", state: "Emphatic" }, language: "Syriac", status: "Known" },
+];
+
+export const odesTokens = [
+  { id: 100401, text: "ܐܝܟ", lemma: "ܐܝܟ", gloss: "As", morphology: { part: "Preposition" }, language: "Syriac", status: "New" },
+  { id: 100402, text: "ܐܝܕܐ", lemma: "ܐܝܕܐ", gloss: "the hand", morphology: { part: "Noun", state: "Emphatic" }, language: "Syriac", status: "Known" },
+  { id: 100403, text: "ܕܡܚܘܬܗ", lemma: "ܡܚܘܬܐ", gloss: "of his striking", morphology: { part: "Noun", prefix: "Preposition", suffix: "3ms" }, language: "Syriac", status: "New" },
+  { id: 100404, text: "ܥܠ", lemma: "ܥܠ", gloss: "upon", morphology: { part: "Preposition" }, language: "Syriac", status: "Known" },
+  { id: 100405, text: "ܟܢܪܐ", lemma: "ܟܢܪܐ", gloss: "the harp", morphology: { part: "Noun", state: "Emphatic" }, language: "Syriac", status: "New" },
+];
+
+export const ephremTokens = [
+  { id: 100501, text: "ܗܒ", lemma: "ܝܗܒ", gloss: "Give", morphology: { part: "Verb", mood: "Imperative" }, language: "Syriac", status: "New" },
+  { id: 100502, text: "ܠܝ", lemma: "ܠ", gloss: "to me", morphology: { part: "Preposition", suffix: "1cs" }, language: "Syriac", status: "Known" },
+  { id: 100503, text: "ܡܪܝ", lemma: "ܡܪܝܐ", gloss: "my Lord", morphology: { part: "Noun", suffix: "1cs" }, language: "Syriac", status: "Known" },
+  { id: 100504, text: "ܡܠܬܐ", lemma: "ܡܠܬܐ", gloss: "a word", morphology: { part: "Noun", state: "Emphatic" }, language: "Syriac", status: "Known" },
+  { id: 100505, text: "ܕܐܡܪ", lemma: "ܐܡܪ", gloss: "that I may say", morphology: { part: "Verb", prefix: "Particle" }, language: "Syriac", status: "New" },
+];
+
+export const edessaTokens = [
+  { id: 100601, text: "ܒܫܢܬ", lemma: "ܫܢܬܐ", gloss: "In the year", morphology: { part: "Noun", state: "Construct", prefix: "Preposition" }, language: "Syriac", status: "New" },
+  { id: 100602, text: "ܚܡܫܡܐܐ", lemma: "ܚܡܫܡܐܐ", gloss: "five hundred", morphology: { part: "Numeral" }, language: "Syriac", status: "New" },
+  { id: 100603, text: "ܘܬܠܬܝܢ", lemma: "ܬܠܬܝܢ", gloss: "and thirty", morphology: { part: "Numeral", prefix: "Conjunction" }, language: "Syriac", status: "New" },
+  { id: 100604, text: "ܘܬܠܬ", lemma: "ܬܠܬ", gloss: "and three", morphology: { part: "Numeral", prefix: "Conjunction" }, language: "Syriac", status: "New" },
+];
+
+export const isaacTokens = [
+  { id: 100701, text: "ܕܘܟܝܐ", lemma: "ܕܘܟܝܐ", gloss: "Purity", morphology: { part: "Noun", state: "Emphatic" }, language: "Syriac", status: "New" },
+  { id: 100702, text: "ܕܠܒܐ", lemma: "ܠܒܐ", gloss: "of heart", morphology: { part: "Noun", state: "Emphatic", prefix: "Preposition" }, language: "Syriac", status: "Familiar" },
+  { id: 100703, text: "ܗܘܝܘ", lemma: "ܗܘ", gloss: "it is", morphology: { part: "Particle" }, language: "Syriac", status: "Known" },
+  { id: 100704, text: "ܡܚܙܝܬܐ", lemma: "ܡܚܙܝܬܐ", gloss: "the mirror", morphology: { part: "Noun", state: "Emphatic" }, language: "Syriac", status: "New" },
+  { id: 100705, text: "ܕܢܦܫܐ", lemma: "ܢܦܫܐ", gloss: "of the soul", morphology: { part: "Noun", state: "Emphatic", prefix: "Preposition" }, language: "Syriac", status: "New" },
 ];
 
 export const hittiteAlphabetTokens = [
@@ -254,13 +371,13 @@ export const hittiteBasicVocabTokens = [
   { id: 110203, text: "𒂊ếp𒍣", lemma: "epzi", gloss: "he takes", morphology: { part: "Verb", tense: "Present", person: "3cs" }, language: "Hittite", status: "New" },
 ];
 
-export const hittiteTokens = [
+export const tunnawiyaTokens = [
   { id: 110301, text: "𒌝𒈠", lemma: "umma", gloss: "Thus (speaks)", morphology: { part: "Adverb" }, language: "Hittite", status: "New" },
   { id: 110302, text: "𒀭𒌓𒅆", lemma: "My Sun", gloss: "His Majesty", morphology: { part: "Noun", case: "Nominative" }, language: "Hittite", status: "Familiar" },
   { id: 110303, text: "ⵎ मुर𒅆ിലി𒅖", lemma: "Muršili", gloss: "Mursili", morphology: { part: "Noun", case: "Nominative" }, language: "Hittite", status: "New" },
 ];
 
-export const nextHittiteTokens = [
+export const tunnawiyaNextTokens = [
   { id: 110304, text: "𒈗", lemma: "haššu-", gloss: "the king", morphology: { part: "Noun", case: "Nominative" }, language: "Hittite", status: "Known" },
   { id: 110305, text: "𒃲", lemma: "šalli-", gloss: "great", morphology: { part: "Adjective", case: "Nominative" }, language: "Hittite", status: "New" },
   { id: 110306, text: "𒌷𒄩𒀜𒌅𒅆", lemma: "Hattuša", gloss: "of Hatti", morphology: { part: "Noun", case: "Genitive" }, language: "Hittite", status: "New" },
@@ -273,14 +390,24 @@ export const latinAlphabetTokens = [
   { id: 50104, text: "V v", lemma: "v", gloss: "[w] as in win", morphology: { part: "Letter", type: "Consonant" }, language: "Latin", status: "New" },
 ];
 
-export const latinBasicVocabTokens = [
-  { id: 50201, text: "Gallia", lemma: "Gallia", gloss: "Gaul", morphology: { part: "Noun", case: "Nominative", gender: "Feminine" }, language: "Latin", status: "New" },
-  { id: 50202, text: "est", lemma: "sum", gloss: "is", morphology: { part: "Verb", tense: "Present", mood: "Indicative", person: "3rd" }, language: "Latin", status: "Known" },
-  { id: 50203, text: "omnis", lemma: "omnis", gloss: "all (as a whole)", morphology: { part: "Adjective", case: "Nominative", gender: "Feminine" }, language: "Latin", status: "New" },
-  { id: 50204, text: "divisa", lemma: "divido", gloss: "divided", morphology: { part: "Participle", case: "Nominative", gender: "Feminine" }, language: "Latin", status: "New" },
-  { id: 50205, text: "in", lemma: "in", gloss: "into", morphology: { part: "Preposition" }, language: "Latin", status: "Known" },
-  { id: 50206, text: "partes", lemma: "pars", gloss: "parts", morphology: { part: "Noun", case: "Accusative", gender: "Feminine", number: "Plural" }, language: "Latin", status: "New" },
-  { id: 50207, text: "tres", lemma: "tres", gloss: "three", morphology: { part: "Numeral", case: "Accusative" }, language: "Latin", status: "New" },
+export const latinVulgateTokens = [
+  { id: 50201, text: "In", lemma: "in", gloss: "in", morphology: { part: "Preposition" }, language: "Latin", status: "New" },
+  { id: 50202, text: "principio", lemma: "principium", gloss: "beginning", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "New" },
+  { id: 50203, text: "creavit", lemma: "creo", gloss: "created", morphology: { part: "Verb", tense: "Perfect" }, language: "Latin", status: "New" },
+  { id: 50204, text: "Deus", lemma: "Deus", gloss: "God", morphology: { part: "Noun", case: "Nominative" }, language: "Latin", status: "Familiar" },
+  { id: 50205, text: "caelum", lemma: "caelum", gloss: "heaven", morphology: { part: "Noun", case: "Accusative" }, language: "Latin", status: "New" },
+  { id: 50206, text: "et", lemma: "et", gloss: "and", morphology: { part: "Conjunction" }, language: "Latin", status: "Known" },
+  { id: 50207, text: "terram.", lemma: "terra", gloss: "earth", morphology: { part: "Noun", case: "Accusative" }, language: "Latin", status: "Known" },
+];
+
+export const gallicWarTokens = [
+  { id: 50301, text: "Gallia", lemma: "Gallia", gloss: "Gaul", morphology: { part: "Noun", case: "Nominative", gender: "Feminine" }, language: "Latin", status: "New" },
+  { id: 50302, text: "est", lemma: "sum", gloss: "is", morphology: { part: "Verb", tense: "Present", mood: "Indicative", person: "3rd" }, language: "Latin", status: "Known" },
+  { id: 50303, text: "omnis", lemma: "omnis", gloss: "all (as a whole)", morphology: { part: "Adjective", case: "Nominative", gender: "Feminine" }, language: "Latin", status: "New" },
+  { id: 50304, text: "divisa", lemma: "divido", gloss: "divided", morphology: { part: "Participle", case: "Nominative", gender: "Feminine" }, language: "Latin", status: "New" },
+  { id: 50305, text: "in", lemma: "in", gloss: "into", morphology: { part: "Preposition" }, language: "Latin", status: "Known" },
+  { id: 50306, text: "partes", lemma: "pars", gloss: "parts", morphology: { part: "Noun", case: "Accusative", gender: "Feminine", number: "Plural" }, language: "Latin", status: "New" },
+  { id: 50307, text: "tres", lemma: "tres", gloss: "three", morphology: { part: "Numeral", case: "Accusative" }, language: "Latin", status: "New" },
 ];
 
 export const greekTokens = [
@@ -319,6 +446,16 @@ export const genesisTokens = [
   { id: 20403, text: "אֱלֹהִים", lemma: "אֱלֹהִים", gloss: "God", morphology: { part: "Noun" }, language: "Hebrew", status: "Known" },
   { id: 20404, text: "אֵת", lemma: "אֵת", gloss: "direct object marker", morphology: { part: "Particle" }, language: "Hebrew", status: "New" },
   { id: 20405, text: "הַשָּׁמַיִם", lemma: "שָׁמַיִם", gloss: "the heavens", morphology: { part: "Noun", prefix: "Article" }, language: "Hebrew", status: "Familiar" },
+];
+
+export const ruthTokens = [
+  { id: 20301, text: "וַיְהִי", lemma: "הָיָה", gloss: "And it came to pass", morphology: { part: "Verb", tense: "Imperfect" }, language: "Hebrew", status: "New" },
+  { id: 20302, text: "בִּימֵי", lemma: "יוֹם", gloss: "in the days of", morphology: { part: "Noun", prefix: "Preposition" }, language: "Hebrew", status: "Familiar" },
+  { id: 20303, text: "שְׁפֹט", lemma: "שָׁפַט", gloss: "the ruling of", morphology: { part: "Verb", tense: "Infinitive" }, language: "Hebrew", status: "New" },
+  { id: 20304, text: "הַשֹּׁפְטִים", lemma: "שָׁפַט", gloss: "the judges", morphology: { part: "Noun", prefix: "Article" }, language: "Hebrew", status: "New" },
+  { id: 20305, text: "וַיְהִי", lemma: "הָיָה", gloss: "and there was", morphology: { part: "Verb", tense: "Imperfect" }, language: "Hebrew", status: "Known" },
+  { id: 20306, text: "רָעָב", lemma: "רָעָב", gloss: "a famine", morphology: { part: "Noun" }, language: "Hebrew", status: "New" },
+  { id: 20307, text: "בָּאָרֶץ", lemma: "אֶרֶץ", gloss: "in the land", morphology: { part: "Noun", prefix: "Preposition" }, language: "Hebrew", status: "Known" },
 ];
 
 export const hebrewTokens = [
@@ -387,33 +524,33 @@ export const nextSanskritTokens = [
   { id: 40313, text: "मृगम्", lemma: "मृग", gloss: "a deer", morphology: { part: "Noun" }, language: "Sanskrit", status: "New" },
 ];
 
-export const additionalLatinTokens = [
-  { id: 50315, text: "multum", lemma: "multus", gloss: "much", morphology: { part: "Adverb" }, language: "Latin", status: "New" },
-  { id: 50316, text: "ille", lemma: "ille", gloss: "he", morphology: { part: "Pronoun", case: "Nominative" }, language: "Latin", status: "Known" },
-  { id: 50317, text: "et", lemma: "et", gloss: "both", morphology: { part: "Conjunction" }, language: "Latin", status: "Known" },
-  { id: 50318, text: "terris", lemma: "terra", gloss: "on land", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "New" },
-  { id: 50319, text: "iactatus", lemma: "iacto", gloss: "tossed", morphology: { part: "Participle", case: "Nominative" }, language: "Latin", status: "New" },
-  { id: 50320, text: "et", lemma: "et", gloss: "and", morphology: { part: "Conjunction" }, language: "Latin", status: "Known" },
-  { id: 50321, text: "alto,", lemma: "altum", gloss: "on the deep", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "New" },
-  { id: 50322, text: "vi", lemma: "vis", gloss: "by the power", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "New" },
-  { id: 50323, text: "superum,", lemma: "superus", gloss: "of the gods", morphology: { part: "Noun", case: "Genitive" }, language: "Latin", status: "New" },
-  { id: 50324, text: "saevae", lemma: "saevus", gloss: "cruel", morphology: { part: "Adjective", case: "Genitive" }, language: "Latin", status: "New" },
+export const aeneidAdditionalTokens = [
+  { id: 50615, text: "multum", lemma: "multus", gloss: "much", morphology: { part: "Adverb" }, language: "Latin", status: "New" },
+  { id: 50616, text: "ille", lemma: "ille", gloss: "he", morphology: { part: "Pronoun", case: "Nominative" }, language: "Latin", status: "Known" },
+  { id: 50617, text: "et", lemma: "et", gloss: "both", morphology: { part: "Conjunction" }, language: "Latin", status: "Known" },
+  { id: 50618, text: "terris", lemma: "terra", gloss: "on land", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "New" },
+  { id: 50619, text: "iactatus", lemma: "iacto", gloss: "tossed", morphology: { part: "Participle", case: "Nominative" }, language: "Latin", status: "New" },
+  { id: 50620, text: "et", lemma: "et", gloss: "and", morphology: { part: "Conjunction" }, language: "Latin", status: "Known" },
+  { id: 50621, text: "alto,", lemma: "altum", gloss: "on the deep", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "New" },
+  { id: 50622, text: "vi", lemma: "vis", gloss: "by the power", morphology: { part: "Noun", case: "Ablative" }, language: "Latin", status: "New" },
+  { id: 50623, text: "superum,", lemma: "superus", gloss: "of the gods", morphology: { part: "Noun", case: "Genitive" }, language: "Latin", status: "New" },
+  { id: 50624, text: "saevae", lemma: "saevus", gloss: "cruel", morphology: { part: "Adjective", case: "Genitive" }, language: "Latin", status: "New" },
 ];
 
-export const additionalKoineGreekTokens = [
-  { id: 60311, text: "ὅτι", lemma: "ὅτι", gloss: "because", morphology: { part: "Conjunction" }, language: "Koine Greek", status: "Known" },
-  { id: 60312, text: "πρῶτον", lemma: "πρῶτος", gloss: "first", morphology: { part: "Adverb" }, language: "Koine Greek", status: "New" },
-  { id: 60313, text: "εὐχαριστῶ", lemma: "εὐχαριστέω", gloss: "I thank", morphology: { part: "Verb", tense: "Present", person: "1st" }, language: "Koine Greek", status: "New" },
-  { id: 60314, text: "τῷ", lemma: "ὁ", gloss: "the", morphology: { part: "Article", case: "Dative" }, language: "Koine Greek", status: "Known" },
-  { id: 60315, text: "θεῷ", lemma: "θεός", gloss: "God", morphology: { part: "Noun", case: "Dative" }, language: "Koine Greek", status: "Known" },
-  { id: 60316, text: "μου", lemma: "ἐγώ", gloss: "my", morphology: { part: "Pronoun", case: "Genitive", person: "1st" }, language: "Koine Greek", status: "Known" },
-  { id: 60317, text: "διὰ", lemma: "διά", gloss: "through", morphology: { part: "Preposition" }, language: "Koine Greek", status: "New" },
-  { id: 60318, text: "Ἰησοῦ", lemma: "Ἰησοῦς", gloss: "Jesus", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
-  { id: 60319, text: "Χριστοῦ", lemma: "Χριστός", gloss: "Christ", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
-  { id: 60320, text: "περὶ", lemma: "περί", gloss: "concerning", morphology: { part: "Preposition" }, language: "Koine Greek", status: "New" },
+export const paulAdditionalTokens = [
+  { id: 60611, text: "ὅτι", lemma: "ὅτι", gloss: "because", morphology: { part: "Conjunction" }, language: "Koine Greek", status: "Known" },
+  { id: 60612, text: "πρῶτον", lemma: "πρῶτος", gloss: "first", morphology: { part: "Adverb" }, language: "Koine Greek", status: "New" },
+  { id: 60613, text: "εὐχαριστῶ", lemma: "εὐχαριστέω", gloss: "I thank", morphology: { part: "Verb", tense: "Present", person: "1st" }, language: "Koine Greek", status: "New" },
+  { id: 60614, text: "τῷ", lemma: "ὁ", gloss: "the", morphology: { part: "Article", case: "Dative" }, language: "Koine Greek", status: "Known" },
+  { id: 60615, text: "θεῷ", lemma: "θεός", gloss: "God", morphology: { part: "Noun", case: "Dative" }, language: "Koine Greek", status: "Known" },
+  { id: 60616, text: "μου", lemma: "ἐγώ", gloss: "my", morphology: { part: "Pronoun", case: "Genitive", person: "1st" }, language: "Koine Greek", status: "Known" },
+  { id: 60617, text: "διὰ", lemma: "διά", gloss: "through", morphology: { part: "Preposition" }, language: "Koine Greek", status: "New" },
+  { id: 60618, text: "Ἰησοῦ", lemma: "Ἰησοῦς", gloss: "Jesus", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60619, text: "Χριστοῦ", lemma: "Χριστός", gloss: "Christ", morphology: { part: "Noun", case: "Genitive" }, language: "Koine Greek", status: "Known" },
+  { id: 60620, text: "περὶ", lemma: "περί", gloss: "concerning", morphology: { part: "Preposition" }, language: "Koine Greek", status: "New" },
 ];
 
-export const additionalAramaicTokens = [
+export const danielAdditionalTokens = [
   { id: 70308, text: "מַלְכוּתָךְ", lemma: "מַלְכוּ", gloss: "your kingdom", morphology: { part: "Noun", suffix: "2ms" }, language: "Aramaic", status: "New" },
   { id: 70309, text: "מַלְכוּת", lemma: "מַלְכוּ", gloss: "is a kingdom", morphology: { part: "Noun", state: "Construct" }, language: "Aramaic", status: "New" },
   { id: 70310, text: "כָּל־", lemma: "כֹּל", gloss: "of all", morphology: { part: "Noun", state: "Construct" }, language: "Aramaic", status: "Familiar" },
@@ -424,7 +561,7 @@ export const additionalAramaicTokens = [
   { id: 70315, text: "וְדָר", lemma: "דָּר", gloss: "and generation", morphology: { part: "Noun", state: "Absolute" }, language: "Aramaic", status: "New" },
 ];
 
-export const additionalCopticTokens = [
+export const thomasAdditionalTokens = [
   { id: 80310, text: "ⲁⲩⲱ", lemma: "auw", gloss: "and", morphology: { part: "Conjunction" }, language: "Coptic", status: "Known" },
   { id: 80311, text: "ⲡⲉϫⲁϥ", lemma: "peja", gloss: "he said", morphology: { part: "Verb" }, language: "Coptic", status: "Familiar" },
   { id: 80312, text: "ⲛⲁⲩ", lemma: "na", gloss: "to them", morphology: { part: "Preposition", suffix: "3pl" }, language: "Coptic", status: "New" },
@@ -436,7 +573,7 @@ export const additionalCopticTokens = [
   { id: 80318, text: "ⲛⲣⲱⲙⲉ", lemma: "rōme", gloss: "men", morphology: { part: "Noun", number: "Plural" }, language: "Coptic", status: "Familiar" },
 ];
 
-export const additionalAkkadianTokens = [
+export const gilgameshAdditionalTokens = [
   { id: 90308, text: "𒄿𒈾", lemma: "ina", gloss: "in", morphology: { part: "Preposition" }, language: "Akkadian", status: "Known" },
   { id: 90309, text: "𒌓𒈪", lemma: "ūmum", gloss: "the days", morphology: { part: "Noun", case: "Genitive" }, language: "Akkadian", status: "New" },
   { id: 90310, text: "𒋗", lemma: "šu", gloss: "of that", morphology: { part: "Pronoun" }, language: "Akkadian", status: "Familiar" },
@@ -448,7 +585,7 @@ export const additionalAkkadianTokens = [
   { id: 90316, text: "𒄿𒁀𒀾𒅆", lemma: "bašûm", gloss: "was", morphology: { part: "Verb", tense: "Preterite" }, language: "Akkadian", status: "New" },
 ];
 
-export const additionalSyriacTokens = [
+export const peshittaAdditionalTokens = [
   { id: 100311, text: "ܗܘ", lemma: "ܗܘ", gloss: "He", morphology: { part: "Pronoun", gender: "Masculine" }, language: "Syriac", status: "Known" },
   { id: 100312, text: "ܐܝܬܘܗܝ", lemma: "ܐܝܬ", gloss: "was", morphology: { part: "Particle" }, language: "Syriac", status: "Familiar" },
   { id: 100313, text: "ܗܘܐ", lemma: "ܗܘܐ", gloss: "was", morphology: { part: "Verb" }, language: "Syriac", status: "Familiar" },
@@ -461,7 +598,7 @@ export const additionalSyriacTokens = [
   { id: 100320, text: "ܗܘܐ", lemma: "ܗܘܐ", gloss: "were made", morphology: { part: "Verb" }, language: "Syriac", status: "New" },
 ];
 
-export const additionalHittiteTokens = [
+export const tunnawiyaAdditionalTokens = [
   { id: 110307, text: "𒉡", lemma: "nu", gloss: "and", morphology: { part: "Particle" }, language: "Hittite", status: "New" },
   { id: 110308, text: "𒈬", lemma: "mu", gloss: "to me", morphology: { part: "Pronoun", suffix: "1cs" }, language: "Hittite", status: "New" },
   { id: 110309, text: "𒀭𒌓", lemma: "UTU", gloss: "the Sun-god", morphology: { part: "Noun" }, language: "Hittite", status: "New" },
@@ -472,4 +609,33 @@ export const additionalHittiteTokens = [
   { id: 110314, text: "𒅀", lemma: "ya", gloss: "mine", morphology: { part: "Pronoun", suffix: "1cs" }, language: "Hittite", status: "New" },
   { id: 110315, text: "𒉺𒊏𒀀", lemma: "parā", gloss: "forth", morphology: { part: "Adverb" }, language: "Hittite", status: "New" },
   { id: 110316, text: "𒈾𒄿𒅖", lemma: "nai-", gloss: "he turned", morphology: { part: "Verb" }, language: "Hittite", status: "New" },
+];
+
+export const illuyankaTokens = [
+  { id: 110401, text: "𒈠𒀀𒀭", lemma: "mān", gloss: "When", morphology: { part: "Conjunction" }, language: "Hittite", status: "New" },
+  { id: 110402, text: "𒀭𒅎", lemma: "Tarḫunna", gloss: "the Storm-god", morphology: { part: "Noun" }, language: "Hittite", status: "New" },
+  { id: 110403, text: "𒈲", lemma: "Illuyanka", gloss: "the serpent", morphology: { part: "Noun" }, language: "Hittite", status: "New" },
+  { id: 110404, text: "𒆪𒂗𒋫", lemma: "kuen-", gloss: "killed", morphology: { part: "Verb", tense: "Preterite" }, language: "Hittite", status: "New" },
+];
+
+export const kumarbiTokens = [
+  { id: 110501, text: "𒊭ირი𒊭", lemma: "šir-", gloss: "Sing", morphology: { part: "Verb", mood: "Imperative" }, language: "Hittite", status: "New" },
+  { id: 110502, text: "𒉌", lemma: "ni", gloss: "[particle]", morphology: { part: "Particle" }, language: "Hittite", status: "Known" },
+  { id: 110503, text: "𒀭", lemma: "Dingir", gloss: "to the gods", morphology: { part: "Noun", number: "Plural" }, language: "Hittite", status: "New" },
+  { id: 110504, text: "𒆪𒈥𒁉", lemma: "Kumarbi", gloss: "of Kumarbi", morphology: { part: "Proper Noun" }, language: "Hittite", status: "New" },
+];
+
+export const mursiliTokens = [
+  { id: 110601, text: "𒌝𒈠", lemma: "umma", gloss: "Thus", morphology: { part: "Adverb" }, language: "Hittite", status: "Known" },
+  { id: 110602, text: "𒀭𒌓𒅆", lemma: "My Sun", gloss: "His Majesty", morphology: { part: "Noun" }, language: "Hittite", status: "Familiar" },
+  { id: 110603, text: "মুর𒅆𒇷", lemma: "Muršili", gloss: "Mursili", morphology: { part: "Proper Noun" }, language: "Hittite", status: "New" },
+  { id: 110604, text: "𒈗", lemma: "LUGAL", gloss: "king", morphology: { part: "Noun" }, language: "Hittite", status: "New" },
+  { id: 110605, text: "𒃲", lemma: "GAL", gloss: "great", morphology: { part: "Adjective" }, language: "Hittite", status: "New" },
+];
+
+export const hattusiliTokens = [
+  { id: 110701, text: "𒌝𒈠", lemma: "umma", gloss: "Thus", morphology: { part: "Adverb" }, language: "Hittite", status: "Known" },
+  { id: 110702, text: "𒄩𒀜𒌅𒅆𒇷", lemma: "Ḫattušili", gloss: "Hattusili", morphology: { part: "Proper Noun" }, language: "Hittite", status: "New" },
+  { id: 110703, text: "𒈗", lemma: "LUGAL", gloss: "king", morphology: { part: "Noun" }, language: "Hittite", status: "Known" },
+  { id: 110704, text: "𒃲", lemma: "GAL", gloss: "great", morphology: { part: "Adjective" }, language: "Hittite", status: "Known" },
 ];
