@@ -8,13 +8,14 @@ export const getChapter = (textId: number): Chapter => {
     102: { title: "Basic Greetings & Phrasing", translation: "Basic Greek Vocabulary", tokens: tokens.greekBasicVocabTokens },
     103: { title: "Aesop's Fables", translation: "In the beginning was the Word, and the Word was with God, and the Word was God. He was in the beginning with God.", tokens: [...tokens.greekTokens, ...tokens.nextGreekTokens] }, // Fallback to John 1:1 for now
     104: { title: "Gospel of John", translation: "In the beginning was the Word, and the Word was with God, and the Word was God. He was in the beginning with God.", tokens: [...tokens.greekTokens, ...tokens.nextGreekTokens] },
+    105: { title: "Anabasis", translation: "Darius and Parysatis had two sons born to them, the elder Artaxerxes, the younger Cyrus.", tokens: tokens.anabasisTokens },
     106: { title: "Iliad", translation: "Sing, O goddess, the anger of Achilles son of Peleus...", tokens: tokens.iliadTokens },
     107: { title: "The Odyssey", translation: "Tell me, O muse, of that ingenious hero...", tokens: tokens.odysseyTokens },
 
     // Hebrew
     201: { title: "The Aleph-Bet & Vowels", translation: "The Hebrew Alphabet", tokens: tokens.hebrewAlphabetTokens },
     202: { title: "Basic Vocabulary", translation: "Basic Hebrew Vocabulary", tokens: tokens.hebrewBasicVocabTokens },
-    203: { title: "Book of Ruth", translation: "In the days when the judges ruled, there was a famine in the land...", tokens: [...tokens.hebrewTokens, ...tokens.nextHebrewTokens] }, // Ruth starts similarly to Gen so let's fallback using hebrewTokens
+    203: { title: "Book of Ruth", translation: "In the days when the judges ruled, there was a famine in the land...", tokens: tokens.ruthTokens }, 
     204: { title: "Genesis", translation: "In the beginning God created the heaven and the earth.", tokens: [...tokens.genesisTokens, ...tokens.nextHebrewTokens] },
 
     // Egyptian
@@ -29,38 +30,56 @@ export const getChapter = (textId: number): Chapter => {
 
     // Latin
     501: { title: "Latin Alphabet & Pronunciation", translation: "The Latin Alphabet", tokens: tokens.latinAlphabetTokens },
-    502: { title: "Vulgate", translation: "Basic Latin Vocabulary", tokens: tokens.latinBasicVocabTokens },
-    503: { title: "Gallic War", translation: "Arms and the man I sing, who first from the shores of Troy, exiled by fate, came to Italy and Lavinian shores, much he was tossed both on land and on the deep, by the power of the gods, because of cruel Juno.", tokens: [...tokens.latinTokens, ...tokens.nextLatinTokens, ...tokens.additionalLatinTokens] },
+    502: { title: "Vulgate", translation: "In the beginning God created the heavens and the earth.", tokens: tokens.latinVulgateTokens },
+    503: { title: "Gallic War", translation: "All Gaul is divided into three parts.", tokens: tokens.gallicWarTokens },
+    506: { title: "Aeneid", translation: "Arms and the man I sing, who first from the shores of Troy, exiled by fate, came to Italy and Lavinian shores, much he was tossed both on land and on the deep, by the power of the gods, because of cruel Juno.", tokens: [...tokens.aeneidTokens, ...tokens.aeneidNextTokens, ...tokens.aeneidAdditionalTokens] },
     
     // Koine Greek
     601: { title: "Koine Alphabet & Sounds", translation: "The Koine Greek Alphabet", tokens: tokens.koineGreekAlphabetTokens },
     602: { title: "Basic Vocabulary", translation: "Basic Koine Greek Vocabulary", tokens: tokens.koineGreekBasicVocabTokens },
-    603: { title: "Didache", translation: "Paul, a servant of Jesus Christ, called to be an apostle, set apart for the gospel of God... First, I thank my God through Jesus Christ concerning...", tokens: [...tokens.koineGreekTokens, ...tokens.nextKoineGreekTokens, ...tokens.additionalKoineGreekTokens] },
+    603: { title: "Didache", translation: "There are two ways, one of life and one of death.", tokens: tokens.didacheTokens },
+    604: { title: "Gospel of Mark", translation: "The beginning of the gospel of Jesus Christ, the Son of God.", tokens: tokens.markTokens },
+    605: { title: "Gospel of John", translation: "In the beginning was the Word, and the Word was with God, and the Word was God.", tokens: [...tokens.greekTokens, ...tokens.nextGreekTokens] },
+    606: { title: "Epistles of Paul", translation: "Paul, a servant of Jesus Christ, called to be an apostle, set apart for the gospel of God... First, I thank my God through Jesus Christ concerning...", tokens: [...tokens.paulTokens, ...tokens.paulNextTokens, ...tokens.paulAdditionalTokens] },
     
     // Aramaic
     701: { title: "Aramaic Alphabet", translation: "The Aramaic Alphabet", tokens: tokens.aramaicAlphabetTokens },
     702: { title: "Basic Vocabulary", translation: "Basic Aramaic Vocabulary", tokens: tokens.aramaicBasicVocabTokens },
-    703: { title: "Elephantine Papyri", translation: "Then Daniel spoke to the king, 'O king, live forever! Your kingdom is a kingdom of all ages, and your dominion in all generations.'", tokens: [...tokens.aramaicTokens, ...tokens.nextAramaicTokens, ...tokens.additionalAramaicTokens] },
+    703: { title: "Elephantine Papyri", translation: "To our lord Bagoas, governor of Yehud...", tokens: tokens.elephantineTokens },
+    704: { title: "Book of Daniel", translation: "Then Daniel spoke to the king, 'O king, live forever! Your kingdom is a kingdom of all ages, and your dominion in all generations.'", tokens: [...tokens.danielTokens, ...tokens.danielNextTokens, ...tokens.danielAdditionalTokens] },
 
     // Coptic
     801: { title: "Coptic Alphabet", translation: "The Coptic Alphabet", tokens: tokens.copticAlphabetTokens },
     802: { title: "Basic Vocabulary", translation: "Basic Coptic Vocabulary", tokens: tokens.copticBasicVocabTokens },
-    803: { title: "Sayings of the Desert Fathers", translation: "Jesus said: He who finds the interpretation of these words will not taste death. And he said to them, 'In that place men customarily...'", tokens: [...tokens.copticTokens, ...tokens.nextCopticTokens, ...tokens.additionalCopticTokens] },
+    803: { title: "Sayings of the Desert Fathers", translation: "Abba Anthony said...", tokens: tokens.desertFathersTokens },
+    804: { title: "Gospel of Thomas", translation: "Jesus said: He who finds the interpretation of these words will not taste death. And he said to them, 'In that place men customarily...'", tokens: [...tokens.thomasTokens, ...tokens.thomasNextTokens, ...tokens.thomasAdditionalTokens] },
 
     // Akkadian
     901: { title: "Cuneiform Signs", translation: "The Akkadian Signs", tokens: tokens.akkadianAlphabetTokens },
     902: { title: "Basic Vocabulary", translation: "Basic Akkadian Vocabulary", tokens: tokens.akkadianBasicVocabTokens },
-    903: { title: "Amarna Letters", translation: "He who saw the deep, the foundation of the land, he knew everything. In the days of that god Enlil, the king of the heavens was...", tokens: [...tokens.akkadianTokens, ...tokens.nextAkkadianTokens, ...tokens.additionalAkkadianTokens] },
+    903: { title: "Amarna Letters", translation: "To the king, my lord, say:", tokens: tokens.amarnaTokens },
+    904: { title: "Code of Hammurabi", translation: "If a man destroys the eye of another man, they shall destroy his eye.", tokens: tokens.hammurabiTokens },
+    905: { title: "Enuma Elish", translation: "When on high the heavens were not named...", tokens: tokens.enumaTokens },
+    906: { title: "Epic of Gilgamesh", translation: "He who saw the deep, the foundation of the land, he knew everything. In the days of that god Enlil, the king of the heavens was...", tokens: [...tokens.gilgameshTokens, ...tokens.gilgameshNextTokens, ...tokens.gilgameshAdditionalTokens] },
+    907: { title: "Atra-Hasis", translation: "When the gods like men bore the work...", tokens: tokens.atrahasisTokens },
 
     // Syriac
     1001: { title: "Estrangelo Alphabet", translation: "The Syriac Alphabet", tokens: tokens.syriacAlphabetTokens },
     1002: { title: "Basic Vocabulary", translation: "Basic Syriac Vocabulary", tokens: tokens.syriacBasicVocabTokens },
-    1003: { title: "Peshitta Gospels", translation: "In the beginning was the Word, and the Word was with God, He was from the beginning with God. All things by his hand were made.", tokens: [...tokens.syriacTokens, ...tokens.nextSyriacTokens, ...tokens.additionalSyriacTokens] },
+    1003: { title: "Peshitta Gospels", translation: "In the beginning was the Word, and the Word was with God, He was from the beginning with God. All things by his hand were made.", tokens: [...tokens.peshittaTokens, ...tokens.peshittaNextTokens, ...tokens.peshittaAdditionalTokens] },
+    1004: { title: "Odes of Solomon", translation: "As the hand of his striking upon the harp...", tokens: tokens.odesTokens },
+    1005: { title: "Hymns of Ephrem", translation: "Give me, my Lord, a word that I may say...", tokens: tokens.ephremTokens },
+    1006: { title: "Chronicle of Edessa", translation: "In the year five hundred and thirty-three...", tokens: tokens.edessaTokens },
+    1007: { title: "Isaac of Nineveh", translation: "Purity of heart is the mirror of the soul...", tokens: tokens.isaacTokens },
 
     // Hittite
     1101: { title: "Cuneiform Basics", translation: "The Hittite Cuneiform", tokens: tokens.hittiteAlphabetTokens },
     1102: { title: "Basic Vocabulary", translation: "Basic Hittite Vocabulary", tokens: tokens.hittiteBasicVocabTokens },
-    1103: { title: "Ritual of Tunnawiya", translation: "Thus speaks His Majesty, Mursili, the great king of Hatti. And to me the Sun-god, my lord, Ishtar, my lady, turned forth.", tokens: [...tokens.hittiteTokens, ...tokens.nextHittiteTokens, ...tokens.additionalHittiteTokens] },
+    1103: { title: "Ritual of Tunnawiya", translation: "Thus speaks His Majesty, Mursili, the great king of Hatti. And to me the Sun-god, my lord, Ishtar, my lady, turned forth.", tokens: [...tokens.tunnawiyaTokens, ...tokens.tunnawiyaNextTokens, ...tokens.tunnawiyaAdditionalTokens] },
+    1104: { title: "Illuyanka Myth", translation: "When the Storm-god killed the serpent Illuyanka...", tokens: tokens.illuyankaTokens },
+    1105: { title: "Song of Kumarbi", translation: "Sing to the gods of Kumarbi...", tokens: tokens.kumarbiTokens },
+    1106: { title: "Annals of Mursili II", translation: "Thus speaks His Majesty Mursili, great king...", tokens: tokens.mursiliTokens },
+    1107: { title: "Apology of Hattusili III", translation: "Thus speaks Hattusili, great king...", tokens: tokens.hattusiliTokens },
   };
 
   const defaultData = {

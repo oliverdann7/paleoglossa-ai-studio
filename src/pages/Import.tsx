@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'motion/react';
 import { Upload, FileText, Link as LinkIcon, Type } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -6,11 +7,14 @@ export const Import = () => {
   const [activeTab, setActiveTab] = useState<'text' | 'file' | 'url'>('text');
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleImport = () => {
     // Make dummy import logic clear input
     setContent('');
     setTitle('');
+    setIsSuccess(true);
+    setTimeout(() => setIsSuccess(false), 3000);
   };
 
   return (
@@ -21,6 +25,16 @@ export const Import = () => {
           Bring in your own reading material to study. We currently support Greek, Hebrew, and Latin imports.
         </p>
       </div>
+
+      {isSuccess && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 p-4 bg-gold-500/10 text-gold-600 dark:text-gold-400 border border-gold-500/20 rounded-xl font-bold flex items-center justify-center gap-2"
+        >
+          Text imported successfully! You can find it in your Library.
+        </motion.div>
+      )}
 
       <div className="bg-white dark:bg-obsidian-900 border border-black/5 dark:border-white/5 rounded-3xl p-8 mb-8 shadow-sm">
         <div className="flex gap-4 mb-8 border-b border-black/5 dark:border-white/5 pb-4">

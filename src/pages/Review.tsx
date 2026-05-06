@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Brain, Check, RotateCcw } from 'lucide-react';
+import { Brain, Check, RotateCcw, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const dummyReviewQueue = [
@@ -62,7 +62,14 @@ export const Review = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-8 min-h-screen flex flex-col items-center text-obsidian-900 dark:text-vellum-100">
+    <div className="max-w-4xl mx-auto py-12 px-8 min-h-screen flex flex-col items-center text-obsidian-900 dark:text-vellum-100 relative">
+      <button 
+        onClick={() => setSessionComplete(true)}
+        className="absolute top-8 right-8 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 opacity-40 hover:opacity-100 transition-opacity"
+      >
+        <X className="w-6 h-6" />
+      </button>
+      
       <div className="w-full flex items-center justify-between mb-8">
         <div className="flex items-center gap-3 opacity-60 font-bold tracking-widest uppercase text-xs">
           <Brain className="w-4 h-4" />
