@@ -3,19 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Languages, Eye, Maximize2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LexDrawer } from '../components/LexDrawer';
-import { 
-  greekAlphabetTokens, greekBasicVocabTokens, greekTokens, nextGreekTokens,
-  hebrewAlphabetTokens, hebrewBasicVocabTokens, hebrewTokens, nextHebrewTokens,
-  egyptianAlphabetTokens, egyptianBasicVocabTokens, egyptianTokens, nextEgyptianTokens,
-  sanskritAlphabetTokens, sanskritBasicVocabTokens, sanskritTokens, nextSanskritTokens,
-  latinAlphabetTokens, latinBasicVocabTokens, latinTokens, nextLatinTokens, additionalLatinTokens,
-  koineGreekAlphabetTokens, koineGreekBasicVocabTokens, koineGreekTokens, nextKoineGreekTokens, additionalKoineGreekTokens,
-  aramaicAlphabetTokens, aramaicBasicVocabTokens, aramaicTokens, nextAramaicTokens, additionalAramaicTokens,
-  copticAlphabetTokens, copticBasicVocabTokens, copticTokens, nextCopticTokens, additionalCopticTokens,
-  akkadianAlphabetTokens, akkadianBasicVocabTokens, akkadianTokens, nextAkkadianTokens, additionalAkkadianTokens,
-  syriacAlphabetTokens, syriacBasicVocabTokens, syriacTokens, nextSyriacTokens, additionalSyriacTokens,
-  hittiteAlphabetTokens, hittiteBasicVocabTokens, hittiteTokens, nextHittiteTokens, additionalHittiteTokens
-} from '../data/tokens';
+import { getChapter } from '../data/chapters';
 
 export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const [selectedWord, setSelectedWord] = useState<any>(null);
@@ -24,78 +12,20 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const [focusMode, setFocusMode] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  const [currentTokens, setCurrentTokens] = useState<any[]>(() => {
-    switch (text?.id) {
-      case 101: return greekAlphabetTokens;
-      case 102: return greekBasicVocabTokens;
-      case 201: return hebrewAlphabetTokens;
-      case 202: return hebrewBasicVocabTokens;
-      case 301: return egyptianAlphabetTokens;
-      case 302: return egyptianBasicVocabTokens;
-      case 401: return sanskritAlphabetTokens;
-      case 402: return sanskritBasicVocabTokens;
-      case 501: return latinAlphabetTokens;
-      case 502: return latinBasicVocabTokens;
-      case 601: return koineGreekAlphabetTokens;
-      case 602: return koineGreekBasicVocabTokens;
-      case 701: return aramaicAlphabetTokens;
-      case 702: return aramaicBasicVocabTokens;
-      case 801: return copticAlphabetTokens;
-      case 802: return copticBasicVocabTokens;
-      case 901: return akkadianAlphabetTokens;
-      case 902: return akkadianBasicVocabTokens;
-      case 1001: return syriacAlphabetTokens;
-      case 1002: return syriacBasicVocabTokens;
-      case 1101: return hittiteAlphabetTokens;
-      case 1102: return hittiteBasicVocabTokens;
-      default:
-        if (text?.language === 'Hebrew') return hebrewTokens;
-        if (text?.language === 'Egyptian') return egyptianTokens;
-        if (text?.language === 'Sanskrit') return sanskritTokens;
-        if (text?.language === 'Latin') return latinTokens;
-        if (text?.language === 'Koine Greek') return koineGreekTokens;
-        if (text?.language === 'Aramaic') return aramaicTokens;
-        if (text?.language === 'Coptic') return copticTokens;
-        if (text?.language === 'Akkadian') return akkadianTokens;
-        if (text?.language === 'Syriac') return syriacTokens;
-        if (text?.language === 'Hittite') return hittiteTokens;
-        return greekTokens;
-    }
-  });
-
-  const [hasMore, setHasMore] = useState(text?.id ? (text.id % 100 > 2) : true);
+  const chapter = getChapter(text?.id || 104);
+  const [currentTokens, setCurrentTokens] = useState<any[]>(chapter.tokens);
+  const [hasMore, setHasMore] = useState(false); // Can be enhanced later to load more chapters
 
   let isRTL = text?.language === 'Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac';
   let fontClass = "font-greek";
   if (text?.language === 'Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac') fontClass = "font-hebrew";
   else if (text?.language === 'Egyptian' || text?.language === 'Sanskrit' || text?.language === 'Latin' || text?.language === 'Akkadian' || text?.language === 'Coptic' || text?.language === 'Hittite') fontClass = "font-sans";
 
-  let translationText = "In the beginning was the Word, and the Word was with God, and the Word was God.";
-  if (text?.language === 'Hebrew') {
-    translationText = "In the beginning God created the heaven and the earth.";
-  } else if (text?.language === 'Egyptian') {
-    translationText = "The jackal is upon the hunter.";
-  } else if (text?.language === 'Sanskrit') {
-    translationText = "I praise Agni, the high priest of the sacrifice, the divine ministrant.";
-  } else if (text?.language === 'Latin') {
-    translationText = "Arms and the man I sing.";
-  } else if (text?.language === 'Koine Greek') {
-    translationText = "Paul, a servant of Jesus Christ...";
-  } else if (text?.language === 'Aramaic') {
-    translationText = "Then Daniel spoke to the king...";
-  } else if (text?.language === 'Coptic') {
-    translationText = "Jesus said: He who finds...";
-  } else if (text?.language === 'Akkadian') {
-    translationText = "He who saw the deep...";
-  } else if (text?.language === 'Syriac') {
-    translationText = "In the beginning was the Word...";
-  } else if (text?.language === 'Hittite') {
-    translationText = "Thus speaks His Majesty, Mursili...";
-  }
+  let translationText = chapter.translation;
 
-  // Update translation for alphabets/basics
-  if (text?.id % 100 === 1) translationText = "The Alphabet";
-  if (text?.id % 100 === 2) translationText = "Basic Vocabulary and Sentences";
+  useEffect(() => {
+    setCurrentTokens(chapter.tokens);
+  }, [text?.id]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -109,18 +39,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
 
   const loadMore = () => {
     if (!hasMore) return;
-    setHasMore(false); // only 1 extra page for demo
-    if (text?.language === 'Hebrew') setCurrentTokens(prev => [...prev, ...nextHebrewTokens]);
-    else if (text?.language === 'Egyptian') setCurrentTokens(prev => [...prev, ...nextEgyptianTokens]);
-    else if (text?.language === 'Sanskrit') setCurrentTokens(prev => [...prev, ...nextSanskritTokens]);
-    else if (text?.language === 'Latin') setCurrentTokens(prev => [...prev, ...nextLatinTokens, ...additionalLatinTokens]);
-    else if (text?.language === 'Koine Greek') setCurrentTokens(prev => [...prev, ...nextKoineGreekTokens, ...additionalKoineGreekTokens]);
-    else if (text?.language === 'Aramaic') setCurrentTokens(prev => [...prev, ...nextAramaicTokens, ...additionalAramaicTokens]);
-    else if (text?.language === 'Coptic') setCurrentTokens(prev => [...prev, ...nextCopticTokens, ...additionalCopticTokens]);
-    else if (text?.language === 'Akkadian') setCurrentTokens(prev => [...prev, ...nextAkkadianTokens, ...additionalAkkadianTokens]);
-    else if (text?.language === 'Syriac') setCurrentTokens(prev => [...prev, ...nextSyriacTokens, ...additionalSyriacTokens]);
-    else if (text?.language === 'Hittite') setCurrentTokens(prev => [...prev, ...nextHittiteTokens, ...additionalHittiteTokens]);
-    else setCurrentTokens(prev => [...prev, ...nextGreekTokens]);
+    setHasMore(false); // just disable it for now since we load all at once per chapter
   };
 
   const getStatusColor = (status: string, isSelected: boolean) => {
