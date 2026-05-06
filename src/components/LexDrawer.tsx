@@ -11,14 +11,16 @@ interface LexDrawerProps {
 
 export const LexDrawer = ({ word, isOpen, onClose }: LexDrawerProps) => {
   // In a real app this would come from a database/context
-  const [proficiency, setProficiency] = useState<'new' | 'seen' | 'familiar' | 'known'>('new');
+  const [proficiency, setProficiency] = useState<string>('New');
 
   if (!word) return null;
 
   const proficiencyLevels = [
-    { id: 'seen', label: 'Seen Once', icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { id: 'familiar', label: 'Familiar', icon: Brain, color: 'text-gold-500', bg: 'bg-gold-500/10' },
-    { id: 'known', label: 'Known', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' }
+    { id: 'New', label: 'New', icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { id: 'Seen Once', label: 'Seen Once', icon: Eye, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+    { id: 'Learning', label: 'Learning', icon: Eye, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { id: 'Familiar', label: 'Familiar', icon: Brain, color: 'text-gold-500', bg: 'bg-gold-500/10' },
+    { id: 'Known', label: 'Known', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' }
   ] as const;
 
   return (

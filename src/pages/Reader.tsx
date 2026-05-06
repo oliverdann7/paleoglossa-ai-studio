@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Languages, Eye, Maximize2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FastWordPopup } from '../components/FastWordPopup';
 import { LexDrawer } from '../components/LexDrawer';
 import { getChapter } from '../data/chapters';
 
 export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const [selectedWord, setSelectedWord] = useState<any>(null);
+  const [panelWord, setPanelWord] = useState<any>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [fontSize, setFontSize] = useState(28);
   const [focusMode, setFocusMode] = useState(false);
@@ -14,7 +16,6 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
 
   const chapter = getChapter(text?.id || 104);
   const [currentTokens, setCurrentTokens] = useState<any[]>(chapter.tokens);
-  const [hasMore, setHasMore] = useState(false); // Can be enhanced later to load more chapters
 
   let isRTL = text?.language === 'Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac';
   let fontClass = "font-greek";
@@ -37,18 +38,16 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const loadMore = () => {
-    if (!hasMore) return;
-    setHasMore(false); // just disable it for now since we load all at once per chapter
-  };
-
   const getStatusColor = (status: string, isSelected: boolean) => {
-    if (isSelected) return "text-gold-600";
+    if (isSelected) return "text-gold-600 bg-black/5 dark:bg-white/5";
     switch(status) {
-      case 'Known': return "text-green-600 dark:text-green-400";
-      case 'Familiar': return "text-gold-600 dark:text-gold-400";
-      case 'Seen Once': return "text-blue-600 dark:text-blue-400";
-      default: return "text-obsidian-900 dark:text-vellum-100";
+      case 'New': return "text-blue-600 dark:text-blue-400 font-semibold";
+      case 'Seen Once': return "text-blue-400 dark:text-blue-300";
+      case 'Learning': return "text-amber-600 dark:text-amber-400";
+      case 'Familiar': return "text-green-600 dark:text-green-400";
+      case 'Known': return "text-obsidian-900 dark:text-vellum-100"; // clean reading
+      case 'Ignored': return "text-obsidian-900/40 dark:text-vellum-100/40"; // faded
+      default: return "text-blue-600 dark:text-blue-400"; // assume new by default
     }
   };
 
@@ -168,17 +167,6 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
             ))}
           </motion.div>
 
-          {hasMore && (
-            <div className="mt-16 flex justify-center">
-              <button
-                onClick={loadMore}
-                className="px-8 py-3 rounded-full border border-black/10 dark:border-white/10 text-xs font-bold uppercase tracking-widest hover:border-gold-500/50 hover:text-gold-600 transition-all duration-300"
-              >
-                Continue Reading
-              </button>
-            </div>
-          )}
-
           <AnimatePresence>
             {showTranslation && (
               <motion.div
@@ -201,6 +189,52 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
           </AnimatePresence>
         </div>
 
+        {/* Section Completion & Stats */}
+        <div className="mt-32 p-12 bg-white dark:bg-obsidian-900 rounded-[32px] border border-black/5 dark:border-white/5 shadow-xl">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
+            <div>
+              <h3 className="text-2xl font-serif font-bold mb-2">Section Completed</h3>
+              <p className="text-obsidian-900/60 dark:text-vellum-100/60">You've reached the end of this chapter.</p>
+            </div>
+            
+            <div className="flex gap-6">
+              <div className="flex flex-col items-center">
+                <span className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  {Math.round((currentTokens.filter(t => t.status === 'Known' || t.status === 'Familiar').length / currentTokens.length) * 100) || 0}%
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Known</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                  {currentTokens.filter(t => t.status === 'Learning').length}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Learning</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {currentTokens.filter(t => t.status === 'New' || !t.status).length}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">New</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-4">
+            <button className="px-6 py-3 bg-gold-500 text-vellum-50 rounded-full text-sm font-bold shadow-lg hover:bg-gold-600 transition-colors">
+              Continue to Next Section
+            </button>
+            <button className="px-6 py-3 bg-obsidian-900 text-vellum-50 dark:bg-vellum-100 dark:text-obsidian-950 rounded-full text-sm font-bold hover:opacity-90 transition-opacity">
+              Review New Words
+            </button>
+            <button 
+              onClick={() => setCurrentTokens(prev => prev.map(t => (!t.status || t.status === 'New' ? { ...t, status: 'Known' } : t)))}
+              className="px-6 py-3 border border-black/10 dark:border-white/10 rounded-full text-sm font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            >
+              Mark Remaining as Known
+            </button>
+          </div>
+        </div>
+
         {/* Navigation Controls */}
         <div className="mt-48 flex justify-between items-center pt-16 border-t border-black/5 dark:border-white/5">
           <button className="group flex items-center gap-3 text-xs font-bold text-obsidian-900/40 dark:text-vellum-100/40 hover:text-gold-600 transition-all uppercase tracking-widest">
@@ -218,11 +252,23 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
         </div>
       </main>
 
-      {/* Lexical Drawer */}
+      {/* Fast Word Popup */}
+      <FastWordPopup
+        word={selectedWord}
+        isOpen={!!selectedWord && !panelWord}
+        onClose={() => setSelectedWord(null)}
+        onOpenPanel={() => setPanelWord(selectedWord)}
+        onStatusChange={(wordId, status) => {
+          setCurrentTokens(prev => prev.map(t => t.id === wordId ? { ...t, status } : t));
+          if (selectedWord?.id === wordId) setSelectedWord({ ...selectedWord, status });
+        }}
+      />
+
+      {/* Lexical Deep Panel */}
       <LexDrawer 
-        word={selectedWord} 
-        isOpen={!!selectedWord} 
-        onClose={() => setSelectedWord(null)} 
+        word={panelWord} 
+        isOpen={!!panelWord} 
+        onClose={() => setPanelWord(null)} 
       />
 
       {/* Focus Mode Toggle (Floating) */}
