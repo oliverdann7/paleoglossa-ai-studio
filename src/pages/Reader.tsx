@@ -28,6 +28,81 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
     setCurrentTokens(chapter.tokens);
   }, [text?.id]);
 
+  const handleStatusChange = (wordId: number, status: string) => {
+    setCurrentTokens(prev => prev.map(t => t.id === wordId ? { ...t, status } : t));
+    if (selectedWord?.id === wordId) setSelectedWord((prev: any) => ({ ...prev, status }));
+  };
+
+  useEffect(() => {
+    if (selectedWord) {
+      const el = document.getElementById(`word-${selectedWord.id}`);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const isInView = (
+          rect.top >= 100 &&
+          rect.bottom <= (window.innerHeight - 200)
+        );
+        if (!isInView) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+  }, [selectedWord]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedWord && e.key === 'ArrowRight') {
+        const firstToken = currentTokens[0];
+        if (firstToken) setSelectedWord(firstToken);
+        return;
+      }
+      
+      if (selectedWord) {
+        const currentIndex = currentTokens.findIndex(t => t.id === selectedWord.id);
+        
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          if (currentIndex < currentTokens.length - 1) {
+            setSelectedWord(currentTokens[currentIndex + 1]);
+          }
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          if (currentIndex > 0) {
+            setSelectedWord(currentTokens[currentIndex - 1]);
+          }
+        } else if (e.key === 'Escape') {
+          setSelectedWord(null);
+          setPanelWord(null);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (!panelWord) setPanelWord(selectedWord);
+        } else if (['1', '2', '3', '4', '5'].includes(e.key)) {
+          e.preventDefault();
+          const statusMap: Record<string, string> = {
+            '1': 'New',
+            '2': 'Seen Once',
+            '3': 'Learning',
+            '4': 'Familiar',
+            '5': 'Known'
+          };
+          const newStatus = statusMap[e.key];
+          if (newStatus) {
+            handleStatusChange(selectedWord.id, newStatus);
+            // Auto advance
+            if (currentIndex < currentTokens.length - 1) {
+              setSelectedWord(currentTokens[currentIndex + 1]);
+            } else {
+              setSelectedWord(null);
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedWord, currentTokens, panelWord]);
+
   useEffect(() => {
     const handleScroll = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -44,7 +119,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
       case 'New': return "text-blue-600 dark:text-blue-400 font-semibold";
       case 'Seen Once': return "text-blue-400 dark:text-blue-300";
       case 'Learning': return "text-amber-600 dark:text-amber-400";
-      case 'Familiar': return "text-green-600 dark:text-green-400";
+      case 'Familiar': return "text-gold-600 dark:text-gold-400";
       case 'Known': return "text-obsidian-900 dark:text-vellum-100"; // clean reading
       case 'Ignored': return "text-obsidian-900/40 dark:text-vellum-100/40"; // faded
       default: return "text-blue-600 dark:text-blue-400"; // assume new by default
@@ -145,6 +220,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
             {currentTokens.map((token: any) => (
               <motion.span
                 key={token.id}
+                id={`word-${token.id}`}
                 variants={{
                   hidden: { opacity: 0, y: 10, filter: 'blur(2px)' },
                   visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, ease: "easeOut" } }
@@ -259,8 +335,19 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
         onClose={() => setSelectedWord(null)}
         onOpenPanel={() => setPanelWord(selectedWord)}
         onStatusChange={(wordId, status) => {
-          setCurrentTokens(prev => prev.map(t => t.id === wordId ? { ...t, status } : t));
-          if (selectedWord?.id === wordId) setSelectedWord({ ...selectedWord, status });
+          handleStatusChange(wordId, status);
+          
+          // Auto advance to next word on status change
+          const currentIndex = currentTokens.findIndex(t => t.id === wordId);
+          if (currentIndex !== -1 && currentIndex < currentTokens.length - 1) {
+            setTimeout(() => {
+              setSelectedWord(currentTokens[currentIndex + 1]);
+            }, 50);
+          } else {
+             setTimeout(() => {
+              setSelectedWord(null);
+            }, 50);
+          }
         }}
       />
 
@@ -269,6 +356,10 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
         word={panelWord} 
         isOpen={!!panelWord} 
         onClose={() => setPanelWord(null)} 
+        onStatusChange={(wordId, status) => {
+          handleStatusChange(wordId, status);
+          if (panelWord?.id === wordId) setPanelWord({ ...panelWord, status });
+        }}
       />
 
       {/* Focus Mode Toggle (Floating) */}

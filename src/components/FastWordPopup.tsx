@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, Brain, CheckCircle2, MoreHorizontal, Bookmark, BookOpen } from 'lucide-react';
+import { MoreHorizontal, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const FastWordPopup = ({ word, isOpen, onClose, onOpenPanel, onStatusChange }: { word: any, isOpen: boolean, onClose: () => void, onOpenPanel: () => void, onStatusChange: (wordId: number, status: string) => void }) => {

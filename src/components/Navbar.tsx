@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Library, BookOpen, GraduationCap, Settings, User, Moon, Sun } from 'lucide-react';
+import { Library, BookOpen, GraduationCap, Settings, User, Moon, Sun, Brain, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItemProps {
@@ -57,7 +57,9 @@ export const Navbar = ({
         <div className="text-[10px] font-bold text-obsidian-900/30 dark:text-vellum-100/30 uppercase tracking-[0.3em] mb-2 px-4">Main Menu</div>
         <NavItem icon={BookOpen} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} />
         <NavItem icon={Library} label="Library" isActive={activeTab === 'library'} onClick={() => onTabChange('library')} />
+        <NavItem icon={Brain} label="Review" isActive={activeTab === 'review'} onClick={() => onTabChange('review')} />
         <NavItem icon={GraduationCap} label="Vocabulary" isActive={activeTab === 'vocabulary'} onClick={() => onTabChange('vocabulary')} />
+        <NavItem icon={PlusCircle} label="Import" isActive={activeTab === 'import'} onClick={() => onTabChange('import')} />
       </div>
 
       <div className="flex flex-col gap-6">

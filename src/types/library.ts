@@ -34,6 +34,7 @@ export interface TextMetadata {
   knownCoverage?: number;
   unknownLemmas?: number;
   learningWords?: number;
+  tags?: string[];
 }
 
 export interface Chapter {
