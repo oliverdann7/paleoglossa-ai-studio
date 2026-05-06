@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export const ForgotPassword = ({ 
   onNavigate 
@@ -18,22 +19,11 @@ export const ForgotPassword = ({
     setLoading(true);
     setError(null);
     
-    if (import.meta.env.VITE_SUPABASE_URL === undefined) {
-      setTimeout(() => {
-        setSuccess(true);
-        setLoading(false);
-      }, 1000);
-      return;
-    }
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
+    try {
+      await sendPasswordResetEmail(auth, email);
       setSuccess(true);
+    } catch (err: any) {
+      setError(err.message);
     }
     setLoading(false);
   };

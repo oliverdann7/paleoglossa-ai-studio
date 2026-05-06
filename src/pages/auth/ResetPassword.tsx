@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Lock, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { confirmPasswordReset } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export const ResetPassword = ({ 
   onSuccess 
@@ -17,20 +18,18 @@ export const ResetPassword = ({
     setLoading(true);
     setError(null);
     
-    if (import.meta.env.VITE_SUPABASE_URL === undefined) {
-      setTimeout(() => onSuccess(), 1000);
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({
-      password: password
-    });
-
-    if (error) {
-      setError(error.message);
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const oobCode = urlParams.get('oobCode');
+      if (oobCode) {
+        await confirmPasswordReset(auth, oobCode, password);
+        onSuccess();
+      } else {
+        throw new Error('Invalid or missing action code (oobCode).');
+      }
+    } catch (err: any) {
+      setError(err.message);
       setLoading(false);
-    } else {
-      onSuccess();
     }
   };
 
