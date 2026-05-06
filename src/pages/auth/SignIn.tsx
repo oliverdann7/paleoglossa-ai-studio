@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, AlertCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { auth, googleProvider } from '@/lib/firebase';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 
 export const SignIn = ({ 
   onNavigate, 
@@ -20,37 +21,23 @@ export const SignIn = ({
     setLoading(true);
     setError(null);
     
-    // In a real app with valid keys, this would work.
-    // For preview purposes, we'll simulate success if keys are placeholders.
-    if (!import.meta.env.VITE_SUPABASE_URL) {
-      setTimeout(() => onSuccess(), 1000);
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
       onSuccess();
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    if (!import.meta.env.VITE_SUPABASE_URL) {
+    try {
+      await signInWithPopup(auth, googleProvider);
       onSuccess();
-      return;
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message);
     }
-    
-    // In a real application, you would configure Google Auth in the Supabase dashboard.
-    // Since it's not configured by default, calling signInWithOAuth will redirect 
-    // to a JSON error page. We simulate success here for preview purposes.
-    console.warn('Google provider is not enabled in Supabase. Simulating success for preview.');
-    onSuccess();
   };
 
   return (

@@ -8,16 +8,30 @@ import { Library } from './pages/Library';
 import { Vocabulary } from './pages/Vocabulary';
 import { Import } from './pages/Import';
 import { Review } from './pages/Review';
+import { Subscription } from './pages/Subscription';
 import { Onboarding } from './pages/Onboarding';
 import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { cn } from '@/lib/utils';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('landing');
   const [selectedText, setSelectedText] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser && activeTab === 'landing') {
+        setActiveTab('dashboard'); // could also be onboarding if new
+      }
+    });
+    return () => unsubscribe();
+  }, [activeTab]);
 
   useEffect(() => {
     // Check for password reset hash in URL
@@ -151,6 +165,18 @@ export default function App() {
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Import />
+            </motion.div>
+          )}
+
+          {activeTab === 'subscription' && (
+            <motion.div
+              key="subscription"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <Subscription />
             </motion.div>
           )}
 

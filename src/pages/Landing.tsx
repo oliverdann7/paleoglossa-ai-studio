@@ -44,7 +44,7 @@ export const Landing = ({ onEnter }: { onEnter: () => void }) => {
               <div className="flex flex-wrap gap-4">
                 <button 
                   onClick={onEnter}
-                  className="btn-hero flex items-center gap-2 group"
+                  className="btn-primary px-8 py-4 text-lg flex items-center gap-2 group"
                 >
                   Open texts
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

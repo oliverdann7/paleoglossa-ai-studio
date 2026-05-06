@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'createdAt', 'currentPlan']) &&
+             data.email is string && data.email.size() <= 256 &&
+             (data.get('displayName', '') is string) &&
+             data.createdAt == request.time &&
+             data.currentPlan in ['free', 'pro'];
+    }
+
+    function isValidUserUpdate(data) {
+      return (data.get('displayName', '') is string) &&
+             (data.get('currentPlan', 'free') in ['free', 'pro']);
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && 
+                    request.auth.uid == userId && 
+                    isValidId(userId) &&
+                    isValidUser(incoming());
+      
+      allow update: if isSignedIn() && 
+                    request.auth.uid == userId &&
+                    isValidUserUpdate(incoming()) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'currentPlan']) &&
+                    incoming().email == existing().email &&
+                    incoming().createdAt == existing().createdAt;
+    }
+
+    function isValidVocabItem(data, isCreate) {
+      return data.keys().hasAll(['userId', 'term', 'status', 'nextReview', 'interval', 'ease', 'createdAt', 'updatedAt']) &&
+             data.userId == request.auth.uid &&
+             data.term is string && data.term.size() <= 256 &&
+             (data.get('translit', '') is string) &&
+             (data.get('definition', '') is string) &&
+             (data.get('language', '') is string) &&
+             data.status in ["Seen Once", "Learning", "Familiar", "Known"] &&
+             data.nextReview is timestamp &&
+             data.interval is number &&
+             data.ease is number &&
+             (isCreate ? data.createdAt == request.time : data.createdAt == existing().createdAt) &&
+             data.updatedAt == request.time;
+    }
+
+    match /vocabulary/{itemId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() &&
+                    isValidId(itemId) &&
+                    isValidVocabItem(incoming(), true);
+      
+      allow update: if isSignedIn() &&
+                    existing().userId == request.auth.uid &&
+                    isValidVocabItem(incoming(), false) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'nextReview', 'interval', 'ease', 'updatedAt']);
+                    
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+  }
+}

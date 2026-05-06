@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Languages, Maximize2, ChevronRight, ChevronLeft, Search, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getChapters } from '../data/chapters';
+import { auth, db } from '@/lib/firebase';
+import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '@/lib/db';
 
 export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const [selectedWord, setSelectedWord] = useState<any>(null);
@@ -29,20 +32,38 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   }, [currentChapterIndex, text?.id]);
 
   useEffect(() => {
-    const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
-    let savedStatuses: Record<string, string> = {};
-    if (savedStatusesStr) {
-      try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
-    }
+    const fetchVocab = async () => {
+      let savedStatuses: Record<string, string> = {};
+      
+      if (auth.currentUser) {
+        try {
+          const vocabQuery = query(collection(db, 'vocabulary'), where('userId', '==', auth.currentUser.uid));
+          const snap = await getDocs(vocabQuery);
+          snap.forEach(d => {
+            const data = d.data();
+            savedStatuses[`${text?.language || 'Lang'}_${data.term}`] = data.status;
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
+        if (savedStatusesStr) {
+          try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
+        }
+      }
 
-    const initialTokens = chapter.tokens.map((t: any) => {
-      const key = `${text?.language || 'Lang'}_${t.lemma || t.text}`;
-      return { ...t, status: savedStatuses[key] || t.status };
-    });
-    
-    setCurrentTokens(initialTokens);
-    setScrollProgress(0);
-  }, [chapter, text?.id]);
+      const initialTokens = chapter.tokens.map((t: any) => {
+        const key = `${text?.language || 'Lang'}_${t.lemma || t.text}`;
+        return { ...t, status: savedStatuses[key] || t.status };
+      });
+      
+      setCurrentTokens(initialTokens);
+      setScrollProgress(0);
+    };
+
+    fetchVocab();
+  }, [chapter, text?.id, text?.language]);
 
   useEffect(() => {
     const handleScroll = (e: any) => {
@@ -82,7 +103,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedWord, currentTokens]);
 
-  const handleStatusChange = (wordId: number, status: string) => {
+  const handleStatusChange = async (wordId: number, status: string) => {
     let affectedToken: any = null;
     setCurrentTokens(prev => prev.map(t => {
       if (t.id === wordId) {
@@ -93,18 +114,40 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
     
     if (selectedWord?.id === wordId) setSelectedWord((prev: any) => ({ ...prev, status }));
 
-    setTimeout(() => {
-      if (affectedToken) {
+    if (affectedToken) {
+      const key = `${text?.language || 'Lang'}_${affectedToken.lemma || affectedToken.text}`;
+      
+      if (auth.currentUser) {
+        // Sync to Firestore
+        const termId = key.replace(/[^a-zA-Z0-9_\-]/g, '_').substring(0, 50); // safe doc ID
+        try {
+          const docRef = doc(db, 'vocabulary', `${auth.currentUser.uid}_${termId}`);
+          await setDoc(docRef, {
+            userId: auth.currentUser.uid,
+            term: affectedToken.lemma || affectedToken.text,
+            translit: affectedToken.translit || '',
+            definition: affectedToken.gloss || '',
+            language: text?.language || 'Unknown',
+            status: status,
+            nextReview: new Date(Date.now() + 86400000), // tomorrow
+            interval: 1,
+            ease: 2.5,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } catch (e) {
+          handleFirestoreError(e, OperationType.WRITE, 'vocabulary');
+        }
+      } else {
         const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
         let savedStatuses: Record<string, string> = {};
         if (savedStatusesStr) {
           try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
         }
-        const key = `${text?.language || 'Lang'}_${affectedToken.lemma || affectedToken.text}`;
         savedStatuses[key] = status;
         localStorage.setItem('user_vocab_statuses', JSON.stringify(savedStatuses));
       }
-    }, 0);
+    }
   };
 
   const getWordClasses = (token: any, isSelected: boolean) => {

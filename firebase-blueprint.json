@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "currentPlan": { "type": "string", "enum": ["free", "pro"] }
+      },
+      "required": ["email", "createdAt", "currentPlan"]
+    },
+    "VocabularyItem": {
+      "title": "Vocabulary Item",
+      "description": "A user's spaced repetition item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "term": { "type": "string" },
+        "translit": { "type": "string" },
+        "definition": { "type": "string" },
+        "language": { "type": "string" },
+        "status": { "type": "string", "enum": ["Seen Once", "Learning", "Familiar", "Known"] },
+        "nextReview": { "type": "string" },
+        "interval": { "type": "number" },
+        "ease": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "term", "status", "nextReview", "interval", "ease", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile data."
+    },
+    "vocabulary/{itemId}": {
+      "schema": { "$ref": "#/entities/VocabularyItem" },
+      "description": "User spaced repetition words."
+    }
+  }
+}
