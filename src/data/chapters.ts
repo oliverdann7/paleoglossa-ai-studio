@@ -6,7 +6,7 @@ export const getChapter = (textId: number): Chapter => {
     // Greek
     101: { title: "Greek Alphabet & Sounds", translation: "The Greek Alphabet", tokens: tokens.greekAlphabetTokens },
     102: { title: "Basic Greetings & Phrasing", translation: "Basic Greek Vocabulary", tokens: tokens.greekBasicVocabTokens },
-    103: { title: "Aesop's Fables", translation: "In the beginning was the Word, and the Word was with God, and the Word was God. He was in the beginning with God.", tokens: [...tokens.greekTokens, ...tokens.nextGreekTokens] }, // Fallback to John 1:1 for now
+    103: { title: "Aesop's Fables", translation: "A fox was hungry", tokens: tokens.aesopTokens },
     104: { title: "Gospel of John", translation: "In the beginning was the Word, and the Word was with God, and the Word was God. He was in the beginning with God.", tokens: [...tokens.greekTokens, ...tokens.nextGreekTokens] },
     105: { title: "Anabasis", translation: "Darius and Parysatis had two sons born to them, the elder Artaxerxes, the younger Cyrus.", tokens: tokens.anabasisTokens },
     106: { title: "Iliad", translation: "Sing, O goddess, the anger of Achilles son of Peleus...", tokens: tokens.iliadTokens },
@@ -17,22 +17,33 @@ export const getChapter = (textId: number): Chapter => {
     202: { title: "Basic Vocabulary", translation: "Basic Hebrew Vocabulary", tokens: tokens.hebrewBasicVocabTokens },
     203: { title: "Book of Ruth", translation: "In the days when the judges ruled, there was a famine in the land...", tokens: tokens.ruthTokens }, 
     204: { title: "Genesis", translation: "In the beginning God created the heaven and the earth.", tokens: [...tokens.genesisTokens, ...tokens.nextHebrewTokens] },
+    205: { title: "Psalms", translation: "Blessed is the man", tokens: tokens.psalmsTokens },
+    206: { title: "Isaiah", translation: "The vision of Isaiah", tokens: tokens.isaiahTokens },
+    207: { title: "Job", translation: "There was a man", tokens: tokens.jobTokens },
 
     // Egyptian
     301: { title: "Uniliteral Signs & Sounds", translation: "The Egyptian Alphabet", tokens: tokens.egyptianAlphabetTokens },
     302: { title: "Basic Offering Formula", translation: "Basic Egyptian Vocabulary", tokens: tokens.egyptianBasicVocabTokens },
     303: { title: "Shipwrecked Sailor", translation: "The jackal is upon the hunter in the field of the king making peace with the good god.", tokens: [...tokens.egyptianTokens, ...tokens.nextEgyptianTokens] },
+    304: { title: "The Tale of Sinuhe", translation: "The hereditary prince", tokens: tokens.sinuheTokens },
+    305: { title: "Great Hymn to the Aten", translation: "Adoration of the sun", tokens: tokens.atenHymnTokens },
+    306: { title: "Pyramid Texts", translation: "Words spoken", tokens: tokens.pyramidTextsTokens },
     
     // Sanskrit
     401: { title: "Devanagari Script & Matras", translation: "The Sanskrit Alphabet", tokens: tokens.sanskritAlphabetTokens },
     402: { title: "Hitopadesha (Selections)", translation: "Basic Sanskrit Vocabulary", tokens: tokens.sanskritBasicVocabTokens },
     403: { title: "Bhagavad Gita", translation: "I praise Agni, the high priest of the sacrifice, the divine ministrant, the invoker, the best bestower of treasure. He goes to the forest, there he sees a deer.", tokens: [...tokens.sanskritTokens, ...tokens.nextSanskritTokens] },
+    404: { title: "Ramayana", translation: "Asceticism", tokens: tokens.ramayanaTokens },
+    405: { title: "Upanishads", translation: "Om", tokens: tokens.upanishadsTokens },
+    406: { title: "The Rigveda", translation: "Agni", tokens: tokens.rigvedaTokens },
 
     // Latin
     501: { title: "Latin Alphabet & Pronunciation", translation: "The Latin Alphabet", tokens: tokens.latinAlphabetTokens },
     502: { title: "Vulgate", translation: "In the beginning God created the heavens and the earth.", tokens: tokens.latinVulgateTokens },
     503: { title: "Gallic War", translation: "All Gaul is divided into three parts.", tokens: tokens.gallicWarTokens },
-    506: { title: "Aeneid", translation: "Arms and the man I sing, who first from the shores of Troy, exiled by fate, came to Italy and Lavinian shores, much he was tossed both on land and on the deep, by the power of the gods, because of cruel Juno.", tokens: [...tokens.aeneidTokens, ...tokens.aeneidNextTokens, ...tokens.aeneidAdditionalTokens] },
+    504: { title: "Odes", translation: "Maecenas", tokens: tokens.odesHoraceTokens },
+    505: { title: "Metamorphoses", translation: "Into new forms", tokens: tokens.metamorphosesTokens },
+    506: { title: "Aeneid", translation: "Arms and the man I sing, who first from the shores of Troy, exiled by fate, came to Italy and Lavinian shores, much he was tossed both on land and on the deep, by the power of the gods, because of cruel Juno.", tokens: [...tokens.latinTokens, ...tokens.aeneidNextTokens, ...tokens.aeneidAdditionalTokens] },
     
     // Koine Greek
     601: { title: "Koine Alphabet & Sounds", translation: "The Koine Greek Alphabet", tokens: tokens.koineGreekAlphabetTokens },
@@ -41,18 +52,25 @@ export const getChapter = (textId: number): Chapter => {
     604: { title: "Gospel of Mark", translation: "The beginning of the gospel of Jesus Christ, the Son of God.", tokens: tokens.markTokens },
     605: { title: "Gospel of John", translation: "In the beginning was the Word, and the Word was with God, and the Word was God.", tokens: [...tokens.greekTokens, ...tokens.nextGreekTokens] },
     606: { title: "Epistles of Paul", translation: "Paul, a servant of Jesus Christ, called to be an apostle, set apart for the gospel of God... First, I thank my God through Jesus Christ concerning...", tokens: [...tokens.paulTokens, ...tokens.paulNextTokens, ...tokens.paulAdditionalTokens] },
+    607: { title: "Revelation", translation: "The Revelation", tokens: tokens.revelationTokens },
     
     // Aramaic
     701: { title: "Aramaic Alphabet", translation: "The Aramaic Alphabet", tokens: tokens.aramaicAlphabetTokens },
     702: { title: "Basic Vocabulary", translation: "Basic Aramaic Vocabulary", tokens: tokens.aramaicBasicVocabTokens },
     703: { title: "Elephantine Papyri", translation: "To our lord Bagoas, governor of Yehud...", tokens: tokens.elephantineTokens },
     704: { title: "Book of Daniel", translation: "Then Daniel spoke to the king, 'O king, live forever! Your kingdom is a kingdom of all ages, and your dominion in all generations.'", tokens: [...tokens.danielTokens, ...tokens.danielNextTokens, ...tokens.danielAdditionalTokens] },
+    705: { title: "Book of Ezra", translation: "In the year", tokens: tokens.ezraTokens },
+    706: { title: "Targum Onqelos", translation: "In ancient times", tokens: tokens.targumTokens },
+    707: { title: "Genesis Apocryphon", translation: "I", tokens: tokens.genesisApocryphonTokens },
 
     // Coptic
     801: { title: "Coptic Alphabet", translation: "The Coptic Alphabet", tokens: tokens.copticAlphabetTokens },
     802: { title: "Basic Vocabulary", translation: "Basic Coptic Vocabulary", tokens: tokens.copticBasicVocabTokens },
     803: { title: "Sayings of the Desert Fathers", translation: "Abba Anthony said...", tokens: tokens.desertFathersTokens },
     804: { title: "Gospel of Thomas", translation: "Jesus said: He who finds the interpretation of these words will not taste death. And he said to them, 'In that place men customarily...'", tokens: [...tokens.thomasTokens, ...tokens.thomasNextTokens, ...tokens.thomasAdditionalTokens] },
+    805: { title: "Sahidic New Testament", translation: "Paul", tokens: tokens.sahidicNtTokens },
+    806: { title: "Shenoute of Atripe", translation: "I", tokens: tokens.shenouteTokens },
+    807: { title: "Pistis Sophia", translation: "It happened", tokens: tokens.pistisSophiaTokens },
 
     // Akkadian
     901: { title: "Cuneiform Signs", translation: "The Akkadian Signs", tokens: tokens.akkadianAlphabetTokens },

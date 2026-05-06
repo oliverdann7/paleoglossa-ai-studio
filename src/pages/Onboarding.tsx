@@ -2,11 +2,15 @@ import { motion } from 'motion/react';
 
 const languages = [
   { id: 'hieroglyphs', glyph: '𓊹', label: 'Egyptian Hieroglyphs', desc: 'The sacred writing of the Pharaohs and ancient Egypt.' },
+  { id: 'akkadian', glyph: '𒀀', label: 'Akkadian', desc: 'The language of ancient Mesopotamia, written in cuneiform.' },
   { id: 'sanskrit', glyph: 'ॐ', label: 'Vedic Sanskrit', desc: 'The language of the Vedas, Upanishads, and ancient India.' },
-  { id: 'greek', glyph: 'Ω', label: 'Ancient Greek', desc: 'The language of Homer, Plato, and the New Testament.' },
+  { id: 'greek', glyph: 'Ω', label: 'Ancient Greek', desc: 'The language of Homer, Plato, and classical Athens.' },
+  { id: 'koine', glyph: 'Α', label: 'Koine Greek', desc: 'The common language of the Hellenistic world and New Testament.' },
   { id: 'hebrew', glyph: 'א', label: 'Biblical Hebrew', desc: 'The language of the Torah, Prophets, and ancient Israel.' },
+  { id: 'aramaic', glyph: 'ש', label: 'Aramaic', desc: 'The lingua franca of the ancient Near East.' },
   { id: 'latin', glyph: 'L', label: 'Classical Latin', desc: 'The language of Virgil, Cicero, and the Roman Empire.' },
   { id: 'syriac', glyph: 'ܐ', label: 'Classical Syriac', desc: 'The language of the Peshitta and Eastern Christianity.' },
+  { id: 'coptic', glyph: 'ⲁ', label: 'Coptic', desc: 'The final stage of the Egyptian language.' },
   { id: 'hittite', glyph: '𒀭', label: 'Hittite', desc: 'The oldest attested Indo-European language.' }
 ];
 

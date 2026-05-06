@@ -22,7 +22,7 @@ export const Import = () => {
       <div className="mb-12">
         <h1 className="text-4xl font-serif font-bold tracking-tight mb-4">Import Text</h1>
         <p className="text-obsidian-900/60 dark:text-vellum-100/60">
-          Bring in your own reading material to study. We currently support Greek, Hebrew, and Latin imports.
+            Bring in your own reading material to study. We currently support all texts written in Egyptian Hieroglyphs, Akkadian, Vedic Sanskrit, Ancient Greek, Koine Greek, Biblical Hebrew, Aramaic, Classical Latin, Classical Syriac, Coptic, and Hittite.
         </p>
       </div>
 
@@ -92,9 +92,17 @@ export const Import = () => {
              <div className="space-y-2">
               <label className="text-sm font-bold tracking-tight px-1">Language</label>
               <select className="w-full px-4 py-3 rounded-xl border border-black/10 dark:border-white/10 bg-transparent focus:outline-none focus:ring-2 focus:ring-gold-500/50 appearance-none">
+                <option value="egyptian">Egyptian Hieroglyphs</option>
+                <option value="akkadian">Akkadian</option>
+                <option value="sanskrit">Vedic Sanskrit</option>
                 <option value="greek">Ancient Greek</option>
+                <option value="koine">Koine Greek</option>
                 <option value="hebrew">Biblical Hebrew</option>
-                <option value="latin">Latin</option>
+                <option value="aramaic">Aramaic</option>
+                <option value="latin">Classical Latin</option>
+                <option value="syriac">Classical Syriac</option>
+                <option value="coptic">Coptic</option>
+                <option value="hittite">Hittite</option>
               </select>
             </div>
             <div className="space-y-2">
