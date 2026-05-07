@@ -1,37 +1,107 @@
-import { Text, TextSection, Sentence, Token, Corpus } from '../types/corpus';
+import { Text, TextSection, Sentence, Token, Corpus, SourceAttribution } from '../types/corpus';
+
+export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
+  'sblgnt-text': {
+    id: 'sblgnt-text',
+    sourceName: 'SBL Greek New Testament',
+    sourceUrl: 'https://sblgnt.com',
+    dataType: 'text',
+    licenseName: 'SBLGNT License',
+    licenseUrl: 'https://sblgnt.com/license/',
+    attributionText: 'The SBL Greek New Testament, edited by Michael W. Holmes. Copyright 2010 Society of Biblical Literature and Logos Bible Software.',
+    requiresAttribution: true,
+    allowsCommercialUse: false, // The license restricts commercial without permission
+    allowsModification: false, // Generally derivative works of the SBLGNT are not permitted without permission
+    shareAlike: false
+  },
+  'morphgnt-parsing': {
+    id: 'morphgnt-parsing',
+    sourceName: 'MorphGNT',
+    sourceUrl: 'https://github.com/morphgnt/sblgnt',
+    dataType: 'morphology',
+    licenseName: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+    attributionText: 'Morphological parsing by MorphGNT.',
+    requiresAttribution: true,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: true
+  },
+  'oshb-text-morph': {
+    id: 'oshb-text-morph',
+    sourceName: 'Open Scriptures Hebrew Bible',
+    sourceUrl: 'https://github.com/openscriptures/morphhb',
+    dataType: 'text',
+    licenseName: 'CC BY 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    attributionText: 'OSHB text and morphology provided by Open Scriptures.',
+    requiresAttribution: true,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false,
+    notes: 'Includes WLC text.'
+  },
+  'stepbible-lexicon': {
+    id: 'stepbible-lexicon',
+    sourceName: 'STEPBible Lexicon',
+    sourceUrl: 'https://www.stepbible.org/',
+    dataType: 'lexicon',
+    licenseName: 'CC BY 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    attributionText: 'Lexical data provided by STEPBible (Tyndale House).',
+    requiresAttribution: true,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false
+  },
+  'wlc-text': {
+    id: 'wlc-text',
+    sourceName: 'Westminster Leningrad Codex',
+    sourceUrl: 'https://tanach.us/',
+    dataType: 'text',
+    licenseName: 'Public Domain',
+    attributionText: 'The Westminster Leningrad Codex (Public Domain).',
+    requiresAttribution: false,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false
+  }
+};
 
 export const GREEK_CORPUS: Corpus = {
   id: 'SBLGNT',
-  name: 'SBL Greek New Testament',
+  title: 'SBL Greek New Testament',
   description: 'The SBL Greek New Testament, edited by Michael W. Holmes. Copyright 2010 Society of Biblical Literature and Logos Bible Software.',
   language: 'grc',
-  attribution: {
-    name: 'SBLGNT',
-    url: 'https://sblgnt.com',
-    license: 'SBLGNT License',
-    licenseUrl: 'https://sblgnt.com/license/'
-  }
+  sourceAttributionId: 'sblgnt-text',
+  licenseSummary: 'Non-Commercial, Attribution Required',
+  importStatus: 'partial',
+  attribution: [ATTRIBUTIONS['sblgnt-text'], ATTRIBUTIONS['morphgnt-parsing']]
 };
 
 export const HEBREW_CORPUS: Corpus = {
   id: 'OSHB',
-  name: 'Open Scriptures Hebrew Bible',
+  title: 'Open Scriptures Hebrew Bible',
   description: 'Open Scriptures Hebrew Bible aligned to morphological parsing and Strong’s numbers.',
   language: 'hbo',
-  attribution: {
-    name: 'Open Scriptures',
-    url: 'https://github.com/openscriptures/morphhb',
-    license: 'CC BY 4.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/'
-  }
+  sourceAttributionId: 'oshb-text-morph',
+  licenseSummary: 'CC BY 4.0',
+  importStatus: 'partial',
+  attribution: [ATTRIBUTIONS['oshb-text-morph'], ATTRIBUTIONS['wlc-text']]
 };
 
 export const TEXT_MATTHEW: Text = {
   id: 'Mt',
   corpusId: 'SBLGNT',
   title: 'ΚΑΤΑ ΜΑΘΘΑΙΟΝ',
+  canonicalRef: 'Matthew',
   author: 'Matthew',
   language: 'grc',
+  direction: 'ltr',
+  sourceAttributionId: 'sblgnt-text',
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: true,
   sectionsPreview: [
     { id: 'Mt-1', label: 'Chapter 1' }
   ]
@@ -41,8 +111,14 @@ export const TEXT_GENESIS: Text = {
   id: 'Gen',
   corpusId: 'OSHB',
   title: 'בְּרֵאשִׁית',
+  canonicalRef: 'Genesis',
   author: 'Moses',
   language: 'hbo',
+  direction: 'rtl',
+  sourceAttributionId: 'oshb-text-morph',
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
   sectionsPreview: [
     { id: 'Gen-1', label: 'Chapter 1' }
   ]
