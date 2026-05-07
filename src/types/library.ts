@@ -24,7 +24,7 @@ export interface Token {
 }
 
 export interface TextMetadata {
-  id: number;
+  id: number | string;
   title: string;
   author: string;
   language: string;
@@ -35,6 +35,7 @@ export interface TextMetadata {
   unknownLemmas?: number;
   learningWords?: number;
   tags?: string[];
+  sourceAttributionId?: string;
 }
 
 export interface Chapter {

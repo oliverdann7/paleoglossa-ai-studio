@@ -1,8 +1,16 @@
 export interface SourceAttribution {
-  name: string;
-  url: string;
-  license: string;
+  id: string;
+  sourceName: string;
+  sourceUrl: string;
+  dataType: 'text' | 'morphology' | 'lexicon' | 'translation' | 'transliteration' | 'metadata';
+  licenseName: string;
   licenseUrl?: string;
+  attributionText?: string;
+  requiresAttribution: boolean;
+  allowsCommercialUse: boolean;
+  allowsModification: boolean;
+  shareAlike: boolean;
+  notes?: string;
 }
 
 export interface Morphology {
@@ -62,15 +70,24 @@ export interface Text {
   id: string; // e.g. "Matthew"
   corpusId: string;
   title: string;
+  canonicalRef?: string;
   author?: string;
   language: string; // e.g., "grc"
+  direction?: 'ltr' | 'rtl';
+  sourceAttributionId?: string;
+  hasMorphology?: boolean;
+  hasTranslation?: boolean;
+  hasTransliteration?: boolean;
   sectionsPreview?: { id: string; label: string }[];
 }
 
 export interface Corpus {
   id: string; // e.g. "SBLGNT"
-  name: string;
+  title: string;
   description: string;
   language: string;
-  attribution: SourceAttribution;
+  sourceAttributionId?: string;
+  licenseSummary?: string;
+  importStatus?: string;
+  attribution?: SourceAttribution[]; // Kept for backwards compatibility for now if needed? The instructions say "sourceAttributionId", so maybe we maintain a global database of Attributions? For MVP we can just attach it here too alongside.
 }

@@ -49,8 +49,10 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
     const saved = localStorage.getItem(`reader_chapter_${text?.id}`);
-    return saved ? parseInt(saved, 10) || 0 : 0;
+    const parsed = saved ? parseInt(saved, 10) || 0 : 0;
+    return parsed < chapters.length ? parsed : 0;
   });
+  
   const chapter = chapters[currentChapterIndex] || chapters[0];
   const [currentTokens, setCurrentTokens] = useState<any[]>([]);
 
@@ -303,12 +305,29 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
                   Written during the {text?.era || "ancient period"}, tracking the development of cultural and theological understanding within its original audience.
                 </p>
               </div>
-              <div className="p-4 border-b border-bdr">
-                <div className="eyebrow text-gold mb-2">Why It Matters</div>
-                <p className="font-body text-[11.5px] leading-[1.55] text-ink2">
-                  Considered foundational literature, offering insight into narrative conventions and linguistic shifts over time in the {text?.language} corpus.
-                </p>
-              </div>
+              
+              {/* Attribution Section */}
+              {text?.sourceAttributionId && CorpusDB.getCorpusOverview(text.corpusId)?.attribution && (
+                <div className="p-4 border-b border-bdr">
+                  <div className="eyebrow text-gold mb-2">Source Attribution</div>
+                  <div className="flex flex-col gap-3">
+                    {CorpusDB.getCorpusOverview(text.corpusId)?.attribution?.map((attr) => (
+                      <div key={attr.id} className="text-[10px] leading-tight flex flex-col gap-1">
+                        <div className="font-bold text-ink2">{attr.sourceName}</div>
+                        {attr.attributionText && <div className="text-muted italic">{attr.attributionText}</div>}
+                        <div className="text-muted mt-0.5">
+                          License:{' '}
+                          {attr.licenseUrl ? (
+                            <a href={attr.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue">{attr.licenseName}</a>
+                          ) : (
+                            attr.licenseName
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="p-4 pt-3 flex justify-center border-t border-bdr bg-parch2 mt-auto">
                <span className="pill bg-jadexl text-jade border-jade/20 font-mono" style={{fontSize: '9px'}}>✓ Complete Survival</span>
@@ -327,10 +346,24 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="text-[11px] font-sans text-ink3 flex items-center">
-              Library <span className="mx-1 text-muted">›</span> 
+              <span className="cursor-pointer hover:underline" onClick={onBack}>Library</span> <span className="mx-1 text-muted">›</span> 
               <span className="font-medium text-ink truncate max-w-[120px] md:max-w-xs">{text?.title || "Unknown"}</span>
               <span className="mx-1 text-muted">›</span> 
-              <span className="truncate max-w-[80px]">{chapter.title}</span>
+              <div className="relative flex items-center">
+                <select
+                  value={currentChapterIndex}
+                  onChange={(e) => {
+                    setCurrentChapterIndex(parseInt(e.target.value, 10));
+                    setSelectedWord(null);
+                  }}
+                  className="bg-transparent border-none appearance-none outline-none focus:ring-0 pr-4 pl-1 py-0.5 hover:bg-black/5 rounded cursor-pointer truncate max-w-[150px] text-ink font-medium transition-colors"
+                >
+                  {chapters.map((chap: any, idx: number) => (
+                    <option key={chap.id} value={idx}>{chap.title}</option>
+                  ))}
+                </select>
+                <div className="absolute right-1 text-muted pointer-events-none text-[8px] opacity-70">▼</div>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -2,8 +2,8 @@ import { TextMetadata } from '../types/library';
 
 export const texts: TextMetadata[] = [
   // Real Open Corpora
-  { id: 'Mt' as any, title: "SBL Greek NT: Matthew", author: "Matthew", language: "Ancient Greek", level: "A2", era: "1st c. AD", image: "https://images.unsplash.com/photo-1544640808-32ca72ac7f37?auto=format&fit=crop&q=80&w=400", knownCoverage: 0, unknownLemmas: 0, learningWords: 0, tags: ['Primary Source', 'Real Text'] },
-  { id: 'Gen' as any, title: "OSHB: Genesis", author: "Moses (Trad.)", language: "Biblical Hebrew", level: "B1", era: "Ancient", image: "https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?auto=format&fit=crop&q=80&w=400", knownCoverage: 0, unknownLemmas: 0, learningWords: 0, tags: ['Primary Source', 'Real Text'] },
+  { id: 'Mt', title: "SBL Greek NT: Matthew", author: "Matthew", language: "Ancient Greek", level: "A2", era: "1st c. AD", image: "https://images.unsplash.com/photo-1544640808-32ca72ac7f37?auto=format&fit=crop&q=80&w=400", knownCoverage: 0, unknownLemmas: 0, learningWords: 0, tags: ['Primary Source', 'Real Text'], sourceAttributionId: 'sblgnt-text' },
+  { id: 'Gen', title: "OSHB: Genesis", author: "Moses (Trad.)", language: "Biblical Hebrew", level: "B1", era: "Ancient", image: "https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?auto=format&fit=crop&q=80&w=400", knownCoverage: 0, unknownLemmas: 0, learningWords: 0, tags: ['Primary Source', 'Real Text'], sourceAttributionId: 'oshb-text-morph' },
   
   // Greek
   { id: 101, title: "Greek Alphabet & Sounds", author: "Foundations", language: "Ancient Greek", level: "A1", era: "Ancient", image: "https://images.unsplash.com/photo-1544640808-32ca72ac7f37?auto=format&fit=crop&q=80&w=400", knownCoverage: 98, unknownLemmas: 1, learningWords: 0, tags: ['Fundamentals', 'Alphabet'] },
