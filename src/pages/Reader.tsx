@@ -114,19 +114,35 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   // Adjust handleKeyDown to match UI components
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!selectedWord && e.key === 'ArrowRight') {
-        const firstToken = currentTokens[0];
-        if (firstToken) setSelectedWord(firstToken);
+      if (!selectedWord) {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          if (currentChapterIndex < chapters.length - 1) setCurrentChapterIndex(currentChapterIndex + 1);
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          if (currentChapterIndex > 0) setCurrentChapterIndex(currentChapterIndex - 1);
+        }
         return;
       }
+      
       if (selectedWord) {
         const currentIndex = currentTokens.findIndex(t => t.id === selectedWord.id);
         if (e.key === 'ArrowRight') {
           e.preventDefault();
-          if (currentIndex < currentTokens.length - 1) setSelectedWord(currentTokens[currentIndex + 1]);
+          if (currentIndex < currentTokens.length - 1) {
+            setSelectedWord(currentTokens[currentIndex + 1]);
+          } else if (currentChapterIndex < chapters.length - 1) {
+            setCurrentChapterIndex(currentChapterIndex + 1);
+            setSelectedWord(null);
+          }
         } else if (e.key === 'ArrowLeft') {
           e.preventDefault();
-          if (currentIndex > 0) setSelectedWord(currentTokens[currentIndex - 1]);
+          if (currentIndex > 0) {
+            setSelectedWord(currentTokens[currentIndex - 1]);
+          } else if (currentChapterIndex > 0) {
+            setCurrentChapterIndex(currentChapterIndex - 1);
+            setSelectedWord(null);
+          }
         } else if (e.key === 'Escape') {
           setSelectedWord(null);
         }
@@ -134,7 +150,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedWord, currentTokens]);
+  }, [selectedWord, currentTokens, currentChapterIndex, chapters.length]);
 
   const handleStatusChange = async (wordId: number, status: string) => {
     let affectedToken: any = null;
