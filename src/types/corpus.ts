@@ -25,6 +25,7 @@ export interface Morphology {
   degree?: string;
   state?: string;      // Aramaic/Hebrew
   stem?: string;       // Hebrew binyan
+  root?: string;       // foreign root
 }
 
 export interface Lemma {

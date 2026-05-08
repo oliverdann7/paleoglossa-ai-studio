@@ -2,25 +2,53 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { texts } from '../data/texts';
+import { CorpusDB } from '../data/corpus';
+import { useKnowledge } from '../lib/hooks/useKnowledge';
+import { WordState } from '../lib/constants/wordStates';
 
 export const Library = ({ onSelectText }: { onSelectText: (text: any) => void }) => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const { knowledge } = useKnowledge();
   
-  // Specific filters requested: "All" + 4 languages + 3 difficulty bands
-  const mainFilters = ['All', 'Ancient Greek', 'Biblical Hebrew', 'Egyptian Hieroglyphs', 'Classical Latin', 'Beginner (A1-A2)', 'Intermediate (B1-B2)', 'Advanced (C1-C2)'];
+  const mainFilters = ['All', 'Ancient Greek', 'Biblical Hebrew', 'Classical Latin'];
 
-  const filteredTexts = texts.filter(t => {
-    let matchesFilter = false;
-    if (activeFilter === 'All') matchesFilter = true;
-    else if (activeFilter.includes('Beginner')) matchesFilter = t.level === 'A1' || t.level === 'A2';
-    else if (activeFilter.includes('Intermediate')) matchesFilter = t.level === 'B1' || t.level === 'B2';
-    else if (activeFilter.includes('Advanced')) matchesFilter = t.level === 'C1' || t.level === 'C2';
-    else matchesFilter = t.language === activeFilter;
+  const allTexts = CorpusDB.getTexts().map(t => {
+    // Calculate real stats for each text
+    const sections = t.sectionsPreview?.map(p => CorpusDB.getSection(p.id)).filter(Boolean) || [];
+    const allTokens = sections.flatMap(s => s?.sentences.flatMap(sent => sent.tokens) || []);
+    const totalWords = allTokens.length;
+    
+    if (totalWords === 0) return { ...t, percentKnown: 0, percentLearning: 0, totalWords: 0, level: 'A1' };
+
+    const knownWords = allTokens.filter(tok => knowledge[tok.lemma] === WordState.KNOWN).length;
+    const learningWords = allTokens.filter(tok => 
+      knowledge[tok.lemma] === WordState.LEARNING || 
+      knowledge[tok.lemma] === WordState.FAMILIAR
+    ).length;
+
+    return {
+      ...t,
+      percentKnown: Math.round((knownWords / totalWords) * 100),
+      percentLearning: Math.round((learningWords / totalWords) * 100),
+      totalWords,
+      level: t.id === 'Jn-1' ? 'A1' : t.id === 'Gen' ? 'A2' : 'B1' // Demo levels
+    };
+  });
+
+  const filteredTexts = allTexts.filter(t => {
+    let matchesFilter = true;
+    if (activeFilter !== 'All') {
+      const langMap: Record<string, string> = {
+        'Ancient Greek': 'grc',
+        'Biblical Hebrew': 'hbo',
+        'Classical Latin': 'lat'
+      };
+      matchesFilter = t.language === langMap[activeFilter];
+    }
 
     const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          t.author.toLowerCase().includes(searchQuery.toLowerCase());
+                          t.author?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -35,7 +63,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
       <header className="mb-10">
         <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">The Library</h2>
         <p className="font-body text-[15px] italic text-ink2">
-          Eighty-three texts across four languages — from your first ten verses to the Septuagint
+          Ancient wisdom, now familiar. Every word tracked, every text a milestone.
         </p>
       </header>
 
@@ -44,7 +72,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input 
             type="text" 
-            placeholder="Search texts or authors..." 
+            placeholder="Search by title or author..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white border border-bdr rounded-[12px] text-sm font-sans focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-colors shadow-sm"
@@ -77,39 +105,49 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: i * 0.03, duration: 0.3 }}
              onClick={() => onSelectText(text)}
-             className="card p-6 flex flex-col justify-between cursor-pointer group hover:border-blue/30 transition-colors min-h-[180px]"
+             className="card p-6 flex flex-col justify-between cursor-pointer group hover:border-blue/30 transition-all min-h-[220px]"
            >
              <div>
                <div className="flex justify-between items-start mb-2">
-                 <h4 className="text-[16px] font-serif font-medium text-ink leading-snug pr-4">{text.title}</h4>
-                 <span className={cn("pill flex-shrink-0 font-medium", getCefrClass(text.level))}>{text.level}</span>
+                 <h4 className="text-[18px] font-serif font-medium text-ink leading-snug pr-4">{text.title}</h4>
+                 <span className={cn("pill flex-shrink-0 font-bold", getCefrClass(text.level))}>{text.level}</span>
                </div>
                
-               <div className="text-[10px] text-ink3 font-sans mb-3">
-                 {text.author} <span className="mx-1 opacity-50">•</span> {text.era} <span className="mx-1 opacity-50">•</span> {text.language}
+               <div className="text-[10px] text-ink3 font-sans mb-4 uppercase tracking-[0.1em] font-bold">
+                 {text.author} <span className="mx-1 opacity-50">•</span> {text.language === 'grc' ? 'Ancient Greek' : text.language === 'hbo' ? 'Biblical Hebrew' : 'Classical Latin'}
                </div>
 
-               <p className="text-[13.5px] font-body italic text-ink2 line-clamp-2 leading-relaxed mb-4">
-                 A foundational text from the {text.era} for students of {text.language}, exploring themes of {text.tags?.[0]?.toLowerCase() || 'history'} and {text.tags?.[1]?.toLowerCase() || 'literature'}.
-               </p>
+               {/* Stats & Progress Bars */}
+               <div className="space-y-4 mb-6">
+                 <div className="flex items-center justify-between text-[11px] font-bold">
+                    <span className="text-zinc-500 uppercase tracking-tight">{text.totalWords} Total Words</span>
+                    <span className="text-blue">{text.percentKnown}% Known</span>
+                 </div>
+                 <div className="flex h-1.5 w-full bg-parch3 rounded-full overflow-hidden">
+                    <div className="bg-blue h-full transition-all duration-500" style={{ width: `${text.percentKnown}%` }} />
+                    <div className="bg-amber h-full transition-all duration-500 opacity-60" style={{ width: `${text.percentLearning}%` }} />
+                 </div>
+                 <div className="flex gap-4">
+                    <div className="flex flex-col">
+                       <span className="text-[14px] font-bold text-ink leading-none">{text.percentKnown}%</span>
+                       <span className="text-[8px] uppercase font-bold text-muted tracking-widest">Known</span>
+                    </div>
+                    <div className="flex flex-col">
+                       <span className="text-[14px] font-bold text-amber leading-none">{text.percentLearning}%</span>
+                       <span className="text-[8px] uppercase font-bold text-muted tracking-widest">Learning</span>
+                    </div>
+                 </div>
+               </div>
              </div>
 
-             <div className="flex items-end justify-between border-t border-bdr/40 pt-4 mt-auto">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-muted">Length</span>
-                  <span className="text-xs text-ink3 font-mono">14 Caps · ~2h</span>
-                </div>
-                <div className="text-[13px] font-bold text-blue font-sans group-hover:translate-x-1 transition-transform">
-                  {text.knownCoverage ? `${text.knownCoverage}% read →` : 'Start →'}
+             <div className="flex items-end justify-between pt-4 mt-auto">
+                <span className="text-[11px] font-body italic text-muted">Original Scripture</span>
+                <div className="bg-blue/5 text-blue px-3 py-1 rounded-full text-[11px] font-bold group-hover:bg-blue group-hover:text-white transition-all">
+                  Read Text
                 </div>
              </div>
            </motion.div>
         ))}
-        {filteredTexts.length === 0 && (
-          <div className="col-span-full py-12 text-center text-ink3 font-body italic">
-            No texts found matching your criteria.
-          </div>
-        )}
       </div>
     </div>
   );
