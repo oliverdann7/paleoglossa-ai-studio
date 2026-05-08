@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from './lib/hooks/useAuth';
 import { Navbar } from './components/Navbar';
 import { Landing } from './pages/Landing';
 import { Dashboard } from './pages/Dashboard';
@@ -17,6 +18,25 @@ import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { seedKnowledge } from './lib/data/seeding';
+
+function RequireAuth() {
+  const { state } = useAuth();
+  const location = useLocation();
+
+  if (state === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-parch2">
+        <div className="text-[32px] font-serif text-muted animate-pulse">Paleoglossa</div>
+      </div>
+    );
+  }
+
+  if (state === 'unauthenticated') {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  }
+
+  return <Outlet />;
+}
 
 function AppLayout() {
   return (
@@ -50,21 +70,23 @@ export default function App() {
         <Route path="/onboarding" element={<Onboarding />} />
 
         {/* App Core (Authenticated) */}
-        <Route path="/app" element={<AppLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="library" element={<Library />} />
-          <Route path="reader/:textId" element={<Reader />} />
-          <Route path="vocabulary" element={<Vocabulary />} />
-          <Route path="review" element={<Review />} />
-          <Route path="statistics" element={<Statistics />} />
-          <Route path="notes" element={<div className="p-8">Notes coming soon</div>} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="subscription" element={<Subscription />} />
-        </Route>
+        <Route element={<RequireAuth />}>
+          <Route path="/app" element={<AppLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="library" element={<Library />} />
+            <Route path="reader/:textId" element={<Reader />} />
+            <Route path="vocabulary" element={<Vocabulary />} />
+            <Route path="review" element={<Review />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="notes" element={<div className="p-8">Notes coming soon</div>} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="subscription" element={<Subscription />} />
+          </Route>
 
-        {/* Admin */}
-        <Route path="/admin/import" element={<AppLayout />}>
-          <Route index element={<Import />} />
+          {/* Admin */}
+          <Route path="/admin/import" element={<AppLayout />}>
+            <Route index element={<Import />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
