@@ -127,7 +127,7 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
             <div className="flex items-center gap-3">
               <span className="text-[14px] font-body text-ink3">{continueText.author}</span>
               <span className="w-1 h-1 rounded-full bg-bdr" />
-              <span className="text-[14px] font-mono text-muted uppercase tracking-widest">{continueText.language === 'grc' ? 'Ancient Greek':'Biblical Hebrew'}</span>
+              <span className="text-[14px] font-mono text-muted uppercase tracking-widest">{continueText.language === 'grc' ? 'Ancient Greek' : continueText.language === 'grc-koine' ? 'Koine Greek' : continueText.language === 'hbo' ? 'Biblical Hebrew' : 'Classical Latin'}</span>
             </div>
           </div>
           
@@ -160,21 +160,27 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
           <h3 className="text-2xl font-serif text-ink font-semibold">Vocabulary Spotlight</h3>
           <button onClick={() => onNavigate?.('vocabulary')} className="text-[12px] font-bold text-blue hover:underline">View All Vocabulary</button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {recentVocab.map((w, i) => (
-            <div key={i} className="card p-4 border-bdr/40 hover:scale-[1.02] transition-transform shadow-sm">
-               <div className="text-[18px] font-serif text-ink mb-1 truncate" dir={w.lemma.match(/[א-ת]/) ? 'rtl' : 'ltr'}>
-                 {w.lemma}
-               </div>
-               <div 
-                 className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full inline-block"
-                 style={{ backgroundColor: STATE_COLORS[w.state as WordState].bg, color: STATE_COLORS[w.state as WordState].text }}
-               >
-                 {STATE_LABELS[w.state as WordState]}
-               </div>
-            </div>
-          ))}
-        </div>
+        {recentVocab.length === 0 ? (
+          <div className="card p-8 border-dashed border-2 border-bdr bg-parch2/50 text-center">
+            <p className="font-body text-[14px] italic text-ink3">No vocabulary saved yet. Read texts and mark words to build your lexicon.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {recentVocab.map((w, i) => (
+              <div key={i} className="card p-4 border-bdr/40 hover:scale-[1.02] transition-transform shadow-sm">
+                 <div className="text-[18px] font-serif text-ink mb-1 truncate" dir={w.lemma.match(/[א-ת]/) ? 'rtl' : 'ltr'}>
+                   {w.lemma}
+                 </div>
+                 <div 
+                   className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full inline-block"
+                   style={{ backgroundColor: STATE_COLORS[w.state as WordState].bg, color: STATE_COLORS[w.state as WordState].text }}
+                 >
+                   {STATE_LABELS[w.state as WordState]}
+                 </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
     </div>

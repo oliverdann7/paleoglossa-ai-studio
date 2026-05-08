@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Search, Library as LibraryIcon } from 'lucide-react';
+import { Search, Library as LibraryIcon, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorpusDB } from '../data/corpus';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
@@ -12,7 +12,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
   const [minKnown, setMinKnown] = useState(0);
   const { getWordInfo } = useKnowledge();
   
-  const mainFilters = ['All', 'Ancient Greek', 'Biblical Hebrew', 'Classical Latin'];
+  const mainFilters = ['All', 'Ancient Greek', 'Koine Greek', 'Biblical Hebrew', 'Classical Latin'];
 
   const allTexts = useMemo(() => {
     const builtIn = CorpusDB.getTexts();
@@ -70,6 +70,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
     if (activeFilter !== 'All') {
       const langMap: Record<string, string> = {
         'Ancient Greek': 'grc',
+        'Koine Greek': 'grc-koine',
         'Biblical Hebrew': 'hbo',
         'Classical Latin': 'lat'
       };
@@ -205,7 +206,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
                </div>
                
                <div className="text-[10px] text-ink3 font-sans mb-4 uppercase tracking-[0.1em] font-bold">
-                 {text.author} <span className="mx-1 opacity-50">•</span> {text.language === 'grc' ? 'Ancient Greek' : text.language === 'hbo' ? 'Biblical Hebrew' : 'Classical Latin'}
+                 {text.author} <span className="mx-1 opacity-50">•</span> {text.language === 'grc' ? 'Ancient Greek' : text.language === 'grc-koine' ? 'Koine Greek' : text.language === 'hbo' ? 'Biblical Hebrew' : 'Classical Latin'}
                </div>
 
                {/* Knowledge bars at a glance */}
@@ -251,9 +252,3 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
     </div>
   );
 };
-
-const Play = ({ className }: { className?: string }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M8 5v14l11-7z" />
-  </svg>
-);

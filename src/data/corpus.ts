@@ -55,12 +55,12 @@ export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
   }
 };
 
-export const GREEK_CORPUS: Corpus = { id: 'SBLGNT', title: 'SBL Greek New Testament', description: 'The SBL Greek New Testament', language: 'grc', sourceAttributionId: 'sblgnt-text', licenseSummary: 'Non-Commercial', importStatus: 'partial', attribution: [ATTRIBUTIONS['sblgnt-text'], ATTRIBUTIONS['morphgnt-parsing']] };
+export const GREEK_CORPUS: Corpus = { id: 'SBLGNT', title: 'SBL Greek New Testament', description: 'The SBL Greek New Testament', language: 'grc-koine', sourceAttributionId: 'sblgnt-text', licenseSummary: 'Non-Commercial', importStatus: 'partial', attribution: [ATTRIBUTIONS['sblgnt-text'], ATTRIBUTIONS['morphgnt-parsing']] };
 export const HEBREW_CORPUS: Corpus = { id: 'OSHB', title: 'Open Scriptures Hebrew Bible', description: 'Hebrew Bible', language: 'hbo', sourceAttributionId: 'oshb-text-morph', licenseSummary: 'CC BY 4.0', importStatus: 'partial', attribution: [ATTRIBUTIONS['oshb-text-morph'], ATTRIBUTIONS['wlc-text']] };
 export const LATIN_CORPUS: Corpus = { id: 'LATIN_CLASSIC', title: 'Classical Latin Corpus', description: 'Ancient Latin texts', language: 'lat', sourceAttributionId: 'perseus-texts', licenseSummary: 'CC BY-SA 3.0', importStatus: 'partial', attribution: [ATTRIBUTIONS['perseus-texts']] };
 
 export const TEXT_JOHN_1: Text = {
-  id: 'Jn-1', corpusId: 'SBLGNT', title: 'ΚΑΤΑ ΙΩΑΝΝΗΝ', canonicalRef: 'John 1', author: 'John', language: 'grc', direction: 'ltr', hasMorphology: true, hasTranslation: true, hasTransliteration: true,
+  id: 'Jn-1', corpusId: 'SBLGNT', title: 'ΚΑΤΑ ΙΩΑΝΝΗΝ', canonicalRef: 'John 1', author: 'John', language: 'grc-koine', direction: 'ltr', hasMorphology: true, hasTranslation: true, hasTransliteration: true,
   sectionsPreview: [{ id: 'Jn-1-1', label: 'John 1' }]
 };
 

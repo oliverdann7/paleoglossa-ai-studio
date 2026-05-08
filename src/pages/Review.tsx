@@ -33,7 +33,7 @@ export const Review = ({ onBack }: { onBack: () => void }) => {
 
   // 1. Identify words due for review
   const queue = useMemo(() => {
-    const words = Object.entries(knowledge).filter(([_, info]) => {
+    const words = Object.entries(knowledge).filter(([, info]) => {
       const i = typeof info === 'object' ? (info as any) : { state: info };
       if (i.state !== WordState.LEARNING && i.state !== WordState.FAMILIAR) return false;
       if (!i.srs?.nextReview) return true;
@@ -47,6 +47,7 @@ export const Review = ({ onBack }: { onBack: () => void }) => {
       const types = [CardType.FORM_TO_MEANING, CardType.MEANING_TO_FORM, CardType.LEMMA];
       // Dummy search for a text that contains this lemma to provide context for cloze if possible
       // In a real app we'd have a reverse index. For demo, we'll just stick to simpler ones or fake context.
+      // eslint-disable-next-line react-hooks/purity
       const type = types[Math.floor(Math.random() * types.length)];
       
       // Get gloss from corpus (fake lookup)
@@ -72,6 +73,7 @@ export const Review = ({ onBack }: { onBack: () => void }) => {
         answer,
         morphHint: "verb, preset active"
       } as ReviewCard;
+      // eslint-disable-next-line react-hooks/purity
     }).sort(() => Math.random() - 0.5);
   }, [knowledge]);
 
