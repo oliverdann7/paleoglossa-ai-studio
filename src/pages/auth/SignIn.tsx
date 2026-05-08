@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, AlertCircle } from 'lucide-react';
 import { auth, googleProvider } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 
-export const SignIn = ({ 
-  onNavigate, 
-  onSuccess 
-}: { 
-  onNavigate: (page: string) => void,
-  onSuccess: () => void 
-}) => {
+export const SignIn = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,7 +19,7 @@ export const SignIn = ({
     
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      onSuccess();
+      navigate('/app');
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -33,7 +29,7 @@ export const SignIn = ({
   const handleGoogleSignIn = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      onSuccess();
+      navigate('/app');
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/popup-blocked') {
@@ -146,7 +142,7 @@ export const SignIn = ({
                   </label>
                   <button 
                     type="button"
-                    onClick={() => onNavigate('reset-password')}
+                    onClick={() => navigate('/auth/reset-password')}
                     className="text-xs font-bold text-gold-600 hover:text-gold-500 transition-colors"
                   >
                     Forgot?
@@ -180,7 +176,7 @@ export const SignIn = ({
             <p className="mt-8 text-center text-sm text-obsidian-900/60 dark:text-vellum-100/60">
               Don't have an account?{' '}
               <button 
-                onClick={() => onNavigate('signup')}
+                onClick={() => navigate('/auth/signup')}
                 className="font-bold text-obsidian-900 dark:text-vellum-100 hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
               >
                 Sign Up

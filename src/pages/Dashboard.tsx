@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 import { CorpusDB } from '../data/corpus';
@@ -15,7 +16,8 @@ const StatCard = ({ label, value }: { label: string, value: string | number }) =
   </div>
 );
 
-export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: any) => void, onNavigate?: (path: string) => void }) => {
+export const Dashboard = () => {
+  const navigate = useNavigate();
   const { knowledge, stats } = useKnowledge();
   const hour = new Date().getHours();
   
@@ -106,7 +108,7 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
             <p className="font-body text-bluexl/70 text-[16px]">Words ready for reinforcement.</p>
           </div>
           <button 
-            onClick={() => onNavigate?.('review')} 
+            onClick={() => navigate('/app/review')} 
             disabled={reviewCount === 0}
             className="relative z-10 w-full bg-white text-blue py-3 rounded-2xl font-bold font-sans text-[14px] hover:shadow-lg transition-all active:scale-95 disabled:opacity-80 disabled:cursor-not-allowed"
           >
@@ -115,7 +117,7 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
         </div>
 
         {/* Continue Reading Hero */}
-        <div className="lg:col-span-2 card p-8 group cursor-pointer flex flex-col justify-between min-h-[300px] hover:border-blue/30 transition-all border-2 border-transparent" onClick={() => onSelectText(continueText)}>
+        <div className="lg:col-span-2 card p-8 group cursor-pointer flex flex-col justify-between min-h-[300px] hover:border-blue/30 transition-all border-2 border-transparent" onClick={() => navigate(`/app/reader/${continueText.id}`)}>
           <div>
             <div className="flex justify-between items-start mb-4">
               <span className="eyebrow text-gold font-bold">Resume Reading</span>
@@ -147,7 +149,7 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
 
       {/* Global Progress Grid */}
       <h3 className="eyebrow mb-6 font-bold text-ink3">Overall Progress</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14 cursor-pointer" onClick={() => onNavigate?.('statistics')}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14 cursor-pointer" onClick={() => navigate('/app/statistics')}>
         <StatCard label="Words Known" value={knownCount.toLocaleString()} />
         <StatCard label="Words Learning" value={learningCount.toLocaleString()} />
         <StatCard label="Total Words Read" value={(stats.readToday + 12400).toLocaleString()} />
@@ -158,7 +160,7 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
       <div className="mb-10">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-serif text-ink font-semibold">Vocabulary Spotlight</h3>
-          <button onClick={() => onNavigate?.('vocabulary')} className="text-[12px] font-bold text-blue hover:underline">View All Vocabulary</button>
+          <button onClick={() => navigate('/app/vocabulary')} className="text-[12px] font-bold text-blue hover:underline">View All Vocabulary</button>
         </div>
         {recentVocab.length === 0 ? (
           <div className="card p-8 border-dashed border-2 border-bdr bg-parch2/50 text-center">

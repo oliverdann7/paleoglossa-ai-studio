@@ -1,7 +1,10 @@
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, GraduationCap, Sparkles } from 'lucide-react';
 
-export const Landing = ({ onEnter }: { onEnter: () => void }) => {
+export const Landing = () => {
+  const navigate = useNavigate();
+  const onEnter = () => navigate('/auth/login');
   return (
     <div className="relative min-h-screen bg-parch text-ink font-sans overflow-hidden paper-texture">
       <header className="absolute top-0 left-0 w-full p-8 flex justify-between items-center z-50">

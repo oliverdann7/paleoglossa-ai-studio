@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Search, Library as LibraryIcon, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -6,7 +7,8 @@ import { CorpusDB } from '../data/corpus';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
 import { WordState } from '../lib/constants/wordStates';
 
-export const Library = ({ onSelectText }: { onSelectText: (text: any) => void }) => {
+export const Library = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [minKnown, setMinKnown] = useState(0);
@@ -109,7 +111,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
          <h3 className="eyebrow mb-4 opacity-50">Continue Reading</h3>
          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
             {recentTexts.map((text, i) => (
-               <div key={i} className="min-w-[340px] card bg-parch2/30 border-bdr/40 p-6 flex items-center justify-between group cursor-pointer hover:border-blue/30 transition-all" onClick={() => onSelectText(text)}>
+               <div key={i} className="min-w-[340px] card bg-parch2/30 border-bdr/40 p-6 flex items-center justify-between group cursor-pointer hover:border-blue/30 transition-all" onClick={() => navigate(`/app/reader/${text.id}`)}>
                   <div className="max-w-[200px]">
                      <h4 className="text-[17px] font-serif font-bold text-ink truncate mb-1">{text.title}</h4>
                      <div className="text-[10px] uppercase font-bold text-muted tracking-widest">{text.author}</div>
@@ -193,7 +195,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
              initial={{ opacity: 0, y: 15 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: i * 0.03, duration: 0.3 }}
-             onClick={() => onSelectText(text)}
+             onClick={() => navigate(`/app/reader/${text.id}`)}
              className={cn("card p-6 flex flex-col justify-between cursor-pointer group hover:border-blue/30 transition-all min-h-[240px]", text.isImported && "border-blue/10 bg-blue/[0.01]")}
            >
              <div>

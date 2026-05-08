@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,7 +24,9 @@ interface ReviewCard {
   morphHint?: string;
 }
 
-export const Review = ({ onBack }: { onBack: () => void }) => {
+export const Review = () => {
+  const navigate = useNavigate();
+  const onBack = () => navigate('/app');
   const { knowledge, updateWordSRS } = useKnowledge();
   const [isStarted, setIsStarted] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);

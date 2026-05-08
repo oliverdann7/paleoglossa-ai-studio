@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Settings2, Trash2, X, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useKnowledge, WordInfo } from '../lib/hooks/useKnowledge';
 import { WordState, STATE_LABELS } from '../lib/constants/wordStates';
 
-export const Vocabulary = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
+export const Vocabulary = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('All');
   const [showSettings, setShowSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,7 +82,7 @@ export const Vocabulary = ({ onNavigate }: { onNavigate?: (tab: string) => void 
             <Settings2 className="w-4 h-4" />
           </button>
           <button 
-            onClick={() => onNavigate && onNavigate('review')}
+            onClick={() => navigate('/app/review')}
             className="btn-primary px-6 py-2.5"
           >
             Start Review
