@@ -23,6 +23,15 @@
   --color-goldxl: #FEF0D8;
   --color-rubyxl: #FDEAE8;
 
+  /* Auth page token aliases (vellum = parchment, obsidian = dark ink) */
+  --color-vellum-50: #FDFBF7;
+  --color-vellum-100: #F8F3E8;
+  --color-obsidian-900: #1A1410;
+  --color-obsidian-950: #0D0A07;
+  --color-gold-400: #D4AF65;
+  --color-gold-500: #B8842A;
+  --color-gold-600: #9A6E22;
+
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'Crimson Pro', Georgia, serif;
