@@ -8,6 +8,7 @@ import { Library } from './pages/Library';
 import { Vocabulary } from './pages/Vocabulary';
 import { Import } from './pages/Import';
 import { Review } from './pages/Review';
+import { Statistics } from './pages/Statistics';
 import { Subscription } from './pages/Subscription';
 import { Onboarding } from './pages/Onboarding';
 import { SignIn } from './pages/auth/SignIn';
@@ -165,7 +166,19 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
-              <Import />
+              <Import onComplete={handleTextSelect} />
+            </motion.div>
+          )}
+
+          {activeTab === 'statistics' && (
+            <motion.div
+              key="statistics"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <Statistics />
             </motion.div>
           )}
 
