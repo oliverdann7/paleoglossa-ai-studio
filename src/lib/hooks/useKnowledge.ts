@@ -152,7 +152,11 @@ export const useKnowledge = () => {
       return info.state === WordState.KNOWN;
     }).length;
     
-    setStats(prev => ({ ...prev, totalKnown: knownCount }));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStats(prev => {
+      if (prev.totalKnown === knownCount) return prev;
+      return { ...prev, totalKnown: knownCount };
+    });
   }, [knowledge]);
 
   useEffect(() => {

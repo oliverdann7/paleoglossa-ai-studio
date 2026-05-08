@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, ChevronRight, ChevronLeft, ExternalLink, Play, Pause, Repeat, Repeat1, BookOpen, Layout, EyeOff, Search } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, ExternalLink, Play, Pause, Repeat, Repeat1, Layout, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorpusDB } from '../data/corpus';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
@@ -14,6 +14,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const { settings } = useSettings();
   
   const [selectedWord, setSelectedWord] = useState<any>(null);
+
   const [showTranslit] = useState(settings.showTranslit);
   const [showParallel, setShowParallel] = useState(settings.showParallelDefault);
   const [readingMode, setReadingMode] = useState<'scroll' | 'page'>('scroll');
@@ -36,8 +37,10 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
 
   const chapters = useMemo(() => {
-    if (typeof text?.id === 'string' && CorpusDB.getText(text.id)) {
-      const realText = CorpusDB.getText(text.id);
+    const textId = text?.id;
+
+    if (typeof textId === 'string' && CorpusDB.getText(textId)) {
+      const realText = CorpusDB.getText(textId);
       return realText?.sectionsPreview?.map(preview => {
         const section = CorpusDB.getSection(preview.id);
         if (!section) return { id: preview.id, title: preview.label, sentences: [], translation: '' };
@@ -91,7 +94,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
       }];
     }
     return [];
-  }, [text?.id, text?.content]);
+  }, [text?.id, text?.content, text?.language]);
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
     const saved = localStorage.getItem(`reader_chapter_${text?.id}`);
@@ -101,6 +104,12 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   
   const chapter = chapters[currentChapterIndex] || chapters[0];
   const isHebrew = text?.language === 'hbo' || text?.language === 'Biblical Hebrew';
+
+  const exampleSentences = useMemo(() => {
+    if (!selectedWord) return [];
+    const currentSentenceId = chapter?.sentences?.[currentSentenceIndex]?.id;
+    return CorpusDB.findSentencesWithLemma(selectedWord.lemma, currentSentenceId, 3);
+  }, [selectedWord, chapter, currentSentenceIndex]);
 
   // Stats & Time tracking
   useEffect(() => {
@@ -118,6 +127,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
      if (!isPlaying) return;
      const currentSentence = chapter?.sentences[audioPos.sentenceIdx];
      if (!currentSentence) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsPlaying(false);
         return;
      }
@@ -137,7 +147,9 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
               setAudioPos({ sentenceIdx: audioPos.sentenceIdx + 1, wordIdx: 0 });
               if (readingMode === 'page') setCurrentSentenceIndex(audioPos.sentenceIdx + 1);
            } else {
+              // eslint-disable-next-line react-hooks/set-state-in-effect
               setIsPlaying(false);
+              // eslint-disable-next-line react-hooks/set-state-in-effect
               setAudioPos({ sentenceIdx: 0, wordIdx: 0 });
            }
         }
@@ -157,10 +169,13 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
     if (tutorialStep === 0) return;
     
     if (tutorialStep === 1 && selectedWord) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTutorialStep(2);
     } else if (tutorialStep === 2 && selectedWord && (knowledge[selectedWord.lemma] === WordState.KNOWN || (knowledge[selectedWord.lemma] as any)?.state === WordState.KNOWN)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTutorialStep(3);
     } else if (tutorialStep === 3 && scrollProgress > 80) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTutorialStep(4);
     }
   }, [tutorialStep, selectedWord, knowledge, scrollProgress]);
@@ -256,7 +271,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   };
 
   const handleMarkPageKnown = () => {
-    let tokensToMark = [];
+    let tokensToMark: any[];
     if (readingMode === 'page') {
       tokensToMark = chapter.sentences[currentSentenceIndex]?.tokens || [];
     } else {
@@ -353,18 +368,26 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
               <EyeOff className="w-3.5 h-3.5" /> Mask Known
             </button>
             <div className="w-px h-4 bg-bdr m-1 hidden md:block" />
-            <button 
-              onClick={() => setReadingMode('scroll')}
-              className={cn("hidden md:flex p-1.5 rounded-md transition-colors", readingMode === 'scroll' ? "bg-parch text-ink shadow-sm border border-bdr" : "text-muted hover:bg-parch3")}
-            >
-              <BookOpen className="w-4 h-4" />
-            </button>
-            <button 
-              onClick={() => setReadingMode('page')}
-              className={cn("hidden md:flex p-1.5 rounded-md transition-colors", readingMode === 'page' ? "bg-parch text-ink shadow-sm border border-bdr" : "text-muted hover:bg-parch3")}
-            >
-              <Search className="w-4 h-4" />
-            </button>
+            <div className="flex bg-parch3 p-0.5 rounded-lg border border-bdr shrink-0">
+              <button 
+                onClick={() => setReadingMode('scroll')}
+                className={cn(
+                  "px-3 py-1 text-[10px] uppercase font-bold tracking-widest rounded-md transition-all whitespace-nowrap",
+                  readingMode === 'scroll' ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink cursor-pointer"
+                )}
+              >
+                Sentence View
+              </button>
+              <button 
+                onClick={() => setReadingMode('page')}
+                className={cn(
+                  "px-3 py-1 text-[10px] uppercase font-bold tracking-widest rounded-md transition-all whitespace-nowrap",
+                  readingMode === 'page' ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink cursor-pointer"
+                )}
+              >
+                Page View
+              </button>
+            </div>
           </div>
         </div>
 
@@ -404,8 +427,8 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
         </div>
 
         {/* Text Pane */}
-        <div id="reading-area-scroll" className="flex-1 overflow-y-auto px-4 md:px-12 lg:px-24 py-8 md:py-16 scroll-smooth bg-transparent relative">
-          <div className={cn("mx-auto transition-all", showParallel ? "max-w-full lg:grid grid-cols-2 gap-8" : "max-w-3xl")}>
+        <div id="reading-area-scroll" className={cn("flex-1 overflow-y-auto px-4 md:px-12 py-8 md:py-16 scroll-smooth bg-transparent relative", readingMode === 'page' && "flex flex-col justify-center")}>
+          <div className={cn("mx-auto transition-all w-full", showParallel ? "max-w-screen-xl lg:grid grid-cols-2 gap-8 items-center" : "max-w-3xl")}>
              
              {/* Original Column */}
              <div className="col-span-1 border-r-0 lg:border-r border-bdr/40 lg:pr-8">
@@ -546,26 +569,92 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
                     <div className="eyebrow mb-3 flex items-center gap-2 text-ink">
                       <span>Morphology</span>
                     </div>
+
+                    <div className="mb-4 text-[14px] text-ink2 capitalize font-medium italic">
+                      {(() => {
+                        const m = selectedWord.morphology;
+                        const pos = m.partOfSpeech || (m.tense ? 'verb' : m.case ? 'noun' : '');
+                        const parts = [];
+                        if (pos === 'noun' || pos === 'pronoun' || m.case) {
+                          if (m.case) parts.push(m.case);
+                          if (m.number) parts.push(m.number);
+                          if (m.gender) parts.push(m.gender);
+                          if (pos) parts.push(pos);
+                        } else if (pos === 'verb' || m.tense || m.mood) {
+                          if (m.person) parts.push(m.person === 'first' ? '1st person' : m.person === 'second' ? '2nd person' : m.person === 'third' ? '3rd person' : m.person);
+                          if (m.number) parts.push(m.number);
+                          if (m.tense) parts.push(m.tense);
+                          if (m.voice) parts.push(m.voice);
+                          if (m.mood) parts.push(m.mood);
+                          if (!parts.includes('verb')) parts.push('verb');
+                        } else {
+                          if (pos) parts.push(pos);
+                        }
+                        return parts.filter(Boolean).join(' ');
+                      })()}
+                    </div>
                     
-                    {/* Compact Paradigm Table Fake Demo */}
+                    {/* Compact Paradigm Table */}
                     <div className="border border-bdr/50 rounded-xl overflow-hidden bg-white text-[12px] font-sans">
-                       <div className="bg-parch2 px-3 py-2 border-b border-bdr/50 font-bold text-ink2 text-[11px] uppercase tracking-wider text-center">
-                          Aorist Active Indicative
-                       </div>
-                       <div className="divide-y divide-bdr/30">
-                          {["1st Sg", "2nd Sg", "3rd Sg", "1st Pl", "2nd Pl", "3rd Pl"].map((person, i) => {
-                             const isCurrent = i === 3; // fake match
-                             return (
-                                <div key={person} className={cn("flex px-4 py-2", isCurrent ? "bg-blue/5 font-bold text-blue" : "text-ink3")}>
-                                   <div className="w-16 opacity-70">{person}</div>
-                                   <div className={cn("font-serif", isHebrew?"font-hebrew":"")}>
-                                      {isCurrent ? selectedWord.text : "—"}
-                                   </div>
-                                </div>
-                             )
-                          })}
-                       </div>
-                       <button className="w-full text-center py-2 text-[10px] font-bold uppercase tracking-widest text-blue hover:bg-blue/5 transition-colors">
+                       {(() => {
+                          const m = selectedWord.morphology || {};
+                          const pos = m.partOfSpeech || (m.tense ? 'verb' : m.case ? 'noun' : '');
+                          const isNoun = pos === 'noun' || pos === 'pronoun' || m.case;
+                          
+                          const cases = ["nominative", "genitive", "dative", "accusative", "vocative"];
+                          if (m.case && !cases.includes(m.case)) cases.push(m.case);
+                          
+                          const persons = ["first", "second", "third"];
+
+                          return (
+                             <>
+                               <div className="bg-parch2 px-3 py-2 border-b border-bdr/50 font-bold text-ink2 text-[11px] uppercase tracking-wider text-center">
+                                  {isNoun ? `${pos ? pos.charAt(0).toUpperCase() + pos.slice(1) : 'Declension'}${m.gender ? ` (${m.gender})` : ''}` : `${m.tense || ''} ${m.voice || ''} ${m.mood || ''}`.trim() || 'Conjugation'}
+                               </div>
+                               
+                               <div className="flex divide-x divide-bdr/30 border-b border-bdr/30 text-[10px] font-bold uppercase text-ink3 text-center bg-parch/30">
+                                 <div className="w-16 flex-none"></div>
+                                 <div className="flex-1 py-1">Singular</div>
+                                 <div className="flex-1 py-1">Plural</div>
+                               </div>
+
+                               <div className="flex flex-col">
+                                  {isNoun ? cases.map(c => {
+                                     const isSgActive = m.case === c && m.number === 'singular';
+                                     const isPlActive = m.case === c && m.number === 'plural';
+                                     
+                                     return (
+                                        <div key={c} className="flex divide-x divide-bdr/30 border-b border-bdr/30 last:border-b-0 text-center">
+                                           <div className="w-16 flex-none flex items-center justify-center text-[10px] uppercase font-bold text-ink3 bg-parch/30">{c.substring(0, 3)}</div>
+                                           <div className={cn("flex-1 py-2 flex items-center justify-center font-serif", isHebrew?"font-hebrew":"", isSgActive ? "bg-blue/5 text-blue font-bold" : "text-ink3")}>
+                                              {isSgActive ? selectedWord.text : "—"}
+                                           </div>
+                                           <div className={cn("flex-1 py-2 flex items-center justify-center font-serif", isHebrew?"font-hebrew":"", isPlActive ? "bg-blue/5 text-blue font-bold" : "text-ink3")}>
+                                              {isPlActive ? selectedWord.text : "—"}
+                                           </div>
+                                        </div>
+                                     );
+                                  }) : persons.map(p => {
+                                     const isSgActive = m.person === p && m.number === 'singular';
+                                     const isPlActive = m.person === p && m.number === 'plural';
+                                     
+                                     return (
+                                        <div key={p} className="flex divide-x divide-bdr/30 border-b border-bdr/30 last:border-b-0 text-center">
+                                           <div className="w-16 flex-none flex items-center justify-center text-[10px] uppercase font-bold text-ink3 bg-parch/30">{p.substring(0, 3)}</div>
+                                           <div className={cn("flex-1 py-2 flex items-center justify-center font-serif", isHebrew?"font-hebrew":"", isSgActive ? "bg-blue/5 text-blue font-bold" : "text-ink3")}>
+                                              {isSgActive ? selectedWord.text : "—"}
+                                           </div>
+                                           <div className={cn("flex-1 py-2 flex items-center justify-center font-serif", isHebrew?"font-hebrew":"", isPlActive ? "bg-blue/5 text-blue font-bold" : "text-ink3")}>
+                                              {isPlActive ? selectedWord.text : "—"}
+                                           </div>
+                                        </div>
+                                     );
+                                  })}
+                               </div>
+                             </>
+                          );
+                       })()}
+                       <button className="w-full text-center py-2 border-t border-bdr/30 text-[10px] font-bold uppercase tracking-widest text-blue hover:bg-blue/5 transition-colors">
                           Show Full Paradigm
                        </button>
                     </div>
@@ -604,17 +693,31 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
                </div>
 
                {/* Example sentences */}
-               <div className="mt-8 pt-8 border-t border-bdr/30">
-                  <div className="eyebrow mb-4">Examples from Corpus</div>
-                  <div className="space-y-4">
-                     <div className="p-3 bg-parch/30 rounded-xl border border-bdr/20 text-[14px]">
-                        <p className={cn("font-serif mb-2 text-ink2", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
-                           ...kai <span className="font-bold text-blue">{selectedWord.text}</span> autois...
-                        </p>
-                        <p className="font-body italic text-muted text-[12px]">...and he gave to them...</p>
-                     </div>
-                  </div>
-               </div>
+               {exampleSentences.length > 0 && (
+                 <div className="mt-8 pt-8 border-t border-bdr/30">
+                    <div className="eyebrow mb-4">Examples from Corpus</div>
+                    <div className="space-y-4">
+                       {exampleSentences.map((ex: any, idx: number) => {
+                          return (
+                            <div key={idx} className="p-3 bg-parch/30 rounded-xl border border-bdr/20 text-[14px]">
+                               <p className={cn("font-serif mb-2 text-ink2", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
+                                  {ex.sentence.tokens.map((t: any, i: number) => (
+                                     <span key={i}>
+                                        {t.punctBefore}
+                                        <span className={cn(t.lemma === selectedWord.lemma ? "font-bold text-blue" : "")}>
+                                           {t.surface}
+                                        </span>
+                                        {t.punctAfter}
+                                     </span>
+                                  ))}
+                               </p>
+                               <p className="font-body italic text-muted text-[12px]">{ex.sentence.translation}</p>
+                            </div>
+                          );
+                       })}
+                    </div>
+                 </div>
+               )}
             </div>
           </motion.div>
         )}

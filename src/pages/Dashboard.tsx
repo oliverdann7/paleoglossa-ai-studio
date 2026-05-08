@@ -29,8 +29,17 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
     return state === WordState.LEARNING || state === WordState.FAMILIAR;
   }).length, [knowledge]);
 
+  const reviewCount = useMemo(() => {
+    return Object.values(knowledge).filter(info => {
+      const i = typeof info === 'object' ? (info as any) : { state: info };
+      if (i.state !== WordState.LEARNING && i.state !== WordState.FAMILIAR) return false;
+      if (!i.srs?.nextReview) return true; // Newly learned words are due immediately
+      return new Date(i.srs.nextReview) <= new Date();
+    }).length;
+  }, [knowledge]);
+
   const recentVocab = useMemo(() => {
-    const highlighted = Object.entries(knowledge).filter(([_, info]) => {
+    const highlighted = Object.entries(knowledge).filter(([, info]) => {
       const state = typeof info === 'object' ? (info as any).state : info;
       return state !== WordState.NEW;
     }).slice(0, 6);
@@ -93,11 +102,15 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
           </div>
           <div className="relative z-10">
             <div className="eyebrow text-bluexl/50 mb-4 font-bold">Review Queue</div>
-            <div className="text-[64px] font-serif font-bold leading-none mb-4">142</div>
+            <div className="text-[64px] font-serif font-bold leading-none mb-4">{reviewCount}</div>
             <p className="font-body text-bluexl/70 text-[16px]">Words ready for reinforcement.</p>
           </div>
-          <button onClick={() => onNavigate?.('review')} className="relative z-10 w-full bg-white text-blue py-3 rounded-2xl font-bold font-sans text-[14px] hover:shadow-lg transition-all active:scale-95">
-             Start Review Session
+          <button 
+            onClick={() => onNavigate?.('review')} 
+            disabled={reviewCount === 0}
+            className="relative z-10 w-full bg-white text-blue py-3 rounded-2xl font-bold font-sans text-[14px] hover:shadow-lg transition-all active:scale-95 disabled:opacity-80 disabled:cursor-not-allowed"
+          >
+             {reviewCount > 0 ? "Start Review Session" : "All Caught Up"}
           </button>
         </div>
 

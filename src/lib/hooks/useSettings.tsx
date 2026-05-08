@@ -30,7 +30,7 @@ export const useSettings = () => {
     if (saved) {
       try {
         return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-      } catch (e) {
+      } catch {
         return DEFAULT_SETTINGS;
       }
     }
