@@ -10,7 +10,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [minKnown, setMinKnown] = useState(0);
-  const { knowledge, getWordInfo } = useKnowledge();
+  const { getWordInfo } = useKnowledge();
   
   const mainFilters = ['All', 'Ancient Greek', 'Biblical Hebrew', 'Classical Latin'];
 
@@ -28,12 +28,12 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
 
     return unified.map((t: any) => {
       // Calculate real stats for each text
-      let totalWords = 0;
+      let totalWords: number;
       let knownWordsCount = 0;
       let learningWordsCount = 0;
 
       if (t.isImported) {
-        totalWords = t.stats.totalWords;
+        totalWords = t.stats?.totalWords || 0;
         // In real app, we'd tokenize and check. For demo, we just keep the initial import stats 
         // OR better: check against existing knowledge for real-time updates
         const words = t.content.split(/\s+/).filter(Boolean);
@@ -63,7 +63,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
         level: t.id === 'Jn-1' ? 'A1' : t.id === 'Gen' ? 'A2' : 'B1' // Demo levels
       };
     });
-  }, [knowledge, getWordInfo]);
+  }, [getWordInfo]);
 
   const filteredTexts = allTexts.filter((t: any) => {
     let matchesFilter = true;

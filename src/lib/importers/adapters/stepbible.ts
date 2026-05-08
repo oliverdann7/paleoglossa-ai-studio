@@ -14,11 +14,11 @@ export const StepBibleAdapter: ContentSourceAdapter = {
     return [];
   },
   
-  async fetchText(_ref: string) {
+  async fetchText() {
     throw new Error('STEPBible data is usually imported as a local database file/JSON block, not fetched text-by-text');
   },
   
-  async normalize(_raw: any, _metadata: any) {
+  async normalize() {
     // Stub: parses STEPBible TB1Lexicon data and Tyndale morphology
     return {
       text: {

@@ -14,7 +14,7 @@ export const LatinCorpusAdapter: ContentSourceAdapter = {
     return [];
   },
   
-  async fetchText(_ref: string) {
+  async fetchText() {
     return '';
   },
   

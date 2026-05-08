@@ -21,7 +21,12 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { seedKnowledge } from './lib/data/seeding';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('landing');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash && window.location.hash.includes('type=recovery')) {
+      return 'reset-password';
+    }
+    return 'landing';
+  });
   const [selectedText, setSelectedText] = useState<any>(null);
 
   useEffect(() => {
@@ -35,13 +40,6 @@ export default function App() {
     });
     return () => unsubscribe();
   }, [activeTab]);
-
-  useEffect(() => {
-    // Check for password reset hash in URL
-    if (window.location.hash && window.location.hash.includes('type=recovery')) {
-      setActiveTab('reset-password');
-    }
-  }, []);
 
   const handleTextSelect = (text: any) => {
     setSelectedText(text);

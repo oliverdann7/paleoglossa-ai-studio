@@ -163,5 +163,18 @@ export const CorpusDB = {
     if (corpusId === 'OSHB') return HEBREW_CORPUS;
     if (corpusId === 'LATIN_CLASSIC') return LATIN_CORPUS;
     return null;
+  },
+  findSentencesWithLemma: (lemma: string, currentSentenceId?: string, max: number = 3) => {
+    const results: any[] = [];
+    for (const section of [JOHN_1_1, GENESIS_1, AENEID_1_1, PSALM_23_1]) {
+       for (const sentence of section.sentences) {
+          if (sentence.id === currentSentenceId) continue;
+          if (sentence.tokens.some((t: any) => t.lemma === lemma)) {
+             results.push({ sentence, sectionId: section.id, textId: section.textId });
+             if (results.length >= max) return results;
+          }
+       }
+    }
+    return results;
   }
 };

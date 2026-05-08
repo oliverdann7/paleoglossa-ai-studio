@@ -1,22 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Settings2, Trash2, X, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { 
-  collection, 
-  query, 
-  where, 
-  onSnapshot,
-  deleteDoc,
-  doc
-} from 'firebase/firestore';
-import { db, auth, handleFirestoreError, OperationType } from '@/lib/firebase';
+import { useKnowledge, WordInfo } from '../lib/hooks/useKnowledge';
+import { WordState, STATE_LABELS } from '../lib/constants/wordStates';
 
 export const Vocabulary = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [showSettings, setShowSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [words, setWords] = useState<any[]>([]);
+  const { knowledge, setWordState } = useKnowledge();
   
   const [srsIntervals, setSrsIntervals] = useState({
     seenOnce: '1 day',
@@ -25,35 +18,32 @@ export const Vocabulary = ({ onNavigate }: { onNavigate?: (tab: string) => void 
     multiplier: '1.5x'
   });
 
-  const filters = ['All', 'Known', 'Familiar', 'Learning', 'Seen Once'];
+  const filters = ['All', 'Known', 'Familiar', 'Learning'];
 
-  useEffect(() => {
-    if (!auth.currentUser) return;
-    
-    const vocabQuery = query(
-      collection(db, 'vocabulary'), 
-      where('userId', '==', auth.currentUser.uid)
-    );
-    
-    const unsubscribe = onSnapshot(vocabQuery, (snapshot) => {
-      const vocabItems: any[] = [];
-      snapshot.forEach(doc => {
-        vocabItems.push({ id: doc.id, ...doc.data() });
+  const words = useMemo(() => {
+    return Object.entries(knowledge)
+      .filter(([_, info]) => {
+         const state = typeof info === 'object' ? (info as any).state : info;
+         return state !== WordState.NEW && state !== WordState.IGNORED;
+      })
+      .map(([lemma, info]) => {
+         const wordInfo = typeof info === 'object' ? (info as WordInfo) : { state: info } as WordInfo;
+         const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview) : new Date();
+         
+         return {
+            id: lemma, // using lemma as ID
+            term: lemma,
+            definition: 'Definition...', // Fake until real data
+            translit: '',
+            language: lemma.match(/[א-ת]/) ? 'Hebrew' : 'Greek', // Simple fallback detection
+            status: STATE_LABELS[wordInfo.state as WordState],
+            nextReview: nextReview.toISOString()
+         };
       });
-      setWords(vocabItems);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'vocabulary');
-    });
-    
-    return () => unsubscribe();
-  }, []);
+  }, [knowledge]);
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, 'vocabulary', id));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, 'vocabulary');
-    }
+  const handleDelete = (id: string) => {
+    setWordState(id, WordState.NEW); // Effectively deletes from learned list
   };
 
   const filteredWords = words.filter(w => {
@@ -65,9 +55,8 @@ export const Vocabulary = ({ onNavigate }: { onNavigate?: (tab: string) => void 
   const getStatusClass = (status: string) => {
     switch(status) {
       case 'Known': return "cefr-a";
-      case 'Familiar': return "cefr-a";
+      case 'Familiar': return "cefr-a text-amber";
       case 'Learning': return "cefr-b";
-      case 'Seen Once': return "cefr-c";
       default: return "";
     }
   };
