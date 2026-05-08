@@ -3,6 +3,8 @@ import { TrendingUp, Clock, BookOpen, Zap, History, BarChart2, CheckCircle2 as C
 import { cn } from '@/lib/utils';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
 import { WordState } from '../lib/constants/wordStates';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, BarChart, Bar, LineChart, Line } from 'recharts';
+import { format, subDays, parseISO } from 'date-fns';
 
 const StatCard = ({ label, value, trend, icon: Icon, color }: any) => (
   <div className="card p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
@@ -27,15 +29,56 @@ const StatCard = ({ label, value, trend, icon: Icon, color }: any) => (
 export const Statistics = () => {
   const { stats, knowledge } = useKnowledge();
 
-  // 13-week heatmap simulator
-  const heatmap = useMemo(() => {
-    const data = [];
-    for (let i = 0; i < 13 * 7; i++) {
-       // eslint-disable-next-line react-hooks/purity
-       data.push(Math.floor(Math.random() * 5));
+  const trendData = useMemo(() => {
+    let data = [...(stats.history || [])];
+    
+    // Ensure we have at least 30 days of data, pad with zeros if missing
+    if (data.length < 30) {
+       const needed = 30 - data.length;
+       const firstDate = data.length > 0 ? parseISO(data[0].date) : new Date();
+       const pads = [];
+       for (let i = needed; i > 0; i--) {
+          pads.push({
+             date: format(subDays(firstDate, i), 'yyyy-MM-dd'),
+             knownWords: 0,
+             readWords: 0,
+             minutes: 0,
+          });
+       }
+       data = [...pads, ...data];
+    } else {
+       data = data.slice(-30);
     }
     return data;
-  }, []);
+  }, [stats.history]);
+
+  // 13-week heatmap simulator using real history + padding
+  const heatmap = useMemo(() => {
+    const data = new Array(13 * 7).fill(0);
+    const history = stats.history || [];
+    
+    // We map days from today backwards up to 91 days
+    const today = new Date();
+    
+    history.forEach(item => {
+       const date = parseISO(item.date);
+       const diff = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+       if (diff >= 0 && diff < 91) {
+          // index 0 is oldest (90 days ago), index 90 is today
+          const index = 90 - diff;
+          // Calculate intensity (0 to 4) based on readWords
+          let intensity = 0;
+          if (item.readWords > 500) intensity = 4;
+          else if (item.readWords > 200) intensity = 3;
+          else if (item.readWords > 50) intensity = 2;
+          else if (item.readWords > 0) intensity = 1;
+          
+          data[index] = intensity;
+       }
+    });
+
+    return data;
+  }, [stats.history]);
 
   const languageStats = useMemo(() => {
     const raw: any = {
@@ -73,6 +116,32 @@ export const Statistics = () => {
     });
   }, [knowledge]);
 
+  const weeklyStats = useMemo(() => {
+    let weekRead = stats.readToday;
+    let weekMinutes = stats.readingTime;
+    
+    // Add history from the last 6 days
+    if (stats.history && stats.history.length > 0) {
+      const recentHistory = stats.history.slice(-6);
+      recentHistory.forEach(day => {
+        weekRead += day.readWords || 0;
+        weekMinutes += day.minutes || 0;
+      });
+    }
+    
+    let totalMinutes = stats.readingTime;
+    if (stats.history) {
+      stats.history.forEach(day => {
+        totalMinutes += day.minutes || 0;
+      });
+    }
+    
+    return {
+      weekRead,
+      totalHours: (totalMinutes / 60).toFixed(1),
+    };
+  }, [stats]);
+
   const milestones = [
     { label: "Polyglot Apprentice", desc: "Reach 500 known words in 2 languages", date: "Reached Apr 12", completed: true },
     { label: "Homeric Memory", desc: "Complete 10 error-free review sessions", date: "Reached May 3", completed: true },
@@ -100,9 +169,9 @@ export const Statistics = () => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
         <StatCard label="Known Words" value={stats.totalKnown.toLocaleString()} trend="+12% vs last week" icon={BookOpen} color="blue" />
-        <StatCard label="Words Read (Week)" value="4,283" trend="+542" icon={History} color="amber" />
-        <StatCard label="Total Reading Time" value={`${stats.readingTime || 14}h`} trend="+2.4h" icon={Clock} color="green" />
-        <StatCard label="Current Streak" value={`🔥 ${stats.streak || 23} Days`} icon={Zap} color="amber" />
+        <StatCard label="Words Read (Week)" value={weeklyStats.weekRead.toLocaleString()} trend="Active" icon={History} color="amber" />
+        <StatCard label="Total Reading Time" value={`${weeklyStats.totalHours}h`} trend="Keep it up!" icon={Clock} color="green" />
+        <StatCard label="Current Streak" value={`🔥 ${stats.streak} Days`} icon={Zap} color="amber" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
@@ -142,9 +211,9 @@ export const Statistics = () => {
              ))}
            </div>
            <div className="flex justify-between mt-4 text-[10px] font-bold text-muted uppercase tracking-widest px-1">
-              <span>Mar</span>
-              <span>Apr</span>
-              <span>May</span>
+              <span>{format(subDays(new Date(), 90), 'MMM')}</span>
+              <span>{format(subDays(new Date(), 45), 'MMM')}</span>
+              <span>{format(new Date(), 'MMM')}</span>
            </div>
         </div>
 
@@ -178,36 +247,55 @@ export const Statistics = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-         {/* Simple visualization of lines via SVG for demo feel */}
-         <div className="card p-6">
-            <h4 className="eyebrow text-amber mb-4 font-bold">Known Words (90d)</h4>
-            <div className="h-32 w-full relative group">
-               <svg viewBox="0 0 100 40" className="w-full h-full">
-                  <path d="M0 40 Q 25 35 50 20 T 100 5" fill="none" stroke="#F1DAB0" strokeWidth="2" />
-                  <path d="M0 40 Q 25 35 50 20 T 100 5 L 100 40 L 0 40" fill="url(#grad)" opacity="0.3" />
-                  <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" style={{ stopColor: '#F1DAB0' }} />
-                      <stop offset="100%" style={{ stopColor: 'transparent' }} />
-                    </linearGradient>
-                  </defs>
-               </svg>
+         {/* Known Words via Recharts */}
+         <div className="card p-6 flex flex-col">
+            <h4 className="eyebrow text-amber mb-4 font-bold">Known Words (30d)</h4>
+            <div className="h-32 w-full relative group flex-1">
+               <ResponsiveContainer width="100%" height="100%">
+                 <AreaChart data={trendData}>
+                   <defs>
+                     <linearGradient id="colorKnown" x1="0" y1="0" x2="0" y2="1">
+                       <stop offset="5%" stopColor="#F1DAB0" stopOpacity={0.8}/>
+                       <stop offset="95%" stopColor="#F1DAB0" stopOpacity={0}/>
+                     </linearGradient>
+                   </defs>
+                   <Tooltip 
+                     contentStyle={{ backgroundColor: '#FCFBF8', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '12px' }}
+                     labelFormatter={(label) => format(parseISO(label as string), 'MMM d, yyyy')}
+                   />
+                   <Area type="monotone" dataKey="knownWords" stroke="#d4ab6a" fillOpacity={1} fill="url(#colorKnown)" />
+                 </AreaChart>
+               </ResponsiveContainer>
             </div>
          </div>
-         <div className="card p-6">
+         <div className="card p-6 flex flex-col">
             <h4 className="eyebrow text-blue mb-4 font-bold">Daily Reading (30d)</h4>
-            <div className="h-32 w-full relative">
-               <svg viewBox="0 0 100 40" className="w-full h-full">
-                  <path d="M0 35 L 10 38 L 20 20 L 30 25 L 40 10 L 50 15 L 60 5 L 70 8 L 80 12 L 90 2 L 100 15" fill="none" stroke="#1E3D6E" strokeWidth="1.5" />
-               </svg>
+            <div className="h-32 w-full relative flex-1">
+               <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={trendData}>
+                   <Tooltip 
+                     contentStyle={{ backgroundColor: '#FCFBF8', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '12px' }}
+                     labelFormatter={(label) => format(parseISO(label as string), 'MMM d, yyyy')}
+                     cursor={{ fill: 'rgba(30, 61, 110, 0.1)' }}
+                   />
+                   <Bar dataKey="readWords" fill="#1E3D6E" radius={[2, 2, 0, 0]} />
+                 </BarChart>
+               </ResponsiveContainer>
             </div>
          </div>
-         <div className="card p-6">
-            <h4 className="eyebrow text-green-600 mb-4 font-bold">Review Accuracy (30d)</h4>
-            <div className="h-32 w-full relative">
-               <svg viewBox="0 0 100 40" className="w-full h-full">
-                  <path d="M0 10 L 20 8 L 40 12 L 60 5 L 80 7 L 100 6" fill="none" stroke="#10b981" strokeWidth="2" />
-               </svg>
+         <div className="card p-6 flex flex-col">
+            <h4 className="eyebrow text-green-600 mb-4 font-bold">Reading Time (30d)</h4>
+            <div className="h-32 w-full relative flex-1">
+               <ResponsiveContainer width="100%" height="100%">
+                 <LineChart data={trendData}>
+                   <Tooltip 
+                     contentStyle={{ backgroundColor: '#FCFBF8', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '12px' }}
+                     labelFormatter={(label) => format(parseISO(label as string), 'MMM d, yyyy')}
+                     formatter={(val: any) => [`${val} min`, 'Time']}
+                   />
+                   <Line type="monotone" dataKey="minutes" stroke="#10b981" strokeWidth={2} dot={false} />
+                 </LineChart>
+               </ResponsiveContainer>
             </div>
          </div>
       </div>

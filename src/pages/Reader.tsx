@@ -53,6 +53,15 @@ export const Reader = () => {
   // Page mode state
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
 
+  useEffect(() => {
+    if (readingMode === 'page') {
+      const el = document.getElementById(`sentence-${currentSentenceIndex}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentSentenceIndex, readingMode]);
+
   const chapters = useMemo(() => {
     const textId = text?.id;
 
@@ -65,7 +74,7 @@ export const Reader = () => {
         const sentences = section.sentences.map((s: any) => ({
            id: s.id,
            translation: s.translation,
-           parallel: "In principio erat Verbum...", // Fake parallel text for demo
+           parallel: s.translation, // Use actual translation as parallel text for demo purposes
            tokens: s.tokens.map((t: any) => ({
               id: t.id,
               text: t.surface,
@@ -444,17 +453,17 @@ export const Reader = () => {
         </div>
 
         {/* Text Pane */}
-        <div id="reading-area-scroll" className={cn("flex-1 overflow-y-auto px-4 md:px-12 py-8 md:py-16 scroll-smooth bg-transparent relative", readingMode === 'page' && "flex flex-col justify-center")}>
+        <div id="reading-area-scroll" className="flex-1 overflow-y-auto px-4 md:px-12 py-8 md:py-16 scroll-smooth bg-transparent relative">
           <div className={cn("mx-auto transition-all w-full", showParallel ? "max-w-screen-xl lg:grid grid-cols-2 gap-8 items-center" : "max-w-3xl")}>
              
              {/* Original Column */}
              <div className="col-span-1 border-r-0 lg:border-r border-bdr/40 lg:pr-8">
-                <div className={cn("font-serif tracking-wide transition-all", isHebrew ? "font-hebrew text-right" : "text-left", readingMode==='page' ?"text-center leading-[3]":"leading-[2.2]")}>
+                <div className={cn("font-serif tracking-wide transition-all", isHebrew ? "font-hebrew text-right" : "text-left", readingMode==='page' ?"text-[24px] leading-[2.5]":"leading-[2.2]")}>
                    {chapter.sentences.map((sentence: any, sIdx: number) => {
-                      if (readingMode === 'page' && sIdx !== currentSentenceIndex) return null;
+                      const isActivePageMode = readingMode === 'page' ? sIdx === currentSentenceIndex : true;
                       
                       return (
-                        <span key={sentence.id} className="inline mr-2 md:mr-3">
+                        <span id={`sentence-${sIdx}`} key={sentence.id} className={cn("inline mr-2 md:mr-3 transition-opacity duration-500", !isActivePageMode && readingMode === 'page' ? "opacity-30" : "opacity-100")}>
                            {sentence.tokens.map((token: any, tIdx: number) => {
                               const isAudioActive = audioPos.sentenceIdx === sIdx && audioPos.wordIdx === tIdx;
                               return (
@@ -462,10 +471,13 @@ export const Reader = () => {
                                   {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
                                   <motion.span
                                     layoutId={`word-${token.id}`}
-                                    onClick={() => setSelectedWord(token)}
+                                    onClick={() => {
+                                       setSelectedWord(token);
+                                       if (readingMode === 'page') setCurrentSentenceIndex(sIdx);
+                                    }}
                                     className="cursor-pointer transition-all px-0.5 rounded-sm inline-block"
                                     style={{ 
-                                      fontSize: readingMode==='page' ? `${settings.fontSize * 1.5}px` : `${settings.fontSize}px`,
+                                      fontSize: readingMode==='page' ? `${settings.fontSize * 1.2}px` : `${settings.fontSize}px`,
                                       ...getWordStyle(token, isAudioActive)
                                     }}
                                   >
@@ -486,10 +498,11 @@ export const Reader = () => {
              {showParallel && (
                 <div className="col-span-1 pt-8 lg:pt-0 pb-16">
                    {chapter.sentences.map((sentence: any, sIdx: number) => {
-                      if (readingMode === 'page' && sIdx !== currentSentenceIndex) return null;
+                      const isActivePageMode = readingMode === 'page' ? sIdx === currentSentenceIndex : true;
+                      
                       return (
-                         <p key={`par-${sentence.id}`} className={cn("font-serif text-ink2 leading-[2.2] mb-3 transition-opacity", readingMode==='page' ?"text-center text-[24px]":"text-[18px]", "opacity-80 hover:opacity-100")}>
-                            {sentence.parallel}
+                         <p key={`par-${sentence.id}`} className={cn("font-serif text-ink2 mb-3 transition-opacity duration-500", readingMode==='page' ?"text-[20px] leading-[2.2]":"text-[18px] leading-[2.2]", !isActivePageMode && readingMode === 'page' ? "opacity-20" : "opacity-80 hover:opacity-100")}>
+                            {sentence.parallel || sentence.translation}
                          </p>
                       )
                    })}
