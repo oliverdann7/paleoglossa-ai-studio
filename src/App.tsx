@@ -16,10 +16,15 @@ import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { seedKnowledge } from './lib/data/seeding';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('landing');
   const [selectedText, setSelectedText] = useState<any>(null);
+
+  useEffect(() => {
+    seedKnowledge();
+  }, []);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser && activeTab === 'landing') {

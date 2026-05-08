@@ -14,11 +14,12 @@ export const LatinCorpusAdapter: ContentSourceAdapter = {
     return [];
   },
   
-  async fetchText(ref: string) {
+  async fetchText(_ref: string) {
     return '';
   },
   
   async normalize(raw: any, metadata: any) {
+    console.log('Normalizing raw data', !!raw);
     return {
       text: {
         id: metadata?.id || 'lat-1',

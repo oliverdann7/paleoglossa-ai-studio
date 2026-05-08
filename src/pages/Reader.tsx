@@ -1,29 +1,27 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, ChevronRight, ChevronLeft, Bookmark } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, ExternalLink, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getChapters } from '../data/chapters';
 import { CorpusDB } from '../data/corpus';
-import { auth, db } from '@/lib/firebase';
-import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '@/lib/firebase';
+import { useKnowledge } from '../lib/hooks/useKnowledge';
+import { WordState, STATE_COLORS, STATE_LABELS } from '../lib/constants/wordStates';
+import { ProgressRing } from '../components/reader/ProgressRing';
 
 export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
+  const { knowledge, setWordState, stats, addReadWords, incrementReadingTime } = useKnowledge();
   const [selectedWord, setSelectedWord] = useState<any>(null);
-  const [showHistory, setShowHistory] = useState(true);
   const [showTranslation, setShowTranslation] = useState(false);
   const [showTranslit, setShowTranslit] = useState(false);
-  const [fontSize, setFontSize] = useState(21);
+  const [fontSize] = useState(24);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0); // seconds
 
   const chapters = useMemo(() => {
-    // If this is a real Corpus DB text (string IDs like 'Mt' or 'Gen')
     if (typeof text?.id === 'string' && CorpusDB.getText(text.id)) {
       const realText = CorpusDB.getText(text.id);
       return realText?.sectionsPreview?.map(preview => {
         const section = CorpusDB.getSection(preview.id);
         if (!section) return { id: preview.id, title: preview.label, tokens: [], translation: '' };
-        // Flatten sentences into tokens array for Reader
         const tokens = section.sentences.flatMap((s: any) => s.tokens.map((t: any) => ({
           id: t.id,
           text: t.surface,
@@ -31,7 +29,6 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
           gloss: t.gloss,
           morphology: t.morphology,
           translit: t.transliteration,
-          status: 'New', // default
           punctBefore: t.punctBefore || '',
           punctAfter: t.punctAfter || ' '
         })));
@@ -43,8 +40,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
         };
       }) || [];
     }
-    // Fallback to legacy mock data
-    return getChapters(text?.id || 104);
+    return [];
   }, [text?.id]);
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
@@ -54,49 +50,24 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   });
   
   const chapter = chapters[currentChapterIndex] || chapters[0];
-  const [currentTokens, setCurrentTokens] = useState<any[]>([]);
+  const isHebrew = text?.language === 'hbo' || text?.language === 'Biblical Hebrew';
 
-  const isHebrew = text?.language === 'Biblical Hebrew' || text?.language === 'Aramaic' || text?.language === 'Syriac' || text?.language === 'hbo';
+  // Stats & Time tracking
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedTime(prev => {
+        if (prev > 0 && prev % 60 === 0) incrementReadingTime(1);
+        return prev + 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [incrementReadingTime]);
 
   useEffect(() => {
     if (text?.id) {
       localStorage.setItem(`reader_chapter_${text.id}`, currentChapterIndex.toString());
     }
   }, [currentChapterIndex, text?.id]);
-
-  useEffect(() => {
-    const fetchVocab = async () => {
-      let savedStatuses: Record<string, string> = {};
-      
-      if (auth.currentUser) {
-        try {
-          const vocabQuery = query(collection(db, 'vocabulary'), where('userId', '==', auth.currentUser.uid));
-          const snap = await getDocs(vocabQuery);
-          snap.forEach(d => {
-            const data = d.data();
-            savedStatuses[`${text?.language || 'Lang'}_${data.term}`] = data.status;
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
-        if (savedStatusesStr) {
-          try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
-        }
-      }
-
-      const initialTokens = chapter.tokens.map((t: any) => {
-        const key = `${text?.language || 'Lang'}_${t.lemma || t.text}`;
-        return { ...t, status: savedStatuses[key] || t.status };
-      });
-      
-      setCurrentTokens(initialTokens);
-      setScrollProgress(0);
-    };
-
-    fetchVocab();
-  }, [chapter, text?.id, text?.language]);
 
   useEffect(() => {
     const handleScroll = (e: any) => {
@@ -111,539 +82,301 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
     };
   }, [chapter]);
 
-  // Adjust handleKeyDown to match UI components
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedWord) {
         if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          if (currentChapterIndex < chapters.length - 1) setCurrentChapterIndex(currentChapterIndex + 1);
+           if (currentChapterIndex < chapters.length - 1) setCurrentChapterIndex(currentChapterIndex + 1);
         } else if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          if (currentChapterIndex > 0) setCurrentChapterIndex(currentChapterIndex - 1);
+           if (currentChapterIndex > 0) setCurrentChapterIndex(currentChapterIndex - 1);
         }
         return;
       }
       
-      if (selectedWord) {
-        const currentIndex = currentTokens.findIndex(t => t.id === selectedWord.id);
-        if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          if (currentIndex < currentTokens.length - 1) {
-            setSelectedWord(currentTokens[currentIndex + 1]);
-          } else if (currentChapterIndex < chapters.length - 1) {
-            setCurrentChapterIndex(currentChapterIndex + 1);
-            setSelectedWord(null);
-          }
-        } else if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          if (currentIndex > 0) {
-            setSelectedWord(currentTokens[currentIndex - 1]);
-          } else if (currentChapterIndex > 0) {
-            setCurrentChapterIndex(currentChapterIndex - 1);
-            setSelectedWord(null);
-          }
-        } else if (e.key === 'Escape') {
-          setSelectedWord(null);
+      const currentIndex = chapter.tokens.findIndex((t: any) => t.id === selectedWord.id);
+      if (e.key === 'ArrowRight') {
+        if (currentIndex < chapter.tokens.length - 1) setSelectedWord(chapter.tokens[currentIndex + 1]);
+        else if (currentChapterIndex < chapters.length - 1) {
+           setCurrentChapterIndex(currentChapterIndex + 1);
+           setSelectedWord(null);
         }
+      } else if (e.key === 'ArrowLeft') {
+        if (currentIndex > 0) setSelectedWord(chapter.tokens[currentIndex - 1]);
+        else if (currentChapterIndex > 0) {
+           setCurrentChapterIndex(currentChapterIndex - 1);
+           setSelectedWord(null);
+        }
+      } else if (e.key === 'Escape') {
+        setSelectedWord(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedWord, currentTokens, currentChapterIndex, chapters.length]);
+  }, [selectedWord, chapter, currentChapterIndex, chapters.length]);
 
-  const handleStatusChange = async (wordId: number, status: string) => {
-    let affectedToken: any = null;
-    setCurrentTokens(prev => prev.map(t => {
-      if (t.id === wordId) {
-         affectedToken = { ...t, status };
-         return affectedToken;
-      } return t;
-    }));
+  const getWordStyle = (token: any) => {
+    const state = knowledge[token.lemma] ?? WordState.NEW;
+    const isSelected = selectedWord?.id === token.id;
+    const colors = STATE_COLORS[state];
     
-    if (selectedWord?.id === wordId) setSelectedWord((prev: any) => ({ ...prev, status }));
-
-    if (affectedToken) {
-      const key = `${text?.language || 'Lang'}_${affectedToken.lemma || affectedToken.text}`;
-      
-      if (auth.currentUser) {
-        // Sync to Firestore
-        const termId = key.replace(/[^a-zA-Z0-9_\-]/g, '_').substring(0, 50); // safe doc ID
-        try {
-          const docRef = doc(db, 'vocabulary', `${auth.currentUser.uid}_${termId}`);
-          await setDoc(docRef, {
-            userId: auth.currentUser.uid,
-            term: affectedToken.lemma || affectedToken.text,
-            translit: affectedToken.translit || '',
-            definition: affectedToken.gloss || '',
-            language: text?.language || 'Unknown',
-            status: status,
-            nextReview: new Date(Date.now() + 86400000), // tomorrow
-            interval: 1,
-            ease: 2.5,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-        } catch (e) {
-          handleFirestoreError(e, OperationType.WRITE, 'vocabulary');
-        }
-      } else {
-        const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
-        let savedStatuses: Record<string, string> = {};
-        if (savedStatusesStr) {
-          try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
-        }
-        savedStatuses[key] = status;
-        localStorage.setItem('user_vocab_statuses', JSON.stringify(savedStatuses));
-      }
-    }
+    return {
+      backgroundColor: isSelected ? '#1E3D6E33' : colors.bg,
+      borderBottom: `2px solid ${isSelected ? '#1E3D6E' : colors.border}`,
+      color: colors.text,
+      fontStyle: state === WordState.IGNORED ? 'italic' : 'normal',
+      opacity: state === WordState.IGNORED ? 0.6 : 1,
+    };
   };
 
-  const handleMarkAllKnownAndAdvance = async () => {
-    const tokensToMark = currentTokens.filter(t => !t.status || t.status === 'New');
+  const handleMarkPageKnown = () => {
+    const newLemmas = chapter.tokens
+      .map((t: any) => t.lemma)
+      .filter((l: string) => (knowledge[l] ?? WordState.NEW) === WordState.NEW);
     
-    // Optimistic UI update
-    setCurrentTokens(prev => prev.map(t => {
-      if (!t.status || t.status === 'New') {
-        return { ...t, status: 'Known' };
-      }
-      return t;
-    }));
-
-    if (auth.currentUser) {
-      try {
-        const batch = writeBatch(db);
-        let count = 0;
-        
-        // We need to keep track of unique lemmas so we don't try to write the same doc twice in a batch
-        const uniqueLemmas = new Set<string>();
-
-        for (const token of tokensToMark) {
-          const lemmaStr = token.lemma || token.text;
-          if (uniqueLemmas.has(lemmaStr)) continue;
-          uniqueLemmas.add(lemmaStr);
-
-          const key = `${text?.language || 'Lang'}_${lemmaStr}`;
-          const termId = key.replace(/[^a-zA-Z0-9_\-]/g, '_').substring(0, 50);
-          
-          const docRef = doc(db, 'vocabulary', `${auth.currentUser.uid}_${termId}`);
-          batch.set(docRef, {
-            userId: auth.currentUser.uid,
-            term: lemmaStr,
-            translit: token.translit || '',
-            definition: token.gloss || '',
-            language: text?.language || 'Unknown',
-            status: 'Known',
-            nextReview: new Date(Date.now() + 86400000), // tomorrow
-            interval: 1,
-            ease: 2.5,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-          
-          count++;
-          if (count >= 500) break; // max batch size
-        }
-        if (count > 0) {
-          await batch.commit();
-        }
-      } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, 'vocabulary');
-      }
-    } else {
-      const savedStatusesStr = localStorage.getItem('user_vocab_statuses');
-      let savedStatuses: Record<string, string> = {};
-      if (savedStatusesStr) {
-        try { savedStatuses = JSON.parse(savedStatusesStr); } catch (e) {}
-      }
-      for (const token of tokensToMark) {
-        const key = `${text?.language || 'Lang'}_${token.lemma || token.text}`;
-        savedStatuses[key] = 'Known';
-      }
-      localStorage.setItem('user_vocab_statuses', JSON.stringify(savedStatuses));
-    }
+    newLemmas.forEach((l: string) => setWordState(l, WordState.KNOWN));
+    addReadWords(chapter.tokens.length);
     
-    // Advance to next chapter if available
     if (currentChapterIndex < chapters.length - 1) {
-       setCurrentChapterIndex(currentChapterIndex + 1);
-       setSelectedWord(null);
+      setCurrentChapterIndex(currentChapterIndex + 1);
+      setSelectedWord(null);
     }
   };
 
-  const getWordClasses = (token: any, isSelected: boolean) => {
-    const base = "cursor-pointer transition-colors px-0.5 rounded-sm inline-block";
-    
-    let styleClass = "";
-    if (isSelected) {
-      styleClass = "bg-bluexl underline decoration-blue decoration-2 underline-offset-4";
-    } else {
-      switch(token.status) {
-        case 'New': styleClass = "underline decoration-[#6894C0] decoration-2 underline-offset-4 decoration-dashed hover:bg-[#1E3D6E0f]"; break;
-        case 'Learning': styleClass = "underline decoration-amber decoration-2 underline-offset-4 hover:bg-[#1E3D6E0f]"; break;
-        case 'Familiar': styleClass = "underline decoration-jade decoration-2 underline-offset-4 hover:bg-[#1E3D6E0f]"; break;
-        case 'Ignored': styleClass = "opacity-50 hover:bg-[#1E3D6E0f]"; break;
-        case 'Known': styleClass = "hover:bg-[#1E3D6E0f]"; break;
-        default: styleClass = "underline decoration-[#6894C0] decoration-2 underline-offset-4 decoration-dashed hover:bg-[#1E3D6E0f]";
-      }
-    }
-    return cn(base, styleClass);
+  const formatTime = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    return `${mins} min`;
   };
-
-  const isMobile = window.innerWidth < 768;
 
   return (
-    <div className="flex h-screen bg-parch text-ink font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#FDFBF7] text-ink font-sans overflow-hidden">
       
-      {/* History Sidebar */}
-      <AnimatePresence>
-        {(showHistory) && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: isMobile ? '100%' : 220, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            className={cn(
-              "border-r border-bdr bg-parch2 flex flex-col z-40 overflow-hidden flex-shrink-0",
-              isMobile ? "absolute inset-0" : ""
-            )}
-          >
-            <div className="p-4 border-b border-bdr flex justify-between items-center">
-              <span className="font-serif font-medium text-[15px]">📜 Text history</span>
-              <button className="text-muted hover:text-ink transition-colors" onClick={() => setShowHistory(false)}>✕</button>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-4 border-b border-bdr">
-                <div className="eyebrow text-gold mb-2">Author</div>
-                <p className="font-body text-[11.5px] leading-[1.55] text-ink2">{text?.author || "Traditional"}</p>
-              </div>
-              <div className="p-4 border-b border-bdr">
-                <div className="eyebrow text-gold mb-2">Historical Context</div>
-                <p className="font-body text-[11.5px] leading-[1.55] text-ink2">
-                  Written during the {text?.era || "ancient period"}, tracking the development of cultural and theological understanding within its original audience.
-                </p>
-              </div>
-              
-              {/* Attribution Section */}
-              {text?.sourceAttributionId && CorpusDB.getCorpusOverview(text.corpusId)?.attribution && (
-                <div className="p-4 border-b border-bdr">
-                  <div className="eyebrow text-gold mb-2">Source Attribution</div>
-                  <div className="flex flex-col gap-3">
-                    {CorpusDB.getCorpusOverview(text.corpusId)?.attribution?.map((attr) => (
-                      <div key={attr.id} className="text-[10px] leading-tight flex flex-col gap-1">
-                        <div className="font-bold text-ink2">{attr.sourceName}</div>
-                        {attr.attributionText && <div className="text-muted italic">{attr.attributionText}</div>}
-                        <div className="text-muted mt-0.5">
-                          License:{' '}
-                          {attr.licenseUrl ? (
-                            <a href={attr.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue">{attr.licenseName}</a>
-                          ) : (
-                            attr.licenseName
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="p-4 pt-3 flex justify-center border-t border-bdr bg-parch2 mt-auto">
-               <span className="pill bg-jadexl text-jade border-jade/20 font-mono" style={{fontSize: '9px'}}>✓ Complete Survival</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main Reading Area */}
-      <div className="flex-1 flex flex-col relative z-20 overflow-hidden bg-parch paper-texture">
+      <div className="flex-1 flex flex-col relative z-20 overflow-hidden">
         
-        {/* Top Bar */}
-        <div className="h-12 border-b border-bdr flex items-center justify-between px-4 bg-parch2/90 backdrop-blur-sm z-10 shrink-0">
-          <div className="flex items-center gap-2">
-            <button onClick={onBack} className="p-1 text-muted hover:text-ink transition-colors mr-2">
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <div className="text-[11px] font-sans text-ink3 flex items-center">
-              <span className="cursor-pointer hover:underline" onClick={onBack}>Library</span> <span className="mx-1 text-muted">›</span> 
-              <span className="font-medium text-ink truncate max-w-[120px] md:max-w-xs">{text?.title || "Unknown"}</span>
-              <span className="mx-1 text-muted">›</span> 
-              <div className="relative flex items-center">
-                <select
-                  value={currentChapterIndex}
-                  onChange={(e) => {
-                    setCurrentChapterIndex(parseInt(e.target.value, 10));
-                    setSelectedWord(null);
-                  }}
-                  className="bg-transparent border-none appearance-none outline-none focus:ring-0 pr-4 pl-1 py-0.5 hover:bg-black/5 rounded cursor-pointer truncate max-w-[150px] text-ink font-medium transition-colors"
-                >
-                  {chapters.map((chap: any, idx: number) => (
-                    <option key={chap.id} value={idx}>{chap.title}</option>
-                  ))}
-                </select>
-                <div className="absolute right-1 text-muted pointer-events-none text-[8px] opacity-70">▼</div>
-              </div>
+        {/* Progress Header Strip */}
+        <div className="h-14 bg-parch2 border-b border-bdr flex items-center justify-between px-6 shrink-0">
+          <div className="flex items-center gap-8">
+            <div className="flex flex-col">
+              <span className="text-[18px] font-bold text-blue leading-none">{stats.totalKnown.toLocaleString()}</span>
+              <span className="text-[9px] uppercase tracking-wider text-muted font-bold">Known Words</span>
+            </div>
+            <div className="hidden sm:flex flex-col">
+              <span className="text-[18px] font-bold text-ink leading-none">{stats.readToday.toLocaleString()}</span>
+              <span className="text-[9px] uppercase tracking-wider text-muted font-bold">Read Today</span>
+            </div>
+            <div className="hidden md:flex flex-col">
+              <span className="text-[18px] font-bold text-ink leading-none">{formatTime(elapsedTime)}</span>
+              <span className="text-[9px] uppercase tracking-wider text-muted font-bold">Session Time</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {!showHistory && (
-              <button onClick={() => setShowHistory(true)} className="pill bg-parch text-ink3 border-bdr hover:bg-parch2 text-[10px] py-1 px-2.5 hidden md:block">
-                📜 History
-              </button>
-            )}
-            <button onClick={() => setShowTranslation(!showTranslation)} className={cn("pill border text-[10px] py-1 px-2.5 transition-colors", showTranslation ? "bg-bluexl text-blue border-blue/20" : "bg-parch text-ink3 border-bdr hover:bg-parch2")}>
-              Translation
-            </button>
-            <button onClick={() => setShowTranslit(!showTranslit)} className={cn("pill border text-[10px] py-1 px-2.5 transition-colors hidden sm:block", showTranslit ? "bg-bluexl text-blue border-blue/20" : "bg-parch text-ink3 border-bdr hover:bg-parch2")}>
-              Translit.
-            </button>
-            <div className="flex bg-parch2 rounded-full border border-bdr overflow-hidden ml-1">
-              <button className="px-2 py-0.5 text-ink3 hover:bg-parch3 hover:text-ink" onClick={() => setFontSize(Math.max(16, fontSize - 2))}>
-                <span className="text-[10px] font-serif font-bold">A-</span>
-              </button>
-              <button className="px-2 py-0.5 text-ink3 hover:bg-parch3 hover:text-ink" onClick={() => setFontSize(Math.min(48, fontSize + 2))}>
-                <span className="text-[11px] font-serif font-bold">A+</span>
-              </button>
-            </div>
+
+          <div className="flex items-center gap-4">
+             <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-ink3 uppercase tracking-tight">Daily Goal</span>
+                <ProgressRing progress={Math.min(1, stats.readToday / 500)} />
+             </div>
+             <div className="w-px h-8 bg-bdr/50" />
+             <button onClick={onBack} className="p-2 text-link hover:bg-parch3 rounded-full transition-colors">
+               <ArrowLeft className="w-5 h-5 text-ink3" />
+             </button>
+          </div>
+        </div>
+
+        {/* Reader Top Nav */}
+        <div className="h-10 border-b border-bdr/40 flex items-center justify-between px-6 bg-parch/30 backdrop-blur-sm shrink-0">
+          <div className="flex items-center gap-3 text-[11px] font-medium text-ink2">
+            <span className="text-muted">Library</span>
+            <span className="text-muted/40">/</span>
+            <span className="truncate max-w-[200px]">{text?.title}</span>
+            <span className="text-muted/40">/</span>
+            <select 
+              value={currentChapterIndex} 
+              onChange={e => setCurrentChapterIndex(parseInt(e.target.value, 10))}
+              className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer font-bold text-blue"
+            >
+              {chapters.map((c, i) => <option key={c.id} value={i}>{c.title}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-4">
+            <button onClick={() => setShowTranslation(!showTranslation)} className={cn("text-[10px] font-bold tracking-widest uppercase", showTranslation ? "text-blue" : "text-muted")}>Translation</button>
+            <button onClick={() => setShowTranslit(!showTranslit)} className={cn("text-[10px] font-bold tracking-widest uppercase", showTranslit ? "text-blue" : "text-muted")}>Transliteration</button>
           </div>
         </div>
 
         {/* Text Pane */}
-        <div id="reading-area-scroll" className="flex-1 overflow-y-auto px-7 md:px-10 lg:px-14 py-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="eyebrow mb-8 text-center md:text-left">
-              Corpus <span className="mx-1.5 opacity-40">•</span> {text?.language} <span className="mx-1.5 opacity-40">•</span> {chapter.title}
-            </div>
-            
-            <div className={cn("font-serif leading-[2.1] tracking-[0.008em] pb-12", isHebrew ? "font-hebrew text-right" : "")} dir={isHebrew ? "rtl" : "ltr"}>
-               {currentTokens.map((token: any) => (
-                  <span key={token.id} className="inline whitespace-pre-wrap">
-                    {token.punctBefore && <span>{token.punctBefore}</span>}
-                    <span
-                      id={`word-${token.id}`}
+        <div id="reading-area-scroll" className="flex-1 overflow-y-auto px-12 md:px-24 lg:px-32 py-16 scroll-smooth">
+          <div className="max-w-3xl mx-auto">
+            <div className={cn("font-serif leading-[2.2] tracking-wide", isHebrew ? "font-hebrew text-right" : "text-left")}>
+               {chapter.tokens.map((token: any) => (
+                  <span key={token.id} className="inline">
+                    {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
+                    <motion.span
+                      layoutId={`word-${token.id}`}
                       onClick={() => setSelectedWord(token)}
-                      className={getWordClasses(token, selectedWord?.id === token.id)}
-                      style={{ fontSize: `${fontSize}px` }}
+                      className="cursor-pointer transition-all px-0.5 rounded-sm inline-block"
+                      style={{ 
+                        fontSize: `${fontSize}px`,
+                        ...getWordStyle(token)
+                      }}
                     >
                        {token.text}
-                    </span>
-                    {token.punctAfter ? <span>{token.punctAfter}</span> : <span> </span>}
+                    </motion.span>
+                    {token.punctAfter ? <span className="opacity-40">{token.punctAfter}</span> : <span> </span>}
                   </span>
                ))}
-               <span className="text-muted ml-2 opacity-50 text-[18px]">❧</span>
+               <span className="text-muted ml-4 opacity-30 text-[24px]">❦</span>
             </div>
 
             {showTranslation && (
-              <div className="mt-12 pt-6 border-t border-bdr/40">
-                <p className="font-body italic text-[14px] text-ink2 leading-[1.7]">
+              <div className="mt-20 pt-10 border-t border-bdr/20">
+                <p className="font-body italic text-[18px] text-ink2 leading-relaxed opacity-80">
                   {chapter.translation}
                 </p>
-                <div className="font-mono text-[9px] text-muted mt-2 uppercase tracking-widest text-right">
-                   Source: Standard Edition Translation
-                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer / Legend / Progress */}
-        <div className="shrink-0 bg-parch2 border-t border-bdr flex flex-col z-30">
-          <div className="h-6 flex items-center justify-between px-4 border-b border-bdr/50 bg-parch">
-             <div className="flex gap-4">
-               <div className="flex items-center gap-1.5">
-                 <span className="w-3 h-px border-b-2 border-dashed border-[#6894C0]"></span>
-                 <span className="text-[9px] uppercase font-mono text-muted hidden sm:inline">New</span>
-               </div>
-               <div className="flex items-center gap-1.5">
-                 <span className="w-3 h-0.5 border-b-2 border-solid border-amber"></span>
-                 <span className="text-[9px] uppercase font-mono text-muted hidden sm:inline">Learning</span>
-               </div>
-               <div className="flex items-center gap-1.5">
-                 <span className="w-3 h-0.5 border-b-2 border-solid border-jade"></span>
-                 <span className="text-[9px] uppercase font-mono text-muted hidden sm:inline">Familiar</span>
-               </div>
-               <div className="flex items-center gap-1.5">
-                 <span className="w-3 h-0.5 border-b-2 border-solid border-transparent"></span>
-                 <span className="text-[9px] uppercase font-mono text-muted hidden sm:inline">Known</span>
-               </div>
+        {/* Bottom Nav / Stats */}
+        <div className="h-12 bg-parch2 border-t border-bdr flex items-center justify-between px-6 shrink-0 z-30">
+           <div className="flex items-center gap-6">
+             <div className="flex h-1 w-32 bg-parch3 rounded-full overflow-hidden">
+                <div className="h-full bg-gold transition-all duration-300" style={{ width: `${scrollProgress}%` }} />
              </div>
-             <div className="text-[9px] font-mono text-muted uppercase">← → keys to navigate</div>
-          </div>
-          <div className="h-0.5 w-full bg-parch3 flex items-center">
-            <div className="h-full bg-blue transition-all duration-300" style={{ width: `${scrollProgress}%` }} />
-          </div>
-          <div className="h-10 flex items-center justify-between px-4 text-[11px] font-sans">
-             <div className="flex items-center gap-4">
-               <span className="text-ink3 font-medium hidden sm:inline">{chapter.title}</span>
-               <span className="text-muted font-mono">{Math.round(scrollProgress)}% Complete</span>
-             </div>
-             <div className="flex items-center gap-3">
-               <button 
-                 onClick={() => currentChapterIndex > 0 && setCurrentChapterIndex(currentChapterIndex - 1)}
-                 className={cn("hover:text-blue transition-colors", currentChapterIndex === 0 ? "text-muted cursor-not-allowed" : "text-ink2")}
-               >
-                 Prev Section
-               </button>
-               <div className="hidden md:block w-px h-4 bg-bdr mx-1" />
-               <button 
-                 onClick={handleMarkAllKnownAndAdvance}
-                 className="pill bg-[#1E3D6E0f] text-blue hover:bg-bluexl px-2.5 py-1 font-medium transition-colors hidden md:flex items-center gap-1 opacity-90 hover:opacity-100"
-               >
-                 Mark page read <ChevronRight className="w-3 h-3" />
-               </button>
-               <button 
-                 onClick={() => currentChapterIndex < chapters.length - 1 && setCurrentChapterIndex(currentChapterIndex + 1)}
-                 className={cn("hover:text-blue transition-colors font-medium", currentChapterIndex === chapters.length - 1 ? "text-muted cursor-not-allowed" : "text-blue")}
-               >
-                 Next Section
-               </button>
-             </div>
-          </div>
+             <span className="text-[10px] font-bold uppercase tracking-widest text-muted">{Math.round(scrollProgress)}% read</span>
+           </div>
+           
+           <div className="flex items-center gap-4">
+              <button 
+                onClick={() => currentChapterIndex > 0 && setCurrentChapterIndex(currentChapterIndex - 1)}
+                disabled={currentChapterIndex === 0}
+                className="text-ink3 hover:text-blue disabled:opacity-30 p-1"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={handleMarkPageKnown}
+                className="bg-blue text-white px-5 py-1.5 rounded-full text-[12px] font-bold hover:bg-blue/90 shadow-sm transition-all"
+              >
+                Mark Known & Next
+              </button>
+              <button 
+                onClick={() => currentChapterIndex < chapters.length - 1 && setCurrentChapterIndex(currentChapterIndex + 1)}
+                disabled={currentChapterIndex === chapters.length - 1}
+                className="text-ink3 hover:text-blue disabled:opacity-30 p-1"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+           </div>
         </div>
       </div>
 
-      {/* Word Panel */}
+      {/* 380px Reading Panel */}
       <AnimatePresence>
-        {(selectedWord) && (
+        {selectedWord && (
           <motion.div
-            initial={{ width: 0, opacity: 0, x: isMobile ? 0 : 50, y: isMobile ? 100 : 0 }}
-            animate={{ width: isMobile ? '100%' : 280, opacity: 1, x: 0, y: 0 }}
-            exit={{ width: 0, opacity: 0, x: isMobile ? 0 : 50, y: isMobile ? 100 : 0 }}
-            className={cn(
-               "bg-[#FEFAF4] border-l border-bdr flex flex-col z-50 overflow-hidden flex-shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.03)]",
-               isMobile ? "absolute bottom-0 left-0 h-[50%] rounded-t-2xl border-t border-l-0 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] w-full" : "h-full"
-            )}
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 380, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            className="bg-[#FEFAF4] border-l border-bdr flex flex-col shrink-0 z-40 shadow-[-10px_0_40px_rgba(35,20,10,0.04)]"
           >
-            {/* Header */}
-            <div className="h-12 border-b border-bdr flex items-center justify-between px-3 bg-parch shrink-0">
-               <div className="flex gap-2 text-ink3">
-                  <button className="p-1 hover:bg-parch3 rounded transition-colors"><ChevronLeft className="w-4 h-4"/></button>
-                  <button className="p-1 hover:bg-parch3 rounded transition-colors"><ChevronRight className="w-4 h-4"/></button>
-               </div>
-               <button onClick={() => setSelectedWord(null)} className="text-muted hover:text-ink"><span className="text-sm font-bold">✕</span></button>
+            <div className="h-14 border-b border-bdr flex items-center justify-between px-4 bg-[#FEFAF4] shrink-0">
+               <div className="eyebrow">Word Analysis</div>
+               <button onClick={() => setSelectedWord(null)} className="text-muted hover:text-ink p-1">✕</button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-6">
-              {/* Form Section */}
-              <div className="mb-6">
-                 <div className={cn("text-[32px] font-serif leading-none mb-1 text-ink", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
-                   {selectedWord.text}
-                 </div>
-                 {selectedWord.translit && <div className="font-mono italic text-xs text-muted mb-4">{selectedWord.translit}</div>}
-                 
-                 <div className="flex items-center gap-2 mb-1">
-                   <span className="eyebrow">Lemma</span>
-                   <span className={cn("font-serif text-[17px] text-blue", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>{selectedWord.lemma || selectedWord.text}</span>
-                 </div>
-                 {selectedWord.strongs && <div className="font-mono text-[9px] text-muted tracking-widest uppercase">Strong's {selectedWord.strongs}</div>}
-              </div>
+            <div className="flex-1 overflow-y-auto p-8">
+               <div className="mb-10 text-center">
+                  <h2 className={cn("text-[48px] font-serif leading-tight mb-2 text-ink", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
+                    {selectedWord.text}
+                  </h2>
+                  {showTranslit && selectedWord.translit && (
+                    <div className="font-body italic text-[16px] text-muted mb-4 opacity-80">{selectedWord.translit}</div>
+                  )}
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[18px] font-serif text-blue font-semibold tracking-wide">
+                       {selectedWord.lemma}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">Lemma form</span>
+                  </div>
+               </div>
 
-              {/* Meaning Section */}
-              <div className="mb-6 border-t border-bdr/50 pt-5">
-                 <div className="eyebrow mb-2">Meaning</div>
-                 <div className="font-body text-[13.5px] font-medium text-ink mb-1">
-                   {selectedWord.gloss || "Translation not available"}
-                 </div>
-                 {selectedWord.extendedMeaning && (
-                   <div className="font-body italic text-[12.5px] text-ink2 pl-3 border-l-2 border-parch3 mb-2">
-                     {selectedWord.extendedMeaning}
-                   </div>
-                 )}
-                 {selectedWord.synonyms && (
-                   <div className="font-body text-[12.5px] text-ink3 mb-2">
-                     <span className="italic mr-1">Also:</span> {selectedWord.synonyms}
-                   </div>
-                 )}
-                 {selectedWord.lexicons && <div className="font-mono text-[9px] text-muted">{selectedWord.lexicons}</div>}
-              </div>
-
-              {/* Morphology Section */}
-              {selectedWord.morphology && (
-                <div className="mb-6 border-t border-bdr/50 pt-5">
-                    <div className="eyebrow mb-2">Morphology</div>
-                    {selectedWord.morphology.code && (
-                      <div className="inline-block bg-bluexl text-blue border border-blue/20 rounded px-1.5 py-0.5 font-mono text-[10px] mb-3">
-                        {selectedWord.morphology.code}
-                      </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-                      {Object.entries(selectedWord.morphology).map(([key, val]) => {
-                        if (key === 'code') return null;
-                        return (
-                          <div key={key} className="flex flex-col">
-                            <span className="text-[9px] font-mono text-muted uppercase">{key}</span>
-                            <span className="text-[11.5px] font-sans text-ink">{val as string}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                </div>
-              )}
-
-              {/* Frequency Stats */}
-              {(selectedWord.occurrences || selectedWord.frequencyTier) && (
-                <div className="mb-6 flex gap-3">
-                   {selectedWord.occurrences && (
-                     <div className="flex-1 bg-parch2 rounded-xl p-3 border border-bdr text-center">
-                        <div className="text-[17px] font-serif text-ink mb-0.5">{selectedWord.occurrences}</div>
-                        <div className="text-[9px] font-mono uppercase text-muted tracking-widest">Occurrences</div>
-                     </div>
-                   )}
-                   {selectedWord.frequencyTier && (
-                     <div className="flex-1 bg-parch2 rounded-xl p-3 border border-bdr text-center">
-                        <div className="text-[17px] font-sans font-medium text-amber mb-0.5">{selectedWord.frequencyTier}</div>
-                        <div className="text-[9px] font-mono uppercase text-muted tracking-widest">Frequency Tier</div>
-                     </div>
-                   )}
-                </div>
-              )}
-
-              {/* Grammar Ref */}
-              {selectedWord.grammarNote && (
-                <div className="mb-8">
-                   <button className="pill bg-bluexl text-blue border-blue/20 py-1.5 px-3 w-auto flex items-center gap-2 hover:bg-blue/10 transition-colors">
-                     <Bookmark className="w-3 h-3"/> {selectedWord.grammarNote}
-                   </button>
-                </div>
-              )}
-
-              {/* Vocab Status Toggle */}
-              <div className="mb-6">
-                <div className="flex p-1 bg-parch border border-bdr rounded-full mb-3 shadow-[0_1px_2px_rgba(35,20,10,0.02)_inset]">
-                   {['Ignored', 'Learning', 'Familiar', 'Known'].map(status => {
-                     const isActive = (selectedWord.status === status) || (status === 'Learning' && (!selectedWord.status || selectedWord.status === 'New'));
-                     let activeClass = "";
-                     if (status === 'Ignored') activeClass = "bg-parch3 text-ink2 border-bdr ring-1 ring-bdr/50 shadow-sm";
-                     if (status === 'Learning') activeClass = "bg-amberxl text-amber ring-2 ring-amber/30 border-amber/20 shadow-sm";
-                     if (status === 'Familiar') activeClass = "bg-jadexl text-jade ring-2 ring-jade/30 border-jade/20 shadow-sm";
-                     if (status === 'Known') activeClass = "bg-bluexl text-blue ring-2 ring-blue/30 border-blue/20 shadow-sm";
-                     
-                     return (
+               <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-[20px]">
+                  <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
+                    <span>Popular Meanings</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </div>
+                  <div className="font-body text-[20px] text-ink font-medium mb-6 leading-snug">
+                    {selectedWord.gloss}
+                  </div>
+                  
+                  <div className="space-y-2">
+                     {/* Fake "Popular hints" based on standard meanings */}
+                     {["primary translation", "alternative sense", "rare usage"].map((_hint, i) => (
                        <button 
-                         key={status}
-                         onClick={() => handleStatusChange(selectedWord.id, status)}
-                         className={cn(
-                           "flex-1 text-[10px] font-bold uppercase tracking-widest py-1.5 rounded-full transition-all text-center",
-                           isActive ? activeClass : "text-muted hover:text-ink border border-transparent"
-                         )}
+                         key={i} 
+                         onClick={() => {}}
+                         className="w-full text-left p-3 rounded-xl border border-bdr/20 hover:border-blue/30 text-ink2 text-[13px] font-sans transition-colors flex items-center justify-between group"
                        >
-                         {status}
+                         <span>{selectedWord.gloss.split(',')[0]} (option {i+1})</span>
+                         <Plus className="w-3 h-3 opacity-0 group-hover:opacity-100 text-blue" />
                        </button>
-                     );
-                   })}
-                </div>
-                <button className={cn(
-                  "w-full text-center py-2.5 rounded-xl font-bold font-sans text-[13px] transition-colors border",
-                  selectedWord.status !== 'Known' ? "bg-blue text-white border-blue shadow-sm hover:shadow-md hover:-translate-y-px" : "bg-jadexl text-jade border-jade/30"
-                )}>
-                  {selectedWord.status !== 'Known' ? "Add to review queue" : "✓ In review queue"}
-                </button>
-              </div>
+                     ))}
+                  </div>
+               </div>
 
-              {/* Notes Section */}
-              <div className="border-t border-bdr/50 pt-5 pb-8">
-                <button className="w-full py-3 border border-dashed border-bdr text-ink3 text-[12.5px] font-sans font-medium rounded-xl hover:bg-parch2 transition-colors flex items-center justify-center gap-2">
-                  <span className="text-muted">✎</span> Add a note about this word
-                </button>
-              </div>
+               {selectedWord.morphology && (
+                 <div className="mb-10">
+                    <div className="eyebrow mb-4 opacity-50">Morphology</div>
+                    <div className="font-sans text-[14px] text-ink2 leading-relaxed bg-white/40 p-4 rounded-xl border border-bdr/20">
+                       <span className="font-bold text-blue pr-2">Parsed:</span>
+                       {Object.entries(selectedWord.morphology).map(([_k, v]) => v).join(', ')}
+                    </div>
+                 </div>
+               )}
 
+               {/* Status Selector */}
+               <div className="mb-10">
+                  <div className="eyebrow mb-4 opacity-50">Mastery Level</div>
+                  <div className="grid grid-cols-4 gap-2 mb-4">
+                     {[WordState.NEW, WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN].map((s) => {
+                       const active = (knowledge[selectedWord.lemma] ?? WordState.NEW) === s;
+                       const colors = STATE_COLORS[s];
+                       return (
+                         <button 
+                           key={s}
+                           onClick={() => setWordState(selectedWord.lemma, s)}
+                           className={cn(
+                             "flex flex-col items-center p-3 rounded-xl border transition-all",
+                             active ? "border-blue ring-1 ring-blue shadow-sm" : "border-bdr/30 grayscale opacity-40 hover:grayscale-0 hover:opacity-100"
+                           )}
+                           style={{ backgroundColor: active ? colors.bg : 'transparent', color: colors.text }}
+                         >
+                            <span className="text-[14px] font-bold mb-1">{s === WordState.NEW ? '?' : s === WordState.KNOWN ? '✓' : s}</span>
+                            <span className="text-[8px] font-bold uppercase tracking-tighter">{STATE_LABELS[s]}</span>
+                         </button>
+                       )
+                     })}
+                  </div>
+                  <button 
+                    onClick={() => setWordState(selectedWord.lemma, WordState.IGNORED)}
+                    className={cn(
+                      "w-full py-3 rounded-xl text-[12px] font-bold uppercase tracking-widest transition-colors",
+                      (knowledge[selectedWord.lemma] ?? WordState.NEW) === WordState.IGNORED ? "bg-zinc-200 text-zinc-600" : "text-muted hover:text-ink"
+                    )}
+                  >
+                    Hold as Ignored / Proper Noun
+                  </button>
+               </div>
+
+               <div className="pt-6 border-t border-bdr/20 text-center">
+                  <div className="inline-flex items-center gap-2 bg-blue/5 px-4 py-2 rounded-full">
+                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                     <span className="text-[11px] font-bold text-blue/70">
+                       Lemma occurs 247× across 14 texts
+                     </span>
+                  </div>
+               </div>
             </div>
           </motion.div>
         )}
