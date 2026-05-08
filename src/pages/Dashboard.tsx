@@ -41,18 +41,22 @@ export const Dashboard = () => {
   }, [knowledge]);
 
   const recentVocab = useMemo(() => {
-    const highlighted = Object.entries(knowledge).filter(([, info]) => {
-      const state = typeof info === 'object' ? (info as any).state : info;
-      return state !== WordState.NEW;
-    }).slice(0, 6);
-    return highlighted.map(([lemma, info]) => {
-      const state = typeof info === 'object' ? (info as any).state : info;
-      return {
-        lemma,
-        state,
-        gloss: 'Demo definition'
-      };
-    });
+    return Object.entries(knowledge)
+      .filter(([, info]) => {
+        const state = typeof info === 'object' ? (info as any).state : info;
+        return state !== WordState.NEW && state !== WordState.IGNORED;
+      })
+      .sort((a, b) => {
+        const aDate = typeof a[1] === 'object' ? (a[1] as any).addedAt || '' : '';
+        const bDate = typeof b[1] === 'object' ? (b[1] as any).addedAt || '' : '';
+        return bDate.localeCompare(aDate);
+      })
+      .slice(0, 6)
+      .map(([lemma, info]) => {
+        const state = typeof info === 'object' ? (info as any).state : info;
+        const gloss = typeof info === 'object' ? (info as any).gloss : undefined;
+        return { lemma, state, gloss };
+      });
   }, [knowledge]);
 
   let greeting = "Good evening";
@@ -80,7 +84,7 @@ export const Dashboard = () => {
            <div className="card bg-amberxl/30 border-amber/20 p-4 flex items-center gap-4 shadow-sm">
               <span className="text-2xl">🔥</span>
               <div>
-                <div className="text-2xl font-serif font-bold text-amber leading-none">12</div>
+                <div className="text-2xl font-serif font-bold text-amber leading-none">{stats.streak}</div>
                 <div className="eyebrow text-amber/60 text-[8px] mt-1">Day Streak</div>
               </div>
            </div>
@@ -152,8 +156,8 @@ export const Dashboard = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14 cursor-pointer" onClick={() => navigate('/app/statistics')}>
         <StatCard label="Words Known" value={knownCount.toLocaleString()} />
         <StatCard label="Words Learning" value={learningCount.toLocaleString()} />
-        <StatCard label="Total Words Read" value={(stats.readToday + 12400).toLocaleString()} />
-        <StatCard label="Accuracy" value="94%" />
+        <StatCard label="Total Words Read" value={stats.readToday.toLocaleString()} />
+        <StatCard label="Reading Time" value={`${stats.readingTime || 0}m`} />
       </div>
 
       {/* Recent Vocab */}
@@ -169,13 +173,16 @@ export const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {recentVocab.map((w, i) => (
-              <div key={i} className="card p-4 border-bdr/40 hover:scale-[1.02] transition-transform shadow-sm">
-                 <div className="text-[18px] font-serif text-ink mb-1 truncate" dir={w.lemma.match(/[א-ת]/) ? 'rtl' : 'ltr'}>
+              <div key={i} className="card p-4 border-bdr/40 hover:scale-[1.02] transition-transform shadow-sm flex flex-col gap-1">
+                 <div className="text-[18px] font-serif text-ink leading-tight truncate" dir={w.lemma.match(/[א-ת]/) ? 'rtl' : 'ltr'}>
                    {w.lemma}
                  </div>
-                 <div 
-                   className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full inline-block"
-                   style={{ backgroundColor: STATE_COLORS[w.state as WordState].bg, color: STATE_COLORS[w.state as WordState].text }}
+                 {w.gloss && (
+                   <div className="font-body text-[11px] italic text-muted truncate">{w.gloss}</div>
+                 )}
+                 <div
+                   className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full inline-block w-fit mt-auto"
+                   style={{ backgroundColor: STATE_COLORS[w.state as WordState].bg || '#EAE5D9', color: STATE_COLORS[w.state as WordState].text }}
                  >
                    {STATE_LABELS[w.state as WordState]}
                  </div>
