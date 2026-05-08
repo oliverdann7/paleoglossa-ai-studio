@@ -23,7 +23,7 @@ export const OshbAdapter: ContentSourceAdapter = {
     return `stub raw XML data for ${ref}`;
   },
   
-  async normalize(raw: any, metadata: any) {
+  async normalize(_raw: any, metadata: any) {
     // Stub: Parse the OSHB XML (OSIS/TEI-like format with word nodes)
     return {
       text: {

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Search } from 'lucide-react';
+import { Search, Library as LibraryIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorpusDB } from '../data/corpus';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
@@ -176,8 +176,17 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-        {filteredTexts.map((text, i) => (
+      {filteredTexts.length === 0 ? (
+        <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
+          <LibraryIcon className="w-12 h-12 text-muted mb-4" />
+          <h3 className="font-serif text-[24px] text-ink mb-2">Shelf Empty</h3>
+          <p className="text-ink3 max-w-sm mx-auto">
+            Import a text or pick one from the curated library to begin. Try adjusting your filters if you can't find what you're looking for.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+          {filteredTexts.map((text, i) => (
            <motion.div
             key={text.id}
              initial={{ opacity: 0, y: 15 }}
@@ -238,6 +247,7 @@ export const Library = ({ onSelectText }: { onSelectText: (text: any) => void })
            </motion.div>
         ))}
       </div>
+      )}
     </div>
   );
 };

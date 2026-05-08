@@ -157,10 +157,13 @@ export const Review = ({ onBack }: { onBack: () => void }) => {
            <div className="w-16 h-16 bg-blue/10 text-blue rounded-full flex items-center justify-center mx-auto mb-6">
               <Award className="w-8 h-8" />
            </div>
-           <h2 className="text-[36px] font-serif font-bold text-ink mb-2">SRS Review Session</h2>
-           <p className="text-ink2 mb-10 max-w-md mx-auto">
-             Reinforce {queue.length} words due for review. We prioritize words you're still mastering.
-           </p>
+          <h2 className="text-[36px] font-serif font-bold text-ink mb-2">SRS Review Session</h2>
+          <p className="text-ink2 mb-10 max-w-md mx-auto">
+            {queue.length === 0 
+              ? "No cards due. Read more to find new words to learn."
+              : `Reinforce ${queue.length} words due for review. We prioritize words you're still mastering.`
+            }
+          </p>
 
            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 text-left">
               <div className="bg-parch p-4 rounded-xl border border-bdr/40">

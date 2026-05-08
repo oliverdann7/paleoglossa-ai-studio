@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { TrendingUp, Clock, BookOpen, Zap, History } from 'lucide-react';
+import { TrendingUp, Clock, BookOpen, Zap, History, BarChart2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
 import { WordState } from '../lib/constants/wordStates';
@@ -86,7 +86,17 @@ export const Statistics = () => {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+      {stats.history.length === 0 && stats.totalKnown === 0 && stats.readToday === 0 ? (
+        <div className="card p-12 text-center border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center mt-8">
+          <BarChart2 className="w-12 h-12 text-muted mb-4" />
+          <h3 className="font-serif text-[24px] text-ink mb-2">No Data Yet</h3>
+          <p className="text-ink3 max-w-sm mx-auto">
+            Read your first 100 words to see your progress here. Head over to the Library to begin!
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
         <StatCard label="Known Words" value={stats.totalKnown.toLocaleString()} trend="+12% vs last week" icon={BookOpen} color="blue" />
         <StatCard label="Words Read (Week)" value="4,283" trend="+542" icon={History} color="amber" />
         <StatCard label="Total Reading Time" value={`${stats.readingTime || 14}h`} trend="+2.4h" icon={Clock} color="green" />
@@ -237,6 +247,8 @@ export const Statistics = () => {
             ))}
          </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

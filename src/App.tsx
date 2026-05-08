@@ -10,6 +10,7 @@ import { Import } from './pages/Import';
 import { Review } from './pages/Review';
 import { Statistics } from './pages/Statistics';
 import { Subscription } from './pages/Subscription';
+import { Settings } from './pages/Settings';
 import { Onboarding } from './pages/Onboarding';
 import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
@@ -179,6 +180,18 @@ export default function App() {
               transition={{ duration: 0.15, ease: "easeOut" }}
             >
               <Statistics />
+            </motion.div>
+          )}
+
+          {activeTab === 'settings' && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <Settings />
             </motion.div>
           )}
 
