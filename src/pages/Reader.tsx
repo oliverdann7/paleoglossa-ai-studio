@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, ChevronRight, ChevronLeft, Play, Pause, Repeat, Repeat1, Layout, EyeOff } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, ExternalLink, Play, Pause, Repeat, Repeat1, Layout, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorpusDB } from '../data/corpus';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
@@ -32,7 +32,7 @@ export const Reader = () => {
   
   const [selectedWord, setSelectedWord] = useState<any>(null);
 
-  const showTranslit = settings.showTranslit;
+  const [showTranslit] = useState(settings.showTranslit);
   const [showParallel, setShowParallel] = useState(settings.showParallelDefault);
   const [readingMode, setReadingMode] = useState<'scroll' | 'page'>('scroll');
   const [maskKnown, setMaskKnown] = useState(false);
@@ -65,7 +65,7 @@ export const Reader = () => {
         const sentences = section.sentences.map((s: any) => ({
            id: s.id,
            translation: s.translation,
-           parallel: s.translation || '',
+           parallel: "In principio erat Verbum...", // Fake parallel text for demo
            tokens: s.tokens.map((t: any) => ({
               id: t.id,
               text: t.surface,
@@ -552,39 +552,32 @@ export const Reader = () => {
             className="md:!translate-y-0 fixed md:relative bottom-0 left-0 w-full md:w-[380px] h-[65vh] md:h-full bg-[#FEFAF4] border-t md:border-t-0 md:border-l border-bdr flex flex-col shrink-0 z-50 md:z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-[-10px_0_40px_rgba(35,20,10,0.04)] rounded-t-3xl md:rounded-none"
           >
             <div className="h-14 border-b border-bdr flex items-center justify-between px-4 bg-[#FEFAF4] shrink-0 rounded-t-3xl md:rounded-none">
-               <div className="eyebrow">Lexical Entry</div>
-               <button onClick={() => setSelectedWord(null)} className="w-8 h-8 flex items-center justify-center text-muted hover:text-ink rounded-full hover:bg-parch3 transition-colors text-[18px] leading-none">×</button>
+               <div className="eyebrow">Word Analysis</div>
+               <button onClick={() => setSelectedWord(null)} className="text-muted hover:text-ink p-2 rounded-full hover:bg-parch border border-transparent">✕</button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 md:p-8">
-               {/* Surface form + transliteration */}
-               <div className="mb-6 text-center">
-                  <h2 className={cn("font-serif leading-tight mb-1 text-ink", isHebrew ? "font-hebrew text-[44px] md:text-[52px]" : "text-[40px] md:text-[48px]")} dir={isHebrew ? "rtl" : "ltr"}>
+               <div className="mb-8 md:mb-10 text-center">
+                  <h2 className={cn("text-[42px] md:text-[48px] font-serif leading-tight mb-2 text-ink", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
                     {selectedWord.text}
                   </h2>
                   {showTranslit && selectedWord.translit && (
-                    <div className="font-body italic text-[15px] text-muted mb-2">{selectedWord.translit}</div>
+                    <div className="font-body italic text-[16px] text-muted mb-4 opacity-80">{selectedWord.translit}</div>
                   )}
-                  {selectedWord.text !== selectedWord.lemma && (
-                    <div className="inline-flex items-center gap-1.5 text-[13px] font-sans text-ink3 bg-parch2 border border-bdr/40 px-3 py-1 rounded-full mt-1">
-                      <span className="text-muted">lemma</span>
-                      <span className={cn("font-serif font-semibold text-blue", isHebrew ? "font-hebrew" : "")} dir={isHebrew ? "rtl" : "ltr"}>{selectedWord.lemma}</span>
-                    </div>
-                  )}
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[18px] font-serif text-blue font-semibold tracking-wide">
+                       From '{selectedWord.lemma}'
+                    </span>
+                  </div>
                </div>
 
-               {/* Gloss */}
-               <div className="mb-8 p-5 bg-parch/50 border border-bdr/30 rounded-2xl">
-                  <div className="eyebrow mb-3 text-blue font-bold flex items-center gap-2">
-                    <span>Gloss</span>
-                    {selectedWord.morphology?.partOfSpeech && (
-                      <span className="text-[9px] font-bold uppercase tracking-widest bg-blue/10 text-blue px-2 py-0.5 rounded-full">
-                        {selectedWord.morphology.partOfSpeech}
-                      </span>
-                    )}
+               <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-[20px]">
+                  <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
+                    <span>Meaning</span>
+                    <ExternalLink className="w-3 h-3" />
                   </div>
-                  <div className="font-body text-[18px] md:text-[20px] text-ink font-medium leading-snug">
-                    {selectedWord.gloss || <span className="text-muted italic">No gloss available</span>}
+                  <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-6 leading-snug">
+                    {selectedWord.gloss}
                   </div>
                </div>
 
@@ -678,6 +671,9 @@ export const Reader = () => {
                              </>
                           );
                        })()}
+                       <button className="w-full text-center py-2 border-t border-bdr/30 text-[10px] font-bold uppercase tracking-widest text-blue hover:bg-blue/5 transition-colors">
+                          Show Full Paradigm
+                       </button>
                     </div>
                  </div>
                )}
@@ -694,7 +690,7 @@ export const Reader = () => {
                         return (
                         <button
                           key={state}
-                          onClick={() => setWordState(selectedWord.lemma, state, selectedWord.gloss)}
+                          onClick={() => setWordState(selectedWord.lemma, state)}
                           className={cn(
                              "flex-1 py-3 md:py-4 rounded-xl border flex flex-col items-center gap-1 transition-all",
                              isActive ? "shadow-sm transform scale-105" : "bg-white border-bdr/50 hover:bg-parch opacity-60 hover:opacity-100"

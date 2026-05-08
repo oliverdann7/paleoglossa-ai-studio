@@ -142,23 +142,3 @@
 .font-greek { font-family: 'Cormorant Garamond', Georgia, serif; }
 .font-hebrew { font-family: 'Noto Serif Hebrew', 'SBL Hebrew', serif; direction: rtl; }
 
-/* Utility: hide scrollbars visually but keep scrolling functional */
-.scrollbar-hide::-webkit-scrollbar,
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.scrollbar-hide,
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Utility: safe-area bottom padding for mobile notch devices */
-.pb-safe { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
-
-/* Subtle paper grain texture using SVG turbulence */
-.paper-texture::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  z-index: 0;
-  background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E');
-}
-
