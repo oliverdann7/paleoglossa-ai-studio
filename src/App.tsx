@@ -18,15 +18,6 @@ import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { seedKnowledge } from './lib/data/seeding';
 
-// Apply saved theme before first render to avoid flash
-try {
-  const saved = localStorage.getItem('paleoglossa_settings');
-  if (saved) {
-    const parsed = JSON.parse(saved);
-    if (parsed.theme) document.documentElement.className = `theme-${parsed.theme}`;
-  }
-} catch { /* ignore */ }
-
 function AppLayout() {
   return (
     <div className="min-h-screen">
@@ -48,6 +39,7 @@ export default function App() {
       <Routes>
         {/* Marketing (Public) */}
         <Route path="/" element={<Landing />} />
+        {/* TODO: Add pricing page if needed, for now point to subscription */}
         <Route path="/pricing" element={<Subscription />} />
 
         {/* Auth */}
@@ -80,3 +72,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+

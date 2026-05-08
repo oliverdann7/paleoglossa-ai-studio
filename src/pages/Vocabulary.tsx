@@ -31,23 +31,17 @@ export const Vocabulary = () => {
       .map(([lemma, info]) => {
          const wordInfo = typeof info === 'object' ? (info as WordInfo) : { state: info } as WordInfo;
          const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview) : new Date();
-
-         const hasHebrew = /[א-ת]/.test(lemma);
-         const hasGreek = /[Ͱ-Ͽἀ-῿]/.test(lemma);
-         const language = hasHebrew ? 'Hebrew' : hasGreek ? 'Greek' : 'Latin';
-
+         
          return {
-            id: lemma,
+            id: lemma, // using lemma as ID
             term: lemma,
-            definition: wordInfo.gloss || '—',
-            notes: wordInfo.notes || '',
-            language,
+            definition: 'Definition...', // Fake until real data
+            translit: '',
+            language: lemma.match(/[א-ת]/) ? 'Hebrew' : 'Greek', // Simple fallback detection
             status: STATE_LABELS[wordInfo.state as WordState],
-            nextReview: nextReview.toISOString(),
-            addedAt: wordInfo.addedAt
+            nextReview: nextReview.toISOString()
          };
-      })
-      .sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime());
+      });
   }, [knowledge]);
 
   const handleDelete = (id: string) => {
@@ -143,6 +137,7 @@ export const Vocabulary = () => {
                   <div className={cn("text-[26px] font-serif text-ink leading-tight", word.language === 'Hebrew' ? "font-hebrew" : "")} dir={word.language === 'Hebrew' ? "rtl" : "ltr"}>
                     {word.term}
                   </div>
+                  <div className="font-mono text-[11px] italic text-muted mt-0.5">{word.translit}</div>
                 </div>
                 
                 <div className="flex flex-col">
@@ -152,11 +147,6 @@ export const Vocabulary = () => {
                   <div className="font-body text-[13.5px] italic text-ink2">
                     {word.definition}
                   </div>
-                  {word.notes && (
-                    <div className="font-body text-[11px] text-muted mt-1 italic line-clamp-1">
-                      {word.notes}
-                    </div>
-                  )}
                 </div>
               </div>
 

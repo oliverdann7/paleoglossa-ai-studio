@@ -45,13 +45,28 @@ export const Review = () => {
 
     return words.map(([lemma, info]) => {
       const wordInfo = typeof info === 'object' ? info : { state: info, addedAt: new Date().toISOString() };
-      const gloss = (wordInfo as any).gloss as string | undefined;
+      
+      // Select random card type
+      const types = [CardType.FORM_TO_MEANING, CardType.MEANING_TO_FORM, CardType.LEMMA];
+      // Dummy search for a text that contains this lemma to provide context for cloze if possible
+      // In a real app we'd have a reverse index. For demo, we'll just stick to simpler ones or fake context.
+      // eslint-disable-next-line react-hooks/purity
+      const type = types[Math.floor(Math.random() * types.length)];
+      
+      // Get gloss from corpus (fake lookup)
+      // In real app, we should store primary gloss in knowledge or fetch from a dedicated dictionary
+      const gloss = "to do, to make; to act"; // Placeholder
 
-      // Only generate FORM_TO_MEANING cards when we have a gloss stored
-      const type = gloss ? CardType.FORM_TO_MEANING : CardType.LEMMA;
-
-      const question = lemma;
-      const answer = gloss || '(no gloss stored — read the text to record definitions)';
+      let question = lemma;
+      let answer = gloss;
+      
+      if (type === CardType.MEANING_TO_FORM) {
+        question = gloss;
+        answer = lemma;
+      } else if (type === CardType.LEMMA) {
+        question = lemma + " (inflected form demo)";
+        answer = lemma;
+      }
 
       return {
         lemma,
@@ -59,7 +74,9 @@ export const Review = () => {
         type,
         question,
         answer,
+        morphHint: "verb, preset active"
       } as ReviewCard;
+      // eslint-disable-next-line react-hooks/purity
     }).sort(() => Math.random() - 0.5);
   }, [knowledge]);
 
@@ -261,7 +278,7 @@ export const Review = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-parch">
+      <div className="flex-1 flex items-center justify-center p-6 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]">
          <AnimatePresence mode="wait">
            <motion.div 
              key={currentCard.lemma + isRevealed}

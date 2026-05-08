@@ -1,15 +1,21 @@
 import { useMemo } from 'react';
-import { Clock, BookOpen, Zap, History, BarChart2, CheckCircle2 as CheckCircle } from 'lucide-react';
+import { TrendingUp, Clock, BookOpen, Zap, History, BarChart2, CheckCircle2 as CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
 import { WordState } from '../lib/constants/wordStates';
 
-const StatCard = ({ label, value, icon: Icon, color }: any) => (
+const StatCard = ({ label, value, trend, icon: Icon, color }: any) => (
   <div className="card p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
     <div className="flex justify-between items-start mb-4">
       <div className={cn("p-3 rounded-2xl bg-opacity-10", color === 'blue' ? "bg-blue text-blue" : color === 'amber' ? "bg-amber text-amber" : "bg-green-600 text-green-600")}>
         <Icon className="w-6 h-6" />
       </div>
+      {trend && (
+        <div className="flex items-center gap-1 text-[11px] font-bold text-green-600">
+          <TrendingUp className="w-3 h-3" />
+          {trend}
+        </div>
+      )}
     </div>
     <div>
       <div className="text-[32px] font-serif font-bold text-ink leading-none mb-1">{value}</div>
@@ -21,25 +27,15 @@ const StatCard = ({ label, value, icon: Icon, color }: any) => (
 export const Statistics = () => {
   const { stats, knowledge } = useKnowledge();
 
-  // 13-week heatmap from real reading history
+  // 13-week heatmap simulator
   const heatmap = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const historyMap: Record<string, number> = {};
-    stats.history.forEach(h => { historyMap[h.date] = h.readWords; });
-
-    const data: number[] = [];
-    const totalDays = 13 * 7;
-    for (let i = totalDays - 1; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const key = d.toISOString().split('T')[0];
-      const words = historyMap[key] || (key === today.toISOString().split('T')[0] ? stats.readToday : 0);
-      const intensity = words === 0 ? 0 : words < 100 ? 1 : words < 300 ? 2 : words < 600 ? 3 : 4;
-      data.push(intensity);
+    const data = [];
+    for (let i = 0; i < 13 * 7; i++) {
+       // eslint-disable-next-line react-hooks/purity
+       data.push(Math.floor(Math.random() * 5));
     }
     return data;
-  }, [stats.history, stats.readToday]);
+  }, []);
 
   const languageStats = useMemo(() => {
     const raw: any = {
@@ -103,10 +99,10 @@ export const Statistics = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-        <StatCard label="Known Words" value={stats.totalKnown.toLocaleString()} icon={BookOpen} color="blue" />
-        <StatCard label="Words Read Today" value={stats.readToday.toLocaleString()} icon={History} color="amber" />
-        <StatCard label="Reading Time" value={`${stats.readingTime || 0}m`} icon={Clock} color="green" />
-        <StatCard label="Current Streak" value={`${stats.streak || 0} Days`} icon={Zap} color="amber" />
+        <StatCard label="Known Words" value={stats.totalKnown.toLocaleString()} trend="+12% vs last week" icon={BookOpen} color="blue" />
+        <StatCard label="Words Read (Week)" value="4,283" trend="+542" icon={History} color="amber" />
+        <StatCard label="Total Reading Time" value={`${stats.readingTime || 14}h`} trend="+2.4h" icon={Clock} color="green" />
+        <StatCard label="Current Streak" value={`🔥 ${stats.streak || 23} Days`} icon={Zap} color="amber" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">

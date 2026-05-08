@@ -16,7 +16,6 @@ export interface WordInfo {
   state: WordState;
   srs?: SRSData;
   notes?: string;
-  gloss?: string;
   addedAt: string;
 }
 
@@ -164,14 +163,11 @@ export const useKnowledge = () => {
     localStorage.setItem(STATS_KEY, JSON.stringify(stats));
   }, [stats]);
 
-  const setWordState = useCallback((lemma: string, state: WordState, gloss?: string) => {
+  const setWordState = useCallback((lemma: string, state: WordState) => {
     setKnowledge(prev => {
       const current = prev[lemma];
       const info: WordInfo = typeof current === 'object' ? { ...current, state } : { state, addedAt: new Date().toISOString() };
-
-      // Store gloss if provided and not already set
-      if (gloss && !info.gloss) info.gloss = gloss;
-
+      
       // Auto-init SRS if moving to learning
       if (state === WordState.LEARNING && !info.srs) {
         info.srs = {
