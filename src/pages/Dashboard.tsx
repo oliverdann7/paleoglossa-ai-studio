@@ -19,17 +19,29 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
   const { knowledge, stats } = useKnowledge();
   const hour = new Date().getHours();
   
-  const knownCount = useMemo(() => Object.values(knowledge).filter(s => s === WordState.KNOWN).length, [knowledge]);
-  const learningCount = useMemo(() => Object.values(knowledge).filter(s => s === WordState.LEARNING || s === WordState.FAMILIAR).length, [knowledge]);
+  const knownCount = useMemo(() => Object.values(knowledge).filter(info => {
+    const state = typeof info === 'object' ? (info as any).state : info;
+    return state === WordState.KNOWN;
+  }).length, [knowledge]);
+
+  const learningCount = useMemo(() => Object.values(knowledge).filter(info => {
+    const state = typeof info === 'object' ? (info as any).state : info;
+    return state === WordState.LEARNING || state === WordState.FAMILIAR;
+  }).length, [knowledge]);
 
   const recentVocab = useMemo(() => {
-    // Just grab a few highlighted words for the demo dashboard
-    const highlighted = Object.entries(knowledge).filter(([_, s]) => s !== WordState.NEW).slice(0, 6);
-    return highlighted.map(([lemma, state]) => ({
-      lemma,
-      state,
-      gloss: 'Demo definition'
-    }));
+    const highlighted = Object.entries(knowledge).filter(([_, info]) => {
+      const state = typeof info === 'object' ? (info as any).state : info;
+      return state !== WordState.NEW;
+    }).slice(0, 6);
+    return highlighted.map(([lemma, info]) => {
+      const state = typeof info === 'object' ? (info as any).state : info;
+      return {
+        lemma,
+        state,
+        gloss: 'Demo definition'
+      };
+    });
   }, [knowledge]);
 
   let greeting = "Good evening";
@@ -122,7 +134,7 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
 
       {/* Global Progress Grid */}
       <h3 className="eyebrow mb-6 font-bold text-ink3">Overall Progress</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14 cursor-pointer" onClick={() => onNavigate?.('statistics')}>
         <StatCard label="Words Known" value={knownCount.toLocaleString()} />
         <StatCard label="Words Learning" value={learningCount.toLocaleString()} />
         <StatCard label="Total Words Read" value={(stats.readToday + 12400).toLocaleString()} />
@@ -143,9 +155,9 @@ export const Dashboard = ({ onSelectText, onNavigate }: { onSelectText: (text: a
                </div>
                <div 
                  className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full inline-block"
-                 style={{ backgroundColor: STATE_COLORS[w.state].bg, color: STATE_COLORS[w.state].text }}
+                 style={{ backgroundColor: STATE_COLORS[w.state as WordState].bg, color: STATE_COLORS[w.state as WordState].text }}
                >
-                 {STATE_LABELS[w.state]}
+                 {STATE_LABELS[w.state as WordState]}
                </div>
             </div>
           ))}

@@ -39,9 +39,25 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
            translation: section.sentences.map(s => s.translation).filter(Boolean).join(' ')
         };
       }) || [];
+    } else if (text?.content) {
+      // Logic for imported text
+      const rawTokens = text.content.split(/\s+/).filter(Boolean);
+      const tokens = rawTokens.map((t: string, i: number) => ({
+        id: `import-token-${i}`,
+        text: t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
+        lemma: t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").toLowerCase(),
+        gloss: 'User imported word',
+        punctAfter: t.match(/[.,/#!$%^&*;:{}=\-_`~()]/) ? t.slice(-1) + ' ' : ' '
+      }));
+      return [{
+        id: 'imported-section-1',
+        title: 'Full Text',
+        tokens,
+        translation: 'No translation available for imported text.'
+      }];
     }
     return [];
-  }, [text?.id]);
+  }, [text?.id, text?.content]);
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
     const saved = localStorage.getItem(`reader_chapter_${text?.id}`);
@@ -116,9 +132,10 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   }, [selectedWord, chapter, currentChapterIndex, chapters.length]);
 
   const getWordStyle = (token: any) => {
-    const state = knowledge[token.lemma] ?? WordState.NEW;
+    const info = knowledge[token.lemma] ?? WordState.NEW;
+    const state = typeof info === 'object' ? (info as any).state : info;
     const isSelected = selectedWord?.id === token.id;
-    const colors = STATE_COLORS[state];
+    const colors = STATE_COLORS[state as WordState];
     
     return {
       backgroundColor: isSelected ? '#1E3D6E33' : colors.bg,
@@ -132,7 +149,11 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
   const handleMarkPageKnown = () => {
     const newLemmas = chapter.tokens
       .map((t: any) => t.lemma)
-      .filter((l: string) => (knowledge[l] ?? WordState.NEW) === WordState.NEW);
+      .filter((l: string) => {
+        const info = knowledge[l] ?? WordState.NEW;
+        const state = typeof info === 'object' ? (info as any).state : info;
+        return state === WordState.NEW;
+      });
     
     newLemmas.forEach((l: string) => setWordState(l, WordState.KNOWN));
     addReadWords(chapter.tokens.length);
@@ -339,10 +360,11 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
                <div className="mb-10">
                   <div className="eyebrow mb-4 opacity-50">Mastery Level</div>
                   <div className="grid grid-cols-4 gap-2 mb-4">
-                     {[WordState.NEW, WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN].map((s) => {
-                       const active = (knowledge[selectedWord.lemma] ?? WordState.NEW) === s;
-                       const colors = STATE_COLORS[s];
-                       return (
+                        {[WordState.NEW, WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN].map((s) => {
+                          const info = knowledge[selectedWord.lemma] ?? WordState.NEW;
+                          const active = (typeof info === 'object' ? (info as any).state : info) === s;
+                          const colors = STATE_COLORS[s];
+                          return (
                          <button 
                            key={s}
                            onClick={() => setWordState(selectedWord.lemma, s)}
@@ -362,7 +384,11 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
                     onClick={() => setWordState(selectedWord.lemma, WordState.IGNORED)}
                     className={cn(
                       "w-full py-3 rounded-xl text-[12px] font-bold uppercase tracking-widest transition-colors",
-                      (knowledge[selectedWord.lemma] ?? WordState.NEW) === WordState.IGNORED ? "bg-zinc-200 text-zinc-600" : "text-muted hover:text-ink"
+                      (() => {
+                        const info = knowledge[selectedWord.lemma] ?? WordState.NEW;
+                        const state = typeof info === 'object' ? (info as any).state : info;
+                        return state === WordState.IGNORED;
+                      })() ? "bg-zinc-200 text-zinc-600" : "text-muted hover:text-ink"
                     )}
                   >
                     Hold as Ignored / Proper Noun

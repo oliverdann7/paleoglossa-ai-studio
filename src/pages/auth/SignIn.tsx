@@ -36,7 +36,11 @@ export const SignIn = ({
       onSuccess();
     } catch (err: any) {
       console.error(err);
-      setError(err.message);
+      if (err.code === 'auth/popup-blocked') {
+        setError('Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google.');
+      } else {
+        setError(err.message);
+      }
     }
   };
 
