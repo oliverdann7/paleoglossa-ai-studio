@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Link as LinkIcon, FileText, CheckCircle, Loader2, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,7 +18,9 @@ interface ImportedText {
   };
 }
 
-export const Import = ({ onComplete }: { onComplete: (text: any) => void }) => {
+export const Import = () => {
+  const navigate = useNavigate();
+  const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
   const [activeTab, setActiveTab] = useState<'paste' | 'file' | 'url'>('paste');
   const [text, setText] = useState('');
   const [language, setLanguage] = useState('grc');

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { auth, googleProvider, db } from '@/lib/firebase';
@@ -6,13 +7,8 @@ import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firebase';
 
-export const SignUp = ({ 
-  onNavigate, 
-  onSuccess 
-}: { 
-  onNavigate: (page: string) => void,
-  onSuccess: () => void 
-}) => {
+export const SignUp = () => {
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,7 +36,7 @@ export const SignUp = ({
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await createUserProfile(cred.user.uid, email, fullName);
-      onSuccess();
+      navigate('/onboarding');
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -55,11 +51,11 @@ export const SignUp = ({
         // A robust app would check exists() first, but we will skip that here for brevity.
         await createUserProfile(cred.user.uid, cred.user.email || '', cred.user.displayName || '');
       }
-      onSuccess();
+      navigate('/onboarding');
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/popup-blocked') {
-        setError('Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign up with Google.');
+        setError('Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google.');
       } else {
         setError(err.message);
       }
@@ -210,7 +206,7 @@ export const SignUp = ({
             <p className="mt-8 text-center text-sm text-obsidian-900/60 dark:text-vellum-100/60">
               Already have an account?{' '}
               <button 
-                onClick={() => onNavigate('signin')}
+                onClick={() => navigate('/auth/login')}
                 className="font-bold text-obsidian-900 dark:text-vellum-100 hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
               >
                 Sign In

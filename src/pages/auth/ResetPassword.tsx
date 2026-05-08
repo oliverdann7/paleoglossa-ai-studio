@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Lock, AlertCircle } from 'lucide-react';
 import { confirmPasswordReset } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-export const ResetPassword = ({ 
-  onSuccess 
-}: { 
-  onSuccess: () => void 
-}) => {
+export const ResetPassword = () => {
+  const navigate = useNavigate();
+  const onSuccess = () => navigate('/app');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

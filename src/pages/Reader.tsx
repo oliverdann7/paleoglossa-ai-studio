@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, ChevronRight, ChevronLeft, ExternalLink, Play, Pause, Repeat, Repeat1, Layout, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,7 +10,23 @@ import { WordState, STATE_COLORS, STATE_LABELS } from '../lib/constants/wordStat
 import { ProgressRing } from '../components/reader/ProgressRing';
 import { ReaderTutorial } from '../components/reader/ReaderTutorial';
 
-export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
+export const Reader = () => {
+  const { textId } = useParams();
+  const navigate = useNavigate();
+  const onBack = () => navigate('/app/library');
+  
+  const text = useMemo<any>(() => {
+    if (!textId) return null;
+    let t = CorpusDB.getText(textId);
+    if (!t && textId.startsWith('import-')) {
+      const existingRaw = localStorage.getItem('paleoglossa_imports');
+      if (existingRaw) {
+        const existing = JSON.parse(existingRaw);
+        t = existing.find((item: any) => item.id === textId);
+      }
+    }
+    return t;
+  }, [textId]);
   const { knowledge, setWordState, stats, addReadWords, incrementReadingTime, setWordNote, getWordInfo } = useKnowledge();
   const { settings } = useSettings();
   

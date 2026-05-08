@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 
 const languages = [
@@ -14,7 +15,9 @@ const languages = [
   { id: 'hittite', glyph: '𒀭', label: 'Hittite', desc: 'The oldest attested Indo-European language.', font: 'font-sans' }
 ];
 
-export const Onboarding = ({ onComplete }: { onComplete: (lang: string) => void }) => {
+export const Onboarding = () => {
+  const navigate = useNavigate();
+  const onComplete = (_lang: string) => navigate('/app');
   return (
     <div className="min-h-screen bg-parch text-ink flex items-center justify-center p-6 md:p-12 font-sans paper-texture">
       <div className="max-w-6xl w-full py-12">

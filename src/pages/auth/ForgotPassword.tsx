@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowLeft, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-export const ForgotPassword = ({ 
-  onNavigate 
-}: { 
-  onNavigate: (page: string) => void 
-}) => {
+export const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +96,7 @@ export const ForgotPassword = ({
 
           <div className="mt-8 text-center">
             <button 
-              onClick={() => onNavigate('signin')}
+              onClick={() => navigate('/auth/login')}
               className="inline-flex items-center gap-2 text-sm font-bold text-obsidian-900/60 dark:text-vellum-100/60 hover:text-obsidian-900 dark:hover:text-vellum-100 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />

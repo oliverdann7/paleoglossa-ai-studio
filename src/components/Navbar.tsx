@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { Link, useLocation } from 'react-router-dom';
 import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -7,12 +8,12 @@ interface NavItemProps {
   icon: React.ElementType;
   label: string;
   isActive?: boolean;
-  onClick: () => void;
+  to: string;
 }
 
-const DesktopNavItem = ({ icon: Icon, label, isActive, onClick }: NavItemProps) => (
-  <button
-    onClick={onClick}
+const DesktopNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
+  <Link
+    to={to}
     className={cn(
       "flex items-center gap-3 px-3 py-2 transition-all duration-150 group text-[12.5px] font-sans font-medium w-full text-left",
       isActive 
@@ -22,12 +23,12 @@ const DesktopNavItem = ({ icon: Icon, label, isActive, onClick }: NavItemProps) 
   >
     <Icon className={cn("w-4 h-4", isActive ? "scale-110 text-blue" : "group-hover:scale-110 text-muted")} strokeWidth={isActive ? 2 : 1.5} />
     <span>{label}</span>
-  </button>
+  </Link>
 );
 
-const MobileNavItem = ({ icon: Icon, label, isActive, onClick }: NavItemProps) => (
-  <button
-    onClick={onClick}
+const MobileNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
+  <Link
+    to={to}
     className={cn(
       "flex flex-col items-center gap-1 p-2 flex-1 transition-all duration-150",
       isActive ? "text-blue" : "text-muted hover:text-ink3"
@@ -35,23 +36,20 @@ const MobileNavItem = ({ icon: Icon, label, isActive, onClick }: NavItemProps) =
   >
     <Icon className={cn("w-5 h-5", isActive && "fill-bluexl")} strokeWidth={isActive ? 2 : 1.5} />
     <span className="text-[10px] font-medium font-sans">{label}</span>
-  </button>
+  </Link>
 );
 
-export const Navbar = ({ 
-  activeTab, 
-  onTabChange, 
-}: { 
-  activeTab: string, 
-  onTabChange: (tab: string) => void,
-}) => {
+export const Navbar = () => {
+  const location = useLocation();
+  const path = location.pathname;
+
   return (
     <>
       <nav className="hidden md:flex fixed left-0 top-0 h-full w-[220px] border-r border-bdr bg-parch2 flex-col z-50 overflow-y-auto">
         <div className="p-5 flex flex-col gap-1">
-          <h1 className="text-[17px] font-serif font-semibold text-blue flex items-center gap-2">
+          <Link to="/app" className="text-[17px] font-serif font-semibold text-blue flex items-center gap-2">
             Παλαιόγλωσσα
-          </h1>
+          </Link>
           <span className="eyebrow" style={{fontSize: '9px', textTransform: 'none'}}>Where ancient texts come alive</span>
         </div>
 
@@ -67,16 +65,16 @@ export const Navbar = ({
 
         <div className="flex flex-col gap-1 flex-1 px-2">
           <div className="nav-label px-3 mb-1 mt-2">Study</div>
-          <DesktopNavItem icon={BookOpen} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} />
-          <DesktopNavItem icon={Library} label="Library" isActive={activeTab === 'library'} onClick={() => onTabChange('library')} />
-          <DesktopNavItem icon={Brain} label="Review" isActive={activeTab === 'review'} onClick={() => onTabChange('review')} />
-          <DesktopNavItem icon={GraduationCap} label="Vocabulary" isActive={activeTab === 'vocabulary'} onClick={() => onTabChange('vocabulary')} />
-          <DesktopNavItem icon={BarChart3} label="Statistics" isActive={activeTab === 'statistics'} onClick={() => onTabChange('statistics')} />
+          <DesktopNavItem icon={BookOpen} label="Dashboard" isActive={path === '/app'} to="/app" />
+          <DesktopNavItem icon={Library} label="Library" isActive={path.startsWith('/app/library') || path.startsWith('/app/reader')} to="/app/library" />
+          <DesktopNavItem icon={Brain} label="Review" isActive={path === '/app/review'} to="/app/review" />
+          <DesktopNavItem icon={GraduationCap} label="Vocabulary" isActive={path === '/app/vocabulary'} to="/app/vocabulary" />
+          <DesktopNavItem icon={BarChart3} label="Statistics" isActive={path === '/app/statistics'} to="/app/statistics" />
           
           <div className="nav-label px-3 mb-1 mt-6">Manage</div>
-          <DesktopNavItem icon={PlusCircle} label="Import" isActive={activeTab === 'import'} onClick={() => onTabChange('import')} />
-          <DesktopNavItem icon={Settings} label="Settings" isActive={activeTab === 'settings'} onClick={() => onTabChange('settings')} />
-          <DesktopNavItem icon={Crown} label="Upgrade" isActive={activeTab === 'subscription'} onClick={() => onTabChange('subscription')} />
+          <DesktopNavItem icon={PlusCircle} label="Import" isActive={path === '/admin/import'} to="/admin/import" />
+          <DesktopNavItem icon={Settings} label="Settings" isActive={path === '/app/settings'} to="/app/settings" />
+          <DesktopNavItem icon={Crown} label="Upgrade" isActive={path === '/app/subscription'} to="/app/subscription" />
         </div>
 
         <div className="p-4 border-t border-bdr">
@@ -95,7 +93,7 @@ export const Navbar = ({
             <p className="text-[10px] text-ink3 font-sans">2.4k words to B2</p>
           </div>
           
-          <button onClick={() => onTabChange('subscription')} className="flex items-center gap-3 w-full p-2 hover:bg-parch3 rounded-lg transition-colors group">
+          <Link to="/app/subscription" className="flex items-center gap-3 w-full p-2 hover:bg-parch3 rounded-lg transition-colors group">
             <div className="w-8 h-8 rounded-full bg-parch3 border border-bdr flex items-center justify-center overflow-hidden">
                <User className="w-4 h-4 text-ink3 group-hover:text-blue" />
             </div>
@@ -103,18 +101,19 @@ export const Navbar = ({
               <span className="text-[12.5px] font-bold font-sans text-ink">E. L. Scholar</span>
               <span className="text-[10px] font-sans text-muted group-hover:text-amber transition-colors">Free Plan →</span>
             </div>
-          </button>
+          </Link>
         </div>
       </nav>
 
       {/* Mobile Tab Bar */}
       <nav className="md:hidden fixed bottom-0 left-0 w-full border-t border-bdr bg-parch2/90 backdrop-blur-md pb-safe z-50 flex justify-around px-2 py-1">
-        <MobileNavItem icon={BookOpen} label="Home" isActive={activeTab === 'dashboard'} onClick={() => onTabChange('dashboard')} />
-        <MobileNavItem icon={Library} label="Library" isActive={activeTab === 'library'} onClick={() => onTabChange('library')} />
-        <MobileNavItem icon={Brain} label="Review" isActive={activeTab === 'review'} onClick={() => onTabChange('review')} />
-        <MobileNavItem icon={GraduationCap} label="Words" isActive={activeTab === 'vocabulary'} onClick={() => onTabChange('vocabulary')} />
-        <MobileNavItem icon={MoreHorizontal} label="More" isActive={['import', 'settings', 'profile', 'subscription'].includes(activeTab)} onClick={() => onTabChange('settings')} />
+        <MobileNavItem icon={BookOpen} label="Home" isActive={path === '/app'} to="/app" />
+        <MobileNavItem icon={Library} label="Library" isActive={path.startsWith('/app/library')} to="/app/library" />
+        <MobileNavItem icon={Brain} label="Review" isActive={path.startsWith('/app/review')} to="/app/review" />
+        <MobileNavItem icon={GraduationCap} label="Words" isActive={path.startsWith('/app/vocabulary')} to="/app/vocabulary" />
+        <MobileNavItem icon={MoreHorizontal} label="More" isActive={['/admin/import', '/app/settings', '/app/subscription'].includes(path)} to="/app/settings" />
       </nav>
     </>
   );
 };
+

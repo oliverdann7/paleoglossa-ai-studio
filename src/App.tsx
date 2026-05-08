@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Landing } from './pages/Landing';
 import { Dashboard } from './pages/Dashboard';
@@ -16,232 +16,60 @@ import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
 import { seedKnowledge } from './lib/data/seeding';
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== 'undefined' && window.location.hash && window.location.hash.includes('type=recovery')) {
-      return 'reset-password';
-    }
-    return 'landing';
-  });
-  const [selectedText, setSelectedText] = useState<any>(null);
-
-  useEffect(() => {
-    seedKnowledge();
-  }, []);
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser && activeTab === 'landing') {
-        setActiveTab('dashboard'); // could also be onboarding if new
-      }
-    });
-    return () => unsubscribe();
-  }, [activeTab]);
-
-  const handleTextSelect = (text: any) => {
-    setSelectedText(text);
-    setActiveTab('reader');
-  };
-
-  const handleOnboardingComplete = () => {
-    setActiveTab('dashboard');
-  };
-
-  const isAuthScreen = ['signin', 'signup', 'forgot-password', 'reset-password'].includes(activeTab);
-  const isFullScreen = activeTab === 'landing' || activeTab === 'onboarding' || isAuthScreen;
-
+function AppLayout() {
   return (
     <div className="min-h-screen">
-      {!isFullScreen && (
-        <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
-      )}
-      
-      <main className={!isFullScreen ? "md:pl-[220px] pb-20 md:pb-0 min-h-screen" : "min-h-screen"}>
-        <AnimatePresence mode="wait">
-          {activeTab === 'landing' && (
-            <motion.div
-              key="landing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Landing onEnter={() => setActiveTab('signin')} />
-            </motion.div>
-          )}
-
-          {activeTab === 'signin' && (
-            <motion.div
-              key="signin"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <SignIn onNavigate={setActiveTab} onSuccess={() => setActiveTab('onboarding')} />
-            </motion.div>
-          )}
-
-          {activeTab === 'signup' && (
-            <motion.div
-              key="signup"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <SignUp onNavigate={setActiveTab} onSuccess={() => setActiveTab('onboarding')} />
-            </motion.div>
-          )}
-
-          {activeTab === 'forgot-password' && (
-            <motion.div
-              key="forgot-password"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <ForgotPassword onNavigate={setActiveTab} />
-            </motion.div>
-          )}
-
-          {activeTab === 'reset-password' && (
-            <motion.div
-              key="reset-password"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <ResetPassword onSuccess={() => setActiveTab('dashboard')} />
-            </motion.div>
-          )}
-
-          {activeTab === 'onboarding' && (
-            <motion.div
-              key="onboarding"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Onboarding onComplete={handleOnboardingComplete} />
-            </motion.div>
-          )}
-
-          {activeTab === 'dashboard' && (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Dashboard onSelectText={handleTextSelect} onNavigate={setActiveTab} />
-            </motion.div>
-          )}
-
-          {activeTab === 'library' && (
-            <motion.div
-              key="library"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Library onSelectText={handleTextSelect} />
-            </motion.div>
-          )}
-
-          {activeTab === 'import' && (
-            <motion.div
-              key="import"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Import onComplete={handleTextSelect} />
-            </motion.div>
-          )}
-
-          {activeTab === 'statistics' && (
-            <motion.div
-              key="statistics"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Statistics />
-            </motion.div>
-          )}
-
-          {activeTab === 'settings' && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Settings />
-            </motion.div>
-          )}
-
-          {activeTab === 'subscription' && (
-            <motion.div
-              key="subscription"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Subscription />
-            </motion.div>
-          )}
-
-          {activeTab === 'review' && (
-            <motion.div
-              key="review"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Review onBack={() => setActiveTab('dashboard')} />
-            </motion.div>
-          )}
-
-          {activeTab === 'vocabulary' && (
-            <motion.div
-              key="vocabulary"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Vocabulary onNavigate={setActiveTab} />
-            </motion.div>
-          )}
-
-          {activeTab === 'reader' && (
-            <motion.div
-              key="reader"
-              initial={{ opacity: 0, scale: 0.99 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.01 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <Reader text={selectedText} onBack={() => setActiveTab('library')} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <Navbar />
+      <main className="md:pl-[220px] pb-20 md:pb-0 min-h-screen">
+        <Outlet />
       </main>
     </div>
   );
 }
+
+export default function App() {
+  useEffect(() => {
+    seedKnowledge();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Marketing (Public) */}
+        <Route path="/" element={<Landing />} />
+        {/* TODO: Add pricing page if needed, for now point to subscription */}
+        <Route path="/pricing" element={<Subscription />} />
+
+        {/* Auth */}
+        <Route path="/auth/login" element={<SignIn />} />
+        <Route path="/auth/signup" element={<SignUp />} />
+        <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+
+        {/* App Core (Authenticated) */}
+        <Route path="/app" element={<AppLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="library" element={<Library />} />
+          <Route path="reader/:textId" element={<Reader />} />
+          <Route path="vocabulary" element={<Vocabulary />} />
+          <Route path="review" element={<Review />} />
+          <Route path="statistics" element={<Statistics />} />
+          <Route path="notes" element={<div className="p-8">Notes coming soon</div>} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="subscription" element={<Subscription />} />
+        </Route>
+
+        {/* Admin */}
+        <Route path="/admin/import" element={<AppLayout />}>
+          <Route index element={<Import />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
