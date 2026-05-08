@@ -1,0 +1,5 @@
+node_modules/@protobufjs/fetch/tests/index.js
+node_modules/protobufjs/src/root.js
+node_modules/firebase/firebase-compat.js.map
+node_modules/firebase/firebase-functions-compat.js.map
+node_modules/firebase/firebase-functions.js.map

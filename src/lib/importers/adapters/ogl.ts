@@ -20,7 +20,7 @@ export const OglAdapter: ContentSourceAdapter = {
     return `stub raw CTS TEI XML for ${ref}`;
   },
   
-  async normalize(raw: any, metadata: any) {
+  async normalize(_raw: any, metadata: any) {
     // Stub: parse TEI XML structure
     return {
       text: {

@@ -37,6 +37,8 @@ export interface ReadingStats {
   lastActive: string; // ISO date
   streak: number;
   history: DailyStat[];
+  freezesTotal: number;
+  freezesUsed: number;
 }
 
 export const useKnowledge = () => {
@@ -61,30 +63,54 @@ export const useKnowledge = () => {
   const [stats, setStats] = useState<ReadingStats>(() => {
     const saved = localStorage.getItem(STATS_KEY);
     const now = new Date();
+    // Shift by 4 hours to make the visual 'day' end at 4am UTC
+    now.setUTCHours(now.getUTCHours() - 4);
+
     const initialStats: ReadingStats = {
       totalKnown: 0,
       readToday: 0,
       readingTime: 0,
       lastActive: now.toISOString(),
       streak: 1,
-      history: []
+      history: [],
+      freezesTotal: 2,
+      freezesUsed: 0
     };
 
     if (!saved) return initialStats;
     try {
       const parsed = JSON.parse(saved);
+      if (!parsed.lastActive) return initialStats;
+
       const last = new Date(parsed.lastActive);
+      // Shift last active by 4 hours as well
+      last.setUTCHours(last.getUTCHours() - 4);
+
+      let newStreak = parsed.streak || 0;
+      let freezesTotal = parsed.freezesTotal ?? 2;
+      let freezesUsed = parsed.freezesUsed ?? 0;
+      
+      const diffDays = Math.floor(now.valueOf() / 86400000) - Math.floor(last.valueOf() / 86400000);
+
+      // Reset freezes monthly (simple check: if it's a new month)
+      if (now.getUTCMonth() !== last.getUTCMonth() || now.getUTCFullYear() !== last.getUTCFullYear()) {
+         freezesTotal = 2;
+         freezesUsed = 0;
+      }
       
       // Daily reset logic
-      if (last.toDateString() !== now.toDateString()) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        let newStreak = parsed.streak || 0;
-        if (last.toDateString() === yesterday.toDateString()) {
+      if (diffDays > 0) {
+        if (diffDays === 1) {
            newStreak += 1;
-        } else if (last.getTime() < yesterday.getTime()) {
-           newStreak = 1;
+        } else if (diffDays > 1) {
+           const freezesNeeded = diffDays - 1;
+           const freezesAvailable = freezesTotal - freezesUsed;
+           if (freezesAvailable >= freezesNeeded) {
+             freezesUsed += freezesNeeded;
+             newStreak += 1;
+           } else {
+             newStreak = 1;
+           }
         }
 
         // Add to history
@@ -98,17 +124,22 @@ export const useKnowledge = () => {
             minutes: parsed.readingTime
           });
         }
-
+        
+        // Keep only last 90 days
+        if (history.length > 90) history.shift();
+        
         return { 
           ...parsed, 
           readToday: 0, 
           readingTime: 0, 
-          streak: newStreak, 
-          lastActive: now.toISOString(),
+          streak: newStreak,
+          freezesTotal,
+          freezesUsed,
+          lastActive: new Date().toISOString(),
           history
         };
       }
-      return parsed;
+      return { ...parsed, freezesTotal, freezesUsed };
     } catch { return initialStats; }
   });
 
@@ -182,6 +213,15 @@ export const useKnowledge = () => {
     }));
   }, []);
 
+  const exportData = useCallback(() => {
+    return {
+      knowledge,
+      stats,
+      imports: JSON.parse(localStorage.getItem('paleoglossa_imports') || '[]'),
+      settings: JSON.parse(localStorage.getItem('paleoglossa_settings') || '{}')
+    };
+  }, [knowledge, stats]);
+
   return {
     knowledge,
     getWordInfo,
@@ -190,6 +230,7 @@ export const useKnowledge = () => {
     stats,
     addReadWords,
     incrementReadingTime,
-    setKnowledge
+    setKnowledge,
+    exportData
   };
 };

@@ -54,11 +54,44 @@
     --rubyxl: #FDEAE8;
   }
 
+  :root.theme-sepia {
+    --parch: #F7ECD2;
+    --parch2: #E6D0AC;
+    --parch3: #D0B388;
+    --bdr: #B59363;
+    --ink: #301705;
+    --ink2: #4D2508;
+    --ink3: #753B11;
+    --muted: #915F33;
+    --gold: #964f16;
+    --blue: #5C3A21;
+    --bluexl: #f0decd;
+  }
+
+  :root.theme-dark {
+    --parch: #151b23;
+    --parch2: #1e2630;
+    --parch3: #2a3544;
+    --bdr: #3d4d63;
+    --ink: #e0e5ea;
+    --ink2: #a2b1c4;
+    --ink3: #7b8fa7;
+    --muted: #5e6f85;
+    --gold: #dcb360;
+    --blue: #579ee5;
+    --bluexl: #183452;
+    --amber: #de8c3f;
+    --amberxl: #3e2610;
+    --jade: #4bb376;
+    --jadexl: #123722;
+  }
+
   body {
-    background:
-      radial-gradient(ellipse 1200px 600px at 20% 0%, #EDE5D0 0%, transparent 55%),
-      radial-gradient(ellipse 900px 500px at 80% 100%, #E8DEC4 0%, transparent 55%),
-      linear-gradient(180deg, #F0E9D5 0%, #E4D8BE 100%);
+    background-color: var(--parch2);
+    background-image:
+      radial-gradient(ellipse 1200px 600px at 20% 0%, var(--parch) 0%, transparent 55%),
+      radial-gradient(ellipse 900px 500px at 80% 100%, var(--parch3) 0%, transparent 55%),
+      linear-gradient(180deg, var(--parch2) 0%, var(--parch3) 100%);
     background-attachment: fixed;
     color: var(--ink);
     font-family: var(--font-body);
