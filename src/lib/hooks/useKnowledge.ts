@@ -217,6 +217,14 @@ export const useKnowledge = () => {
     }));
   }, []);
 
+  const setWordNote = useCallback((lemma: string, notes: string) => {
+    setKnowledge(prev => {
+      const current = prev[lemma];
+      const info: WordInfo = typeof current === 'object' ? { ...current, notes } : { state: WordState.NEW, notes, addedAt: new Date().toISOString() };
+      return { ...prev, [lemma]: info };
+    });
+  }, []);
+
   const exportData = useCallback(() => {
     return {
       knowledge,
@@ -231,6 +239,7 @@ export const useKnowledge = () => {
     getWordInfo,
     setWordState,
     updateWordSRS,
+    setWordNote,
     stats,
     addReadWords,
     incrementReadingTime,

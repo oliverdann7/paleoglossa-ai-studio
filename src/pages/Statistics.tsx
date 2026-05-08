@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { TrendingUp, Clock, BookOpen, Zap, History, BarChart2 } from 'lucide-react';
+import { TrendingUp, Clock, BookOpen, Zap, History, BarChart2, CheckCircle2 as CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
 import { WordState } from '../lib/constants/wordStates';
@@ -31,6 +31,7 @@ export const Statistics = () => {
   const heatmap = useMemo(() => {
     const data = [];
     for (let i = 0; i < 13 * 7; i++) {
+       // eslint-disable-next-line react-hooks/purity
        data.push(Math.floor(Math.random() * 5));
     }
     return data;
@@ -39,6 +40,7 @@ export const Statistics = () => {
   const languageStats = useMemo(() => {
     const raw: any = {
       'grc': { label: 'Ancient Greek', known: 0, learning: 0, new: 0 },
+      'grc-koine': { label: 'Koine Greek', known: 0, learning: 0, new: 0 },
       'hbo': { label: 'Biblical Hebrew', known: 0, learning: 0, new: 0 },
       'lat': { label: 'Classical Latin', known: 0, learning: 0, new: 0 }
     };
@@ -47,9 +49,9 @@ export const Statistics = () => {
       const i = typeof info === 'object' ? info : { state: info };
       // In a real app we'd need language tags on lemmas
       // For demo, we'll crudely guess by character ranges
-      let lang = 'grc';
+      let lang = 'grc-koine';
       if (/[א-ת]/.test(lemma)) lang = 'hbo';
-      else if (/[a-z]/.test(lemma)) lang = 'lat';
+      else if (/[A-Za-z]/.test(lemma)) lang = 'lat';
 
       if (raw[lang]) {
         if (i.state === WordState.KNOWN) raw[lang].known++;
@@ -252,9 +254,3 @@ export const Statistics = () => {
     </div>
   );
 };
-
-const CheckCircle = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);

@@ -10,7 +10,7 @@ import { ProgressRing } from '../components/reader/ProgressRing';
 import { ReaderTutorial } from '../components/reader/ReaderTutorial';
 
 export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
-  const { knowledge, setWordState, stats, addReadWords, incrementReadingTime } = useKnowledge();
+  const { knowledge, setWordState, stats, addReadWords, incrementReadingTime, setWordNote, getWordInfo } = useKnowledge();
   const { settings } = useSettings();
   
   const [selectedWord, setSelectedWord] = useState<any>(null);
@@ -94,7 +94,7 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
       }];
     }
     return [];
-  }, [text?.id, text?.content, text?.language]);
+  }, [text]);
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
     const saved = localStorage.getItem(`reader_chapter_${text?.id}`);
@@ -147,9 +147,9 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
               setAudioPos({ sentenceIdx: audioPos.sentenceIdx + 1, wordIdx: 0 });
               if (readingMode === 'page') setCurrentSentenceIndex(audioPos.sentenceIdx + 1);
            } else {
-              // eslint-disable-next-line react-hooks/set-state-in-effect
+               
               setIsPlaying(false);
-              // eslint-disable-next-line react-hooks/set-state-in-effect
+               
               setAudioPos({ sentenceIdx: 0, wordIdx: 0 });
            }
         }
@@ -172,10 +172,10 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setTutorialStep(2);
     } else if (tutorialStep === 2 && selectedWord && (knowledge[selectedWord.lemma] === WordState.KNOWN || (knowledge[selectedWord.lemma] as any)?.state === WordState.KNOWN)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+         
         setTutorialStep(3);
     } else if (tutorialStep === 3 && scrollProgress > 80) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+         
         setTutorialStep(4);
     }
   }, [tutorialStep, selectedWord, knowledge, scrollProgress]);
@@ -692,10 +692,24 @@ export const Reader = ({ text, onBack }: { text: any, onBack: () => void }) => {
                   </div>
                </div>
 
+               {/* Notes Section */}
+               <div className="mb-8">
+                  <div className="eyebrow mb-3 text-ink">Personal Notes</div>
+                  <textarea
+                    className="w-full h-24 p-3 bg-white border border-bdr rounded-xl text-[13px] font-body resize-none focus:outline-none focus:border-blue transition-colors"
+                    placeholder="Add a note about this word..."
+                    value={getWordInfo(selectedWord.lemma).notes || ''}
+                    onChange={(e) => setWordNote(selectedWord.lemma, e.target.value)}
+                  />
+               </div>
+
                {/* Example sentences */}
                {exampleSentences.length > 0 && (
                  <div className="mt-8 pt-8 border-t border-bdr/30">
-                    <div className="eyebrow mb-4">Examples from Corpus</div>
+                    <div className="eyebrow mb-4 flex justify-between">
+                       <span>Occurrences in Library</span>
+                       <span className="text-blue">{exampleSentences.length} matches</span>
+                    </div>
                     <div className="space-y-4">
                        {exampleSentences.map((ex: any, idx: number) => {
                           return (

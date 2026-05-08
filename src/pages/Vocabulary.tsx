@@ -22,7 +22,7 @@ export const Vocabulary = ({ onNavigate }: { onNavigate?: (tab: string) => void 
 
   const words = useMemo(() => {
     return Object.entries(knowledge)
-      .filter(([_, info]) => {
+      .filter(([, info]) => {
          const state = typeof info === 'object' ? (info as any).state : info;
          return state !== WordState.NEW && state !== WordState.IGNORED;
       })
