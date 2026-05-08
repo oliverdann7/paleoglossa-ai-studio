@@ -4,17 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
-      if (typeof window !== 'undefined' && window.fetch) {
+      (function() {
+        if (typeof window === 'undefined') return;
+        const originalFetch = window.fetch;
+        const descriptor = {
+          get: function() { return originalFetch; },
+          set: function(v) { console.debug('Intercepted fetch polyfill assignment'); },
+          configurable: true,
+          enumerable: true
+        };
         try {
-          Object.defineProperty(window, 'fetch', {
-            value: window.fetch,
-            writable: true,
-            configurable: true
-          });
+          Object.defineProperty(window, 'fetch', descriptor);
         } catch (e) {
-          console.warn(e);
+          try {
+            Object.defineProperty(Window.prototype, 'fetch', descriptor);
+          } catch (e2) {}
         }
-      }
+        if (typeof globalThis !== 'undefined' && globalThis !== window) {
+          try { Object.defineProperty(globalThis, 'fetch', descriptor); } catch (e) {}
+        }
+      })();
     </script>
     <title>Paleoglossa</title>
   </head>
