@@ -49,8 +49,7 @@ export const Review = () => {
       return new Date(i.srs.nextReview) <= new Date();
     });
 
-    return words
-      .map(([lemma, info]) => {
+    const mappedWords = words.map(([lemma, info]) => {
         const wordInfo =
           typeof info === "object"
             ? info
@@ -89,7 +88,7 @@ export const Review = () => {
       });
 
     // Simple deterministic shuffle to avoid react-hooks/purity
-    return words.sort((a, b) => a.lemma.localeCompare(b.lemma));
+    return mappedWords.sort((a, b) => a.lemma.localeCompare(b.lemma));
   }, [knowledge]);
 
   const currentCard = queue[currentCardIndex];

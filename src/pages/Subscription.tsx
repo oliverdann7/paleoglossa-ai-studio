@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Check, Sparkles, BookOpen, Crown, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export const Subscription = () => {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "yearly",
   );
+  const { t } = useTranslation();
 
   return (
     <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen pb-24">
@@ -15,11 +17,10 @@ export const Subscription = () => {
           Paleoglossa Fellowship
         </div>
         <h2 className="text-[36px] md:text-[42px] font-serif font-light text-ink tracking-tight mb-4 leading-tight">
-          Master classical languages without limits.
+          {t("sub.title", "Master classical languages without limits.")}
         </h2>
         <p className="font-body text-[16px] italic text-ink2 leading-relaxed">
-          Upgrade to the Fellowship plan to unlock the entire corpus, unlimited
-          imports, and advanced morphology insights.
+          {t("sub.desc", "Upgrade to the Fellowship plan to unlock the entire corpus, unlimited imports, and advanced morphology insights.")}
         </p>
       </header>
 
@@ -34,7 +35,7 @@ export const Subscription = () => {
                 : "text-ink3 hover:text-ink",
             )}
           >
-            Monthly
+            {t("sub.monthly", "Monthly")}
           </button>
           <button
             onClick={() => setBillingCycle("yearly")}
@@ -45,9 +46,9 @@ export const Subscription = () => {
                 : "text-ink3 hover:text-ink",
             )}
           >
-            Yearly
+            {t("sub.yearly", "Yearly")}
             <span className="bg-jadexl text-jade px-1.5 py-0.5 rounded text-[10px] font-bold">
-              Save 20%
+              {t("sub.save", "Save 20%")}
             </span>
           </button>
         </div>
@@ -58,14 +59,14 @@ export const Subscription = () => {
         <div className="card p-8 bg-parch/50 border-bdr/50 flex flex-col h-full opacity-90 transition-opacity hover:opacity-100">
           <div className="mb-6">
             <h3 className="font-serif text-[22px] font-medium text-ink mb-2">
-              Novice Scholar
+              {t("sub.novice", "Novice Scholar")}
             </h3>
             <div className="flex items-baseline gap-1">
               <span className="text-[32px] font-serif">$0</span>
-              <span className="text-muted font-sans text-sm">/ forever</span>
+              <span className="text-muted font-sans text-sm">{t("sub.forever")}</span>
             </div>
             <p className="font-body text-[14px] text-ink2 italic mt-3">
-              Essential access for casual learners starting their journey.
+              {t("sub.noviceDesc", "Essential access for casual learners starting their journey.")}
             </p>
           </div>
 
@@ -86,7 +87,7 @@ export const Subscription = () => {
           </div>
 
           <button className="w-full btn-secondary py-3 text-[14px]" disabled>
-            Current Plan
+            {t("sub.current", "Current Plan")}
           </button>
         </div>
 
@@ -94,21 +95,21 @@ export const Subscription = () => {
         <div className="card p-8 border-blue/30 relative flex flex-col h-full shadow-[0_20px_40px_-15px_rgba(30,61,110,0.15)] ring-1 ring-blue/10">
           <div className="absolute top-0 inset-x-0 h-1 bg-blue rounded-t-[15px]" />
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue text-white font-mono text-[9px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
-            <Sparkles className="w-3 h-3" /> Most Popular
+            <Sparkles className="w-3 h-3" /> {t("sub.popular", "Most Popular")}
           </div>
 
           <div className="mb-6 mt-2">
             <h3 className="font-serif text-[22px] font-medium text-blue mb-2">
-              Fellowship
+              {t("sub.fellowship", "Fellowship")}
             </h3>
             <div className="flex items-baseline gap-1">
               <span className="text-[32px] font-serif">
                 {billingCycle === "yearly" ? "$12" : "$15"}
               </span>
-              <span className="text-muted font-sans text-sm">/ month</span>
+              <span className="text-muted font-sans text-sm">{t("sub.month")}</span>
             </div>
             <p className="font-body text-[14px] text-ink2 italic mt-3">
-              Unlimited access to all texts, languages, and advanced tools.
+              {t("sub.fellowshipDesc", "Unlimited access to all texts, languages, and advanced tools.")}
             </p>
           </div>
 
@@ -131,15 +132,14 @@ export const Subscription = () => {
           </div>
 
           <button className="w-full btn-primary py-3 text-[14px] flex items-center justify-center gap-2 group">
-            Upgrade to Fellowship
+            {t("sub.upgrade", "Upgrade to Fellowship")}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
 
           <p className="text-center text-[11px] text-muted font-sans mt-3">
             {billingCycle === "yearly"
-              ? "Billed $144 annually."
-              : "Billed $15 rolling monthly."}{" "}
-            Cancel anytime.
+              ? t("sub.billedYearly")
+              : t("sub.billedMonthly")}{" "}
           </p>
         </div>
       </div>
@@ -147,14 +147,13 @@ export const Subscription = () => {
       <div className="mt-20 max-w-2xl mx-auto text-center border-t border-bdr/50 pt-10">
         <BookOpen className="w-6 h-6 text-muted mx-auto mb-4" />
         <h4 className="font-serif text-[20px] text-ink mb-2">
-          Educational & Institutional
+          {t("sub.edu", "Educational & Institutional")}
         </h4>
         <p className="font-body text-[14.5px] italic text-ink2 mb-6">
-          Are you a university or a study group? We offer discounted bulk
-          licenses for educational institutions.
+          {t("sub.eduDesc", "Are you a university or a study group? We offer discounted bulk licenses for educational institutions.")}
         </p>
         <button className="btn-secondary px-6 py-2 text-[13px]">
-          Contact Sales
+          {t("sub.contact", "Contact Sales")}
         </button>
       </div>
     </div>
