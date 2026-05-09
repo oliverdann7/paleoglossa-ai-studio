@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from "react-i18next";
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -42,9 +43,10 @@ const MobileNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
 export const Navbar = () => {
   const location = useLocation();
   const path = location.pathname;
+  const { t } = useTranslation();
 
   return (
-    <>
+    <>  
       <nav className="hidden md:flex fixed left-0 top-0 h-full w-[220px] border-r border-bdr bg-parch2 flex-col z-50 overflow-y-auto">
         <div className="p-5 flex flex-col gap-1">
           <Link to="/app" className="text-[17px] font-serif font-semibold text-blue flex items-center gap-2">
@@ -65,16 +67,16 @@ export const Navbar = () => {
 
         <div className="flex flex-col gap-1 flex-1 px-2">
           <div className="nav-label px-3 mb-1 mt-2">Study</div>
-          <DesktopNavItem icon={BookOpen} label="Dashboard" isActive={path === '/app'} to="/app" />
-          <DesktopNavItem icon={Library} label="Library" isActive={path.startsWith('/app/library') || path.startsWith('/app/reader')} to="/app/library" />
-          <DesktopNavItem icon={Brain} label="Review" isActive={path === '/app/review'} to="/app/review" />
-          <DesktopNavItem icon={GraduationCap} label="Vocabulary" isActive={path === '/app/vocabulary'} to="/app/vocabulary" />
-          <DesktopNavItem icon={BarChart3} label="Statistics" isActive={path === '/app/statistics'} to="/app/statistics" />
+          <DesktopNavItem icon={BookOpen} label={t("nav.dashboard", "Dashboard")} isActive={path === '/app'} to="/app" />
+          <DesktopNavItem icon={Library} label={t("nav.library", "Library")} isActive={path.startsWith('/app/library') || path.startsWith('/app/reader')} to="/app/library" />
+          <DesktopNavItem icon={Brain} label={t("nav.review", "Review")} isActive={path === '/app/review'} to="/app/review" />
+          <DesktopNavItem icon={GraduationCap} label={t("nav.vocabulary", "Vocabulary")} isActive={path === '/app/vocabulary'} to="/app/vocabulary" />
+          <DesktopNavItem icon={BarChart3} label={t("nav.statistics", "Statistics")} isActive={path === '/app/statistics'} to="/app/statistics" />
           
           <div className="nav-label px-3 mb-1 mt-6">Manage</div>
-          <DesktopNavItem icon={PlusCircle} label="Import" isActive={path === '/admin/import'} to="/admin/import" />
-          <DesktopNavItem icon={Settings} label="Settings" isActive={path === '/app/settings'} to="/app/settings" />
-          <DesktopNavItem icon={Crown} label="Upgrade" isActive={path === '/app/subscription'} to="/app/subscription" />
+          <DesktopNavItem icon={PlusCircle} label={t("nav.import", "Import")} isActive={path === '/admin/import'} to="/admin/import" />
+          <DesktopNavItem icon={Settings} label={t("nav.settings", "Settings")} isActive={path === '/app/settings'} to="/app/settings" />
+          <DesktopNavItem icon={Crown} label={t("nav.upgrade", "Upgrade")} isActive={path === '/app/subscription'} to="/app/subscription" />
         </div>
 
         <div className="p-4 border-t border-bdr">
@@ -107,11 +109,11 @@ export const Navbar = () => {
 
       {/* Mobile Tab Bar */}
       <nav className="md:hidden fixed bottom-0 left-0 w-full border-t border-bdr bg-parch2/90 backdrop-blur-md pb-safe z-50 flex justify-around px-2 py-1">
-        <MobileNavItem icon={BookOpen} label="Home" isActive={path === '/app'} to="/app" />
-        <MobileNavItem icon={Library} label="Library" isActive={path.startsWith('/app/library')} to="/app/library" />
-        <MobileNavItem icon={Brain} label="Review" isActive={path.startsWith('/app/review')} to="/app/review" />
-        <MobileNavItem icon={GraduationCap} label="Words" isActive={path.startsWith('/app/vocabulary')} to="/app/vocabulary" />
-        <MobileNavItem icon={MoreHorizontal} label="More" isActive={['/admin/import', '/app/settings', '/app/subscription'].includes(path)} to="/app/settings" />
+        <MobileNavItem icon={BookOpen} label={t("nav.home", "Home")} isActive={path === '/app'} to="/app" />
+        <MobileNavItem icon={Library} label={t("nav.library", "Library")} isActive={path.startsWith('/app/library')} to="/app/library" />
+        <MobileNavItem icon={Brain} label={t("nav.review", "Review")} isActive={path.startsWith('/app/review')} to="/app/review" />
+        <MobileNavItem icon={GraduationCap} label={t("nav.words", "Words")} isActive={path.startsWith('/app/vocabulary')} to="/app/vocabulary" />
+        <MobileNavItem icon={MoreHorizontal} label={t("nav.more", "More")} isActive={['/admin/import', '/app/settings', '/app/subscription'].includes(path)} to="/app/settings" />
       </nav>
     </>
   );

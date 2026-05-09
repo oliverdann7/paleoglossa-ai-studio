@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { CorpusDB } from "../data/corpus";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
+import { useTranslation } from "react-i18next";
 
 export const Library = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export const Library = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [minKnown, setMinKnown] = useState(0);
   const { getWordInfo } = useKnowledge();
+  const { t } = useTranslation();
 
   const mainFilters = [
     "All",
@@ -84,12 +86,7 @@ export const Library = () => {
           level: "A1",
         };
 
-      let level = "A1";
-      if (t.level) {
-        level = t.level;
-      } else {
-        level = t.id === "Jn-1" ? "A1" : t.id === "Gen" ? "A2" : "B1"; // Demo levels
-      }
+      const level = t.level || (t.id === "Jn-1" ? "A1" : t.id === "Gen" ? "A2" : "B1"); // Demo levels
 
       return {
         ...t,
@@ -142,7 +139,7 @@ export const Library = () => {
     <div className="p-6 md:p-12 max-w-7xl mx-auto font-sans min-h-screen">
       <header className="mb-10">
         <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
-          The Library
+          {t("library.title", "Library")}
         </h2>
         <p className="font-body text-[15px] italic text-ink2">
           Ancient wisdom, now familiar. Every word tracked, every text a

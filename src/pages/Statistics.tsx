@@ -177,14 +177,12 @@ export const Statistics = () => {
 
   const weeklyStats = useMemo(() => {
     let weekRead = stats.readToday;
-    let weekMinutes = stats.readingTime;
 
     // Add history from the last 6 days
     if (stats.history && stats.history.length > 0) {
       const recentHistory = stats.history.slice(-6);
       recentHistory.forEach((day) => {
         weekRead += day.readWords || 0;
-        weekMinutes += day.minutes || 0;
       });
     }
 

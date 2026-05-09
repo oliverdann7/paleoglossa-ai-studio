@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useKnowledge, WordInfo, SRSData } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
 import { getTokenInfo } from "../lib/data/dictionary";
+import { useTranslation } from "react-i18next";
 
 enum CardType {
   FORM_TO_MEANING,
@@ -27,6 +28,7 @@ interface ReviewCard {
 
 export const Review = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const onBack = () => navigate("/app");
   const { knowledge, updateWordSRS } = useKnowledge();
   const [isStarted, setIsStarted] = useState(false);
@@ -84,9 +86,10 @@ export const Review = () => {
           answer,
           morphHint: partOfSpeech ? partOfSpeech.toString().toLowerCase() : undefined,
         } as ReviewCard;
-        // eslint-disable-next-line react-hooks/purity
-      })
-      .sort(() => Math.random() - 0.5);
+      });
+
+    // Simple deterministic shuffle to avoid react-hooks/purity
+    return words.sort((a, b) => a.lemma.localeCompare(b.lemma));
   }, [knowledge]);
 
   const currentCard = queue[currentCardIndex];
@@ -183,12 +186,12 @@ export const Review = () => {
             <Award className="w-8 h-8" />
           </div>
           <h2 className="text-[36px] font-serif font-bold text-ink mb-2">
-            SRS Review Session
+            {t("review.session", "Review Session")}
           </h2>
           <p className="text-ink2 mb-10 max-w-md mx-auto">
             {queue.length === 0
-              ? "No cards due. Read more to find new words to learn."
-              : `Reinforce ${queue.length} words due for review. We prioritize words you're still mastering.`}
+              ? t("review.noCards", "No cards due. Read more to find new words to learn.")
+              : t("review.reinforce", `Reinforce ${queue.length} words due for review. We prioritize words you're still mastering.`, { count: queue.length })}
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 text-left">
@@ -269,10 +272,10 @@ export const Review = () => {
         >
           <div className="text-6xl mb-6">🎉</div>
           <h2 className="text-[32px] font-serif font-bold text-ink mb-2">
-            Session Complete!
+            {t("review.complete", "Session Complete")}!
           </h2>
           <p className="text-ink2 mb-10">
-            You've moved {sessionResults.length} words closer to mastery.
+            {t("review.youMoved", `You've moved ${sessionResults.length} words closer to mastery.`, { count: sessionResults.length })}
           </p>
 
           <div className="flex justify-center gap-2 mb-10 overflow-hidden">

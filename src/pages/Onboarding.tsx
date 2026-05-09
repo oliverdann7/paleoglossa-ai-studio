@@ -83,7 +83,7 @@ const languages = [
 
 export const Onboarding = () => {
   const navigate = useNavigate();
-  const onComplete = (_lang: string) => navigate("/app");
+  const onComplete = () => navigate("/app");
   return (
     <div className="min-h-screen bg-parch text-ink flex items-center justify-center p-6 md:p-12 font-sans paper-texture">
       <div className="max-w-6xl w-full py-12">
@@ -111,7 +111,7 @@ export const Onboarding = () => {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              onClick={() => onComplete(lang.id)}
+              onClick={() => onComplete()}
               className="card p-6 flex items-start gap-5 hover:border-blue/30 transition-colors text-left group"
             >
               <div
