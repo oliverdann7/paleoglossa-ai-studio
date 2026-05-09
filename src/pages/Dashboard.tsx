@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
 import { getLangForLemma } from "../lib/data/dictionary";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
+import { cn } from "../lib/utils";
 import {
   WordState,
   STATE_COLORS,

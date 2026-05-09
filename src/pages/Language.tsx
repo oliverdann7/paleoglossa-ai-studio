@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, BookOpen, Play } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 export const Language = () => {
   const { langId } = useParams();
@@ -227,7 +227,7 @@ export const Language = () => {
                 <span className="text-muted uppercase tracking-wider text-[10px] block mb-4 w-full text-center">Sample</span>
                 <span 
                   dir={languageInfo.type}
-                  className="text-2xl text-ink font-serif text-center leading-loose"
+                  className={cn("text-2xl text-ink font-serif text-center leading-loose", languageInfo.type === "rtl" ? "font-hebrew text-right" : "")}
                 >
                   {languageInfo.sample}
                 </span>
