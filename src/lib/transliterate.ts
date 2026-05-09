@@ -5,7 +5,7 @@ const copticMap: Record<string, string> = {'ⲁ':'a', 'ⲃ':'b', 'ⲅ':'g', 'ⲇ
 
 export function getTransliteration(word: string, lang: string, normalized?: string): string {
    if (!word) return "";
-   if (lang === 'san' || lang === 'akk') {
+   if (lang === 'san' || lang === 'akk' || lang === 'egy') {
        return normalized ? normalized : word;
    }
    if (lang === 'lat' || lang === 'en' || lang === 'es' || lang === 'fr') {
