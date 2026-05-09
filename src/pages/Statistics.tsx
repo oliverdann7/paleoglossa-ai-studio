@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
+import { useTranslation } from "react-i18next";
 import {
   AreaChart,
   Area,
@@ -60,6 +61,7 @@ import { getLangForLemma } from "../lib/data/dictionary";
 
 export const Statistics = () => {
   const { stats, knowledge } = useKnowledge();
+  const { t } = useTranslation();
 
   const trendData = useMemo(() => {
     let data = [...(stats.history || [])];
@@ -226,11 +228,10 @@ export const Statistics = () => {
     <div className="p-8 md:p-12 max-w-7xl mx-auto font-sans min-h-screen">
       <header className="mb-10">
         <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
-          Progress Analytics
+          {t('stats.title', "Progress Analytics")}
         </h2>
         <p className="font-body text-[15px] italic text-ink2">
-          Knowledge is a marathon. Every page read is a stone in your
-          intellectual fortress.
+          {t('stats.description', "Knowledge is a marathon. Every page read is a stone in your intellectual fortress.")}
         </p>
       </header>
 
@@ -239,38 +240,37 @@ export const Statistics = () => {
       stats.readToday === 0 ? (
         <div className="card p-12 text-center border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center mt-8">
           <BarChart2 className="w-12 h-12 text-muted mb-4" />
-          <h3 className="font-serif text-[24px] text-ink mb-2">No Data Yet</h3>
+          <h3 className="font-serif text-[24px] text-ink mb-2">{t('stats.noData', "No Data Yet")}</h3>
           <p className="text-ink3 max-w-sm mx-auto">
-            Read your first 100 words to see your progress here. Head over to
-            the Library to begin!
+            {t('stats.noDataDesc', "Read your first 100 words to see your progress here. Head over to the Library to begin!")}
           </p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             <StatCard
-              label="Known Words"
+              label={t('stats.knownWords', "Known Words")}
               value={stats.totalKnown.toLocaleString()}
               trend="+12% vs last week"
               icon={BookOpen}
               color="blue"
             />
             <StatCard
-              label="Words Read (Week)"
+              label={t('stats.wordsReadWeek', "Words Read (Week)")}
               value={weeklyStats.weekRead.toLocaleString()}
               trend="Active"
               icon={History}
               color="amber"
             />
             <StatCard
-              label="Total Reading Time"
+              label={t('stats.totalReadingTime', "Total Reading Time")}
               value={`${weeklyStats.totalHours}h`}
               trend="Keep it up!"
               icon={Clock}
               color="green"
             />
             <StatCard
-              label="Current Streak"
+              label={t('stats.currentStreak', "Current Streak")}
               value={`🔥 ${stats.streak} Days`}
               icon={Zap}
               color="amber"
@@ -282,7 +282,7 @@ export const Statistics = () => {
             <div className="lg:col-span-2 card p-8">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-[18px] font-serif font-bold text-ink">
-                  Reading Activity (13 Weeks)
+                  {t('stats.readingActivity', "Reading Activity (13 Weeks)")}
                 </h3>
                 <div className="flex gap-1 text-[9px] font-bold text-muted uppercase tracking-widest items-center">
                   <span>Less</span>

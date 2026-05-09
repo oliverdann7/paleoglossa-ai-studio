@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   ChevronRight,
@@ -31,6 +32,7 @@ import { getTransliteration } from "../lib/transliterate";
 export const Reader = () => {
   const { textId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const onBack = () => navigate("/app/library");
 
   const text = useMemo<any>(() => {
@@ -1084,7 +1086,7 @@ export const Reader = () => {
 
               <div className="mb-8">
                 <div className="eyebrow mb-3 flex items-center justify-between text-ink">
-                  <span>Your Knowledge</span>
+                  <span>{t('reader.yourKnowledge', "Your Knowledge")}</span>
                 </div>
                 <div className="flex gap-2">
                   {[
@@ -1137,10 +1139,10 @@ export const Reader = () => {
 
               {/* Notes Section */}
               <div className="mb-8">
-                <div className="eyebrow mb-3 text-ink">Personal Notes</div>
+                <div className="eyebrow mb-3 text-ink">{t('reader.personalNotes', "Personal Notes")}</div>
                 <textarea
                   className="w-full h-24 p-3 bg-white border border-bdr rounded-xl text-[13px] font-body resize-none focus:outline-none focus:border-blue transition-colors"
-                  placeholder="Add a note about this word..."
+                  placeholder={t('reader.addNote', "Add a note about this word...")}
                   value={getWordInfo(selectedWord.lemma).notes || ""}
                   onChange={(e) =>
                     setWordNote(selectedWord.lemma, e.target.value)
@@ -1152,9 +1154,9 @@ export const Reader = () => {
               {exampleSentences.length > 0 && (
                 <div className="mt-8 pt-8 border-t border-bdr/30">
                   <div className="eyebrow mb-4 flex justify-between">
-                    <span>Occurrences in Library</span>
+                    <span>{t('reader.occurrences', "Occurrences in Library")}</span>
                     <span className="text-blue">
-                      {exampleSentences.length} matches
+                      {exampleSentences.length} {t('reader.matches', "matches")}
                     </span>
                   </div>
                   <div className="space-y-4">
