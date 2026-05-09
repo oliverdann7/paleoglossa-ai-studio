@@ -119,9 +119,15 @@ export const Import = () => {
                       className="w-full p-3 bg-white border border-bdr rounded-xl text-[14px] font-sans focus:ring-1 focus:ring-blue"
                     >
                       <option value="grc">Ancient Greek</option>
+                      <option value="grc-koine">Koine Greek</option>
                       <option value="hbo">Biblical Hebrew</option>
                       <option value="lat">Classical Latin</option>
                       <option value="syr">Classical Syriac</option>
+                      <option value="cop">Coptic</option>
+                      <option value="arc">Aramaic</option>
+                      <option value="akk">Akkadian</option>
+                      <option value="san">Sanskrit</option>
+                      <option value="egy">Egyptian Hieroglyphs</option>
                     </select>
                   </div>
                   

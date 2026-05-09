@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, AlertCircle } from 'lucide-react';
 import { auth, googleProvider } from '@/lib/firebase';
@@ -7,8 +7,6 @@ import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 
 export const SignIn = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = (location.state as any)?.from?.pathname || '/app';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +19,7 @@ export const SignIn = () => {
     
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate(from, { replace: true });
+      navigate('/app');
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -31,7 +29,7 @@ export const SignIn = () => {
   const handleGoogleSignIn = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate(from, { replace: true });
+      navigate('/app');
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/popup-blocked') {

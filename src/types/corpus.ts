@@ -75,6 +75,7 @@ export interface Text {
   author?: string;
   language: string; // e.g., "grc"
   direction?: 'ltr' | 'rtl';
+  level?: string; // e.g., 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'
   sourceAttributionId?: string;
   hasMorphology?: boolean;
   hasTranslation?: boolean;

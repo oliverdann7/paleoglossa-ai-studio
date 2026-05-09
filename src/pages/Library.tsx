@@ -14,7 +14,7 @@ export const Library = () => {
   const [minKnown, setMinKnown] = useState(0);
   const { getWordInfo } = useKnowledge();
   
-  const mainFilters = ['All', 'Ancient Greek', 'Koine Greek', 'Biblical Hebrew', 'Classical Latin'];
+  const mainFilters = ['All', 'Ancient Greek', 'Koine Greek', 'Biblical Hebrew', 'Classical Latin', 'Syriac', 'Coptic', 'Aramaic', 'Akkadian', 'Sanskrit', 'Egyptian Hieroglyphs'];
 
   const allTexts = useMemo(() => {
     const builtIn = CorpusDB.getTexts();
@@ -25,7 +25,7 @@ export const Library = () => {
        ...t,
        isImported: true,
        author: 'Your Import',
-       language: t.language === 'grc' ? 'grc' : t.language === 'hbo' ? 'hbo' : 'lat'
+       language: t.language || 'grc'
     }))];
 
     return unified.map((t: any) => {
@@ -57,12 +57,19 @@ export const Library = () => {
       
       if (totalWords === 0) return { ...t, percentKnown: 0, percentLearning: 0, totalWords: 0, level: 'A1' };
 
+      let level = 'A1';
+      if (t.level) {
+         level = t.level;
+      } else {
+         level = t.id === 'Jn-1' ? 'A1' : t.id === 'Gen' ? 'A2' : 'B1'; // Demo levels
+      }
+
       return {
         ...t,
         percentKnown: Math.round((knownWordsCount / totalWords) * 100),
         percentLearning: Math.round((learningWordsCount / totalWords) * 100),
         totalWords,
-        level: t.id === 'Jn-1' ? 'A1' : t.id === 'Gen' ? 'A2' : 'B1' // Demo levels
+        level
       };
     });
   }, [getWordInfo]);
@@ -74,7 +81,13 @@ export const Library = () => {
         'Ancient Greek': 'grc',
         'Koine Greek': 'grc-koine',
         'Biblical Hebrew': 'hbo',
-        'Classical Latin': 'lat'
+        'Classical Latin': 'lat',
+        'Syriac': 'syr',
+        'Coptic': 'cop',
+        'Aramaic': 'arc',
+        'Akkadian': 'akk',
+        'Sanskrit': 'san',
+        'Egyptian Hieroglyphs': 'egy',
       };
       matchesFilter = t.language === langMap[activeFilter];
     }
@@ -179,6 +192,32 @@ export const Library = () => {
         </div>
       </div>
 
+      <div className="mb-14">
+        <h3 className="eyebrow mb-4 opacity-50">Explore by Language</h3>
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          {[
+            { id: 'grc-koine', name: 'Koine Greek' },
+            { id: 'grc', name: 'Ancient Greek' },
+            { id: 'hbo', name: 'Biblical Hebrew' },
+            { id: 'lat', name: 'Classical Latin' },
+            { id: 'syr', name: 'Syriac' },
+            { id: 'cop', name: 'Coptic' },
+            { id: 'arc', name: 'Aramaic' },
+            { id: 'akk', name: 'Akkadian' },
+            { id: 'san', name: 'Sanskrit' },
+            { id: 'egy', name: 'Egyptian Hieroglyphs' },
+          ].map((lang) => (
+            <button 
+              key={lang.id} 
+              onClick={() => navigate(`/app/language/${lang.id}`)}
+              className="shrink-0 px-6 py-4 rounded-xl border border-bdr/40 bg-sand hover:border-blue hover:text-blue transition-colors font-serif whitespace-nowrap"
+            >
+              {lang.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {filteredTexts.length === 0 ? (
         <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
           <LibraryIcon className="w-12 h-12 text-muted mb-4" />
@@ -208,7 +247,20 @@ export const Library = () => {
                </div>
                
                <div className="text-[10px] text-ink3 font-sans mb-4 uppercase tracking-[0.1em] font-bold">
-                 {text.author} <span className="mx-1 opacity-50">•</span> {text.language === 'grc' ? 'Ancient Greek' : text.language === 'grc-koine' ? 'Koine Greek' : text.language === 'hbo' ? 'Biblical Hebrew' : 'Classical Latin'}
+                 {text.author} <span className="mx-1 opacity-50">•</span> {
+                   {
+                     'grc': 'Ancient Greek',
+                     'grc-koine': 'Koine Greek',
+                     'hbo': 'Biblical Hebrew',
+                     'lat': 'Classical Latin',
+                     'syr': 'Syriac',
+                     'cop': 'Coptic',
+                     'arc': 'Aramaic',
+                     'akk': 'Akkadian',
+                     'san': 'Sanskrit',
+                     'egy': 'Egyptian Hieroglyphs',
+                   }[text.language as string] || text.language
+                 }
                </div>
 
                {/* Knowledge bars at a glance */}
