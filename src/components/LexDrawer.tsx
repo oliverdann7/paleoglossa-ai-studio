@@ -50,7 +50,7 @@ export const LexDrawer = ({ word, isOpen, onClose, onStatusChange }: LexDrawerPr
               <div className="flex items-center gap-4 mb-6">
                 <h3 className={cn(
                   "text-5xl font-serif font-bold tracking-tight",
-                  word.language === 'Hebrew' ? "font-hebrew" : "font-greek"
+                  ['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'Hebrew'].includes(word.language) ? "font-hebrew" : "font-greek"
                 )}>
                   {word.text}
                 </h3>

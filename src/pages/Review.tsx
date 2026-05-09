@@ -354,7 +354,7 @@ export const Review = () => {
             </div>
 
             <div className="flex flex-col items-center text-center">
-              <h3 className="text-[64px] font-serif font-light text-ink leading-none mb-4">
+              <h3 className={cn("text-[64px] font-serif font-light text-ink leading-none mb-4", /[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u.test(currentCard.question) ? "font-hebrew text-right" : "")}>
                 {currentCard.question}
               </h3>
               {currentCard.morphHint && (
@@ -370,7 +370,7 @@ export const Review = () => {
                   className="flex flex-col items-center"
                 >
                   <div className="w-12 h-px bg-bdr/30 mb-8" />
-                  <div className="text-[24px] font-body text-blue font-medium leading-snug">
+                  <div className={cn("text-[24px] font-body text-blue font-medium leading-snug", /[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u.test(currentCard.answer) ? "font-hebrew text-right" : "")}>
                     {currentCard.answer}
                   </div>
                 </motion.div>

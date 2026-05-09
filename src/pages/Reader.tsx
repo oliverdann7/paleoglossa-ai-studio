@@ -203,10 +203,8 @@ export const Reader = () => {
   });
 
   const chapter = chapters[currentChapterIndex] || chapters[0];
-  const isHebrew = ["hbo", "Biblical Hebrew", "arc"].includes(
-    text?.language || "",
-  );
-  const isRtl = text?.direction === "rtl";
+  const isHebrewFont = ["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "Hebrew"].includes(text?.language || "");
+  const isRtl = text?.direction === "rtl" || ["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "egy", "Egyptian Hieroglyphs"].includes(text?.language || "");
 
   const exampleSentences = useMemo(() => {
     if (!selectedWord) return [];
@@ -239,7 +237,7 @@ export const Reader = () => {
       return;
     }
 
-    const baseSpeed = isHebrew ? 180 : 150;
+    const baseSpeed = isHebrewFont ? 180 : 150;
     const delay = baseSpeed / audioSpeed;
 
     const timer = setTimeout(() => {
@@ -270,7 +268,7 @@ export const Reader = () => {
     chapter,
     loopWord,
     loopSentence,
-    isHebrew,
+    isHebrewFont,
     readingMode,
   ]);
 
@@ -654,7 +652,8 @@ export const Reader = () => {
                 dir={isRtl ? "rtl" : "ltr"}
                 className={cn(
                   "font-serif tracking-wide transition-all",
-                  isHebrew ? "font-hebrew text-right" : "text-left",
+                  isHebrewFont ? "font-hebrew" : "",
+                  isRtl ? "text-right" : "text-left",
                   readingMode === "page"
                     ? "text-[24px] leading-[2.5]"
                     : "leading-[2.2]",
@@ -857,7 +856,7 @@ export const Reader = () => {
                   <h2
                     className={cn(
                       "text-[42px] md:text-[48px] font-serif leading-tight text-ink",
-                      isHebrew ? "font-hebrew" : "",
+                      isHebrewFont ? "font-hebrew" : "",
                     )}
                     dir={isRtl ? "rtl" : "ltr"}
                   >
@@ -881,7 +880,7 @@ export const Reader = () => {
                 <div className="flex flex-col items-center gap-1">
                   <span className="text-[18px] font-serif text-blue font-semibold tracking-wide">
                     From '
-                    <bdi className={isHebrew ? "font-hebrew" : ""}>
+                    <bdi className={isHebrewFont ? "font-hebrew" : ""}>
                       {selectedWord.lemma}
                     </bdi>
                     '
@@ -995,7 +994,7 @@ export const Reader = () => {
                                       <div
                                         className={cn(
                                           "flex-1 py-2 flex items-center justify-center font-serif",
-                                          isHebrew ? "font-hebrew" : "",
+                                          isHebrewFont ? "font-hebrew" : "",
                                           isSgActive
                                             ? "bg-blue/5 text-blue font-bold"
                                             : "text-ink3",
@@ -1010,7 +1009,7 @@ export const Reader = () => {
                                       <div
                                         className={cn(
                                           "flex-1 py-2 flex items-center justify-center font-serif",
-                                          isHebrew ? "font-hebrew" : "",
+                                          isHebrewFont ? "font-hebrew" : "",
                                           isPlActive
                                             ? "bg-blue/5 text-blue font-bold"
                                             : "text-ink3",
@@ -1042,7 +1041,7 @@ export const Reader = () => {
                                       <div
                                         className={cn(
                                           "flex-1 py-2 flex items-center justify-center font-serif",
-                                          isHebrew ? "font-hebrew" : "",
+                                          isHebrewFont ? "font-hebrew" : "",
                                           isSgActive
                                             ? "bg-blue/5 text-blue font-bold"
                                             : "text-ink3",
@@ -1057,7 +1056,7 @@ export const Reader = () => {
                                       <div
                                         className={cn(
                                           "flex-1 py-2 flex items-center justify-center font-serif",
-                                          isHebrew ? "font-hebrew" : "",
+                                          isHebrewFont ? "font-hebrew" : "",
                                           isPlActive
                                             ? "bg-blue/5 text-blue font-bold"
                                             : "text-ink3",
@@ -1168,7 +1167,7 @@ export const Reader = () => {
                           <p
                             className={cn(
                               "font-serif mb-2 text-ink2",
-                              isHebrew ? "font-hebrew" : "",
+                              isHebrewFont ? "font-hebrew" : "",
                             )}
                             dir={isRtl ? "rtl" : "ltr"}
                           >
