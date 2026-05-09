@@ -42,10 +42,10 @@ export const Settings = () => {
     <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen pb-24">
       <header className="mb-10">
         <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2 flex items-center gap-3">
-          <SettingsIcon className="w-8 h-8 text-muted" /> Preferences
+          <SettingsIcon className="w-8 h-8 text-muted" /> {t("settings.title", "Preferences")}
         </h2>
         <p className="font-body text-[15px] italic text-ink2">
-          Configure your reading environment and manage your scholarly data.
+          {t("settings.description", "Configure your reading environment and manage your scholarly data.")}
         </p>
       </header>
 
@@ -68,12 +68,12 @@ export const Settings = () => {
 
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
-            Reading Goals
+            {t("settings.readingGoals", "Reading Goals")}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-3">
-                Daily Words Goal
+                {t("settings.dailyWords", "Daily Words Goal")}
               </label>
               <input
                 type="number"
@@ -88,7 +88,7 @@ export const Settings = () => {
             </div>
             <div>
               <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-3">
-                Daily Minutes Goal
+                {t("settings.dailyMinutes", "Daily Minutes Goal")}
               </label>
               <input
                 type="number"
@@ -105,10 +105,10 @@ export const Settings = () => {
           <div className="mt-8 p-4 bg-blue/5 border border-blue/10 rounded-xl flex justify-between items-center">
             <div>
               <h4 className="font-bold text-[14px] text-blue">
-                Streak Freezes
+                {t("settings.streakFreezes", "Streak Freezes")}
               </h4>
               <p className="text-[12px] text-ink3">
-                You have 2 freezes remaining this month.
+                {t("settings.freezesRemaining", "You have 2 freezes remaining this month.")}
               </p>
             </div>
             <div className="bg-white/50 px-3 py-1 rounded text-blue font-bold shadow-sm">
@@ -119,13 +119,13 @@ export const Settings = () => {
 
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
-            Reader Appearance
+            {t("settings.readerAppearance", "Reader Appearance")}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
               <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-3">
-                Base Font Size
+                {t("settings.fontSize", "Base Font Size")}
               </label>
               <select
                 value={settings.fontSize}
@@ -144,7 +144,7 @@ export const Settings = () => {
 
             <div>
               <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-3">
-                Highlight Intensity
+                {t("settings.highlightIntensity", "Highlight Intensity")}
               </label>
               <select
                 value={settings.highlightIntensity}
@@ -153,9 +153,9 @@ export const Settings = () => {
                 }
                 className="w-full p-4 bg-parch2/50 border border-bdr rounded-xl text-ink focus:outline-none focus:border-blue transition-all"
               >
-                <option value="subtle">Subtle</option>
-                <option value="normal">Normal</option>
-                <option value="strong">Strong</option>
+                <option value="subtle">{t("settings.intensitySubtle", "Subtle")}</option>
+                <option value="normal">{t("settings.intensityNormal", "Normal")}</option>
+                <option value="strong">{t("settings.intensityStrong", "Strong")}</option>
               </select>
             </div>
           </div>
@@ -163,7 +163,7 @@ export const Settings = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
               <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-3">
-                Theme
+                {t("settings.theme", "Theme")}
               </label>
               <div className="flex gap-2">
                 <button
@@ -175,7 +175,7 @@ export const Settings = () => {
                       : "bg-parch2/50 border-bdr text-muted hover:text-ink",
                   )}
                 >
-                  Parchment
+                  {t("settings.themeParchment", "Parchment")}
                 </button>
                 <button
                   onClick={() => updateSettings({ theme: "sepia" })}
@@ -186,7 +186,7 @@ export const Settings = () => {
                       : "bg-[#f4ecd8]/40 border-bdr text-muted hover:text-ink",
                   )}
                 >
-                  Sepia
+                  {t("settings.themeSepia", "Sepia")}
                 </button>
                 <button
                   onClick={() => updateSettings({ theme: "dark" })}
@@ -197,14 +197,14 @@ export const Settings = () => {
                       : "bg-[#151c27]/40 border-[#2a364a] text-zinc-400 hover:text-zinc-200",
                   )}
                 >
-                  Dark
+                  {t("settings.themeDark", "Dark")}
                 </button>
               </div>
             </div>
 
             <div>
               <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-3">
-                Audio Speed Default
+                {t("settings.audioSpeed", "Audio Speed Default")}
               </label>
               <div className="flex gap-1 bg-parch2/50 p-1 border border-bdr rounded-xl">
                 {[0.85, 1.0, 1.15].map((speed) => (
@@ -236,7 +236,7 @@ export const Settings = () => {
                 className="w-5 h-5 rounded text-blue focus:ring-blue accent-blue border-bdr bg-white"
               />
               <span className="text-[14px] font-medium text-ink group-hover:text-blue transition-colors">
-                Show transliteration by default
+                {t("settings.showTranslit", "Show transliteration by default")}
               </span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer group">
@@ -249,7 +249,7 @@ export const Settings = () => {
                 className="w-5 h-5 rounded text-blue focus:ring-blue accent-blue border-bdr bg-white"
               />
               <span className="text-[14px] font-medium text-ink group-hover:text-blue transition-colors">
-                Show parallel text by default
+                {t("settings.showParallel", "Show parallel text by default")}
               </span>
             </label>
           </div>
@@ -257,7 +257,7 @@ export const Settings = () => {
 
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
-            Data & Export
+            {t("settings.dataExport", "Data & Export")}
           </h3>
 
           <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -266,9 +266,9 @@ export const Settings = () => {
               className="flex-1 btn-secondary py-4 flex flex-col items-center gap-2 group"
             >
               <Download className="w-5 h-5 text-muted group-hover:text-ink transition-colors" />
-              <span className="font-bold text-[14px]">Export All Data</span>
+              <span className="font-bold text-[14px]">{t("settings.export", "Export All Data")}</span>
               <span className="text-[11px] font-normal text-muted">
-                Download .json of vocabulary and logs
+                {t("settings.exportDesc", "Download .json of vocabulary and logs")}
               </span>
             </button>
             <button
@@ -276,9 +276,9 @@ export const Settings = () => {
               className="flex-1 bg-red-50 border border-red-100 hover:border-red-300 py-4 flex flex-col items-center gap-2 group text-red-600 rounded-2xl transition-all"
             >
               <RefreshCcw className="w-5 h-5 text-red-400 group-hover:text-red-600 transition-colors" />
-              <span className="font-bold text-[14px]">Reset Progress</span>
+              <span className="font-bold text-[14px]">{t("settings.reset", "Reset Progress")}</span>
               <span className="text-[11px] font-normal opacity-80">
-                Erase all knowledge and streaks
+                {t("settings.resetDesc", "Erase all knowledge and streaks")}
               </span>
             </button>
           </div>
@@ -286,20 +286,20 @@ export const Settings = () => {
           {showConfirmReset && (
             <div className="p-4 bg-red-100 border border-red-200 rounded-xl mt-4">
               <p className="text-[13px] font-bold text-red-800 mb-3">
-                Are you absolutely sure? This cannot be undone.
+                {t("settings.resetConfirm", "Are you absolutely sure? This cannot be undone.")}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={handleReset}
                   className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-[12px] hover:bg-red-700"
                 >
-                  Yes, erase everything
+                  {t("settings.resetYes", "Yes, erase everything")}
                 </button>
                 <button
                   onClick={() => setShowConfirmReset(false)}
                   className="bg-white text-ink px-4 py-2 rounded-lg font-bold text-[12px] border border-bdr"
                 >
-                  Cancel
+                  {t("settings.resetCancel", "Cancel")}
                 </button>
               </div>
             </div>
