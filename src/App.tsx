@@ -13,6 +13,7 @@ import { Statistics } from './pages/Statistics';
 import { Subscription } from './pages/Subscription';
 import { Settings } from './pages/Settings';
 import { Onboarding } from './pages/Onboarding';
+import { Notes } from './pages/Notes';
 import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
@@ -59,7 +60,7 @@ export default function App() {
           <Route path="vocabulary" element={<Vocabulary />} />
           <Route path="review" element={<Review />} />
           <Route path="statistics" element={<Statistics />} />
-          <Route path="notes" element={<div className="p-8">Notes coming soon</div>} />
+          <Route path="notes" element={<Notes />} />
           <Route path="settings" element={<Settings />} />
           <Route path="subscription" element={<Subscription />} />
         </Route>

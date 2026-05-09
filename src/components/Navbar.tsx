@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3 } from 'lucide-react';
+import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from "react-i18next";
 
@@ -71,6 +71,7 @@ export const Navbar = () => {
           <DesktopNavItem icon={Library} label={t("nav.library", "Library")} isActive={path.startsWith('/app/library') || path.startsWith('/app/reader')} to="/app/library" />
           <DesktopNavItem icon={Brain} label={t("nav.review", "Review")} isActive={path === '/app/review'} to="/app/review" />
           <DesktopNavItem icon={GraduationCap} label={t("nav.vocabulary", "Vocabulary")} isActive={path === '/app/vocabulary'} to="/app/vocabulary" />
+          <DesktopNavItem icon={FileText} label={t("nav.notes", "Notes")} isActive={path === '/app/notes'} to="/app/notes" />
           <DesktopNavItem icon={BarChart3} label={t("nav.statistics", "Statistics")} isActive={path === '/app/statistics'} to="/app/statistics" />
           
           <div className="nav-label px-3 mb-1 mt-6">Manage</div>

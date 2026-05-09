@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 import {
   Upload,
   Link as LinkIcon,
@@ -27,6 +28,7 @@ interface ImportedText {
 
 export const Import = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
   const [activeTab, setActiveTab] = useState<"paste" | "file" | "url">("paste");
   const [text, setText] = useState("");
@@ -97,11 +99,10 @@ export const Import = () => {
     <div className="p-8 md:p-12 max-w-4xl mx-auto font-sans min-h-screen">
       <header className="mb-10">
         <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
-          Import New Lesson
+          {t("import.title", "Import New Lesson")}
         </h2>
         <p className="font-body text-[15px] italic text-ink2">
-          Your personal library. Paste anything from the ancient world and the
-          system will map it to your knowledge.
+          {t("import.description", "Your personal library. Paste anything from the ancient world and the system will map it to your knowledge.")}
         </p>
       </header>
 
@@ -119,7 +120,7 @@ export const Import = () => {
               )}
             >
               <FileText className="w-4 h-4" />
-              Paste Text
+              {t("import.pasteText", "Paste Text")}
             </button>
             <button
               onClick={() => setActiveTab("file")}
@@ -131,7 +132,7 @@ export const Import = () => {
               )}
             >
               <Upload className="w-4 h-4" />
-              Upload File
+              {t("import.uploadFile", "Upload File")}
             </button>
             <button
               onClick={() => setActiveTab("url")}
@@ -143,7 +144,7 @@ export const Import = () => {
               )}
             >
               <LinkIcon className="w-4 h-4" />
-              Import URL
+              {t("import.importUrl", "Import URL")}
             </button>
           </div>
 
@@ -157,7 +158,7 @@ export const Import = () => {
                   exit={{ opacity: 0 }}
                 >
                   <div className="mb-6">
-                    <label className="eyebrow mb-2">Select Language</label>
+                    <label className="eyebrow mb-2">{t("import.selectLanguage", "Select Language")}</label>
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
@@ -177,7 +178,7 @@ export const Import = () => {
                   </div>
 
                   <div className="mb-6">
-                    <label className="eyebrow mb-2">Paste Content</label>
+                    <label className="eyebrow mb-2">{t("import.pasteContent", "Paste Content")}</label>
                     <textarea
                       value={text}
                       onChange={(e) => setText(e.target.value)}
@@ -193,7 +194,7 @@ export const Import = () => {
                         onClick={() => handleSample(s.text, s.lang)}
                         className="px-3 py-1.5 rounded-full border border-bdr/50 bg-parch text-[11px] font-bold text-muted hover:border-blue/30 transition-all"
                       >
-                        Try: {s.name}
+                        {t("import.try", "Try")}: {s.name}
                       </button>
                     ))}
                   </div>
@@ -214,10 +215,10 @@ export const Import = () => {
                     <Upload className="w-8 h-8" />
                   </div>
                   <h3 className="text-[20px] font-serif font-bold text-ink mb-1">
-                    Click to Upload
+                    {t("import.clickUpload", "Click to Upload")}
                   </h3>
                   <p className="text-[13px] text-muted">
-                    Supports .txt, .pdf, .docx files up to 20MB
+                    {t("import.supports", "Supports .txt, .pdf, .docx files up to 20MB")}
                   </p>
                 </motion.div>
               )}
@@ -230,7 +231,7 @@ export const Import = () => {
                   exit={{ opacity: 0 }}
                 >
                   <div className="mb-8">
-                    <label className="eyebrow mb-2">Article URL</label>
+                    <label className="eyebrow mb-2">{t("import.articleUrl", "Article URL")}</label>
                     <input
                       type="url"
                       placeholder="https://example.com/ancient-text"
@@ -243,12 +244,10 @@ export const Import = () => {
                     </div>
                     <div>
                       <h4 className="text-[14px] font-bold text-blue mb-1">
-                        URL Scraper Beta
+                        {t("import.urlScraper", "URL Scraper Beta")}
                       </h4>
                       <p className="text-[13px] text-ink3 leading-relaxed">
-                        We'll automatically extract the main text content,
-                        ignoring ads and navigation. Works best with scholarly
-                        databases and digital classics libraries.
+                        {t("import.scraperDesc", "We'll automatically extract the main text content, ignoring ads and navigation. Works best with scholarly databases and digital classics libraries.")}
                       </p>
                     </div>
                   </div>
@@ -264,10 +263,10 @@ export const Import = () => {
               {isProcessing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing Language...
+                  {t("import.processing", "Processing Language...")}
                 </>
               ) : (
-                "Analyze & Import Text"
+                t("import.process", "Analyze & Import Text")
               )}
             </button>
           </div>
@@ -283,7 +282,7 @@ export const Import = () => {
               <CheckCircle className="w-10 h-10" />
             </div>
             <h3 className="text-[28px] font-serif font-bold text-ink mb-1">
-              Processing Complete
+              {t("import.complete", "Processing Complete")}
             </h3>
             <p className="text-green-700 font-bold text-[14px]">
               {result.title}
@@ -296,14 +295,14 @@ export const Import = () => {
                 <div className="text-[32px] font-serif font-bold text-ink">
                   {result.stats.totalWords}
                 </div>
-                <div className="eyebrow text-[9px] text-muted">Total Words</div>
+                <div className="eyebrow text-[9px] text-muted">{t("import.totalWords", "Total Words")}</div>
               </div>
               <div className="text-center">
                 <div className="text-[32px] font-serif font-bold text-ink">
                   {result.stats.uniqueWords}
                 </div>
                 <div className="eyebrow text-[9px] text-muted">
-                  Unique Words
+                  {t("import.uniqueWords", "Unique Words")}
                 </div>
               </div>
               <div className="text-center">
@@ -311,7 +310,7 @@ export const Import = () => {
                   {result.stats.newWords}
                 </div>
                 <div className="eyebrow text-[9px] text-blue/70">
-                  New to You
+                  {t("import.newWords", "New to You")}
                 </div>
               </div>
               <div className="text-center">
@@ -319,7 +318,7 @@ export const Import = () => {
                   {result.stats.knownWords}
                 </div>
                 <div className="eyebrow text-[9px] text-green-600/70">
-                  Known Words
+                  {t("import.knownWords", "Known Words")}
                 </div>
               </div>
             </div>
@@ -330,17 +329,17 @@ export const Import = () => {
                 className="w-full bg-blue text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:shadow-xl transition-all shadow-lg"
               >
                 <Play className="w-5 h-5 fill-current" />
-                Open in Reader
+                {t("import.openReader", "Open in Reader")}
               </button>
               <div className="flex justify-between items-center px-2 py-4">
                 <button className="text-[13px] font-bold text-muted hover:text-ink">
-                  Save for later
+                  {t("import.saveLater", "Save for later")}
                 </button>
                 <button
                   onClick={() => setResult(null)}
                   className="text-[13px] font-bold text-blue hover:underline"
                 >
-                  Import another
+                  {t("import.importAnother", "Import another")}
                 </button>
               </div>
             </div>
