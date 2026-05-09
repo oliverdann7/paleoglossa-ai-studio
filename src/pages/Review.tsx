@@ -5,6 +5,7 @@ import { ChevronLeft, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useKnowledge, WordInfo, SRSData } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
+import { getTokenInfo } from "../lib/data/dictionary";
 
 enum CardType {
   FORM_TO_MEANING,
@@ -53,29 +54,25 @@ export const Review = () => {
             ? info
             : { state: info, addedAt: new Date().toISOString() };
 
-        // Select random card type
+        // Select random card type (only form-to-meaning and meaning-to-form for now)
         const types = [
           CardType.FORM_TO_MEANING,
           CardType.MEANING_TO_FORM,
-          CardType.LEMMA,
         ];
-        // Dummy search for a text that contains this lemma to provide context for cloze if possible
-        // In a real app we'd have a reverse index. For demo, we'll just stick to simpler ones or fake context.
+        
         // eslint-disable-next-line react-hooks/purity
         const type = types[Math.floor(Math.random() * types.length)];
 
-        // Get gloss from corpus (fake lookup)
-        // In real app, we should store primary gloss in knowledge or fetch from a dedicated dictionary
-        const gloss = "to do, to make; to act"; // Placeholder
+        // Get dictionary info
+        const tokenInfo = getTokenInfo(lemma);
+        const gloss = tokenInfo?.gloss || "Definition missing";
+        const partOfSpeech = tokenInfo?.morphology?.partOfSpeech || tokenInfo?.morphology?.part || "";
 
         let question = lemma;
         let answer = gloss;
 
         if (type === CardType.MEANING_TO_FORM) {
           question = gloss;
-          answer = lemma;
-        } else if (type === CardType.LEMMA) {
-          question = lemma + " (inflected form demo)";
           answer = lemma;
         }
 
@@ -85,7 +82,7 @@ export const Review = () => {
           type,
           question,
           answer,
-          morphHint: "verb, preset active",
+          morphHint: partOfSpeech ? partOfSpeech.toString().toLowerCase() : undefined,
         } as ReviewCard;
         // eslint-disable-next-line react-hooks/purity
       })

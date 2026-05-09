@@ -5,6 +5,7 @@ import { Search, Settings2, Trash2, X, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useKnowledge, WordInfo } from "../lib/hooks/useKnowledge";
 import { WordState, STATE_LABELS } from "../lib/constants/wordStates";
+import { getTokenInfo } from "../lib/data/dictionary";
 
 export const Vocabulary = () => {
   const navigate = useNavigate();
@@ -37,12 +38,16 @@ export const Vocabulary = () => {
           ? new Date(wordInfo.srs.nextReview)
           : new Date();
 
+          const tokenInfo = getTokenInfo(lemma);
+          const definition = tokenInfo?.gloss || "Definition...";
+          const languageDesc = tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u) ? "Hebrew" : "Greek");
+
         return {
           id: lemma, // using lemma as ID
           term: lemma,
-          definition: "Definition...", // Fake until real data
-          translit: "",
-          language: lemma.match(/[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u) ? "Hebrew" : "Greek", // Simple fallback detection
+          definition,
+          translit: tokenInfo?.transliteration || "",
+          language: languageDesc,
           status: STATE_LABELS[wordInfo.state as WordState],
           nextReview: nextReview.toISOString(),
         };
