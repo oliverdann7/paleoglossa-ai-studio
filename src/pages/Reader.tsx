@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, ChevronRight, ChevronLeft, ExternalLink, Play, Pause, Repeat, Repeat1, Layout, EyeOff } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, ExternalLink, Play, Pause, Repeat, Repeat1, Layout, EyeOff, Type, Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorpusDB } from '../data/corpus';
 import { useKnowledge } from '../lib/hooks/useKnowledge';
@@ -9,6 +9,7 @@ import { useSettings } from '../lib/hooks/useSettings';
 import { WordState, STATE_COLORS, STATE_LABELS } from '../lib/constants/wordStates';
 import { ProgressRing } from '../components/reader/ProgressRing';
 import { ReaderTutorial } from '../components/reader/ReaderTutorial';
+import { getTransliteration } from '../lib/transliterate';
 
 export const Reader = () => {
   const { textId } = useParams();
@@ -32,7 +33,7 @@ export const Reader = () => {
   
   const [selectedWord, setSelectedWord] = useState<any>(null);
 
-  const [showTranslit] = useState(settings.showTranslit);
+  const [showTranslit, setShowTranslit] = useState(settings.showTranslit);
   const [showParallel, setShowParallel] = useState(settings.showParallelDefault);
   const [readingMode, setReadingMode] = useState<'scroll' | 'page'>('scroll');
   const [maskKnown, setMaskKnown] = useState(false);
@@ -42,6 +43,27 @@ export const Reader = () => {
 
   const [scrollProgress, setScrollProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0); // seconds
+
+  const playTTS = (wordText: string, lang: string) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(wordText);
+    const langCodeMap: Record<string, string> = {
+      'grc': 'el-GR',
+      'grc-koine': 'el-GR',
+      'hbo': 'he-IL',
+      'Biblical Hebrew': 'he-IL',
+      'lat': 'it-IT',
+      'syr': 'ar-SA',
+      'arc': 'ar-SA',
+      'cop': 'el-GR', // Close enough approximate phonetics via greek for coptic
+      'akk': 'ar-SA',
+      'san': 'hi-IN'
+    };
+    u.lang = langCodeMap[lang] || 'en-US';
+    u.rate = 0.8;
+    window.speechSynthesis.speak(u);
+  };
 
   // Audio state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -81,9 +103,9 @@ export const Reader = () => {
               lemma: t.lemma,
               gloss: t.gloss,
               morphology: t.morphology,
-              translit: t.transliteration,
+              translit: t.transliteration || getTransliteration(t.surface, realText?.language || '', t.normalized),
               punctBefore: t.punctBefore || '',
-              punctAfter: t.punctAfter || ' '
+              punctAfter: t.punctAfter !== undefined ? t.punctAfter : ' '
            }))
         }));
         
@@ -107,6 +129,7 @@ export const Reader = () => {
               id: `import-token-${i}-${j}`,
               text: t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
               lemma: t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").toLowerCase(),
+              translit: getTransliteration(t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""), text.language || ''),
               gloss: 'User imported word',
               punctAfter: t.match(/[.,/#!$%^&*;:{}=\-_`~()]/) ? t.slice(-1) + ' ' : ' '
             }))
@@ -129,7 +152,8 @@ export const Reader = () => {
   });
   
   const chapter = chapters[currentChapterIndex] || chapters[0];
-  const isHebrew = text?.language === 'hbo' || text?.language === 'Biblical Hebrew';
+  const isHebrew = ['hbo', 'Biblical Hebrew', 'arc'].includes(text?.language || '');
+  const isRtl = text?.direction === 'rtl';
 
   const exampleSentences = useMemo(() => {
     if (!selectedWord) return [];
@@ -382,6 +406,12 @@ export const Reader = () => {
           </div>
           <div className="flex items-center gap-3 overflow-x-auto no-scrollbar">
             <button 
+              onClick={() => setShowTranslit(!showTranslit)}
+              className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors text-[10px] font-bold uppercase tracking-widest hidden md:flex", showTranslit ? "bg-purple-100 text-purple-700" : "text-muted hover:bg-parch3")}
+            >
+              <Type className="w-3.5 h-3.5" /> Translit
+            </button>
+            <button 
               onClick={() => setShowParallel(!showParallel)}
               className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors text-[10px] font-bold uppercase tracking-widest", showParallel ? "bg-blue/10 text-blue" : "text-muted hover:bg-parch3")}
             >
@@ -458,12 +488,12 @@ export const Reader = () => {
              
              {/* Original Column */}
              <div className="col-span-1 border-r-0 lg:border-r border-bdr/40 lg:pr-8">
-                <div className={cn("font-serif tracking-wide transition-all", isHebrew ? "font-hebrew text-right" : "text-left", readingMode==='page' ?"text-[24px] leading-[2.5]":"leading-[2.2]")}>
+                <div dir={isRtl ? "rtl" : "ltr"} className={cn("font-serif tracking-wide transition-all", isHebrew ? "font-hebrew text-right" : "text-left", readingMode==='page' ?"text-[24px] leading-[2.5]":"leading-[2.2]")}>
                    {chapter.sentences.map((sentence: any, sIdx: number) => {
                       const isActivePageMode = readingMode === 'page' ? sIdx === currentSentenceIndex : true;
                       
                       return (
-                        <span id={`sentence-${sIdx}`} key={sentence.id} className={cn("inline mr-2 md:mr-3 transition-opacity duration-500", !isActivePageMode && readingMode === 'page' ? "opacity-30" : "opacity-100")}>
+                        <span id={`sentence-${sIdx}`} key={sentence.id} className={cn("inline transition-opacity duration-500", isRtl ? "ml-2 md:ml-3" : "mr-2 md:mr-3", !isActivePageMode && readingMode === 'page' ? "opacity-30" : "opacity-100")}>
                            {sentence.tokens.map((token: any, tIdx: number) => {
                               const isAudioActive = audioPos.sentenceIdx === sIdx && audioPos.wordIdx === tIdx;
                               return (
@@ -475,15 +505,20 @@ export const Reader = () => {
                                        setSelectedWord(token);
                                        if (readingMode === 'page') setCurrentSentenceIndex(sIdx);
                                     }}
-                                    className="cursor-pointer transition-all px-0.5 rounded-sm inline-block"
+                                    className="cursor-pointer transition-all px-1 rounded-sm inline-flex flex-col items-center align-top leading-none"
                                     style={{ 
                                       fontSize: readingMode==='page' ? `${settings.fontSize * 1.2}px` : `${settings.fontSize}px`,
                                       ...getWordStyle(token, isAudioActive)
                                     }}
                                   >
-                                     {token.text}
+                                     <bdi className="leading-tight mb-1">{token.text}</bdi>
+                                     {showTranslit && token.translit && (
+                                       <span className="text-[0.45em] text-muted opacity-70 font-sans tracking-wide">
+                                         {token.translit}
+                                       </span>
+                                     )}
                                   </motion.span>
-                                  {token.punctAfter ? <span className="opacity-40">{token.punctAfter}</span> : <span> </span>}
+                                  {token.punctAfter !== undefined && token.punctAfter !== null ? <span className="opacity-40 whitespace-pre-wrap">{token.punctAfter}</span> : <span> </span>}
                                 </span>
                               )
                            })}
@@ -571,15 +606,24 @@ export const Reader = () => {
 
             <div className="flex-1 overflow-y-auto p-6 md:p-8">
                <div className="mb-8 md:mb-10 text-center">
-                  <h2 className={cn("text-[42px] md:text-[48px] font-serif leading-tight mb-2 text-ink", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
-                    {selectedWord.text}
-                  </h2>
+                  <div className="flex justify-center items-center gap-4 mb-2">
+                     <h2 className={cn("text-[42px] md:text-[48px] font-serif leading-tight text-ink", isHebrew?"font-hebrew":"")} dir={isRtl?"rtl":"ltr"}>
+                        <bdi>{selectedWord.text}</bdi>
+                     </h2>
+                     <button 
+                        onClick={() => playTTS(selectedWord.text, text?.language || '')}
+                        className="p-3 text-blue hover:bg-blue/10 rounded-full transition-colors"
+                        title="Listen to pronunciation"
+                     >
+                        <Volume2 className="w-6 h-6" />
+                     </button>
+                  </div>
                   {showTranslit && selectedWord.translit && (
                     <div className="font-body italic text-[16px] text-muted mb-4 opacity-80">{selectedWord.translit}</div>
                   )}
                   <div className="flex flex-col items-center gap-1">
                     <span className="text-[18px] font-serif text-blue font-semibold tracking-wide">
-                       From '{selectedWord.lemma}'
+                       From '<bdi className={isHebrew?"font-hebrew":""}>{selectedWord.lemma}</bdi>'
                     </span>
                   </div>
                </div>
@@ -657,10 +701,10 @@ export const Reader = () => {
                                         <div key={c} className="flex divide-x divide-bdr/30 border-b border-bdr/30 last:border-b-0 text-center">
                                            <div className="w-16 flex-none flex items-center justify-center text-[10px] uppercase font-bold text-ink3 bg-parch/30">{c.substring(0, 3)}</div>
                                            <div className={cn("flex-1 py-2 flex items-center justify-center font-serif", isHebrew?"font-hebrew":"", isSgActive ? "bg-blue/5 text-blue font-bold" : "text-ink3")}>
-                                              {isSgActive ? selectedWord.text : "—"}
+                                              {isSgActive ? <bdi>{selectedWord.text}</bdi> : "—"}
                                            </div>
                                            <div className={cn("flex-1 py-2 flex items-center justify-center font-serif", isHebrew?"font-hebrew":"", isPlActive ? "bg-blue/5 text-blue font-bold" : "text-ink3")}>
-                                              {isPlActive ? selectedWord.text : "—"}
+                                              {isPlActive ? <bdi>{selectedWord.text}</bdi> : "—"}
                                            </div>
                                         </div>
                                      );
@@ -672,10 +716,10 @@ export const Reader = () => {
                                         <div key={p} className="flex divide-x divide-bdr/30 border-b border-bdr/30 last:border-b-0 text-center">
                                            <div className="w-16 flex-none flex items-center justify-center text-[10px] uppercase font-bold text-ink3 bg-parch/30">{p.substring(0, 3)}</div>
                                            <div className={cn("flex-1 py-2 flex items-center justify-center font-serif", isHebrew?"font-hebrew":"", isSgActive ? "bg-blue/5 text-blue font-bold" : "text-ink3")}>
-                                              {isSgActive ? selectedWord.text : "—"}
+                                              {isSgActive ? <bdi>{selectedWord.text}</bdi> : "—"}
                                            </div>
                                            <div className={cn("flex-1 py-2 flex items-center justify-center font-serif", isHebrew?"font-hebrew":"", isPlActive ? "bg-blue/5 text-blue font-bold" : "text-ink3")}>
-                                              {isPlActive ? selectedWord.text : "—"}
+                                              {isPlActive ? <bdi>{selectedWord.text}</bdi> : "—"}
                                            </div>
                                         </div>
                                      );
@@ -744,7 +788,7 @@ export const Reader = () => {
                        {exampleSentences.map((ex: any, idx: number) => {
                           return (
                             <div key={idx} className="p-3 bg-parch/30 rounded-xl border border-bdr/20 text-[14px]">
-                               <p className={cn("font-serif mb-2 text-ink2", isHebrew?"font-hebrew":"")} dir={isHebrew?"rtl":"ltr"}>
+                               <p className={cn("font-serif mb-2 text-ink2", isHebrew?"font-hebrew":"")} dir={isRtl?"rtl":"ltr"}>
                                   {ex.sentence.tokens.map((t: any, i: number) => (
                                      <span key={i}>
                                         {t.punctBefore}

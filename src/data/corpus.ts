@@ -1,269 +1,1738 @@
-import { Text, TextSection, Corpus, SourceAttribution } from '../types/corpus';
+import { Text, TextSection, Corpus, SourceAttribution } from "../types/corpus";
 
 export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
-  'sblgnt-text': {
-    id: 'sblgnt-text',
-    sourceName: 'SBL Greek New Testament',
-    sourceUrl: 'https://sblgnt.com',
-    dataType: 'text',
-    licenseName: 'SBLGNT License',
-    licenseUrl: 'https://sblgnt.com/license/',
-    attributionText: 'The SBL Greek New Testament, edited by Michael W. Holmes. Copyright 2010 Society of Biblical Literature and Logos Bible Software.',
+  "sblgnt-text": {
+    id: "sblgnt-text",
+    sourceName: "SBL Greek New Testament",
+    sourceUrl: "https://sblgnt.com",
+    dataType: "text",
+    licenseName: "SBLGNT License",
+    licenseUrl: "https://sblgnt.com/license/",
+    attributionText:
+      "The SBL Greek New Testament, edited by Michael W. Holmes. Copyright 2010 Society of Biblical Literature and Logos Bible Software.",
     requiresAttribution: true,
     allowsCommercialUse: false,
     allowsModification: false,
-    shareAlike: false
+    shareAlike: false,
   },
-  'morphgnt-parsing': {
-    id: 'morphgnt-parsing',
-    sourceName: 'MorphGNT',
-    sourceUrl: 'https://github.com/morphgnt/sblgnt',
-    dataType: 'morphology',
-    licenseName: 'CC BY-SA 3.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
-    attributionText: 'Morphological parsing by MorphGNT.',
+  "morphgnt-parsing": {
+    id: "morphgnt-parsing",
+    sourceName: "MorphGNT",
+    sourceUrl: "https://github.com/morphgnt/sblgnt",
+    dataType: "morphology",
+    licenseName: "CC BY-SA 3.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+    attributionText: "Morphological parsing by MorphGNT.",
     requiresAttribution: true,
     allowsCommercialUse: true,
     allowsModification: true,
-    shareAlike: true
+    shareAlike: true,
   },
-  'oshb-text-morph': {
-    id: 'oshb-text-morph',
-    sourceName: 'Open Scriptures Hebrew Bible',
-    sourceUrl: 'https://github.com/openscriptures/morphhb',
-    dataType: 'text',
-    licenseName: 'CC BY 4.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
-    attributionText: 'OSHB text and morphology provided by Open Scriptures.',
+  "oshb-text-morph": {
+    id: "oshb-text-morph",
+    sourceName: "Open Scriptures Hebrew Bible",
+    sourceUrl: "https://github.com/openscriptures/morphhb",
+    dataType: "text",
+    licenseName: "CC BY 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    attributionText: "OSHB text and morphology provided by Open Scriptures.",
     requiresAttribution: true,
     allowsCommercialUse: true,
     allowsModification: true,
     shareAlike: false,
-    notes: 'Includes WLC text.'
+    notes: "Includes WLC text.",
   },
-  'perseus-texts': {
-    id: 'perseus-texts',
-    sourceName: 'Perseus Digital Library',
-    sourceUrl: 'http://www.perseus.tufts.edu/',
-    dataType: 'text',
-    licenseName: 'CC BY-SA 3.0',
-    attributionText: 'Text provided by Perseus Digital Library.',
+  "perseus-texts": {
+    id: "perseus-texts",
+    sourceName: "Perseus Digital Library",
+    sourceUrl: "http://www.perseus.tufts.edu/",
+    dataType: "text",
+    licenseName: "CC BY-SA 3.0",
+    attributionText: "Text provided by Perseus Digital Library.",
     requiresAttribution: true,
     allowsCommercialUse: true,
     allowsModification: true,
-    shareAlike: true
-  }
+    shareAlike: true,
+  },
+  "project-gutenberg": {
+    id: "project-gutenberg",
+    sourceName: "Project Gutenberg",
+    sourceUrl: "https://www.gutenberg.org/",
+    dataType: "text",
+    licenseName: "Public Domain",
+    attributionText: "Text provided by Project Gutenberg.",
+    requiresAttribution: false,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false,
+  },
 };
 
-export const GREEK_CORPUS: Corpus = { id: 'SBLGNT', title: 'SBL Greek New Testament', description: 'The SBL Greek New Testament', language: 'grc-koine', sourceAttributionId: 'sblgnt-text', licenseSummary: 'Non-Commercial', importStatus: 'partial', attribution: [ATTRIBUTIONS['sblgnt-text'], ATTRIBUTIONS['morphgnt-parsing']] };
-export const HEBREW_CORPUS: Corpus = { id: 'OSHB', title: 'Open Scriptures Hebrew Bible', description: 'Hebrew Bible', language: 'hbo', sourceAttributionId: 'oshb-text-morph', licenseSummary: 'CC BY 4.0', importStatus: 'partial', attribution: [ATTRIBUTIONS['oshb-text-morph'], ATTRIBUTIONS['wlc-text']] };
-export const LATIN_CORPUS: Corpus = { id: 'LATIN_CLASSIC', title: 'Classical Latin Corpus', description: 'Ancient Latin texts', language: 'lat', sourceAttributionId: 'perseus-texts', licenseSummary: 'CC BY-SA 3.0', importStatus: 'partial', attribution: [ATTRIBUTIONS['perseus-texts']] };
+export const GREEK_CORPUS: Corpus = {
+  id: "SBLGNT",
+  title: "SBL Greek New Testament",
+  description: "The SBL Greek New Testament",
+  language: "grc-koine",
+  sourceAttributionId: "sblgnt-text",
+  licenseSummary: "Non-Commercial",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["sblgnt-text"], ATTRIBUTIONS["morphgnt-parsing"]],
+};
+export const HEBREW_CORPUS: Corpus = {
+  id: "OSHB",
+  title: "Open Scriptures Hebrew Bible",
+  description: "Hebrew Bible",
+  language: "hbo",
+  sourceAttributionId: "oshb-text-morph",
+  licenseSummary: "CC BY 4.0",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["oshb-text-morph"], ATTRIBUTIONS["wlc-text"]],
+};
+export const LATIN_CORPUS: Corpus = {
+  id: "LATIN_CLASSIC",
+  title: "Classical Latin Corpus",
+  description: "Ancient Latin texts",
+  language: "lat",
+  sourceAttributionId: "perseus-texts",
+  licenseSummary: "CC BY-SA 3.0",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["perseus-texts"]],
+};
+export const SYRIAC_CORPUS: Corpus = {
+  id: "SYRIAC_PESHITTA",
+  title: "Syriac Peshitta",
+  description: "The Syriac Bible",
+  language: "syr",
+  sourceAttributionId: "project-gutenberg",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["project-gutenberg"]],
+};
+export const COPTIC_CORPUS: Corpus = {
+  id: "COPTIC_SAHIDIC",
+  title: "Sahidic Coptic New Testament",
+  description: "Coptic New Testament",
+  language: "cop",
+  sourceAttributionId: "project-gutenberg",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["project-gutenberg"]],
+};
+export const ARAMAIC_CORPUS: Corpus = {
+  id: "ARAMAIC_TARGUM",
+  title: "Aramaic Targum",
+  description: "Aramaic Targum of the Hebrew Bible",
+  language: "arc",
+  sourceAttributionId: "project-gutenberg",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["project-gutenberg"]],
+};
+export const AKKADIAN_CORPUS: Corpus = {
+  id: "AKKADIAN_GILGAMESH",
+  title: "Epic of Gilgamesh",
+  description: "Standard Babylonian Epic of Gilgamesh (Transliteration)",
+  language: "akk",
+  sourceAttributionId: "project-gutenberg",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["project-gutenberg"]],
+};
+export const SANSKRIT_CORPUS: Corpus = {
+  id: "SANSKRIT_MAHABHARATA",
+  title: "Mahabharata",
+  description: "The Mahabharata in Sanskrit",
+  language: "san",
+  sourceAttributionId: "project-gutenberg",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["project-gutenberg"]],
+};
 
 export const TEXT_JOHN_1: Text = {
-  id: 'Jn-1', corpusId: 'SBLGNT', title: 'ΚΑΤΑ ΙΩΑΝΝΗΝ', canonicalRef: 'John 1', author: 'John', language: 'grc-koine', direction: 'ltr', hasMorphology: true, hasTranslation: true, hasTransliteration: true,
-  sectionsPreview: [{ id: 'Jn-1-1', label: 'John 1' }]
+  id: "Jn-1",
+  corpusId: "SBLGNT",
+  title: "ΚΑΤΑ ΙΩΑΝΝΗΝ",
+  canonicalRef: "John 1",
+  author: "John",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sectionsPreview: [{ id: "Jn-1-1", label: "John 1" }],
 };
 
 export const TEXT_GENESIS: Text = {
-  id: 'Gen', corpusId: 'OSHB', title: 'בְּרֵאשִׁית', canonicalRef: 'Genesis', author: 'Moses', language: 'hbo', direction: 'rtl', hasMorphology: true, hasTranslation: true, hasTransliteration: false,
-  sectionsPreview: [{ id: 'Gen-1', label: 'Chapter 1' }]
+  id: "Gen",
+  corpusId: "OSHB",
+  title: "בְּרֵאשִׁית",
+  canonicalRef: "Genesis",
+  author: "Moses",
+  language: "hbo",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sectionsPreview: [{ id: "Gen-1", label: "Chapter 1" }],
 };
 
 export const TEXT_AENEID_1: Text = {
-  id: 'Aeneid-1', corpusId: 'LATIN_CLASSIC', title: 'AENEIS', canonicalRef: 'Aeneid 1', author: 'Virgil', language: 'lat', direction: 'ltr', hasMorphology: true, hasTranslation: true, hasTransliteration: false,
-  sectionsPreview: [{ id: 'Aen-1-1', label: 'Book 1.1-11' }]
+  id: "Aeneid-1",
+  corpusId: "LATIN_CLASSIC",
+  title: "AENEIS",
+  canonicalRef: "Aeneid 1",
+  author: "Virgil",
+  language: "lat",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sectionsPreview: [{ id: "Aen-1-1", label: "Book 1.1-11" }],
 };
 
 export const TEXT_PSALM_23: Text = {
-  id: 'Ps-23', corpusId: 'OSHB', title: 'תְּהִלִּים כג', canonicalRef: 'Psalm 23', author: 'David', language: 'hbo', direction: 'rtl', hasMorphology: true, hasTranslation: true, hasTransliteration: false,
-  sectionsPreview: [{ id: 'Ps-23-1', label: 'Psalm 23' }]
+  id: "Ps-23",
+  corpusId: "OSHB",
+  title: "תְּהִלִּים כג",
+  canonicalRef: "Psalm 23",
+  author: "David",
+  language: "hbo",
+  direction: "rtl",
+  level: "B1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sectionsPreview: [{ id: "Ps-23-1", label: "Psalm 23" }],
+};
+
+export const TEXT_SYRIAC_JOHN: Text = {
+  id: "Syr-Jn-1",
+  corpusId: "SYRIAC_PESHITTA",
+  title: "ܝܘܚܢܢ",
+  canonicalRef: "John 1",
+  author: "John",
+  language: "syr",
+  direction: "rtl",
+  level: "A1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sectionsPreview: [{ id: "Syr-Jn-1-1", label: "John 1" }],
+};
+
+export const TEXT_COPTIC_JOHN: Text = {
+  id: "Cop-Jn-1",
+  corpusId: "COPTIC_SAHIDIC",
+  title: "ⲡⲕⲁⲧⲁ ⲓⲱϩⲁⲛⲛⲏⲥ",
+  canonicalRef: "John 1",
+  author: "John",
+  language: "cop",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sectionsPreview: [{ id: "Cop-Jn-1-1", label: "John 1" }],
+};
+
+export const TEXT_ARAMAIC_GENESIS: Text = {
+  id: "Arc-Gen-1",
+  corpusId: "ARAMAIC_TARGUM",
+  title: "תרגום אונקלוס בראשית",
+  canonicalRef: "Targum Onkelos Genesis 1",
+  author: "Onkelos",
+  language: "arc",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sectionsPreview: [{ id: "Arc-Gen-1-1", label: "Genesis 1" }],
+};
+
+export const TEXT_AKKADIAN_GILGAMESH: Text = {
+  id: "Akk-Gilg-1",
+  corpusId: "AKKADIAN_GILGAMESH",
+  title: "Epic of Gilgamesh, Tablet I",
+  canonicalRef: "Gilgamesh Tablet I",
+  author: "Sin-leqi-unninni",
+  language: "akk",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sectionsPreview: [{ id: "Akk-Gilg-1-1", label: "Tablet I" }],
+};
+
+export const TEXT_SANSKRIT_GITA: Text = {
+  id: "San-Gita-1",
+  corpusId: "SANSKRIT_MAHABHARATA",
+  title: "भगवद्गीता",
+  canonicalRef: "Bhagavad Gita 1",
+  author: "Vyasa",
+  language: "san",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sectionsPreview: [{ id: "San-Gita-1-1", label: "Chapter 1" }],
 };
 
 export const JOHN_1_1: TextSection = {
-  id: 'Jn-1-1', textId: 'Jn-1', sequence: 1, label: 'John 1',
+  id: "Jn-1-1",
+  textId: "Jn-1",
+  sequence: 1,
+  label: "John 1",
   sentences: [
     {
-      id: 'Jn-1-1-1', translation: 'In the beginning was the Word, and the Word was with God, and the Word was God.',
+      id: "Jn-1-1-1",
+      translation:
+        "In the beginning was the Word, and the Word was with God, and the Word was God.",
       tokens: [
-        { id: 'jn1', surface: 'Ἐν', normalized: 'εν', lemma: 'ἐν', gloss: 'in, with, by', morphology: { partOfSpeech: 'preposition' }, transliteration: 'En', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn2', surface: 'ἀρχῇ', normalized: 'αρχη', lemma: 'ἀρχή', gloss: 'beginning, origin, first cause', morphology: { partOfSpeech: 'noun', case: 'dative', number: 'singular', gender: 'feminine' }, transliteration: 'archē', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn3', surface: 'ἦν', normalized: 'ην', lemma: 'εἰμί', gloss: 'was', morphology: { partOfSpeech: 'verb', tense: 'imperfect', voice: 'active', mood: 'indicative', person: 'third', number: 'singular' }, transliteration: 'ēn', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn4', surface: 'ὁ', normalized: 'ο', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article', case: 'nominative', number: 'singular', gender: 'masculine' }, transliteration: 'ho', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn5', surface: 'λόγος', normalized: 'λογος', lemma: 'λόγος', gloss: 'word, reason, speech', morphology: { partOfSpeech: 'noun', case: 'nominative', number: 'singular', gender: 'masculine' }, transliteration: 'logos', punctBefore: '', punctAfter: ', ' },
-        { id: 'jn6', surface: 'καὶ', normalized: 'και', lemma: 'καί', gloss: 'and, also', morphology: { partOfSpeech: 'conjunction' }, transliteration: 'kai', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn7', surface: 'ὁ', normalized: 'ο', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article', case: 'nominative', number: 'singular', gender: 'masculine' }, transliteration: 'ho', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn8', surface: 'λόγος', normalized: 'λογος', lemma: 'λόγος', gloss: 'word, reason, speech', morphology: { partOfSpeech: 'noun', case: 'nominative', number: 'singular', gender: 'masculine' }, transliteration: 'logos', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn9', surface: 'ἦν', normalized: 'ην', lemma: 'εἰμί', gloss: 'was', morphology: { partOfSpeech: 'verb', tense: 'imperfect', voice: 'active', mood: 'indicative', person: 'third', number: 'singular' }, transliteration: 'ēn', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn10', surface: 'πρὸς', normalized: 'προς', lemma: 'πρός', gloss: 'with, toward', morphology: { partOfSpeech: 'preposition' }, transliteration: 'pros', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn11', surface: 'τὸν', normalized: 'τον', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article', case: 'accusative', number: 'singular', gender: 'masculine' }, transliteration: 'ton', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn12', surface: 'θεόν', normalized: 'θεον', lemma: 'θεός', gloss: 'God, deity', morphology: { partOfSpeech: 'noun', case: 'accusative', number: 'singular', gender: 'masculine' }, transliteration: 'theon', punctBefore: '', punctAfter: ', ' },
-        { id: 'jn13', surface: 'καὶ', normalized: 'και', lemma: 'καί', gloss: 'and, also', morphology: { partOfSpeech: 'conjunction' }, transliteration: 'kai', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn14', surface: 'θεὸς', normalized: 'θεος', lemma: 'θεός', gloss: 'God, deity', morphology: { partOfSpeech: 'noun', case: 'nominative', number: 'singular', gender: 'masculine' }, transliteration: 'theos', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn15', surface: 'ἦν', normalized: 'ην', lemma: 'εἰμί', gloss: 'was', morphology: { partOfSpeech: 'verb', tense: 'imperfect', voice: 'active', mood: 'indicative', person: 'third', number: 'singular' }, transliteration: 'ēn', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn16', surface: 'ὁ', normalized: 'ο', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article', case: 'nominative', number: 'singular', gender: 'masculine' }, transliteration: 'ho', punctBefore: '', punctAfter: ' ' },
-        { id: 'jn17', surface: 'λόγος', normalized: 'λογος', lemma: 'λόγος', gloss: 'word, reason, speech', morphology: { partOfSpeech: 'noun', case: 'nominative', number: 'singular', gender: 'masculine' }, transliteration: 'logos', punctBefore: '', punctAfter: '.' }
-      ]
+        {
+          id: "jn1",
+          surface: "Ἐν",
+          normalized: "εν",
+          lemma: "ἐν",
+          gloss: "in, with, by",
+          morphology: { partOfSpeech: "preposition" },
+          transliteration: "En",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn2",
+          surface: "ἀρχῇ",
+          normalized: "αρχη",
+          lemma: "ἀρχή",
+          gloss: "beginning, origin, first cause",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "dative",
+            number: "singular",
+            gender: "feminine",
+          },
+          transliteration: "archē",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn3",
+          surface: "ἦν",
+          normalized: "ην",
+          lemma: "εἰμί",
+          gloss: "was",
+          morphology: {
+            partOfSpeech: "verb",
+            tense: "imperfect",
+            voice: "active",
+            mood: "indicative",
+            person: "third",
+            number: "singular",
+          },
+          transliteration: "ēn",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn4",
+          surface: "ὁ",
+          normalized: "ο",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: {
+            partOfSpeech: "article",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "ho",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn5",
+          surface: "λόγος",
+          normalized: "λογος",
+          lemma: "λόγος",
+          gloss: "word, reason, speech",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "logos",
+          punctBefore: "",
+          punctAfter: ", ",
+        },
+        {
+          id: "jn6",
+          surface: "καὶ",
+          normalized: "και",
+          lemma: "καί",
+          gloss: "and, also",
+          morphology: { partOfSpeech: "conjunction" },
+          transliteration: "kai",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn7",
+          surface: "ὁ",
+          normalized: "ο",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: {
+            partOfSpeech: "article",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "ho",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn8",
+          surface: "λόγος",
+          normalized: "λογος",
+          lemma: "λόγος",
+          gloss: "word, reason, speech",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "logos",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn9",
+          surface: "ἦν",
+          normalized: "ην",
+          lemma: "εἰμί",
+          gloss: "was",
+          morphology: {
+            partOfSpeech: "verb",
+            tense: "imperfect",
+            voice: "active",
+            mood: "indicative",
+            person: "third",
+            number: "singular",
+          },
+          transliteration: "ēn",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn10",
+          surface: "πρὸς",
+          normalized: "προς",
+          lemma: "πρός",
+          gloss: "with, toward",
+          morphology: { partOfSpeech: "preposition" },
+          transliteration: "pros",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn11",
+          surface: "τὸν",
+          normalized: "τον",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: {
+            partOfSpeech: "article",
+            case: "accusative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "ton",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn12",
+          surface: "θεόν",
+          normalized: "θεον",
+          lemma: "θεός",
+          gloss: "God, deity",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "accusative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "theon",
+          punctBefore: "",
+          punctAfter: ", ",
+        },
+        {
+          id: "jn13",
+          surface: "καὶ",
+          normalized: "και",
+          lemma: "καί",
+          gloss: "and, also",
+          morphology: { partOfSpeech: "conjunction" },
+          transliteration: "kai",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn14",
+          surface: "θεὸς",
+          normalized: "θεος",
+          lemma: "θεός",
+          gloss: "God, deity",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "theos",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn15",
+          surface: "ἦν",
+          normalized: "ην",
+          lemma: "εἰμί",
+          gloss: "was",
+          morphology: {
+            partOfSpeech: "verb",
+            tense: "imperfect",
+            voice: "active",
+            mood: "indicative",
+            person: "third",
+            number: "singular",
+          },
+          transliteration: "ēn",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn16",
+          surface: "ὁ",
+          normalized: "ο",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: {
+            partOfSpeech: "article",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "ho",
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn17",
+          surface: "λόγος",
+          normalized: "λογος",
+          lemma: "λόγος",
+          gloss: "word, reason, speech",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          transliteration: "logos",
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
     },
     {
-      id: 'Jn-1-1-2', translation: 'He was with God in the beginning.',
+      id: "Jn-1-1-2",
+      translation: "He was with God in the beginning.",
       tokens: [
-        { id: 'jn18', surface: 'οὗτος', normalized: 'ουτοϲ', lemma: 'οὗτος', gloss: 'this', morphology: { partOfSpeech: 'pronoun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn19', surface: 'ἦν', normalized: 'ην', lemma: 'εἰμί', gloss: 'was', morphology: { partOfSpeech: 'verb', tense: 'imperfect', voice: 'active', mood: 'indicative', person: 'third', number: 'singular' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn20', surface: 'ἐν', normalized: 'εν', lemma: 'ἐν', gloss: 'in', morphology: { partOfSpeech: 'preposition' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn21', surface: 'ἀρχῇ', normalized: 'αρχη', lemma: 'ἀρχή', gloss: 'beginning', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn22', surface: 'πρὸς', normalized: 'προϲ', lemma: 'πρός', gloss: 'with', morphology: { partOfSpeech: 'preposition' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn23', surface: 'τὸν', normalized: 'τον', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn24', surface: 'θεόν', normalized: 'θεον', lemma: 'θεός', gloss: 'God', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: '.' }
-      ]
+        {
+          id: "jn18",
+          surface: "οὗτος",
+          normalized: "ουτοϲ",
+          lemma: "οὗτος",
+          gloss: "this",
+          morphology: { partOfSpeech: "pronoun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn19",
+          surface: "ἦν",
+          normalized: "ην",
+          lemma: "εἰμί",
+          gloss: "was",
+          morphology: {
+            partOfSpeech: "verb",
+            tense: "imperfect",
+            voice: "active",
+            mood: "indicative",
+            person: "third",
+            number: "singular",
+          },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn20",
+          surface: "ἐν",
+          normalized: "εν",
+          lemma: "ἐν",
+          gloss: "in",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn21",
+          surface: "ἀρχῇ",
+          normalized: "αρχη",
+          lemma: "ἀρχή",
+          gloss: "beginning",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn22",
+          surface: "πρὸς",
+          normalized: "προϲ",
+          lemma: "πρός",
+          gloss: "with",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn23",
+          surface: "τὸν",
+          normalized: "τον",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn24",
+          surface: "θεόν",
+          normalized: "θεον",
+          lemma: "θεός",
+          gloss: "God",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
     },
     {
-      id: 'Jn-1-1-3', translation: 'Through him all things were made; without him nothing was made that has been made.',
+      id: "Jn-1-1-3",
+      translation:
+        "Through him all things were made; without him nothing was made that has been made.",
       tokens: [
-        { id: 'jn25', surface: 'πάντα', normalized: 'παντα', lemma: 'πᾶς', gloss: 'all', morphology: { partOfSpeech: 'adjective' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn26', surface: 'δι’', normalized: 'δι', lemma: 'διά', gloss: 'through', morphology: { partOfSpeech: 'preposition' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn27', surface: 'αὐτοῦ', normalized: 'αυτου', lemma: 'αὐτός', gloss: 'him', morphology: { partOfSpeech: 'pronoun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn28', surface: 'ἐγένετο', normalized: 'εγενετο', lemma: 'γίνομαι', gloss: 'were made', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: ', ' },
-        { id: 'jn29', surface: 'καὶ', normalized: 'και', lemma: 'καί', gloss: 'and', morphology: { partOfSpeech: 'conjunction' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn30', surface: 'χωρὶς', normalized: 'χωριϲ', lemma: 'χωρίς', gloss: 'without', morphology: { partOfSpeech: 'preposition' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn31', surface: 'αὐτοῦ', normalized: 'αυτου', lemma: 'αὐτός', gloss: 'him', morphology: { partOfSpeech: 'pronoun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn32', surface: 'ἐγένετο', normalized: 'εγενετο', lemma: 'γίνομαι', gloss: 'was made', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn33', surface: 'οὐδὲ', normalized: 'ουδε', lemma: 'οὐδέ', gloss: 'not even', morphology: { partOfSpeech: 'conjunction' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn34', surface: 'ἕν', normalized: 'εν', lemma: 'εἷς', gloss: 'one', morphology: { partOfSpeech: 'adjective' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn35', surface: 'ὃ', normalized: 'ο', lemma: 'ὅς', gloss: 'which', morphology: { partOfSpeech: 'pronoun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn36', surface: 'γέγονεν', normalized: 'γεγονεν', lemma: 'γίνομαι', gloss: 'has been made', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: '.' }
-      ]
+        {
+          id: "jn25",
+          surface: "πάντα",
+          normalized: "παντα",
+          lemma: "πᾶς",
+          gloss: "all",
+          morphology: { partOfSpeech: "adjective" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn26",
+          surface: "δι’",
+          normalized: "δι",
+          lemma: "διά",
+          gloss: "through",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn27",
+          surface: "αὐτοῦ",
+          normalized: "αυτου",
+          lemma: "αὐτός",
+          gloss: "him",
+          morphology: { partOfSpeech: "pronoun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn28",
+          surface: "ἐγένετο",
+          normalized: "εγενετο",
+          lemma: "γίνομαι",
+          gloss: "were made",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: ", ",
+        },
+        {
+          id: "jn29",
+          surface: "καὶ",
+          normalized: "και",
+          lemma: "καί",
+          gloss: "and",
+          morphology: { partOfSpeech: "conjunction" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn30",
+          surface: "χωρὶς",
+          normalized: "χωριϲ",
+          lemma: "χωρίς",
+          gloss: "without",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn31",
+          surface: "αὐτοῦ",
+          normalized: "αυτου",
+          lemma: "αὐτός",
+          gloss: "him",
+          morphology: { partOfSpeech: "pronoun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn32",
+          surface: "ἐγένετο",
+          normalized: "εγενετο",
+          lemma: "γίνομαι",
+          gloss: "was made",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn33",
+          surface: "οὐδὲ",
+          normalized: "ουδε",
+          lemma: "οὐδέ",
+          gloss: "not even",
+          morphology: { partOfSpeech: "conjunction" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn34",
+          surface: "ἕν",
+          normalized: "εν",
+          lemma: "εἷς",
+          gloss: "one",
+          morphology: { partOfSpeech: "adjective" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn35",
+          surface: "ὃ",
+          normalized: "ο",
+          lemma: "ὅς",
+          gloss: "which",
+          morphology: { partOfSpeech: "pronoun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn36",
+          surface: "γέγονεν",
+          normalized: "γεγονεν",
+          lemma: "γίνομαι",
+          gloss: "has been made",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
     },
     {
-      id: 'Jn-1-1-4', translation: 'In him was life, and that life was the light of all mankind.',
+      id: "Jn-1-1-4",
+      translation:
+        "In him was life, and that life was the light of all mankind.",
       tokens: [
-        { id: 'jn37', surface: 'ἐν', normalized: 'εν', lemma: 'ἐν', gloss: 'in', morphology: { partOfSpeech: 'preposition' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn38', surface: 'αὐτῷ', normalized: 'αυτω', lemma: 'αὐτός', gloss: 'him', morphology: { partOfSpeech: 'pronoun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn39', surface: 'ζωὴ', normalized: 'ζωη', lemma: 'ζωή', gloss: 'life', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn40', surface: 'ἦν', normalized: 'ην', lemma: 'εἰμί', gloss: 'was', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: ', ' },
-        { id: 'jn41', surface: 'καὶ', normalized: 'και', lemma: 'καί', gloss: 'and', morphology: { partOfSpeech: 'conjunction' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn42', surface: 'ἡ', normalized: 'η', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn43', surface: 'ζωὴ', normalized: 'ζωη', lemma: 'ζωή', gloss: 'life', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn44', surface: 'ἦν', normalized: 'ην', lemma: 'εἰμί', gloss: 'was', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn45', surface: 'τὸ', normalized: 'το', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn46', surface: 'φῶς', normalized: 'φωϲ', lemma: 'φῶς', gloss: 'light', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn47', surface: 'τῶν', normalized: 'των', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn48', surface: 'ἀνθρώπων', normalized: 'ανθρωπων', lemma: 'ἄνθρωπος', gloss: 'men', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: '.' }
-      ]
+        {
+          id: "jn37",
+          surface: "ἐν",
+          normalized: "εν",
+          lemma: "ἐν",
+          gloss: "in",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn38",
+          surface: "αὐτῷ",
+          normalized: "αυτω",
+          lemma: "αὐτός",
+          gloss: "him",
+          morphology: { partOfSpeech: "pronoun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn39",
+          surface: "ζωὴ",
+          normalized: "ζωη",
+          lemma: "ζωή",
+          gloss: "life",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn40",
+          surface: "ἦν",
+          normalized: "ην",
+          lemma: "εἰμί",
+          gloss: "was",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: ", ",
+        },
+        {
+          id: "jn41",
+          surface: "καὶ",
+          normalized: "και",
+          lemma: "καί",
+          gloss: "and",
+          morphology: { partOfSpeech: "conjunction" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn42",
+          surface: "ἡ",
+          normalized: "η",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn43",
+          surface: "ζωὴ",
+          normalized: "ζωη",
+          lemma: "ζωή",
+          gloss: "life",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn44",
+          surface: "ἦν",
+          normalized: "ην",
+          lemma: "εἰμί",
+          gloss: "was",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn45",
+          surface: "τὸ",
+          normalized: "το",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn46",
+          surface: "φῶς",
+          normalized: "φωϲ",
+          lemma: "φῶς",
+          gloss: "light",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn47",
+          surface: "τῶν",
+          normalized: "των",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn48",
+          surface: "ἀνθρώπων",
+          normalized: "ανθρωπων",
+          lemma: "ἄνθρωπος",
+          gloss: "men",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
     },
     {
-      id: 'Jn-1-1-5', translation: 'The light shines in the darkness, and the darkness has not overcome it.',
+      id: "Jn-1-1-5",
+      translation:
+        "The light shines in the darkness, and the darkness has not overcome it.",
       tokens: [
-        { id: 'jn49', surface: 'καὶ', normalized: 'και', lemma: 'καί', gloss: 'and', morphology: { partOfSpeech: 'conjunction' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn50', surface: 'τὸ', normalized: 'το', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn51', surface: 'φῶς', normalized: 'φωϲ', lemma: 'φῶς', gloss: 'light', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn52', surface: 'ἐν', normalized: 'εν', lemma: 'ἐν', gloss: 'in', morphology: { partOfSpeech: 'preposition' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn53', surface: 'τῇ', normalized: 'τη', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn54', surface: 'σκοτίᾳ', normalized: 'σκοτια', lemma: 'σκοτία', gloss: 'darkness', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn55', surface: 'φαίνει', normalized: 'φαινει', lemma: 'φαίνω', gloss: 'shines', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: ', ' },
-        { id: 'jn56', surface: 'καὶ', normalized: 'και', lemma: 'καί', gloss: 'and', morphology: { partOfSpeech: 'conjunction' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn57', surface: 'ἡ', normalized: 'η', lemma: 'ὁ', gloss: 'the', morphology: { partOfSpeech: 'article' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn58', surface: 'σκοτία', normalized: 'σκοτια', lemma: 'σκοτία', gloss: 'darkness', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn59', surface: 'αὐτὸ', normalized: 'αυτο', lemma: 'αὐτός', gloss: 'it', morphology: { partOfSpeech: 'pronoun' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn60', surface: 'οὐ', normalized: 'ου', lemma: 'οὐ', gloss: 'not', morphology: { partOfSpeech: 'particle' }, punctBefore: '', punctAfter: ' ' },
-        { id: 'jn61', surface: 'κατέλαβεν', normalized: 'κατελαβεν', lemma: 'καταλαμβάνω', gloss: 'overcome', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: '.' }
+        {
+          id: "jn49",
+          surface: "καὶ",
+          normalized: "και",
+          lemma: "καί",
+          gloss: "and",
+          morphology: { partOfSpeech: "conjunction" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn50",
+          surface: "τὸ",
+          normalized: "το",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn51",
+          surface: "φῶς",
+          normalized: "φωϲ",
+          lemma: "φῶς",
+          gloss: "light",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn52",
+          surface: "ἐν",
+          normalized: "εν",
+          lemma: "ἐν",
+          gloss: "in",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn53",
+          surface: "τῇ",
+          normalized: "τη",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn54",
+          surface: "σκοτίᾳ",
+          normalized: "σκοτια",
+          lemma: "σκοτία",
+          gloss: "darkness",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn55",
+          surface: "φαίνει",
+          normalized: "φαινει",
+          lemma: "φαίνω",
+          gloss: "shines",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: ", ",
+        },
+        {
+          id: "jn56",
+          surface: "καὶ",
+          normalized: "και",
+          lemma: "καί",
+          gloss: "and",
+          morphology: { partOfSpeech: "conjunction" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn57",
+          surface: "ἡ",
+          normalized: "η",
+          lemma: "ὁ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn58",
+          surface: "σκοτία",
+          normalized: "σκοτια",
+          lemma: "σκοτία",
+          gloss: "darkness",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn59",
+          surface: "αὐτὸ",
+          normalized: "αυτο",
+          lemma: "αὐτός",
+          gloss: "it",
+          morphology: { partOfSpeech: "pronoun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn60",
+          surface: "οὐ",
+          normalized: "ου",
+          lemma: "οὐ",
+          gloss: "not",
+          morphology: { partOfSpeech: "particle" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "jn61",
+          surface: "κατέλαβεν",
+          normalized: "κατελαβεν",
+          lemma: "καταλαμβάνω",
+          gloss: "overcome",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
+    },
+  ],
+};
+
+export const AENEID_1_1: TextSection = {
+  id: "Aen-1-1",
+  textId: "Aeneid-1",
+  sequence: 1,
+  label: "Book 1",
+  sentences: [
+    {
+      id: "aen1",
+      translation:
+        "I sing of arms and the man, who first from the coasts of Troy...",
+      tokens: [
+        {
+          id: "a1",
+          surface: "Arma",
+          normalized: "arma",
+          lemma: "arma",
+          gloss: "arms, weapons",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "accusative",
+            number: "plural",
+            gender: "neuter",
+          },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a2",
+          surface: "virumque",
+          normalized: "virumque",
+          lemma: "vir",
+          gloss: "man, hero",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "accusative",
+            number: "singular",
+            gender: "masculine",
+          },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a3",
+          surface: "cano",
+          normalized: "cano",
+          lemma: "cano",
+          gloss: "I sing",
+          morphology: {
+            partOfSpeech: "verb",
+            person: "first",
+            number: "singular",
+            tense: "present",
+            voice: "active",
+            mood: "indicative",
+          },
+          punctBefore: "",
+          punctAfter: ", ",
+        },
+        {
+          id: "a4",
+          surface: "Troiae",
+          normalized: "troiae",
+          lemma: "Troia",
+          gloss: "Troy",
+          morphology: {
+            partOfSpeech: "proper noun",
+            case: "genitive",
+            number: "singular",
+            gender: "feminine",
+          },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a5",
+          surface: "qui",
+          normalized: "qui",
+          lemma: "qui",
+          gloss: "who",
+          morphology: {
+            partOfSpeech: "relative pronoun",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a6",
+          surface: "primus",
+          normalized: "primus",
+          lemma: "primus",
+          gloss: "first",
+          morphology: {
+            partOfSpeech: "adjective",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a7",
+          surface: "ab",
+          normalized: "ab",
+          lemma: "ab",
+          gloss: "from",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a8",
+          surface: "oris",
+          normalized: "oris",
+          lemma: "ora",
+          gloss: "coast, shore",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "ablative",
+            number: "plural",
+            gender: "feminine",
+          },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
+    },
+    {
+      id: "aen2",
+      translation: "driven by fate, came to Italy and the Lavinian shores.",
+      tokens: [
+        {
+          id: "a9",
+          surface: "Italiam",
+          normalized: "italiam",
+          lemma: "Italia",
+          gloss: "Italy",
+          morphology: {
+            partOfSpeech: "proper noun",
+            case: "accusative",
+            number: "singular",
+            gender: "feminine",
+          },
+          punctBefore: "",
+          punctAfter: ", ",
+        },
+        {
+          id: "a10",
+          surface: "fato",
+          normalized: "fato",
+          lemma: "fatum",
+          gloss: "fate",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "ablative",
+            number: "singular",
+            gender: "neuter",
+          },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a11",
+          surface: "profugus",
+          normalized: "profugus",
+          lemma: "profugus",
+          gloss: "exiled, fugitive",
+          morphology: {
+            partOfSpeech: "adjective",
+            case: "nominative",
+            number: "singular",
+            gender: "masculine",
+          },
+          punctBefore: "",
+          punctAfter: ", ",
+        },
+        {
+          id: "a12",
+          surface: "Laviniaque",
+          normalized: "laviniaque",
+          lemma: "Lavinius",
+          gloss: "Lavinian",
+          morphology: { partOfSpeech: "adjective" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a13",
+          surface: "venit",
+          normalized: "venit",
+          lemma: "venio",
+          gloss: "came",
+          morphology: {
+            partOfSpeech: "verb",
+            tense: "perfect",
+            number: "singular",
+            person: "third",
+          },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "a14",
+          surface: "litora",
+          normalized: "litora",
+          lemma: "litus",
+          gloss: "shore",
+          morphology: {
+            partOfSpeech: "noun",
+            case: "accusative",
+            number: "plural",
+            gender: "neuter",
+          },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
+    },
+  ],
+};
+
+export const PSALM_23_1: TextSection = {
+  id: "Ps-23-1",
+  textId: "Ps-23",
+  sequence: 1,
+  label: "Psalm 23",
+  sentences: [
+    {
+      id: "p23-1",
+      translation: "The Lord is my shepherd; I shall not want.",
+      tokens: [
+        {
+          id: "p1",
+          surface: "יְהוָה",
+          normalized: "יהוה",
+          lemma: "יְהוָה",
+          gloss: "the Lord",
+          morphology: { partOfSpeech: "proper noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "p2",
+          surface: "רֹעִ֫י",
+          normalized: "רעי",
+          lemma: "רָעָה",
+          gloss: "my shepherd",
+          morphology: { partOfSpeech: "verb", tense: "participle" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "p3",
+          surface: "לֹא",
+          normalized: "לא",
+          lemma: "לֹא",
+          gloss: "not",
+          morphology: { partOfSpeech: "particle" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "p4",
+          surface: "אֶחְסָֽר",
+          normalized: "אחסר",
+          lemma: "חָסֵר",
+          gloss: "I will want",
+          morphology: { partOfSpeech: "verb", tense: "imperfect" },
+          punctBefore: "",
+          punctAfter: "׃",
+        },
+      ],
+    },
+  ],
+};
+
+export const GENESIS_1: TextSection = {
+  id: "Gen-1",
+  textId: "Gen",
+  sequence: 1,
+  label: "Genesis 1",
+  sentences: [
+    {
+      id: "g-1",
+      translation: "In the beginning God created the heavens and the earth.",
+      tokens: [
+        {
+          id: "g1",
+          surface: "בְּ",
+          normalized: "ב",
+          lemma: "בְּ",
+          gloss: "in",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: "",
+        },
+        {
+          id: "g2",
+          surface: "רֵאשִׁית",
+          normalized: "ראשית",
+          lemma: "רֵאשִׁית",
+          gloss: "beginning",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "g3",
+          surface: "בָּרָא",
+          normalized: "ברא",
+          lemma: "בָּרָא",
+          gloss: "created",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "g4",
+          surface: "אֱלֹהִים",
+          normalized: "אלהים",
+          lemma: "אֱלֹהִים",
+          gloss: "God",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
+    },
+    {
+      id: "g-2",
+      translation: "Now the earth was formless and empty.",
+      tokens: [
+        {
+          id: "g5",
+          surface: "וְ",
+          normalized: "ו",
+          lemma: "וְ",
+          gloss: "and",
+          morphology: { partOfSpeech: "conjunction" },
+          punctBefore: "",
+          punctAfter: "",
+        },
+        {
+          id: "g6",
+          surface: "הָ",
+          normalized: "ה",
+          lemma: "הַ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: "",
+        },
+        {
+          id: "g7",
+          surface: "אָרֶץ",
+          normalized: "ארץ",
+          lemma: "אֶרֶץ",
+          gloss: "earth",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "g8",
+          surface: "הָיְתָה",
+          normalized: "היתה",
+          lemma: "הָיָה",
+          gloss: "was",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "g9",
+          surface: "תֹהוּ",
+          normalized: "תהו",
+          lemma: "תֹּהוּ",
+          gloss: "formless",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "g10",
+          surface: "וָ",
+          normalized: "ו",
+          lemma: "וְ",
+          gloss: "and",
+          morphology: { partOfSpeech: "conjunction" },
+          punctBefore: "",
+          punctAfter: "",
+        },
+        {
+          id: "g11",
+          surface: "בֹהוּ",
+          normalized: "בהו",
+          lemma: "בֹּהוּ",
+          gloss: "empty",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
+    },
+  ],
+};
+
+export const SYRIAC_JOHN_1_1: TextSection = {
+  id: "Syr-Jn-1-1",
+  textId: "Syr-Jn-1",
+  sequence: 1,
+  label: "John 1",
+  sentences: [
+    {
+      id: "syr-1",
+      translation: "In the beginning was the Word.",
+      tokens: [
+        {
+          id: "syr1",
+          surface: "ܒܪܫܝܬ",
+          normalized: "ܒܪܫܝܬ",
+          lemma: "ܪܫܝܬ",
+          gloss: "in the beginning",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "syr2",
+          surface: "ܐܝܬܘܗܝ",
+          normalized: "ܐܝܬܘܗܝ",
+          lemma: "ܐܝܬ",
+          gloss: "was",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "syr3",
+          surface: "ܗܘܐ",
+          normalized: "ܗܘܐ",
+          lemma: "ܗܘܐ",
+          gloss: "he was",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "syr4",
+          surface: "ܡܠܬܐ",
+          normalized: "ܡܠܬܐ",
+          lemma: "ܡܠܬܐ",
+          gloss: "the Word",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
+    },
+  ],
+};
+
+export const COPTIC_JOHN_1_1: TextSection = {
+  id: "Cop-Jn-1-1",
+  textId: "Cop-Jn-1",
+  sequence: 1,
+  label: "John 1",
+  sentences: [
+    {
+      id: "cop-1",
+      translation: "In the beginning was the Word.",
+      tokens: [
+        {
+          id: "cop1",
+          surface: "ϩⲛ",
+          normalized: "ϩⲛ",
+          lemma: "ϩⲛ",
+          gloss: "in",
+          morphology: { partOfSpeech: "preposition" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "cop2",
+          surface: "ⲧⲉ",
+          normalized: "ⲧⲉ",
+          lemma: "ⲡ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: "",
+        },
+        {
+          id: "cop3",
+          surface: "ϩⲟⲩⲉⲓⲧⲉ",
+          normalized: "ϩⲟⲩⲉⲓⲧⲉ",
+          lemma: "ϩⲟⲩⲉⲓⲧⲉ",
+          gloss: "beginning",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "cop4",
+          surface: "ⲛⲉϥϣⲟⲟⲡ",
+          normalized: "ⲛⲉϥϣⲟⲟⲡ",
+          lemma: "ϣⲱⲡⲉ",
+          gloss: "was",
+          morphology: { partOfSpeech: "verb" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "cop5",
+          surface: "ⲛϭⲓ",
+          normalized: "ⲛϭⲓ",
+          lemma: "ⲛϭⲓ",
+          gloss: "namely",
+          morphology: { partOfSpeech: "particle" },
+          punctBefore: "",
+          punctAfter: " ",
+        },
+        {
+          id: "cop6",
+          surface: "ⲡ",
+          normalized: "ⲡ",
+          lemma: "ⲡ",
+          gloss: "the",
+          morphology: { partOfSpeech: "article" },
+          punctBefore: "",
+          punctAfter: "",
+        },
+        {
+          id: "cop7",
+          surface: "ϣⲁϫⲉ",
+          normalized: "ϣⲁϫⲉ",
+          lemma: "ϣⲁϫⲉ",
+          gloss: "word",
+          morphology: { partOfSpeech: "noun" },
+          punctBefore: "",
+          punctAfter: ".",
+        },
+      ],
+    },
+  ],
+};
+
+
+
+export const ARAMAIC_GENESIS_1_1: TextSection = {
+  id: "Arc-Gen-1-1",
+  textId: "Arc-Gen-1",
+  sequence: 1,
+  label: "Genesis 1",
+  sentences: [
+    {
+      id: "arc-1",
+      translation: "In the beginning, God created the heavens and the earth.",
+      tokens: [
+        { id: "arc1", surface: "ܒܩܕܡܝܢ", normalized: "ܒܩܕܡܝܢ", lemma: "ܩܕܡܝ", gloss: "in the beginning", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "arc2", surface: "ܒܪܐ", normalized: "ܒܪܐ", lemma: "ܒܪܐ", gloss: "created", morphology: { partOfSpeech: "verb" }, punctBefore: "", punctAfter: " " },
+        { id: "arc3", surface: "ܝܘܝ", normalized: "ܝܘܝ", lemma: "ܝܘܝ", gloss: "Lord", morphology: { partOfSpeech: "proper noun" }, punctBefore: "", punctAfter: " " },
+        { id: "arc4", surface: "ܝܬ", normalized: "ܝܬ", lemma: "ܝܬ", gloss: "the", morphology: { partOfSpeech: "particle" }, punctBefore: "", punctAfter: " " },
+        { id: "arc5", surface: "ܫܡܝܐ", normalized: "ܫܡܝܐ", lemma: "ܫܡܝܐ", gloss: "heavens", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "arc6", surface: "ܘܝܬ", normalized: "ܘܝܬ", lemma: "ܘܝܬ", gloss: "and the", morphology: { partOfSpeech: "particle" }, punctBefore: "", punctAfter: " " },
+        { id: "arc7", surface: "ܐܪܥܐ", normalized: "ܐܪܥܐ", lemma: "ܐܪܥܐ", gloss: "earth", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: "." }
       ]
     }
   ]
 };
 
-export const AENEID_1_1: TextSection = {
-  id: 'Aen-1-1', textId: 'Aeneid-1', sequence: 1, label: 'Book 1',
-  sentences: [{
-    id: 'aen1', translation: 'I sing of arms and the man, who first from the coasts of Troy...',
-    tokens: [
-      { id: 'a1', surface: 'Arma', normalized: 'arma', lemma: 'arma', gloss: 'arms, weapons', morphology: { partOfSpeech: 'noun', case: 'accusative', number: 'plural', gender: 'neuter' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a2', surface: 'virumque', normalized: 'virumque', lemma: 'vir', gloss: 'man, hero', morphology: { partOfSpeech: 'noun', case: 'accusative', number: 'singular', gender: 'masculine' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a3', surface: 'cano', normalized: 'cano', lemma: 'cano', gloss: 'I sing', morphology: { partOfSpeech: 'verb', person: 'first', number: 'singular', tense: 'present', voice: 'active', mood: 'indicative' }, punctBefore: '', punctAfter: ', ' },
-      { id: 'a4', surface: 'Troiae', normalized: 'troiae', lemma: 'Troia', gloss: 'Troy', morphology: { partOfSpeech: 'proper noun', case: 'genitive', number: 'singular', gender: 'feminine' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a5', surface: 'qui', normalized: 'qui', lemma: 'qui', gloss: 'who', morphology: { partOfSpeech: 'relative pronoun', case: 'nominative', number: 'singular', gender: 'masculine' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a6', surface: 'primus', normalized: 'primus', lemma: 'primus', gloss: 'first', morphology: { partOfSpeech: 'adjective', case: 'nominative', number: 'singular', gender: 'masculine' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a7', surface: 'ab', normalized: 'ab', lemma: 'ab', gloss: 'from', morphology: { partOfSpeech: 'preposition' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a8', surface: 'oris', normalized: 'oris', lemma: 'ora', gloss: 'coast, shore', morphology: { partOfSpeech: 'noun', case: 'ablative', number: 'plural', gender: 'feminine' }, punctBefore: '', punctAfter: '.' }
-    ]
-  },
-  {
-    id: 'aen2', translation: 'driven by fate, came to Italy and the Lavinian shores.',
-    tokens: [
-      { id: 'a9', surface: 'Italiam', normalized: 'italiam', lemma: 'Italia', gloss: 'Italy', morphology: { partOfSpeech: 'proper noun', case: 'accusative', number: 'singular', gender: 'feminine' }, punctBefore: '', punctAfter: ', ' },
-      { id: 'a10', surface: 'fato', normalized: 'fato', lemma: 'fatum', gloss: 'fate', morphology: { partOfSpeech: 'noun', case: 'ablative', number: 'singular', gender: 'neuter' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a11', surface: 'profugus', normalized: 'profugus', lemma: 'profugus', gloss: 'exiled, fugitive', morphology: { partOfSpeech: 'adjective', case: 'nominative', number: 'singular', gender: 'masculine' }, punctBefore: '', punctAfter: ', ' },
-      { id: 'a12', surface: 'Laviniaque', normalized: 'laviniaque', lemma: 'Lavinius', gloss: 'Lavinian', morphology: { partOfSpeech: 'adjective' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a13', surface: 'venit', normalized: 'venit', lemma: 'venio', gloss: 'came', morphology: { partOfSpeech: 'verb', tense: 'perfect', number: 'singular', person: 'third' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'a14', surface: 'litora', normalized: 'litora', lemma: 'litus', gloss: 'shore', morphology: { partOfSpeech: 'noun', case: 'accusative', number: 'plural', gender: 'neuter' }, punctBefore: '', punctAfter: '.' }
-    ]
-  }]
+export const AKKADIAN_GILGAMESH_1_1: TextSection = {
+  id: "Akk-Gilg-1-1",
+  textId: "Akk-Gilg-1",
+  sequence: 1,
+  label: "Tablet I",
+  sentences: [
+    {
+      id: "akk-1",
+      translation: "He who saw the Deep, the countrys foundation",
+      tokens: [
+        { id: "akk1", surface: "ša", normalized: "sa", lemma: "ša", gloss: "He who", morphology: { partOfSpeech: "pronoun" }, punctBefore: "", punctAfter: " " },
+        { id: "akk2", surface: "nagba", normalized: "nagba", lemma: "nagbu", gloss: "the Deep", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "akk3", surface: "īmuru", normalized: "imuru", lemma: "amāru", gloss: "saw", morphology: { partOfSpeech: "verb" }, punctBefore: "", punctAfter: " " },
+        { id: "akk4", surface: "išdi", normalized: "isdi", lemma: "išdu", gloss: "foundation", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "akk5", surface: "māti", normalized: "mati", lemma: "mātu", gloss: "of the land", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: "." }
+      ]
+    }
+  ]
 };
 
-export const PSALM_23_1: TextSection = {
-  id: 'Ps-23-1', textId: 'Ps-23', sequence: 1, label: 'Psalm 23',
-  sentences: [{
-    id: 'p23-1', translation: 'The Lord is my shepherd; I shall not want.',
-    tokens: [
-      { id: 'p1', surface: 'יְהוָה', normalized: 'יהוה', lemma: 'יְהוָה', gloss: 'the Lord', morphology: { partOfSpeech: 'proper noun' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'p2', surface: 'רֹעִ֫י', normalized: 'רעי', lemma: 'רָעָה', gloss: 'my shepherd', morphology: { partOfSpeech: 'verb', tense: 'participle' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'p3', surface: 'לֹא', normalized: 'לא', lemma: 'לֹא', gloss: 'not', morphology: { partOfSpeech: 'particle' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'p4', surface: 'אֶחְסָֽר', normalized: 'אחסר', lemma: 'חָסֵר', gloss: 'I will want', morphology: { partOfSpeech: 'verb', tense: 'imperfect' }, punctBefore: '', punctAfter: '׃' }
-    ]
-  }]
+export const SANSKRIT_GITA_1_1: TextSection = {
+  id: "San-Gita-1-1",
+  textId: "San-Gita-1",
+  sequence: 1,
+  label: "Chapter 1",
+  sentences: [
+    {
+      id: "san-1",
+      translation: "Dhritarashtra said: O Sanjaya, what did my sons and the sons of Pandu do, when they gathered on the sacred field of Kurukshetra, eager for battle?",
+      tokens: [
+        { id: "san1", surface: "धृतराष्ट्र", normalized: "dhritarashtra", lemma: "dhṛtarāṣṭra", gloss: "Dhritarashtra", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "san2", surface: "उवाच", normalized: "uvaca", lemma: "vac", gloss: "said", morphology: { partOfSpeech: "verb" }, punctBefore: "", punctAfter: " | " },
+        { id: "san3", surface: "धर्मक्षेत्रे", normalized: "dharmakshetre", lemma: "dharmakṣetra", gloss: "in the sacred field", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "san4", surface: "कुरुक्षेत्रे", normalized: "kurukshetre", lemma: "kurukṣetra", gloss: "in Kurukshetra", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "san5", surface: "समवेता", normalized: "samaveta", lemma: "samaveta", gloss: "assembled", morphology: { partOfSpeech: "adjective" }, punctBefore: "", punctAfter: " " },
+        { id: "san6", surface: "युयुत्सवः", normalized: "yuyutsavah", lemma: "yuyutsu", gloss: "eager for battle", morphology: { partOfSpeech: "adjective" }, punctBefore: "", punctAfter: " || " }
+      ]
+    }
+  ]
 };
 
-export const GENESIS_1: TextSection = {
-  id: 'Gen-1', textId: 'Gen', sequence: 1, label: 'Genesis 1',
-  sentences: [{
-    id: 'g-1', translation: 'In the beginning God created the heavens and the earth.',
-    tokens: [
-      { id: 'g1', surface: 'בְּ', normalized: 'ב', lemma: 'בְּ', gloss: 'in', morphology: { partOfSpeech: 'preposition' }, punctBefore: '', punctAfter: '' },
-      { id: 'g2', surface: 'רֵאשִׁית', normalized: 'ראשית', lemma: 'רֵאשִׁית', gloss: 'beginning', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'g3', surface: 'בָּרָא', normalized: 'ברא', lemma: 'בָּרָא', gloss: 'created', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'g4', surface: 'אֱלֹהִים', normalized: 'אלהים', lemma: 'אֱלֹהִים', gloss: 'God', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: '.' }
-    ]
-  },
-  {
-    id: 'g-2', translation: 'Now the earth was formless and empty.',
-    tokens: [
-      { id: 'g5', surface: 'וְ', normalized: 'ו', lemma: 'וְ', gloss: 'and', morphology: { partOfSpeech: 'conjunction' }, punctBefore: '', punctAfter: '' },
-      { id: 'g6', surface: 'הָ', normalized: 'ה', lemma: 'הַ', gloss: 'the', morphology: { partOfSpeech: 'article' }, punctBefore: '', punctAfter: '' },
-      { id: 'g7', surface: 'אָרֶץ', normalized: 'ארץ', lemma: 'אֶרֶץ', gloss: 'earth', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'g8', surface: 'הָיְתָה', normalized: 'היתה', lemma: 'הָיָה', gloss: 'was', morphology: { partOfSpeech: 'verb' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'g9', surface: 'תֹהוּ', normalized: 'תהו', lemma: 'תֹּהוּ', gloss: 'formless', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: ' ' },
-      { id: 'g10', surface: 'וָ', normalized: 'ו', lemma: 'וְ', gloss: 'and', morphology: { partOfSpeech: 'conjunction' }, punctBefore: '', punctAfter: '' },
-      { id: 'g11', surface: 'בֹהוּ', normalized: 'בהו', lemma: 'בֹּהוּ', gloss: 'empty', morphology: { partOfSpeech: 'noun' }, punctBefore: '', punctAfter: '.' }
-    ]
-  }]
-};
+import { getMockTexts, getMockSections } from "./mockTexts";
 
 export const CorpusDB = {
-  getTexts: () => [TEXT_JOHN_1, TEXT_GENESIS, TEXT_AENEID_1, TEXT_PSALM_23],
-  getText: (id: string) => [TEXT_JOHN_1, TEXT_GENESIS, TEXT_AENEID_1, TEXT_PSALM_23].find(t => t.id === id),
+  getTexts: () => [
+    TEXT_JOHN_1,
+    TEXT_GENESIS,
+    TEXT_AENEID_1,
+    TEXT_PSALM_23,
+    TEXT_SYRIAC_JOHN,
+    TEXT_COPTIC_JOHN,
+    TEXT_ARAMAIC_GENESIS,
+    TEXT_AKKADIAN_GILGAMESH,
+    TEXT_SANSKRIT_GITA,
+    ...getMockTexts()
+  ],
+  getText: (id: string) =>
+    [
+      TEXT_JOHN_1,
+      TEXT_GENESIS,
+      TEXT_AENEID_1,
+      TEXT_PSALM_23,
+      TEXT_SYRIAC_JOHN,
+      TEXT_COPTIC_JOHN,
+      TEXT_ARAMAIC_GENESIS,
+      TEXT_AKKADIAN_GILGAMESH,
+      TEXT_SANSKRIT_GITA,
+      ...getMockTexts()
+    ].find((t) => t.id === id),
   getSection: (sectionId: string) => {
-    if (sectionId === 'Jn-1-1') return JOHN_1_1;
-    if (sectionId === 'Gen-1') return GENESIS_1;
-    if (sectionId === 'Aen-1-1') return AENEID_1_1;
-    if (sectionId === 'Ps-23-1') return PSALM_23_1;
+    if (sectionId === "Jn-1-1") return JOHN_1_1;
+    if (sectionId === "Gen-1") return GENESIS_1;
+    if (sectionId === "Aen-1-1") return AENEID_1_1;
+    if (sectionId === "Ps-23-1") return PSALM_23_1;
+    if (sectionId === "Syr-Jn-1-1") return SYRIAC_JOHN_1_1;
+    if (sectionId === "Cop-Jn-1-1") return COPTIC_JOHN_1_1;
+    if (sectionId === "Arc-Gen-1-1") return ARAMAIC_GENESIS_1_1;
+    if (sectionId === "Akk-Gilg-1-1") return AKKADIAN_GILGAMESH_1_1;
+    if (sectionId === "San-Gita-1-1") return SANSKRIT_GITA_1_1;
+    
+    const mockMatch = getMockSections().find(s => s.id === sectionId);
+    if (mockMatch) return mockMatch;
+    
     return null;
   },
   getCorpusOverview: (corpusId: string) => {
-    if (corpusId === 'SBLGNT') return GREEK_CORPUS;
-    if (corpusId === 'OSHB') return HEBREW_CORPUS;
-    if (corpusId === 'LATIN_CLASSIC') return LATIN_CORPUS;
+    if (corpusId === "SBLGNT") return GREEK_CORPUS;
+    if (corpusId === "OSHB") return HEBREW_CORPUS;
+    if (corpusId === "LATIN_CLASSIC") return LATIN_CORPUS;
+    if (corpusId === "SYRIAC_PESHITTA") return SYRIAC_CORPUS;
+    if (corpusId === "COPTIC_SAHIDIC") return COPTIC_CORPUS;
+    if (corpusId === "ARAMAIC_TARGUM") return ARAMAIC_CORPUS;
+    if (corpusId === "AKKADIAN_GILGAMESH") return AKKADIAN_CORPUS;
+    if (corpusId === "SANSKRIT_MAHABHARATA") return SANSKRIT_CORPUS;
     return null;
   },
-  findSentencesWithLemma: (lemma: string, currentSentenceId?: string, max: number = 3) => {
+  findSentencesWithLemma: (
+    lemma: string,
+    currentSentenceId?: string,
+    max: number = 3,
+  ) => {
     const results: any[] = [];
-    for (const section of [JOHN_1_1, GENESIS_1, AENEID_1_1, PSALM_23_1]) {
-       for (const sentence of section.sentences) {
-          if (sentence.id === currentSentenceId) continue;
-          if (sentence.tokens.some((t: any) => t.lemma === lemma)) {
-             results.push({ sentence, sectionId: section.id, textId: section.textId });
-             if (results.length >= max) return results;
-          }
-       }
+    const allSections = [
+      JOHN_1_1,
+      GENESIS_1,
+      AENEID_1_1,
+      PSALM_23_1,
+      SYRIAC_JOHN_1_1,
+      COPTIC_JOHN_1_1,
+      ARAMAIC_GENESIS_1_1,
+      AKKADIAN_GILGAMESH_1_1,
+      SANSKRIT_GITA_1_1,
+      ...getMockSections()
+    ];
+    for (const section of allSections) {
+      for (const sentence of section.sentences) {
+        if (sentence.id === currentSentenceId) continue;
+        if (sentence.tokens.some((t: any) => t.lemma === lemma)) {
+          results.push({
+            sentence,
+            sectionId: section.id,
+            textId: section.textId,
+          });
+          if (results.length >= max) return results;
+        }
+      }
     }
     return results;
-  }
+  },
 };
