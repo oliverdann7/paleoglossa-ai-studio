@@ -1,10 +1,10 @@
-import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, GraduationCap, Sparkles } from 'lucide-react';
+import { motion } from "motion/react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, BookOpen, GraduationCap, Sparkles } from "lucide-react";
 
 export const Landing = () => {
   const navigate = useNavigate();
-  const onEnter = () => navigate('/auth/login');
+  const onEnter = () => navigate("/auth/login");
   return (
     <div className="relative min-h-screen bg-parch text-ink font-sans overflow-hidden paper-texture">
       <header className="absolute top-0 left-0 w-full p-8 flex justify-between items-center z-50">
@@ -12,9 +12,11 @@ export const Landing = () => {
           <div className="w-8 h-8 rounded-sm flex items-center justify-center border border-ink">
             <span className="font-serif font-bold text-xl text-ink">P</span>
           </div>
-          <h1 className="text-xl font-serif tracking-tight text-ink">Paleoglossa</h1>
+          <h1 className="text-xl font-serif tracking-tight text-ink">
+            Paleoglossa
+          </h1>
         </div>
-        <button 
+        <button
           onClick={onEnter}
           className="font-serif italic text-ink2 hover:text-ink transition-colors"
         >
@@ -35,26 +37,25 @@ export const Landing = () => {
                 The Future of Philology
               </div>
               <h2 className="text-6xl md:text-[80px] font-serif leading-[1] tracking-tighter mb-8 text-ink">
-                Read the ancient world<span className="italic">.</span><br />
+                Read the ancient world<span className="italic">.</span>
+                <br />
                 <span className="italic text-ink2">Word by word.</span>
               </h2>
               <p className="text-[17px] text-ink2 max-w-lg leading-[1.7] mb-12 font-body italic">
-                A scholarly reference tool for reading classical languages. 
-                Focus on the text with precision morphology, immersive typography, 
-                and spaced repetition.
+                A scholarly reference tool for reading classical languages.
+                Focus on the text with precision morphology, immersive
+                typography, and spaced repetition.
               </p>
-              
+
               <div className="flex flex-wrap gap-4">
-                <button 
+                <button
                   onClick={onEnter}
                   className="btn-primary px-8 py-4 text-lg flex items-center gap-2 group"
                 >
                   Open texts
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button className="btn-secondary px-8">
-                  Browse catalog
-                </button>
+                <button className="btn-secondary px-8">Browse catalog</button>
               </div>
             </motion.div>
           </div>
@@ -67,13 +68,21 @@ export const Landing = () => {
               className="relative w-full max-w-[420px] aspect-[3/4] p-2 bg-parch2 border border-bdr shadow-[0_20px_40px_-20px_rgba(26,20,16,0.15)]"
             >
               <div className="absolute inset-2 border border-bdr/50 p-6 flex flex-col justify-center items-center text-center bg-parch paper-texture">
-                 <div className="w-12 h-12 rounded-full border border-bdr flex items-center justify-center mb-6 text-gold">
-                   <BookOpen className="w-5 h-5" />
-                 </div>
-                 <h3 className="text-3xl font-serif text-ink mb-3 leading-tight">ΟΜΗΡΟΥ<br/><span className="text-2xl italic">ΟΔΥΣΣΕΙΑ</span></h3>
-                 <div className="w-12 h-px bg-bdr my-6"></div>
-                 <p className="font-body text-sm italic text-ink2">Homeri Odyssea</p>
-                 <p className="font-mono text-[9px] uppercase tracking-widest text-muted mt-2">Liber I</p>
+                <div className="w-12 h-12 rounded-full border border-bdr flex items-center justify-center mb-6 text-gold">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <h3 className="text-3xl font-serif text-ink mb-3 leading-tight">
+                  ΟΜΗΡΟΥ
+                  <br />
+                  <span className="text-2xl italic">ΟΔΥΣΣΕΙΑ</span>
+                </h3>
+                <div className="w-12 h-px bg-bdr my-6"></div>
+                <p className="font-body text-sm italic text-ink2">
+                  Homeri Odyssea
+                </p>
+                <p className="font-mono text-[9px] uppercase tracking-widest text-muted mt-2">
+                  Liber I
+                </p>
               </div>
             </motion.div>
           </div>
@@ -81,9 +90,21 @@ export const Landing = () => {
 
         <section className="mt-32 pt-20 border-t border-bdr/50 grid grid-cols-1 md:grid-cols-3 gap-12">
           {[
-            { icon: BookOpen, title: "Immersive Reading", desc: "Typography optimized for ancient scripts and deep focus without distractions." },
-            { icon: GraduationCap, title: "Morphology Aware", desc: "Instant parsing, lemma analysis, and root tracking for every word." },
-            { icon: Sparkles, title: "Intelligent Review", desc: "Spaced repetition system designed for lexical mastery and retaining classical vocabulary." }
+            {
+              icon: BookOpen,
+              title: "Immersive Reading",
+              desc: "Typography optimized for ancient scripts and deep focus without distractions.",
+            },
+            {
+              icon: GraduationCap,
+              title: "Morphology Aware",
+              desc: "Instant parsing, lemma analysis, and root tracking for every word.",
+            },
+            {
+              icon: Sparkles,
+              title: "Intelligent Review",
+              desc: "Spaced repetition system designed for lexical mastery and retaining classical vocabulary.",
+            },
           ].map((feature, i) => (
             <motion.div
               key={i}
@@ -93,9 +114,16 @@ export const Landing = () => {
               transition={{ delay: i * 0.1 }}
               className="p-6 rounded border border-transparent hover:border-bdr hover:bg-parch2 transition-colors duration-300"
             >
-              <feature.icon className="w-6 h-6 text-muted mb-4" strokeWidth={1.5} />
-              <h4 className="text-xl font-serif text-ink mb-3">{feature.title}</h4>
-              <p className="font-body text-[14px] italic text-ink2 leading-relaxed">{feature.desc}</p>
+              <feature.icon
+                className="w-6 h-6 text-muted mb-4"
+                strokeWidth={1.5}
+              />
+              <h4 className="text-xl font-serif text-ink mb-3">
+                {feature.title}
+              </h4>
+              <p className="font-body text-[14px] italic text-ink2 leading-relaxed">
+                {feature.desc}
+              </p>
             </motion.div>
           ))}
         </section>
