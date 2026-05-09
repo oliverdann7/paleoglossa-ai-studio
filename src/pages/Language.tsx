@@ -4,10 +4,12 @@ import { motion } from "motion/react";
 import { ArrowLeft, BookOpen, Play } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
 import { cn } from "../lib/utils";
+import { useTranslation } from "react-i18next";
 
 export const Language = () => {
   const { langId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const langMap: Record<string, any> = {
     grc: {
@@ -183,7 +185,7 @@ export const Language = () => {
           onClick={() => navigate("/app/library")}
           className="text-muted hover:text-ink flex items-center mb-8 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Library
+          <ArrowLeft className="w-4 h-4 mr-2" /> {t("common.backToLibrary", "Back to Library")}
         </button>
 
         <motion.div
@@ -203,19 +205,19 @@ export const Language = () => {
               <div className="flex flex-wrap gap-x-8 gap-y-4 text-sm font-sans">
                 {languageInfo.era && (
                   <div>
-                    <span className="text-muted uppercase tracking-wider text-[10px] block mb-1">Era</span>
+                    <span className="text-muted uppercase tracking-wider text-[10px] block mb-1">{t("language.era", "Era")}</span>
                     <span className="text-ink font-medium">{languageInfo.era}</span>
                   </div>
                 )}
                 {languageInfo.region && (
                   <div>
-                    <span className="text-muted uppercase tracking-wider text-[10px] block mb-1">Region</span>
+                    <span className="text-muted uppercase tracking-wider text-[10px] block mb-1">{t("language.region", "Region")}</span>
                     <span className="text-ink font-medium">{languageInfo.region}</span>
                   </div>
                 )}
                 {languageInfo.writingSystem && (
                   <div>
-                    <span className="text-muted uppercase tracking-wider text-[10px] block mb-1">Writing System</span>
+                    <span className="text-muted uppercase tracking-wider text-[10px] block mb-1">{t("language.writingSystem", "Writing System")}</span>
                     <span className="text-ink font-medium">{languageInfo.writingSystem}</span>
                   </div>
                 )}
@@ -224,7 +226,7 @@ export const Language = () => {
             
             {languageInfo.sample && (
               <div className="w-full md:w-1/3 bg-sand p-6 rounded-2xl border border-bdr flex flex-col items-center justify-center min-h-[160px]">
-                <span className="text-muted uppercase tracking-wider text-[10px] block mb-4 w-full text-center">Sample</span>
+                <span className="text-muted uppercase tracking-wider text-[10px] block mb-4 w-full text-center">{t("language.sample", "Sample")}</span>
                 <span 
                   dir={languageInfo.type}
                   className={cn("text-2xl text-ink font-serif text-center leading-loose", languageInfo.type === "rtl" ? "font-hebrew text-right" : "")}
@@ -245,10 +247,10 @@ export const Language = () => {
           >
             <div className="flex items-center gap-3 mb-6 border-b border-bdr pb-4">
               <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
-                Beginner
+                {t("level.beginner", "Beginner")}
               </span>
               <h2 className="text-2xl font-serif text-ink">
-                Foundational Texts
+                {t("language.foundationalTexts", "Foundational Texts")}
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -268,10 +270,10 @@ export const Language = () => {
           >
             <div className="flex items-center gap-3 mb-6 border-b border-bdr pb-4">
               <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
-                Intermediate
+                {t("level.intermediate", "Intermediate")}
               </span>
               <h2 className="text-2xl font-serif text-ink">
-                Building Proficiency
+                {t("language.buildingProficiency", "Building Proficiency")}
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -291,10 +293,10 @@ export const Language = () => {
           >
             <div className="flex items-center gap-3 mb-6 border-b border-bdr pb-4">
               <span className="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">
-                Advanced
+                {t("level.advanced", "Advanced")}
               </span>
               <h2 className="text-2xl font-serif text-ink">
-                Mastery & Literature
+                {t("language.masteryLiterature", "Mastery & Literature")}
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -309,10 +311,10 @@ export const Language = () => {
           <div className="text-center py-16 bg-parch/50 rounded-2xl border border-bdr">
             <BookOpen className="w-12 h-12 text-muted mx-auto mb-4" />
             <h3 className="text-xl font-serif text-ink2">
-              No texts available yet
+              {t("language.noTexts", "No texts available yet")}
             </h3>
             <p className="text-muted mt-2">
-              Check back soon or import your own texts.
+              {t("language.checkBack", "Check back soon or import your own texts.")}
             </p>
           </div>
         )}
