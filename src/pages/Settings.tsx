@@ -3,11 +3,20 @@ import { Download, RefreshCcw, Settings as SettingsIcon } from "lucide-react";
 import { useSettings } from "../lib/hooks/useSettings";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
+import { useTranslation } from "react-i18next";
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
   const { exportData } = useKnowledge();
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const { t, i18n } = useTranslation();
+
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLang = e.target.value;
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("app_lang", newLang);
+  };
+
 
   const handleExport = () => {
     const data = exportData();
@@ -41,6 +50,22 @@ export const Settings = () => {
       </header>
 
       <div className="space-y-8">
+        <section className="card p-8">
+          <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
+            {t("settings.language", "App Language")}
+          </h3>
+          <div className="mb-8">
+            <select
+              value={i18n.language}
+              onChange={handleLanguageChange}
+              className="w-full md:w-1/2 p-4 bg-parch2/50 border border-bdr rounded-xl text-ink focus:outline-none focus:border-blue transition-all font-bold"
+            >
+              <option value="en">English</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+        </section>
+
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
             Reading Goals

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useKnowledge, WordInfo } from "../lib/hooks/useKnowledge";
 import { WordState, STATE_LABELS } from "../lib/constants/wordStates";
 import { getTokenInfo } from "../lib/data/dictionary";
+import { useTranslation } from "react-i18next";
 
 export const Vocabulary = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export const Vocabulary = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { knowledge, setWordState } = useKnowledge();
+  const { t } = useTranslation();
 
   const [srsIntervals, setSrsIntervals] = useState({
     seenOnce: "1 day",
@@ -84,11 +86,10 @@ export const Vocabulary = () => {
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
-            Lexicon
+            {t('vocab.title', "Vocabulary")}
           </h2>
           <p className="font-body text-[15px] italic text-ink2">
-            Your personal collection of {words.length} classical forms and
-            definitions
+            {t('vocab.personalCollection', `Your personal collection of ${words.length} classical forms and definitions`, { count: words.length })}
           </p>
         </div>
 
@@ -96,7 +97,7 @@ export const Vocabulary = () => {
           <button
             onClick={() => setShowSettings(true)}
             className="p-2.5 rounded-full bg-parch border border-bdr hover:bg-parch2 transition-colors text-ink2"
-            title="Spaced Repetition Configuration"
+            title={t('vocab.config', "Spaced Repetition Configuration")}
           >
             <Settings2 className="w-4 h-4" />
           </button>
@@ -104,7 +105,7 @@ export const Vocabulary = () => {
             onClick={() => navigate("/app/review")}
             className="btn-primary px-6 py-2.5"
           >
-            Start Review
+            {t('dashboard.startReview', "Start Review")}
           </button>
         </div>
       </header>

@@ -6,6 +6,7 @@ import { CorpusDB } from "../data/corpus";
 import { getLangForLemma } from "../lib/data/dictionary";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { cn } from "../lib/utils";
+import { useTranslation } from "react-i18next";
 import {
   WordState,
   STATE_COLORS,
@@ -31,6 +32,7 @@ const StatCard = ({
 export const Dashboard = () => {
   const navigate = useNavigate();
   const { knowledge, stats } = useKnowledge();
+  const { t } = useTranslation();
   const hour = new Date().getHours();
 
   const knownCount = useMemo(
@@ -146,13 +148,13 @@ export const Dashboard = () => {
           </div>
           <div className="relative z-10">
             <div className="eyebrow text-bluexl/50 mb-4 font-bold">
-              Review Queue
+              {t('dashboard.reviewQueue', 'Review Queue')}
             </div>
             <div className="text-[64px] font-serif font-bold leading-none mb-4">
               {reviewCount}
             </div>
             <p className="font-body text-bluexl/70 text-[16px]">
-              Words ready for reinforcement.
+              {t('dashboard.wordsReady', 'Words ready for reinforcement.')}
             </p>
           </div>
           <button
@@ -160,7 +162,7 @@ export const Dashboard = () => {
             disabled={reviewCount === 0}
             className="relative z-10 w-full bg-white text-blue py-3 rounded-2xl font-bold font-sans text-[14px] hover:shadow-lg transition-all active:scale-95 disabled:opacity-80 disabled:cursor-not-allowed"
           >
-            {reviewCount > 0 ? "Start Review Session" : "All Caught Up"}
+            {reviewCount > 0 ? t('dashboard.startReview', "Start Review Session") : t('dashboard.allCaughtUp', "All Caught Up")}
           </button>
         </div>
 
@@ -227,29 +229,29 @@ export const Dashboard = () => {
         className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14 cursor-pointer"
         onClick={() => navigate("/app/statistics")}
       >
-        <StatCard label="Words Known" value={knownCount.toLocaleString()} />
+        <StatCard label={t('vocab.known', "Words Known")} value={knownCount.toLocaleString()} />
         <StatCard
-          label="Words Learning"
+          label={t('vocab.learning', "Words Learning")}
           value={learningCount.toLocaleString()}
         />
         <StatCard
-          label="Total Words Read"
+          label={t('dashboard.wordsLearned', "Total Words Read")}
           value={(stats.readToday + 12400).toLocaleString()}
         />
-        <StatCard label="Accuracy" value="94%" />
+        <StatCard label={t('dashboard.accuracy', "Accuracy")} value="94%" />
       </div>
 
       {/* Recent Vocab */}
       <div className="mb-10">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-serif text-ink font-semibold">
-            Vocabulary Spotlight
+            {t('dashboard.recentWords', "Vocabulary Spotlight")}
           </h3>
           <button
             onClick={() => navigate("/app/vocabulary")}
             className="text-[12px] font-bold text-blue hover:underline"
           >
-            View All Vocabulary
+            {t('dashboard.viewVocab', "View All Vocabulary")}
           </button>
         </div>
         {recentVocab.length === 0 ? (
