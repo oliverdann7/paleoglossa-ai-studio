@@ -24,7 +24,7 @@ export const FastWordPopup = ({ word, isOpen, onClose, onOpenPanel, onStatusChan
         <div className="p-5 flex flex-col gap-4">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className={cn("text-2xl font-bold mb-1", word.language === 'Hebrew' || word.language === 'Aramaic' || word.language === 'Syriac' ? "font-hebrew" : "font-greek")}>
+              <h3 className={cn("text-2xl font-bold mb-1", ['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac'].includes(word.language) ? "font-hebrew" : "font-greek")}>
                 {word.text}
               </h3>
               <div className="flex items-center gap-2">

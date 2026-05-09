@@ -42,7 +42,7 @@ export const Vocabulary = () => {
           term: lemma,
           definition: "Definition...", // Fake until real data
           translit: "",
-          language: lemma.match(/[א-ת]/) ? "Hebrew" : "Greek", // Simple fallback detection
+          language: lemma.match(/[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u) ? "Hebrew" : "Greek", // Simple fallback detection
           status: STATE_LABELS[wordInfo.state as WordState],
           nextReview: nextReview.toISOString(),
         };
@@ -151,9 +151,9 @@ export const Vocabulary = () => {
                   <div
                     className={cn(
                       "text-[26px] font-serif text-ink leading-tight",
-                      word.language === "Hebrew" ? "font-hebrew" : "",
+                      ['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'Hebrew'].includes(word.language) ? "font-hebrew" : "",
                     )}
-                    dir={word.language === "Hebrew" ? "rtl" : "ltr"}
+                    dir={['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'egy', 'Hebrew'].includes(word.language) ? "rtl" : "ltr"}
                   >
                     {word.term}
                   </div>
