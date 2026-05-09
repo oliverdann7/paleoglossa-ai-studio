@@ -56,6 +56,8 @@ const StatCard = ({ label, value, trend, icon: Icon, color }: any) => (
   </div>
 );
 
+import { getLangForLemma } from "../lib/data/dictionary";
+
 export const Statistics = () => {
   const { stats, knowledge } = useKnowledge();
 
@@ -128,11 +130,19 @@ export const Statistics = () => {
 
     Object.entries(knowledge).forEach(([lemma, info]) => {
       const i = typeof info === "object" ? info : { state: info };
-      let lang = "grc-koine";
-      // Very crude heuristic just to have some data showing based on chars
-      if (/[א-ת]/.test(lemma)) lang = "hbo";
-      else if (/[A-Za-z]/.test(lemma)) lang = "lat";
-      else if (/[\u{13000}-\u{1342E}]/u.test(lemma)) lang = "egy";
+      
+      const dictLang = getLangForLemma(lemma);
+      let lang = dictLang !== "Unknown" ? dictLang : "grc-koine";
+      
+      // Fallbacks in case dictionary doesn't have it
+      if (dictLang === "Unknown") {
+        if (/[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F]/u.test(lemma)) lang = "hbo";
+        else if (/[a-zA-Z]/.test(lemma)) lang = "lat";
+        else if (/[\u{13000}-\u{1342E}]/u.test(lemma)) lang = "egy";
+      }
+
+      // Map 'Biblical Hebrew' to 'hbo' to match the keys of `raw`
+      if (lang === "Biblical Hebrew") lang = "hbo";
 
       if ((i as any).language) lang = (i as any).language;
 

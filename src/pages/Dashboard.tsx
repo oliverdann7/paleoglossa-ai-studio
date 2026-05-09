@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
+import { getLangForLemma } from "../lib/data/dictionary";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import {
   WordState,
@@ -63,15 +64,21 @@ export const Dashboard = () => {
     const highlighted = Object.entries(knowledge)
       .filter(([, info]) => {
         const state = typeof info === "object" ? (info as any).state : info;
-        return state !== WordState.NEW;
+        return state !== WordState.NEW && state !== WordState.IGNORED;
+      })
+      .sort((a, b) => {
+        const aDate = typeof a[1] === "object" ? new Date((a[1] as any).addedAt || 0).getTime() : 0;
+        const bDate = typeof b[1] === "object" ? new Date((b[1] as any).addedAt || 0).getTime() : 0;
+        return bDate - aDate;
       })
       .slice(0, 6);
     return highlighted.map(([lemma, info]) => {
       const state = typeof info === "object" ? (info as any).state : info;
+      const dictLang = getLangForLemma(lemma);
       return {
         lemma,
         state,
-        gloss: "Demo definition",
+        lang: dictLang,
       };
     });
   }, [knowledge]);
@@ -259,8 +266,11 @@ export const Dashboard = () => {
                 className="card p-4 border-bdr/40 hover:scale-[1.02] transition-transform shadow-sm"
               >
                 <div
-                  className="text-[18px] font-serif text-ink mb-1 truncate"
-                  dir={w.lemma.match(/[א-ת]/) ? "rtl" : "ltr"}
+                  className={cn(
+                    "text-[18px] font-serif text-ink mb-1 truncate",
+                    ['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'Hebrew'].includes(w.lang) ? "font-hebrew" : ""
+                  )}
+                  dir={['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'egy', 'Hebrew'].includes(w.lang) ? "rtl" : "ltr"}
                 >
                   {w.lemma}
                 </div>
