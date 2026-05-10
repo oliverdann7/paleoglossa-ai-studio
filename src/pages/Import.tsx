@@ -9,8 +9,10 @@ import {
   CheckCircle,
   Loader2,
   Play,
+  Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GoogleGenAI } from "@google/genai";
 
 interface ImportedText {
   id: string;
@@ -30,12 +32,54 @@ export const Import = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
-  const [activeTab, setActiveTab] = useState<"paste" | "file" | "url">("paste");
+  const [activeTab, setActiveTab] = useState<"paste" | "file" | "url" | "ocr">("paste");
   const [text, setText] = useState("");
   const [language, setLanguage] = useState("grc");
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ImportedText | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [imageMimeType, setImageMimeType] = useState<string | null>(null);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setImageMimeType(file.type);
+      setImageBase64(dataUrl.split(",")[1]);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleExtractText = async () => {
+    if (!imageBase64 || !imageMimeType) return;
+    setIsProcessing(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: {
+          parts: [
+            { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
+            { text: "Extract the text from this image. If it is an ancient language like Greek, Latin, Hebrew, etc., preserve the original characters. Return ONLY the extracted text, with no markdown formatting or extra commentary." }
+          ]
+        }
+      });
+      const extractedText = response.text || "";
+      setText(extractedText);
+      setActiveTab("paste");
+      setImageBase64(null);
+      setImageMimeType(null);
+    } catch (error) {
+      console.error("OCR Extraction failed:", error);
+      alert("Failed to extract text from image.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleProcess = () => {
     if (!text.trim()) return;
@@ -146,6 +190,18 @@ export const Import = () => {
               <LinkIcon className="w-4 h-4" />
               {t("import.importUrl", "Import URL")}
             </button>
+            <button
+              onClick={() => setActiveTab("ocr")}
+              className={cn(
+                "flex-1 px-6 py-4 flex items-center justify-center gap-2 text-[13px] font-bold transition-all",
+                activeTab === "ocr"
+                  ? "bg-white text-blue border-b-2 border-blue"
+                  : "text-muted hover:bg-parch",
+              )}
+            >
+              <ImageIcon className="w-4 h-4" />
+              {t("import.ocr", "Image OCR")}
+            </button>
           </div>
 
           <div className="p-8">
@@ -253,20 +309,47 @@ export const Import = () => {
                   </div>
                 </motion.div>
               )}
+              {activeTab === "ocr" && (
+                <motion.div
+                  key="ocr"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => imageInputRef.current?.click()}
+                  className={cn(
+                    "h-96 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all relative overflow-hidden",
+                    imageBase64 ? "border-blue bg-blue/5" : "border-bdr/40 hover:bg-blue/5 hover:border-blue/30"
+                  )}
+                >
+                  <input type="file" accept="image/*" ref={imageInputRef} onChange={handleImageSelect} className="hidden" />
+                  {imageBase64 ? (
+                    <img src={`data:${imageMimeType};base64,${imageBase64}`} alt="Selected text" className="absolute inset-0 w-full h-full object-contain opacity-40" />
+                  ) : null}
+                  <div className="relative z-10 w-16 h-16 bg-parch2 text-muted rounded-full flex items-center justify-center mb-6">
+                    <ImageIcon className="w-8 h-8" />
+                  </div>
+                  <h3 className="relative z-10 text-[20px] font-serif font-bold text-ink mb-1">
+                    {imageBase64 ? t("import.imageSelected", "Image Selected. Click to change.") : t("import.clickUploadImage", "Upload Image for OCR")}
+                  </h3>
+                  <p className="relative z-10 text-[13px] text-muted">
+                    {t("import.supportsOcr", "Extract text automatically from ancient manuscripts or textbooks.")}
+                  </p>
+                </motion.div>
+              )}
             </AnimatePresence>
 
             <button
-              onClick={handleProcess}
-              disabled={isProcessing || !text.trim()}
+              onClick={activeTab === 'ocr' ? handleExtractText : handleProcess}
+              disabled={isProcessing || (activeTab === 'ocr' ? !imageBase64 : !text.trim())}
               className="w-full mt-8 bg-blue text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:shadow-xl transition-all shadow-lg shadow-blue/20 disabled:opacity-50"
             >
               {isProcessing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  {t("import.processing", "Processing Language...")}
+                  {activeTab === 'ocr' ? t("import.extracting", "Extracting Text...") : t("import.processing", "Processing Language...")}
                 </>
               ) : (
-                t("import.process", "Analyze & Import Text")
+                activeTab === 'ocr' ? t("import.extractText", "Extract Text from Image") :  t("import.process", "Analyze & Import Text")
               )}
             </button>
           </div>

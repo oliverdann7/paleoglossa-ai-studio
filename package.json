@@ -11,6 +11,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@google/genai": "^2.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "firebase": "^11.1.0",
