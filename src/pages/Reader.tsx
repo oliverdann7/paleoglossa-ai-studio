@@ -32,7 +32,7 @@ import { ReaderTutorial } from "../components/reader/ReaderTutorial";
 import { ParadigmModal } from "../components/reader/ParadigmModal";
 import { getTransliteration } from "../lib/transliterate";
 
-import { TextAnalysisService } from "../lib/services/textAnalysisService";
+import { AIClient } from "../lib/services/aiClient";
 import { ImportService } from "../lib/services/importService";
 import { useAuth } from "../lib/hooks/useAuth";
 
@@ -176,7 +176,7 @@ export const Reader = () => {
     
     try {
       const languageName = text?.language || selectedWord.language || "ancient language";
-      const explanation = await TextAnalysisService.explainWord(languageName, selectedWord.text, selectedWord.lemma);
+      const explanation = await AIClient.explainWord(languageName, selectedWord.text, selectedWord.lemma, user?.uid);
       setAiWordInsight(explanation);
     } catch (error) {
       console.error(error);
@@ -192,7 +192,7 @@ export const Reader = () => {
     
     try {
       const languageName = text?.language || "ancient language";
-      const result = await TextAnalysisService.translateSentence(languageName, sentenceTokens.map(t => t.text).join(" "));
+      const result = await AIClient.translateSentence(languageName, sentenceTokens.map(t => t.text).join(" "), user?.uid);
       setAiTranslations(prev => ({ ...prev, [sentenceId]: result }));
     } catch (error) {
       console.error(error);
