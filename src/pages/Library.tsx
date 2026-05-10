@@ -135,14 +135,13 @@ export const Library = () => {
           {t("library.title", "Library")}
         </h2>
         <p className="font-body text-[15px] italic text-ink2">
-          Ancient wisdom, now familiar. Every word tracked, every text a
-          milestone.
+          {t("library.subtitle", "Ancient wisdom, now familiar. Every word tracked, every text a milestone.")}
         </p>
       </header>
 
       {/* Continue Reading Carousel */}
       <div className="mb-14">
-        <h3 className="eyebrow mb-4 opacity-50">Continue Reading</h3>
+        <h3 className="eyebrow mb-4 opacity-50">{t("library.continueReading", "Continue Reading")}</h3>
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {recentTexts.map((text, i) => (
             <div
@@ -175,7 +174,7 @@ export const Library = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="text"
-              placeholder="Search by title or author..."
+              placeholder={t("library.searchPlaceholder", "Search by title or author...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white border border-bdr rounded-[12px] text-sm font-sans focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-colors shadow-sm"
@@ -204,10 +203,10 @@ export const Library = () => {
         <div className="w-full lg:w-64 card p-4 bg-parch2/20 border-bdr/30">
           <div className="flex justify-between items-center mb-4">
             <label className="text-[11px] font-bold text-muted uppercase">
-              Comprehensibility
+              {t("library.comprehensibility", "Comprehensibility")}
             </label>
             <span className="text-[11px] font-bold text-blue">
-              {minKnown}%+ Known
+              {minKnown}%+ {t("library.known", "Known")}
             </span>
           </div>
           <input
@@ -220,14 +219,14 @@ export const Library = () => {
             className="w-full accent-blue appearance-none h-1.5 bg-parch3 rounded-full"
           />
           <div className="flex justify-between mt-2 text-[9px] font-bold text-zinc-400">
-            <span>Any</span>
-            <span>Nearly All</span>
+            <span>{t("library.any", "Any")}</span>
+            <span>{t("library.nearlyAll", "Nearly All")}</span>
           </div>
         </div>
       </div>
 
       <div className="mb-14">
-        <h3 className="eyebrow mb-4 opacity-50">Explore by Language</h3>
+        <h3 className="eyebrow mb-4 opacity-50">{t("library.exploreLanguage", "Explore by Language")}</h3>
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {LANGUAGES.map((lang) => (
             <button
@@ -238,7 +237,7 @@ export const Library = () => {
               <span className="w-8 h-8 rounded-full bg-parch2 text-ink flex items-center justify-center text-lg group-hover:bg-blue/10 group-hover:text-blue transition-colors">
                 {lang.icon}
               </span>
-              <span className="text-[16px] font-bold tracking-tight">{lang.name}</span>
+              <span className="text-[16px] font-bold tracking-tight">{t(`languageNames.${lang.id}`, lang.name)}</span>
             </button>
           ))}
         </div>
@@ -247,10 +246,9 @@ export const Library = () => {
       {filteredTexts.length === 0 ? (
         <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
           <LibraryIcon className="w-12 h-12 text-muted mb-4" />
-          <h3 className="font-serif text-[24px] text-ink mb-2">Shelf Empty</h3>
+          <h3 className="font-serif text-[24px] text-ink mb-2">{t("library.shelfEmpty", "Shelf Empty")}</h3>
           <p className="text-ink3 max-w-sm mx-auto">
-            Import a text or pick one from the curated library to begin. Try
-            adjusting your filters if you can't find what you're looking for.
+            {t("library.shelfEmptyDesc", "Import a text or pick one from the curated library to begin. Try adjusting your filters if you can't find what you're looking for.")}
           </p>
         </div>
       ) : (

@@ -198,19 +198,19 @@ export const Review = () => {
               <div className="text-[24px] font-bold text-blue">
                 {queue.length}
               </div>
-              <div className="eyebrow text-[9px] text-muted">In Queue</div>
+              <div className="eyebrow text-[9px] text-muted">{t("review.inQueue", "In Queue")}</div>
             </div>
             <div className="bg-parch p-4 rounded-xl border border-bdr/40">
               <div className="text-[24px] font-bold text-amber">12</div>
-              <div className="eyebrow text-[9px] text-muted">Critical</div>
+              <div className="eyebrow text-[9px] text-muted">{t("review.critical", "Critical")}</div>
             </div>
             <div className="bg-parch p-4 rounded-xl border border-bdr/40">
               <div className="text-[24px] font-bold text-ink">247</div>
-              <div className="eyebrow text-[9px] text-muted">New Today</div>
+              <div className="eyebrow text-[9px] text-muted">{t("review.newToday", "New Today")}</div>
             </div>
             <div className="bg-parch p-4 rounded-xl border border-bdr/40">
               <div className="text-[24px] font-bold text-green-600">85%</div>
-              <div className="eyebrow text-[9px] text-muted">Accuracy</div>
+              <div className="eyebrow text-[9px] text-muted">{t("review.accuracy", "Accuracy")}</div>
             </div>
           </div>
 
@@ -220,13 +220,13 @@ export const Review = () => {
               disabled={queue.length === 0}
               className="w-full bg-blue text-white py-4 rounded-2xl font-bold text-[18px] hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
             >
-              Start Session
+              {t("review.startSession", "Start Session")}
             </button>
             <button
               onClick={onBack}
               className="text-muted font-bold text-[14px] hover:text-ink"
             >
-              Maybe later
+              {t("review.maybeLater", "Maybe later")}
             </button>
           </div>
 
@@ -235,25 +235,25 @@ export const Review = () => {
               <span className="w-6 h-6 bg-red-100 text-red-500 rounded flex items-center justify-center font-mono">
                 1
               </span>
-              Again
+              {t("review.again", "Again")}
             </div>
             <div className="flex items-center gap-2 text-[11px] font-bold text-muted">
               <span className="w-6 h-6 bg-amber-100 text-amber-500 rounded flex items-center justify-center font-mono">
                 2
               </span>
-              Hard
+              {t("review.hard", "Hard")}
             </div>
             <div className="flex items-center gap-2 text-[11px] font-bold text-muted">
               <span className="w-6 h-6 bg-green-100 text-green-500 rounded flex items-center justify-center font-mono">
                 3
               </span>
-              Good
+              {t("review.good", "Good")}
             </div>
             <div className="flex items-center gap-2 text-[11px] font-bold text-muted">
               <span className="w-6 h-6 bg-blue-100 text-blue-500 rounded flex items-center justify-center font-mono">
                 4
               </span>
-              Easy
+              {t("review.easy", "Easy")}
             </div>
           </div>
         </motion.div>
@@ -299,7 +299,7 @@ export const Review = () => {
             onClick={onBack}
             className="w-full bg-blue text-white py-4 rounded-full font-bold text-[16px] hover:shadow-lg transition-all"
           >
-            Back to Dashboard
+            {t("review.backDashboard", "Back to Dashboard")}
           </button>
         </motion.div>
       </div>
@@ -317,12 +317,12 @@ export const Review = () => {
           className="text-ink3 hover:text-blue flex items-center gap-2 font-bold text-[14px]"
         >
           <ChevronLeft className="w-5 h-5" />
-          Quit Session
+          {t("review.quitSession", "Quit Session")}
         </button>
         <div className="flex-1 max-w-md mx-8">
           <div className="flex justify-between text-[10px] font-bold text-muted uppercase tracking-widest mb-1">
             <span>
-              Card {currentCardIndex + 1} of {queue.length}
+              {t("review.cardProgress", `Card ${currentCardIndex + 1} of ${queue.length}`, { current: currentCardIndex + 1, total: queue.length })}
             </span>
             <span>{Math.round(progress)}%</span>
           </div>
@@ -384,7 +384,7 @@ export const Review = () => {
 
             {!isRevealed && (
               <div className="absolute bottom-10 text-[12px] font-bold text-muted animate-pulse">
-                Tap to Reveal Meaning
+                {t("review.tapReveal", "Tap to Reveal Meaning")}
               </div>
             )}
           </motion.div>
@@ -399,7 +399,7 @@ export const Review = () => {
               onClick={() => setIsRevealed(true)}
               className="bg-blue text-white px-10 py-4 rounded-2xl font-bold hover:shadow-lg transition-all active:scale-95"
             >
-              Show Answer
+              {t("review.showAnswer", "Show Answer")}
             </button>
           ) : (
             <div className="grid grid-cols-4 gap-4 w-full">
@@ -408,7 +408,7 @@ export const Review = () => {
                 className="flex flex-col items-center gap-1 group"
               >
                 <div className="w-full h-14 bg-red-50 border border-red-200 text-red-600 rounded-xl flex items-center justify-center font-bold text-[14px] group-hover:bg-red-500 group-hover:text-white transition-all shadow-sm">
-                  AGAIN
+                  {t("review.again", "AGAIN")}
                 </div>
                 <span className="text-[9px] font-bold text-muted uppercase tracking-tighter">
                   {"<"}1m
@@ -419,7 +419,7 @@ export const Review = () => {
                 className="flex flex-col items-center gap-1 group"
               >
                 <div className="w-full h-14 bg-amber-50 border border-amber-200 text-amber-600 rounded-xl flex items-center justify-center font-bold text-[14px] group-hover:bg-amber-500 group-hover:text-white transition-all shadow-sm">
-                  HARD
+                  {t("review.hard", "HARD")}
                 </div>
                 <span className="text-[9px] font-bold text-muted uppercase tracking-tighter">
                   1d
@@ -430,7 +430,7 @@ export const Review = () => {
                 className="flex flex-col items-center gap-1 group"
               >
                 <div className="w-full h-14 bg-green-50 border border-green-200 text-green-600 rounded-xl flex items-center justify-center font-bold text-[14px] group-hover:bg-green-500 group-hover:text-white transition-all shadow-sm">
-                  GOOD
+                  {t("review.good", "GOOD")}
                 </div>
                 <span className="text-[9px] font-bold text-muted uppercase tracking-tighter">
                   4d
@@ -441,7 +441,7 @@ export const Review = () => {
                 className="flex flex-col items-center gap-1 group"
               >
                 <div className="w-full h-14 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl flex items-center justify-center font-bold text-[14px] group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm">
-                  EASY
+                  {t("review.easy", "EASY")}
                 </div>
                 <span className="text-[9px] font-bold text-muted uppercase tracking-tighter">
                   7d

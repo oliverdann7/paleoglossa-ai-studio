@@ -203,21 +203,21 @@ export const Statistics = () => {
 
   const milestones = [
     {
-      label: "Polyglot Apprentice",
-      desc: "Reach 500 known words in 2 languages",
-      date: "Reached Apr 12",
+      label: t("stats.polyglotApprentice", "Polyglot Apprentice"),
+      desc: t("stats.polyglotDesc", "Reach 500 known words in 2 languages"),
+      date: t("stats.reachedDate", "Reached Apr 12"),
       completed: true,
     },
     {
-      label: "Homeric Memory",
-      desc: "Complete 10 error-free review sessions",
-      date: "Reached May 3",
+      label: t("stats.homericMemory", "Homeric Memory"),
+      desc: t("stats.homericDesc", "Complete 10 error-free review sessions"),
+      date: t("stats.reachedMay", "Reached May 3"),
       completed: true,
     },
     {
-      label: "Master of the Tense",
-      desc: "Known 2,000 words across the library",
-      desc2: "153 words to go",
+      label: t("stats.masterOfTense", "Master of the Tense"),
+      desc: t("stats.masterDesc", "Known 2,000 words across the library"),
+      desc2: t("stats.wordsToGo", "153 words to go"),
       date: null,
       completed: false,
       progress: 1847 / 2000,
@@ -251,27 +251,27 @@ export const Statistics = () => {
             <StatCard
               label={t('stats.knownWords', "Known Words")}
               value={stats.totalKnown.toLocaleString()}
-              trend="+12% vs last week"
+              trend={t("stats.trendKnown", "+12% vs last week")}
               icon={BookOpen}
               color="blue"
             />
             <StatCard
               label={t('stats.wordsReadWeek', "Words Read (Week)")}
               value={weeklyStats.weekRead.toLocaleString()}
-              trend="Active"
+              trend={t("stats.trendActive", "Active")}
               icon={History}
               color="amber"
             />
             <StatCard
               label={t('stats.totalReadingTime', "Total Reading Time")}
               value={`${weeklyStats.totalHours}h`}
-              trend="Keep it up!"
+              trend={t("stats.trendKeepUp", "Keep it up!")}
               icon={Clock}
               color="green"
             />
             <StatCard
               label={t('stats.currentStreak', "Current Streak")}
-              value={`🔥 ${stats.streak} Days`}
+              value={t("stats.streakDays", `🔥 ${stats.streak} Days`, { streak: stats.streak })}
               icon={Zap}
               color="amber"
             />
@@ -285,7 +285,7 @@ export const Statistics = () => {
                   {t('stats.readingActivity', "Reading Activity (13 Weeks)")}
                 </h3>
                 <div className="flex gap-1 text-[9px] font-bold text-muted uppercase tracking-widest items-center">
-                  <span>Less</span>
+                  <span>{t("stats.less", "Less")}</span>
                   <div className="flex gap-1">
                     <div className="w-3 h-3 bg-parch rounded-sm" />
                     <div className="w-3 h-3 bg-amber/30 rounded-sm" />
@@ -293,7 +293,7 @@ export const Statistics = () => {
                     <div className="w-3 h-3 bg-amber rounded-sm" />
                     <div className="w-3 h-3 bg-gold rounded-sm" />
                   </div>
-                  <span>More</span>
+                  <span>{t("stats.more", "More")}</span>
                 </div>
               </div>
 
@@ -333,7 +333,7 @@ export const Statistics = () => {
             {/* Milestones Sidebar */}
             <div className="card p-8 flex flex-col h-full">
               <h3 className="text-[18px] font-serif font-bold text-ink mb-6">
-                Milestone Tracker
+                {t("stats.milestoneTracker", "Milestone Tracker")}
               </h3>
               <div className="space-y-6 flex-1">
                 {milestones.map((m, i) => (
@@ -388,7 +388,7 @@ export const Statistics = () => {
                 ))}
               </div>
               <button className="w-full mt-6 py-2 text-[12px] font-bold text-blue hover:bg-blue/5 rounded-lg transition-all border border-blue/20">
-                View All Achievement
+                {t("stats.viewAllAchievements", "View All Achievement")}
               </button>
             </div>
           </div>
@@ -397,7 +397,7 @@ export const Statistics = () => {
             {/* Known Words via Recharts */}
             <div className="card p-6 flex flex-col">
               <h4 className="eyebrow text-amber mb-4 font-bold">
-                Known Words (30d)
+                {t("stats.knownWords30d", "Known Words (30d)")}
               </h4>
               <div className="h-32 w-full relative group flex-1">
                 <ResponsiveContainer width="100%" height="100%">
@@ -446,7 +446,7 @@ export const Statistics = () => {
             </div>
             <div className="card p-6 flex flex-col">
               <h4 className="eyebrow text-blue mb-4 font-bold">
-                Daily Reading (30d)
+                {t("stats.dailyReading30d", "Daily Reading (30d)")}
               </h4>
               <div className="h-32 w-full relative flex-1">
                 <ResponsiveContainer width="100%" height="100%">
@@ -474,7 +474,7 @@ export const Statistics = () => {
             </div>
             <div className="card p-6 flex flex-col">
               <h4 className="eyebrow text-green-600 mb-4 font-bold">
-                Reading Time (30d)
+                {t("stats.readingTime30d", "Reading Time (30d)")}
               </h4>
               <div className="h-32 w-full relative flex-1">
                 <ResponsiveContainer width="100%" height="100%">
@@ -489,7 +489,7 @@ export const Statistics = () => {
                       labelFormatter={(label) =>
                         format(parseISO(label as string), "MMM d, yyyy")
                       }
-                      formatter={(val: any) => [`${val} min`, "Time"]}
+                      formatter={(val: any) => [`${val} min`, t("stats.time", "Time")]}
                     />
                     <Line
                       type="monotone"
@@ -506,7 +506,7 @@ export const Statistics = () => {
 
           <div className="card p-8">
             <h3 className="text-[20px] font-serif font-bold text-ink mb-8">
-              Language Proficiency
+              {t("stats.languageProficiency", "Language Proficiency")}
             </h3>
             <div className="space-y-10">
               {languageStats.map((l, i) => (
@@ -514,10 +514,10 @@ export const Statistics = () => {
                   <div className="flex justify-between items-end mb-3">
                     <div>
                       <h4 className="text-[17px] font-bold text-ink leading-none">
-                        {l.label}
+                         {t(`languageNames.${l.label === 'Ancient Greek' ? 'grc' : l.label === 'Koine Greek' ? 'grc-koine' : l.label === 'Biblical Hebrew' ? 'hbo' : l.label === 'Classical Latin' ? 'lat' : l.label === 'Syriac' ? 'syr' : l.label === 'Coptic' ? 'cop' : l.label === 'Aramaic' ? 'arc' : l.label === 'Akkadian' ? 'akk' : l.label === 'Sanskrit' ? 'san' : l.label === 'Egyptian Hieroglyphs' ? 'egy' : l.label}`, l.label)}
                       </h4>
                       <span className="text-[11px] font-serif italic text-muted">
-                        Estimated Level: {l.cefr}
+                        {t("stats.estLevel", "Estimated Level:")} {l.cefr}
                       </span>
                     </div>
                     <div className="text-right">
@@ -525,7 +525,7 @@ export const Statistics = () => {
                         {l.known.toLocaleString()}
                       </span>
                       <span className="text-[10px] font-bold text-muted uppercase tracking-widest ml-2">
-                        Known Words
+                        {t("stats.knownWordsSmall", "Known Words")}
                       </span>
                     </div>
                   </div>
@@ -543,19 +543,19 @@ export const Statistics = () => {
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-blue rounded-full" />
                       <span className="text-[10px] font-bold text-ink3 uppercase tracking-tighter">
-                        {l.known} Known
+                        {l.known} {t("library.known", "Known")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-amber rounded-full" />
                       <span className="text-[10px] font-bold text-ink3 uppercase tracking-tighter">
-                        {l.learning} Learning
+                        {l.learning} {t("vocab.learning", "Learning")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-parch3 rounded-full" />
                       <span className="text-[10px] font-bold text-ink3 uppercase tracking-tighter">
-                        {l.new} New
+                        {l.new} {t("vocab.new", "New")}
                       </span>
                     </div>
                   </div>
