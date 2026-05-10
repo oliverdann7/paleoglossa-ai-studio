@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { SettingsService } from '../services/settingsService';
 
 export interface Settings {
   dailyGoalWords: number;
@@ -25,31 +27,34 @@ const DEFAULT_SETTINGS: Settings = {
 };
 
 export const useSettings = () => {
-  const [settings, setSettings] = useState<Settings>(() => {
-    const saved = localStorage.getItem('paleoglossa_settings');
-    if (saved) {
-      try {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-      } catch {
-        return DEFAULT_SETTINGS;
-      }
-    }
-    return DEFAULT_SETTINGS;
-  });
+  const { user } = useAuth();
+  const userId = user ? user.uid : null;
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
-    localStorage.setItem('paleoglossa_settings', JSON.stringify(settings));
+    const load = async () => {
+      const dbSettings = await SettingsService.getSettings(userId);
+      // Map Firestore settings to local Settings interface if they differ slightly
+      // For now they are aligned enough or we overwrite
+      setSettings(prev => ({ ...prev, ...dbSettings } as Settings));
+    };
+    load();
+  }, [userId]);
+
+  useEffect(() => {
     document.documentElement.className = `theme-${settings.theme}`;
     if (settings.theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [settings]);
+  }, [settings.theme]);
 
-  const updateSettings = (updates: Partial<Settings>) => {
-    setSettings(prev => ({ ...prev, ...updates }));
-  };
+  const updateSettings = useCallback(async (updates: Partial<Settings>) => {
+    const newSettings = { ...settings, ...updates };
+    setSettings(newSettings);
+    await SettingsService.saveSettings(userId, newSettings as any);
+  }, [userId, settings]);
 
   return { settings, updateSettings };
 };

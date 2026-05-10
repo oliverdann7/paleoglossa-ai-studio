@@ -1,129 +1,93 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // DENY ALL BY DEFAULT
     match /{document=**} {
       allow read, write: if false;
     }
-    
-    function isValidId(id) { 
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
-    }
-    function incoming() { return request.resource.data; }
-    function existing() { return resource.data; }
-    function isSignedIn() { return request.auth != null && request.auth.token.email_verified == true; }
-    // Add missing fallback for demo users: if they bypass email verification in a sandbox, just check if authed.
-    // In our case we use email authed google login so email_verified == true is safe. Let's just use request.auth != null
-    function isAuthed() { return request.auth != null; }
 
-    // User validation
-    function isValidUser(data) {
-      return data.keys().hasAll(['email', 'createdAt', 'currentPlan', 'stats']) &&
-             data.email is string &&
-             (data.get('displayName', '') is string) &&
-             data.createdAt == request.time &&
-             data.currentPlan in ['free', 'pro', 'fellowship'] &&
-             data.stats is map &&
-             data.stats.keys().hasAll(['totalKnown', 'readToday', 'readingTime', 'lastActive', 'streak', 'freezesTotal', 'freezesUsed']) &&
-             data.stats.totalKnown is number &&
-             data.stats.readToday is number &&
-             data.stats.readingTime is number &&
-             data.stats.lastActive is string &&
-             data.stats.streak is number &&
-             data.stats.freezesTotal is number &&
-             data.stats.freezesUsed is number;
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
     }
 
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // PUBLIC COLLECTIONS
+    match /texts/{textId} {
+      allow get, list: if true; // Everyone can read public texts
+      allow write: if false;    // For now, only system can write to root texts
+    }
+
+    match /languages/{languageId} {
+      allow get, list: if true;
+    }
+
+    match /lemmas/{lemmaId} {
+      allow get, list: if true;
+    }
+
+    // USER-SPECIFIC DATA
     match /users/{userId} {
-      allow get: if isAuthed() && request.auth.uid == userId;
-      allow create: if isAuthed() && 
-                    request.auth.uid == userId && 
-                    isValidId(userId) &&
-                    isValidUser(incoming());
+      allow get: if isOwner(userId);
       
-      allow update: if isAuthed() && 
-                    request.auth.uid == userId &&
-                    (incoming().get('displayName', '') is string) &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'stats', 'currentPlan']) &&
-                    incoming().email == existing().email &&
-                    incoming().createdAt == existing().createdAt;
-      
-      // Vocabulary subcollection
+      // Vocabulary
       match /vocabulary/{termId} {
-        function isValidVocabItem(data, isCreate) {
-          return data.keys().hasAll(['term', 'status', 'nextReview', 'interval', 'ease', 'step', 'createdAt', 'updatedAt', 'language']) &&
-                 data.term is string && data.term.size() > 0 && data.term.size() <= 256 &&
-                 (data.get('translit', '') is string) &&
-                 (data.get('definition', '') is string) &&
-                 (data.get('notes', '') is string) &&
-                 data.language is string &&
-                 data.status in ["Seen Once", "Learning", "Familiar", "Known", "Ignored", "New"] &&
-                 (data.nextReview is string || data.nextReview is timestamp) &&
-                 data.interval is number &&
-                 data.ease is number &&
-                 data.step is number &&
-                 (isCreate ? data.createdAt == request.time : data.createdAt == existing().createdAt) &&
-                 data.updatedAt == request.time;
+        function isValidVocab(data) {
+          return data.keys().hasAll(['term', 'status', 'languageId']) &&
+                 data.term is string &&
+                 data.status in ['NEW', 'SEEN', 'LEARNING', 'FAMILIAR', 'KNOWN', 'IGNORED'];
         }
 
-        allow get: if isAuthed() && request.auth.uid == userId;
-        allow list: if isAuthed() && request.auth.uid == userId; // Parent path implicit owner check
-        
-        allow create: if isAuthed() && request.auth.uid == userId &&
-                      isValidId(termId) &&
-                      isValidVocabItem(incoming(), true);
-                      
-        allow update: if isAuthed() && request.auth.uid == userId &&
-                      isValidVocabItem(incoming(), false) &&
-                      incoming().diff(existing()).affectedKeys().hasOnly(['status', 'nextReview', 'interval', 'ease', 'step', 'updatedAt', 'translit', 'definition', 'notes', 'language', 'lastReviewed']);
-                      
-        allow delete: if isAuthed() && request.auth.uid == userId;
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidVocab(incoming());
+        allow delete: if isOwner(userId);
       }
 
-      // Imports subcollection
+      // Imports
       match /imports/{importId} {
-        function isValidImport(data, isCreate) {
-          return data.keys().hasAll(['title', 'content', 'language', 'totalWords', 'percentKnown', 'percentLearning', 'isImported', 'createdAt', 'updatedAt']) &&
-                 data.title is string && data.title.size() <= 256 &&
-                 data.content is string && data.content.size() <= 1048576 && // 1MB limit check
-                 data.language is string &&
-                 data.totalWords is number &&
-                 data.percentKnown is number &&
-                 data.percentLearning is number &&
-                 data.isImported == true &&
-                 (isCreate ? data.createdAt == request.time : data.createdAt == existing().createdAt) &&
-                 data.updatedAt == request.time;
+        function isValidImport(data) {
+          return data.keys().hasAll(['title', 'languageId', 'sourceType', 'visibility']) &&
+                 data.title is string &&
+                 data.sourceType in ['paste', 'file', 'url', 'image', 'pdf'] &&
+                 data.visibility in ['private', 'shared', 'public'];
         }
 
-        allow get: if isAuthed() && request.auth.uid == userId;
-        allow list: if isAuthed() && request.auth.uid == userId;
-        
-        allow create: if isAuthed() && request.auth.uid == userId &&
-                      isValidId(importId) &&
-                      isValidImport(incoming(), true);
-                      
-        allow update: if isAuthed() && request.auth.uid == userId &&
-                      isValidImport(incoming(), false) &&
-                      incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'totalWords', 'percentKnown', 'percentLearning', 'updatedAt']);
-                      
-        allow delete: if isAuthed() && request.auth.uid == userId;
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidImport(incoming());
+        allow delete: if isOwner(userId);
       }
 
-      // Progress subcollection
-      match /progress/{textId} {
-        function isValidProgress(data) {
-          return data.keys().hasAll(['textId', 'lastPosition', 'lastReadAt']) &&
-                 data.textId is string &&
-                 data.lastPosition is number &&
-                 data.lastReadAt is string &&
-                 (data.get('completed', false) is bool) &&
-                 (data.get('sentenceIndex', 0) is number);
-        }
+      // Reading Progress
+      match /readingProgress/{textId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && incoming().textId == textId;
+        allow delete: if isOwner(userId);
+      }
 
-        allow get, list: if isAuthed() && request.auth.uid == userId;
-        allow create, update: if isAuthed() && request.auth.uid == userId &&
-                               isValidId(textId) &&
-                               isValidProgress(incoming());
-        allow delete: if isAuthed() && request.auth.uid == userId;
+      // Settings
+      match /settings/{settingsId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Review Logs
+      match /reviewLogs/{logId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && incoming().userId == userId;
       }
     }
   }

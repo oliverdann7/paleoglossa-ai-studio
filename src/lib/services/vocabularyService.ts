@@ -1,25 +1,19 @@
 import { db } from '../firebase';
 import { doc, setDoc, updateDoc, getDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { WordState } from '../constants/wordStates';
-
-const STORAGE_KEY = 'paleoglossa_knowledge';
-
-export interface SRSData {
-  lastReviewed: string | null;
-  nextReview: string | null;
-  interval: number; // days
-  easing: number; // SM-2 ease factor
-  step: number; // number of reviews
-}
+import { WordStatus, SRSData } from '../../types/firestore';
 
 export interface WordInfo {
-  state: WordState;
+  state: WordStatus | WordState;
   srs?: SRSData;
   notes?: string;
   addedAt: string;
+  languageId?: string;
 }
 
 export type KnowledgeMap = Record<string, WordInfo>;
+
+const STORAGE_KEY = 'paleoglossa_knowledge';
 
 function getTermId(term: string): string {
   // Hex encode to safely match ^[a-zA-Z0-9_\-]+$ and avoid firestore issues
@@ -41,17 +35,20 @@ export class VocabularyService {
       const map: KnowledgeMap = {};
       vocabSnap.forEach(doc => {
         const data = doc.data();
+        const nextReview = data.nextReview?.toDate ? data.nextReview.toDate().toISOString() : data.nextReview;
+        const addedAt = data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt;
+        
         map[data.term] = {
           state: data.status,
-          srs: data.nextReview ? {
+          srs: nextReview ? {
             lastReviewed: data.lastReviewed || null,
-            nextReview: data.nextReview,
+            nextReview: nextReview,
             interval: data.interval,
             easing: data.ease,
             step: data.step || 0
           } : undefined,
           notes: data.notes,
-          addedAt: data.createdAt,
+          addedAt: addedAt || new Date().toISOString(),
         };
       });
       return map;
@@ -61,7 +58,7 @@ export class VocabularyService {
     }
   }
 
-  static async setWordState(userId: string | null, term: string, state: WordState, language: string = "unknown", srs?: SRSData) {
+  static async setWordState(userId: string | null, term: string, state: WordStatus | WordState, languageId: string = "unknown", srs?: SRSData) {
     if (!userId) {
       // Local fallback
       const ls = localStorage.getItem(STORAGE_KEY);
@@ -69,7 +66,8 @@ export class VocabularyService {
       map[term] = { 
         state, 
         addedAt: map[term]?.addedAt || new Date().toISOString(),
-        srs: srs || map[term]?.srs
+        srs: srs || map[term]?.srs,
+        languageId
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
       return;
@@ -82,15 +80,16 @@ export class VocabularyService {
       
       const payload: any = {
         term,
+        normalizedTerm: term.toLowerCase().trim(),
         status: state,
-        language,
+        languageId,
         updatedAt: serverTimestamp(),
       };
 
       if (srs) {
         payload.nextReview = srs.nextReview;
         payload.interval = srs.interval;
-        payload.ease = srs.easing;
+        payload.ease = srs.ease;
         payload.step = srs.step;
         payload.lastReviewed = srs.lastReviewed;
       }
@@ -101,6 +100,11 @@ export class VocabularyService {
         await setDoc(docRef, {
           ...payload,
           createdAt: serverTimestamp(),
+          encounterCount: 1,
+          firstSeenAt: serverTimestamp(),
+          lastSeenAt: serverTimestamp(),
+          sourceTextIds: [],
+          tags: [],
           // Default SRS if not provided
           nextReview: payload.nextReview || new Date().toISOString(),
           interval: payload.interval || 0,

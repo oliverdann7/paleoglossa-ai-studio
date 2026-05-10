@@ -10,6 +10,7 @@ export const useKnowledge = () => {
   const userId = user ? user.uid : null;
   const [knowledge, setKnowledge] = useState<KnowledgeMap>({});
   const [stats, setStats] = useState<ReadingStats | null>(null);
+  const [userImports, setUserImports] = useState<any[]>([]);
 
   // Initialize data
   useEffect(() => {
@@ -17,9 +18,11 @@ export const useKnowledge = () => {
     const init = async () => {
       const dbVocab = await VocabularyService.getVocabulary(userId);
       const dbStats = await ProgressService.getStats(userId);
+      const dbImports = await ImportService.getImports(userId);
       
       if (active) {
         setKnowledge(dbVocab);
+        setUserImports(dbImports);
         
         // Compute streak logic
         const now = new Date();
@@ -151,6 +154,11 @@ export const useKnowledge = () => {
     return ProgressService.getAllProgress(userId);
   }, [userId]);
 
+  const refreshImports = useCallback(async () => {
+    const dbImports = await ImportService.getImports(userId);
+    setUserImports(dbImports);
+  }, [userId]);
+
   const getWordInfo = useCallback((lemma: string): WordInfo => {
     const val = knowledge[lemma];
     if (!val) return { state: WordState.NEW, addedAt: new Date().toISOString() };
@@ -210,6 +218,8 @@ export const useKnowledge = () => {
     addReadWords,
     incrementReadingTime,
     setKnowledge,
+    userImports,
+    refreshImports,
     exportData,
     fetchTextProgress,
     saveTextProgress,

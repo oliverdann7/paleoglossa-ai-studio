@@ -1,96 +1,82 @@
 {
   "entities": {
-    "User": {
-      "title": "User",
-      "description": "User profile and top-level stats",
-      "type": "object",
-      "properties": {
-        "email": { "type": "string" },
-        "displayName": { "type": "string" },
-        "createdAt": { "type": "string" },
-        "currentPlan": { "type": "string", "enum": ["free", "pro", "fellowship"] },
-        "stats": { 
-          "type": "object",
-          "properties": {
-            "totalKnown": { "type": "number" },
-            "readToday": { "type": "number" },
-            "readingTime": { "type": "number" },
-            "lastActive": { "type": "string" },
-            "streak": { "type": "number" },
-            "freezesTotal": { "type": "number" },
-            "freezesUsed": { "type": "number" }
-          }
-        }
-      },
-      "required": ["email", "createdAt", "currentPlan", "stats"]
-    },
     "VocabularyItem": {
       "title": "Vocabulary Item",
-      "description": "A user's spaced repetition item",
+      "description": "User word knowledge record.",
       "type": "object",
       "properties": {
         "term": { "type": "string" },
-        "translit": { "type": "string" },
-        "definition": { "type": "string" },
-        "language": { "type": "string" },
-        "status": { "type": "string", "enum": ["New", "Seen Once", "Learning", "Familiar", "Known", "Ignored"] },
+        "normalizedTerm": { "type": "string" },
+        "status": { "enum": ["NEW", "SEEN", "LEARNING", "FAMILIAR", "KNOWN", "IGNORED"] },
+        "languageId": { "type": "string" },
         "nextReview": { "type": "string" },
         "interval": { "type": "number" },
         "ease": { "type": "number" },
         "step": { "type": "number" },
-        "notes": { "type": "string" },
-        "createdAt": { "type": "string" },
-        "updatedAt": { "type": "string" }
+        "lastSeenAt": { "type": "string" }
       },
-      "required": ["term", "status", "nextReview", "interval", "ease", "step", "createdAt", "updatedAt", "language"]
+      "required": ["term", "status", "languageId"]
     },
     "ImportedText": {
       "title": "Imported Text",
-      "description": "A user-imported lesson/text",
+      "description": "User custom imported or added content.",
       "type": "object",
       "properties": {
         "title": { "type": "string" },
         "content": { "type": "string" },
-        "language": { "type": "string" },
-        "totalWords": { "type": "number" },
-        "percentKnown": { "type": "number" },
-        "percentLearning": { "type": "number" },
-        "isImported": { "type": "boolean" },
-        "createdAt": { "type": "string" },
-        "updatedAt": { "type": "string" }
+        "languageId": { "type": "string" },
+        "sourceType": { "enum": ["paste", "file", "url", "image", "pdf"] },
+        "visibility": { "enum": ["private", "shared", "public"] }
       },
-      "required": ["title", "content", "language", "totalWords", "percentKnown", "percentLearning", "isImported", "createdAt", "updatedAt"]
+      "required": ["title", "languageId", "sourceType", "visibility"]
     },
-    "TextProgress": {
-      "title": "Text Progress",
-      "description": "User's reading progress for a specific text",
+    "ReadingProgress": {
+      "title": "Reading Progress",
+      "description": "Progress marker within a text.",
       "type": "object",
       "properties": {
         "textId": { "type": "string" },
         "lastPosition": { "type": "number" },
-        "completed": { "type": "boolean" },
-        "lastReadAt": { "type": "string" },
         "sentenceIndex": { "type": "number" }
       },
-      "required": ["textId", "lastPosition", "lastReadAt"]
+      "required": ["textId", "lastPosition"]
+    },
+    "ReviewLog": {
+      "title": "Review Log",
+      "description": "History of a word review action.",
+      "type": "object",
+      "properties": {
+        "vocabItemId": { "type": "string" },
+        "quality": { "type": "number" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["vocabItemId", "quality", "timestamp"]
     }
   },
   "firestore": {
-    "users/{userId}": {
-      "schema": { "$ref": "#/entities/User" },
-      "description": "User profile data."
-    },
     "users/{userId}/vocabulary/{termId}": {
       "schema": { "$ref": "#/entities/VocabularyItem" },
-      "description": "User spaced repetition words."
+      "description": "User personal dictionary."
     },
     "users/{userId}/imports/{importId}": {
       "schema": { "$ref": "#/entities/ImportedText" },
       "description": "User custom imported texts."
     },
-    "users/{userId}/progress/{textId}": {
-      "schema": { "$ref": "#/entities/TextProgress" },
-      "description": "Progress within a specific text."
+    "users/{userId}/readingProgress/{textId}": {
+      "schema": { "$ref": "#/entities/ReadingProgress" },
+      "description": "Progress within a text."
+    },
+    "users/{userId}/reviewLogs/{logId}": {
+      "schema": { "$ref": "#/entities/ReviewLog" },
+      "description": "History of SRS reviews."
+    },
+    "texts/{textId}": {
+      "schema": { "$ref": "#/entities/ImportedText" },
+      "description": "Public shared texts."
+    },
+    "lemmas/{lemmaId}": {
+      "schema": "object",
+      "description": "Universal lemma mapping."
     }
   }
 }
