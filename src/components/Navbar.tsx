@@ -52,21 +52,21 @@ export const Navbar = () => {
           <Link to="/app" className="text-[17px] font-serif font-semibold text-blue flex items-center gap-2">
             Παλαιόγλωσσα
           </Link>
-          <span className="eyebrow" style={{fontSize: '9px', textTransform: 'none'}}>Where ancient texts come alive</span>
+          <span className="eyebrow" style={{fontSize: '9px', textTransform: 'none'}}>{t("nav.slogan", "Where ancient texts come alive")}</span>
         </div>
 
         <div className="px-4 mb-6">
           <button className="w-full flex items-center justify-between px-3 py-1.5 bg-parch border border-bdr rounded-md text-ink3 hover:shadow-sm transition-all group">
             <div className="flex items-center gap-2">
               <Search className="w-3.5 h-3.5 text-muted group-hover:text-ink3" />
-              <span className="text-[12.5px] font-sans">Search...</span>
+              <span className="text-[12.5px] font-sans">{t("nav.search", "Search...")}</span>
             </div>
             <span className="font-mono text-[10px] text-muted">⌘K</span>
           </button>
         </div>
 
         <div className="flex flex-col gap-1 flex-1 px-2">
-          <div className="nav-label px-3 mb-1 mt-2">Study</div>
+          <div className="nav-label px-3 mb-1 mt-2">{t("nav.study", "Study")}</div>
           <DesktopNavItem icon={BookOpen} label={t("nav.dashboard", "Dashboard")} isActive={path === '/app'} to="/app" />
           <DesktopNavItem icon={Library} label={t("nav.library", "Library")} isActive={path.startsWith('/app/library') || path.startsWith('/app/reader')} to="/app/library" />
           <DesktopNavItem icon={Brain} label={t("nav.review", "Review")} isActive={path === '/app/review'} to="/app/review" />
@@ -74,7 +74,7 @@ export const Navbar = () => {
           <DesktopNavItem icon={FileText} label={t("nav.notes", "Notes")} isActive={path === '/app/notes'} to="/app/notes" />
           <DesktopNavItem icon={BarChart3} label={t("nav.statistics", "Statistics")} isActive={path === '/app/statistics'} to="/app/statistics" />
           
-          <div className="nav-label px-3 mb-1 mt-6">Manage</div>
+          <div className="nav-label px-3 mb-1 mt-6">{t("nav.manage", "Manage")}</div>
           <DesktopNavItem icon={PlusCircle} label={t("nav.import", "Import")} isActive={path === '/admin/import'} to="/admin/import" />
           <DesktopNavItem icon={Settings} label={t("nav.settings", "Settings")} isActive={path === '/app/settings'} to="/app/settings" />
           <DesktopNavItem icon={Crown} label={t("nav.upgrade", "Upgrade")} isActive={path === '/app/subscription'} to="/app/subscription" />
@@ -83,7 +83,7 @@ export const Navbar = () => {
         <div className="p-4 border-t border-bdr">
           <div className="card shadow-none border-amberxl bg-[#FFF8E1] p-3 mb-3">
             <div className="flex justify-between items-start mb-2">
-              <span className="font-mono text-[9px] uppercase tracking-widest text-amber">Reading Level</span>
+              <span className="font-mono text-[9px] uppercase tracking-widest text-amber">{t("nav.readingLevel", "Reading Level")}</span>
               <span className="pill cefr-b" style={{fontSize: '9px', padding: '1px 4px'}}>B1</span>
             </div>
             <div className="h-1 w-full bg-amberxl rounded-full overflow-hidden mb-1">
@@ -93,7 +93,7 @@ export const Navbar = () => {
                 className="h-full bg-amber"
               />
             </div>
-            <p className="text-[10px] text-ink3 font-sans">2.4k words to B2</p>
+            <p className="text-[10px] text-ink3 font-sans">{t("nav.wordsToLevel", "2.4k words to B2")}</p>
           </div>
           
           <Link to="/app/subscription" className="flex items-center gap-3 w-full p-2 hover:bg-parch3 rounded-lg transition-colors group">
@@ -102,7 +102,7 @@ export const Navbar = () => {
             </div>
             <div className="flex flex-col items-start">
               <span className="text-[12.5px] font-bold font-sans text-ink">E. L. Scholar</span>
-              <span className="text-[10px] font-sans text-muted group-hover:text-amber transition-colors">Free Plan →</span>
+              <span className="text-[10px] font-sans text-muted group-hover:text-amber transition-colors">{t("nav.freePlan", "Free Plan →")}</span>
             </div>
           </Link>
         </div>

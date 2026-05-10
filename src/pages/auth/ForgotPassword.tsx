@@ -4,9 +4,11 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useTranslation } from 'react-i18next';
 
 export const ForgotPassword = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,9 +43,9 @@ export const ForgotPassword = () => {
             </div>
           </div>
 
-          <h3 className="text-3xl font-serif font-bold mb-2 text-center">Reset Password</h3>
+          <h3 className="text-3xl font-serif font-bold mb-2 text-center">{t("auth.resetPassword", "Reset Password")}</h3>
           <p className="text-obsidian-900/60 dark:text-vellum-100/60 mb-8 text-center">
-            Enter your email address and we'll send you a link to reset your password.
+            {t("auth.resetDesc", "Enter your email address and we'll send you a link to reset your password.")}
           </p>
 
           {error && (
@@ -60,16 +62,16 @@ export const ForgotPassword = () => {
               className="mb-8 p-6 rounded-xl bg-green-500/10 border border-green-500/20 flex flex-col items-center text-center gap-3 text-green-700 dark:text-green-400"
             >
               <CheckCircle2 className="w-10 h-10 mb-2" />
-              <h4 className="font-bold text-lg">Check your email</h4>
+              <h4 className="font-bold text-lg">{t("auth.checkEmail", "Check your email")}</h4>
               <p className="text-sm font-medium opacity-80">
-                We've sent a password reset link to {email}
+                {t("auth.sentLink", "We've sent a password reset link to")} {email}
               </p>
             </motion.div>
           ) : (
             <form onSubmit={handleReset} className="space-y-6">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest text-obsidian-900/60 dark:text-vellum-100/60 mb-2">
-                  Email Address
+                  {t("auth.email", "Email Address")}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-obsidian-900/40 dark:text-vellum-100/40" />
@@ -89,7 +91,7 @@ export const ForgotPassword = () => {
                 disabled={loading}
                 className="w-full px-8 py-4 bg-obsidian-900 dark:bg-vellum-100 text-vellum-50 dark:text-obsidian-950 rounded-xl font-bold transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100"
               >
-                {loading ? 'Sending Link...' : 'Send Reset Link'}
+                {loading ? t("auth.sendingLink", "Sending Link...") : t("auth.sendLink", "Send Reset Link")}
               </button>
             </form>
           )}
@@ -100,7 +102,7 @@ export const ForgotPassword = () => {
               className="inline-flex items-center gap-2 text-sm font-bold text-obsidian-900/60 dark:text-vellum-100/60 hover:text-obsidian-900 dark:hover:text-vellum-100 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Sign In
+              {t("auth.backToSignIn", "Back to Sign In")}
             </button>
           </div>
         </motion.div>

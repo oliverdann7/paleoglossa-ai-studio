@@ -4,9 +4,11 @@ import { motion } from 'motion/react';
 import { Lock, AlertCircle } from 'lucide-react';
 import { confirmPasswordReset } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useTranslation } from 'react-i18next';
 
 export const ResetPassword = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const onSuccess = () => navigate('/app');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,9 +49,9 @@ export const ResetPassword = () => {
             </div>
           </div>
 
-          <h3 className="text-3xl font-serif font-bold mb-2 text-center">New Password</h3>
+          <h3 className="text-3xl font-serif font-bold mb-2 text-center">{t("auth.newPassword", "New Password")}</h3>
           <p className="text-obsidian-900/60 dark:text-vellum-100/60 mb-8 text-center">
-            Enter your new password below to regain access to your account.
+            {t("auth.newPasswordDesc", "Enter your new password below to regain access to your account.")}
           </p>
 
           {error && (
@@ -62,7 +64,7 @@ export const ResetPassword = () => {
           <form onSubmit={handleUpdate} className="space-y-6">
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-obsidian-900/60 dark:text-vellum-100/60 mb-2">
-                New Password
+                {t("auth.newPassword", "New Password")}
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-obsidian-900/40 dark:text-vellum-100/40" />
@@ -82,7 +84,7 @@ export const ResetPassword = () => {
               disabled={loading}
               className="w-full px-8 py-4 bg-obsidian-900 dark:bg-vellum-100 text-vellum-50 dark:text-obsidian-950 rounded-xl font-bold transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100"
             >
-              {loading ? 'Updating...' : 'Update Password'}
+              {loading ? t("auth.updating", "Updating...") : t("auth.updatePassword", "Update Password")}
             </button>
           </form>
         </motion.div>
