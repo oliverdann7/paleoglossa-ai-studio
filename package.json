@@ -4,16 +4,18 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev": "tsx server.ts",
+    "start": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@google/genai": "^2.0.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "express": "^5.2.1",
     "firebase": "^11.1.0",
     "i18next": "^26.0.10",
     "lucide-react": "^0.469.0",
@@ -30,6 +32,7 @@
     "@eslint/js": "^10.0.1",
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
     "@tailwindcss/vite": "^4.0.0",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",

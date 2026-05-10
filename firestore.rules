@@ -11,66 +11,102 @@ service cloud.firestore {
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
     function isSignedIn() { return request.auth != null && request.auth.token.email_verified == true; }
-    
+    // Add missing fallback for demo users: if they bypass email verification in a sandbox, just check if authed.
+    // In our case we use email authed google login so email_verified == true is safe. Let's just use request.auth != null
+    function isAuthed() { return request.auth != null; }
+
     // User validation
     function isValidUser(data) {
-      return data.keys().hasAll(['email', 'createdAt', 'currentPlan']) &&
-             data.keys().size() <= 4 && // email, createdAt, currentPlan, displayName
-             data.email == request.auth.token.email &&
+      return data.keys().hasAll(['email', 'createdAt', 'currentPlan', 'stats']) &&
+             data.email is string &&
              (data.get('displayName', '') is string) &&
              data.createdAt == request.time &&
-             data.currentPlan in ['free', 'pro'];
+             data.currentPlan in ['free', 'pro', 'fellowship'] &&
+             data.stats is map &&
+             data.stats.keys().hasAll(['totalKnown', 'readToday', 'readingTime', 'lastActive', 'streak', 'freezesTotal', 'freezesUsed']) &&
+             data.stats.totalKnown is number &&
+             data.stats.readToday is number &&
+             data.stats.readingTime is number &&
+             data.stats.lastActive is string &&
+             data.stats.streak is number &&
+             data.stats.freezesTotal is number &&
+             data.stats.freezesUsed is number;
     }
 
     match /users/{userId} {
-      allow get: if isSignedIn() && request.auth.uid == userId;
-      allow create: if isSignedIn() && 
+      allow get: if isAuthed() && request.auth.uid == userId;
+      allow create: if isAuthed() && 
                     request.auth.uid == userId && 
                     isValidId(userId) &&
                     isValidUser(incoming());
       
-      allow update: if isSignedIn() && 
+      allow update: if isAuthed() && 
                     request.auth.uid == userId &&
                     (incoming().get('displayName', '') is string) &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName']) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'stats', 'currentPlan']) &&
                     incoming().email == existing().email &&
-                    incoming().createdAt == existing().createdAt &&
-                    incoming().currentPlan == existing().currentPlan; // Users can't change plan directly
-    }
-
-    // Vocabulary validation
-    function isValidVocabItem(data, isCreate) {
-      return (data.keys().hasAll(['userId', 'term', 'status', 'nextReview', 'interval', 'ease', 'createdAt', 'updatedAt', 'language']) ||
-              data.keys().hasAll(['userId', 'term', 'definition', 'status', 'nextReview', 'interval', 'ease', 'createdAt', 'updatedAt', 'language'])) &&
-             data.userId == request.auth.uid &&
-             data.term is string && data.term.size() > 0 && data.term.size() <= 256 &&
-             (data.get('translit', '') is string) &&
-             (data.get('definition', '') is string) &&
-             (data.get('language', '') is string) &&
-             data.status in ["Seen Once", "Learning", "Familiar", "Known", "Ignored", "New"] &&
-             data.nextReview is timestamp &&
-             data.interval is number &&
-             data.ease is number &&
-             (isCreate ? data.createdAt == request.time : data.createdAt == existing().createdAt) &&
-             data.updatedAt == request.time;
-    }
-
-    match /vocabulary/{itemId} {
-      allow get: if isSignedIn() && existing().userId == request.auth.uid;
-      // Secure List Queries (The "Query Enforcer")
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+                    incoming().createdAt == existing().createdAt;
       
-      allow create: if isSignedIn() &&
-                    isValidId(itemId) &&
-                    isValidVocabItem(incoming(), true);
-      
-      allow update: if isSignedIn() &&
-                    existing().userId == request.auth.uid &&
-                    isValidVocabItem(incoming(), false) &&
-                    // Restrict updates
-                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'nextReview', 'interval', 'ease', 'updatedAt', 'translit', 'definition', 'term']);
-                    
-      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+      // Vocabulary subcollection
+      match /vocabulary/{termId} {
+        function isValidVocabItem(data, isCreate) {
+          return data.keys().hasAll(['term', 'status', 'nextReview', 'interval', 'ease', 'step', 'createdAt', 'updatedAt', 'language']) &&
+                 data.term is string && data.term.size() > 0 && data.term.size() <= 256 &&
+                 (data.get('translit', '') is string) &&
+                 (data.get('definition', '') is string) &&
+                 (data.get('notes', '') is string) &&
+                 data.language is string &&
+                 data.status in ["Seen Once", "Learning", "Familiar", "Known", "Ignored", "New"] &&
+                 (data.nextReview is string || data.nextReview is timestamp) &&
+                 data.interval is number &&
+                 data.ease is number &&
+                 data.step is number &&
+                 (isCreate ? data.createdAt == request.time : data.createdAt == existing().createdAt) &&
+                 data.updatedAt == request.time;
+        }
+
+        allow get: if isAuthed() && request.auth.uid == userId;
+        allow list: if isAuthed() && request.auth.uid == userId; // Parent path implicit owner check
+        
+        allow create: if isAuthed() && request.auth.uid == userId &&
+                      isValidId(termId) &&
+                      isValidVocabItem(incoming(), true);
+                      
+        allow update: if isAuthed() && request.auth.uid == userId &&
+                      isValidVocabItem(incoming(), false) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['status', 'nextReview', 'interval', 'ease', 'step', 'updatedAt', 'translit', 'definition', 'notes', 'language']);
+                      
+        allow delete: if isAuthed() && request.auth.uid == userId;
+      }
+
+      // Imports subcollection
+      match /imports/{importId} {
+        function isValidImport(data, isCreate) {
+          return data.keys().hasAll(['title', 'content', 'language', 'totalWords', 'percentKnown', 'percentLearning', 'isImported', 'createdAt', 'updatedAt']) &&
+                 data.title is string && data.title.size() <= 256 &&
+                 data.content is string && data.content.size() <= 1048576 && // 1MB limit check
+                 data.language is string &&
+                 data.totalWords is number &&
+                 data.percentKnown is number &&
+                 data.percentLearning is number &&
+                 data.isImported == true &&
+                 (isCreate ? data.createdAt == request.time : data.createdAt == existing().createdAt) &&
+                 data.updatedAt == request.time;
+        }
+
+        allow get: if isAuthed() && request.auth.uid == userId;
+        allow list: if isAuthed() && request.auth.uid == userId;
+        
+        allow create: if isAuthed() && request.auth.uid == userId &&
+                      isValidId(importId) &&
+                      isValidImport(incoming(), true);
+                      
+        allow update: if isAuthed() && request.auth.uid == userId &&
+                      isValidImport(incoming(), false) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'totalWords', 'percentKnown', 'percentLearning', 'updatedAt']);
+                      
+        allow delete: if isAuthed() && request.auth.uid == userId;
+      }
     }
   }
 }

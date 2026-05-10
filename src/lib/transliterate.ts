@@ -13,7 +13,7 @@ export function getTransliteration(word: string, lang: string, normalized?: stri
    }
 
    let res = '';
-   for(let char of word) {
+   for(const char of word) {
       if(lang === 'grc' || lang === 'grc-koine') {
          res += greekMap[char] || char;
       } else if (lang === 'hbo' || lang === 'Biblical Hebrew') {

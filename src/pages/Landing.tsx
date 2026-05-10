@@ -2,12 +2,19 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, GraduationCap, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../lib/contexts/AuthContext";
 
 export const Landing = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { setDemoMode } = useAuth();
   
   const onEnter = () => navigate("/auth/login");
+  
+  const onDemoMode = () => {
+    setDemoMode(true);
+    navigate("/app");
+  };
   
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLang = e.target.value;
@@ -78,7 +85,7 @@ export const Landing = () => {
                   {t("landing.openTexts", "Open texts")}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button className="btn-secondary px-8">{t("landing.browseCatalog", "Browse catalog")}</button>
+                <button onClick={onDemoMode} className="btn-secondary px-8">{t("landing.tryDemo", "Try Demo")}</button>
               </div>
             </motion.div>
           </div>

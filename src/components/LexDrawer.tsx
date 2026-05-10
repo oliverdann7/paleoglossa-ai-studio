@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Volume2, Bookmark, Eye, Brain, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { GoogleGenAI } from '@google/genai';
+import { AIService } from '../lib/services/aiService';
+import { useTranslation } from 'react-i18next';
 
 interface LexDrawerProps {
   word: any;
@@ -13,6 +14,7 @@ interface LexDrawerProps {
 }
 
 export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: LexDrawerProps) => {
+  const { t } = useTranslation();
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -22,20 +24,13 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
     setAiInsights("");
     
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const prompt = `Give a brief, scholarly explanation of the etymology and morphological usage of the word '${word.text}' (lemma: ${word.lemma}) in the language '${language || word.language || "ancient language"}'. Keep it concise (under 150 words).`;
-      
-      const response = await ai.models.generateContentStream({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt,
+      const languageName = language || word.language || "ancient language";
+      await AIService.explainWord(word.text, word.lemma, languageName, (textChunk) => {
+        setAiInsights((prev) => (prev || "") + textChunk);
       });
-
-      for await (const chunk of response) {
-        setAiInsights((prev) => (prev || "") + (chunk.text || ""));
-      }
     } catch (error) {
       console.error(error);
-      setAiInsights("Failed to fetch insights.");
+      setAiInsights(t("reader.failedInsights", "Failed to fetch insights."));
     } finally {
       setIsAiLoading(false);
     }
@@ -44,11 +39,11 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
   if (!word) return null;
 
   const proficiencyLevels = [
-    { id: 'New', label: 'New', icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { id: 'Seen Once', label: 'Seen Once', icon: Eye, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    { id: 'Learning', label: 'Learning', icon: Eye, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { id: 'Familiar', label: 'Familiar', icon: Brain, color: 'text-gold-500', bg: 'bg-gold-500/10' },
-    { id: 'Known', label: 'Known', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' }
+    { id: 'New', label: t('vocab.new', 'New'), icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { id: 'Seen Once', label: t('vocab.seenonce', 'Seen Once'), icon: Eye, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+    { id: 'Learning', label: t('vocab.learning', 'Learning'), icon: Eye, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { id: 'Familiar', label: t('vocab.familiar', 'Familiar'), icon: Brain, color: 'text-gold-500', bg: 'bg-gold-500/10' },
+    { id: 'Known', label: t('vocab.known', 'Known'), icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' }
   ] as const;
 
   return (
@@ -84,7 +79,28 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
                 )}>
                   {word.text}
                 </h3>
-                <button className="p-2 rounded-full bg-gold-500/10 text-gold-600 hover:bg-gold-500/20 transition-colors">
+                <button 
+                  onClick={() => {
+                    if (!window.speechSynthesis) return;
+                    window.speechSynthesis.cancel();
+                    const u = new SpeechSynthesisUtterance(word.text);
+                    const langCodeMap: Record<string, string> = {
+                      grc: "el-GR",
+                      "grc-koine": "el-GR",
+                      hbo: "he-IL",
+                      lat: "it-IT",
+                      syr: "ar-SA",
+                      arc: "ar-SA",
+                      cop: "el-GR",
+                      akk: "ar-SA",
+                      san: "hi-IN",
+                    };
+                    u.lang = langCodeMap[language || word.language] || "en-US";
+                    u.rate = 0.8;
+                    window.speechSynthesis.speak(u);
+                  }}
+                  className="p-2 rounded-full bg-gold-500/10 text-gold-600 hover:bg-gold-500/20 transition-colors"
+                >
                   <Volume2 className="w-5 h-5" />
                 </button>
               </div>
@@ -104,7 +120,7 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
             </header>
 
             <section className="mb-10">
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-4">Mastery Level</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-4">{t('reader.masteryLevel', 'Mastery Level')}</h4>
               <div className="flex flex-col gap-2">
                 {proficiencyLevels.map((level) => {
                   const isSelected = (word.status || 'New') === level.id;
@@ -139,7 +155,7 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
             </section>
 
             <section className="mb-10">
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">Morphology</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">{t('reader.morphology', 'Morphology')}</h4>
               <div className="grid grid-cols-2 gap-4">
                 {Object.entries(word.morphology || {}).map(([key, value]: [string, any]) => (
                   <div key={key} className="p-4 rounded-xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/5">
@@ -151,11 +167,11 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
             </section>
 
             <section className="mb-12">
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">Root Analysis</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">{t('reader.rootAnalysis', 'Root Analysis')}</h4>
               <div className="p-6 rounded-2xl bg-gold-500/5 border border-gold-500/10 mb-4">
                 <div className="text-2xl font-serif font-bold text-gold-600 mb-2">{word.root || '—'}</div>
                 <p className="text-sm text-obsidian-900/60 dark:text-vellum-100/60 leading-relaxed">
-                  Shares a semantic root with <span className="text-gold-600 font-bold">14 other words</span> in this corpus.
+                  {t('reader.rootInfo', 'Shares a semantic root with')} <span className="text-gold-600 font-bold">14 {t('reader.otherWords', 'other words')}</span> {t('reader.inCorpus', 'in this corpus.')}
                 </p>
               </div>
 
@@ -163,7 +179,7 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
                 <div className="p-6 rounded-2xl bg-blue/5 border border-blue/10 mb-4">
                   <div className="flex items-center gap-2 mb-3 text-blue font-bold text-sm">
                     {isAiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                    AI Insights
+                    {t('reader.aiInsights', 'AI Insights')}
                   </div>
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{aiInsights}</p>
                 </div>
@@ -177,11 +193,11 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
                 className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 <Sparkles className="w-3 h-3 text-blue" />
-                AI Explain
+                {t('reader.aiExplain', 'AI Explain')}
               </button>
               <button className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 <Bookmark className="w-3 h-3" />
-                Annotate
+                {t('reader.annotate', 'Annotate')}
               </button>
             </div>
           </motion.div>

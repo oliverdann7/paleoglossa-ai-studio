@@ -8,14 +8,22 @@ import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "../lib/constants/languages";
+import { ImportService } from "../lib/services/importService";
+import { useAuth } from "../lib/contexts/AuthContext";
 
 export const Library = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [minKnown, setMinKnown] = useState(0);
   const { getWordInfo } = useKnowledge();
   const { t } = useTranslation();
+  const [imported, setImported] = useState<any[]>([]);
+
+  useState(() => {
+    ImportService.getImports(user ? user.uid : null).then(setImported);
+  });
 
   const mainFilters = [
     { name: "All", id: "all", icon: "📚", symbol: "*" },
@@ -24,8 +32,6 @@ export const Library = () => {
 
   const allTexts = useMemo(() => {
     const builtIn = CorpusDB.getTexts();
-    const importedRaw = localStorage.getItem("paleoglossa_imports");
-    const imported = importedRaw ? JSON.parse(importedRaw) : [];
 
     const unified = [
       ...builtIn,
@@ -271,7 +277,7 @@ export const Library = () => {
                     {text.title}
                     {text.isImported && (
                       <span className="inline-block ml-2 text-[10px] font-sans font-bold bg-blue/10 text-blue px-2 py-0.5 rounded uppercase tracking-wider">
-                        📥 Import
+                        📥 {t("library.importBadge", "Import")}
                       </span>
                     )}
                   </h4>
@@ -318,10 +324,10 @@ export const Library = () => {
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center justify-between text-[11px] font-bold">
                     <span className="text-zinc-500 uppercase tracking-tight">
-                      {text.totalWords} Total Words
+                      {text.totalWords} {t("library.totalWords", "Total Words")}
                     </span>
                     <span className="text-blue">
-                      {text.percentKnown}% Known
+                      {text.percentKnown}% {t("library.known", "Known")}
                     </span>
                   </div>
                   <div className="flex h-1.5 w-full bg-parch3 rounded-full overflow-hidden">
@@ -340,7 +346,7 @@ export const Library = () => {
                         {text.percentKnown}%
                       </span>
                       <span className="text-[8px] uppercase font-bold text-muted tracking-widest">
-                        Known
+                        {t("vocab.known", "Known")}
                       </span>
                     </div>
                     <div className="flex flex-col">
@@ -348,7 +354,7 @@ export const Library = () => {
                         {text.percentLearning}%
                       </span>
                       <span className="text-[8px] uppercase font-bold text-muted tracking-widest">
-                        Learning
+                        {t("vocab.learning", "Learning")}
                       </span>
                     </div>
                   </div>
@@ -357,10 +363,10 @@ export const Library = () => {
 
               <div className="flex items-end justify-between pt-4 mt-auto">
                 <span className="text-[11px] font-body italic text-muted">
-                  {text.isImported ? "Private Lesson" : "Original Scripture"}
+                  {text.isImported ? t("library.privateLesson", "Private Lesson") : t("library.scripture", "Original Scripture")}
                 </span>
                 <div className="bg-blue/5 text-blue px-3 py-1 rounded-full text-[11px] font-bold group-hover:bg-blue group-hover:text-white transition-all">
-                  Read Text
+                  {t("library.readText", "Read Text")}
                 </div>
               </div>
             </motion.div>
