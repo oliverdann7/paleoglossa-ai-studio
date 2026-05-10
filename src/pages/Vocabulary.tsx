@@ -180,10 +180,16 @@ export const Vocabulary = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-3 mb-1">
                     <span className="font-mono text-[9px] text-muted border border-bdr/50 bg-parch px-1 rounded uppercase">
                       {word.language}
                     </span>
+                    {word.nextReview && (
+                      <span className="text-[10px] font-bold text-blue flex items-center gap-1.5 opacity-60">
+                        <History className="w-3 h-3" />
+                        {new Date(word.nextReview) <= new Date() ? "Due Now" : `Due ${new Date(word.nextReview).toLocaleDateString()}`}
+                      </span>
+                    )}
                   </div>
                   <div className="font-body text-[13.5px] italic text-ink2">
                     {word.definition}

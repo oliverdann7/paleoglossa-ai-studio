@@ -1,142 +1,91 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
-import { Search, Library as LibraryIcon, Play } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Search, Library as LibraryIcon, Play, Filter, Clock, BookOpen, Crown, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CorpusDB } from "../data/corpus";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
-import { WordState } from "../lib/constants/wordStates";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "../lib/constants/languages";
+import { LibraryService, LibraryText } from "../lib/services/libraryService";
+import { useAuth } from "../lib/hooks/useAuth";
+
+type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
 
 export const Library = () => {
   const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState("All");
+  const { user } = useAuth();
+  const { getWordInfo, getAllProgress } = useKnowledge();
+  const { t } = useTranslation();
+  
+  const [texts, setTexts] = useState<LibraryText[]>([]);
+  const [readingProgress, setReadingProgress] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Filters & Sorting state
+  const [activeLang, setActiveLang] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [minKnown, setMinKnown] = useState(0);
-  const { getWordInfo, getAllProgress, userImports } = useKnowledge();
-  const { t } = useTranslation();
-  const [readingProgress, setReadingProgress] = useState<any[]>([]);
+  const [activeSort, setActiveSort] = useState<SortOption>('comprehensible');
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'corpus' | 'import'>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     getAllProgress().then(setReadingProgress);
   }, [getAllProgress]);
 
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      setIsLoading(true);
+      const data = await LibraryService.getLibrary(user?.uid || null, {
+        language: activeLang,
+        search: searchQuery,
+        minKnownPercent: minKnown,
+        source: sourceFilter === 'all' ? undefined : sourceFilter
+      }, getWordInfo);
+      setTexts(data);
+      setIsLoading(false);
+    };
+
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      fetchLibrary();
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [user?.uid, activeLang, searchQuery, minKnown, sourceFilter, getWordInfo]);
+
   const mainFilters = [
-    { name: "All", id: "all", icon: "📚", symbol: "*" },
+    { name: "All", id: "all", icon: "📚" },
     ...LANGUAGES
   ];
 
-  const allTexts = useMemo(() => {
-    const builtIn = CorpusDB.getTexts();
-
-    const unified = [
-      ...builtIn,
-      ...userImports.map((t: any) => ({
-        ...t,
-        isImported: true,
-        author: "Your Import",
-        language: t.languageId || t.language || "grc",
-      })),
-    ];
-
-    return unified.map((t: any) => {
-      // Calculate real stats for each text
-      let totalWords: number;
-      let knownWordsCount = 0;
-      let learningWordsCount = 0;
-
-      if (t.isImported) {
-        totalWords = t.stats?.totalWords || 0;
-        // Check against existing knowledge for real-time updates
-        const tokens = t.sentences?.flatMap((s: any) => s.tokens).filter((tok: any) => tok.type === 'word') || [];
-        if (tokens.length > 0) {
-          totalWords = tokens.length;
-          tokens.forEach((tok: any) => {
-            const info = getWordInfo(tok.lemma || tok.text);
-            if (info.state === WordState.KNOWN) knownWordsCount++;
-            else if (info.state !== WordState.NEW && info.state !== WordState.IGNORED) learningWordsCount++;
-          });
-        } else {
-          const content = t.rawContent || t.content || "";
-          const words = content.split(/\s+/).filter(Boolean);
-          words.forEach((w: string) => {
-            const info = getWordInfo(w.toLowerCase());
-            if (info.state === WordState.KNOWN) knownWordsCount++;
-            else if (info.state !== WordState.NEW && info.state !== WordState.IGNORED) learningWordsCount++;
-          });
-        }
-      } else {
-        const sections =
-          t.sectionsPreview
-            ?.map((p: any) => CorpusDB.getSection(p.id))
-            .filter(Boolean) || [];
-        const allTokens = sections.flatMap(
-          (s: any) => s?.sentences.flatMap((sent: any) => sent.tokens) || [],
-        );
-        totalWords = allTokens.length;
-        allTokens.forEach((tok: any) => {
-          const info = getWordInfo(tok.lemma);
-          if (info.state === WordState.KNOWN) knownWordsCount++;
-          else if (info.state !== WordState.NEW) learningWordsCount++;
+  const sortedTexts = useMemo(() => {
+    const copy = [...texts];
+    switch (activeSort) {
+      case 'comprehensible':
+        return copy.sort((a, b) => (b.percentKnown || 0) - (a.percentKnown || 0));
+      case 'hardest':
+        return copy.sort((a, b) => (a.percentKnown || 0) - (b.percentKnown || 0));
+      case 'newest':
+        return copy.sort((a, b) => new Date(b.addedAt || 0).getTime() - new Date(a.addedAt || 0).getTime());
+      case 'shortest':
+        return copy.sort((a, b) => a.totalWords - b.totalWords);
+      case 'unknown':
+        return copy.sort((a, b) => {
+          const aUnknown = a.totalWords - ((a.percentKnown || 0)/100 * a.totalWords) - ((a.percentLearning || 0)/100 * a.totalWords);
+          const bUnknown = b.totalWords - ((b.percentKnown || 0)/100 * b.totalWords) - ((b.percentLearning || 0)/100 * b.totalWords);
+          return bUnknown - aUnknown;
         });
-      }
-
-      if (totalWords === 0)
-        return {
-          ...t,
-          percentKnown: 0,
-          percentLearning: 0,
-          totalWords: 0,
-          level: "A1",
-        };
-
-      const level = t.level || (t.id === "Jn-1" ? "A1" : t.id === "Gen" ? "A2" : "B1"); // Demo levels
-
-      return {
-        ...t,
-        percentKnown: Math.round((knownWordsCount / totalWords) * 100),
-        percentLearning: Math.round((learningWordsCount / totalWords) * 100),
-        totalWords,
-        level,
-      };
-    });
-  }, [userImports, getWordInfo]);
-
-  const filteredTexts = allTexts.filter((t: any) => {
-    let matchesFilter = true;
-    if (activeFilter !== "All") {
-      const langMap: Record<string, string> = {
-        "Ancient Greek": "grc",
-        "Koine Greek": "grc-koine",
-        "Biblical Hebrew": "hbo",
-        "Classical Latin": "lat",
-        Syriac: "syr",
-        Coptic: "cop",
-        Aramaic: "arc",
-        Akkadian: "akk",
-        Sanskrit: "san",
-        "Egyptian Hieroglyphs": "egy",
-        "Hittite": "hit",
-      };
-      matchesFilter = t.language === langMap[activeFilter];
+      default:
+        return copy;
     }
-
-    const matchesSearch =
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.author?.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesKnown = t.percentKnown >= minKnown;
-
-    return matchesFilter && matchesSearch && matchesKnown;
-  });
+  }, [texts, activeSort]);
 
   const recentTexts = useMemo(() => {
-    if (readingProgress.length === 0) return allTexts.slice(0, 3);
+    if (readingProgress.length === 0) return sortedTexts.slice(0, 3);
     
     return readingProgress
       .map(p => {
-        const text = allTexts.find(t => t.id === p.textId);
+        const text = texts.find(t => t.id === p.textId);
         if (!text) return null;
         return {
           ...text,
@@ -144,8 +93,8 @@ export const Library = () => {
         };
       })
       .filter(Boolean)
-      .slice(0, 3);
-  }, [readingProgress, allTexts]);
+      .slice(0, 4);
+  }, [readingProgress, texts, sortedTexts]);
 
   const getCefrClass = (level: string) => {
     if (level.startsWith("A")) return "cefr-a";
@@ -153,245 +102,340 @@ export const Library = () => {
     return "cefr-c";
   };
 
+  // Group into courses/collections
+  const collections = useMemo(() => {
+    const map: Record<string, LibraryText[]> = {};
+    sortedTexts.forEach(t => {
+      let collectionName = "Other";
+      if (t.sourceType === 'import') collectionName = "Your Imports";
+      else if (t.language === 'grc-koine' || t.language === 'grc') collectionName = "Greek Texts";
+      else if (t.language === 'hbo') collectionName = "Hebrew Bible";
+      else if (t.language === 'lat') collectionName = "Latin Library";
+      
+      if (!map[collectionName]) map[collectionName] = [];
+      map[collectionName].push(t);
+    });
+    return map;
+  }, [sortedTexts]);
+
   return (
     <div className="p-6 md:p-12 max-w-7xl mx-auto font-sans min-h-screen">
-      <header className="mb-10">
-        <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
-          {t("library.title", "Library")}
-        </h2>
-        <p className="font-body text-[15px] italic text-ink2">
-          {t("library.subtitle", "Ancient wisdom, now familiar. Every word tracked, every text a milestone.")}
-        </p>
+      <header className="mb-10 flex justify-between items-end">
+        <div>
+          <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
+            {t("library.title", "Library")}
+          </h2>
+          <p className="font-body text-[15px] italic text-ink2">
+            {t("library.subtitle", "Ancient wisdom, now familiar. Every word tracked, every text a milestone.")}
+          </p>
+        </div>
       </header>
 
       {/* Continue Reading Carousel */}
-      <div className="mb-14">
-        <h3 className="eyebrow mb-4 opacity-50">{t("library.continueReading", "Continue Reading")}</h3>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {recentTexts.map((text, i) => (
-            <div
-              key={i}
-              className="min-w-[340px] card bg-parch2/30 border-bdr/40 p-6 flex items-center justify-between group cursor-pointer hover:border-blue/30 transition-all"
-              onClick={() => navigate(`/app/reader/${text.id}`)}
-            >
-              <div className="max-w-[200px]">
-                <h4 className="text-[17px] font-serif font-bold text-ink truncate mb-1">
-                  {text.title}
-                </h4>
-                <div className="text-[10px] uppercase font-bold text-muted tracking-widest">
-                  {text.author}
-                </div>
-                <div className="mt-4 h-1 w-full bg-parch3 rounded-full overflow-hidden">
-                  <div className="h-full bg-gold" style={{ width: `${text.lastPosition || 0}%` }} />
-                </div>
-              </div>
-              <button className="w-10 h-10 bg-white border border-bdr rounded-full flex items-center justify-center text-blue shadow-sm group-hover:bg-blue group-hover:text-white transition-all">
-                <Play className="w-4 h-4 ml-0.5" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8 mb-10 items-start lg:items-end">
-        <div className="flex-1 space-y-5 w-full">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-            <input
-              type="text"
-              placeholder={t("library.searchPlaceholder", "Search by title or author...")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-bdr rounded-[12px] text-sm font-sans focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-colors shadow-sm"
-            />
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {mainFilters.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => setActiveFilter(filter.name)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-[11.5px] font-medium font-sans transition-all duration-150 border flex items-center gap-1.5",
-                  activeFilter === filter.name
-                    ? "bg-blue text-white shadow-sm border-blue"
-                    : "bg-parch text-ink3 border-bdr hover:bg-parch2 hover:border-blue/30",
-                )}
+      {recentTexts.length > 0 && (
+        <div className="mb-14 fade-in">
+          <h3 className="eyebrow mb-4 opacity-50">{t("library.continueReading", "Continue Reading")}</h3>
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide py-1">
+            {recentTexts.map((text: any, i) => (
+              <div
+                key={i}
+                className="min-w-[340px] card bg-parch2/30 border-bdr/40 p-6 flex items-center justify-between group cursor-pointer hover:border-blue/30 hover:shadow-md transition-all active:scale-[0.99]"
+                onClick={() => navigate(`/app/reader/${text.id}`)}
               >
-                <span>{filter.icon}</span>
-                <span>{filter.name}</span>
-              </button>
+                <div className="max-w-[200px]">
+                  <h4 className="text-[17px] font-serif font-bold text-ink truncate mb-1">
+                    {text.title}
+                  </h4>
+                  <div className="text-[10px] uppercase font-bold text-muted tracking-widest flex items-center gap-1.5">
+                     {text.sourceType === 'import' && <BookOpen className="w-3 h-3 text-blue" />}
+                    {text.author || "Unknown"}
+                  </div>
+                  <div className="mt-4 h-1.5 w-full bg-parch3 rounded-full overflow-hidden">
+                    <div className="h-full bg-gold transition-all duration-1000" style={{ width: `${Math.max(text.lastPosition || 0, 2)}%` }} />
+                  </div>
+                  <div className="text-[10px] text-muted mt-2 font-bold">{Math.round(text.lastPosition || 0)}% Complete</div>
+                </div>
+                <button className="w-12 h-12 bg-white border border-bdr rounded-full flex items-center justify-center text-blue shadow-sm group-hover:bg-blue group-hover:text-white transition-all">
+                  <Play className="w-5 h-5 ml-0.5" />
+                </button>
+              </div>
             ))}
           </div>
         </div>
+      )}
 
-        <div className="w-full lg:w-64 card p-4 bg-parch2/20 border-bdr/30">
-          <div className="flex justify-between items-center mb-4">
-            <label className="text-[11px] font-bold text-muted uppercase">
-              {t("library.comprehensibility", "Comprehensibility")}
-            </label>
-            <span className="text-[11px] font-bold text-blue">
-              {minKnown}%+ {t("library.known", "Known")}
-            </span>
+      {/* Advanced Filters */}
+      <div className="mb-10 card p-6 bg-parch2/10 border-bdr/30 shadow-sm">
+        <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+          <div className="relative flex-1 w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+            <input
+              type="text"
+              placeholder={t("library.searchPlaceholder", "Search lessons, authors...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-bdr rounded-[12px] text-[14px] font-sans focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all shadow-sm"
+            />
           </div>
-          <input
-            type="range"
-            min="0"
-            max="95"
-            step="5"
-            value={minKnown}
-            onChange={(e) => setMinKnown(parseInt(e.target.value, 10))}
-            className="w-full accent-blue appearance-none h-1.5 bg-parch3 rounded-full"
-          />
-          <div className="flex justify-between mt-2 text-[9px] font-bold text-zinc-400">
-            <span>{t("library.any", "Any")}</span>
-            <span>{t("library.nearlyAll", "Nearly All")}</span>
-          </div>
-        </div>
-      </div>
 
-      <div className="mb-14">
-        <h3 className="eyebrow mb-4 opacity-50">{t("library.exploreLanguage", "Explore by Language")}</h3>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {LANGUAGES.map((lang) => (
+          <div className="flex flex-wrap gap-2 flex-1">
+            {mainFilters.slice(0, 5).map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setActiveLang(filter.name)}
+                className={cn(
+                  "px-4 py-2 rounded-full text-[12px] font-medium font-sans transition-all duration-150 border flex items-center gap-1.5 active:scale-95",
+                  activeLang === filter.name
+                    ? "bg-blue text-white shadow-md border-blue"
+                    : "bg-white text-ink3 border-bdr/60 hover:bg-parch hover:border-blue/30",
+                )}
+              >
+                <span>{filter.icon}</span>
+                <span className="hidden sm:inline">{filter.name}</span>
+              </button>
+            ))}
             <button
-              key={lang.id}
-              onClick={() => navigate(`/app/language/${lang.id}`)}
-              className="shrink-0 flex items-center gap-3 px-6 py-4 rounded-xl border border-bdr/40 bg-sand hover:bg-white hover:border-blue hover:text-blue transition-all font-serif whitespace-nowrap shadow-sm group"
+               onClick={() => setShowFilters(!showFilters)}
+               className={cn(
+                  "px-4 py-2 rounded-full text-[12px] font-bold font-sans flex items-center gap-1.5 transition-all outline-none border",
+                  showFilters ? "bg-parch3 border-bdr text-ink" : "bg-white border-bdr/60 text-ink3 hover:bg-parch"
+               )}
             >
-              <span className="w-8 h-8 rounded-full bg-parch2 text-ink flex items-center justify-center text-lg group-hover:bg-blue/10 group-hover:text-blue transition-colors">
-                {lang.icon}
-              </span>
-              <span className="text-[16px] font-bold tracking-tight">{t(`languageNames.${lang.id}`, lang.name)}</span>
+               <Filter className="w-3.5 h-3.5" />
+               Filters
+               <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", showFilters && "rotate-180")} />
             </button>
-          ))}
+          </div>
         </div>
+
+        <AnimatePresence>
+           {showFilters && (
+              <motion.div 
+                 initial={{ height: 0, opacity: 0 }}
+                 animate={{ height: 'auto', opacity: 1 }}
+                 exit={{ height: 0, opacity: 0 }}
+                 className="overflow-hidden mt-6 pt-6 border-t border-bdr/30 flex flex-wrap lg:flex-nowrap gap-8"
+              >
+                 <div className="w-full lg:w-72">
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="text-[11px] font-bold text-muted uppercase">
+                        {t("library.comprehensibility", "Comprehensibility")}
+                      </label>
+                      <span className="text-[11px] font-bold text-blue bg-blue/10 px-2 py-0.5 rounded-full">
+                        {minKnown}%+ {t("library.known", "Known")}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="95"
+                      step="5"
+                      value={minKnown}
+                      onChange={(e) => setMinKnown(parseInt(e.target.value, 10))}
+                      className="w-full accent-blue appearance-none h-1.5 bg-parch3 rounded-full cursor-pointer"
+                    />
+                    <div className="flex justify-between mt-2 text-[10px] font-bold text-zinc-400">
+                      <span>{t("library.any", "Any %")}</span>
+                      <span>{t("library.nearlyAll", "Nearly All")}</span>
+                    </div>
+                 </div>
+
+                 <div className="w-full lg:w-48">
+                     <label className="block text-[11px] font-bold text-muted uppercase mb-4">
+                        Source
+                      </label>
+                      <select 
+                         value={sourceFilter}
+                         onChange={e => setSourceFilter(e.target.value as any)}
+                         className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none"
+                      >
+                         <option value="all">All Sources</option>
+                         <option value="corpus">Curated Library</option>
+                         <option value="import">My Imports</option>
+                      </select>
+                 </div>
+
+                 <div className="w-full lg:w-48">
+                     <label className="block text-[11px] font-bold text-muted uppercase mb-4">
+                        Sort By
+                      </label>
+                      <select 
+                         value={activeSort}
+                         onChange={e => setActiveSort(e.target.value as any)}
+                         className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none"
+                      >
+                         <option value="comprehensible">Most Comprehensible</option>
+                         <option value="newest">Newest Added</option>
+                         <option value="shortest">Shortest Length</option>
+                         <option value="hardest">Hardest (Lowest %)</option>
+                         <option value="unknown">Most Unknown Words</option>
+                      </select>
+                 </div>
+              </motion.div>
+           )}
+        </AnimatePresence>
       </div>
 
-      {filteredTexts.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+               <div key={i} className="card p-6 min-h-[240px] flex flex-col justify-between animate-pulse">
+                  <div>
+                     <div className="h-6 bg-parch3 rounded w-3/4 mb-4"></div>
+                     <div className="h-4 bg-parch3 rounded w-1/2 mb-8"></div>
+                     <div className="h-2 bg-parch3 rounded w-full mb-4"></div>
+                  </div>
+                  <div className="h-8 bg-parch3 rounded w-1/3 ml-auto"></div>
+               </div>
+            ))}
+        </div>
+      ) : sortedTexts.length === 0 ? (
         <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
           <LibraryIcon className="w-12 h-12 text-muted mb-4" />
           <h3 className="font-serif text-[24px] text-ink mb-2">{t("library.shelfEmpty", "Shelf Empty")}</h3>
-          <p className="text-ink3 max-w-sm mx-auto">
+          <p className="text-ink3 max-w-sm mx-auto mb-6">
             {t("library.shelfEmptyDesc", "Import a text or pick one from the curated library to begin. Try adjusting your filters if you can't find what you're looking for.")}
           </p>
+          <button 
+             onClick={() => navigate('/app/import')}
+             className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-md"
+          >
+             Import New Lesson
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-          {filteredTexts.map((text, i) => (
-            <motion.div
-              key={text.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.3 }}
-              onClick={() => navigate(`/app/reader/${text.id}`)}
-              className={cn(
-                "card p-6 flex flex-col justify-between cursor-pointer group hover:border-blue/30 transition-all min-h-[240px]",
-                text.isImported && "border-blue/10 bg-blue/[0.01]",
-              )}
-            >
-              <div>
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="text-[18px] font-serif font-medium text-ink leading-snug pr-4">
-                    {text.title}
-                    {text.isImported && (
-                      <span className="inline-block ml-2 text-[10px] font-sans font-bold bg-blue/10 text-blue px-2 py-0.5 rounded uppercase tracking-wider">
-                        📥 {t("library.importBadge", "Import")}
-                      </span>
-                    )}
-                  </h4>
-                  <span
-                    className={cn(
-                      "pill flex-shrink-0 font-bold",
-                      getCefrClass(text.level),
-                    )}
-                  >
-                    {text.level}
-                  </span>
-                </div>
-
-                <div className="text-[10px] text-ink3 font-sans mb-4 uppercase tracking-[0.1em] font-bold">
-                  {text.author} <span className="mx-1 opacity-50">•</span>{" "}
-                  {{
-                    grc: "Ancient Greek",
-                    "grc-koine": "Koine Greek",
-                    hbo: "Biblical Hebrew",
-                    lat: "Classical Latin",
-                    syr: "Syriac",
-                    cop: "Coptic",
-                    arc: "Aramaic",
-                    akk: "Akkadian",
-                    san: "Sanskrit",
-                    egy: "Egyptian Hieroglyphs",
-                  }[text.language as string] || text.language}
-                </div>
-
-                {/* Knowledge bars at a glance */}
-                <div className="flex h-1 gap-0.5 mb-6 opacity-30 group-hover:opacity-100 transition-opacity">
-                  <div
-                    className="bg-blue h-full"
-                    style={{ width: `${text.percentKnown}%` }}
-                  />
-                  <div
-                    className="bg-amber h-full"
-                    style={{ width: `${text.percentLearning}%` }}
-                  />
-                  <div className="flex-1 bg-parch3 h-full" />
-                </div>
-
-                {/* Stats & Progress Bars */}
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-zinc-500 uppercase tracking-tight">
-                      {text.totalWords} {t("library.totalWords", "Total Words")}
-                    </span>
-                    <span className="text-blue">
-                      {text.percentKnown}% {t("library.known", "Known")}
-                    </span>
-                  </div>
-                  <div className="flex h-1.5 w-full bg-parch3 rounded-full overflow-hidden">
-                    <div
-                      className="bg-blue h-full transition-all duration-500"
-                      style={{ width: `${text.percentKnown}%` }}
-                    />
-                    <div
-                      className="bg-amber h-full transition-all duration-500 opacity-60"
-                      style={{ width: `${text.percentLearning}%` }}
-                    />
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="flex flex-col">
-                      <span className="text-[14px] font-bold text-ink leading-none">
-                        {text.percentKnown}%
-                      </span>
-                      <span className="text-[8px] uppercase font-bold text-muted tracking-widest">
-                        {t("vocab.known", "Known")}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[14px] font-bold text-amber leading-none">
-                        {text.percentLearning}%
-                      </span>
-                      <span className="text-[8px] uppercase font-bold text-muted tracking-widest">
-                        {t("vocab.learning", "Learning")}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+        <div className="space-y-12 pb-20">
+           {Object.entries(collections).map(([collectionName, colTexts]) => (
+              <div key={collectionName} className="scroll-mt-8">
+                 <h3 className="font-serif text-[22px] font-bold text-ink flex items-center gap-3 mb-6">
+                    {collectionName === "Your Imports" && <BookOpen className="w-5 h-5 text-blue" />}
+                    {collectionName}
+                    <span className="text-sm font-sans font-normal text-muted bg-parch3 px-2 py-0.5 rounded-full">{colTexts.length}</span>
+                 </h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {colTexts.map((text, i) => (
+                      <motion.div
+                        key={text.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03, duration: 0.3 }}
+                        onClick={() => navigate(`/app/reader/${text.id}`)}
+                        className={cn(
+                          "card p-6 flex flex-col justify-between cursor-pointer group hover:border-blue/30 transition-all min-h-[250px] relative overflow-hidden",
+                          text.sourceType === 'import' && "border-blue/10 bg-blue/[0.01]",
+                        )}
+                      >
+                        {text.percentKnown !== undefined && text.percentKnown >= 90 && (
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-gold/10 rounded-bl-full flex justify-end items-start p-3">
+                               <Crown className="w-4 h-4 text-gold opacity-50" />
+                            </div>
+                        )}
+                        <div>
+                          <div className="flex justify-between items-start mb-2 pr-8">
+                            <h4 className="text-[18px] font-serif font-medium text-ink leading-snug">
+                              {text.title}
+                            </h4>
+                          </div>
+          
+                          <div className="flex items-center gap-2 mb-4">
+                             <div className="text-[10px] text-ink3 font-sans uppercase tracking-[0.1em] font-bold">
+                                {text.author}
+                             </div>
+                             <span className="opacity-30 text-[10px]">•</span>
+                             <span className="text-[10px] text-blue font-sans uppercase tracking-widest font-bold">
+                                {{
+                                  grc: "Ancient Greek",
+                                  "grc-koine": "Koine Greek",
+                                  hbo: "Biblical Hebrew",
+                                  lat: "Classical Latin",
+                                  syr: "Syriac",
+                                  cop: "Coptic",
+                                  arc: "Aramaic",
+                                  akk: "Akkadian",
+                                  san: "Sanskrit",
+                                  egy: "Egyptian Hieroglyphs",
+                                }[text.language] || text.language}
+                              </span>
+                          </div>
+          
+                          {/* Knowledge bars at a glance */}
+                          <div className="flex h-1 gap-0.5 mb-6 opacity-40 group-hover:opacity-100 transition-opacity">
+                            <div
+                              className="bg-blue h-full"
+                              style={{ width: `${Math.max(text.percentKnown || 0, 1)}%` }}
+                            />
+                            <div
+                              className="bg-amber h-full"
+                              style={{ width: `${Math.max(text.percentLearning || 0, 1)}%` }}
+                            />
+                            <div className="flex-1 bg-parch3 h-full" />
+                          </div>
+          
+                          {/* Stats & Progress Bars */}
+                          <div className="space-y-4 mb-6">
+                            <div className="flex items-center justify-between text-[11.5px] font-bold">
+                              <span className="text-zinc-500 uppercase tracking-tight flex items-center gap-1.5">
+                                <Clock className="w-3 h-3" />
+                                {text.totalWords} wds • ~{Math.ceil(text.totalWords / 150)} min
+                              </span>
+                              <span className="text-blue">
+                                {text.percentKnown}% Known
+                              </span>
+                            </div>
+                            <div className="flex gap-4">
+                              <div className="flex flex-col">
+                                <span className="text-[15px] font-bold text-ink leading-none">
+                                  {text.percentKnown}%
+                                </span>
+                                <span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">
+                                  {t("vocab.known", "Known")}
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[15px] font-bold text-amber leading-none">
+                                  {text.percentLearning}%
+                                </span>
+                                <span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">
+                                  {t("vocab.learning", "Learning")}
+                                </span>
+                              </div>
+                              <div className="flex flex-col ml-auto text-right">
+                                <span className="text-[15px] font-bold text-red-400 leading-none">
+                                  {text.percentKnown !== undefined ? (100 - text.percentKnown - (text.percentLearning || 0)) : 0}%
+                                </span>
+                                <span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">
+                                  New
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+          
+                        <div className="flex items-end justify-between pt-4 mt-auto border-t border-dashed border-bdr/40">
+                          <span className={cn(
+                             "text-[10px] uppercase font-bold tracking-widest flex items-center gap-1",
+                             text.sourceType === 'import' ? "text-purple-600/60" : "text-emerald-600/60"
+                          )}>
+                            {text.sourceType === 'import' && <BookOpen className="w-3 h-3" />}
+                            {text.sourceType === 'import' ? "Private Import" : "Curated Library"}
+                          </span>
+                          <span
+                            className={cn(
+                              "pill text-[10px] px-2 py-0.5",
+                              getCefrClass(text.level),
+                            )}
+                          >
+                            {text.level}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                 </div>
               </div>
-
-              <div className="flex items-end justify-between pt-4 mt-auto">
-                <span className="text-[11px] font-body italic text-muted">
-                  {text.isImported ? t("library.privateLesson", "Private Lesson") : t("library.scripture", "Original Scripture")}
-                </span>
-                <div className="bg-blue/5 text-blue px-3 py-1 rounded-full text-[11px] font-bold group-hover:bg-blue group-hover:text-white transition-all">
-                  {t("library.readText", "Read Text")}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+           ))}
         </div>
       )}
     </div>
   );
 };
+

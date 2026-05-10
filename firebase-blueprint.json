@@ -2,7 +2,7 @@
   "entities": {
     "VocabularyItem": {
       "title": "Vocabulary Item",
-      "description": "User word knowledge record.",
+      "description": "User word knowledge record with SRS data.",
       "type": "object",
       "properties": {
         "term": { "type": "string" },
@@ -13,7 +13,12 @@
         "interval": { "type": "number" },
         "ease": { "type": "number" },
         "step": { "type": "number" },
-        "lastSeenAt": { "type": "string" }
+        "lastReviewed": { "type": "string" },
+        "lastSeenAt": { "type": "string" },
+        "encounterCount": { "type": "number" },
+        "userGloss": { "type": "string" },
+        "notes": { "type": "string" },
+        "contexts": { "type": "array", "items": { "type": "string" } }
       },
       "required": ["term", "status", "languageId"]
     },
@@ -43,14 +48,20 @@
     },
     "ReviewLog": {
       "title": "Review Log",
-      "description": "History of a word review action.",
+      "description": "History of a word review action including SRS delta.",
       "type": "object",
       "properties": {
         "vocabItemId": { "type": "string" },
-        "quality": { "type": "number" },
+        "term": { "type": "string" },
+        "rating": { "type": "string" },
+        "responseMs": { "type": "number" },
+        "intervalBefore": { "type": "number" },
+        "intervalAfter": { "type": "number" },
+        "easeBefore": { "type": "number" },
+        "easeAfter": { "type": "number" },
         "timestamp": { "type": "string" }
       },
-      "required": ["vocabItemId", "quality", "timestamp"]
+      "required": ["vocabItemId", "rating", "timestamp"]
     }
   },
   "firestore": {

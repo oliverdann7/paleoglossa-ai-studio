@@ -172,29 +172,38 @@ export const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
         {/* Review Hero */}
-        <div className="lg:col-span-1 rounded-[24px] p-8 bg-blue text-white shadow-xl flex flex-col justify-between min-h-[300px] relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-            <span className="text-[120px] font-serif font-bold leading-none">
-              A
-            </span>
+        <div className="lg:col-span-1 rounded-[32px] p-8 bg-ink text-parch2 shadow-2xl flex flex-col justify-between min-h-[340px] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-all duration-700">
+            <Brain className="w-48 h-48" />
           </div>
           <div className="relative z-10">
-            <div className="eyebrow text-bluexl/50 mb-4 font-bold">
-              {t('dashboard.reviewQueue', 'Review Queue')}
+            <div className="flex items-center gap-2 mb-6">
+               <div className={cn(
+                 "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-gold/20 text-gold",
+                 reviewCount > 0 ? "animate-pulse" : "opacity-50"
+               )}>
+                 {reviewCount > 0 ? t('dashboard.cardsDue', 'Cards Due') : t('dashboard.allClear', 'All Clear')}
+               </div>
             </div>
-            <div className="text-[64px] font-serif font-bold leading-none mb-4">
+            <div className="text-[72px] font-serif font-bold leading-none mb-4 flex items-baseline gap-2">
               {reviewCount}
+              <span className="text-[18px] text-parch/40 font-body font-normal">items</span>
             </div>
-            <p className="font-body text-bluexl/70 text-[16px]">
-              {t('dashboard.wordsReady', 'Words ready for reinforcement.')}
+            <p className="font-body text-parch/60 text-[16px] leading-relaxed max-w-[200px]">
+              {reviewCount > 0 
+                ? t('dashboard.wordsReady', 'Your memory is fading for these words. Refresh now.') 
+                : t('dashboard.memoryFresh', 'Your memory is currently in optimal state.')}
             </p>
           </div>
           <button
             onClick={() => navigate("/app/review")}
             disabled={reviewCount === 0}
-            className="relative z-10 w-full bg-white text-blue py-3 rounded-2xl font-bold font-sans text-[14px] hover:shadow-lg transition-all active:scale-95 disabled:opacity-80 disabled:cursor-not-allowed"
+            className="relative z-10 w-full bg-parch text-ink py-4 rounded-[20px] font-bold font-sans text-[15px] hover:bg-white transition-all active:scale-95 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed group shadow-lg"
           >
-            {reviewCount > 0 ? t('dashboard.startReview', "Start Review Session") : t('dashboard.allCaughtUp', "All Caught Up")}
+            <span className="flex items-center justify-center gap-2">
+              {reviewCount > 0 ? t('dashboard.startReview', "Enter Review Sanctum") : t('dashboard.allCaughtUp', "No Reviews Today")}
+              {reviewCount > 0 && <ChevronRight className="w-4 h-4" />}
+            </span>
           </button>
         </div>
 

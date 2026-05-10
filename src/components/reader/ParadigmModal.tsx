@@ -3,6 +3,8 @@ import { X, Sparkles, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AIClient } from "../../lib/services/aiClient";
+import { useAuth } from "../../lib/hooks/useAuth";
 
 interface ParadigmModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export const ParadigmModal: React.FC<ParadigmModalProps> = ({
   languageId,
   word,
 }) => {
+  const { user } = useAuth();
   const [paradigm, setParadigm] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,29 +30,18 @@ export const ParadigmModal: React.FC<ParadigmModalProps> = ({
       const fetchParadigm = async () => {
         setIsLoading(true);
         try {
-          // We can use a custom prompt for paradigmatic information
-          const response = await fetch("/api/ai/explain", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              languageId,
-              word,
-              lemma,
-              type: "paradigm",
-            }),
-          });
-          const data = await response.json();
-          setParadigm(data.explanation);
-        } catch (error) {
+          const result = await AIClient.getParadigm(languageId, word, lemma, user?.uid);
+          setParadigm(result);
+        } catch (error: any) {
           console.error(error);
-          setParadigm("Failed to load paradigm data.");
+          setParadigm(error.message || "Failed to load paradigm data.");
         } finally {
           setIsLoading(false);
         }
       };
       fetchParadigm();
     }
-  }, [isOpen, lemma, languageId, word]);
+  }, [isOpen, lemma, languageId, word, user?.uid]);
 
   return (
     <AnimatePresence>

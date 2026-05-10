@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImportService, ImportedText } from "../lib/services/importService";
-import { TextAnalysisService } from "../lib/services/textAnalysisService";
+import { AIClient } from "../lib/services/aiClient";
 import { useAuth } from "../lib/hooks/useAuth";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
@@ -103,7 +103,7 @@ export const Import = () => {
     setIsProcessing(true);
     setProcessingStep("Performing OCR with AI...");
     try {
-      const extractedText = await TextAnalysisService.extractFromImage(languageId, imageBase64, imageMimeType);
+      const extractedText = await AIClient.extractFromImage(languageId, imageBase64, imageMimeType, user?.uid);
       setText(extractedText);
       setActiveTab("paste");
       setImageBase64(null);
@@ -122,7 +122,7 @@ export const Import = () => {
     setIsProcessing(true);
     setProcessingStep("Scraping content from URL...");
     try {
-      const extractedText = await TextAnalysisService.scrapeUrl(url);
+      const extractedText = await AIClient.scrapeUrl(url, user?.uid);
       setText(extractedText);
       setActiveTab("paste");
       setUrl("");
@@ -170,7 +170,7 @@ export const Import = () => {
 
     try {
       // Step 1: Analyze text (Segment, Tokenize, Lemmatize, Gloss, Transliterate)
-      const sentences = await TextAnalysisService.analyzeText(languageId, text);
+      const sentences = await AIClient.analyzeText(languageId, text, user?.uid);
       
       setProcessingStep("Mapping to your knowledge...");
       

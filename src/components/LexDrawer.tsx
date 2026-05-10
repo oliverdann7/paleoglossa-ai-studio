@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Volume2, Bookmark, Eye, Brain, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AIService } from '../lib/services/aiService';
+import { AIClient } from '../lib/services/aiClient';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../lib/hooks/useAuth';
 
 interface LexDrawerProps {
   word: any;
@@ -14,6 +15,7 @@ interface LexDrawerProps {
 }
 
 export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: LexDrawerProps) => {
+  const { user } = useAuth();
   const { t } = useTranslation();
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -25,9 +27,8 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
     
     try {
       const languageName = language || word.language || "ancient language";
-      await AIService.explainWord(word.text, word.lemma, languageName, (textChunk) => {
-        setAiInsights((prev) => (prev || "") + textChunk);
-      });
+      const explanation = await AIClient.explainWord(languageName, word.text, word.lemma, user?.uid);
+      setAiInsights(explanation);
     } catch (error) {
       console.error(error);
       setAiInsights(t("reader.failedInsights", "Failed to fetch insights."));
