@@ -14,10 +14,12 @@ import {
   Globe2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GoogleGenAI } from "@google/genai";
 import { ImportService, ImportedText } from "../lib/services/importService";
+import { TextAnalysisService } from "../lib/services/textAnalysisService";
 import { useAuth } from "../lib/contexts/AuthContext";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
+import { WordState } from "../lib/constants/wordStates";
+import { ImportedSentence } from "../types/firestore";
 
 import { LANGUAGES } from "../lib/constants/languages";
 
@@ -25,12 +27,14 @@ export const Import = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { refreshImports } = useKnowledge();
+  const { refreshImports, knowledge } = useKnowledge();
   const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
+  const [url, setUrl] = useState("");
   const [activeTab, setActiveTab] = useState<"paste" | "file" | "url" | "ocr">("paste");
   const [text, setText] = useState("");
   const [languageId, setLanguageId] = useState("grc");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState("");
   const [result, setResult] = useState<ImportedText | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -61,67 +65,144 @@ export const Import = () => {
     reader.readAsDataURL(file);
   };
 
+  const calculateStats = (sentences: ImportedSentence[]) => {
+    const allTokens = sentences.flatMap(s => s.tokens).filter(t => t.type === 'word');
+    const totalWords = allTokens.length;
+    const uniqueLemmas = Array.from(new Set(allTokens.map(t => (t.lemma || t.text).toLowerCase())));
+    const uniqueWords = uniqueLemmas.length;
+    
+    let knownWords = 0;
+    let learningWords = 0;
+    let newWords = 0;
+    
+    uniqueLemmas.forEach(lemma => {
+      const info = knowledge[lemma];
+      if (info) {
+        const state = typeof info === 'string' ? info : (info as any).state;
+        if (state === WordState.KNOWN) knownWords++;
+        else if (state !== WordState.NEW && state !== WordState.IGNORED) learningWords++;
+        else newWords++;
+      } else {
+        newWords++;
+      }
+    });
+
+    return {
+      totalWords,
+      uniqueWords,
+      knownWords,
+      newWords,
+      learningWords,
+      percentKnown: Math.round((knownWords / Math.max(1, uniqueWords)) * 100),
+      percentLearning: Math.round((learningWords / Math.max(1, uniqueWords)) * 100)
+    };
+  };
+
   const handleExtractText = async () => {
     if (!imageBase64 || !imageMimeType) return;
     setIsProcessing(true);
+    setProcessingStep("Performing OCR with AI...");
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: {
-          parts: [
-            { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
-            { text: `Extract the text from this image. The source text is ${languageId}. Preserve the original characters and native script. Return ONLY the extracted text, with no markdown formatting or extra commentary.` }
-          ]
-        }
-      });
-      const extractedText = response.text || "";
+      const extractedText = await TextAnalysisService.extractFromImage(languageId, imageBase64, imageMimeType);
       setText(extractedText);
       setActiveTab("paste");
       setImageBase64(null);
       setImageMimeType(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("OCR Extraction failed:", error);
-      alert("Failed to extract text from image.");
+      alert("Failed to extract text from image: " + error.message);
     } finally {
       setIsProcessing(false);
+      setProcessingStep("");
     }
   };
 
-  const handleProcess = () => {
+  const handleScrapeUrl = async () => {
+    if (!url.trim()) return;
+    setIsProcessing(true);
+    setProcessingStep("Scraping content from URL...");
+    try {
+      const extractedText = await TextAnalysisService.scrapeUrl(url);
+      setText(extractedText);
+      setActiveTab("paste");
+      setUrl("");
+    } catch (error: any) {
+      console.error("Scrape failed:", error);
+      alert("Failed to scrape URL: " + error.message);
+    } finally {
+      setIsProcessing(false);
+      setProcessingStep("");
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsProcessing(true);
+    setProcessingStep("Reading file...");
+    
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const content = event.target?.result as string;
+        setText(content);
+        setActiveTab("paste");
+        setIsProcessing(false);
+        setProcessingStep("");
+      };
+      reader.onerror = () => {
+        throw new Error("Failed to read file");
+      };
+      reader.readAsText(file);
+    } catch (error: any) {
+      console.error("File upload failed:", error);
+      alert("Failed to upload file: " + error.message);
+      setIsProcessing(false);
+      setProcessingStep("");
+    }
+  };
+
+  const handleProcess = async () => {
     if (!text.trim()) return;
     setIsProcessing(true);
+    setProcessingStep("Linguistic analysis...");
 
-    // Simulate analysis
-    setTimeout(async () => {
-      const words = text.split(/\s+/).filter(Boolean);
-      const uniqueWords = new Set(words.map((w) => w.toLowerCase())).size;
+    try {
+      // Step 1: Analyze text (Segment, Tokenize, Lemmatize, Gloss, Transliterate)
+      const sentences = await TextAnalysisService.analyzeText(languageId, text);
+      
+      setProcessingStep("Mapping to your knowledge...");
+      
+      // Step 2: Calculate real stats
+      const stats = calculateStats(sentences);
 
-      const imported: Partial<ImportedText> = {
+      const imported: ImportedText = {
         id: `imp-${Date.now()}`,
         userId: user?.uid || 'anonymous',
         title: text.slice(0, 40) + (text.length > 40 ? "..." : ""),
         rawContent: text,
-        content: text,
+        sentences,
         languageId,
         sourceType: activeTab === 'ocr' ? 'image' : 'paste',
         status: 'complete',
         visibility: 'private',
-        stats: {
-          totalWords: words.length,
-          uniqueWords,
-          newWords: Math.floor(uniqueWords * 0.4),
-          knownWords: Math.floor(uniqueWords * 0.2),
-          learningWords: 0
-        },
+        stats,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
       await ImportService.saveImport(user ? user.uid : null, imported);
       refreshImports();
 
       setResult(imported);
+    } catch (error: any) {
+      console.error("Import failed:", error);
+      alert("Import failed: " + error.message);
+    } finally {
       setIsProcessing(false);
-    }, 2000);
+      setProcessingStep("");
+    }
   };
 
   const handleSample = (sample: string, langId: string) => {
@@ -331,7 +412,7 @@ export const Import = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="h-96 border-2 border-dashed border-bdr/40 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-blue/5 hover:border-blue/30 transition-all"
                 >
-                  <input type="file" ref={fileInputRef} className="hidden" />
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
                   <div className="w-16 h-16 bg-parch2 text-muted rounded-full flex items-center justify-center mb-6">
                     <Upload className="w-8 h-8" />
                   </div>
@@ -339,7 +420,7 @@ export const Import = () => {
                     {t("import.clickUpload", "Click to Upload")}
                   </h3>
                   <p className="text-[13px] text-muted">
-                    {t("import.supports", "Supports .txt, .pdf, .docx files up to 20MB")}
+                    {t("import.supports", "Supports .txt files (PDF/DOCX Coming Soon)")}
                   </p>
                 </motion.div>
               )}
@@ -356,6 +437,8 @@ export const Import = () => {
                     <input
                       type="url"
                       placeholder="https://example.com/ancient-text"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
                       className="w-full p-4 bg-white border border-bdr rounded-xl text-[16px] focus:ring-1 focus:ring-blue shadow-sm"
                     />
                   </div>
@@ -404,14 +487,17 @@ export const Import = () => {
             </AnimatePresence>
 
             <button
-              onClick={activeTab === 'ocr' ? handleExtractText : handleProcess}
-              disabled={isProcessing || (activeTab === 'ocr' ? !imageBase64 : !text.trim())}
+              onClick={activeTab === 'ocr' ? handleExtractText : activeTab === 'url' ? handleScrapeUrl : handleProcess}
+              disabled={isProcessing || (activeTab === 'ocr' ? !imageBase64 : activeTab === 'url' ? !url.trim() : activeTab === 'file' ? false : !text.trim())}
               className="w-full mt-8 bg-blue text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:shadow-xl transition-all shadow-lg shadow-blue/20 disabled:opacity-50"
             >
               {isProcessing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  {activeTab === 'ocr' ? t("import.extracting", "Extracting Text...") : t("import.processing", "Processing Language...")}
+                  <div>
+                    <div className="font-bold">{activeTab === 'ocr' ? t("import.extracting", "Extracting Text...") : t("import.processing", "Processing Language...")}</div>
+                    <div className="text-[10px] opacity-70 uppercase tracking-widest">{processingStep}</div>
+                  </div>
                 </>
               ) : (
                 activeTab === 'ocr' ? t("import.extractText", "Extract Text from Image") :  t("import.process", "Analyze & Import Text")

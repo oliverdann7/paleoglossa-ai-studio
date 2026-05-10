@@ -50,18 +50,32 @@ export interface TextProgress {
   sectionId?: string;
 }
 
+export interface ImportedToken {
+  text: string;
+  lemma?: string;
+  normalized?: string;
+  type: 'word' | 'punctuation' | 'number' | 'whitespace';
+  transliteration?: string;
+  gloss?: string;
+  pos?: string;
+  confidence?: number;
+  aiGenerated?: boolean;
+}
+
+export interface ImportedSentence {
+  tokens: ImportedToken[];
+  translation?: string;
+}
+
 export interface ImportedText {
   id?: string;
   userId: string;
   title: string;
   languageId: string;
-  language?: string; // Compatibility
-  content?: string;  // Compatibility
   sourceType: 'paste' | 'file' | 'url' | 'image' | 'pdf';
   rawContent: string;
   processedContent?: string;
-  sentences?: string[];
-  tokens?: any[];
+  sentences: ImportedSentence[];
   stats: {
     totalWords: number;
     uniqueWords: number;

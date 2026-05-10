@@ -21,22 +21,25 @@ export interface ReadingStats {
 
 export interface TextProgress {
   textId: string;
-  lastPosition: number; // scroll or sentence index
+  lastPosition: number;
   completed: boolean;
   lastReadAt: string;
   sentenceIndex?: number;
 }
 
-export class ProgressService {
+const STATS_STORAGE_KEY = 'paleoglossa_stats';
+
+export class StatsService {
   static async getStats(userId: string | null): Promise<ReadingStats> {
-    const now = new Date();
-    now.setUTCHours(now.getUTCHours() - 4);
+    // Default to a 4am reset for "today"
+    const offsetDate = new Date();
+    offsetDate.setUTCHours(offsetDate.getUTCHours() - 4);
     
     const initialStats: ReadingStats = {
       totalKnown: 0,
       readToday: 0,
       readingTime: 0,
-      lastActive: now.toISOString(),
+      lastActive: offsetDate.toISOString(),
       streak: 1,
       history: [],
       freezesTotal: 2,
@@ -44,9 +47,8 @@ export class ProgressService {
     };
 
     if (!userId) {
-      const saved = localStorage.getItem('paleoglossa_stats');
-      if (saved) return { ...initialStats, ...JSON.parse(saved) };
-      return initialStats;
+      const saved = localStorage.getItem(STATS_STORAGE_KEY);
+      return saved ? { ...initialStats, ...JSON.parse(saved) } : initialStats;
     }
 
     try {
@@ -55,7 +57,7 @@ export class ProgressService {
         return { ...initialStats, ...snap.data().stats } as ReadingStats;
       }
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching stats:", e);
     }
     
     return initialStats;
@@ -63,19 +65,36 @@ export class ProgressService {
 
   static async updateStats(userId: string | null, newStats: ReadingStats) {
     if (!userId) {
-      localStorage.setItem('paleoglossa_stats', JSON.stringify(newStats));
+      localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(newStats));
       return;
     }
 
     try {
       await updateDoc(doc(db, `users/${userId}`), {
-        stats: newStats
+        stats: newStats,
+        updatedAt: serverTimestamp()
       });
     } catch (e) {
-      console.error(e);
+      console.error("Error updating stats:", e);
     }
   }
 
+  static async migrateLocalStorage(userId: string): Promise<ReadingStats | null> {
+    const saved = localStorage.getItem(STATS_STORAGE_KEY);
+    if (!saved) return null;
+
+    try {
+      const stats = JSON.parse(saved) as ReadingStats;
+      await this.updateStats(userId, stats);
+      localStorage.removeItem(STATS_STORAGE_KEY);
+      return stats;
+    } catch (e) {
+      console.error("Stats migration failed:", e);
+      return null;
+    }
+  }
+
+  // Text Progress specific methods (can stay here or move to progressService, but user asked for statsService)
   static async getTextProgress(userId: string | null, textId: string): Promise<TextProgress | null> {
     if (!userId) {
       const saved = localStorage.getItem(`reading_progress_${textId}`);
@@ -86,7 +105,7 @@ export class ProgressService {
       const snap = await getDoc(doc(db, `users/${userId}/readingProgress`, textId));
       return snap.exists() ? snap.data() as TextProgress : null;
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching text progress:", e);
       return null;
     }
   }
@@ -94,7 +113,6 @@ export class ProgressService {
   static async setTextProgress(userId: string | null, progress: TextProgress) {
     if (!userId) {
       localStorage.setItem(`reading_progress_${progress.textId}`, JSON.stringify(progress));
-      // Also update a global list for local fallback
       const recent = JSON.parse(localStorage.getItem('recent_reading_progress') || '[]');
       const filtered = recent.filter((r: any) => r.textId !== progress.textId);
       filtered.unshift({ ...progress, lastReadAt: new Date().toISOString() });
@@ -108,7 +126,7 @@ export class ProgressService {
         lastReadAt: serverTimestamp()
       }, { merge: true });
     } catch (e) {
-      console.error(e);
+      console.error("Error saving text progress:", e);
     }
   }
 
@@ -127,7 +145,7 @@ export class ProgressService {
       });
       return results.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime());
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching all progress:", e);
       return [];
     }
   }

@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { doc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { ImportedText as FSImportedText } from '../../types/firestore';
 
 export type ImportedText = FSImportedText;
@@ -32,6 +32,52 @@ export class ImportService {
     } catch (e) {
       console.error("Import Fetch Error:", e);
       return [];
+    }
+  }
+
+  static async migrateLocalStorage(userId: string): Promise<number> {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return 0;
+    
+    try {
+      const imports = JSON.parse(saved) as ImportedText[];
+      let count = 0;
+      for (const imp of imports) {
+        await this.saveImport(userId, imp);
+        count++;
+      }
+      localStorage.removeItem(STORAGE_KEY);
+      return count;
+    } catch (e) {
+      console.error("Import migration failed:", e);
+      return 0;
+    }
+  }
+
+  static async getImport(userId: string | null, importId: string): Promise<ImportedText | null> {
+    if (!userId) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const imports = saved ? JSON.parse(saved) : [];
+      return imports.find((i: any) => i.id === importId) || null;
+    }
+
+    try {
+      const snap = await getDoc(doc(db, `users/${userId}/imports`, importId));
+      if (snap.exists()) {
+        const data = snap.data();
+        const createdAt = data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt;
+        const updatedAt = data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt;
+        return { 
+          ...data, 
+          id: snap.id,
+          createdAt: createdAt || new Date().toISOString(),
+          updatedAt: updatedAt || new Date().toISOString()
+        } as ImportedText;
+      }
+      return null;
+    } catch (e) {
+      console.error("Import Fetch Error:", e);
+      return null;
     }
   }
 

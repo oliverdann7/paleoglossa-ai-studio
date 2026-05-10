@@ -49,13 +49,23 @@ export const Library = () => {
       if (t.isImported) {
         totalWords = t.stats?.totalWords || 0;
         // Check against existing knowledge for real-time updates
-        const content = t.rawContent || t.content || "";
-        const words = content.split(/\s+/).filter(Boolean);
-        words.forEach((w: string) => {
-          const info = getWordInfo(w.toLowerCase());
-          if (info.state === WordState.KNOWN || (info.state as any) === WordStatus.KNOWN) knownWordsCount++;
-          else if (info.state !== WordState.NEW && (info.state as any) !== WordStatus.NEW) learningWordsCount++;
-        });
+        const tokens = t.sentences?.flatMap((s: any) => s.tokens).filter((tok: any) => tok.type === 'word') || [];
+        if (tokens.length > 0) {
+          totalWords = tokens.length;
+          tokens.forEach((tok: any) => {
+            const info = getWordInfo(tok.lemma || tok.text);
+            if (info.state === WordState.KNOWN) knownWordsCount++;
+            else if (info.state !== WordState.NEW && info.state !== WordState.IGNORED) learningWordsCount++;
+          });
+        } else {
+          const content = t.rawContent || t.content || "";
+          const words = content.split(/\s+/).filter(Boolean);
+          words.forEach((w: string) => {
+            const info = getWordInfo(w.toLowerCase());
+            if (info.state === WordState.KNOWN) knownWordsCount++;
+            else if (info.state !== WordState.NEW && info.state !== WordState.IGNORED) learningWordsCount++;
+          });
+        }
       } else {
         const sections =
           t.sectionsPreview
