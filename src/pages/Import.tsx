@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,8 @@ import {
   Loader2,
   Play,
   Image as ImageIcon,
+  ChevronDown,
+  Globe2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GoogleGenAI } from "@google/genai";
@@ -28,6 +30,8 @@ interface ImportedText {
   };
 }
 
+import { LANGUAGES } from "../lib/constants/languages";
+
 export const Import = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -41,6 +45,18 @@ export const Import = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imageMimeType, setImageMimeType] = useState<string | null>(null);
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langSelectRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (langSelectRef.current && !langSelectRef.current.contains(event.target as Node)) {
+        setIsLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -220,6 +236,68 @@ export const Import = () => {
           </div>
 
           <div className="p-8">
+            <div className="mb-8 relative z-50">
+              <label className="eyebrow mb-2">{t("import.selectLanguage", "Select Language")}</label>
+              <div className="relative" ref={langSelectRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsLangOpen(!isLangOpen)}
+                  className="w-full flex items-center justify-between p-4 bg-white border border-bdr rounded-xl focus:outline-none focus:ring-2 focus:ring-blue/50 hover:border-blue/30 transition-colors shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-full bg-parch2 text-ink flex items-center justify-center text-[18px]">
+                      {LANGUAGES.find((l) => l.id === language)?.icon || <Globe2 className="w-4 h-4" />}
+                    </span>
+                    <span className="font-bold text-ink text-[15px]">
+                      {LANGUAGES.find((l) => l.id === language)?.name || "Select Language"}
+                    </span>
+                  </div>
+                  <ChevronDown className={cn("w-5 h-5 text-muted transition-transform", isLangOpen && "rotate-180")} />
+                </button>
+                
+                <AnimatePresence>
+                  {isLangOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-bdr shadow-xl shadow-parch2/50 rounded-xl overflow-hidden z-50 max-h-[300px] overflow-y-auto"
+                    >
+                      <div className="p-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                        {LANGUAGES.map((lang) => (
+                          <button
+                            key={lang.id}
+                            type="button"
+                            onClick={() => {
+                              setLanguage(lang.id);
+                              setIsLangOpen(false);
+                            }}
+                            className={cn(
+                              "flex items-center gap-3 p-3 rounded-lg transition-all text-left w-full",
+                              language === lang.id ? "bg-blue/10 text-blue font-bold" : "hover:bg-parch text-ink2 font-medium"
+                            )}
+                          >
+                            <span className={cn(
+                              "w-8 h-8 rounded-full flex items-center justify-center text-[16px]",
+                              language === lang.id ? "bg-blue text-white" : "bg-parch2 text-ink"
+                            )}>
+                              {lang.icon}
+                            </span>
+                            <div className="flex flex-col text-left">
+                              <span className="text-[14px]">{lang.name}</span>
+                              <span className="text-[11px] opacity-60 uppercase font-sans font-bold tracking-wider">{lang.symbol}</span>
+                            </div>
+                            {language === lang.id && <CheckCircle className="w-4 h-4 ml-auto" />}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
             <AnimatePresence mode="wait">
               {activeTab === "paste" && (
                 <motion.div
@@ -228,27 +306,6 @@ export const Import = () => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <div className="mb-6">
-                    <label className="eyebrow mb-2">{t("import.selectLanguage", "Select Language")}</label>
-                    <select
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full p-3 bg-white border border-bdr rounded-xl text-[14px] font-sans focus:ring-1 focus:ring-blue"
-                    >
-                      <option value="grc">Ancient Greek</option>
-                      <option value="grc-koine">Koine Greek</option>
-                      <option value="hbo">Biblical Hebrew</option>
-                      <option value="lat">Classical Latin</option>
-                      <option value="syr">Classical Syriac</option>
-                      <option value="cop">Coptic</option>
-                      <option value="arc">Aramaic</option>
-                      <option value="akk">Akkadian</option>
-                      <option value="san">Sanskrit</option>
-                      <option value="egy">Egyptian Hieroglyphs</option>
-                      <option value="hit">Hittite</option>
-                    </select>
-                  </div>
-
                   <div className="mb-6">
                     <label className="eyebrow mb-2">{t("import.pasteContent", "Paste Content")}</label>
                     <textarea

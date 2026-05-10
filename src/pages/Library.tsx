@@ -7,6 +7,7 @@ import { CorpusDB } from "../data/corpus";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
 import { useTranslation } from "react-i18next";
+import { LANGUAGES } from "../lib/constants/languages";
 
 export const Library = () => {
   const navigate = useNavigate();
@@ -17,18 +18,8 @@ export const Library = () => {
   const { t } = useTranslation();
 
   const mainFilters = [
-    "All",
-    "Ancient Greek",
-    "Koine Greek",
-    "Biblical Hebrew",
-    "Classical Latin",
-    "Syriac",
-    "Coptic",
-    "Aramaic",
-    "Akkadian",
-    "Sanskrit",
-    "Egyptian Hieroglyphs",
-    "Hittite",
+    { name: "All", id: "all", icon: "📚", symbol: "*" },
+    ...LANGUAGES
   ];
 
   const allTexts = useMemo(() => {
@@ -194,16 +185,17 @@ export const Library = () => {
           <div className="flex flex-wrap gap-2">
             {mainFilters.map((filter) => (
               <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
+                key={filter.id}
+                onClick={() => setActiveFilter(filter.name)}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-[11.5px] font-medium font-sans transition-all duration-150 border",
-                  activeFilter === filter
+                  "px-3 py-1.5 rounded-full text-[11.5px] font-medium font-sans transition-all duration-150 border flex items-center gap-1.5",
+                  activeFilter === filter.name
                     ? "bg-blue text-white shadow-sm border-blue"
-                    : "bg-parch text-ink3 border-bdr hover:bg-parch2",
+                    : "bg-parch text-ink3 border-bdr hover:bg-parch2 hover:border-blue/30",
                 )}
               >
-                {filter}
+                <span>{filter.icon}</span>
+                <span>{filter.name}</span>
               </button>
             ))}
           </div>
@@ -237,24 +229,16 @@ export const Library = () => {
       <div className="mb-14">
         <h3 className="eyebrow mb-4 opacity-50">Explore by Language</h3>
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {[
-            { id: "grc-koine", name: "Koine Greek" },
-            { id: "grc", name: "Ancient Greek" },
-            { id: "hbo", name: "Biblical Hebrew" },
-            { id: "lat", name: "Classical Latin" },
-            { id: "syr", name: "Syriac" },
-            { id: "cop", name: "Coptic" },
-            { id: "arc", name: "Aramaic" },
-            { id: "akk", name: "Akkadian" },
-            { id: "san", name: "Sanskrit" },
-            { id: "egy", name: "Egyptian Hieroglyphs" },
-          ].map((lang) => (
+          {LANGUAGES.map((lang) => (
             <button
               key={lang.id}
               onClick={() => navigate(`/app/language/${lang.id}`)}
-              className="shrink-0 px-6 py-4 rounded-xl border border-bdr/40 bg-sand hover:border-blue hover:text-blue transition-colors font-serif whitespace-nowrap"
+              className="shrink-0 flex items-center gap-3 px-6 py-4 rounded-xl border border-bdr/40 bg-sand hover:bg-white hover:border-blue hover:text-blue transition-all font-serif whitespace-nowrap shadow-sm group"
             >
-              {lang.name}
+              <span className="w-8 h-8 rounded-full bg-parch2 text-ink flex items-center justify-center text-lg group-hover:bg-blue/10 group-hover:text-blue transition-colors">
+                {lang.icon}
+              </span>
+              <span className="text-[16px] font-bold tracking-tight">{lang.name}</span>
             </button>
           ))}
         </div>
