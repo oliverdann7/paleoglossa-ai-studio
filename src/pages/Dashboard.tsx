@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
@@ -31,9 +31,14 @@ const StatCard = ({
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const { knowledge, stats } = useKnowledge();
+  const { knowledge, stats, getAllProgress, userImports } = useKnowledge();
   const { t } = useTranslation();
+  const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const hour = new Date().getHours();
+
+  useEffect(() => {
+    getAllProgress().then(setReadingProgress);
+  }, [getAllProgress]);
 
   const knownCount = useMemo(
     () =>
@@ -90,7 +95,16 @@ export const Dashboard = () => {
   if (hour < 12) greeting = t("dashboard.morning", "Good morning");
   else if (hour < 18) greeting = t("dashboard.afternoon", "Good afternoon");
 
-  const continueText = CorpusDB.getTexts()[0];
+  const continueText = useMemo(() => {
+    const builtInTexts = CorpusDB.getTexts();
+    const allTexts = [...builtInTexts, ...userImports];
+    if (readingProgress.length > 0) {
+      const last = readingProgress[0];
+      const text = allTexts.find(t => t.id === last.textId);
+      if (text) return { ...text, lastPosition: last.lastPosition || 0 };
+    }
+    return { ...builtInTexts[0], lastPosition: 0 };
+  }, [readingProgress, userImports]);
 
   return (
     <div className="p-6 md:p-12 max-w-6xl mx-auto font-sans min-h-screen">
@@ -114,7 +128,7 @@ export const Dashboard = () => {
             <span className="text-2xl">🔥</span>
             <div>
               <div className="text-2xl font-serif font-bold text-amber leading-none">
-                12
+                {stats.streak}
               </div>
               <div className="eyebrow text-amber/60 text-[8px] mt-1">
                 {t("dashboard.dayStreak", "Day Streak")}
@@ -206,16 +220,16 @@ export const Dashboard = () => {
           <div className="mt-8">
             <div className="flex justify-between items-end mb-3">
               <span className="text-[13px] font-bold text-blue group-hover:translate-x-1 transition-transform inline-flex items-center gap-2">
-                {t("dashboard.continueFrom", "Continue from John 1:1")} <ChevronRight className="w-4 h-4" />
+                {t("dashboard.continueReading", "Continue Reading")} <ChevronRight className="w-4 h-4" />
               </span>
               <span className="text-[11px] font-bold text-muted uppercase tracking-tighter">
-                {t("dashboard.minsLeft", "~4 mins left in section")}
+                {Math.round(continueText.lastPosition)}% {t("dashboard.complete", "complete")}
               </span>
             </div>
             <div className="h-2 w-full bg-parch3 rounded-full overflow-hidden shadow-inner">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: "42%" }}
+                animate={{ width: `${continueText.lastPosition}%` }}
                 className="h-full bg-gold"
               />
             </div>
@@ -235,11 +249,12 @@ export const Dashboard = () => {
           value={learningCount.toLocaleString()}
         />
         <StatCard
-          label={t('dashboard.wordsLearned', "Total Words Read")}
-          value={(stats.readToday + 12400).toLocaleString()}
+          label={t('dashboard.totalReadingTime', "Reading Time (m)")}
+          value={stats.readingTime.toLocaleString()}
         />
-        <StatCard label={t('dashboard.accuracy', "Accuracy")} value="94%" />
+        <StatCard label={t('dashboard.streakStatus', "Current Streak")} value={`${stats.streak}d`} />
       </div>
+
 
       {/* Recent Vocab */}
       <div className="mb-10">

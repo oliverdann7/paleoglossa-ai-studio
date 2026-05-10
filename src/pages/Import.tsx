@@ -15,22 +15,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GoogleGenAI } from "@google/genai";
-import { ImportService } from "../lib/services/importService";
+import { ImportService, ImportedText } from "../lib/services/importService";
 import { useAuth } from "../lib/contexts/AuthContext";
-
-interface ImportedText {
-  id: string;
-  title: string;
-  content: string;
-  language: string;
-  importedAt: string;
-  stats: {
-    totalWords: number;
-    uniqueWords: number;
-    newWords: number;
-    knownWords: number;
-  };
-}
+import { useKnowledge } from "../lib/hooks/useKnowledge";
 
 import { LANGUAGES } from "../lib/constants/languages";
 
@@ -38,10 +25,11 @@ export const Import = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { refreshImports } = useKnowledge();
   const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
   const [activeTab, setActiveTab] = useState<"paste" | "file" | "url" | "ocr">("paste");
   const [text, setText] = useState("");
-  const [language, setLanguage] = useState("grc");
+  const [languageId, setLanguageId] = useState("grc");
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ImportedText | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +71,7 @@ export const Import = () => {
         contents: {
           parts: [
             { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
-            { text: `Extract the text from this image. The source text is ${language}. Preserve the original characters and native script. Return ONLY the extracted text, with no markdown formatting or extra commentary.` }
+            { text: `Extract the text from this image. The source text is ${languageId}. Preserve the original characters and native script. Return ONLY the extracted text, with no markdown formatting or extra commentary.` }
           ]
         }
       });
@@ -109,33 +97,36 @@ export const Import = () => {
       const words = text.split(/\s+/).filter(Boolean);
       const uniqueWords = new Set(words.map((w) => w.toLowerCase())).size;
 
-      const imported: any = {
-        id: `import-${Date.now()}`,
+      const imported: Partial<ImportedText> = {
+        id: `imp-${Date.now()}`,
+        userId: user?.uid || 'anonymous',
         title: text.slice(0, 40) + (text.length > 40 ? "..." : ""),
+        rawContent: text,
         content: text,
-        language,
-        totalWords: words.length,
-        percentKnown: 20,
-        percentLearning: 40,
-        isImported: true,
+        languageId,
+        sourceType: activeTab === 'ocr' ? 'image' : 'paste',
+        status: 'complete',
+        visibility: 'private',
         stats: {
           totalWords: words.length,
           uniqueWords,
           newWords: Math.floor(uniqueWords * 0.4),
           knownWords: Math.floor(uniqueWords * 0.2),
+          learningWords: 0
         },
       };
 
       await ImportService.saveImport(user ? user.uid : null, imported);
+      refreshImports();
 
       setResult(imported);
       setIsProcessing(false);
     }, 2000);
   };
 
-  const handleSample = (sample: string, lang: string) => {
+  const handleSample = (sample: string, langId: string) => {
     setText(sample);
-    setLanguage(lang);
+    setLanguageId(langId);
   };
 
   const samples = [
@@ -237,67 +228,67 @@ export const Import = () => {
           </div>
 
           <div className="p-8">
-            <div className="mb-8 relative z-50">
-              <label className="eyebrow mb-2">{t("import.selectLanguage", "Select Language")}</label>
-              <div className="relative" ref={langSelectRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="w-full flex items-center justify-between p-4 bg-white border border-bdr rounded-xl focus:outline-none focus:ring-2 focus:ring-blue/50 hover:border-blue/30 transition-colors shadow-sm"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-parch2 text-ink flex items-center justify-center text-[18px]">
-                      {LANGUAGES.find((l) => l.id === language)?.icon || <Globe2 className="w-4 h-4" />}
+    <div className="mb-8 relative z-50">
+      <label className="eyebrow mb-2">{t("import.selectLanguage", "Select Language")}</label>
+      <div className="relative" ref={langSelectRef}>
+        <button
+          type="button"
+          onClick={() => setIsLangOpen(!isLangOpen)}
+          className="w-full flex items-center justify-between p-4 bg-white border border-bdr rounded-xl focus:outline-none focus:ring-2 focus:ring-blue/50 hover:border-blue/30 transition-colors shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <span className="w-8 h-8 rounded-full bg-parch2 text-ink flex items-center justify-center text-[18px]">
+              {LANGUAGES.find((l) => l.id === languageId)?.icon || <Globe2 className="w-4 h-4" />}
+            </span>
+            <span className="font-bold text-ink text-[15px]">
+              {LANGUAGES.find((l) => l.id === languageId)?.name || "Select Language"}
+            </span>
+          </div>
+          <ChevronDown className={cn("w-5 h-5 text-muted transition-transform", isLangOpen && "rotate-180")} />
+        </button>
+        
+        <AnimatePresence>
+          {isLangOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-full left-0 right-0 mt-2 bg-white border border-bdr shadow-xl shadow-parch2/50 rounded-xl overflow-hidden z-50 max-h-[300px] overflow-y-auto"
+            >
+              <div className="p-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.id}
+                    type="button"
+                    onClick={() => {
+                      setLanguageId(lang.id);
+                      setIsLangOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-lg transition-all text-left w-full",
+                      languageId === lang.id ? "bg-blue/10 text-blue font-bold" : "hover:bg-parch text-ink2 font-medium"
+                    )}
+                  >
+                    <span className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center text-[16px]",
+                      languageId === lang.id ? "bg-blue text-white" : "bg-parch2 text-ink"
+                    )}>
+                      {lang.icon}
                     </span>
-                    <span className="font-bold text-ink text-[15px]">
-                      {LANGUAGES.find((l) => l.id === language)?.name || "Select Language"}
-                    </span>
-                  </div>
-                  <ChevronDown className={cn("w-5 h-5 text-muted transition-transform", isLangOpen && "rotate-180")} />
-                </button>
-                
-                <AnimatePresence>
-                  {isLangOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-bdr shadow-xl shadow-parch2/50 rounded-xl overflow-hidden z-50 max-h-[300px] overflow-y-auto"
-                    >
-                      <div className="p-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
-                        {LANGUAGES.map((lang) => (
-                          <button
-                            key={lang.id}
-                            type="button"
-                            onClick={() => {
-                              setLanguage(lang.id);
-                              setIsLangOpen(false);
-                            }}
-                            className={cn(
-                              "flex items-center gap-3 p-3 rounded-lg transition-all text-left w-full",
-                              language === lang.id ? "bg-blue/10 text-blue font-bold" : "hover:bg-parch text-ink2 font-medium"
-                            )}
-                          >
-                            <span className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center text-[16px]",
-                              language === lang.id ? "bg-blue text-white" : "bg-parch2 text-ink"
-                            )}>
-                              {lang.icon}
-                            </span>
-                            <div className="flex flex-col text-left">
-                              <span className="text-[14px]">{lang.name}</span>
-                              <span className="text-[11px] opacity-60 uppercase font-sans font-bold tracking-wider">{lang.symbol}</span>
-                            </div>
-                            {language === lang.id && <CheckCircle className="w-4 h-4 ml-auto" />}
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[14px]">{lang.name}</span>
+                      <span className="text-[11px] opacity-60 uppercase font-sans font-bold tracking-wider">{lang.symbol}</span>
+                    </div>
+                    {languageId === lang.id && <CheckCircle className="w-4 h-4 ml-auto" />}
+                  </button>
+                ))}
               </div>
-            </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
 
             <AnimatePresence mode="wait">
               {activeTab === "paste" && (

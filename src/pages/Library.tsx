@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Search, Library as LibraryIcon, Play } from "lucide-react";
@@ -8,24 +8,19 @@ import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "../lib/constants/languages";
-import { ImportService } from "../lib/services/importService";
-import { useAuth } from "../lib/contexts/AuthContext";
 
 export const Library = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [minKnown, setMinKnown] = useState(0);
-  const { getWordInfo, getAllProgress } = useKnowledge();
+  const { getWordInfo, getAllProgress, userImports } = useKnowledge();
   const { t } = useTranslation();
-  const [imported, setImported] = useState<any[]>([]);
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
 
-  useState(() => {
-    ImportService.getImports(user ? user.uid : null).then(setImported);
+  useEffect(() => {
     getAllProgress().then(setReadingProgress);
-  });
+  }, [getAllProgress]);
 
   const mainFilters = [
     { name: "All", id: "all", icon: "📚", symbol: "*" },
@@ -37,11 +32,11 @@ export const Library = () => {
 
     const unified = [
       ...builtIn,
-      ...imported.map((t: any) => ({
+      ...userImports.map((t: any) => ({
         ...t,
         isImported: true,
         author: "Your Import",
-        language: t.language || "grc",
+        language: t.languageId || t.language || "grc",
       })),
     ];
 
@@ -53,13 +48,13 @@ export const Library = () => {
 
       if (t.isImported) {
         totalWords = t.stats?.totalWords || 0;
-        // In real app, we'd tokenize and check. For demo, we just keep the initial import stats
-        // OR better: check against existing knowledge for real-time updates
-        const words = t.content.split(/\s+/).filter(Boolean);
+        // Check against existing knowledge for real-time updates
+        const content = t.rawContent || t.content || "";
+        const words = content.split(/\s+/).filter(Boolean);
         words.forEach((w: string) => {
           const info = getWordInfo(w.toLowerCase());
-          if (info.state === WordState.KNOWN) knownWordsCount++;
-          else if (info.state !== WordState.NEW) learningWordsCount++;
+          if (info.state === WordState.KNOWN || (info.state as any) === WordStatus.KNOWN) knownWordsCount++;
+          else if (info.state !== WordState.NEW && (info.state as any) !== WordStatus.NEW) learningWordsCount++;
         });
       } else {
         const sections =
@@ -96,7 +91,7 @@ export const Library = () => {
         level,
       };
     });
-  }, [getWordInfo]);
+  }, [userImports, getWordInfo]);
 
   const filteredTexts = allTexts.filter((t: any) => {
     let matchesFilter = true;

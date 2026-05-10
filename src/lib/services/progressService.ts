@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 
 export interface DailyStat {
   date: string; // YYYY-MM-DD
@@ -78,12 +78,12 @@ export class ProgressService {
 
   static async getTextProgress(userId: string | null, textId: string): Promise<TextProgress | null> {
     if (!userId) {
-      const saved = localStorage.getItem(`progress_${textId}`);
+      const saved = localStorage.getItem(`reading_progress_${textId}`);
       return saved ? JSON.parse(saved) : null;
     }
 
     try {
-      const snap = await getDoc(doc(db, `users/${userId}/progress`, textId));
+      const snap = await getDoc(doc(db, `users/${userId}/readingProgress`, textId));
       return snap.exists() ? snap.data() as TextProgress : null;
     } catch (e) {
       console.error(e);
@@ -93,19 +93,19 @@ export class ProgressService {
 
   static async setTextProgress(userId: string | null, progress: TextProgress) {
     if (!userId) {
-      localStorage.setItem(`progress_${progress.textId}`, JSON.stringify(progress));
+      localStorage.setItem(`reading_progress_${progress.textId}`, JSON.stringify(progress));
       // Also update a global list for local fallback
-      const recent = JSON.parse(localStorage.getItem('recent_progress') || '[]');
+      const recent = JSON.parse(localStorage.getItem('recent_reading_progress') || '[]');
       const filtered = recent.filter((r: any) => r.textId !== progress.textId);
       filtered.unshift({ ...progress, lastReadAt: new Date().toISOString() });
-      localStorage.setItem('recent_progress', JSON.stringify(filtered.slice(0, 10)));
+      localStorage.setItem('recent_reading_progress', JSON.stringify(filtered.slice(0, 10)));
       return;
     }
 
     try {
-      await setDoc(doc(db, `users/${userId}/progress`, progress.textId), {
+      await setDoc(doc(db, `users/${userId}/readingProgress`, progress.textId), {
         ...progress,
-        lastReadAt: new Date().toISOString()
+        lastReadAt: serverTimestamp()
       }, { merge: true });
     } catch (e) {
       console.error(e);
@@ -114,13 +114,17 @@ export class ProgressService {
 
   static async getAllProgress(userId: string | null): Promise<TextProgress[]> {
     if (!userId) {
-      return JSON.parse(localStorage.getItem('recent_progress') || '[]');
+      return JSON.parse(localStorage.getItem('recent_reading_progress') || '[]');
     }
 
     try {
-      const snap = await getDocs(collection(db, `users/${userId}/progress`));
+      const snap = await getDocs(collection(db, `users/${userId}/readingProgress`));
       const results: TextProgress[] = [];
-      snap.forEach(doc => results.push(doc.data() as TextProgress));
+      snap.forEach(doc => {
+        const data = doc.data();
+        const lastReadAt = data.lastReadAt?.toDate ? data.lastReadAt.toDate().toISOString() : data.lastReadAt;
+        results.push({ ...data, lastReadAt } as TextProgress);
+      });
       return results.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime());
     } catch (e) {
       console.error(e);
