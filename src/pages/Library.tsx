@@ -17,12 +17,14 @@ export const Library = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [minKnown, setMinKnown] = useState(0);
-  const { getWordInfo } = useKnowledge();
+  const { getWordInfo, getAllProgress } = useKnowledge();
   const { t } = useTranslation();
   const [imported, setImported] = useState<any[]>([]);
+  const [readingProgress, setReadingProgress] = useState<any[]>([]);
 
   useState(() => {
     ImportService.getImports(user ? user.uid : null).then(setImported);
+    getAllProgress().then(setReadingProgress);
   });
 
   const mainFilters = [
@@ -125,8 +127,20 @@ export const Library = () => {
   });
 
   const recentTexts = useMemo(() => {
-    return allTexts.slice(0, 3); // Demo: first 3 are recent
-  }, [allTexts]);
+    if (readingProgress.length === 0) return allTexts.slice(0, 3);
+    
+    return readingProgress
+      .map(p => {
+        const text = allTexts.find(t => t.id === p.textId);
+        if (!text) return null;
+        return {
+          ...text,
+          lastPosition: p.lastPosition || 0
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 3);
+  }, [readingProgress, allTexts]);
 
   const getCefrClass = (level: string) => {
     if (level.startsWith("A")) return "cefr-a";
@@ -163,7 +177,7 @@ export const Library = () => {
                   {text.author}
                 </div>
                 <div className="mt-4 h-1 w-full bg-parch3 rounded-full overflow-hidden">
-                  <div className="h-full bg-gold" style={{ width: "42%" }} />
+                  <div className="h-full bg-gold" style={{ width: `${text.lastPosition || 0}%` }} />
                 </div>
               </div>
               <button className="w-10 h-10 bg-white border border-bdr rounded-full flex items-center justify-center text-blue shadow-sm group-hover:bg-blue group-hover:text-white transition-all">

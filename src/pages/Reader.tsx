@@ -69,6 +69,8 @@ export const Reader = () => {
     incrementReadingTime,
     setWordNote,
     getWordInfo,
+    fetchTextProgress,
+    saveTextProgress
   } = useKnowledge();
   const { settings } = useSettings();
 
@@ -123,6 +125,39 @@ export const Reader = () => {
 
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
+
+  useEffect(() => {
+    if (!textId) return;
+    const loadProgress = async () => {
+      const prog = await fetchTextProgress(textId);
+      if (prog) {
+        if (readingMode === "scroll" && prog.lastPosition) {
+          const scrollContainer = document.getElementById("reading-area-scroll");
+          if (scrollContainer) {
+            scrollContainer.scrollTop = (prog.lastPosition / 100) * (scrollContainer.scrollHeight - scrollContainer.clientHeight);
+          }
+        } else if (readingMode === "page" && prog.sentenceIndex !== undefined) {
+          setCurrentSentenceIndex(prog.sentenceIndex);
+        }
+      }
+    };
+    loadProgress();
+  }, [textId, fetchTextProgress, readingMode]);
+
+  // Save progress periodically
+  useEffect(() => {
+    if (!textId) return;
+    const interval = setInterval(() => {
+      saveTextProgress({
+        textId,
+        lastPosition: scrollProgress,
+        sentenceIndex: currentSentenceIndex,
+        completed: scrollProgress > 95,
+        lastReadAt: new Date().toISOString()
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [textId, scrollProgress, currentSentenceIndex, saveTextProgress]);
 
   // Clear word insight when word changes
   useEffect(() => {
