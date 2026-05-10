@@ -149,6 +149,28 @@ export const SANSKRIT_CORPUS: Corpus = {
   attribution: [ATTRIBUTIONS["project-gutenberg"]],
 };
 
+export const HITTITE_CORPUS: Corpus = {
+  id: "HITTITE_ANNALS",
+  title: "Annals of Mursili II",
+  description: "The extensive ten-year annals documenting the early reign of Mursili II",
+  language: "hit",
+  sourceAttributionId: "project-gutenberg",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["project-gutenberg"]],
+};
+
+export const EGYPTIAN_CORPUS: Corpus = {
+  id: "EGYPTIAN_TEXTS",
+  title: "Egyptian Hieroglyphs",
+  description: "Classic Middle Egyptian texts",
+  language: "egy",
+  sourceAttributionId: "project-gutenberg",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["project-gutenberg"]],
+};
+
 export const TEXT_JOHN_1: Text = {
   id: "Jn-1",
   corpusId: "SBLGNT",
@@ -282,6 +304,36 @@ export const TEXT_SANSKRIT_GITA: Text = {
   hasTranslation: true,
   hasTransliteration: false,
   sectionsPreview: [{ id: "San-Gita-1-1", label: "Chapter 1" }],
+};
+
+export const TEXT_HITTITE_ANNALS: Text = {
+  id: "Hit-Annals-1",
+  corpusId: "HITTITE_ANNALS",
+  title: "Annals of Mursili II - Ten Year Annals",
+  canonicalRef: "CTH 61.II",
+  author: "Mursili II",
+  language: "hit",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sectionsPreview: [{ id: "Hit-Annals-1-1", label: "Year 1" }],
+};
+
+export const TEXT_EGYPTIAN_PTAHHOTEP: Text = {
+  id: "Egy-Ptah-1",
+  corpusId: "EGYPTIAN_TEXTS",
+  title: "The Maxims of Ptahhotep",
+  canonicalRef: "Prisse Papyrus",
+  author: "Ptahhotep",
+  language: "egy",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sectionsPreview: [{ id: "Egy-Ptah-1-1", label: "Maxim 1" }],
 };
 
 export const JOHN_1_1: TextSection = {
@@ -1647,6 +1699,47 @@ export const SANSKRIT_GITA_1_1: TextSection = {
   ]
 };
 
+export const HITTITE_ANNALS_1_1: TextSection = {
+  id: "Hit-Annals-1-1",
+  textId: "Hit-Annals-1",
+  sequence: 1,
+  label: "Year 1",
+  sentences: [
+    {
+      id: "hit-1",
+      translation: "Thus speaks My Sun, Mursili, the Great King, King of Hatti, Hero.",
+      tokens: [
+        { id: "hit1", surface: " UM", normalized: "UM", lemma: "umma", gloss: "thus", morphology: { partOfSpeech: "particle" }, transliteration: "UM", punctBefore: "", punctAfter: "-" },
+        { id: "hit2", surface: "MA", normalized: "MA", lemma: "umma", gloss: "thus", morphology: { partOfSpeech: "particle" }, transliteration: "MA", punctBefore: "", punctAfter: " " },
+        { id: "hit3", surface: "dUTU", normalized: "UTU", lemma: "UTU", gloss: "Sun-god", morphology: { partOfSpeech: "noun" }, transliteration: "d UTU", punctBefore: "", punctAfter: "-" },
+        { id: "hit4", surface: "ŠI", normalized: "SI", lemma: "ŠI", gloss: "my", morphology: { partOfSpeech: "pronoun" }, transliteration: "ŠI", punctBefore: "", punctAfter: " " },
+        { id: "hit5", surface: "m", normalized: "m", lemma: "mursili", gloss: "Mursili", morphology: { partOfSpeech: "proper_noun" }, transliteration: "m", punctBefore: "", punctAfter: "-" },
+        { id: "hit6", surface: "Mur-ši-li", normalized: "mursili", lemma: "mursili", gloss: "Mursili", morphology: { partOfSpeech: "proper_noun" }, transliteration: "Mur-ši-li", punctBefore: "", punctAfter: " " },
+        { id: "hit7", surface: "LUGAL", normalized: "LUGAL", lemma: "LUGAL", gloss: "king", morphology: { partOfSpeech: "noun" }, transliteration: "LUGAL", punctBefore: "", punctAfter: " " },
+        { id: "hit8", surface: "GAL", normalized: "GAL", lemma: "GAL", gloss: "great", morphology: { partOfSpeech: "adjective" }, transliteration: "GAL", punctBefore: "", punctAfter: " " }
+      ]
+    }
+  ]
+};
+
+export const EGYPTIAN_PTAHHOTEP_1_1: TextSection = {
+  id: "Egy-Ptah-1-1",
+  textId: "Egy-Ptah-1",
+  sequence: 1,
+  label: "Maxim 1",
+  sentences: [
+    {
+      id: "egy-1",
+      translation: "Let not your heart be puffed-up because of thy knowledge.",
+      tokens: [
+        { id: "e1", surface: "𓐍𓂤𓅱", normalized: "ḫrw", lemma: "ḫrw", gloss: "voice", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "e2", surface: "𓈖", normalized: "n", lemma: "n", gloss: "of", morphology: { partOfSpeech: "prep" }, punctBefore: "", punctAfter: " " },
+        { id: "e3", surface: "𓊵𓏏𓊪𓅆", normalized: "ḥtp", lemma: "ḥtp", gloss: "peace", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: "." }
+      ]
+    }
+  ]
+};
+
 import { getMockTexts, getMockSections } from "./mockTexts";
 
 export const CorpusDB = {
@@ -1660,6 +1753,8 @@ export const CorpusDB = {
     TEXT_ARAMAIC_GENESIS,
     TEXT_AKKADIAN_GILGAMESH,
     TEXT_SANSKRIT_GITA,
+    TEXT_HITTITE_ANNALS,
+    TEXT_EGYPTIAN_PTAHHOTEP,
     ...getMockTexts()
   ],
   getText: (id: string) =>
@@ -1673,6 +1768,8 @@ export const CorpusDB = {
       TEXT_ARAMAIC_GENESIS,
       TEXT_AKKADIAN_GILGAMESH,
       TEXT_SANSKRIT_GITA,
+      TEXT_HITTITE_ANNALS,
+      TEXT_EGYPTIAN_PTAHHOTEP,
       ...getMockTexts()
     ].find((t) => t.id === id),
   getSection: (sectionId: string) => {
@@ -1685,6 +1782,8 @@ export const CorpusDB = {
     if (sectionId === "Arc-Gen-1-1") return ARAMAIC_GENESIS_1_1;
     if (sectionId === "Akk-Gilg-1-1") return AKKADIAN_GILGAMESH_1_1;
     if (sectionId === "San-Gita-1-1") return SANSKRIT_GITA_1_1;
+    if (sectionId === "Hit-Annals-1-1") return HITTITE_ANNALS_1_1;
+    if (sectionId === "Egy-Ptah-1-1") return EGYPTIAN_PTAHHOTEP_1_1;
     
     const mockMatch = getMockSections().find(s => s.id === sectionId);
     if (mockMatch) return mockMatch;
@@ -1700,6 +1799,8 @@ export const CorpusDB = {
     if (corpusId === "ARAMAIC_TARGUM") return ARAMAIC_CORPUS;
     if (corpusId === "AKKADIAN_GILGAMESH") return AKKADIAN_CORPUS;
     if (corpusId === "SANSKRIT_MAHABHARATA") return SANSKRIT_CORPUS;
+    if (corpusId === "HITTITE_ANNALS") return HITTITE_CORPUS;
+    if (corpusId === "EGYPTIAN_TEXTS") return EGYPTIAN_CORPUS;
     return null;
   },
   findSentencesWithLemma: (
@@ -1718,6 +1819,8 @@ export const CorpusDB = {
       ARAMAIC_GENESIS_1_1,
       AKKADIAN_GILGAMESH_1_1,
       SANSKRIT_GITA_1_1,
+      HITTITE_ANNALS_1_1,
+      EGYPTIAN_PTAHHOTEP_1_1,
       ...getMockSections()
     ];
     for (const section of allSections) {

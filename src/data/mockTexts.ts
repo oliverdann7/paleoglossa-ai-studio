@@ -3,7 +3,8 @@ import {
   TEXT_JOHN_1, GENESIS_1, TEXT_GENESIS, AENEID_1_1, TEXT_AENEID_1, 
   JOHN_1_1, SYRIAC_JOHN_1_1, TEXT_SYRIAC_JOHN,
   COPTIC_JOHN_1_1, TEXT_COPTIC_JOHN, ARAMAIC_GENESIS_1_1, TEXT_ARAMAIC_GENESIS,
-  AKKADIAN_GILGAMESH_1_1, TEXT_AKKADIAN_GILGAMESH, SANSKRIT_GITA_1_1, TEXT_SANSKRIT_GITA
+  AKKADIAN_GILGAMESH_1_1, TEXT_AKKADIAN_GILGAMESH, SANSKRIT_GITA_1_1, TEXT_SANSKRIT_GITA,
+  HITTITE_ANNALS_1_1, TEXT_HITTITE_ANNALS, EGYPTIAN_PTAHHOTEP_1_1, TEXT_EGYPTIAN_PTAHHOTEP
 } from "./corpus";
 
 const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -18,7 +19,8 @@ const titlesByLanguage: Record<string, string[]> = {
   'arc': ["Targum Pseudo-Jonathan", "Targum Neofiti", "Book of Daniel (Aramaic)", "Book of Ezra (Aramaic)", "Genesis Apocryphon", "Targum Isaiah", "Targum Jonathan", "Elephantine Papyri"],
   'akk': ["Enuma Elish", "Epic of Atrahasis", "Code of Hammurabi", "Descent of Ishtar", "Adapa", "Epic of Creation", "Amarna Letters", "Ludlul Bel Nemeqi"],
   'san': ["Ramayana", "Rigveda", "Upanishads", "Pancatantra", "Hitopadesha", "Meghaduta", "Shakuntala", "Arthashastra", "Manusmriti", "Bhagavata Purana"],
-  'egy': ["The Maxims of Ptahhotep", "Tale of Sinuhe", "Book of the Dead", "Westcar Papyrus", "Pyramid Texts", "Coffin Texts", "Instructions of Kagemni", "The Eloquent Peasant", "Story of Wenamun", "Papyrus Edwin Smith"]
+  'egy': ["The Maxims of Ptahhotep", "Tale of Sinuhe", "Book of the Dead", "Westcar Papyrus", "Pyramid Texts", "Coffin Texts", "Instructions of Kagemni", "The Eloquent Peasant", "Story of Wenamun", "Papyrus Edwin Smith"],
+  'hit': ["Annals of Mursili II", "Song of Kumarbi", "Proclamation of Anitta", "Apology of Hattusili III", "Illuyanka Myth", "Instructions of Tudhaliya IV", "Telepinu Myth", "Kikkuli Horse Training Text", "Hittite Laws", "Tawagalawa Letter", "Kadesh Treaty", "Ullikummi Myth"]
 };
 
 const generatedTexts: Text[] = [];
@@ -36,33 +38,6 @@ export const getMockSections = () => {
   return generatedSections;
 };
 
-const EGYPTIAN_BASE_TEXT: Text = {
-  id: "Egy-Ptah",
-  corpusId: "Egy-Corpus",
-  title: "The Maxims of Ptahhotep",
-  author: "Ptahhotep",
-  language: "egy",
-  level: "B1",
-  sectionsPreview: [{ id: "Egy-Ptah-1", label: "Maxim 1" }]
-};
-
-const EGYPTIAN_BASE_SECTION: TextSection = {
-  id: "Egy-Ptah-1",
-  textId: "Egy-Ptah",
-  sequence: 1,
-  label: "Maxim 1",
-  sentences: [
-    {
-      id: "Egy-Ptah-1-s1",
-      tokens: [
-        { id: "Egy-Ptah-1-s1-t1", surface: "𓐍𓂤𓅱", normalized: "ḫrw", lemma: "ḫrw", gloss: "voice", morphology: { partOfSpeech: "noun", case: "Nom" }, punctBefore: "", punctAfter: " " },
-        { id: "Egy-Ptah-1-s1-t2", surface: "𓈖", normalized: "n", lemma: "n", gloss: "of", morphology: { partOfSpeech: "prep" }, punctBefore: "", punctAfter: " " },
-        { id: "Egy-Ptah-1-s1-t3", surface: "𓊵𓏏𓊪𓅆", normalized: "ḥtp", lemma: "ḥtp", gloss: "peace", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: "." }
-      ]
-    }
-  ]
-};
-
 const generateMocks = () => {
   const baseMap: Record<string, { text: Text, section: TextSection }> = {
     'grc': { text: TEXT_JOHN_1, section: JOHN_1_1 },
@@ -74,7 +49,8 @@ const generateMocks = () => {
     'arc': { text: TEXT_ARAMAIC_GENESIS, section: ARAMAIC_GENESIS_1_1 },
     'akk': { text: TEXT_AKKADIAN_GILGAMESH, section: AKKADIAN_GILGAMESH_1_1 },
     'san': { text: TEXT_SANSKRIT_GITA, section: SANSKRIT_GITA_1_1 },
-    'egy': { text: EGYPTIAN_BASE_TEXT, section: EGYPTIAN_BASE_SECTION }
+    'egy': { text: TEXT_EGYPTIAN_PTAHHOTEP, section: EGYPTIAN_PTAHHOTEP_1_1 },
+    'hit': { text: TEXT_HITTITE_ANNALS, section: HITTITE_ANNALS_1_1 }
   };
 
   Object.entries(baseMap).forEach(([lang, base]) => {

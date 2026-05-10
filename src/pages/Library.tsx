@@ -28,6 +28,7 @@ export const Library = () => {
     "Akkadian",
     "Sanskrit",
     "Egyptian Hieroglyphs",
+    "Hittite",
   ];
 
   const allTexts = useMemo(() => {
@@ -112,6 +113,7 @@ export const Library = () => {
         Akkadian: "akk",
         Sanskrit: "san",
         "Egyptian Hieroglyphs": "egy",
+        "Hittite": "hit",
       };
       matchesFilter = t.language === langMap[activeFilter];
     }

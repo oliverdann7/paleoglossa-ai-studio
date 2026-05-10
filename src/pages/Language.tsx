@@ -111,6 +111,15 @@ export const Language = () => {
       writingSystem: "Hieroglyphs",
       sample: "𓐍𓂤𓅱 𓈖 𓊵𓏏𓊪𓅆",
     },
+    hit: {
+      name: "Hittite",
+      description: "An extinct Indo-European language spoken by the Hittites in Anatolia.",
+      type: "ltr",
+      era: "c. 1600 BC – 1180 BC",
+      region: "Anatolia",
+      writingSystem: "Cuneiform",
+      sample: " UM-MA dUTU-ŠI m",
+    },
   };
 
   const languageInfo = langMap[langId || ""];
