@@ -15,6 +15,8 @@ import {
   EyeOff,
   Type,
   Volume2,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CorpusDB } from "../data/corpus";
@@ -28,6 +30,8 @@ import {
 import { ProgressRing } from "../components/reader/ProgressRing";
 import { ReaderTutorial } from "../components/reader/ReaderTutorial";
 import { getTransliteration } from "../lib/transliterate";
+
+import { GoogleGenAI } from "@google/genai";
 
 export const Reader = () => {
   const { textId } = useParams();
@@ -103,6 +107,63 @@ export const Reader = () => {
 
   // Page mode state
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
+
+  const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
+  const [isTranslatingId, setIsTranslatingId] = useState<string | null>(null);
+
+  const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
+  const [isAiWordLoading, setIsAiWordLoading] = useState(false);
+
+  // Clear word insight when word changes
+  useEffect(() => {
+    setAiWordInsight(null);
+  }, [selectedWord?.id]);
+
+  const handleAiWordExplain = async () => {
+    if (isAiWordLoading || !selectedWord) return;
+    setIsAiWordLoading(true);
+    setAiWordInsight("");
+    
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const languageName = text?.language || selectedWord.language || "ancient language";
+      const prompt = `Give a brief, scholarly explanation of the etymology and morphological usage of the word '${selectedWord.text}' (lemma: '${selectedWord.lemma}') in '${languageName}'. Keep it concise (under 150 words).`;
+      
+      const response = await ai.models.generateContentStream({
+        model: "gemini-3.1-pro-preview",
+        contents: prompt,
+      });
+
+      for await (const chunk of response) {
+        setAiWordInsight((prev) => (prev || "") + (chunk.text || ""));
+      }
+    } catch (error) {
+      console.error(error);
+      setAiWordInsight("Failed to fetch insights.");
+    } finally {
+      setIsAiWordLoading(false);
+    }
+  };
+
+  const handleAITranslate = async (sentenceId: string, sentenceTokens: any[]) => {
+    if (isTranslatingId === sentenceId || aiTranslations[sentenceId]) return;
+    setIsTranslatingId(sentenceId);
+    
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const prompt = `Translate the following text into clear, fluent English. Just provide the English translation, and nothing else:\n${sentenceTokens.map(t => t.text).join(" ")}`;
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: prompt
+      });
+      setAiTranslations(prev => ({ ...prev, [sentenceId]: response.text || "Failed to translate." }));
+    } catch (error) {
+      console.error(error);
+      setAiTranslations(prev => ({ ...prev, [sentenceId]: "Error translating text." }));
+    } finally {
+      setIsTranslatingId(null);
+    }
+  };
 
   useEffect(() => {
     if (readingMode === "page") {
@@ -747,7 +808,7 @@ export const Reader = () => {
                       : true;
 
                   return (
-                    <p
+                    <div
                       key={`par-${sentence.id}`}
                       className={cn(
                         "font-serif text-ink2 mb-3 transition-opacity duration-500",
@@ -759,8 +820,23 @@ export const Reader = () => {
                           : "opacity-80 hover:opacity-100",
                       )}
                     >
-                      {sentence.parallel || sentence.translation}
-                    </p>
+                      {aiTranslations[sentence.id] ? (
+                        aiTranslations[sentence.id]
+                      ) : (
+                        <div className="flex flex-col gap-1 items-start">
+                          {sentence.parallel && !sentence.parallel.includes("No parallel text") && <div>{sentence.parallel}</div>}
+                          {sentence.translation && !sentence.translation.includes("No translation") && <div>{sentence.translation}</div>}
+                          <button
+                            onClick={() => handleAITranslate(sentence.id, sentence.tokens)}
+                            disabled={isTranslatingId === sentence.id}
+                            className="text-sm font-sans flex items-center justify-center gap-1.5 px-3 py-1 bg-blue/5 text-blue font-medium rounded-lg hover:bg-blue/10 transition-colors disabled:opacity-50 mt-1"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            {isTranslatingId === sentence.id ? "Translating..." : "Ask AI to Translate"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -899,6 +975,26 @@ export const Reader = () => {
                   {selectedWord.gloss}
                 </div>
               </div>
+
+              {(aiWordInsight || isAiWordLoading) && (
+                <div className="mb-10 p-5 rounded-2xl bg-blue/5 border border-blue/10">
+                  <div className="flex items-center gap-2 mb-3 text-blue font-bold text-sm">
+                    {isAiWordLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    AI Insights
+                  </div>
+                  <p className="text-[14px] text-ink2 leading-relaxed whitespace-pre-wrap">{aiWordInsight}</p>
+                </div>
+              )}
+              
+              {!aiWordInsight && !isAiWordLoading && (
+                <button 
+                  onClick={handleAiWordExplain}
+                  className="w-full mb-10 py-3 border border-blue/20 bg-blue/5 rounded-xl font-bold text-blue text-sm flex items-center justify-center gap-2 hover:bg-blue/10 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Ask AI About This Word
+                </button>
+              )}
 
               {selectedWord.morphology && (
                 <div className="mb-10">

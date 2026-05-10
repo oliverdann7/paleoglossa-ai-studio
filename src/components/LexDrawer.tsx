@@ -6,12 +6,13 @@ import { GoogleGenAI } from '@google/genai';
 
 interface LexDrawerProps {
   word: any;
+  language?: string;
   isOpen: boolean;
   onClose: () => void;
   onStatusChange?: (wordId: number, status: string) => void;
 }
 
-export const LexDrawer = ({ word, isOpen, onClose, onStatusChange }: LexDrawerProps) => {
+export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: LexDrawerProps) => {
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -22,7 +23,7 @@ export const LexDrawer = ({ word, isOpen, onClose, onStatusChange }: LexDrawerPr
     
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const prompt = `Give a brief, scholarly explanation of the etymology and morphological usage of the word '${word.text}' (lemma: ${word.lemma}) in the language '${word.language}'. Keep it concise (under 150 words).`;
+      const prompt = `Give a brief, scholarly explanation of the etymology and morphological usage of the word '${word.text}' (lemma: ${word.lemma}) in the language '${language || word.language || "ancient language"}'. Keep it concise (under 150 words).`;
       
       const response = await ai.models.generateContentStream({
         model: "gemini-3.1-pro-preview",
