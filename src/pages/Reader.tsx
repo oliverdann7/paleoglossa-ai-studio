@@ -519,7 +519,7 @@ export const Reader = () => {
                 {stats.readToday.toLocaleString()}
               </span>
               <span className="text-[9px] uppercase tracking-wider text-muted font-bold hidden md:inline">
-                Read Today
+                {t("reader.readToday", "Read Today")}
               </span>
             </div>
             <div className="hidden md:flex flex-col md:flex-row md:items-baseline md:gap-2">
@@ -527,7 +527,7 @@ export const Reader = () => {
                 {formatTime(elapsedTime)}
               </span>
               <span className="text-[9px] uppercase tracking-wider text-muted font-bold">
-                Session
+                {t("reader.session", "Session")}
               </span>
             </div>
           </div>
@@ -535,7 +535,7 @@ export const Reader = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="hidden md:inline text-[11px] font-bold text-ink3 uppercase tracking-tight">
-                Goal
+                {t("reader.goal", "Goal")}
               </span>
               <ProgressRing
                 progress={Math.min(
@@ -581,7 +581,7 @@ export const Reader = () => {
                   : "text-muted hover:bg-parch3",
               )}
             >
-              <Type className="w-3.5 h-3.5" /> Translit
+              <Type className="w-3.5 h-3.5" /> {t("reader.translit", "Translit")}
             </button>
             <button
               onClick={() => setShowParallel(!showParallel)}
@@ -592,7 +592,7 @@ export const Reader = () => {
                   : "text-muted hover:bg-parch3",
               )}
             >
-              <Layout className="w-3.5 h-3.5" /> Parallel
+              <Layout className="w-3.5 h-3.5" /> {t("reader.parallel", "Parallel")}
             </button>
             <button
               onClick={() => setMaskKnown(!maskKnown)}
@@ -603,7 +603,7 @@ export const Reader = () => {
                   : "text-muted hover:bg-parch3",
               )}
             >
-              <EyeOff className="w-3.5 h-3.5" /> Mask Known
+              <EyeOff className="w-3.5 h-3.5" /> {t("reader.maskKnown", "Mask Known")}
             </button>
             <div className="w-px h-4 bg-bdr m-1 hidden md:block" />
             <div className="flex bg-parch3 p-0.5 rounded-lg border border-bdr shrink-0">
@@ -616,7 +616,7 @@ export const Reader = () => {
                     : "text-muted hover:text-ink cursor-pointer",
                 )}
               >
-                Sentence View
+                {t("reader.sentenceView", "Sentence View")}
               </button>
               <button
                 onClick={() => setReadingMode("page")}
@@ -627,7 +627,7 @@ export const Reader = () => {
                     : "text-muted hover:text-ink cursor-pointer",
                 )}
               >
-                Page View
+                {t("reader.pageView", "Page View")}
               </button>
             </div>
           </div>
@@ -1225,7 +1225,7 @@ export const Reader = () => {
                           }}
                         />
                         <span className="text-[9px] font-bold tracking-widest uppercase text-ink">
-                          {STATE_LABELS[state]}
+                          {t(`vocab.${STATE_LABELS[state].toLowerCase()}`, STATE_LABELS[state])}
                         </span>
                       </button>
                     );

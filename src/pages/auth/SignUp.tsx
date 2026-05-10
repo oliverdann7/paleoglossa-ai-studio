@@ -6,9 +6,11 @@ import { auth, googleProvider, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firebase';
+import { useTranslation } from 'react-i18next';
 
 export const SignUp = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -91,11 +93,11 @@ export const SignUp = () => {
           
           <div>
             <h2 className="text-5xl font-serif font-bold text-vellum-50 leading-tight mb-6">
-              Begin your <br />
+              {t("auth.beginYour", "Begin your")} <br />
               <span className="text-gold-500 italic">Journey.</span>
             </h2>
             <p className="text-vellum-50/60 text-lg max-w-md">
-              Join scholars and students worldwide in mastering the languages of antiquity.
+              {t("auth.beginDesc", "Join scholars and students worldwide in mastering the languages of antiquity.")}
             </p>
           </div>
         </div>
@@ -116,9 +118,9 @@ export const SignUp = () => {
               <h1 className="text-xl font-serif font-bold tracking-tight">Paleoglossa</h1>
             </div>
 
-            <h3 className="text-3xl font-serif font-bold mb-2">Create Account</h3>
+            <h3 className="text-3xl font-serif font-bold mb-2">{t("auth.createAccount", "Create Account")}</h3>
             <p className="text-obsidian-900/60 dark:text-vellum-100/60 mb-8">
-              Sign up to start reading and translating.
+              {t("auth.signUpDesc", "Sign up to start reading and translating.")}
             </p>
 
             <button 
@@ -132,12 +134,12 @@ export const SignUp = () => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
-              {loading ? 'Please Wait...' : 'Sign up with Google'}
+              {loading ? t("auth.pleaseWait", "Please Wait...") : t("auth.signUpGoogle", "Sign up with Google")}
             </button>
 
             <div className="flex items-center gap-4 mb-6">
               <div className="h-px bg-black/10 dark:bg-white/10 flex-1" />
-              <span className="text-xs font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40">Or</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40">{t("auth.or", "Or")}</span>
               <div className="h-px bg-black/10 dark:bg-white/10 flex-1" />
             </div>
 
@@ -151,7 +153,7 @@ export const SignUp = () => {
             <form onSubmit={handleEmailSignUp} className="space-y-5">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest text-obsidian-900/60 dark:text-vellum-100/60 mb-2">
-                  Full Name
+                  {t("auth.fullName", "Full Name")}
                 </label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-obsidian-900/40 dark:text-vellum-100/40" />
@@ -168,7 +170,7 @@ export const SignUp = () => {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest text-obsidian-900/60 dark:text-vellum-100/60 mb-2">
-                  Email Address
+                  {t("auth.email", "Email Address")}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-obsidian-900/40 dark:text-vellum-100/40" />
@@ -185,7 +187,7 @@ export const SignUp = () => {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest text-obsidian-900/60 dark:text-vellum-100/60 mb-2">
-                  Password
+                  {t("auth.password", "Password")}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-obsidian-900/40 dark:text-vellum-100/40" />
@@ -206,19 +208,19 @@ export const SignUp = () => {
                 className="w-full group relative px-8 py-4 bg-obsidian-900 dark:bg-vellum-100 text-vellum-50 dark:text-obsidian-950 rounded-xl font-bold overflow-hidden transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100 mt-4"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading ? t("auth.creatingAcc", "Creating Account...") : t("auth.createAccBtn", "Create Account")}
                   {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                 </span>
               </button>
             </form>
 
             <p className="mt-8 text-center text-sm text-obsidian-900/60 dark:text-vellum-100/60">
-              Already have an account?{' '}
+              {t("auth.alreadyHave", "Already have an account?")}{' '}
               <button 
                 onClick={() => navigate('/auth/login')}
                 className="font-bold text-obsidian-900 dark:text-vellum-100 hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
               >
-                Sign In
+                {t("auth.signIn", "Sign In")}
               </button>
             </p>
           </motion.div>

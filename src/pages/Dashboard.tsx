@@ -284,7 +284,7 @@ export const Dashboard = () => {
                     color: STATE_COLORS[w.state as WordState].text,
                   }}
                 >
-                  {STATE_LABELS[w.state as WordState]}
+                  {t(`vocab.${STATE_LABELS[w.state as WordState].toLowerCase()}`, STATE_LABELS[w.state as WordState])}
                 </div>
               </div>
             ))}
