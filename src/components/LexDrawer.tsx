@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Volume2, Bookmark, Share2, Eye, Brain, CheckCircle2 } from 'lucide-react';
+import { X, Volume2, Bookmark, Eye, Brain, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { GoogleGenAI } from '@google/genai';
 
 interface LexDrawerProps {
   word: any;
@@ -10,6 +12,33 @@ interface LexDrawerProps {
 }
 
 export const LexDrawer = ({ word, isOpen, onClose, onStatusChange }: LexDrawerProps) => {
+  const [aiInsights, setAiInsights] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const handleAiExplain = async () => {
+    if (isAiLoading) return;
+    setIsAiLoading(true);
+    setAiInsights("");
+    
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const prompt = `Give a brief, scholarly explanation of the etymology and morphological usage of the word '${word.text}' (lemma: ${word.lemma}) in the language '${word.language}'. Keep it concise (under 150 words).`;
+      
+      const response = await ai.models.generateContentStream({
+        model: "gemini-3.1-pro-preview",
+        contents: prompt,
+      });
+
+      for await (const chunk of response) {
+        setAiInsights((prev) => (prev || "") + (chunk.text || ""));
+      }
+    } catch (error) {
+      console.error(error);
+      setAiInsights("Failed to fetch insights.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   if (!word) return null;
 
@@ -122,22 +151,36 @@ export const LexDrawer = ({ word, isOpen, onClose, onStatusChange }: LexDrawerPr
 
             <section className="mb-12">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">Root Analysis</h4>
-              <div className="p-6 rounded-2xl bg-gold-500/5 border border-gold-500/10">
+              <div className="p-6 rounded-2xl bg-gold-500/5 border border-gold-500/10 mb-4">
                 <div className="text-2xl font-serif font-bold text-gold-600 mb-2">{word.root || '—'}</div>
                 <p className="text-sm text-obsidian-900/60 dark:text-vellum-100/60 leading-relaxed">
                   Shares a semantic root with <span className="text-gold-600 font-bold">14 other words</span> in this corpus.
                 </p>
               </div>
+
+              {(aiInsights || isAiLoading) && (
+                <div className="p-6 rounded-2xl bg-blue/5 border border-blue/10 mb-4">
+                  <div className="flex items-center gap-2 mb-3 text-blue font-bold text-sm">
+                    {isAiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    AI Insights
+                  </div>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{aiInsights}</p>
+                </div>
+              )}
             </section>
 
             <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={handleAiExplain}
+                disabled={isAiLoading}
+                className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+              >
+                <Sparkles className="w-3 h-3 text-blue" />
+                AI Explain
+              </button>
               <button className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 <Bookmark className="w-3 h-3" />
                 Annotate
-              </button>
-              <button className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                <Share2 className="w-3 h-3" />
-                Share
               </button>
             </div>
           </motion.div>
