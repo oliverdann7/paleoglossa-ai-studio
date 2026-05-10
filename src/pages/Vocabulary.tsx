@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Search, Trash2, ExternalLink, History, TrendingUp, Brain, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useKnowledge, WordInfo } from "../lib/hooks/useKnowledge";
+import { useKnowledge } from "../lib/hooks/useKnowledge";
+import { WordInfo } from "../lib/services/vocabularyService";
 import { WordState, STATE_LABELS } from "../lib/constants/wordStates";
 import { getTokenInfo } from "../lib/data/dictionary";
 import { useTranslation } from "react-i18next";
@@ -24,8 +25,8 @@ export const Vocabulary = () => {
         return state !== WordState.NEW && state !== WordState.IGNORED;
       })
       .map(([lemma, info]) => {
-        const wordInfo = typeof info === "object" ? (info as WordInfo) : ({ state: info } as WordInfo);
-        const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview) : new Date();
+        const wordInfo = typeof info === "object" ? (info as WordInfo) : ({ state: info } as unknown as WordInfo);
+        const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview as any) : new Date();
         const tokenInfo = getTokenInfo(lemma);
         const definition = (wordInfo as any).userGloss || tokenInfo?.gloss || "Definition missing";
         const languageDesc = tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F]/u) ? "Hebrew" : "Greek");

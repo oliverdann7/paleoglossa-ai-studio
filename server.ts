@@ -154,7 +154,7 @@ async function startServer() {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
-      generationConfig: { responseMimeType: "application/json" }
+      config: { responseMimeType: "application/json" }
     });
     res.json(JSON.parse(response.text || '{}'));
   });
@@ -176,7 +176,7 @@ async function startServer() {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: PROMPTS.v1.metadata(languageId, rawText),
-      generationConfig: { responseMimeType: "application/json" }
+      config: { responseMimeType: "application/json" }
     });
     res.json(JSON.parse(response.text || '{}'));
   });
@@ -200,7 +200,7 @@ async function startServer() {
   });
 
   // Alias
-  app.post('/api/scrape', (req, res) => {
+  app.post('/api/scrape', (_req, res) => {
     res.redirect(307, '/api/ai/scrape');
   });
 
@@ -214,7 +214,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('/*all', (req, res) => {
+    app.get('/*all', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
