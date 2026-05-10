@@ -6,10 +6,14 @@ import { CorpusDB } from "../data/corpus";
 import { cn } from "../lib/utils";
 import { useTranslation } from "react-i18next";
 
+import { LANGUAGES } from "../lib/constants/languages";
+
 export const Language = () => {
   const { langId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const langIcon = LANGUAGES.find(l => l.id === langId)?.icon;
 
   const langMap: Record<string, any> = {
     grc: {
@@ -204,9 +208,16 @@ export const Language = () => {
         >
           <div className="flex flex-col md:flex-row gap-12 items-start">
             <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-serif mb-4 text-ink">
-                {languageInfo.name}
-              </h1>
+              <div className="flex items-center gap-4 mb-4">
+                {langIcon && (
+                  <span className="w-14 h-14 bg-parch2 text-ink rounded-full flex items-center justify-center text-3xl font-serif">
+                    {langIcon}
+                  </span>
+                )}
+                <h1 className="text-4xl md:text-5xl font-serif text-ink tracking-tight">
+                  {languageInfo.name}
+                </h1>
+              </div>
               <p className="text-lg text-ink2 leading-relaxed mb-6">
                 {languageInfo.description}
               </p>
