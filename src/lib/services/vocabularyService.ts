@@ -44,7 +44,7 @@ export class VocabularyService {
         map[data.term] = {
           state: data.status,
           srs: data.nextReview ? {
-            lastReviewed: null,
+            lastReviewed: data.lastReviewed || null,
             nextReview: data.nextReview,
             interval: data.interval,
             easing: data.ease,
@@ -61,12 +61,16 @@ export class VocabularyService {
     }
   }
 
-  static async setWordState(userId: string | null, term: string, state: WordState, language: string = "unknown") {
+  static async setWordState(userId: string | null, term: string, state: WordState, language: string = "unknown", srs?: SRSData) {
     if (!userId) {
       // Local fallback
       const ls = localStorage.getItem(STORAGE_KEY);
       const map = ls ? JSON.parse(ls) : {};
-      map[term] = { state, addedAt: new Date().toISOString() };
+      map[term] = { 
+        state, 
+        addedAt: map[term]?.addedAt || new Date().toISOString(),
+        srs: srs || map[term]?.srs
+      };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
       return;
     }
@@ -75,27 +79,42 @@ export class VocabularyService {
     try {
       const docRef = doc(db, `users/${userId}/vocabulary`, termId);
       const snap = await getDoc(docRef);
+      
+      const payload: any = {
+        term,
+        status: state,
+        language,
+        updatedAt: serverTimestamp(),
+      };
+
+      if (srs) {
+        payload.nextReview = srs.nextReview;
+        payload.interval = srs.interval;
+        payload.ease = srs.easing;
+        payload.step = srs.step;
+        payload.lastReviewed = srs.lastReviewed;
+      }
+
       if (snap.exists()) {
-        await updateDoc(docRef, {
-          status: state,
-          updatedAt: serverTimestamp()
-        });
+        await updateDoc(docRef, payload);
       } else {
         await setDoc(docRef, {
-          term,
-          status: state,
-          language,
+          ...payload,
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          interval: 0,
-          ease: 2.5,
-          step: 0,
-          nextReview: new Date().toISOString()
+          // Default SRS if not provided
+          nextReview: payload.nextReview || new Date().toISOString(),
+          interval: payload.interval || 0,
+          ease: payload.ease || 2.5,
+          step: payload.step || 0
         });
       }
     } catch (e) {
       console.error("Failed to set word state", e);
     }
+  }
+
+  static async updateSRS(userId: string | null, term: string, srs: SRSData, state: WordState) {
+    return this.setWordState(userId, term, state, "unknown", srs);
   }
 
   static async setWordNote(userId: string | null, term: string, notes: string) {

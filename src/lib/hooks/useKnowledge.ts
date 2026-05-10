@@ -132,10 +132,24 @@ export const useKnowledge = () => {
   }, [userId, updateStatsState]);
 
   const updateWordSRS = useCallback((lemma: string, srs: SRSData, state: WordState) => {
-    // Basic local state update mapping back to the VocabService API if you implement an SRS update endpoint.
-    // For now we persist just state locally 
-    setWordState(lemma, state);
-  }, [setWordState]);
+    setKnowledge(prev => {
+      const current = prev[lemma] || { addedAt: new Date().toISOString() };
+      return { ...prev, [lemma]: { ...current, srs, state } };
+    });
+    VocabularyService.updateSRS(userId, lemma, srs, state);
+  }, [userId]);
+
+  const fetchTextProgress = useCallback(async (textId: string) => {
+    return ProgressService.getTextProgress(userId, textId);
+  }, [userId]);
+
+  const saveTextProgress = useCallback(async (progress: any) => {
+    return ProgressService.setTextProgress(userId, progress);
+  }, [userId]);
+
+  const getAllProgress = useCallback(async () => {
+    return ProgressService.getAllProgress(userId);
+  }, [userId]);
 
   const getWordInfo = useCallback((lemma: string): WordInfo => {
     const val = knowledge[lemma];
@@ -196,6 +210,9 @@ export const useKnowledge = () => {
     addReadWords,
     incrementReadingTime,
     setKnowledge,
-    exportData
+    exportData,
+    fetchTextProgress,
+    saveTextProgress,
+    getAllProgress
   };
 };

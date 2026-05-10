@@ -60,6 +60,19 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["title", "content", "language", "totalWords", "percentKnown", "percentLearning", "isImported", "createdAt", "updatedAt"]
+    },
+    "TextProgress": {
+      "title": "Text Progress",
+      "description": "User's reading progress for a specific text",
+      "type": "object",
+      "properties": {
+        "textId": { "type": "string" },
+        "lastPosition": { "type": "number" },
+        "completed": { "type": "boolean" },
+        "lastReadAt": { "type": "string" },
+        "sentenceIndex": { "type": "number" }
+      },
+      "required": ["textId", "lastPosition", "lastReadAt"]
     }
   },
   "firestore": {
@@ -74,6 +87,10 @@
     "users/{userId}/imports/{importId}": {
       "schema": { "$ref": "#/entities/ImportedText" },
       "description": "User custom imported texts."
+    },
+    "users/{userId}/progress/{textId}": {
+      "schema": { "$ref": "#/entities/TextProgress" },
+      "description": "Progress within a specific text."
     }
   }
 }

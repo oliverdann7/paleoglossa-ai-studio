@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 
 export interface DailyStat {
   date: string; // YYYY-MM-DD
@@ -17,6 +17,14 @@ export interface ReadingStats {
   history: DailyStat[];
   freezesTotal: number;
   freezesUsed: number;
+}
+
+export interface TextProgress {
+  textId: string;
+  lastPosition: number; // scroll or sentence index
+  completed: boolean;
+  lastReadAt: string;
+  sentenceIndex?: number;
 }
 
 export class ProgressService {
@@ -65,6 +73,58 @@ export class ProgressService {
       });
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  static async getTextProgress(userId: string | null, textId: string): Promise<TextProgress | null> {
+    if (!userId) {
+      const saved = localStorage.getItem(`progress_${textId}`);
+      return saved ? JSON.parse(saved) : null;
+    }
+
+    try {
+      const snap = await getDoc(doc(db, `users/${userId}/progress`, textId));
+      return snap.exists() ? snap.data() as TextProgress : null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+
+  static async setTextProgress(userId: string | null, progress: TextProgress) {
+    if (!userId) {
+      localStorage.setItem(`progress_${progress.textId}`, JSON.stringify(progress));
+      // Also update a global list for local fallback
+      const recent = JSON.parse(localStorage.getItem('recent_progress') || '[]');
+      const filtered = recent.filter((r: any) => r.textId !== progress.textId);
+      filtered.unshift({ ...progress, lastReadAt: new Date().toISOString() });
+      localStorage.setItem('recent_progress', JSON.stringify(filtered.slice(0, 10)));
+      return;
+    }
+
+    try {
+      await setDoc(doc(db, `users/${userId}/progress`, progress.textId), {
+        ...progress,
+        lastReadAt: new Date().toISOString()
+      }, { merge: true });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  static async getAllProgress(userId: string | null): Promise<TextProgress[]> {
+    if (!userId) {
+      return JSON.parse(localStorage.getItem('recent_progress') || '[]');
+    }
+
+    try {
+      const snap = await getDocs(collection(db, `users/${userId}/progress`));
+      const results: TextProgress[] = [];
+      snap.forEach(doc => results.push(doc.data() as TextProgress));
+      return results.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime());
+    } catch (e) {
+      console.error(e);
+      return [];
     }
   }
 }

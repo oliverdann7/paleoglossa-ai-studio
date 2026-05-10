@@ -74,7 +74,7 @@ service cloud.firestore {
                       
         allow update: if isAuthed() && request.auth.uid == userId &&
                       isValidVocabItem(incoming(), false) &&
-                      incoming().diff(existing()).affectedKeys().hasOnly(['status', 'nextReview', 'interval', 'ease', 'step', 'updatedAt', 'translit', 'definition', 'notes', 'language']);
+                      incoming().diff(existing()).affectedKeys().hasOnly(['status', 'nextReview', 'interval', 'ease', 'step', 'updatedAt', 'translit', 'definition', 'notes', 'language', 'lastReviewed']);
                       
         allow delete: if isAuthed() && request.auth.uid == userId;
       }
@@ -105,6 +105,24 @@ service cloud.firestore {
                       isValidImport(incoming(), false) &&
                       incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'totalWords', 'percentKnown', 'percentLearning', 'updatedAt']);
                       
+        allow delete: if isAuthed() && request.auth.uid == userId;
+      }
+
+      // Progress subcollection
+      match /progress/{textId} {
+        function isValidProgress(data) {
+          return data.keys().hasAll(['textId', 'lastPosition', 'lastReadAt']) &&
+                 data.textId is string &&
+                 data.lastPosition is number &&
+                 data.lastReadAt is string &&
+                 (data.get('completed', false) is bool) &&
+                 (data.get('sentenceIndex', 0) is number);
+        }
+
+        allow get, list: if isAuthed() && request.auth.uid == userId;
+        allow create, update: if isAuthed() && request.auth.uid == userId &&
+                               isValidId(textId) &&
+                               isValidProgress(incoming());
         allow delete: if isAuthed() && request.auth.uid == userId;
       }
     }
