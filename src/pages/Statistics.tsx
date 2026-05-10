@@ -146,13 +146,23 @@ export const Statistics = () => {
       // Map 'Biblical Hebrew' to 'hbo' to match the keys of `raw`
       if (lang === "Biblical Hebrew") lang = "hbo";
 
-      if ((i as any).language) lang = (i as any).language;
+      if ((i as any).languageId) lang = (i as any).languageId;
+      else if ((i as any).language) lang = (i as any).language;
 
       if (raw[lang]) {
         if (i.state === WordState.KNOWN) raw[lang].known++;
         else if (i.state === WordState.NEW) raw[lang].new++;
         else if (i.state === WordState.SEEN) raw[lang].learning++; // Count seen as part of learning for progress bar
         else raw[lang].learning++;
+      } else {
+        // Unknown language mapping?
+        if (!raw["other"]) {
+            raw["other"] = { label: lang, known: 0, learning: 0, new: 0 };
+        }
+        if (i.state === WordState.KNOWN) raw["other"].known++;
+        else if (i.state === WordState.NEW) raw["other"].new++;
+        else if (i.state === WordState.SEEN) raw["other"].learning++;
+        else raw["other"].learning++;
       }
     });
 

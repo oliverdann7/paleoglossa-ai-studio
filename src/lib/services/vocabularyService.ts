@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { doc, setDoc, updateDoc, getDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { WordState } from '../constants/wordStates';
 import { WordStatus, SRSData } from '../../types/firestore';
 
@@ -25,6 +25,59 @@ function getTermId(term: string, languageId: string): string {
     .join('');
   return hex.length > 120 ? hex.substring(0, 120) : hex;
 }
+
+// Global queue for batching vocabulary writes to reduce Firestore costs
+const vocabWriteQueue = new Map<string, { docRef: any, payload: any, isNew: boolean }>();
+let vocabWriteTimer: NodeJS.Timeout | null = null;
+
+const flushVocabWrites = async () => {
+  if (vocabWriteQueue.size === 0) return;
+  
+  const entries = Array.from(vocabWriteQueue.entries());
+  vocabWriteQueue.clear();
+  
+  // Firestore batches support up to 500 operations
+  const chunkSize = 500;
+  for (let i = 0; i < entries.length; i += chunkSize) {
+    const chunk = entries.slice(i, i + chunkSize);
+    const batch = writeBatch(db);
+    
+    for (const data of chunk.map(c => c[1])) {
+      if (data.isNew) {
+        batch.set(data.docRef, data.payload, { merge: true });
+      } else {
+        batch.update(data.docRef, data.payload);
+      }
+    }
+    
+    try {
+      await batch.commit();
+    } catch (e) {
+      console.error("Failed to commit vocabulary batch", e);
+      // Depending on strictness, we might want to put them back in the queue
+    }
+  }
+};
+
+const enqueueVocabWrite = (userId: string, termId: string, payload: any, isNew: boolean = false) => {
+  const docRef = doc(db, `users/${userId}/vocabulary`, termId);
+  const queueKey = `${userId}_${termId}`;
+  
+  const existing = vocabWriteQueue.get(queueKey);
+  if (existing) {
+    // Merge payloads
+    vocabWriteQueue.set(queueKey, {
+      docRef,
+      payload: { ...existing.payload, ...payload },
+      isNew: existing.isNew || isNew
+    });
+  } else {
+    vocabWriteQueue.set(queueKey, { docRef, payload, isNew });
+  }
+
+  if (vocabWriteTimer) clearTimeout(vocabWriteTimer);
+  vocabWriteTimer = setTimeout(flushVocabWrites, 2000); // 2 second debounce
+};
 
 export class VocabularyService {
   static async getVocabulary(userId: string | null): Promise<KnowledgeMap> {
@@ -80,66 +133,42 @@ export class VocabularyService {
     }
 
     const termId = getTermId(term, languageId);
-    try {
-      const docRef = doc(db, `users/${userId}/vocabulary`, termId);
-      const snap = await getDoc(docRef);
-      
-      const payload: any = {
-        term,
-        normalizedTerm: term.toLowerCase().trim(),
-        status: state,
-        languageId,
-        updatedAt: serverTimestamp(),
-      };
+    const payload: any = {
+      term,
+      normalizedTerm: term.toLowerCase().trim(),
+      status: state,
+      languageId,
+      updatedAt: serverTimestamp(),
+    };
 
-      if (srs) {
-        payload.nextReview = srs.nextReview;
-        payload.interval = srs.interval;
-        payload.ease = srs.ease;
-        payload.step = srs.step;
-        payload.lastReviewed = srs.lastReviewed;
-      }
-
-      if (snap.exists()) {
-        await updateDoc(docRef, payload);
-      } else {
-        await setDoc(docRef, {
-          ...payload,
-          createdAt: serverTimestamp(),
-          encounterCount: 1,
-          firstSeenAt: serverTimestamp(),
-          lastSeenAt: serverTimestamp(),
-          sourceTextIds: [],
-          tags: [],
-          // Default SRS if not provided
-          nextReview: payload.nextReview || new Date().toISOString(),
-          interval: payload.interval || 0,
-          ease: payload.ease || 2.5,
-          step: payload.step || 0
-        });
-      }
-    } catch (e) {
-      console.error("Failed to set word state", e);
+    if (srs) {
+      payload.nextReview = srs.nextReview;
+      payload.interval = srs.interval;
+      payload.ease = srs.ease;
+      payload.step = srs.step;
+      payload.lastReviewed = srs.lastReviewed;
     }
+
+    enqueueVocabWrite(userId, termId, payload, true);
   }
 
   static async incrementEncounter(userId: string | null, term: string, languageId: string = "unknown") {
-    if (!userId) return; // For local we could implement but skipping for brevity
+    // In a batch queue, incrementing can be tricky. We'll fallback to regular updateDoc for now 
+    // since it relies on previous state, but we could also use Firestore's increment().
+    if (!userId) return;
     
     const termId = getTermId(term, languageId);
     try {
       const docRef = doc(db, `users/${userId}/vocabulary`, termId);
       const snap = await getDoc(docRef);
       if (snap.exists()) {
-        // We use modular import of increment in real apps, but Here I can just use a number update
         const current = snap.data().encounterCount || 0;
-        await updateDoc(docRef, {
+        enqueueVocabWrite(userId, termId, {
           encounterCount: current + 1,
           lastSeenAt: serverTimestamp(),
           updatedAt: serverTimestamp()
-        });
+        }, false);
       } else {
-        // Create as NEW
         await this.setWordState(userId, term, WordState.NEW, languageId);
       }
     } catch (e) {
@@ -150,15 +179,10 @@ export class VocabularyService {
   static async updateGloss(userId: string | null, term: string, gloss: string, languageId: string = "unknown") {
     if (!userId) return;
     const termId = getTermId(term, languageId);
-    try {
-      const docRef = doc(db, `users/${userId}/vocabulary`, termId);
-      await updateDoc(docRef, {
-        userGloss: gloss,
-        updatedAt: serverTimestamp()
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    enqueueVocabWrite(userId, termId, {
+      userGloss: gloss,
+      updatedAt: serverTimestamp()
+    }, false);
   }
 
   static async updateSRS(userId: string | null, term: string, srs: SRSData, state: WordState, languageId: string = "unknown") {
@@ -175,10 +199,10 @@ export class VocabularyService {
         const data = snap.data();
         const contexts = data.contexts || [];
         if (!contexts.includes(context)) {
-          await updateDoc(docRef, {
+          enqueueVocabWrite(userId, termId, {
             contexts: [...contexts, context].slice(-5),
             updatedAt: serverTimestamp()
-          });
+          }, false);
         }
       }
     } catch (e) {
@@ -195,14 +219,14 @@ export class VocabularyService {
       const entries = Object.entries(map);
       let count = 0;
       
-      // Batch processing would be better, but for simplicity let's do it sequentially or with Promise.all
-      // Note: term as key in localStorage doesn't have languageId usually, we might need to guess or use default
       for (const [term, info] of entries) {
         await this.setWordState(userId, term, info.state as WordStatus, info.languageId || "unknown", info.srs);
         count++;
       }
       
-      // Clear localStorage after migration
+      // Flush now for migration
+      await flushVocabWrites();
+      
       localStorage.removeItem(STORAGE_KEY);
       return count;
     } catch (e) {
@@ -225,31 +249,10 @@ export class VocabularyService {
     }
 
     const termId = getTermId(term, languageId);
-    try {
-      const docRef = doc(db, `users/${userId}/vocabulary`, termId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        await updateDoc(docRef, {
-          notes,
-          updatedAt: serverTimestamp()
-        });
-      } else {
-        await setDoc(docRef, {
-          term,
-          normalizedTerm: term.toLowerCase().trim(),
-          languageId,
-          notes,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          status: WordStatus.NEW,
-          interval: 0,
-          ease: 2.5,
-          step: 0,
-          nextReview: new Date().toISOString()
-        });
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    enqueueVocabWrite(userId, termId, {
+      notes,
+      updatedAt: serverTimestamp()
+    }, true);
   }
 }
+

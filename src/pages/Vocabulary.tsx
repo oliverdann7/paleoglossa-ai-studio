@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
-import { Search, Settings2, Trash2, X, ExternalLink } from "lucide-react";
+import { motion } from "motion/react";
+import { Search, Trash2, ExternalLink, History, TrendingUp, Brain, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useKnowledge, WordInfo } from "../lib/hooks/useKnowledge";
 import { WordState, STATE_LABELS } from "../lib/constants/wordStates";
@@ -11,19 +11,11 @@ import { useTranslation } from "react-i18next";
 export const Vocabulary = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("All");
-  const [showSettings, setShowSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { knowledge, setWordState } = useKnowledge();
   const { t } = useTranslation();
 
-  const [srsIntervals, setSrsIntervals] = useState({
-    seenOnce: "1 day",
-    familiar: "3 days",
-    known: "1 week",
-    multiplier: "1.5x",
-  });
-
-  const filters = ["All", "Known", "Familiar", "Learning", "Seen"];
+  const filters = ["All", "Due", "Known", "Familiar", "Learning", "Seen"];
 
   const words = useMemo(() => {
     return Object.entries(knowledge)
@@ -32,28 +24,24 @@ export const Vocabulary = () => {
         return state !== WordState.NEW && state !== WordState.IGNORED;
       })
       .map(([lemma, info]) => {
-        const wordInfo =
-          typeof info === "object"
-            ? (info as WordInfo)
-            : ({ state: info } as WordInfo);
-        const nextReview = wordInfo.srs?.nextReview
-          ? new Date(wordInfo.srs.nextReview)
-          : new Date();
-
-          const tokenInfo = getTokenInfo(lemma);
-          const definition = (wordInfo as any).userGloss || tokenInfo?.gloss || "Definition...";
-          const languageDesc = tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u) ? "Hebrew" : "Greek");
+        const wordInfo = typeof info === "object" ? (info as WordInfo) : ({ state: info } as WordInfo);
+        const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview) : new Date();
+        const tokenInfo = getTokenInfo(lemma);
+        const definition = (wordInfo as any).userGloss || tokenInfo?.gloss || "Definition missing";
+        const languageDesc = tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F]/u) ? "Hebrew" : "Greek");
 
         return {
-          id: lemma, // using lemma as ID
+          id: lemma,
           term: lemma,
           definition,
           translit: tokenInfo?.transliteration || "",
           language: languageDesc,
           status: STATE_LABELS[wordInfo.state as WordState],
           nextReview: nextReview.toISOString(),
+          isDue: nextReview <= new Date(),
         };
-      });
+      })
+      .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime()); // sort due earliest
   }, [knowledge]);
 
   const handleDelete = (id: string) => {
@@ -61,10 +49,11 @@ export const Vocabulary = () => {
   };
 
   const filteredWords = words.filter((w) => {
-    const matchesFilter = activeFilter === "All" || w.status === activeFilter;
-    const matchesSearch =
-      w.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.definition.toLowerCase().includes(searchQuery.toLowerCase());
+    let matchesFilter = true;
+    if (activeFilter === "Due") matchesFilter = w.isDue && w.status !== "Seen";
+    else if (activeFilter !== "All") matchesFilter = w.status === activeFilter;
+    
+    const matchesSearch = w.term.toLowerCase().includes(searchQuery.toLowerCase()) || w.definition.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -72,25 +61,27 @@ export const Vocabulary = () => {
     const code = langId?.toLowerCase() || '';
     if (code.includes('greek') || code === 'grc') return `https://lsj.gr/wiki/${encodeURIComponent(lemma)}`;
     if (code.includes('latin') || code === 'lat') return `https://www.perseus.tufts.edu/hopper/morph?l=${encodeURIComponent(lemma)}&la=la`;
-    if (code.includes('sanskrit') || code === 'san') return `https://www.sanskrit-lexicon.uni-koeln.de/scans/MWScan/2014/web/webtc/indexcaller.php?key=${encodeURIComponent(lemma)}`;
     if (code.includes('hebrew') || code === 'hbo' || code === 'heb') return `https://www.pealim.com/search/?q=${encodeURIComponent(lemma)}`;
     return `https://en.wiktionary.org/wiki/${encodeURIComponent(lemma)}`;
   };
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case "Known":
-        return "cefr-a";
-      case "Familiar":
-        return "cefr-a text-amber";
-      case "Learning":
-        return "cefr-b";
-      case "Seen":
-        return "cefr-b opacity-70";
-      default:
-        return "";
+      case "Known": return "cefr-c";
+      case "Familiar": return "cefr-b";
+      case "Learning": return "cefr-a";
+      case "Seen": return "cefr-a opacity-50";
+      default: return "";
     }
   };
+
+  const stats = useMemo(() => {
+     return {
+        due: words.filter(w => w.isDue && w.status !== "Seen").length,
+        known: words.filter(w => w.status === "Known" || w.status === "Familiar").length,
+        learning: words.filter(w => w.status === "Learning").length,
+     }
+  }, [words]);
 
   return (
     <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
@@ -100,54 +91,69 @@ export const Vocabulary = () => {
             {t('vocab.title', "Vocabulary")}
           </h2>
           <p className="font-body text-[15px] italic text-ink2">
-            {t('vocab.personalCollection', `Your personal collection of ${words.length} classical forms and definitions`, { count: words.length })}
+            {t('vocab.personalCollection', `Your personal collection of ${words.length} tracked words`, { count: words.length })}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2.5 rounded-full bg-parch border border-bdr hover:bg-parch2 transition-colors text-ink2"
-            title={t('vocab.config', "Spaced Repetition Configuration")}
-          >
-            <Settings2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => navigate("/app/review")}
-            className="btn-primary px-6 py-2.5"
-          >
+          <button onClick={() => navigate("/app/review")} className="btn-primary px-6 py-2.5">
             {t('dashboard.startReview', "Start Review")}
           </button>
         </div>
       </header>
 
-      <div className="flex flex-col gap-5 mb-10">
-        <div className="flex items-center justify-between">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+         <div className="card p-5 border-blue/20 bg-blue/5">
+            <div className="flex items-center gap-3 mb-2 opacity-70">
+               <Brain className="w-4 h-4 text-blue" />
+               <h4 className="text-[12px] uppercase tracking-widest font-bold text-blue">Reviews Due</h4>
+            </div>
+            <div className="text-[32px] font-serif leading-none text-ink">{stats.due}</div>
+         </div>
+         <div className="card p-5 border-emerald-500/20 bg-emerald-500/5">
+            <div className="flex items-center gap-3 mb-2 opacity-70">
+               <GraduationCap className="w-4 h-4 text-emerald-600" />
+               <h4 className="text-[12px] uppercase tracking-widest font-bold text-emerald-600">Words Known</h4>
+            </div>
+            <div className="text-[32px] font-serif leading-none text-ink">{stats.known}</div>
+         </div>
+         <div className="card p-5 border-amber/20 bg-amber/5">
+            <div className="flex items-center gap-3 mb-2 opacity-70">
+               <TrendingUp className="w-4 h-4 text-amber" />
+               <h4 className="text-[12px] uppercase tracking-widest font-bold text-amber">Words Learning</h4>
+            </div>
+            <div className="text-[32px] font-serif leading-none text-ink">{stats.learning}</div>
+         </div>
+      </div>
+
+      <div className="flex flex-col gap-5 mb-10 card p-4 bg-parch2/30 border-bdr/50 shadow-sm">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2">
             {filters.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-wide uppercase transition-all duration-150 border",
+                  "px-4 py-2 rounded-full text-[12px] font-bold font-sans transition-all duration-150 border active:scale-95",
                   activeFilter === filter
-                    ? "bg-blue text-white shadow-sm border-blue"
-                    : "bg-parch text-ink3 border-bdr hover:bg-parch2",
+                    ? "bg-blue text-white shadow-md border-blue"
+                    : "bg-white text-ink3 border-bdr/60 hover:bg-parch hover:border-blue/30",
                 )}
               >
-                {filter}
+                {filter} {filter === "Due" && stats.due > 0 && <span className="ml-1 opacity-70">({stats.due})</span>}
               </button>
             ))}
           </div>
 
-          <div className="relative w-full max-w-[240px] hidden md:block">
+          <div className="relative w-full md:w-64 flex-shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="text"
               placeholder="Search lexicon..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-1.5 bg-white border border-bdr rounded-full text-[13px] font-sans focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-colors"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-bdr rounded-[12px] text-[14px] font-sans focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all shadow-sm"
             />
           </div>
         </div>
@@ -160,72 +166,50 @@ export const Vocabulary = () => {
               key={word.id}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.3 }}
-              className="card p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 group hover:border-blue/30 transition-colors"
+              transition={{ delay: i * 0.015, duration: 0.3 }}
+              className="card p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 group hover:border-blue/30 hover:shadow-md transition-all"
             >
               <div className="flex flex-col md:flex-row md:items-center gap-6">
-                <div className="w-32 flex-shrink-0">
-                  <div
-                    className={cn(
-                      "text-[26px] font-serif text-ink leading-tight",
-                      ['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'Hebrew'].includes(word.language) ? "font-hebrew" : "",
-                    )}
-                    dir={['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'egy', 'Hebrew'].includes(word.language) ? "rtl" : "ltr"}
-                  >
+                <div className="w-40 flex-shrink-0">
+                  <div className={cn("text-[26px] font-serif text-ink leading-tight",
+                      ['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'Hebrew'].includes(word.language) ? "font-hebrew" : "")}
+                      dir={['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'egy', 'Hebrew'].includes(word.language) ? "rtl" : "ltr"}>
                     {word.term}
                   </div>
-                  <div className="font-mono text-[11px] italic text-muted mt-0.5">
-                    {word.translit}
-                  </div>
+                  <div className="font-mono text-[11px] italic text-muted mt-0.5">{word.translit}</div>
                 </div>
 
                 <div className="flex flex-col">
                   <div className="flex items-center gap-3 mb-1">
-                    <span className="font-mono text-[9px] text-muted border border-bdr/50 bg-parch px-1 rounded uppercase">
+                    <span className="font-mono text-[9px] font-bold text-muted border border-bdr/60 bg-parch px-1.5 py-0.5 rounded uppercase">
                       {word.language}
                     </span>
-                    {word.nextReview && (
-                      <span className="text-[10px] font-bold text-blue flex items-center gap-1.5 opacity-60">
+                    {word.status !== 'Seen' && (
+                      <span className={cn("text-[10px] font-bold flex items-center gap-1.5 uppercase tracking-wider", word.isDue ? "text-amber" : "text-emerald-600/70")}>
                         <History className="w-3 h-3" />
-                        {new Date(word.nextReview) <= new Date() ? "Due Now" : `Due ${new Date(word.nextReview).toLocaleDateString()}`}
+                        {word.isDue ? "Due Now" : `Due ${new Date(word.nextReview).toLocaleDateString()}`}
                       </span>
                     )}
                   </div>
-                  <div className="font-body text-[13.5px] italic text-ink2">
+                  <div className="font-body text-[14px] italic text-ink2 mt-1">
                     {word.definition}
                   </div>
-                  {((knowledge[word.term] as WordInfo)?.contexts?.length ?? 0) > 0 && (
-                    <div className="mt-2 text-[11px] text-muted line-clamp-1 opacity-60">
-                      "{(knowledge[word.term] as WordInfo)?.contexts?.[0]}"
-                    </div>
-                  )}
                 </div>
               </div>
 
               <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t border-bdr/50 md:border-none">
-                <div className="flex flex-col items-start md:items-end w-32">
-                  <div className={cn("pill", getStatusClass(word.status))}>
+                <div className="flex flex-col items-start md:items-end w-24">
+                  <div className={cn("pill px-2 py-0.5 text-[10.5px] font-bold shadow-sm", getStatusClass(word.status))}>
                     {t(`vocab.${word.status.toLowerCase()}`, word.status)}
-                  </div>
-                  <div className="text-[10px] text-muted font-sans mt-2">
-                    {t("vocab.nextReview", "Next Review:")}{" "}
-                    {new Date(word.nextReview).toLocaleDateString()}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                  <a 
-                    href={getDictionaryUrl(word.term, word.language)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1.5 rounded text-muted hover:text-ink hover:bg-parch3 transition-colors"
-                  >
+                  <a href={getDictionaryUrl(word.term, word.language)} target="_blank" rel="noopener noreferrer"
+                     className="p-1.5 rounded text-muted hover:text-blue hover:bg-blue/5 transition-colors">
                     <ExternalLink className="w-4 h-4" />
                   </a>
-                  <button
-                    onClick={() => handleDelete(word.id)}
-                    className="p-1.5 rounded text-ruby/50 hover:text-ruby hover:bg-rubyxl transition-colors"
-                  >
+                  <button onClick={() => handleDelete(word.id)} className="p-1.5 rounded text-ruby/40 hover:text-ruby hover:bg-ruby/5 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -233,140 +217,14 @@ export const Vocabulary = () => {
             </motion.div>
           ))
         ) : (
-          <div className="py-20 text-center flex flex-col items-center">
-            <div className="text-[40px] text-muted mb-4 font-serif">❧</div>
-            <h3 className="font-serif text-lg text-ink mb-1">{t("vocab.noWordsFound", "No words found")}</h3>
-            <p className="font-body text-[14px] italic text-ink3">
-              {t("vocab.adjustFilters", "Try adjusting your filters or search query.")}
-            </p>
+          <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
+            <Brain className="w-12 h-12 text-muted mb-4 opacity-50" />
+            <h3 className="font-serif text-[24px] text-ink mb-2">No Words Found</h3>
+            <p className="text-ink3 max-w-sm mx-auto mb-6">Read texts or import vocabulary to begin building your personal lexicon.</p>
           </div>
         )}
       </div>
-
-      <AnimatePresence>
-        {showSettings && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowSettings(false)}
-              className="fixed inset-0 bg-[#1A1410]/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="card w-full max-w-md overflow-hidden"
-              >
-                <div className="p-5 border-b border-bdr flex items-center justify-between bg-parch/50">
-                  <h3 className="font-serif text-[19px] text-ink font-medium">
-                    {t("vocab.srsConfig", "Spaced Repetition Configuration")}
-                  </h3>
-                  <button
-                    onClick={() => setShowSettings(false)}
-                    className="text-muted hover:text-ink transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="p-6">
-                  <p className="font-body text-[13.5px] leading-relaxed text-ink2 mb-6">
-                    {t("vocab.srsDesc", "Adjust the base intervals for vocabulary reviews. These determine how long a word waits before resurfacing based on its current mastery level.")}
-                  </p>
-
-                  <div className="flex flex-col gap-4 mb-6">
-                    <div>
-                      <label className="eyebrow block mb-2">
-                        {t("vocab.seenOnceLabel", "\"Seen Once\" Interval")}
-                      </label>
-                      <input
-                        type="text"
-                        value={srsIntervals.seenOnce}
-                        onChange={(e) =>
-                          setSrsIntervals({
-                            ...srsIntervals,
-                            seenOnce: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue"
-                      />
-                    </div>
-                    <div>
-                      <label className="eyebrow block mb-2">
-                        {t("vocab.familiarLabel", "\"Familiar\" Interval")}
-                      </label>
-                      <input
-                        type="text"
-                        value={srsIntervals.familiar}
-                        onChange={(e) =>
-                          setSrsIntervals({
-                            ...srsIntervals,
-                            familiar: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue"
-                      />
-                    </div>
-                    <div>
-                      <label className="eyebrow block mb-2">
-                        {t("vocab.knownLabel", "\"Known\" Interval")}
-                      </label>
-                      <input
-                        type="text"
-                        value={srsIntervals.known}
-                        onChange={(e) =>
-                          setSrsIntervals({
-                            ...srsIntervals,
-                            known: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue"
-                      />
-                    </div>
-                    <div>
-                      <label className="eyebrow block mb-2">
-                        {t("vocab.multiplierLabel", "Ease Multiplier (Hard/Good/Easy)")}
-                      </label>
-                      <input
-                        type="text"
-                        value={srsIntervals.multiplier}
-                        onChange={(e) =>
-                          setSrsIntervals({
-                            ...srsIntervals,
-                            multiplier: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue"
-                      />
-                      <p className="font-mono text-[9px] text-muted mt-2">
-                        {t("vocab.multiplierDesc", "Default: 1.5x scaling on successful review.")}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 justify-end">
-                    <button
-                      onClick={() => setShowSettings(false)}
-                      className="btn-secondary px-4 py-2"
-                    >
-                      {t("vocab.cancel", "Cancel")}
-                    </button>
-                    <button
-                      onClick={() => setShowSettings(false)}
-                      className="btn-primary px-5 py-2"
-                    >
-                      {t("vocab.saveConfig", "Save Configuration")}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
+
