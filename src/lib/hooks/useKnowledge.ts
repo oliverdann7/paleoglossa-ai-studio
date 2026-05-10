@@ -3,7 +3,7 @@ import { WordState } from '../constants/wordStates';
 import { VocabularyService, KnowledgeMap, WordInfo, SRSData } from '../services/vocabularyService';
 import { StatsService, ReadingStats } from '../services/statsService';
 import { ImportService } from '../services/importService';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from './useAuth';
 
 export const useKnowledge = () => {
   const { user } = useAuth();
@@ -160,11 +160,15 @@ export const useKnowledge = () => {
     });
   }, [userId]);
 
-  const setWordState = useCallback((lemma: string, state: WordState, languageId: string = "unknown") => {
+  const setWordState = useCallback((lemma: string, state: WordState, languageId: string = "unknown", context?: string) => {
     setKnowledge(prev => {
       const current = prev[lemma] || { addedAt: new Date().toISOString() };
       const info: WordInfo = { ...current, state, languageId };
       
+      if (context && (!info.contexts || !info.contexts.includes(context))) {
+        info.contexts = [...(info.contexts || []), context].slice(-5);
+      }
+
       if (state === WordState.LEARNING && !info.srs) {
         info.srs = {
           lastReviewed: null,
@@ -252,6 +256,16 @@ export const useKnowledge = () => {
     VocabularyService.updateGloss(userId, lemma, gloss, languageId);
   }, [userId]);
 
+  const setWordContext = useCallback((lemma: string, context: string, languageId: string = "unknown") => {
+    setKnowledge(prev => {
+      const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
+      const contexts = current.contexts || [];
+      if (contexts.includes(context)) return prev;
+      return { ...prev, [lemma]: { ...current, contexts: [...contexts, context].slice(-5) } };
+    });
+    VocabularyService.setWordContext(userId, lemma, context, languageId);
+  }, [userId]);
+
   const exportData = useCallback(async () => {
     const imports = await ImportService.getImports(userId);
     return {
@@ -268,6 +282,7 @@ export const useKnowledge = () => {
     setWordState,
     updateWordSRS,
     setWordNote,
+    setWordContext,
     incrementEncounter,
     updateGloss,
     stats: stats || {

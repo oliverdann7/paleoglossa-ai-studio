@@ -33,7 +33,7 @@ import { getTransliteration } from "../lib/transliterate";
 
 import { TextAnalysisService } from "../lib/services/textAnalysisService";
 import { ImportService } from "../lib/services/importService";
-import { useAuth } from "../lib/contexts/AuthContext";
+import { useAuth } from "../lib/hooks/useAuth";
 
 export const Reader = () => {
   const { textId } = useParams();
@@ -512,7 +512,16 @@ export const Reader = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedWord, chapter, readingMode, currentSentenceIndex]);
+  }, [
+    selectedWord, 
+    chapter, 
+    readingMode, 
+    currentSentenceIndex, 
+    chapters.length, 
+    currentChapterIndex, 
+    setWordState, 
+    text?.languageId
+  ]);
 
   const getWordStyle = (token: any, isAudioActive: boolean) => {
     const info = knowledge[token.lemma] ?? WordState.NEW;
@@ -855,8 +864,10 @@ export const Reader = () => {
                             <motion.span
                               layoutId={`word-${token.id}`}
                               onClick={() => {
-                                setSelectedWord(token);
+                                const sentenceText = sentence.tokens.map((t: any) => t.text).join(" ");
+                                setSelectedWord({ ...token, sentenceText });
                                 incrementEncounter(token.lemma, text?.languageId || "unknown");
+                                setWordContext(token.lemma, sentenceText, text?.languageId || "unknown");
                                 if (readingMode === "page")
                                   setCurrentSentenceIndex(sIdx);
                               }}
@@ -1088,7 +1099,7 @@ export const Reader = () => {
                   <ExternalLink className="w-3 h-3" />
                 </div>
                 <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
-                  {selectedWord.gloss}
+                  {getWordInfo(selectedWord.lemma).userGloss || selectedWord.gloss}
                 </div>
                 <div className="text-[10px] text-muted italic mb-4">
                   Source: PalæoGlossa Ancient Corpus & AI Analysis
@@ -1331,7 +1342,7 @@ export const Reader = () => {
                     return (
                       <button
                         key={state}
-                        onClick={() => setWordState(selectedWord.lemma, state, text?.languageId || "unknown")}
+                        onClick={() => setWordState(selectedWord.lemma, state, text?.languageId || "unknown", selectedWord.sentenceText)}
                         className={cn(
                           "flex-1 min-w-[70px] py-2 md:py-3 rounded-xl border flex flex-col items-center gap-1 transition-all",
                           isActive
@@ -1366,7 +1377,7 @@ export const Reader = () => {
                 
                 <div className="mt-4">
                   <button 
-                    onClick={() => setWordState(selectedWord.lemma, WordState.LEARNING, text?.languageId || "unknown")}
+                    onClick={() => setWordState(selectedWord.lemma, WordState.LEARNING, text?.languageId || "unknown", selectedWord.sentenceText)}
                     className="w-full py-3 bg-blue text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all active:scale-[0.98]"
                   >
                     Save as LingQ / Add to Review

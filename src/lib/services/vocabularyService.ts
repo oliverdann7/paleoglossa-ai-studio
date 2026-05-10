@@ -7,6 +7,8 @@ export interface WordInfo {
   state: WordStatus | WordState;
   srs?: SRSData;
   notes?: string;
+  userGloss?: string;
+  contexts?: string[];
   addedAt: string;
   languageId?: string;
 }
@@ -49,6 +51,8 @@ export class VocabularyService {
             step: data.step || 0
           } : undefined,
           notes: data.notes,
+          userGloss: data.userGloss,
+          contexts: data.contexts || [],
           addedAt: addedAt || new Date().toISOString(),
           languageId: data.languageId
         };
@@ -159,6 +163,27 @@ export class VocabularyService {
 
   static async updateSRS(userId: string | null, term: string, srs: SRSData, state: WordState, languageId: string = "unknown") {
     return this.setWordState(userId, term, state, languageId, srs);
+  }
+
+  static async setWordContext(userId: string | null, term: string, context: string, languageId: string = "unknown") {
+    if (!userId) return;
+    const termId = getTermId(term, languageId);
+    try {
+      const docRef = doc(db, `users/${userId}/vocabulary`, termId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        const contexts = data.contexts || [];
+        if (!contexts.includes(context)) {
+          await updateDoc(docRef, {
+            contexts: [...contexts, context].slice(-5),
+            updatedAt: serverTimestamp()
+          });
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   static async migrateLocalStorage(userId: string): Promise<number> {

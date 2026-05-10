@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, GraduationCap, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../lib/contexts/AuthContext";
+import { useAuth } from "../lib/hooks/useAuth";
 
 export const Landing = () => {
   const navigate = useNavigate();

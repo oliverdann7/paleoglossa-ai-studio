@@ -1,35 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-
-interface UserStats {
-  totalKnown: number;
-  readToday: number;
-  readingTime: number;
-  lastActive: string;
-  streak: number;
-  freezesTotal: number;
-  freezesUsed: number;
-}
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  isDemoMode: boolean;
-  setDemoMode: (val: boolean) => void;
-  stats: UserStats | null;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  isDemoMode: false,
-  setDemoMode: () => {},
-  stats: null,
-});
-
-export const useAuth = () => useContext(AuthContext);
+import { AuthContext, UserStats } from './AuthContextInstance';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
