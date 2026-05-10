@@ -29,6 +29,7 @@ import {
 } from "../lib/constants/wordStates";
 import { ProgressRing } from "../components/reader/ProgressRing";
 import { ReaderTutorial } from "../components/reader/ReaderTutorial";
+import { ParadigmModal } from "../components/reader/ParadigmModal";
 import { getTransliteration } from "../lib/transliterate";
 
 import { TextAnalysisService } from "../lib/services/textAnalysisService";
@@ -122,6 +123,7 @@ export const Reader = () => {
   // Page mode state
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
 
+  const [isParadigmOpen, setIsParadigmOpen] = useState(false);
   const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
   const [isTranslatingId, setIsTranslatingId] = useState<string | null>(null);
 
@@ -523,6 +525,15 @@ export const Reader = () => {
     text?.languageId
   ]);
 
+  const getDictionaryUrl = (lemma: string, langId: string) => {
+    switch (langId) {
+      case 'grc': return `https://lsj.gr/wiki/${encodeURIComponent(lemma)}`;
+      case 'lat': return `https://www.perseus.tufts.edu/hopper/morph?l=${encodeURIComponent(lemma)}&la=la`;
+      case 'san': return `https://www.sanskrit-lexicon.uni-koeln.de/scans/MWScan/2014/web/webtc/indexcaller.php?key=${encodeURIComponent(lemma)}`;
+      default: return `https://en.wiktionary.org/wiki/${encodeURIComponent(lemma)}#${langId}`;
+    }
+  };
+
   const getWordStyle = (token: any, isAudioActive: boolean) => {
     const info = knowledge[token.lemma] ?? WordState.NEW;
     const state = typeof info === "object" ? (info as any).state : info;
@@ -569,15 +580,13 @@ export const Reader = () => {
       tokensToMark = chapter.sentences.flatMap((s: any) => s.tokens);
     }
 
-    const newLemmas = tokensToMark
-      .map((t: any) => t.lemma)
-      .filter((l: string) => {
-        const info = knowledge[l] ?? WordState.NEW;
-        const state = typeof info === "object" ? (info as any).state : info;
-        return state === WordState.NEW;
-      });
-
-    newLemmas.forEach((l: string) => setWordState(l, WordState.KNOWN));
+    // Capture standard tokens (for seen state)
+    const validTokens = tokensToMark.filter(t => t.lemma && t.lemma.length > 0)
+      .map(t => ({ lemma: t.lemma, languageId: text?.languageId || "unknown" }));
+    
+    markPageAsSeen(validTokens);
+    
+    // Explicitly add to read count
     addReadWords(tokensToMark.length);
 
     if (readingMode === "page") {
@@ -904,9 +913,38 @@ export const Reader = () => {
                   );
                 })}
                 {readingMode === "scroll" && (
-                  <div className="text-muted text-center opacity-30 text-[24px] mt-12 mb-8">
-                    ❦
-                  </div>
+                  <>
+                    <div className="text-muted text-center opacity-30 text-[24px] mt-12 mb-8">
+                      ❦
+                    </div>
+                    <div className="flex flex-col items-center gap-6 mt-12 pb-24">
+                      <div className="text-center">
+                        <h4 className="font-serif text-[24px] text-ink mb-2">
+                          {t("reader.finishedChapter", "You've reached the end of this chapter.")}
+                        </h4>
+                        <p className="text-muted text-[14px]">
+                          {t("reader.readyNext", "Ready to move on to the next one?")}
+                        </p>
+                      </div>
+                      
+                      <div className="flex gap-4">
+                        <button
+                          onClick={handleMarkPageKnown}
+                          className="px-8 py-3 bg-blue text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95"
+                        >
+                          {t("reader.markChapterSeen", "Mark Chapter as Seen & Finish")}
+                        </button>
+                        {currentChapterIndex < chapters.length - 1 && (
+                          <button
+                            onClick={() => setCurrentChapterIndex(currentChapterIndex + 1)}
+                            className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
+                          >
+                            {t("reader.nextChapter", "Next Chapter")}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -1096,7 +1134,14 @@ export const Reader = () => {
               <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-[20px]">
                 <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
                   <span>{t('reader.meaning', "Meaning")}</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <a 
+                    href={getDictionaryUrl(selectedWord.lemma, text?.languageId || "unknown")} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-ink transition-colors"
+                  >
+                    <ExternalLink className="w-3" />
+                  </a>
                 </div>
                 <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
                   {getWordInfo(selectedWord.lemma).userGloss || selectedWord.gloss}
@@ -1145,184 +1190,43 @@ export const Reader = () => {
                     <span>Morphology</span>
                   </div>
 
-                  <div className="mb-4 text-[14px] text-ink2 capitalize font-medium italic">
-                    {(() => {
-                      const m = selectedWord.morphology;
-                      const pos =
-                        m.partOfSpeech ||
-                        (m.tense ? "verb" : m.case ? "noun" : "");
-                      const parts = [];
-                      if (pos === "noun" || pos === "pronoun" || m.case) {
-                        if (m.case) parts.push(m.case);
-                        if (m.number) parts.push(m.number);
-                        if (m.gender) parts.push(m.gender);
-                        if (pos) parts.push(pos);
-                      } else if (pos === "verb" || m.tense || m.mood) {
-                        if (m.person)
-                          parts.push(
-                            m.person === "first"
-                              ? "1st person"
-                              : m.person === "second"
-                                ? "2nd person"
-                                : m.person === "third"
-                                  ? "3rd person"
-                                  : m.person,
-                          );
-                        if (m.number) parts.push(m.number);
-                        if (m.tense) parts.push(m.tense);
-                        if (m.voice) parts.push(m.voice);
-                        if (m.mood) parts.push(m.mood);
-                        if (!parts.includes("verb")) parts.push("verb");
-                      } else {
-                        if (pos) parts.push(pos);
-                      }
-                      return parts.filter(Boolean).join(" ");
-                    })()}
-                  </div>
-
-                  {/* Compact Paradigm Table */}
-                  <div className="border border-bdr/50 rounded-xl overflow-hidden bg-white text-[12px] font-sans">
-                    {(() => {
-                      const m = selectedWord.morphology || {};
-                      const pos =
-                        m.partOfSpeech ||
-                        (m.tense ? "verb" : m.case ? "noun" : "");
-                      const isNoun =
-                        pos === "noun" || pos === "pronoun" || m.case;
-
-                      const cases = [
-                        "nominative",
-                        "genitive",
-                        "dative",
-                        "accusative",
-                        "vocative",
-                      ];
-                      if (m.case && !cases.includes(m.case)) cases.push(m.case);
-
-                      const persons = ["first", "second", "third"];
-
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(selectedWord.morphology).map(([key, value]) => {
+                      if (key === 'partOfSpeech' || !value) return null;
                       return (
-                        <>
-                          <div className="bg-parch2 px-3 py-2 border-b border-bdr/50 font-bold text-ink2 text-[11px] uppercase tracking-wider text-center">
-                            {isNoun
-                              ? `${pos ? pos.charAt(0).toUpperCase() + pos.slice(1) : "Declension"}${m.gender ? ` (${m.gender})` : ""}`
-                              : `${m.tense || ""} ${m.voice || ""} ${m.mood || ""}`.trim() ||
-                                "Conjugation"}
-                          </div>
-
-                          <div className="flex divide-x divide-bdr/30 border-b border-bdr/30 text-[10px] font-bold uppercase text-ink3 text-center bg-parch/30">
-                            <div className="w-16 flex-none"></div>
-                            <div className="flex-1 py-1">Singular</div>
-                            <div className="flex-1 py-1">Plural</div>
-                          </div>
-
-                          <div className="flex flex-col">
-                            {isNoun
-                              ? cases.map((c) => {
-                                  const isSgActive =
-                                    m.case === c && m.number === "singular";
-                                  const isPlActive =
-                                    m.case === c && m.number === "plural";
-
-                                  return (
-                                    <div
-                                      key={c}
-                                      className="flex divide-x divide-bdr/30 border-b border-bdr/30 last:border-b-0 text-center"
-                                    >
-                                      <div className="w-16 flex-none flex items-center justify-center text-[10px] uppercase font-bold text-ink3 bg-parch/30">
-                                        {c.substring(0, 3)}
-                                      </div>
-                                      <div
-                                        className={cn(
-                                          "flex-1 py-2 flex items-center justify-center font-serif",
-                                          isHebrewFont ? "font-hebrew" : "",
-                                          isSgActive
-                                            ? "bg-blue/5 text-blue font-bold"
-                                            : "text-ink3",
-                                        )}
-                                      >
-                                        {isSgActive ? (
-                                          <bdi>{selectedWord.text}</bdi>
-                                        ) : (
-                                          "—"
-                                        )}
-                                      </div>
-                                      <div
-                                        className={cn(
-                                          "flex-1 py-2 flex items-center justify-center font-serif",
-                                          isHebrewFont ? "font-hebrew" : "",
-                                          isPlActive
-                                            ? "bg-blue/5 text-blue font-bold"
-                                            : "text-ink3",
-                                        )}
-                                      >
-                                        {isPlActive ? (
-                                          <bdi>{selectedWord.text}</bdi>
-                                        ) : (
-                                          "—"
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })
-                              : persons.map((p) => {
-                                  const isSgActive =
-                                    m.person === p && m.number === "singular";
-                                  const isPlActive =
-                                    m.person === p && m.number === "plural";
-
-                                  return (
-                                    <div
-                                      key={p}
-                                      className="flex divide-x divide-bdr/30 border-b border-bdr/30 last:border-b-0 text-center"
-                                    >
-                                      <div className="w-16 flex-none flex items-center justify-center text-[10px] uppercase font-bold text-ink3 bg-parch/30">
-                                        {p.substring(0, 3)}
-                                      </div>
-                                      <div
-                                        className={cn(
-                                          "flex-1 py-2 flex items-center justify-center font-serif",
-                                          isHebrewFont ? "font-hebrew" : "",
-                                          isSgActive
-                                            ? "bg-blue/5 text-blue font-bold"
-                                            : "text-ink3",
-                                        )}
-                                      >
-                                        {isSgActive ? (
-                                          <bdi>{selectedWord.text}</bdi>
-                                        ) : (
-                                          "—"
-                                        )}
-                                      </div>
-                                      <div
-                                        className={cn(
-                                          "flex-1 py-2 flex items-center justify-center font-serif",
-                                          isHebrewFont ? "font-hebrew" : "",
-                                          isPlActive
-                                            ? "bg-blue/5 text-blue font-bold"
-                                            : "text-ink3",
-                                        )}
-                                      >
-                                        {isPlActive ? (
-                                          <bdi>{selectedWord.text}</bdi>
-                                        ) : (
-                                          "—"
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                          </div>
-                        </>
+                        <div key={key} className="px-3 py-1 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px]">
+                          <span className="opacity-50 lowercase mr-1.5">{key}:</span>
+                          <span className="font-bold">{String(value)}</span>
+                        </div>
                       );
-                    })()}
-                    <button className="w-full text-center py-2 border-t border-bdr/30 text-[10px] font-bold uppercase tracking-widest text-blue hover:bg-blue/5 transition-colors">
-                      Show Full Paradigm
-                    </button>
+                    })}
                   </div>
+                  <button
+                    className="w-full mt-6 py-3 border-2 border-gold/30 text-gold text-[13px] font-bold rounded-xl hover:bg-gold/5 transition-all flex items-center justify-center gap-2"
+                    onClick={() => setIsParadigmOpen(true)}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {t("reader.showFullParadigm", "Show Full Paradigm")}
+                  </button>
                 </div>
               )}
 
+              {/* Contextual Examples */}
+              {getWordInfo(selectedWord.lemma).contexts && (getWordInfo(selectedWord.lemma).contexts?.length ?? 0) > 0 && (
+                <div className="mb-10">
+                  <div className="eyebrow mb-4 text-ink flex items-center justify-between">
+                    <span>Example Sentences</span>
+                    <Repeat className="w-3 h-3 opacity-50" />
+                  </div>
+                  <div className="space-y-3">
+                    {(getWordInfo(selectedWord.lemma).contexts || []).map((ctx: string, i: number) => (
+                      <div key={i} className="p-3 bg-white border border-bdr/30 rounded-xl text-[13px] leading-relaxed italic text-ink/80 border-l-2 border-l-blue/30">
+                        "{ctx}"
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="mb-8">
                 <div className="eyebrow mb-3 flex items-center justify-between text-ink">
                   <span>{t('reader.yourKnowledge', "Your Knowledge")}</span>
@@ -1452,6 +1356,16 @@ export const Reader = () => {
       </AnimatePresence>
 
       <ReaderTutorial currentStep={tutorialStep} onDismiss={dismissTutorial} />
+      
+      {selectedWord && (
+        <ParadigmModal
+          isOpen={isParadigmOpen}
+          onClose={() => setIsParadigmOpen(false)}
+          lemma={selectedWord.lemma}
+          languageId={text?.languageId || "unknown"}
+          word={selectedWord.text}
+        />
+      )}
     </div>
   );
 };

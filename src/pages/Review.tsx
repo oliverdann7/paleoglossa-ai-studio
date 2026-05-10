@@ -30,7 +30,7 @@ export const Review = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const onBack = () => navigate("/app");
-  const { knowledge, updateWordSRS } = useKnowledge();
+  const { knowledge, updateWordSRS, recordReviewSession } = useKnowledge();
   const [isStarted, setIsStarted] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -172,10 +172,13 @@ export const Review = () => {
         setCurrentCardIndex(currentCardIndex + 1);
         setIsRevealed(false);
       } else {
+        const accurateCount = [...sessionResults, { lemma: currentCard.lemma, rating }].filter(r => r.rating !== "AGAIN").length;
+        const accuracy = Math.round((accurateCount / queue.length) * 100);
+        recordReviewSession(accuracy);
         setIsFinished(true);
       }
     },
-    [currentCard, currentCardIndex, queue.length, updateWordSRS],
+    [currentCard, currentCardIndex, queue.length, updateWordSRS, recordReviewSession, sessionResults],
   );
 
   // Keyboard support for ratings 1, 2, 3, 4

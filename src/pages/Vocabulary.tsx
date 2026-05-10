@@ -23,7 +23,7 @@ export const Vocabulary = () => {
     multiplier: "1.5x",
   });
 
-  const filters = ["All", "Known", "Familiar", "Learning"];
+  const filters = ["All", "Known", "Familiar", "Learning", "Seen"];
 
   const words = useMemo(() => {
     return Object.entries(knowledge)
@@ -41,7 +41,7 @@ export const Vocabulary = () => {
           : new Date();
 
           const tokenInfo = getTokenInfo(lemma);
-          const definition = tokenInfo?.gloss || "Definition...";
+          const definition = (wordInfo as any).userGloss || tokenInfo?.gloss || "Definition...";
           const languageDesc = tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u) ? "Hebrew" : "Greek");
 
         return {
@@ -63,10 +63,19 @@ export const Vocabulary = () => {
   const filteredWords = words.filter((w) => {
     const matchesFilter = activeFilter === "All" || w.status === activeFilter;
     const matchesSearch =
-      w.term.includes(searchQuery) ||
+      w.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
       w.definition.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  const getDictionaryUrl = (lemma: string, langId: string) => {
+    const code = langId?.toLowerCase() || '';
+    if (code.includes('greek') || code === 'grc') return `https://lsj.gr/wiki/${encodeURIComponent(lemma)}`;
+    if (code.includes('latin') || code === 'lat') return `https://www.perseus.tufts.edu/hopper/morph?l=${encodeURIComponent(lemma)}&la=la`;
+    if (code.includes('sanskrit') || code === 'san') return `https://www.sanskrit-lexicon.uni-koeln.de/scans/MWScan/2014/web/webtc/indexcaller.php?key=${encodeURIComponent(lemma)}`;
+    if (code.includes('hebrew') || code === 'hbo' || code === 'heb') return `https://www.pealim.com/search/?q=${encodeURIComponent(lemma)}`;
+    return `https://en.wiktionary.org/wiki/${encodeURIComponent(lemma)}`;
+  };
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -76,6 +85,8 @@ export const Vocabulary = () => {
         return "cefr-a text-amber";
       case "Learning":
         return "cefr-b";
+      case "Seen":
+        return "cefr-b opacity-70";
       default:
         return "";
     }
@@ -177,6 +188,11 @@ export const Vocabulary = () => {
                   <div className="font-body text-[13.5px] italic text-ink2">
                     {word.definition}
                   </div>
+                  {((knowledge[word.term] as WordInfo)?.contexts?.length ?? 0) > 0 && (
+                    <div className="mt-2 text-[11px] text-muted line-clamp-1 opacity-60">
+                      "{(knowledge[word.term] as WordInfo)?.contexts?.[0]}"
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -192,9 +208,14 @@ export const Vocabulary = () => {
                 </div>
 
                 <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                  <button className="p-1.5 rounded text-muted hover:text-ink hover:bg-parch3 transition-colors">
+                  <a 
+                    href={getDictionaryUrl(word.term, word.language)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded text-muted hover:text-ink hover:bg-parch3 transition-colors"
+                  >
                     <ExternalLink className="w-4 h-4" />
-                  </button>
+                  </a>
                   <button
                     onClick={() => handleDelete(word.id)}
                     className="p-1.5 rounded text-ruby/50 hover:text-ruby hover:bg-rubyxl transition-colors"

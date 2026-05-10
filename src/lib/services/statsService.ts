@@ -6,6 +6,7 @@ export interface DailyStat {
   knownWords: number;
   readWords: number;
   minutes: number;
+  accuracy?: number; // 0 to 100
 }
 
 export interface ReadingStats {
@@ -15,6 +16,7 @@ export interface ReadingStats {
   lastActive: string; // ISO date
   streak: number;
   history: DailyStat[];
+  lastAccuracy?: number;
   freezesTotal: number;
   freezesUsed: number;
 }

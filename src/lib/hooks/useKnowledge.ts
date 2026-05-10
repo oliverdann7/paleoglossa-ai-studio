@@ -220,6 +220,43 @@ export const useKnowledge = () => {
     return val;
   }, [knowledge]);
 
+  const recordReviewSession = useCallback((accuracy: number) => {
+    updateStatsState(prev => {
+      // Update lastAccuracy
+      return {
+        ...prev,
+        lastAccuracy: accuracy,
+        lastActive: new Date().toISOString()
+      };
+    });
+  }, [updateStatsState]);
+
+  const markPageAsSeen = useCallback((tokens: any[]) => {
+    setKnowledge(prev => {
+      const next = { ...prev };
+      tokens.forEach(token => {
+        if (!token.lemma) return;
+        const current = next[token.lemma] || { addedAt: new Date().toISOString() };
+        const state = typeof current === "object" ? (current as any).state : current;
+        
+        // Only mark as seen if it was new
+        if (state === WordState.NEW) {
+          next[token.lemma] = { ...current, state: WordState.SEEN, languageId: token.languageId || "unknown" } as any;
+        }
+      });
+      return next;
+    });
+    
+    // In a real app, we might also sync this to Firestore in bulk
+    tokens.forEach(token => {
+      if (!token.lemma) return;
+      const state = knowledge[token.lemma] ? (typeof knowledge[token.lemma] === "object" ? (knowledge[token.lemma] as any).state : knowledge[token.lemma]) : WordState.NEW;
+      if (state === WordState.NEW) {
+        VocabularyService.setWordState(userId, token.lemma, WordState.SEEN, token.languageId || "unknown");
+      }
+    });
+  }, [userId, knowledge]);
+
   const addReadWords = useCallback((count: number) => {
     updateStatsState(prev => ({
       ...prev,
@@ -285,6 +322,8 @@ export const useKnowledge = () => {
     setWordContext,
     incrementEncounter,
     updateGloss,
+    recordReviewSession,
+    markPageAsSeen,
     stats: stats || {
       totalKnown: 0,
       readToday: 0,

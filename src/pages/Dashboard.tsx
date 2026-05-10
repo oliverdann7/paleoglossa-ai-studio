@@ -149,6 +149,24 @@ export const Dashboard = () => {
               <div className="eyebrow text-[8px] mt-1">{t("dashboard.wordsReadToday", "Words read today")}</div>
             </div>
           </div>
+
+          {/* Last Accuracy Card */}
+          {stats.lastAccuracy !== undefined && (
+            <div className="card p-4 flex items-center gap-4 border-bdr shadow-sm">
+              <div className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center font-bold text-[14px]",
+                stats.lastAccuracy >= 90 ? "bg-green-100 text-green-600" : stats.lastAccuracy >= 70 ? "bg-amber-100 text-amber-600" : "bg-red-100 text-red-600"
+              )}>
+                {stats.lastAccuracy}%
+              </div>
+              <div>
+                <div className="text-[14px] font-bold text-ink leading-none">
+                  {t("dashboard.lastAccuracy", "Last Accuracy")}
+                </div>
+                <div className="eyebrow text-[8px] mt-1">{t("dashboard.reviewPerformance", "Review performance")}</div>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
