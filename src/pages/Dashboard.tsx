@@ -257,8 +257,7 @@ export const Dashboard = () => {
         {recentVocab.length === 0 ? (
           <div className="card p-8 border-dashed border-2 border-bdr bg-parch2/50 text-center">
             <p className="font-body text-[14px] italic text-ink3">
-              No vocabulary saved yet. Read texts and mark words to build your
-              lexicon.
+              {t("dashboard.noVocab", "No vocabulary saved yet. Read texts and mark words to build your lexicon.")}
             </p>
           </div>
         ) : (

@@ -2,34 +2,64 @@
   "entities": {
     "User": {
       "title": "User",
-      "description": "A user of the application",
+      "description": "User profile and top-level stats",
       "type": "object",
       "properties": {
         "email": { "type": "string" },
         "displayName": { "type": "string" },
         "createdAt": { "type": "string" },
-        "currentPlan": { "type": "string", "enum": ["free", "pro"] }
+        "currentPlan": { "type": "string", "enum": ["free", "pro", "fellowship"] },
+        "stats": { 
+          "type": "object",
+          "properties": {
+            "totalKnown": { "type": "number" },
+            "readToday": { "type": "number" },
+            "readingTime": { "type": "number" },
+            "lastActive": { "type": "string" },
+            "streak": { "type": "number" },
+            "freezesTotal": { "type": "number" },
+            "freezesUsed": { "type": "number" }
+          }
+        }
       },
-      "required": ["email", "createdAt", "currentPlan"]
+      "required": ["email", "createdAt", "currentPlan", "stats"]
     },
     "VocabularyItem": {
       "title": "Vocabulary Item",
       "description": "A user's spaced repetition item",
       "type": "object",
       "properties": {
-        "userId": { "type": "string" },
         "term": { "type": "string" },
         "translit": { "type": "string" },
         "definition": { "type": "string" },
         "language": { "type": "string" },
-        "status": { "type": "string", "enum": ["Seen Once", "Learning", "Familiar", "Known", "Ignored"] },
+        "status": { "type": "string", "enum": ["New", "Seen Once", "Learning", "Familiar", "Known", "Ignored"] },
         "nextReview": { "type": "string" },
         "interval": { "type": "number" },
         "ease": { "type": "number" },
+        "step": { "type": "number" },
+        "notes": { "type": "string" },
         "createdAt": { "type": "string" },
         "updatedAt": { "type": "string" }
       },
-      "required": ["userId", "term", "status", "nextReview", "interval", "ease", "createdAt", "updatedAt"]
+      "required": ["term", "status", "nextReview", "interval", "ease", "step", "createdAt", "updatedAt", "language"]
+    },
+    "ImportedText": {
+      "title": "Imported Text",
+      "description": "A user-imported lesson/text",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "language": { "type": "string" },
+        "totalWords": { "type": "number" },
+        "percentKnown": { "type": "number" },
+        "percentLearning": { "type": "number" },
+        "isImported": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "content", "language", "totalWords", "percentKnown", "percentLearning", "isImported", "createdAt", "updatedAt"]
     }
   },
   "firestore": {
@@ -37,9 +67,13 @@
       "schema": { "$ref": "#/entities/User" },
       "description": "User profile data."
     },
-    "vocabulary/{itemId}": {
+    "users/{userId}/vocabulary/{termId}": {
       "schema": { "$ref": "#/entities/VocabularyItem" },
       "description": "User spaced repetition words."
+    },
+    "users/{userId}/imports/{importId}": {
+      "schema": { "$ref": "#/entities/ImportedText" },
+      "description": "User custom imported texts."
     }
   }
 }

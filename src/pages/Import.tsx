@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GoogleGenAI } from "@google/genai";
+import { ImportService } from "../lib/services/importService";
+import { useAuth } from "../lib/contexts/AuthContext";
 
 interface ImportedText {
   id: string;
@@ -34,6 +36,7 @@ import { LANGUAGES } from "../lib/constants/languages";
 
 export const Import = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { t } = useTranslation();
   const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
   const [activeTab, setActiveTab] = useState<"paste" | "file" | "url" | "ocr">("paste");
@@ -76,7 +79,7 @@ export const Import = () => {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-3-flash-preview",
         contents: {
           parts: [
             { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
@@ -102,16 +105,19 @@ export const Import = () => {
     setIsProcessing(true);
 
     // Simulate analysis
-    setTimeout(() => {
+    setTimeout(async () => {
       const words = text.split(/\s+/).filter(Boolean);
       const uniqueWords = new Set(words.map((w) => w.toLowerCase())).size;
 
-      const imported: ImportedText = {
+      const imported: any = {
         id: `import-${Date.now()}`,
         title: text.slice(0, 40) + (text.length > 40 ? "..." : ""),
         content: text,
         language,
-        importedAt: new Date().toISOString(),
+        totalWords: words.length,
+        percentKnown: 20,
+        percentLearning: 40,
+        isImported: true,
         stats: {
           totalWords: words.length,
           uniqueWords,
@@ -120,12 +126,7 @@ export const Import = () => {
         },
       };
 
-      const existingRaw = localStorage.getItem("paleoglossa_imports");
-      const existing = existingRaw ? JSON.parse(existingRaw) : [];
-      localStorage.setItem(
-        "paleoglossa_imports",
-        JSON.stringify([...existing, imported]),
-      );
+      await ImportService.saveImport(user ? user.uid : null, imported);
 
       setResult(imported);
       setIsProcessing(false);

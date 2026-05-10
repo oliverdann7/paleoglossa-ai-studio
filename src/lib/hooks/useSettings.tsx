@@ -40,6 +40,11 @@ export const useSettings = () => {
   useEffect(() => {
     localStorage.setItem('paleoglossa_settings', JSON.stringify(settings));
     document.documentElement.className = `theme-${settings.theme}`;
+    if (settings.theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, [settings]);
 
   const updateSettings = (updates: Partial<Settings>) => {

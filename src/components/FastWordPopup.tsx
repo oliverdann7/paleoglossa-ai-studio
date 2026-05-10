@@ -1,16 +1,18 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { MoreHorizontal, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 export const FastWordPopup = ({ word, isOpen, onClose, onOpenPanel, onStatusChange }: { word: any, isOpen: boolean, onClose: () => void, onOpenPanel: () => void, onStatusChange: (wordId: number, status: string) => void }) => {
+  const { t } = useTranslation();
   if (!word || !isOpen) return null;
 
   const statuses = [
-    { id: 'New', color: 'bg-blue-500/20 text-blue-700 dark:text-blue-400' },
-    { id: 'Seen Once', color: 'bg-blue-400/20 text-blue-600 dark:text-blue-300' },
-    { id: 'Learning', color: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
-    { id: 'Familiar', color: 'bg-gold-500/20 text-gold-700 dark:text-gold-400' },
-    { id: 'Known', color: 'bg-green-500/20 text-green-700 dark:text-green-400' },
+    { id: 'New', label: t('vocab.new', 'New'), color: 'bg-blue-500/20 text-blue-700 dark:text-blue-400' },
+    { id: 'Seen Once', label: t('vocab.seenonce', 'Seen Once'), color: 'bg-blue-400/20 text-blue-600 dark:text-blue-300' },
+    { id: 'Learning', label: t('vocab.learning', 'Learning'), color: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
+    { id: 'Familiar', label: t('vocab.familiar', 'Familiar'), color: 'bg-gold-500/20 text-gold-700 dark:text-gold-400' },
+    { id: 'Known', label: t('vocab.known', 'Known'), color: 'bg-green-500/20 text-green-700 dark:text-green-400' },
   ];
 
   return (
@@ -58,7 +60,7 @@ export const FastWordPopup = ({ word, isOpen, onClose, onOpenPanel, onStatusChan
                     : "bg-transparent border-black/10 dark:border-white/10 opacity-70 hover:opacity-100"
                 )}
               >
-                {status.id}
+                {status.label}
               </button>
             ))}
           </div>
@@ -66,7 +68,7 @@ export const FastWordPopup = ({ word, isOpen, onClose, onOpenPanel, onStatusChan
           <div className="flex justify-between mt-2 pt-4 border-t border-black/5 dark:border-white/5">
             <button onClick={onOpenPanel} className="text-xs font-bold uppercase tracking-widest text-gold-600 hover:text-gold-500 transition-colors flex items-center gap-1">
               <BookOpen className="w-3 h-3" />
-              More Details
+              {t('reader.moreDetails', 'More Details')}
             </button>
           </div>
         </div>

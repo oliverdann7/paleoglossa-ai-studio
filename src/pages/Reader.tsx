@@ -31,26 +31,36 @@ import { ProgressRing } from "../components/reader/ProgressRing";
 import { ReaderTutorial } from "../components/reader/ReaderTutorial";
 import { getTransliteration } from "../lib/transliterate";
 
-import { GoogleGenAI } from "@google/genai";
+import { AIService } from "../lib/services/aiService";
+import { ImportService } from "../lib/services/importService";
+import { useAuth } from "../lib/contexts/AuthContext";
 
 export const Reader = () => {
   const { textId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { t } = useTranslation();
   const onBack = () => navigate("/app/library");
 
-  const text = useMemo<any>(() => {
-    if (!textId) return null;
-    let t = CorpusDB.getText(textId);
-    if (!t && textId.startsWith("import-")) {
-      const existingRaw = localStorage.getItem("paleoglossa_imports");
-      if (existingRaw) {
-        const existing = JSON.parse(existingRaw);
-        t = existing.find((item: any) => item.id === textId);
-      }
+  const [localText, setLocalText] = useState<any>(null);
+  
+  useEffect(() => {
+    if (!textId) return;
+    
+    const tObj = CorpusDB.getText(textId);
+    if (!tObj && textId.startsWith("import-")) {
+      ImportService.getImports(user ? user.uid : null).then(imports => {
+        const match = imports.find((item: any) => item.id === textId);
+        if(match) setLocalText(match);
+      });
+    } else if (tObj) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLocalText(tObj);
     }
-    return t;
-  }, [textId]);
+  }, [textId, user]);
+  
+  const text = localText;
+  
   const {
     knowledge,
     setWordState,
@@ -116,6 +126,7 @@ export const Reader = () => {
 
   // Clear word insight when word changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAiWordInsight(null);
   }, [selectedWord?.id]);
 
@@ -125,18 +136,10 @@ export const Reader = () => {
     setAiWordInsight("");
     
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const languageName = text?.language || selectedWord.language || "ancient language";
-      const prompt = `Give a brief, scholarly explanation of the etymology and morphological usage of the word '${selectedWord.text}' (lemma: '${selectedWord.lemma}') in '${languageName}'. Keep it concise (under 150 words).`;
-      
-      const response = await ai.models.generateContentStream({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt,
+      await AIService.explainWord(selectedWord.text, selectedWord.lemma, languageName, (textChunk) => {
+        setAiWordInsight((prev) => (prev || "") + textChunk);
       });
-
-      for await (const chunk of response) {
-        setAiWordInsight((prev) => (prev || "") + (chunk.text || ""));
-      }
     } catch (error) {
       console.error(error);
       setAiWordInsight("Failed to fetch insights.");
@@ -150,13 +153,8 @@ export const Reader = () => {
     setIsTranslatingId(sentenceId);
     
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const prompt = `Translate the following text into clear, fluent English. Just provide the English translation, and nothing else:\n${sentenceTokens.map(t => t.text).join(" ")}`;
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: prompt
-      });
-      setAiTranslations(prev => ({ ...prev, [sentenceId]: response.text || "Failed to translate." }));
+      const result = await AIService.translateSentence(sentenceTokens.map(t => t.text));
+      setAiTranslations(prev => ({ ...prev, [sentenceId]: result }));
     } catch (error) {
       console.error(error);
       setAiTranslations(prev => ({ ...prev, [sentenceId]: "Error translating text." }));
@@ -508,6 +506,17 @@ export const Reader = () => {
     return `${mins} min`;
   };
 
+  if (!text || chapters.length === 0 || !chapter) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-parch">
+        <div className="text-ink3 font-medium flex flex-col items-center gap-4">
+          <div className="w-6 h-6 border-2 border-blue border-t-transparent rounded-full animate-spin" />
+          Loading text...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-[#FDFBF7] text-ink font-sans overflow-hidden">
       <div className="flex-1 flex flex-col relative z-20 overflow-hidden">
@@ -516,7 +525,7 @@ export const Reader = () => {
           <div className="flex items-center gap-4 md:gap-8">
             <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">
               <span className="text-[16px] md:text-[18px] font-bold text-blue leading-none">
-                {stats.readToday.toLocaleString()}
+                {stats?.readToday?.toLocaleString() || 0}
               </span>
               <span className="text-[9px] uppercase tracking-wider text-muted font-bold hidden md:inline">
                 {t("reader.readToday", "Read Today")}
