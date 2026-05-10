@@ -151,6 +151,7 @@ export const Statistics = () => {
       if (raw[lang]) {
         if (i.state === WordState.KNOWN) raw[lang].known++;
         else if (i.state === WordState.NEW) raw[lang].new++;
+        else if (i.state === WordState.SEEN) raw[lang].learning++; // Count seen as part of learning for progress bar
         else raw[lang].learning++;
       }
     });

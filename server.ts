@@ -12,28 +12,50 @@ async function startServer() {
   // API Routes
   app.post('/api/ai/explain', async (req, res) => {
     try {
-      const { text, lemma, language } = req.body;
+      const { languageId, text, word, lemma, phrase, type } = req.body;
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const prompt = `Give a brief, scholarly explanation of the etymology and morphological usage of the word '${text}' (lemma: '${lemma}') in '${language}'. Keep it concise (under 150 words).`;
       
-      const response = await ai.models.generateContentStream({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-      });
+      let prompt = "";
+      const targetLangId = languageId || "ancient language";
+      const targetWord = word || text || "";
+      const targetLemma = lemma || targetWord;
 
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-
-      for await (const chunk of response) {
-        if (chunk.text) {
-          res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
-        }
+      if (type === 'phrase' || phrase) {
+        prompt = `
+          Explain the following phrase in ${targetLangId}: "${phrase || targetWord}".
+          Provide a translation and linguistic breakdown of why it means what it means.
+          Keep it educational and insightful for a serious student.
+          
+          Format as clean Markdown.
+        `;
+      } else if (type === 'paradigm') {
+        prompt = `
+          Provide a full morphological paradigm table (declension or conjugation) for the word "${targetWord}" (lemma: "${targetLemma}") in ${targetLangId}.
+          Include all relevant cases, numbers, genders (for nouns/adjectives) or tenses, moods, voices, persons, numbers (for verbs).
+          Use a clean Markdown table format.
+          If the word is irregular, highlight the irregularities.
+        `;
+      } else {
+        prompt = `
+          Explain the following word in ${targetLangId}: "${targetWord}" (lemma: "${targetLemma}").
+          Provide a detailed linguistic explanation including:
+          1. Common meanings.
+          2. Grammatical notes (morphology, usage).
+          3. Etymological hints if interesting.
+          4. A few example short phrases.
+          
+          Format as clean Markdown.
+        `;
       }
-      res.write('data: [DONE]\n\n');
-      res.end();
+      
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt
+      });
+      
+      res.json({ explanation: response.text, text: response.text });
     } catch (error: any) {
-      console.error("AI Error:", error);
+      console.error("AI Explain Error:", error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -45,7 +67,7 @@ async function startServer() {
       const prompt = `Translate the following text in ${languageId || 'ancient language'} into clear, fluent English. Just provide the English translation, and nothing else:\n${tokens.join(" ")}`;
       
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         contents: prompt
       });
 
@@ -122,44 +144,6 @@ async function startServer() {
       res.json({ text: response.text });
     } catch (error: any) {
       console.error("AI OCR Error:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
-  
-  app.post('/api/ai/explain', async (req, res) => {
-    try {
-      const { languageId, word, lemma, phrase, type } = req.body;
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      
-      let prompt = "";
-      if (type === 'word') {
-        prompt = `
-          Explain the following word in ${languageId}: "${word}" (lemma: "${lemma}").
-          Provide a detailed linguistic explanation including:
-          1. Common meanings.
-          2. Grammatical notes (morphology, usage).
-          3. Etymological hints if interesting.
-          4. A few example short phrases.
-          
-          Format as clean Markdown.
-        `;
-      } else {
-        prompt = `
-          Explain the following phrase in ${languageId}: "${phrase}".
-          Provide a translation and linguistic breakdown of why it means what it means.
-          
-          Format as clean Markdown.
-        `;
-      }
-      
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: prompt
-      });
-      
-      res.json({ explanation: response.text });
-    } catch (error: any) {
-      console.error("AI Explain Error:", error);
       res.status(500).json({ error: error.message });
     }
   });
