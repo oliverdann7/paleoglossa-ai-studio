@@ -101,12 +101,12 @@ export const Review = () => {
         lastReviewed: null,
         nextReview: null,
         interval: 0,
-        easing: 2.5,
+        ease: 2.5,
         step: 0,
       };
 
       let newInterval = srs.interval;
-      let newEasing = srs.easing;
+      let newEase = srs.ease;
       let newStep = srs.step + 1;
       let newState = currentCard.wordInfo.state;
 
@@ -116,15 +116,15 @@ export const Review = () => {
         newState = WordState.LEARNING;
       } else if (rating === "HARD") {
         newInterval = Math.max(1, srs.interval * 1.2);
-        newEasing = Math.max(1.3, srs.easing - 0.15);
+        newEase = Math.max(1.3, srs.ease - 0.15);
         newState = WordState.LEARNING;
       } else if (rating === "GOOD") {
-        newInterval = srs.interval === 0 ? 1 : srs.interval * srs.easing;
+        newInterval = srs.interval === 0 ? 1 : srs.interval * srs.ease;
         if (newStep >= 4 && newState === WordState.LEARNING)
           newState = WordState.FAMILIAR;
         if (newStep >= 9) newState = WordState.KNOWN;
       } else if (rating === "EASY") {
-        newInterval = srs.interval === 0 ? 4 : srs.interval * srs.easing * 1.3;
+        newInterval = srs.interval === 0 ? 4 : srs.interval * srs.ease * 1.3;
         if (newState === WordState.LEARNING) newState = WordState.FAMILIAR;
         else if (newState === WordState.FAMILIAR) newState = WordState.KNOWN;
       }
@@ -136,7 +136,7 @@ export const Review = () => {
         lastReviewed: new Date().toISOString(),
         nextReview: nextReview.toISOString(),
         interval: newInterval,
-        easing: newEasing,
+        ease: newEase,
         step: newStep,
       };
 

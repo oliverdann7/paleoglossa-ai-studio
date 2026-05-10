@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { WordState } from '../constants/wordStates';
 import { VocabularyService, KnowledgeMap, WordInfo, SRSData } from '../services/vocabularyService';
-import { ProgressService, ReadingStats } from '../services/progressService';
+import { StatsService, ReadingStats } from '../services/statsService';
 import { ImportService } from '../services/importService';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,35 +11,71 @@ export const useKnowledge = () => {
   const [knowledge, setKnowledge] = useState<KnowledgeMap>({});
   const [stats, setStats] = useState<ReadingStats | null>(null);
   const [userImports, setUserImports] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Ref for debouncing stats updates
+  const statsUpdateTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize data
   useEffect(() => {
     let active = true;
     const init = async () => {
-      const dbVocab = await VocabularyService.getVocabulary(userId);
-      const dbStats = await ProgressService.getStats(userId);
-      const dbImports = await ImportService.getImports(userId);
-      
-      if (active) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const dbVocab = await VocabularyService.getVocabulary(userId);
+        const dbStats = await StatsService.getStats(userId);
+        const dbImports = await ImportService.getImports(userId);
+        
+        if (!active) return;
+
         setKnowledge(dbVocab);
         setUserImports(dbImports);
         
-        // Compute streak logic
+        // Handle migration if user just logged in and has local data
+        if (userId) {
+          const localKnowledge = localStorage.getItem('paleoglossa_knowledge');
+          if (localKnowledge) {
+            const hasData = Object.keys(JSON.parse(localKnowledge)).length > 0;
+            if (hasData) {
+              const count = await VocabularyService.migrateLocalStorage(userId);
+              if (count > 0) {
+                console.log(`Migrated ${count} vocabulary items to Firestore`);
+                // Re-fetch to be safe
+                const updatedVocab = await VocabularyService.getVocabulary(userId);
+                setKnowledge(updatedVocab);
+              }
+            }
+          }
+          
+          const localStats = localStorage.getItem('paleoglossa_stats');
+          if (localStats) {
+            await StatsService.migrateLocalStorage(userId);
+            // Re-fetch stats
+            const updatedStats = await StatsService.getStats(userId);
+            setStats(updatedStats);
+          }
+        }
+
+        // Streak and Daily reset logic
         const now = new Date();
-        now.setUTCHours(now.getUTCHours() - 4);
+        now.setUTCHours(now.getUTCHours() - 4); // 4am boundary
         
         let needUpdate = false;
-        if (dbStats.lastActive) {
-          const last = new Date(dbStats.lastActive);
+        const currentStats = { ...dbStats };
+
+        if (currentStats.lastActive) {
+          const last = new Date(currentStats.lastActive);
           last.setUTCHours(last.getUTCHours() - 4);
           
-          let newStreak = dbStats.streak || 0;
-          let freezesTotal = dbStats.freezesTotal ?? 2;
-          let freezesUsed = dbStats.freezesUsed ?? 0;
+          let newStreak = currentStats.streak || 0;
+          let freezesTotal = currentStats.freezesTotal ?? 2;
+          let freezesUsed = currentStats.freezesUsed ?? 0;
           
           const diffDays = Math.floor(now.valueOf() / 86400000) - Math.floor(last.valueOf() / 86400000);
 
-          // Reset freezes monthly
+          // Reset freezes monthly roughly
           if (now.getUTCMonth() !== last.getUTCMonth() || now.getUTCFullYear() !== last.getUTCFullYear()) {
             freezesTotal = 2;
             freezesUsed = 0;
@@ -57,44 +93,52 @@ export const useKnowledge = () => {
                 freezesUsed += freezesNeeded;
                 newStreak += 1;
               } else {
-                newStreak = 1;
+                newStreak = 1; // Streak broken
               }
             }
 
-            const history = dbStats.history || [];
-            const todayStr = last.toISOString().split('T')[0];
-            if (!history.find((h: any) => h.date === todayStr)) {
-              history.push({
-                date: todayStr,
-                knownWords: dbStats.totalKnown, // Need to make sure totalKnown is calculated
-                readWords: dbStats.readToday,
-                minutes: dbStats.readingTime
-              });
+            // Save history for yesterday/last active day
+            if (currentStats.readToday > 0 || currentStats.readingTime > 0) {
+              const history = [...(currentStats.history || [])];
+              const lastStr = last.toISOString().split('T')[0];
+              if (!history.find(h => h.date === lastStr)) {
+                history.push({
+                  date: lastStr,
+                  knownWords: currentStats.totalKnown,
+                  readWords: currentStats.readToday,
+                  minutes: currentStats.readingTime
+                });
+                if (history.length > 90) history.shift();
+                currentStats.history = history;
+              }
             }
-            if (history.length > 90) history.shift();
 
-            dbStats.readToday = 0;
-            dbStats.readingTime = 0;
-            dbStats.streak = newStreak;
-            dbStats.freezesTotal = freezesTotal;
-            dbStats.freezesUsed = freezesUsed;
-            dbStats.lastActive = new Date().toISOString();
-            dbStats.history = history;
+            currentStats.readToday = 0;
+            currentStats.readingTime = 0;
+            currentStats.streak = newStreak;
+            currentStats.freezesTotal = freezesTotal;
+            currentStats.freezesUsed = freezesUsed;
+            currentStats.lastActive = new Date().toISOString();
           }
         }
 
-        // Re-count known words to ensure consistency
+        // Sync known count
         const knownCount = Object.values(dbVocab).filter(v => v.state === WordState.KNOWN).length;
-        if (dbStats.totalKnown !== knownCount) {
-          dbStats.totalKnown = knownCount;
+        if (currentStats.totalKnown !== knownCount) {
+          currentStats.totalKnown = knownCount;
           needUpdate = true;
         }
 
-        setStats(dbStats);
+        setStats(currentStats);
 
         if (needUpdate) {
-          ProgressService.updateStats(userId, dbStats);
+          StatsService.updateStats(userId, currentStats);
         }
+      } catch (e: any) {
+        console.error("useKnowledge init error:", e);
+        setError(e.message || "Failed to load data");
+      } finally {
+        if (active) setIsLoading(false);
       }
     };
     init();
@@ -105,53 +149,60 @@ export const useKnowledge = () => {
     setStats(prev => {
       if (!prev) return null;
       const next = updater(prev);
-      ProgressService.updateStats(userId, next); // Sync immediately
+      
+      // Debounced sync to Firestore for high-frequency updates
+      if (statsUpdateTimer.current) clearTimeout(statsUpdateTimer.current);
+      statsUpdateTimer.current = setTimeout(() => {
+        StatsService.updateStats(userId, next);
+      }, 2000);
+      
       return next;
     });
   }, [userId]);
 
-  const setWordState = useCallback((lemma: string, state: WordState, language?: string) => {
+  const setWordState = useCallback((lemma: string, state: WordState, languageId: string = "unknown") => {
     setKnowledge(prev => {
       const current = prev[lemma] || { addedAt: new Date().toISOString() };
-      const info: WordInfo = { ...current, state };
+      const info: WordInfo = { ...current, state, languageId };
       
       if (state === WordState.LEARNING && !info.srs) {
         info.srs = {
           lastReviewed: null,
           nextReview: new Date().toISOString(),
           interval: 0,
-          easing: 2.5,
+          ease: 2.5,
           step: 0
         };
       }
       return { ...prev, [lemma]: info };
     });
     
-    VocabularyService.setWordState(userId, lemma, state, language);
+    VocabularyService.setWordState(userId, lemma, state, languageId);
     
+    // UI update for known count
     if (state === WordState.KNOWN) {
       updateStatsState(s => ({ ...s, totalKnown: s.totalKnown + 1 }));
     }
   }, [userId, updateStatsState]);
 
-  const updateWordSRS = useCallback((lemma: string, srs: SRSData, state: WordState) => {
+  const updateWordSRS = useCallback((lemma: string, srs: SRSData, state: WordState, languageId: string = "unknown") => {
     setKnowledge(prev => {
       const current = prev[lemma] || { addedAt: new Date().toISOString() };
-      return { ...prev, [lemma]: { ...current, srs, state } };
+      return { ...prev, [lemma]: { ...current, srs, state, languageId } };
     });
-    VocabularyService.updateSRS(userId, lemma, srs, state);
+    VocabularyService.updateSRS(userId, lemma, srs, state, languageId);
   }, [userId]);
 
   const fetchTextProgress = useCallback(async (textId: string) => {
-    return ProgressService.getTextProgress(userId, textId);
+    return StatsService.getTextProgress(userId, textId);
   }, [userId]);
 
   const saveTextProgress = useCallback(async (progress: any) => {
-    return ProgressService.setTextProgress(userId, progress);
+    return StatsService.setTextProgress(userId, progress);
   }, [userId]);
 
   const getAllProgress = useCallback(async () => {
-    return ProgressService.getAllProgress(userId);
+    return StatsService.getAllProgress(userId);
   }, [userId]);
 
   const refreshImports = useCallback(async () => {
@@ -181,12 +232,24 @@ export const useKnowledge = () => {
     }));
   }, [updateStatsState]);
 
-  const setWordNote = useCallback((lemma: string, notes: string) => {
+  const setWordNote = useCallback((lemma: string, notes: string, languageId: string = "unknown") => {
     setKnowledge(prev => {
-      const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString() };
+      const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
       return { ...prev, [lemma]: { ...current, notes } };
     });
-    VocabularyService.setWordNote(userId, lemma, notes);
+    VocabularyService.setWordNote(userId, lemma, notes, languageId);
+  }, [userId]);
+
+  const incrementEncounter = useCallback((lemma: string, languageId: string = "unknown") => {
+    VocabularyService.incrementEncounter(userId, lemma, languageId);
+  }, [userId]);
+
+  const updateGloss = useCallback((lemma: string, gloss: string, languageId: string = "unknown") => {
+    setKnowledge(prev => {
+      const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
+      return { ...prev, [lemma]: { ...current, userGloss: gloss } as any };
+    });
+    VocabularyService.updateGloss(userId, lemma, gloss, languageId);
   }, [userId]);
 
   const exportData = useCallback(async () => {
@@ -205,6 +268,8 @@ export const useKnowledge = () => {
     setWordState,
     updateWordSRS,
     setWordNote,
+    incrementEncounter,
+    updateGloss,
     stats: stats || {
       totalKnown: 0,
       readToday: 0,
@@ -223,6 +288,8 @@ export const useKnowledge = () => {
     exportData,
     fetchTextProgress,
     saveTextProgress,
-    getAllProgress
+    getAllProgress,
+    isLoading,
+    error
   };
 };

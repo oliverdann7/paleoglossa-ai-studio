@@ -31,7 +31,7 @@ import { ProgressRing } from "../components/reader/ProgressRing";
 import { ReaderTutorial } from "../components/reader/ReaderTutorial";
 import { getTransliteration } from "../lib/transliterate";
 
-import { AIService } from "../lib/services/aiService";
+import { TextAnalysisService } from "../lib/services/textAnalysisService";
 import { ImportService } from "../lib/services/importService";
 import { useAuth } from "../lib/contexts/AuthContext";
 
@@ -68,6 +68,8 @@ export const Reader = () => {
     addReadWords,
     incrementReadingTime,
     setWordNote,
+    incrementEncounter,
+    updateGloss,
     getWordInfo,
     fetchTextProgress,
     saveTextProgress
@@ -89,10 +91,10 @@ export const Reader = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0); // seconds
 
-  const playTTS = (wordText: string, lang: string) => {
+  const playTTS = (textStr: string, lang: string) => {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(wordText);
+    const u = new SpeechSynthesisUtterance(textStr);
     const langCodeMap: Record<string, string> = {
       grc: "el-GR",
       "grc-koine": "el-GR",
@@ -101,12 +103,12 @@ export const Reader = () => {
       lat: "it-IT",
       syr: "ar-SA",
       arc: "ar-SA",
-      cop: "el-GR", // Close enough approximate phonetics via greek for coptic
+      cop: "el-GR",
       akk: "ar-SA",
       san: "hi-IN",
     };
     u.lang = langCodeMap[lang] || "en-US";
-    u.rate = 0.8;
+    u.rate = 0.9;
     window.speechSynthesis.speak(u);
   };
 
@@ -172,9 +174,8 @@ export const Reader = () => {
     
     try {
       const languageName = text?.language || selectedWord.language || "ancient language";
-      await AIService.explainWord(selectedWord.text, selectedWord.lemma, languageName, (textChunk) => {
-        setAiWordInsight((prev) => (prev || "") + textChunk);
-      });
+      const explanation = await TextAnalysisService.explainWord(languageName, selectedWord.text, selectedWord.lemma);
+      setAiWordInsight(explanation);
     } catch (error) {
       console.error(error);
       setAiWordInsight("Failed to fetch insights.");
@@ -188,7 +189,8 @@ export const Reader = () => {
     setIsTranslatingId(sentenceId);
     
     try {
-      const result = await AIService.translateSentence(sentenceTokens.map(t => t.text));
+      const languageName = text?.language || "ancient language";
+      const result = await TextAnalysisService.translateSentence(languageName, sentenceTokens.map(t => t.text).join(" "));
       setAiTranslations(prev => ({ ...prev, [sentenceId]: result }));
     } catch (error) {
       console.error(error);
@@ -256,22 +258,47 @@ export const Reader = () => {
           };
         }) || []
       );
+    } else if (text?.sentences) {
+      // Logic for imported text using structured analysis
+      return [
+        {
+          id: "imported-section-1",
+          title: "Full Text",
+          sentences: text.sentences.map((s: any, i: number) => ({
+            id: `import-sent-${i}`,
+            translation: s.translation || "No translation.",
+            parallel: s.translation || "No parallel text.",
+            tokens: s.tokens.map((t: any, j: number) => ({
+              id: `import-token-${i}-${j}`,
+              text: t.text,
+              lemma: t.lemma || t.text,
+              normalized: t.normalized || t.text,
+              translit: t.transliteration || getTransliteration(t.text, text.languageId || "", t.normalized),
+              gloss: t.gloss || "Ancient word",
+              morphology: t.pos || "",
+              punctBefore: "",
+              punctAfter: t.type === 'whitespace' ? " " : t.type === 'punctuation' ? "" : (s.tokens[j+1]?.type === 'whitespace' ? "" : ""),
+            })),
+          })),
+          translation: text.sentences.map((s: any) => s.translation).filter(Boolean).join(" "),
+        },
+      ];
     } else if (text?.content) {
-      // Logic for imported text
+      // Fallback for legacy imports
       const sentencesRaw = text.content.split(/(?<=[.?!])\s+/).filter(Boolean);
       const sentences = sentencesRaw.map((sRaw: string, i: number) => {
         const rawTokens = sRaw.split(/\s+/).filter(Boolean);
         return {
           id: `import-sent-${i}`,
-          translation: "No translation for imported text.",
-          parallel: "No parallel text available.",
+          translation: "No translation available.",
+          parallel: "No parallel text.",
           tokens: rawTokens.map((t: string, j: number) => ({
             id: `import-token-${i}-${j}`,
             text: t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
             lemma: t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").toLowerCase(),
             translit: getTransliteration(
               t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
-              text.language || "",
+              text.languageId || text.language || "",
             ),
             gloss: "User imported word",
             punctAfter: t.match(/[.,/#!$%^&*;:{}=\-_`~()]/)
@@ -285,11 +312,10 @@ export const Reader = () => {
           id: "imported-section-1",
           title: "Full Text",
           sentences,
-          translation: "No translation available for imported text.",
+          translation: "No translation available.",
         },
       ];
     }
-    return [];
   }, [text]);
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
@@ -421,6 +447,26 @@ export const Reader = () => {
   // Keyboard support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Shortcuts for selected word
+      if (selectedWord) {
+        if (e.key === "k" || e.key === "K") {
+          setWordState(selectedWord.lemma, WordState.KNOWN, text?.languageId || "unknown");
+          return;
+        }
+        if (e.key === "l" || e.key === "L") {
+          setWordState(selectedWord.lemma, WordState.LEARNING, text?.languageId || "unknown");
+          return;
+        }
+        if (e.key === "i" || e.key === "I") {
+          setWordState(selectedWord.lemma, WordState.IGNORED, text?.languageId || "unknown");
+          return;
+        }
+        if (e.key === "Escape") {
+          setSelectedWord(null);
+          return;
+        }
+      }
+
       if (e.key === " ") {
         e.preventDefault();
         setIsPlaying((p) => !p);
@@ -444,11 +490,19 @@ export const Reader = () => {
           ) {
             setCurrentSentenceIndex((prev) => prev + 1);
             setAudioPos({ sentenceIdx: currentSentenceIndex + 1, wordIdx: 0 });
+          } else if (readingMode === "scroll") {
+            if (currentChapterIndex < chapters.length - 1) {
+              setCurrentChapterIndex(prev => prev + 1);
+            }
           }
         } else if (e.key === "ArrowLeft") {
           if (readingMode === "page" && currentSentenceIndex > 0) {
             setCurrentSentenceIndex((prev) => prev - 1);
             setAudioPos({ sentenceIdx: currentSentenceIndex - 1, wordIdx: 0 });
+          } else if (readingMode === "scroll") {
+            if (currentChapterIndex > 0) {
+              setCurrentChapterIndex(prev => prev - 1);
+            }
           }
         }
         return;
@@ -785,6 +839,9 @@ export const Reader = () => {
                       )}
                     >
                       {sentence.tokens.map((token: any, tIdx: number) => {
+                        if (token.type === 'whitespace') {
+                          return <span key={token.id} className="whitespace-pre"> </span>;
+                        }
                         const isAudioActive =
                           audioPos.sentenceIdx === sIdx &&
                           audioPos.wordIdx === tIdx;
@@ -799,6 +856,7 @@ export const Reader = () => {
                               layoutId={`word-${token.id}`}
                               onClick={() => {
                                 setSelectedWord(token);
+                                incrementEncounter(token.lemma, text?.languageId || "unknown");
                                 if (readingMode === "page")
                                   setCurrentSentenceIndex(sIdx);
                               }}
@@ -876,7 +934,21 @@ export const Reader = () => {
                             className="text-sm font-sans flex items-center justify-center gap-1.5 px-3 py-1 bg-blue/5 text-blue font-medium rounded-lg hover:bg-blue/10 transition-colors disabled:opacity-50 mt-1"
                           >
                             <Sparkles className="w-3.5 h-3.5" />
-                            {isTranslatingId === sentence.id ? "Translating..." : "Ask AI to Translate"}
+                            {isTranslatingId === sentence.id ? t("reader.translating", "Translating...") : t("reader.askAiTranslate", "Ask AI to Translate")}
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const phrase = sentence.tokens.map((t: any) => t.text).join(" ");
+                              setWordState(phrase, WordState.LEARNING, text?.languageId || "unknown");
+                              if (sentence.translation || aiTranslations[sentence.id]) {
+                                updateGloss(phrase, aiTranslations[sentence.id] || sentence.translation, text?.languageId || "unknown");
+                              }
+                              alert("Sentence saved to your vocabulary!");
+                            }}
+                            className="text-sm font-sans flex items-center justify-center gap-1.5 px-3 py-1 bg-amber/5 text-amber font-medium rounded-lg hover:bg-amber/10 transition-colors mt-1"
+                          >
+                            <Repeat className="w-3.5 h-3.5" />
+                            {t("reader.saveAsPhrase", "Save as Phrase")}
                           </button>
                         </div>
                       )}
@@ -1012,11 +1084,27 @@ export const Reader = () => {
 
               <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-[20px]">
                 <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
-                  <span>Meaning</span>
+                  <span>{t('reader.meaning', "Meaning")}</span>
                   <ExternalLink className="w-3 h-3" />
                 </div>
-                <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-6 leading-snug">
+                <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
                   {selectedWord.gloss}
+                </div>
+                <div className="text-[10px] text-muted italic mb-4">
+                  Source: PalæoGlossa Ancient Corpus & AI Analysis
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-bdr/20">
+                  <div className="text-[10px] uppercase font-bold text-muted mb-2 tracking-widest">
+                    {t('reader.yourGloss', "Your Gloss / Translation")}
+                  </div>
+                  <input
+                    type="text"
+                    className="w-full bg-white border border-bdr/50 rounded-lg px-3 py-2 text-sm focus:border-blue outline-none"
+                    placeholder="Enter your own gloss..."
+                    value={getWordInfo(selectedWord.lemma).userGloss || ""}
+                    onChange={(e) => updateGloss(selectedWord.lemma, e.target.value, text?.languageId || "unknown")}
+                  />
                 </div>
               </div>
 
@@ -1228,24 +1316,24 @@ export const Reader = () => {
                 <div className="eyebrow mb-3 flex items-center justify-between text-ink">
                   <span>{t('reader.yourKnowledge', "Your Knowledge")}</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {[
                     WordState.NEW,
+                    WordState.SEEN,
                     WordState.LEARNING,
+                    WordState.FAMILIAR,
                     WordState.KNOWN,
                     WordState.IGNORED,
                   ].map((state) => {
-                    const isActive =
-                      knowledge[selectedWord.lemma] === state ||
-                      (knowledge[selectedWord.lemma] as any)?.state === state ||
-                      (!knowledge[selectedWord.lemma] &&
-                        state === WordState.NEW);
+                    const info = getWordInfo(selectedWord.lemma);
+                    const isActive = info.state === state || (info.state === WordState.NEW && state === WordState.NEW && !knowledge[selectedWord.lemma]);
+                    
                     return (
                       <button
                         key={state}
-                        onClick={() => setWordState(selectedWord.lemma, state)}
+                        onClick={() => setWordState(selectedWord.lemma, state, text?.languageId || "unknown")}
                         className={cn(
-                          "flex-1 py-3 md:py-4 rounded-xl border flex flex-col items-center gap-1 transition-all",
+                          "flex-1 min-w-[70px] py-2 md:py-3 rounded-xl border flex flex-col items-center gap-1 transition-all",
                           isActive
                             ? "shadow-sm transform scale-105"
                             : "bg-white border-bdr/50 hover:bg-parch opacity-60 hover:opacity-100",
@@ -1260,7 +1348,7 @@ export const Reader = () => {
                         }
                       >
                         <div
-                          className="w-3 h-3 rounded-full mb-1 border border-black/10"
+                          className="w-2.5 h-2.5 rounded-full mb-0.5 border border-black/10"
                           style={{
                             backgroundColor:
                               STATE_COLORS[state].border === "transparent"
@@ -1268,12 +1356,21 @@ export const Reader = () => {
                                 : STATE_COLORS[state].border,
                           }}
                         />
-                        <span className="text-[9px] font-bold tracking-widest uppercase text-ink">
+                        <span className="text-[8px] font-bold tracking-widest uppercase text-ink">
                           {t(`vocab.${STATE_LABELS[state].toLowerCase()}`, STATE_LABELS[state])}
                         </span>
                       </button>
                     );
                   })}
+                </div>
+                
+                <div className="mt-4">
+                  <button 
+                    onClick={() => setWordState(selectedWord.lemma, WordState.LEARNING, text?.languageId || "unknown")}
+                    className="w-full py-3 bg-blue text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all active:scale-[0.98]"
+                  >
+                    Save as LingQ / Add to Review
+                  </button>
                 </div>
               </div>
 
