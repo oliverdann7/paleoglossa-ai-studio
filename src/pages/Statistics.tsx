@@ -525,7 +525,7 @@ export const Statistics = () => {
                   <div className="flex justify-between items-end mb-3">
                     <div>
                       <h4 className="text-[17px] font-bold text-ink leading-none">
-                         {t(`languageNames.${l.label === 'Ancient Greek' ? 'grc' : l.label === 'Koine Greek' ? 'grc-koine' : l.label === 'Biblical Hebrew' ? 'hbo' : l.label === 'Classical Latin' ? 'lat' : l.label === 'Syriac' ? 'syr' : l.label === 'Coptic' ? 'cop' : l.label === 'Aramaic' ? 'arc' : l.label === 'Akkadian' ? 'akk' : l.label === 'Sanskrit' ? 'san' : l.label === 'Egyptian Hieroglyphs' ? 'egy' : l.label}`, l.label)}
+                         {t(`languageNames.${l.label === 'Ancient Greek' ? 'grc' : l.label === 'Koine Greek' ? 'grc-koine' : l.label === 'Biblical Hebrew' ? 'hbo' : l.label === 'Classical Latin' ? 'lat' : l.label === 'Syriac' ? 'syr' : l.label === 'Coptic' ? 'cop' : l.label === 'Aramaic' ? 'arc' : l.label === 'Akkadian' ? 'akk' : l.label === 'Sanskrit' ? 'san' : l.label === 'Egyptian Hieroglyphs' ? 'egy' : l.label}`, { defaultValue: l.label }) as string}
                       </h4>
                       <span className="text-[11px] font-serif italic text-muted">
                         {t("stats.estLevel", "Estimated Level:")} {l.cefr}

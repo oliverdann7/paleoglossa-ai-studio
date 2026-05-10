@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Brain } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
 import { getLangForLemma } from "../lib/data/dictionary";
 import { useKnowledge } from "../lib/hooks/useKnowledge";

@@ -3,6 +3,8 @@ import { doc, getDoc, collection, getDocs, serverTimestamp, writeBatch } from 'f
 import { WordState } from '../constants/wordStates';
 import { WordStatus, SRSData } from '../../types/firestore';
 
+export type { SRSData };
+
 export interface WordInfo {
   state: WordStatus | WordState;
   srs?: SRSData;

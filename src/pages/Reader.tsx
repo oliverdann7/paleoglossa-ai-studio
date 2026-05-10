@@ -13,6 +13,7 @@ import {
   Layout,
   Type,
   Sparkles,
+  EyeOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CorpusDB } from "../data/corpus";
@@ -68,7 +69,9 @@ export const Reader = () => {
     updateGloss,
     getWordInfo,
     fetchTextProgress,
-    saveTextProgress
+    saveTextProgress,
+    markPageAsSeen,
+    setWordContext
   } = useKnowledge();
   const { settings } = useSettings();
 
@@ -266,6 +269,7 @@ export const Reader = () => {
         },
       ];
     }
+    return [];
   }, [text]);
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
@@ -380,8 +384,8 @@ export const Reader = () => {
     } else if (
       tutorialStep === 2 &&
       selectedWord &&
-      (knowledge[selectedWord.lemma] === WordState.KNOWN ||
-        (knowledge[selectedWord.lemma] as any)?.state === WordState.KNOWN)
+      knowledge[selectedWord.lemma] &&
+      knowledge[selectedWord.lemma]?.state === WordState.KNOWN
     ) {
       setTutorialStep(3);
     } else if (tutorialStep === 3 && scrollProgress > 80) {
