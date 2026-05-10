@@ -86,9 +86,9 @@ export const Dashboard = () => {
     });
   }, [knowledge]);
 
-  let greeting = "Good evening";
-  if (hour < 12) greeting = "Good morning";
-  else if (hour < 18) greeting = "Good afternoon";
+  let greeting = t("dashboard.evening", "Good evening");
+  if (hour < 12) greeting = t("dashboard.morning", "Good morning");
+  else if (hour < 18) greeting = t("dashboard.afternoon", "Good afternoon");
 
   const continueText = CorpusDB.getTexts()[0];
 
@@ -104,7 +104,7 @@ export const Dashboard = () => {
             {greeting}, Scholar.
           </motion.h2>
           <p className="font-body text-[16px] text-muted italic mt-1">
-            Your journey through the ancient world continues.
+            {t("dashboard.subtitle", "Your journey through the ancient world continues.")}
           </p>
         </div>
 
@@ -117,7 +117,7 @@ export const Dashboard = () => {
                 12
               </div>
               <div className="eyebrow text-amber/60 text-[8px] mt-1">
-                Day Streak
+                {t("dashboard.dayStreak", "Day Streak")}
               </div>
             </div>
           </div>
@@ -132,7 +132,7 @@ export const Dashboard = () => {
               <div className="text-[14px] font-bold text-ink leading-none">
                 {stats.readToday} / 500
               </div>
-              <div className="eyebrow text-[8px] mt-1">Words read today</div>
+              <div className="eyebrow text-[8px] mt-1">{t("dashboard.wordsReadToday", "Words read today")}</div>
             </div>
           </div>
         </div>
@@ -174,7 +174,7 @@ export const Dashboard = () => {
           <div>
             <div className="flex justify-between items-start mb-4">
               <span className="eyebrow text-gold font-bold">
-                Resume Reading
+                {t("dashboard.resumeReading", "Resume Reading")}
               </span>
               <span className="pill cefr-a">A1</span>
             </div>
@@ -206,10 +206,10 @@ export const Dashboard = () => {
           <div className="mt-8">
             <div className="flex justify-between items-end mb-3">
               <span className="text-[13px] font-bold text-blue group-hover:translate-x-1 transition-transform inline-flex items-center gap-2">
-                Continue from John 1:1 <ChevronRight className="w-4 h-4" />
+                {t("dashboard.continueFrom", "Continue from John 1:1")} <ChevronRight className="w-4 h-4" />
               </span>
               <span className="text-[11px] font-bold text-muted uppercase tracking-tighter">
-                ~4 mins left in section
+                {t("dashboard.minsLeft", "~4 mins left in section")}
               </span>
             </div>
             <div className="h-2 w-full bg-parch3 rounded-full overflow-hidden shadow-inner">
@@ -224,7 +224,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Global Progress Grid */}
-      <h3 className="eyebrow mb-6 font-bold text-ink3">Overall Progress</h3>
+      <h3 className="eyebrow mb-6 font-bold text-ink3">{t("dashboard.overallProgress", "Overall Progress")}</h3>
       <div
         className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14 cursor-pointer"
         onClick={() => navigate("/app/statistics")}

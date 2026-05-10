@@ -1,10 +1,20 @@
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, GraduationCap, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const Landing = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  
   const onEnter = () => navigate("/auth/login");
+  
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLang = e.target.value;
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("app_lang", newLang);
+  };
+
   return (
     <div className="relative min-h-screen bg-parch text-ink font-sans overflow-hidden paper-texture">
       <header className="absolute top-0 left-0 w-full p-8 flex justify-between items-center z-50">
@@ -12,16 +22,31 @@ export const Landing = () => {
           <div className="w-8 h-8 rounded-sm flex items-center justify-center border border-ink">
             <span className="font-serif font-bold text-xl text-ink">P</span>
           </div>
-          <h1 className="text-xl font-serif tracking-tight text-ink">
+          <h1 className="text-xl font-serif tracking-tight text-ink hidden sm:block">
             Paleoglossa
           </h1>
         </div>
-        <button
-          onClick={onEnter}
-          className="font-serif italic text-ink2 hover:text-ink transition-colors"
-        >
-          Enter the Library
-        </button>
+        <div className="flex items-center gap-6">
+          <select
+            value={i18n.language}
+            onChange={handleLanguageChange}
+            className="bg-transparent border border-bdr rounded px-2 py-1 text-sm font-bold text-ink focus:outline-none focus:border-blue cursor-pointer"
+          >
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+            <option value="de">DE</option>
+            <option value="pt">PT</option>
+            <option value="fr">FR</option>
+            <option value="ru">RU</option>
+            <option value="zh">ZH</option>
+          </select>
+          <button
+            onClick={onEnter}
+            className="font-serif italic text-ink2 hover:text-ink transition-colors"
+          >
+            {t("landing.enterLibrary", "Enter the Library")}
+          </button>
+        </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 md:px-12 pt-40 pb-24 relative z-10 flex flex-col min-h-screen justify-center">
@@ -34,17 +59,15 @@ export const Landing = () => {
             >
               <div className="eyebrow text-gold mb-6 flex items-center gap-2">
                 <Sparkles className="w-3 h-3" />
-                The Future of Philology
+                {t("landing.subtitle", "The Future of Philology")}
               </div>
               <h2 className="text-6xl md:text-[80px] font-serif leading-[1] tracking-tighter mb-8 text-ink">
-                Read the ancient world<span className="italic">.</span>
+                {t("landing.titleTop", "Read the ancient world")}<span className="italic">.</span>
                 <br />
-                <span className="italic text-ink2">Word by word.</span>
+                <span className="italic text-ink2">{t("landing.titleBottom", "Word by word.")}</span>
               </h2>
               <p className="text-[17px] text-ink2 max-w-lg leading-[1.7] mb-12 font-body italic">
-                A scholarly reference tool for reading classical languages.
-                Focus on the text with precision morphology, immersive
-                typography, and spaced repetition.
+                {t("landing.desc", "A scholarly reference tool for reading classical languages. Focus on the text with precision morphology, immersive typography, and spaced repetition.")}
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -52,10 +75,10 @@ export const Landing = () => {
                   onClick={onEnter}
                   className="btn-primary px-8 py-4 text-lg flex items-center gap-2 group"
                 >
-                  Open texts
+                  {t("landing.openTexts", "Open texts")}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button className="btn-secondary px-8">Browse catalog</button>
+                <button className="btn-secondary px-8">{t("landing.browseCatalog", "Browse catalog")}</button>
               </div>
             </motion.div>
           </div>
@@ -92,18 +115,18 @@ export const Landing = () => {
           {[
             {
               icon: BookOpen,
-              title: "Immersive Reading",
-              desc: "Typography optimized for ancient scripts and deep focus without distractions.",
+              title: t("landing.feature1Title", "Immersive Reading"),
+              desc: t("landing.feature1Desc", "Typography optimized for ancient scripts and deep focus without distractions."),
             },
             {
               icon: GraduationCap,
-              title: "Morphology Aware",
-              desc: "Instant parsing, lemma analysis, and root tracking for every word.",
+              title: t("landing.feature2Title", "Morphology Aware"),
+              desc: t("landing.feature2Desc", "Instant parsing, lemma analysis, and root tracking for every word."),
             },
             {
               icon: Sparkles,
-              title: "Intelligent Review",
-              desc: "Spaced repetition system designed for lexical mastery and retaining classical vocabulary.",
+              title: t("landing.feature3Title", "Intelligent Review"),
+              desc: t("landing.feature3Desc", "Spaced repetition system designed for lexical mastery and retaining classical vocabulary."),
             },
           ].map((feature, i) => (
             <motion.div

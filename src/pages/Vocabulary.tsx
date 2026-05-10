@@ -183,10 +183,10 @@ export const Vocabulary = () => {
               <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t border-bdr/50 md:border-none">
                 <div className="flex flex-col items-start md:items-end w-32">
                   <div className={cn("pill", getStatusClass(word.status))}>
-                    {word.status}
+                    {t(`vocab.${word.status.toLowerCase()}`, word.status)}
                   </div>
                   <div className="text-[10px] text-muted font-sans mt-2">
-                    Next Review:{" "}
+                    {t("vocab.nextReview", "Next Review:")}{" "}
                     {new Date(word.nextReview).toLocaleDateString()}
                   </div>
                 </div>
@@ -208,9 +208,9 @@ export const Vocabulary = () => {
         ) : (
           <div className="py-20 text-center flex flex-col items-center">
             <div className="text-[40px] text-muted mb-4 font-serif">❧</div>
-            <h3 className="font-serif text-lg text-ink mb-1">No words found</h3>
+            <h3 className="font-serif text-lg text-ink mb-1">{t("vocab.noWordsFound", "No words found")}</h3>
             <p className="font-body text-[14px] italic text-ink3">
-              Try adjusting your filters or search query.
+              {t("vocab.adjustFilters", "Try adjusting your filters or search query.")}
             </p>
           </div>
         )}
@@ -235,7 +235,7 @@ export const Vocabulary = () => {
               >
                 <div className="p-5 border-b border-bdr flex items-center justify-between bg-parch/50">
                   <h3 className="font-serif text-[19px] text-ink font-medium">
-                    Spaced Repetition Configuration
+                    {t("vocab.srsConfig", "Spaced Repetition Configuration")}
                   </h3>
                   <button
                     onClick={() => setShowSettings(false)}
@@ -247,15 +247,13 @@ export const Vocabulary = () => {
 
                 <div className="p-6">
                   <p className="font-body text-[13.5px] leading-relaxed text-ink2 mb-6">
-                    Adjust the base intervals for vocabulary reviews. These
-                    determine how long a word waits before resurfacing based on
-                    its current mastery level.
+                    {t("vocab.srsDesc", "Adjust the base intervals for vocabulary reviews. These determine how long a word waits before resurfacing based on its current mastery level.")}
                   </p>
 
                   <div className="flex flex-col gap-4 mb-6">
                     <div>
                       <label className="eyebrow block mb-2">
-                        "Seen Once" Interval
+                        {t("vocab.seenOnceLabel", "\"Seen Once\" Interval")}
                       </label>
                       <input
                         type="text"
@@ -271,7 +269,7 @@ export const Vocabulary = () => {
                     </div>
                     <div>
                       <label className="eyebrow block mb-2">
-                        "Familiar" Interval
+                        {t("vocab.familiarLabel", "\"Familiar\" Interval")}
                       </label>
                       <input
                         type="text"
@@ -287,7 +285,7 @@ export const Vocabulary = () => {
                     </div>
                     <div>
                       <label className="eyebrow block mb-2">
-                        "Known" Interval
+                        {t("vocab.knownLabel", "\"Known\" Interval")}
                       </label>
                       <input
                         type="text"
@@ -303,7 +301,7 @@ export const Vocabulary = () => {
                     </div>
                     <div>
                       <label className="eyebrow block mb-2">
-                        Ease Multiplier (Hard/Good/Easy)
+                        {t("vocab.multiplierLabel", "Ease Multiplier (Hard/Good/Easy)")}
                       </label>
                       <input
                         type="text"
@@ -317,7 +315,7 @@ export const Vocabulary = () => {
                         className="w-full px-3 py-2 bg-white border border-bdr rounded-[8px] text-[13px] font-sans focus:outline-none focus:border-blue"
                       />
                       <p className="font-mono text-[9px] text-muted mt-2">
-                        Default: 1.5x scaling on successful review.
+                        {t("vocab.multiplierDesc", "Default: 1.5x scaling on successful review.")}
                       </p>
                     </div>
                   </div>
@@ -327,13 +325,13 @@ export const Vocabulary = () => {
                       onClick={() => setShowSettings(false)}
                       className="btn-secondary px-4 py-2"
                     >
-                      Cancel
+                      {t("vocab.cancel", "Cancel")}
                     </button>
                     <button
                       onClick={() => setShowSettings(false)}
                       className="btn-primary px-5 py-2"
                     >
-                      Save Configuration
+                      {t("vocab.saveConfig", "Save Configuration")}
                     </button>
                   </div>
                 </div>
