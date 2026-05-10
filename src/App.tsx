@@ -19,7 +19,8 @@ import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { seedKnowledge } from './lib/data/seeding';
-import { AuthProvider, useAuth } from './lib/contexts/AuthContext';
+import { AuthProvider } from './lib/contexts/AuthContext';
+import { useAuth } from './lib/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {

@@ -55,26 +55,47 @@ export const Review = () => {
             ? info
             : { state: info, addedAt: new Date().toISOString() };
 
-        // Select random card type (only form-to-meaning and meaning-to-form for now)
+        // Deterministic selection based on lemma to satisfy react-hooks/purity
+        const lemmaHash = (str: string) => {
+          let h = 0;
+          for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i);
+          return Math.abs(h);
+        };
+        const seed = lemmaHash(lemma);
+
+        // Select random card type
         const types = [
           CardType.FORM_TO_MEANING,
           CardType.MEANING_TO_FORM,
         ];
         
-        // eslint-disable-next-line react-hooks/purity
-        const type = types[Math.floor(Math.random() * types.length)];
+        const contexts = (wordInfo as any).contexts || [];
+        if (contexts.length > 0) {
+          types.push(CardType.CLOZE);
+        }
+        
+        const type = types[seed % types.length];
 
         // Get dictionary info
         const tokenInfo = getTokenInfo(lemma);
-        const gloss = tokenInfo?.gloss || "Definition missing";
+        const gloss = (wordInfo as any).userGloss || tokenInfo?.gloss || "Definition missing";
         const partOfSpeech = tokenInfo?.morphology?.partOfSpeech || tokenInfo?.morphology?.part || "";
 
         let question = lemma;
         let answer = gloss;
+        let cardContext = "";
 
         if (type === CardType.MEANING_TO_FORM) {
           question = gloss;
           answer = lemma;
+        } else if (type === CardType.CLOZE && contexts.length > 0) {
+          const raw = contexts[seed % contexts.length];
+          // Attempt to find the lemma or the word in the context
+          // Since we might not have the exact form, we just replace the first match or any word resembling it
+          // For now, simple case-insensitive replace of the lemma
+          question = raw.replace(new RegExp(lemma, "gi"), "[_____]");
+          answer = lemma;
+          cardContext = raw;
         }
 
         return {
@@ -83,6 +104,7 @@ export const Review = () => {
           type,
           question,
           answer,
+          context: cardContext,
           morphHint: partOfSpeech ? partOfSpeech.toString().toLowerCase() : undefined,
         } as ReviewCard;
       });
@@ -209,7 +231,11 @@ export const Review = () => {
               <div className="eyebrow text-[9px] text-muted">{t("review.newToday", "New Today")}</div>
             </div>
             <div className="bg-parch p-4 rounded-xl border border-bdr/40">
-              <div className="text-[24px] font-bold text-green-600">85%</div>
+              <div className="text-[24px] font-bold text-green-600">
+                {sessionResults.length > 0 
+                  ? Math.round((sessionResults.filter(r => r.rating !== "AGAIN").length / sessionResults.length) * 100) 
+                  : "85"}%
+              </div>
               <div className="eyebrow text-[9px] text-muted">{t("review.accuracy", "Accuracy")}</div>
             </div>
           </div>

@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ImportService, ImportedText } from "../lib/services/importService";
 import { TextAnalysisService } from "../lib/services/textAnalysisService";
-import { useAuth } from "../lib/contexts/AuthContext";
+import { useAuth } from "../lib/hooks/useAuth";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordState } from "../lib/constants/wordStates";
 import { ImportedSentence } from "../types/firestore";
