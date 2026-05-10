@@ -64,7 +64,7 @@ export const Import = () => {
         contents: {
           parts: [
             { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
-            { text: "Extract the text from this image. If it is an ancient language like Greek, Latin, Hebrew, etc., preserve the original characters. Return ONLY the extracted text, with no markdown formatting or extra commentary." }
+            { text: `Extract the text from this image. The source text is ${language}. Preserve the original characters and native script. Return ONLY the extracted text, with no markdown formatting or extra commentary.` }
           ]
         }
       });
@@ -137,6 +137,21 @@ export const Import = () => {
       lang: "hbo",
       text: "אַשְׁרֵי הָאִישׁ אֲשֶׁר לֹא הָלַךְ בַּעֲצַת רְשָׁעִים וּבְדֶרֶךְ חַטָּאִים לֹא עָמָד וּבְמוֹשַׁב לֵצִים לֹא יָשָׁב׃",
     },
+    {
+      name: "Bhagavad Gita 1.1",
+      lang: "san",
+      text: "धृतराष्ट्र उवाच धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः। मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय॥",
+    },
+    {
+      name: "Egyptian Offering",
+      lang: "egy",
+      text: "𓊵𓏙𓇓𓏏 𓊩𓁹 𓏃𓋀𓏏𓅂 𓊹𓉻 𓎟𓍋𓃀𓈋𓊖 𓏙𓆑 𓉐𓉲 𓏐𓏊 𓃾𓅿 𓍱𓋲 𓊹𓊵 𓐍𓏏 𓎟 𓄤𓏏 𓃂𓏏",
+    },
+    {
+      name: "Gilgamesh I.1",
+      lang: "akk",
+      text: "𒊭 𒅘𒁀 𒄿𒈬𒊒 𒅖𒁲 𒈠𒀀𒋾 𒄿𒁲𒈠 𒅗𒆷𒈠 𒄩𒊍 Воло",
+    }
   ];
 
   return (
@@ -230,6 +245,7 @@ export const Import = () => {
                       <option value="akk">Akkadian</option>
                       <option value="san">Sanskrit</option>
                       <option value="egy">Egyptian Hieroglyphs</option>
+                      <option value="hit">Hittite</option>
                     </select>
                   </div>
 
