@@ -31,6 +31,7 @@ import { getTransliteration } from "../lib/transliterate";
 import { AIClient } from "../lib/services/aiClient";
 import { ImportService } from "../lib/services/importService";
 import { useAuth } from "../lib/hooks/useAuth";
+import { STORAGE_KEYS } from "../lib/constants/storage";
 
 export const Reader = () => {
   const { textId } = useParams();
@@ -84,7 +85,7 @@ export const Reader = () => {
   const [readingMode, setReadingMode] = useState<"scroll" | "page">("scroll");
   const [maskKnown, setMaskKnown] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(() => {
-    return localStorage.getItem("tutorialCompleted") ? 0 : 1;
+    return localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED) ? 0 : 1;
   });
 
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -273,7 +274,7 @@ export const Reader = () => {
   }, [text]);
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
-    const saved = localStorage.getItem(`reader_chapter_${text?.id}`);
+    const saved = localStorage.getItem(`${STORAGE_KEYS.READER_CHAPTER_PREFIX}${text?.id}`);
     const parsed = saved ? parseInt(saved, 10) || 0 : 0;
     return parsed < chapters.length ? parsed : 0;
   });
@@ -402,7 +403,7 @@ export const Reader = () => {
   useEffect(() => {
     if (text?.id) {
       localStorage.setItem(
-        `reader_chapter_${text.id}`,
+        `${STORAGE_KEYS.READER_CHAPTER_PREFIX}${text.id}`,
         currentChapterIndex.toString(),
       );
     }
@@ -429,7 +430,7 @@ export const Reader = () => {
 
   const dismissTutorial = () => {
     setTutorialStep(0);
-    localStorage.setItem("tutorialCompleted", "true");
+    localStorage.setItem(STORAGE_KEYS.TUTORIAL_COMPLETED, "true");
   };
 
   useEffect(() => {

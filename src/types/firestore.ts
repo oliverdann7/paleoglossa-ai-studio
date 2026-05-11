@@ -1,13 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
-
-export enum WordStatus {
-  NEW = 'NEW',
-  SEEN = 'SEEN',
-  LEARNING = 'LEARNING',
-  FAMILIAR = 'FAMILIAR',
-  KNOWN = 'KNOWN',
-  IGNORED = 'IGNORED'
-}
+import { WordState } from '../lib/constants/wordStates';
 
 export interface SRSData {
   nextReview: string | Timestamp;
@@ -28,7 +20,7 @@ export interface VocabularyItem {
   transliteration?: string;
   gloss?: string;
   userGloss?: string;
-  status: WordStatus;
+  status: WordState;
   sourceTextIds: string[];
   encounterCount: number;
   firstSeenAt: string | Timestamp;
@@ -93,7 +85,7 @@ export interface ImportedText {
 }
 
 export interface UserSettings {
-  theme: 'light' | 'dark' | 'sepia';
+  theme: 'parchment' | 'sepia' | 'dark';
   fontSize: number;
   transliterationMode: 'none' | 'phonetic' | 'roman';
   targetLanguage: string;

@@ -88,6 +88,8 @@ const PROMPTS = {
   }
 };
 
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -107,7 +109,6 @@ async function startServer() {
       }
 
       try {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         await handler(req, res, ai);
       } catch (error: any) {
         console.error(`AI Error on ${path}:`, error);
@@ -219,9 +220,16 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  const shutdown = () => {
+    console.log('Shutting down gracefully...');
+    server.close(() => process.exit(0));
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
 
 startServer();

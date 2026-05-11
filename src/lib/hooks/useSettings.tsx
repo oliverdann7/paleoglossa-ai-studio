@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { SettingsService } from '../services/settingsService';
+import { UserSettings } from '../../types/firestore';
 
 export interface Settings {
   dailyGoalWords: number;
@@ -34,26 +35,19 @@ export const useSettings = () => {
   useEffect(() => {
     const load = async () => {
       const dbSettings = await SettingsService.getSettings(userId);
-      // Map Firestore settings to local Settings interface if they differ slightly
-      // For now they are aligned enough or we overwrite
-      setSettings(prev => ({ ...prev, ...dbSettings } as Settings));
+      setSettings(prev => ({ ...prev, ...dbSettings }));
     };
     load();
   }, [userId]);
 
   useEffect(() => {
     document.documentElement.className = `theme-${settings.theme}`;
-    if (settings.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
   }, [settings.theme]);
 
   const updateSettings = useCallback(async (updates: Partial<Settings>) => {
     const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
-    await SettingsService.saveSettings(userId, newSettings as any);
+    await SettingsService.saveSettings(userId, newSettings as unknown as UserSettings);
   }, [userId, settings]);
 
   return { settings, updateSettings };

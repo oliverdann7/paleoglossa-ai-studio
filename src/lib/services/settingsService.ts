@@ -1,16 +1,17 @@
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { UserSettings } from '../../types/firestore';
+import { STORAGE_KEYS } from '../constants/storage';
 
-const STORAGE_KEY = 'paleoglossa_settings';
+const STORAGE_KEY = STORAGE_KEYS.SETTINGS;
 
 const DEFAULT_SETTINGS: UserSettings = {
-  theme: 'sepia',
-  fontSize: 18,
+  theme: 'parchment',
+  fontSize: 24,
   transliterationMode: 'phonetic',
   targetLanguage: 'grc',
   uiLanguage: 'en',
-  showParallelDefault: true
+  showParallelDefault: false
 };
 
 export class SettingsService {
