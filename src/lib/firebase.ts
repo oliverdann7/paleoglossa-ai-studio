@@ -1,11 +1,19 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+
+// Injected at build time by vite.config.ts — reads from firebase-applet-config.json
+// (AI Studio) or VITE_FIREBASE_* environment variables (Vercel / local dev).
+declare const __FIREBASE_CONFIG__: {
+  projectId: string; appId: string; apiKey: string; authDomain: string;
+  storageBucket: string; messagingSenderId: string; measurementId: string;
+  firestoreDatabaseId: string;
+};
+const { firestoreDatabaseId, ...firebaseConfig } = __FIREBASE_CONFIG__;
 
 const app = initializeApp(firebaseConfig);
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); 
+export const db = getFirestore(app, firestoreDatabaseId || '(default)');
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
