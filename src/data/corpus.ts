@@ -1081,6 +1081,187 @@ export const JOHN_1_1: TextSection = {
         },
       ],
     },
+    {
+      id: "Jn-1-1-6",
+      translation: "There was a man sent from God, whose name was John.",
+      tokens: [
+        { id: "jn62", surface: "Ἐγένετο", normalized: "εγενετο", lemma: "γίνομαι", gloss: "there was, came to be", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "middle", mood: "indicative", person: "third", number: "singular" }, transliteration: "Egeneto", punctBefore: "", punctAfter: " " },
+        { id: "jn63", surface: "ἄνθρωπος", normalized: "ανθρωπος", lemma: "ἄνθρωπος", gloss: "man, person", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "anthrōpos", punctBefore: "", punctAfter: " " },
+        { id: "jn64", surface: "ἀπεσταλμένος", normalized: "απεσταλμενος", lemma: "ἀποστέλλω", gloss: "sent", morphology: { partOfSpeech: "verb", tense: "perfect", voice: "passive", mood: "participle", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "apestalmenos", punctBefore: "", punctAfter: " " },
+        { id: "jn65", surface: "παρὰ", normalized: "παρα", lemma: "παρά", gloss: "from", morphology: { partOfSpeech: "preposition" }, transliteration: "para", punctBefore: "", punctAfter: " " },
+        { id: "jn66", surface: "θεοῦ", normalized: "θεου", lemma: "θεός", gloss: "God", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "theou", punctBefore: "", punctAfter: ", " },
+        { id: "jn67", surface: "ὄνομα", normalized: "ονομα", lemma: "ὄνομα", gloss: "name", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "onoma", punctBefore: "", punctAfter: " " },
+        { id: "jn68", surface: "αὐτῷ", normalized: "αυτω", lemma: "αὐτός", gloss: "his, to him", morphology: { partOfSpeech: "pronoun", case: "dative", number: "singular", gender: "masculine" }, transliteration: "autō", punctBefore: "", punctAfter: " " },
+        { id: "jn69", surface: "Ἰωάννης", normalized: "ιωαννης", lemma: "Ἰωάννης", gloss: "John", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "Iōannēs", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "Jn-1-1-7",
+      translation: "He came as a witness to testify concerning that light, so that through him all might believe.",
+      tokens: [
+        { id: "jn70", surface: "οὗτος", normalized: "ουτος", lemma: "οὗτος", gloss: "this one, he", morphology: { partOfSpeech: "pronoun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "houtos", punctBefore: "", punctAfter: " " },
+        { id: "jn71", surface: "ἦλθεν", normalized: "ηλθεν", lemma: "ἔρχομαι", gloss: "came", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "ēlthen", punctBefore: "", punctAfter: " " },
+        { id: "jn72", surface: "εἰς", normalized: "εις", lemma: "εἰς", gloss: "for, unto", morphology: { partOfSpeech: "preposition" }, transliteration: "eis", punctBefore: "", punctAfter: " " },
+        { id: "jn73", surface: "μαρτυρίαν", normalized: "μαρτυριαν", lemma: "μαρτυρία", gloss: "witness, testimony", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "feminine" }, transliteration: "martyrian", punctBefore: "", punctAfter: ", " },
+        { id: "jn74", surface: "ἵνα", normalized: "ινα", lemma: "ἵνα", gloss: "so that", morphology: { partOfSpeech: "conjunction" }, transliteration: "hina", punctBefore: "", punctAfter: " " },
+        { id: "jn75", surface: "μαρτυρήσῃ", normalized: "μαρτυρηση", lemma: "μαρτυρέω", gloss: "he might testify", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "subjunctive", person: "third", number: "singular" }, transliteration: "martyrēsē", punctBefore: "", punctAfter: " " },
+        { id: "jn76", surface: "περὶ", normalized: "περι", lemma: "περί", gloss: "concerning, about", morphology: { partOfSpeech: "preposition" }, transliteration: "peri", punctBefore: "", punctAfter: " " },
+        { id: "jn77", surface: "τοῦ", normalized: "του", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "genitive", number: "singular", gender: "neuter" }, transliteration: "tou", punctBefore: "", punctAfter: " " },
+        { id: "jn78", surface: "φωτός", normalized: "φωτος", lemma: "φῶς", gloss: "light", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "neuter" }, transliteration: "phōtos", punctBefore: "", punctAfter: ", " },
+        { id: "jn79", surface: "ἵνα", normalized: "ινα", lemma: "ἵνα", gloss: "so that", morphology: { partOfSpeech: "conjunction" }, transliteration: "hina", punctBefore: "", punctAfter: " " },
+        { id: "jn80", surface: "πάντες", normalized: "παντες", lemma: "πᾶς", gloss: "all", morphology: { partOfSpeech: "adjective", case: "nominative", number: "plural", gender: "masculine" }, transliteration: "pantes", punctBefore: "", punctAfter: " " },
+        { id: "jn81", surface: "πιστεύσωσιν", normalized: "πιστευσωσιν", lemma: "πιστεύω", gloss: "might believe", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "subjunctive", person: "third", number: "plural" }, transliteration: "pisteusōsin", punctBefore: "", punctAfter: " " },
+        { id: "jn82", surface: "δι'", normalized: "δι", lemma: "διά", gloss: "through", morphology: { partOfSpeech: "preposition" }, transliteration: "di'", punctBefore: "", punctAfter: " " },
+        { id: "jn83", surface: "αὐτοῦ", normalized: "αυτου", lemma: "αὐτός", gloss: "him", morphology: { partOfSpeech: "pronoun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "autou", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "Jn-1-1-8",
+      translation: "He himself was not the light; he came only as a witness to the light.",
+      tokens: [
+        { id: "jn84", surface: "οὐκ", normalized: "ουκ", lemma: "οὐ", gloss: "not", morphology: { partOfSpeech: "particle" }, transliteration: "ouk", punctBefore: "", punctAfter: " " },
+        { id: "jn85", surface: "ἦν", normalized: "ην", lemma: "εἰμί", gloss: "was", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "ēn", punctBefore: "", punctAfter: " " },
+        { id: "jn86", surface: "ἐκεῖνος", normalized: "εκεινος", lemma: "ἐκεῖνος", gloss: "that one, he", morphology: { partOfSpeech: "pronoun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "ekeinos", punctBefore: "", punctAfter: " " },
+        { id: "jn87", surface: "τὸ", normalized: "το", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "to", punctBefore: "", punctAfter: " " },
+        { id: "jn88", surface: "φῶς", normalized: "φως", lemma: "φῶς", gloss: "light", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "phōs", punctBefore: "", punctAfter: ", " },
+        { id: "jn89", surface: "ἀλλ'", normalized: "αλλ", lemma: "ἀλλά", gloss: "but rather", morphology: { partOfSpeech: "conjunction" }, transliteration: "all'", punctBefore: "", punctAfter: " " },
+        { id: "jn90", surface: "ἵνα", normalized: "ινα", lemma: "ἵνα", gloss: "so that", morphology: { partOfSpeech: "conjunction" }, transliteration: "hina", punctBefore: "", punctAfter: " " },
+        { id: "jn91", surface: "μαρτυρήσῃ", normalized: "μαρτυρηση", lemma: "μαρτυρέω", gloss: "he might testify", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "subjunctive", person: "third", number: "singular" }, transliteration: "martyrēsē", punctBefore: "", punctAfter: " " },
+        { id: "jn92", surface: "περὶ", normalized: "περι", lemma: "περί", gloss: "concerning", morphology: { partOfSpeech: "preposition" }, transliteration: "peri", punctBefore: "", punctAfter: " " },
+        { id: "jn93", surface: "τοῦ", normalized: "του", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "genitive", number: "singular", gender: "neuter" }, transliteration: "tou", punctBefore: "", punctAfter: " " },
+        { id: "jn94", surface: "φωτός", normalized: "φωτος", lemma: "φῶς", gloss: "light", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "neuter" }, transliteration: "phōtos", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "Jn-1-1-9",
+      translation: "The true light that gives light to everyone was coming into the world.",
+      tokens: [
+        { id: "jn95", surface: "Ἦν", normalized: "ην", lemma: "εἰμί", gloss: "was", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "Ēn", punctBefore: "", punctAfter: " " },
+        { id: "jn96", surface: "τὸ", normalized: "το", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "to", punctBefore: "", punctAfter: " " },
+        { id: "jn97", surface: "φῶς", normalized: "φως", lemma: "φῶς", gloss: "light", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "phōs", punctBefore: "", punctAfter: " " },
+        { id: "jn98", surface: "τὸ", normalized: "το", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "to", punctBefore: "", punctAfter: " " },
+        { id: "jn99", surface: "ἀληθινόν", normalized: "αληθινον", lemma: "ἀληθινός", gloss: "true, genuine", morphology: { partOfSpeech: "adjective", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "alēthinon", punctBefore: "", punctAfter: ", " },
+        { id: "jn100", surface: "ὃ", normalized: "ο", lemma: "ὅς", gloss: "which", morphology: { partOfSpeech: "pronoun", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "ho", punctBefore: "", punctAfter: " " },
+        { id: "jn101", surface: "φωτίζει", normalized: "φωτιζει", lemma: "φωτίζω", gloss: "gives light, enlightens", morphology: { partOfSpeech: "verb", tense: "present", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "phōtizei", punctBefore: "", punctAfter: " " },
+        { id: "jn102", surface: "πάντα", normalized: "παντα", lemma: "πᾶς", gloss: "every, all", morphology: { partOfSpeech: "adjective", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "panta", punctBefore: "", punctAfter: " " },
+        { id: "jn103", surface: "ἄνθρωπον", normalized: "ανθρωπον", lemma: "ἄνθρωπος", gloss: "man, person", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "anthrōpon", punctBefore: "", punctAfter: " " },
+        { id: "jn104", surface: "ἐρχόμενον", normalized: "ερχομενον", lemma: "ἔρχομαι", gloss: "coming", morphology: { partOfSpeech: "verb", tense: "present", voice: "middle", mood: "participle", case: "nominative", number: "singular", gender: "neuter" }, transliteration: "erchomenon", punctBefore: "", punctAfter: " " },
+        { id: "jn105", surface: "εἰς", normalized: "εις", lemma: "εἰς", gloss: "into", morphology: { partOfSpeech: "preposition" }, transliteration: "eis", punctBefore: "", punctAfter: " " },
+        { id: "jn106", surface: "τὸν", normalized: "τον", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "ton", punctBefore: "", punctAfter: " " },
+        { id: "jn107", surface: "κόσμον", normalized: "κοσμον", lemma: "κόσμος", gloss: "world", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "kosmon", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "Jn-1-1-10",
+      translation: "He was in the world, and though the world was made through him, the world did not recognize him.",
+      tokens: [
+        { id: "jn108", surface: "ἐν", normalized: "εν", lemma: "ἐν", gloss: "in", morphology: { partOfSpeech: "preposition" }, transliteration: "en", punctBefore: "", punctAfter: " " },
+        { id: "jn109", surface: "τῷ", normalized: "τω", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "dative", number: "singular", gender: "masculine" }, transliteration: "tō", punctBefore: "", punctAfter: " " },
+        { id: "jn110", surface: "κόσμῳ", normalized: "κοσμω", lemma: "κόσμος", gloss: "world", morphology: { partOfSpeech: "noun", case: "dative", number: "singular", gender: "masculine" }, transliteration: "kosmō", punctBefore: "", punctAfter: " " },
+        { id: "jn111", surface: "ἦν", normalized: "ην", lemma: "εἰμί", gloss: "was", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "ēn", punctBefore: "", punctAfter: ", " },
+        { id: "jn112", surface: "καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "kai", punctBefore: "", punctAfter: " " },
+        { id: "jn113", surface: "ὁ", normalized: "ο", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "ho", punctBefore: "", punctAfter: " " },
+        { id: "jn114", surface: "κόσμος", normalized: "κοσμος", lemma: "κόσμος", gloss: "world", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "kosmos", punctBefore: "", punctAfter: " " },
+        { id: "jn115", surface: "δι'", normalized: "δι", lemma: "διά", gloss: "through", morphology: { partOfSpeech: "preposition" }, transliteration: "di'", punctBefore: "", punctAfter: " " },
+        { id: "jn116", surface: "αὐτοῦ", normalized: "αυτου", lemma: "αὐτός", gloss: "him", morphology: { partOfSpeech: "pronoun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "autou", punctBefore: "", punctAfter: " " },
+        { id: "jn117", surface: "ἐγένετο", normalized: "εγενετο", lemma: "γίνομαι", gloss: "was made", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "middle", mood: "indicative", person: "third", number: "singular" }, transliteration: "egeneto", punctBefore: "", punctAfter: ", " },
+        { id: "jn118", surface: "καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "kai", punctBefore: "", punctAfter: " " },
+        { id: "jn119", surface: "ὁ", normalized: "ο", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "ho", punctBefore: "", punctAfter: " " },
+        { id: "jn120", surface: "κόσμος", normalized: "κοσμος", lemma: "κόσμος", gloss: "world", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "kosmos", punctBefore: "", punctAfter: " " },
+        { id: "jn121", surface: "αὐτὸν", normalized: "αυτον", lemma: "αὐτός", gloss: "him", morphology: { partOfSpeech: "pronoun", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "auton", punctBefore: "", punctAfter: " " },
+        { id: "jn122", surface: "οὐκ", normalized: "ουκ", lemma: "οὐ", gloss: "not", morphology: { partOfSpeech: "particle" }, transliteration: "ouk", punctBefore: "", punctAfter: " " },
+        { id: "jn123", surface: "ἔγνω", normalized: "εγνω", lemma: "γινώσκω", gloss: "recognized, knew", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "egnō", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "Jn-1-1-11",
+      translation: "He came to that which was his own, but his own did not receive him.",
+      tokens: [
+        { id: "jn124", surface: "εἰς", normalized: "εις", lemma: "εἰς", gloss: "to, into", morphology: { partOfSpeech: "preposition" }, transliteration: "eis", punctBefore: "", punctAfter: " " },
+        { id: "jn125", surface: "τὰ", normalized: "τα", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "accusative", number: "plural", gender: "neuter" }, transliteration: "ta", punctBefore: "", punctAfter: " " },
+        { id: "jn126", surface: "ἴδια", normalized: "ιδια", lemma: "ἴδιος", gloss: "his own things", morphology: { partOfSpeech: "adjective", case: "accusative", number: "plural", gender: "neuter" }, transliteration: "idia", punctBefore: "", punctAfter: " " },
+        { id: "jn127", surface: "ἦλθεν", normalized: "ηλθεν", lemma: "ἔρχομαι", gloss: "came", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "ēlthen", punctBefore: "", punctAfter: ", " },
+        { id: "jn128", surface: "καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "kai", punctBefore: "", punctAfter: " " },
+        { id: "jn129", surface: "οἱ", normalized: "οι", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "nominative", number: "plural", gender: "masculine" }, transliteration: "hoi", punctBefore: "", punctAfter: " " },
+        { id: "jn130", surface: "ἴδιοι", normalized: "ιδιοι", lemma: "ἴδιος", gloss: "his own people", morphology: { partOfSpeech: "adjective", case: "nominative", number: "plural", gender: "masculine" }, transliteration: "idioi", punctBefore: "", punctAfter: " " },
+        { id: "jn131", surface: "αὐτὸν", normalized: "αυτον", lemma: "αὐτός", gloss: "him", morphology: { partOfSpeech: "pronoun", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "auton", punctBefore: "", punctAfter: " " },
+        { id: "jn132", surface: "οὐ", normalized: "ου", lemma: "οὐ", gloss: "not", morphology: { partOfSpeech: "particle" }, transliteration: "ou", punctBefore: "", punctAfter: " " },
+        { id: "jn133", surface: "παρέλαβον", normalized: "παρελαβον", lemma: "παραλαμβάνω", gloss: "received, accepted", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "plural" }, transliteration: "parelabon", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "Jn-1-1-12",
+      translation: "Yet to all who did receive him, to those who believed in his name, he gave the right to become children of God.",
+      tokens: [
+        { id: "jn134", surface: "ὅσοι", normalized: "οσοι", lemma: "ὅσος", gloss: "as many as, whoever", morphology: { partOfSpeech: "pronoun", case: "nominative", number: "plural", gender: "masculine" }, transliteration: "hosoi", punctBefore: "", punctAfter: " " },
+        { id: "jn135", surface: "δὲ", normalized: "δε", lemma: "δέ", gloss: "but, however", morphology: { partOfSpeech: "particle" }, transliteration: "de", punctBefore: "", punctAfter: " " },
+        { id: "jn136", surface: "ἔλαβον", normalized: "ελαβον", lemma: "λαμβάνω", gloss: "received", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "plural" }, transliteration: "elabon", punctBefore: "", punctAfter: " " },
+        { id: "jn137", surface: "αὐτόν", normalized: "αυτον", lemma: "αὐτός", gloss: "him", morphology: { partOfSpeech: "pronoun", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "auton", punctBefore: "", punctAfter: ", " },
+        { id: "jn138", surface: "ἔδωκεν", normalized: "εδωκεν", lemma: "δίδωμι", gloss: "he gave", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "edōken", punctBefore: "", punctAfter: " " },
+        { id: "jn139", surface: "αὐτοῖς", normalized: "αυτοις", lemma: "αὐτός", gloss: "to them", morphology: { partOfSpeech: "pronoun", case: "dative", number: "plural", gender: "masculine" }, transliteration: "autois", punctBefore: "", punctAfter: " " },
+        { id: "jn140", surface: "ἐξουσίαν", normalized: "εξουσιαν", lemma: "ἐξουσία", gloss: "authority, right", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "feminine" }, transliteration: "exousian", punctBefore: "", punctAfter: " " },
+        { id: "jn141", surface: "τέκνα", normalized: "τεκνα", lemma: "τέκνον", gloss: "children", morphology: { partOfSpeech: "noun", case: "nominative", number: "plural", gender: "neuter" }, transliteration: "tekna", punctBefore: "", punctAfter: " " },
+        { id: "jn142", surface: "θεοῦ", normalized: "θεου", lemma: "θεός", gloss: "of God", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "theou", punctBefore: "", punctAfter: " " },
+        { id: "jn143", surface: "γενέσθαι", normalized: "γενεσθαι", lemma: "γίνομαι", gloss: "to become", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "middle", mood: "infinitive" }, transliteration: "genesthai", punctBefore: "", punctAfter: ", " },
+        { id: "jn144", surface: "τοῖς", normalized: "τοις", lemma: "ὁ", gloss: "to those", morphology: { partOfSpeech: "article", case: "dative", number: "plural", gender: "masculine" }, transliteration: "tois", punctBefore: "", punctAfter: " " },
+        { id: "jn145", surface: "πιστεύουσιν", normalized: "πιστευουσιν", lemma: "πιστεύω", gloss: "believing", morphology: { partOfSpeech: "verb", tense: "present", voice: "active", mood: "participle", case: "dative", number: "plural", gender: "masculine" }, transliteration: "pisteuousin", punctBefore: "", punctAfter: " " },
+        { id: "jn146", surface: "εἰς", normalized: "εις", lemma: "εἰς", gloss: "in, into", morphology: { partOfSpeech: "preposition" }, transliteration: "eis", punctBefore: "", punctAfter: " " },
+        { id: "jn147", surface: "τὸ", normalized: "το", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "accusative", number: "singular", gender: "neuter" }, transliteration: "to", punctBefore: "", punctAfter: " " },
+        { id: "jn148", surface: "ὄνομα", normalized: "ονομα", lemma: "ὄνομα", gloss: "name", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "neuter" }, transliteration: "onoma", punctBefore: "", punctAfter: " " },
+        { id: "jn149", surface: "αὐτοῦ", normalized: "αυτου", lemma: "αὐτός", gloss: "his", morphology: { partOfSpeech: "pronoun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "autou", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "Jn-1-1-13",
+      translation: "Children born not of natural descent, nor of human decision or a husband's will, but born of God.",
+      tokens: [
+        { id: "jn150", surface: "οἳ", normalized: "οι", lemma: "ὅς", gloss: "who", morphology: { partOfSpeech: "pronoun", case: "nominative", number: "plural", gender: "masculine" }, transliteration: "hoi", punctBefore: "", punctAfter: " " },
+        { id: "jn151", surface: "οὐκ", normalized: "ουκ", lemma: "οὐ", gloss: "not", morphology: { partOfSpeech: "particle" }, transliteration: "ouk", punctBefore: "", punctAfter: " " },
+        { id: "jn152", surface: "ἐξ", normalized: "εξ", lemma: "ἐκ", gloss: "from, of", morphology: { partOfSpeech: "preposition" }, transliteration: "ex", punctBefore: "", punctAfter: " " },
+        { id: "jn153", surface: "αἱμάτων", normalized: "αιματων", lemma: "αἷμα", gloss: "bloods", morphology: { partOfSpeech: "noun", case: "genitive", number: "plural", gender: "neuter" }, transliteration: "haimatōn", punctBefore: "", punctAfter: " " },
+        { id: "jn154", surface: "οὐδὲ", normalized: "ουδε", lemma: "οὐδέ", gloss: "nor", morphology: { partOfSpeech: "conjunction" }, transliteration: "oude", punctBefore: "", punctAfter: " " },
+        { id: "jn155", surface: "ἐκ", normalized: "εκ", lemma: "ἐκ", gloss: "from, of", morphology: { partOfSpeech: "preposition" }, transliteration: "ek", punctBefore: "", punctAfter: " " },
+        { id: "jn156", surface: "θελήματος", normalized: "θεληματος", lemma: "θέλημα", gloss: "will, desire", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "neuter" }, transliteration: "thelēmatos", punctBefore: "", punctAfter: " " },
+        { id: "jn157", surface: "σαρκὸς", normalized: "σαρκος", lemma: "σάρξ", gloss: "flesh", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "feminine" }, transliteration: "sarkos", punctBefore: "", punctAfter: " " },
+        { id: "jn158", surface: "οὐδὲ", normalized: "ουδε", lemma: "οὐδέ", gloss: "nor", morphology: { partOfSpeech: "conjunction" }, transliteration: "oude", punctBefore: "", punctAfter: " " },
+        { id: "jn159", surface: "ἐκ", normalized: "εκ", lemma: "ἐκ", gloss: "from, of", morphology: { partOfSpeech: "preposition" }, transliteration: "ek", punctBefore: "", punctAfter: " " },
+        { id: "jn160", surface: "θελήματος", normalized: "θεληματος", lemma: "θέλημα", gloss: "will, desire", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "neuter" }, transliteration: "thelēmatos", punctBefore: "", punctAfter: " " },
+        { id: "jn161", surface: "ἀνδρὸς", normalized: "ανδρος", lemma: "ἀνήρ", gloss: "of a man, husband", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "andros", punctBefore: "", punctAfter: " " },
+        { id: "jn162", surface: "ἀλλ'", normalized: "αλλ", lemma: "ἀλλά", gloss: "but", morphology: { partOfSpeech: "conjunction" }, transliteration: "all'", punctBefore: "", punctAfter: " " },
+        { id: "jn163", surface: "ἐκ", normalized: "εκ", lemma: "ἐκ", gloss: "of, from", morphology: { partOfSpeech: "preposition" }, transliteration: "ek", punctBefore: "", punctAfter: " " },
+        { id: "jn164", surface: "θεοῦ", normalized: "θεου", lemma: "θεός", gloss: "God", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "theou", punctBefore: "", punctAfter: " " },
+        { id: "jn165", surface: "ἐγεννήθησαν", normalized: "εγεννηθησαν", lemma: "γεννάω", gloss: "were born", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "passive", mood: "indicative", person: "third", number: "plural" }, transliteration: "egennēthēsan", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "Jn-1-1-14",
+      translation: "The Word became flesh and made his dwelling among us. We have seen his glory, the glory of the one and only Son, who came from the Father, full of grace and truth.",
+      tokens: [
+        { id: "jn166", surface: "Καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "Kai", punctBefore: "", punctAfter: " " },
+        { id: "jn167", surface: "ὁ", normalized: "ο", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "ho", punctBefore: "", punctAfter: " " },
+        { id: "jn168", surface: "λόγος", normalized: "λογος", lemma: "λόγος", gloss: "Word", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "logos", punctBefore: "", punctAfter: " " },
+        { id: "jn169", surface: "σὰρξ", normalized: "σαρξ", lemma: "σάρξ", gloss: "flesh", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "feminine" }, transliteration: "sarx", punctBefore: "", punctAfter: " " },
+        { id: "jn170", surface: "ἐγένετο", normalized: "εγενετο", lemma: "γίνομαι", gloss: "became", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "middle", mood: "indicative", person: "third", number: "singular" }, transliteration: "egeneto", punctBefore: "", punctAfter: " " },
+        { id: "jn171", surface: "καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "kai", punctBefore: "", punctAfter: " " },
+        { id: "jn172", surface: "ἐσκήνωσεν", normalized: "εσκηνωσεν", lemma: "σκηνόω", gloss: "dwelt, tabernacled", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "eskēnōsen", punctBefore: "", punctAfter: " " },
+        { id: "jn173", surface: "ἐν", normalized: "εν", lemma: "ἐν", gloss: "among", morphology: { partOfSpeech: "preposition" }, transliteration: "en", punctBefore: "", punctAfter: " " },
+        { id: "jn174", surface: "ἡμῖν", normalized: "ημιν", lemma: "ἐγώ", gloss: "us", morphology: { partOfSpeech: "pronoun", case: "dative", number: "plural" }, transliteration: "hēmin", punctBefore: "", punctAfter: ", " },
+        { id: "jn175", surface: "καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "kai", punctBefore: "", punctAfter: " " },
+        { id: "jn176", surface: "ἐθεασάμεθα", normalized: "εθεασαμεθα", lemma: "θεάομαι", gloss: "we beheld", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "middle", mood: "indicative", person: "first", number: "plural" }, transliteration: "etheasametha", punctBefore: "", punctAfter: " " },
+        { id: "jn177", surface: "τὴν", normalized: "την", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "accusative", number: "singular", gender: "feminine" }, transliteration: "tēn", punctBefore: "", punctAfter: " " },
+        { id: "jn178", surface: "δόξαν", normalized: "δοξαν", lemma: "δόξα", gloss: "glory", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "feminine" }, transliteration: "doxan", punctBefore: "", punctAfter: " " },
+        { id: "jn179", surface: "αὐτοῦ", normalized: "αυτου", lemma: "αὐτός", gloss: "his", morphology: { partOfSpeech: "pronoun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "autou", punctBefore: "", punctAfter: ", " },
+        { id: "jn180", surface: "δόξαν", normalized: "δοξαν", lemma: "δόξα", gloss: "glory", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "feminine" }, transliteration: "doxan", punctBefore: "", punctAfter: " " },
+        { id: "jn181", surface: "ὡς", normalized: "ως", lemma: "ὡς", gloss: "as", morphology: { partOfSpeech: "conjunction" }, transliteration: "hōs", punctBefore: "", punctAfter: " " },
+        { id: "jn182", surface: "μονογενοῦς", normalized: "μονογενους", lemma: "μονογενής", gloss: "only begotten, unique", morphology: { partOfSpeech: "adjective", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "monogenous", punctBefore: "", punctAfter: " " },
+        { id: "jn183", surface: "παρὰ", normalized: "παρα", lemma: "παρά", gloss: "from beside", morphology: { partOfSpeech: "preposition" }, transliteration: "para", punctBefore: "", punctAfter: " " },
+        { id: "jn184", surface: "πατρός", normalized: "πατρος", lemma: "πατήρ", gloss: "Father", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "patros", punctBefore: "", punctAfter: ", " },
+        { id: "jn185", surface: "πλήρης", normalized: "πληρης", lemma: "πλήρης", gloss: "full", morphology: { partOfSpeech: "adjective", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "plērēs", punctBefore: "", punctAfter: " " },
+        { id: "jn186", surface: "χάριτος", normalized: "χαριτος", lemma: "χάρις", gloss: "grace", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "feminine" }, transliteration: "charitos", punctBefore: "", punctAfter: " " },
+        { id: "jn187", surface: "καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "kai", punctBefore: "", punctAfter: " " },
+        { id: "jn188", surface: "ἀληθείας", normalized: "αληθειας", lemma: "ἀλήθεια", gloss: "truth", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "feminine" }, transliteration: "alētheias", punctBefore: "", punctAfter: "." },
+      ],
+    },
   ],
 };
 
@@ -1305,6 +1486,71 @@ export const AENEID_1_1: TextSection = {
         },
       ],
     },
+    {
+      id: "aen3",
+      translation: "that man, greatly tossed about on land and sea",
+      tokens: [
+        { id: "a15", surface: "multum", normalized: "multum", lemma: "multus", gloss: "much, greatly", morphology: { partOfSpeech: "adverb" }, punctBefore: "", punctAfter: " " },
+        { id: "a16", surface: "ille", normalized: "ille", lemma: "ille", gloss: "that man, he", morphology: { partOfSpeech: "pronoun", case: "nominative", number: "singular", gender: "masculine" }, punctBefore: "", punctAfter: " " },
+        { id: "a17", surface: "et", normalized: "et", lemma: "et", gloss: "and", morphology: { partOfSpeech: "conjunction" }, punctBefore: "", punctAfter: " " },
+        { id: "a18", surface: "terris", normalized: "terris", lemma: "terra", gloss: "on land", morphology: { partOfSpeech: "noun", case: "ablative", number: "plural", gender: "feminine" }, punctBefore: "", punctAfter: " " },
+        { id: "a19", surface: "iactatus", normalized: "iactatus", lemma: "iacto", gloss: "tossed about", morphology: { partOfSpeech: "verb", tense: "perfect", voice: "passive", mood: "participle", case: "nominative", number: "singular", gender: "masculine" }, punctBefore: "", punctAfter: " " },
+        { id: "a20", surface: "et", normalized: "et", lemma: "et", gloss: "and", morphology: { partOfSpeech: "conjunction" }, punctBefore: "", punctAfter: " " },
+        { id: "a21", surface: "alto", normalized: "alto", lemma: "altum", gloss: "the deep sea", morphology: { partOfSpeech: "noun", case: "ablative", number: "singular", gender: "neuter" }, punctBefore: "", punctAfter: "," },
+      ],
+    },
+    {
+      id: "aen4",
+      translation: "by the power of the gods, because of savage Juno's unrelenting anger,",
+      tokens: [
+        { id: "a22", surface: "vi", normalized: "vi", lemma: "vis", gloss: "force, power", morphology: { partOfSpeech: "noun", case: "ablative", number: "singular", gender: "feminine" }, punctBefore: "", punctAfter: " " },
+        { id: "a23", surface: "superum", normalized: "superum", lemma: "superus", gloss: "of the gods above", morphology: { partOfSpeech: "adjective", case: "genitive", number: "plural", gender: "masculine" }, punctBefore: "", punctAfter: ", " },
+        { id: "a24", surface: "saevae", normalized: "saevae", lemma: "saevus", gloss: "savage, fierce", morphology: { partOfSpeech: "adjective", case: "genitive", number: "singular", gender: "feminine" }, punctBefore: "", punctAfter: " " },
+        { id: "a25", surface: "memorem", normalized: "memorem", lemma: "memor", gloss: "mindful, unrelenting", morphology: { partOfSpeech: "adjective", case: "accusative", number: "singular", gender: "feminine" }, punctBefore: "", punctAfter: " " },
+        { id: "a26", surface: "Iunonis", normalized: "iunonis", lemma: "Iuno", gloss: "of Juno", morphology: { partOfSpeech: "proper noun", case: "genitive", number: "singular", gender: "feminine" }, punctBefore: "", punctAfter: " " },
+        { id: "a27", surface: "ob", normalized: "ob", lemma: "ob", gloss: "on account of, because of", morphology: { partOfSpeech: "preposition" }, punctBefore: "", punctAfter: " " },
+        { id: "a28", surface: "iram", normalized: "iram", lemma: "ira", gloss: "anger, wrath", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "feminine" }, punctBefore: "", punctAfter: "," },
+      ],
+    },
+    {
+      id: "aen5",
+      translation: "suffering much in war too, until he could found a city",
+      tokens: [
+        { id: "a29", surface: "multa", normalized: "multa", lemma: "multus", gloss: "many things", morphology: { partOfSpeech: "adjective", case: "accusative", number: "plural", gender: "neuter" }, punctBefore: "", punctAfter: " " },
+        { id: "a30", surface: "quoque", normalized: "quoque", lemma: "quoque", gloss: "also, too", morphology: { partOfSpeech: "particle" }, punctBefore: "", punctAfter: " " },
+        { id: "a31", surface: "et", normalized: "et", lemma: "et", gloss: "and", morphology: { partOfSpeech: "conjunction" }, punctBefore: "", punctAfter: " " },
+        { id: "a32", surface: "bello", normalized: "bello", lemma: "bellum", gloss: "in war", morphology: { partOfSpeech: "noun", case: "ablative", number: "singular", gender: "neuter" }, punctBefore: "", punctAfter: " " },
+        { id: "a33", surface: "passus", normalized: "passus", lemma: "patior", gloss: "having suffered", morphology: { partOfSpeech: "verb", tense: "perfect", voice: "passive", mood: "participle", case: "nominative", number: "singular", gender: "masculine" }, punctBefore: "", punctAfter: ", " },
+        { id: "a34", surface: "dum", normalized: "dum", lemma: "dum", gloss: "until, while", morphology: { partOfSpeech: "conjunction" }, punctBefore: "", punctAfter: " " },
+        { id: "a35", surface: "conderet", normalized: "conderet", lemma: "condo", gloss: "he might found, build", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "subjunctive", person: "third", number: "singular" }, punctBefore: "", punctAfter: " " },
+        { id: "a36", surface: "urbem", normalized: "urbem", lemma: "urbs", gloss: "city", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "feminine" }, punctBefore: "", punctAfter: "," },
+      ],
+    },
+    {
+      id: "aen6",
+      translation: "and bring his gods to Latium — whence came the Latin race",
+      tokens: [
+        { id: "a37", surface: "inferretque", normalized: "inferretque", lemma: "infero", gloss: "and might bring", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "subjunctive", person: "third", number: "singular" }, punctBefore: "", punctAfter: " " },
+        { id: "a38", surface: "deos", normalized: "deos", lemma: "deus", gloss: "the gods", morphology: { partOfSpeech: "noun", case: "accusative", number: "plural", gender: "masculine" }, punctBefore: "", punctAfter: " " },
+        { id: "a39", surface: "Latio", normalized: "latio", lemma: "Latium", gloss: "to Latium", morphology: { partOfSpeech: "proper noun", case: "dative", number: "singular", gender: "neuter" }, punctBefore: "", punctAfter: ", " },
+        { id: "a40", surface: "genus", normalized: "genus", lemma: "genus", gloss: "race, people", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "neuter" }, punctBefore: "", punctAfter: " " },
+        { id: "a41", surface: "unde", normalized: "unde", lemma: "unde", gloss: "whence, from which", morphology: { partOfSpeech: "adverb" }, punctBefore: "", punctAfter: " " },
+        { id: "a42", surface: "Latinum", normalized: "latinum", lemma: "Latinus", gloss: "Latin", morphology: { partOfSpeech: "adjective", case: "nominative", number: "singular", gender: "neuter" }, punctBefore: "", punctAfter: "," },
+      ],
+    },
+    {
+      id: "aen7",
+      translation: "Muse, tell me the causes: in what way was her divine will offended?",
+      tokens: [
+        { id: "a43", surface: "Musa", normalized: "musa", lemma: "Musa", gloss: "Muse", morphology: { partOfSpeech: "proper noun", case: "vocative", number: "singular", gender: "feminine" }, punctBefore: "", punctAfter: ", " },
+        { id: "a44", surface: "mihi", normalized: "mihi", lemma: "ego", gloss: "to me, for me", morphology: { partOfSpeech: "pronoun", case: "dative", number: "singular" }, punctBefore: "", punctAfter: " " },
+        { id: "a45", surface: "causas", normalized: "causas", lemma: "causa", gloss: "the causes, reasons", morphology: { partOfSpeech: "noun", case: "accusative", number: "plural", gender: "feminine" }, punctBefore: "", punctAfter: " " },
+        { id: "a46", surface: "memora", normalized: "memora", lemma: "memoro", gloss: "relate, tell", morphology: { partOfSpeech: "verb", tense: "present", voice: "active", mood: "imperative", person: "second", number: "singular" }, punctBefore: "", punctAfter: "," },
+        { id: "a47", surface: "quo", normalized: "quo", lemma: "quis", gloss: "in what way", morphology: { partOfSpeech: "pronoun", case: "ablative", number: "singular", gender: "neuter" }, punctBefore: "", punctAfter: " " },
+        { id: "a48", surface: "numine", normalized: "numine", lemma: "numen", gloss: "divine will, power", morphology: { partOfSpeech: "noun", case: "ablative", number: "singular", gender: "neuter" }, punctBefore: "", punctAfter: " " },
+        { id: "a49", surface: "laeso", normalized: "laeso", lemma: "laedo", gloss: "offended, wronged", morphology: { partOfSpeech: "verb", tense: "perfect", voice: "passive", mood: "participle", case: "ablative", number: "singular", gender: "neuter" }, punctBefore: "", punctAfter: "." },
+      ],
+    },
   ],
 };
 
@@ -1358,6 +1604,81 @@ export const PSALM_23_1: TextSection = {
           punctBefore: "",
           punctAfter: "׃",
         },
+      ],
+    },
+    {
+      id: "p23-2",
+      translation: "He makes me lie down in green pastures, he leads me beside quiet waters.",
+      tokens: [
+        { id: "p5", surface: "בִּנְאוֹת", normalized: "בנאות", lemma: "נָאוָה", gloss: "in pastures of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "bin'ot", punctBefore: "", punctAfter: " " },
+        { id: "p6", surface: "דֶּשֶׁא", normalized: "דשא", lemma: "דֶּשֶׁא", gloss: "green grass", morphology: { partOfSpeech: "noun" }, transliteration: "deshe", punctBefore: "", punctAfter: " " },
+        { id: "p7", surface: "יַרְבִּיצֵנִי", normalized: "ירביצני", lemma: "רָבַץ", gloss: "he makes me lie down", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "yarbitseni", punctBefore: "", punctAfter: " " },
+        { id: "p8", surface: "עַל", normalized: "על", lemma: "עַל", gloss: "beside, upon", morphology: { partOfSpeech: "preposition" }, transliteration: "'al", punctBefore: "", punctAfter: " " },
+        { id: "p9", surface: "מֵי", normalized: "מי", lemma: "מַיִם", gloss: "waters of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "mei", punctBefore: "", punctAfter: " " },
+        { id: "p10", surface: "מְנֻחֹות", normalized: "מנחות", lemma: "מְנוּחָה", gloss: "rest, quiet", morphology: { partOfSpeech: "noun", number: "plural" }, transliteration: "menuchot", punctBefore: "", punctAfter: " " },
+        { id: "p11", surface: "יְנַהֲלֵנִי", normalized: "ינהלני", lemma: "נָהַל", gloss: "he leads me", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "yenahaleini", punctBefore: "", punctAfter: "׃" },
+      ],
+    },
+    {
+      id: "p23-3",
+      translation: "He refreshes my soul. He guides me along the right paths for his name's sake.",
+      tokens: [
+        { id: "p12", surface: "נַפְשִׁי", normalized: "נפשי", lemma: "נֶפֶשׁ", gloss: "my soul", morphology: { partOfSpeech: "noun", suffix: "1cs" }, transliteration: "nafshi", punctBefore: "", punctAfter: " " },
+        { id: "p13", surface: "יְשׁוֹבֵב", normalized: "ישובב", lemma: "שׁוּב", gloss: "he restores", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "yeshobev", punctBefore: "", punctAfter: " " },
+        { id: "p14", surface: "יַנְחֵנִי", normalized: "ינחני", lemma: "נָחָה", gloss: "he guides me", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "yancheni", punctBefore: "", punctAfter: " " },
+        { id: "p15", surface: "בְמַעְגְּלֵי", normalized: "במעגלי", lemma: "מַעְגָּל", gloss: "in paths of", morphology: { partOfSpeech: "noun", state: "construct", number: "plural" }, transliteration: "bema'galei", punctBefore: "", punctAfter: " " },
+        { id: "p16", surface: "צֶדֶק", normalized: "צדק", lemma: "צֶדֶק", gloss: "righteousness, right", morphology: { partOfSpeech: "noun" }, transliteration: "tzedek", punctBefore: "", punctAfter: " " },
+        { id: "p17", surface: "לְמַעַן", normalized: "למען", lemma: "לְמַעַן", gloss: "for the sake of", morphology: { partOfSpeech: "preposition" }, transliteration: "lema'an", punctBefore: "", punctAfter: " " },
+        { id: "p18", surface: "שְׁמוֹ", normalized: "שמו", lemma: "שֵׁם", gloss: "his name", morphology: { partOfSpeech: "noun", suffix: "3ms" }, transliteration: "shemo", punctBefore: "", punctAfter: "׃" },
+      ],
+    },
+    {
+      id: "p23-4",
+      translation: "Even though I walk through the darkest valley, I will fear no evil, for you are with me; your rod and your staff, they comfort me.",
+      tokens: [
+        { id: "p19", surface: "גַּם", normalized: "גם", lemma: "גַּם", gloss: "even, also", morphology: { partOfSpeech: "particle" }, transliteration: "gam", punctBefore: "", punctAfter: " " },
+        { id: "p20", surface: "כִּי", normalized: "כי", lemma: "כִּי", gloss: "though, when", morphology: { partOfSpeech: "conjunction" }, transliteration: "ki", punctBefore: "", punctAfter: " " },
+        { id: "p21", surface: "אֵלֵךְ", normalized: "אלך", lemma: "הָלַךְ", gloss: "I walk", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "first", number: "singular" }, transliteration: "'elekh", punctBefore: "", punctAfter: " " },
+        { id: "p22", surface: "בְּגֵיא", normalized: "בגיא", lemma: "גַּיְא", gloss: "in the valley of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "begei", punctBefore: "", punctAfter: " " },
+        { id: "p23", surface: "צַלְמָוֶת", normalized: "צלמות", lemma: "צַלְמָוֶת", gloss: "deep darkness, shadow of death", morphology: { partOfSpeech: "noun" }, transliteration: "tzalmavet", punctBefore: "", punctAfter: " " },
+        { id: "p24", surface: "לֹא", normalized: "לא", lemma: "לֹא", gloss: "not", morphology: { partOfSpeech: "particle" }, transliteration: "lo", punctBefore: "", punctAfter: " " },
+        { id: "p25", surface: "אִירָא", normalized: "אירא", lemma: "יָרֵא", gloss: "I will fear", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "first", number: "singular" }, transliteration: "'ira", punctBefore: "", punctAfter: " " },
+        { id: "p26", surface: "רָע", normalized: "רע", lemma: "רַע", gloss: "evil", morphology: { partOfSpeech: "adjective" }, transliteration: "ra'", punctBefore: "", punctAfter: " " },
+        { id: "p27", surface: "כִּי", normalized: "כי", lemma: "כִּי", gloss: "for, because", morphology: { partOfSpeech: "conjunction" }, transliteration: "ki", punctBefore: "", punctAfter: " " },
+        { id: "p28", surface: "אַתָּה", normalized: "אתה", lemma: "אַתָּה", gloss: "you", morphology: { partOfSpeech: "pronoun", person: "second", number: "singular" }, transliteration: "'atah", punctBefore: "", punctAfter: " " },
+        { id: "p29", surface: "עִמָּדִי", normalized: "עמדי", lemma: "עִם", gloss: "with me", morphology: { partOfSpeech: "preposition", suffix: "1cs" }, transliteration: "'immadi", punctBefore: "", punctAfter: "׃" },
+      ],
+    },
+    {
+      id: "p23-5",
+      translation: "You prepare a table before me in the presence of my enemies; you anoint my head with oil; my cup overflows.",
+      tokens: [
+        { id: "p30", surface: "תַּעֲרֹךְ", normalized: "תערך", lemma: "עָרַךְ", gloss: "you prepare, arrange", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "second", number: "singular" }, transliteration: "ta'aroch", punctBefore: "", punctAfter: " " },
+        { id: "p31", surface: "לְפָנַי", normalized: "לפני", lemma: "פָּנִים", gloss: "before me", morphology: { partOfSpeech: "noun", suffix: "1cs" }, transliteration: "lefanai", punctBefore: "", punctAfter: " " },
+        { id: "p32", surface: "שֻׁלְחָן", normalized: "שלחן", lemma: "שֻׁלְחָן", gloss: "a table", morphology: { partOfSpeech: "noun" }, transliteration: "shulchan", punctBefore: "", punctAfter: " " },
+        { id: "p33", surface: "נֶגֶד", normalized: "נגד", lemma: "נֶגֶד", gloss: "in the presence of, opposite", morphology: { partOfSpeech: "preposition" }, transliteration: "neged", punctBefore: "", punctAfter: " " },
+        { id: "p34", surface: "צֹרְרָי", normalized: "צוררי", lemma: "צָרַר", gloss: "my enemies, those who oppress me", morphology: { partOfSpeech: "verb", tense: "participle", suffix: "1cs" }, transliteration: "tzor'rai", punctBefore: "", punctAfter: " " },
+        { id: "p35", surface: "דִּשַּׁנְתָּ", normalized: "דשנת", lemma: "דָּשֵׁן", gloss: "you have anointed", morphology: { partOfSpeech: "verb", tense: "perfect", person: "second", number: "singular" }, transliteration: "dishanta", punctBefore: "", punctAfter: " " },
+        { id: "p36", surface: "בַשֶּׁמֶן", normalized: "בשמן", lemma: "שֶׁמֶן", gloss: "with oil", morphology: { partOfSpeech: "noun" }, transliteration: "bashemen", punctBefore: "", punctAfter: " " },
+        { id: "p37", surface: "רֹאשִׁי", normalized: "ראשי", lemma: "רֹאשׁ", gloss: "my head", morphology: { partOfSpeech: "noun", suffix: "1cs" }, transliteration: "roshi", punctBefore: "", punctAfter: "׃" },
+      ],
+    },
+    {
+      id: "p23-6",
+      translation: "Surely your goodness and love will follow me all the days of my life, and I will dwell in the house of the Lord forever.",
+      tokens: [
+        { id: "p38", surface: "אַךְ", normalized: "אך", lemma: "אַךְ", gloss: "surely, only", morphology: { partOfSpeech: "particle" }, transliteration: "'ach", punctBefore: "", punctAfter: " " },
+        { id: "p39", surface: "טוֹב", normalized: "טוב", lemma: "טוֹב", gloss: "goodness", morphology: { partOfSpeech: "adjective" }, transliteration: "tov", punctBefore: "", punctAfter: " " },
+        { id: "p40", surface: "וָחֶסֶד", normalized: "וחסד", lemma: "חֶסֶד", gloss: "and steadfast love", morphology: { partOfSpeech: "noun" }, transliteration: "vachesed", punctBefore: "", punctAfter: " " },
+        { id: "p41", surface: "יִרְדְּפוּנִי", normalized: "ירדפוני", lemma: "רָדַף", gloss: "will follow me", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "plural" }, transliteration: "yirdefuni", punctBefore: "", punctAfter: " " },
+        { id: "p42", surface: "כָּל", normalized: "כל", lemma: "כֹּל", gloss: "all", morphology: { partOfSpeech: "noun" }, transliteration: "kol", punctBefore: "", punctAfter: " " },
+        { id: "p43", surface: "יְמֵי", normalized: "ימי", lemma: "יוֹם", gloss: "days of", morphology: { partOfSpeech: "noun", state: "construct", number: "plural" }, transliteration: "yemei", punctBefore: "", punctAfter: " " },
+        { id: "p44", surface: "חַיַּי", normalized: "חיי", lemma: "חַיִּים", gloss: "my life", morphology: { partOfSpeech: "noun", suffix: "1cs" }, transliteration: "chayyai", punctBefore: "", punctAfter: " " },
+        { id: "p45", surface: "וְשַׁבְתִּי", normalized: "ושבתי", lemma: "שׁוּב", gloss: "and I will dwell", morphology: { partOfSpeech: "verb", tense: "perfect", person: "first", number: "singular" }, transliteration: "veshavti", punctBefore: "", punctAfter: " " },
+        { id: "p46", surface: "בְּבֵית", normalized: "בבית", lemma: "בַּיִת", gloss: "in the house of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "beveit", punctBefore: "", punctAfter: " " },
+        { id: "p47", surface: "יְהוָה", normalized: "יהוה", lemma: "יְהוָה", gloss: "the Lord", morphology: { partOfSpeech: "proper noun" }, transliteration: "YHWH", punctBefore: "", punctAfter: " " },
+        { id: "p48", surface: "לְאֹרֶךְ", normalized: "לארך", lemma: "אֹרֶךְ", gloss: "for the length of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "le'orekh", punctBefore: "", punctAfter: " " },
+        { id: "p49", surface: "יָמִים", normalized: "ימים", lemma: "יוֹם", gloss: "days", morphology: { partOfSpeech: "noun", number: "plural" }, transliteration: "yamim", punctBefore: "", punctAfter: "׃" },
       ],
     },
   ],
@@ -1491,6 +1812,55 @@ export const GENESIS_1: TextSection = {
         },
       ],
     },
+    {
+      id: "g-3",
+      translation: "And God said, 'Let there be light,' and there was light.",
+      tokens: [
+        { id: "g12", surface: "וַיֹּאמֶר", normalized: "ויאמר", lemma: "אָמַר", gloss: "and said", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "vayomer", punctBefore: "", punctAfter: " " },
+        { id: "g13", surface: "אֱלֹהִים", normalized: "אלהים", lemma: "אֱלֹהִים", gloss: "God", morphology: { partOfSpeech: "noun" }, transliteration: "'elohim", punctBefore: "", punctAfter: " " },
+        { id: "g14", surface: "יְהִי", normalized: "יהי", lemma: "הָיָה", gloss: "let there be", morphology: { partOfSpeech: "verb", tense: "imperfect", mood: "jussive", person: "third", number: "singular" }, transliteration: "yehi", punctBefore: "", punctAfter: " " },
+        { id: "g15", surface: "אוֹר", normalized: "אור", lemma: "אוֹר", gloss: "light", morphology: { partOfSpeech: "noun" }, transliteration: "'or", punctBefore: "", punctAfter: " " },
+        { id: "g16", surface: "וַיְהִי", normalized: "ויהי", lemma: "הָיָה", gloss: "and there was", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "vayehi", punctBefore: "", punctAfter: " " },
+        { id: "g17", surface: "אוֹר", normalized: "אור", lemma: "אוֹר", gloss: "light", morphology: { partOfSpeech: "noun" }, transliteration: "'or", punctBefore: "", punctAfter: "׃" },
+      ],
+    },
+    {
+      id: "g-4",
+      translation: "God saw that the light was good, and he separated the light from the darkness.",
+      tokens: [
+        { id: "g18", surface: "וַיַּרְא", normalized: "וירא", lemma: "רָאָה", gloss: "and saw", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "vayar", punctBefore: "", punctAfter: " " },
+        { id: "g19", surface: "אֱלֹהִים", normalized: "אלהים", lemma: "אֱלֹהִים", gloss: "God", morphology: { partOfSpeech: "noun" }, transliteration: "'elohim", punctBefore: "", punctAfter: " " },
+        { id: "g20", surface: "אֶת", normalized: "את", lemma: "אֵת", gloss: "[direct object marker]", morphology: { partOfSpeech: "particle" }, transliteration: "'et", punctBefore: "", punctAfter: " " },
+        { id: "g21", surface: "הָאוֹר", normalized: "האור", lemma: "אוֹר", gloss: "the light", morphology: { partOfSpeech: "noun" }, transliteration: "ha'or", punctBefore: "", punctAfter: " " },
+        { id: "g22", surface: "כִּי", normalized: "כי", lemma: "כִּי", gloss: "that", morphology: { partOfSpeech: "conjunction" }, transliteration: "ki", punctBefore: "", punctAfter: " " },
+        { id: "g23", surface: "טוֹב", normalized: "טוב", lemma: "טוֹב", gloss: "good", morphology: { partOfSpeech: "adjective" }, transliteration: "tov", punctBefore: "", punctAfter: " " },
+        { id: "g24", surface: "וַיַּבְדֵּל", normalized: "ויבדל", lemma: "בָּדַל", gloss: "and he separated", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "vayavdel", punctBefore: "", punctAfter: " " },
+        { id: "g25", surface: "אֱלֹהִים", normalized: "אלהים", lemma: "אֱלֹהִים", gloss: "God", morphology: { partOfSpeech: "noun" }, transliteration: "'elohim", punctBefore: "", punctAfter: " " },
+        { id: "g26", surface: "בֵּין", normalized: "בין", lemma: "בֵּין", gloss: "between", morphology: { partOfSpeech: "preposition" }, transliteration: "bein", punctBefore: "", punctAfter: " " },
+        { id: "g27", surface: "הָאוֹר", normalized: "האור", lemma: "אוֹר", gloss: "the light", morphology: { partOfSpeech: "noun" }, transliteration: "ha'or", punctBefore: "", punctAfter: " " },
+        { id: "g28", surface: "וּבֵין", normalized: "ובין", lemma: "בֵּין", gloss: "and between", morphology: { partOfSpeech: "preposition" }, transliteration: "uvein", punctBefore: "", punctAfter: " " },
+        { id: "g29", surface: "הַחֹשֶׁךְ", normalized: "החשך", lemma: "חֹשֶׁךְ", gloss: "the darkness", morphology: { partOfSpeech: "noun" }, transliteration: "hachoshech", punctBefore: "", punctAfter: "׃" },
+      ],
+    },
+    {
+      id: "g-5",
+      translation: "God called the light 'day,' and the darkness he called 'night.' And there was evening, and there was morning — the first day.",
+      tokens: [
+        { id: "g30", surface: "וַיִּקְרָא", normalized: "ויקרא", lemma: "קָרָא", gloss: "and called", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "vayikra", punctBefore: "", punctAfter: " " },
+        { id: "g31", surface: "אֱלֹהִים", normalized: "אלהים", lemma: "אֱלֹהִים", gloss: "God", morphology: { partOfSpeech: "noun" }, transliteration: "'elohim", punctBefore: "", punctAfter: " " },
+        { id: "g32", surface: "לָאוֹר", normalized: "לאור", lemma: "אוֹר", gloss: "the light", morphology: { partOfSpeech: "noun" }, transliteration: "la'or", punctBefore: "", punctAfter: " " },
+        { id: "g33", surface: "יוֹם", normalized: "יום", lemma: "יוֹם", gloss: "day", morphology: { partOfSpeech: "noun" }, transliteration: "yom", punctBefore: "", punctAfter: " " },
+        { id: "g34", surface: "וְלַחֹשֶׁךְ", normalized: "ולחשך", lemma: "חֹשֶׁךְ", gloss: "and the darkness", morphology: { partOfSpeech: "noun" }, transliteration: "velachoshech", punctBefore: "", punctAfter: " " },
+        { id: "g35", surface: "קָרָא", normalized: "קרא", lemma: "קָרָא", gloss: "he called", morphology: { partOfSpeech: "verb", tense: "perfect", person: "third", number: "singular" }, transliteration: "kara", punctBefore: "", punctAfter: " " },
+        { id: "g36", surface: "לָיְלָה", normalized: "לילה", lemma: "לַיְלָה", gloss: "night", morphology: { partOfSpeech: "noun" }, transliteration: "lailah", punctBefore: "", punctAfter: " " },
+        { id: "g37", surface: "וַיְהִי", normalized: "ויהי", lemma: "הָיָה", gloss: "and there was", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "vayehi", punctBefore: "", punctAfter: " " },
+        { id: "g38", surface: "עֶרֶב", normalized: "ערב", lemma: "עֶרֶב", gloss: "evening", morphology: { partOfSpeech: "noun" }, transliteration: "'erev", punctBefore: "", punctAfter: " " },
+        { id: "g39", surface: "וַיְהִי", normalized: "ויהי", lemma: "הָיָה", gloss: "and there was", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "vayehi", punctBefore: "", punctAfter: " " },
+        { id: "g40", surface: "בֹקֶר", normalized: "בקר", lemma: "בֹּקֶר", gloss: "morning", morphology: { partOfSpeech: "noun" }, transliteration: "voker", punctBefore: "", punctAfter: " " },
+        { id: "g41", surface: "יוֹם", normalized: "יום", lemma: "יוֹם", gloss: "day", morphology: { partOfSpeech: "noun" }, transliteration: "yom", punctBefore: "", punctAfter: " " },
+        { id: "g42", surface: "אֶחָד", normalized: "אחד", lemma: "אֶחָד", gloss: "one, first", morphology: { partOfSpeech: "numeral" }, transliteration: "'echad", punctBefore: "", punctAfter: "׃" },
+      ],
+    },
   ],
 };
 
@@ -1544,6 +1914,61 @@ export const SYRIAC_JOHN_1_1: TextSection = {
           punctBefore: "",
           punctAfter: ".",
         },
+      ],
+    },
+    {
+      id: "syr-2",
+      translation: "He was in the beginning with God.",
+      tokens: [
+        { id: "syr5", surface: "ܗܢܐ", normalized: "ܗܢܐ", lemma: "ܗܢܐ", gloss: "this one, he", morphology: { partOfSpeech: "pronoun" }, transliteration: "hānā", punctBefore: "", punctAfter: " " },
+        { id: "syr6", surface: "ܐܝܬܘܗܝ", normalized: "ܐܝܬܘܗܝ", lemma: "ܐܝܬ", gloss: "was", morphology: { partOfSpeech: "particle" }, transliteration: "'itohi", punctBefore: "", punctAfter: " " },
+        { id: "syr7", surface: "ܗܘܐ", normalized: "ܗܘܐ", lemma: "ܗܘܐ", gloss: "[he] was", morphology: { partOfSpeech: "verb" }, transliteration: "hwā", punctBefore: "", punctAfter: " " },
+        { id: "syr8", surface: "ܒܪܫܝܬ", normalized: "ܒܪܫܝܬ", lemma: "ܪܫܝܬ", gloss: "in the beginning", morphology: { partOfSpeech: "noun" }, transliteration: "b'rēšit", punctBefore: "", punctAfter: " " },
+        { id: "syr9", surface: "ܠܘܬ", normalized: "ܠܘܬ", lemma: "ܠܘܬ", gloss: "with", morphology: { partOfSpeech: "preposition" }, transliteration: "lwāt", punctBefore: "", punctAfter: " " },
+        { id: "syr10", surface: "ܐܠܗܐ", normalized: "ܐܠܗܐ", lemma: "ܐܠܗܐ", gloss: "God", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "'alāhā", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "syr-3",
+      translation: "All things came to be through him, and without him not even one thing came to be.",
+      tokens: [
+        { id: "syr11", surface: "ܟܠ", normalized: "ܟܠ", lemma: "ܟܠ", gloss: "all, every", morphology: { partOfSpeech: "adjective" }, transliteration: "kol", punctBefore: "", punctAfter: " " },
+        { id: "syr12", surface: "ܡܕܡ", normalized: "ܡܕܡ", lemma: "ܡܕܡ", gloss: "thing", morphology: { partOfSpeech: "noun" }, transliteration: "meddem", punctBefore: "", punctAfter: " " },
+        { id: "syr13", surface: "ܒܐܝܕܗ", normalized: "ܒܐܝܕܗ", lemma: "ܐܝܕ", gloss: "through his hand", morphology: { partOfSpeech: "noun", suffix: "3ms" }, transliteration: "b'iydeh", punctBefore: "", punctAfter: " " },
+        { id: "syr14", surface: "ܗܘܐ", normalized: "ܗܘܐ", lemma: "ܗܘܐ", gloss: "came to be", morphology: { partOfSpeech: "verb" }, transliteration: "hwā", punctBefore: "", punctAfter: " " },
+        { id: "syr15", surface: "ܘܕܠܐ", normalized: "ܘܕܠܐ", lemma: "ܠܐ", gloss: "and without", morphology: { partOfSpeech: "particle" }, transliteration: "w'dalā", punctBefore: "", punctAfter: " " },
+        { id: "syr16", surface: "ܗܘ", normalized: "ܗܘ", lemma: "ܗܘ", gloss: "him", morphology: { partOfSpeech: "pronoun" }, transliteration: "hū", punctBefore: "", punctAfter: " " },
+        { id: "syr17", surface: "ܐܦ", normalized: "ܐܦ", lemma: "ܐܦ", gloss: "even, also", morphology: { partOfSpeech: "particle" }, transliteration: "'ap", punctBefore: "", punctAfter: " " },
+        { id: "syr18", surface: "ܚܕ", normalized: "ܚܕ", lemma: "ܚܕ", gloss: "one", morphology: { partOfSpeech: "numeral" }, transliteration: "ḥad", punctBefore: "", punctAfter: " " },
+        { id: "syr19", surface: "ܠܐ", normalized: "ܠܐ", lemma: "ܠܐ", gloss: "not", morphology: { partOfSpeech: "particle" }, transliteration: "lā", punctBefore: "", punctAfter: " " },
+        { id: "syr20", surface: "ܗܘܐ", normalized: "ܗܘܐ", lemma: "ܗܘܐ", gloss: "came to be", morphology: { partOfSpeech: "verb" }, transliteration: "hwā", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "syr-4",
+      translation: "In him was life, and that life was the light of the sons of men.",
+      tokens: [
+        { id: "syr21", surface: "ܒܗ", normalized: "ܒܗ", lemma: "ܒ", gloss: "in him", morphology: { partOfSpeech: "preposition", suffix: "3ms" }, transliteration: "beh", punctBefore: "", punctAfter: " " },
+        { id: "syr22", surface: "ܚܝܐ", normalized: "ܚܝܐ", lemma: "ܚܝܐ", gloss: "life", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "ḥayyē", punctBefore: "", punctAfter: " " },
+        { id: "syr23", surface: "ܐܝܬ", normalized: "ܐܝܬ", lemma: "ܐܝܬ", gloss: "there was, was", morphology: { partOfSpeech: "particle" }, transliteration: "'it", punctBefore: "", punctAfter: " " },
+        { id: "syr24", surface: "ܗܘܐ", normalized: "ܗܘܐ", lemma: "ܗܘܐ", gloss: "[was]", morphology: { partOfSpeech: "verb" }, transliteration: "hwā", punctBefore: "", punctAfter: " " },
+        { id: "syr25", surface: "ܘܚܝܐ", normalized: "ܘܚܝܐ", lemma: "ܚܝܐ", gloss: "and the life", morphology: { partOfSpeech: "noun" }, transliteration: "w'ḥayyē", punctBefore: "", punctAfter: " " },
+        { id: "syr26", surface: "ܗܝ", normalized: "ܗܝ", lemma: "ܗܝ", gloss: "is, was", morphology: { partOfSpeech: "particle" }, transliteration: "hi", punctBefore: "", punctAfter: " " },
+        { id: "syr27", surface: "ܢܘܗܪܗ", normalized: "ܢܘܗܪܗ", lemma: "ܢܘܗܪܐ", gloss: "the light of", morphology: { partOfSpeech: "noun", suffix: "3ms" }, transliteration: "nuhrehon", punctBefore: "", punctAfter: " " },
+        { id: "syr28", surface: "ܕܒܢܝ", normalized: "ܕܒܢܝ", lemma: "ܒܪ", gloss: "of sons of", morphology: { partOfSpeech: "noun" }, transliteration: "d'bnay", punctBefore: "", punctAfter: " " },
+        { id: "syr29", surface: "ܐܢܫܐ", normalized: "ܐܢܫܐ", lemma: "ܐܢܫܐ", gloss: "men", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "'anāšā", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "syr-5",
+      translation: "And the light shines in the darkness, and the darkness did not overcome it.",
+      tokens: [
+        { id: "syr30", surface: "ܘܢܘܗܪܐ", normalized: "ܘܢܘܗܪܐ", lemma: "ܢܘܗܪܐ", gloss: "and the light", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "w'nuhrā", punctBefore: "", punctAfter: " " },
+        { id: "syr31", surface: "ܒܚܫܘܟܐ", normalized: "ܒܚܫܘܟܐ", lemma: "ܚܫܘܟܐ", gloss: "in the darkness", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "b'ḥaššūkhā", punctBefore: "", punctAfter: " " },
+        { id: "syr32", surface: "ܡܢܗܪ", normalized: "ܡܢܗܪ", lemma: "ܢܗܪ", gloss: "shines", morphology: { partOfSpeech: "verb", tense: "participle" }, transliteration: "mnahhēr", punctBefore: "", punctAfter: " " },
+        { id: "syr33", surface: "ܘܚܫܘܟܐ", normalized: "ܘܚܫܘܟܐ", lemma: "ܚܫܘܟܐ", gloss: "and the darkness", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "w'ḥaššūkhā", punctBefore: "", punctAfter: " " },
+        { id: "syr34", surface: "ܠܐ", normalized: "ܠܐ", lemma: "ܠܐ", gloss: "not", morphology: { partOfSpeech: "particle" }, transliteration: "lā", punctBefore: "", punctAfter: " " },
+        { id: "syr35", surface: "ܐܕܪܟܗ", normalized: "ܐܕܪܟܗ", lemma: "ܐܕܪܟ", gloss: "overcame it", morphology: { partOfSpeech: "verb", tense: "perfect" }, transliteration: "'adrkeh", punctBefore: "", punctAfter: "." },
       ],
     },
   ],
@@ -1631,6 +2056,57 @@ export const COPTIC_JOHN_1_1: TextSection = {
         },
       ],
     },
+    {
+      id: "cop-2",
+      translation: "This one was with God in the beginning.",
+      tokens: [
+        { id: "cop8", surface: "ⲡⲁⲓ", normalized: "ⲡⲁⲓ", lemma: "ⲡⲁⲓ", gloss: "this one", morphology: { partOfSpeech: "pronoun" }, transliteration: "pai", punctBefore: "", punctAfter: " " },
+        { id: "cop9", surface: "ⲛⲉϥϣⲟⲟⲡ", normalized: "ⲛⲉϥϣⲟⲟⲡ", lemma: "ϣⲱⲡⲉ", gloss: "was", morphology: { partOfSpeech: "verb" }, transliteration: "nefshoop", punctBefore: "", punctAfter: " " },
+        { id: "cop10", surface: "ϩⲁⲧⲏϥ", normalized: "ϩⲁⲧⲏϥ", lemma: "ϩⲁⲧ", gloss: "with him", morphology: { partOfSpeech: "preposition", suffix: "3ms" }, transliteration: "hatēf", punctBefore: "", punctAfter: " " },
+        { id: "cop11", surface: "ⲙⲡⲛⲟⲩⲧⲉ", normalized: "ⲙⲡⲛⲟⲩⲧⲉ", lemma: "ⲛⲟⲩⲧⲉ", gloss: "of God", morphology: { partOfSpeech: "noun" }, transliteration: "mpnoute", punctBefore: "", punctAfter: " " },
+        { id: "cop12", surface: "ϩⲛ", normalized: "ϩⲛ", lemma: "ϩⲛ", gloss: "in", morphology: { partOfSpeech: "preposition" }, transliteration: "hn", punctBefore: "", punctAfter: " " },
+        { id: "cop13", surface: "ⲧⲉϩⲟⲩⲉⲓⲧⲉ", normalized: "ⲧⲉϩⲟⲩⲉⲓⲧⲉ", lemma: "ϩⲟⲩⲉⲓⲧⲉ", gloss: "the beginning", morphology: { partOfSpeech: "noun" }, transliteration: "teholite", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "cop-3",
+      translation: "All things came into being through him, and apart from him nothing came into being.",
+      tokens: [
+        { id: "cop14", surface: "ⲁⲩⲱ", normalized: "ⲁⲩⲱ", lemma: "ⲁⲩⲱ", gloss: "and, also", morphology: { partOfSpeech: "conjunction" }, transliteration: "auō", punctBefore: "", punctAfter: " " },
+        { id: "cop15", surface: "ⲡⲧⲏⲣϥ", normalized: "ⲡⲧⲏⲣϥ", lemma: "ⲧⲏⲣϥ", gloss: "all, everything", morphology: { partOfSpeech: "adjective" }, transliteration: "ptērf", punctBefore: "", punctAfter: " " },
+        { id: "cop16", surface: "ⲁϥϣⲱⲡⲉ", normalized: "ⲁϥϣⲱⲡⲉ", lemma: "ϣⲱⲡⲉ", gloss: "came to be", morphology: { partOfSpeech: "verb", tense: "perfect" }, transliteration: "afshōpe", punctBefore: "", punctAfter: " " },
+        { id: "cop17", surface: "ⲉⲃⲟⲗ", normalized: "ⲉⲃⲟⲗ", lemma: "ⲉⲃⲟⲗ", gloss: "out, through", morphology: { partOfSpeech: "particle" }, transliteration: "ebol", punctBefore: "", punctAfter: " " },
+        { id: "cop18", surface: "ϩⲓⲧⲟⲟⲧϥ", normalized: "ϩⲓⲧⲟⲟⲧϥ", lemma: "ϩⲓⲧⲛ", gloss: "through him", morphology: { partOfSpeech: "preposition", suffix: "3ms" }, transliteration: "hitootf", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "cop-4",
+      translation: "In him was life, and the life was the light of men.",
+      tokens: [
+        { id: "cop19", surface: "ⲡⲱⲛϩ", normalized: "ⲡⲱⲛϩ", lemma: "ⲱⲛϩ", gloss: "life", morphology: { partOfSpeech: "noun" }, transliteration: "pōnh", punctBefore: "", punctAfter: " " },
+        { id: "cop20", surface: "ⲛⲉϥϣⲟⲟⲡ", normalized: "ⲛⲉϥϣⲟⲟⲡ", lemma: "ϣⲱⲡⲉ", gloss: "was", morphology: { partOfSpeech: "verb" }, transliteration: "nefshoop", punctBefore: "", punctAfter: " " },
+        { id: "cop21", surface: "ⲛϩⲏⲧϥ", normalized: "ⲛϩⲏⲧϥ", lemma: "ϩⲏⲧ", gloss: "in him", morphology: { partOfSpeech: "preposition", suffix: "3ms" }, transliteration: "nhētf", punctBefore: "", punctAfter: " " },
+        { id: "cop22", surface: "ⲡⲱⲛϩ", normalized: "ⲡⲱⲛϩ", lemma: "ⲱⲛϩ", gloss: "and the life", morphology: { partOfSpeech: "noun" }, transliteration: "pōnh", punctBefore: "", punctAfter: " " },
+        { id: "cop23", surface: "ⲇⲉ", normalized: "ⲇⲉ", lemma: "ⲇⲉ", gloss: "but, and", morphology: { partOfSpeech: "particle" }, transliteration: "de", punctBefore: "", punctAfter: " " },
+        { id: "cop24", surface: "ⲡⲉ", normalized: "ⲡⲉ", lemma: "ⲡⲉ", gloss: "is, was", morphology: { partOfSpeech: "copula" }, transliteration: "pe", punctBefore: "", punctAfter: " " },
+        { id: "cop25", surface: "ⲡⲟⲩⲟⲉⲓⲛ", normalized: "ⲡⲟⲩⲟⲉⲓⲛ", lemma: "ⲟⲩⲟⲉⲓⲛ", gloss: "the light", morphology: { partOfSpeech: "noun" }, transliteration: "pouoein", punctBefore: "", punctAfter: " " },
+        { id: "cop26", surface: "ⲙⲙⲣⲱⲙⲉ", normalized: "ⲙⲙⲣⲱⲙⲉ", lemma: "ⲣⲱⲙⲉ", gloss: "of men", morphology: { partOfSpeech: "noun" }, transliteration: "mmrōme", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "cop-5",
+      translation: "And the light shines in the darkness, and the darkness did not comprehend it.",
+      tokens: [
+        { id: "cop27", surface: "ⲁⲩⲱ", normalized: "ⲁⲩⲱ", lemma: "ⲁⲩⲱ", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "auō", punctBefore: "", punctAfter: " " },
+        { id: "cop28", surface: "ⲡⲟⲩⲟⲉⲓⲛ", normalized: "ⲡⲟⲩⲟⲉⲓⲛ", lemma: "ⲟⲩⲟⲉⲓⲛ", gloss: "the light", morphology: { partOfSpeech: "noun" }, transliteration: "pouoein", punctBefore: "", punctAfter: " " },
+        { id: "cop29", surface: "ϥⲣⲟⲩⲟⲉⲓⲛ", normalized: "ϥⲣⲟⲩⲟⲉⲓⲛ", lemma: "ⲣⲟⲩⲟⲉⲓⲛ", gloss: "shines", morphology: { partOfSpeech: "verb", tense: "present" }, transliteration: "froupoein", punctBefore: "", punctAfter: " " },
+        { id: "cop30", surface: "ϩⲙ", normalized: "ϩⲙ", lemma: "ϩⲛ", gloss: "in", morphology: { partOfSpeech: "preposition" }, transliteration: "hm", punctBefore: "", punctAfter: " " },
+        { id: "cop31", surface: "ⲡⲕⲁⲕⲉ", normalized: "ⲡⲕⲁⲕⲉ", lemma: "ⲕⲁⲕⲉ", gloss: "the darkness", morphology: { partOfSpeech: "noun" }, transliteration: "pkake", punctBefore: "", punctAfter: " " },
+        { id: "cop32", surface: "ⲁⲩⲱ", normalized: "ⲁⲩⲱ", lemma: "ⲁⲩⲱ", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "auō", punctBefore: "", punctAfter: " " },
+        { id: "cop33", surface: "ⲡⲕⲁⲕⲉ", normalized: "ⲡⲕⲁⲕⲉ", lemma: "ⲕⲁⲕⲉ", gloss: "the darkness", morphology: { partOfSpeech: "noun" }, transliteration: "pkake", punctBefore: "", punctAfter: " " },
+        { id: "cop34", surface: "ⲙⲡϥⲧⲙϩⲟ", normalized: "ⲙⲡϥⲧⲙϩⲟ", lemma: "ϩⲟ", gloss: "did not comprehend it", morphology: { partOfSpeech: "verb", tense: "perfect", polarity: "negative" }, transliteration: "mpftmho", punctBefore: "", punctAfter: "." },
+      ],
+    },
   ],
 };
 
@@ -1654,6 +2130,34 @@ export const ARAMAIC_GENESIS_1_1: TextSection = {
         { id: "arc6", surface: "ܘܝܬ", normalized: "ܘܝܬ", lemma: "ܘܝܬ", gloss: "and the", morphology: { partOfSpeech: "particle" }, punctBefore: "", punctAfter: " " },
         { id: "arc7", surface: "ܐܪܥܐ", normalized: "ܐܪܥܐ", lemma: "ܐܪܥܐ", gloss: "earth", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: "." }
       ]
+    },
+    {
+      id: "arc-2",
+      translation: "And the earth was without form and void, and darkness was upon the face of the deep.",
+      tokens: [
+        { id: "arc8", surface: "וְאַרְעָא", normalized: "וארעא", lemma: "אַרְעָא", gloss: "and the earth", morphology: { partOfSpeech: "noun" }, transliteration: "ve'ar'a", punctBefore: "", punctAfter: " " },
+        { id: "arc9", surface: "הֲוָת", normalized: "הות", lemma: "הֲוָה", gloss: "was", morphology: { partOfSpeech: "verb", tense: "perfect" }, transliteration: "havat", punctBefore: "", punctAfter: " " },
+        { id: "arc10", surface: "צַדְיָא", normalized: "צדיא", lemma: "צְדֵי", gloss: "desolate, empty", morphology: { partOfSpeech: "adjective" }, transliteration: "tzadya", punctBefore: "", punctAfter: " " },
+        { id: "arc11", surface: "וְרֵיקַנְיָא", normalized: "וריקניא", lemma: "רֵיקָן", gloss: "and void", morphology: { partOfSpeech: "adjective" }, transliteration: "vereikayna", punctBefore: "", punctAfter: " " },
+        { id: "arc12", surface: "וַחֲשׁוֹכָא", normalized: "וחשוכא", lemma: "חֲשׁוֹכָא", gloss: "and darkness", morphology: { partOfSpeech: "noun" }, transliteration: "vachashokha", punctBefore: "", punctAfter: " " },
+        { id: "arc13", surface: "עַל", normalized: "על", lemma: "עַל", gloss: "upon, over", morphology: { partOfSpeech: "preposition" }, transliteration: "'al", punctBefore: "", punctAfter: " " },
+        { id: "arc14", surface: "אַפֵּי", normalized: "אפי", lemma: "אַפִּין", gloss: "the face of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "'appei", punctBefore: "", punctAfter: " " },
+        { id: "arc15", surface: "תְּהוֹמָא", normalized: "תהומא", lemma: "תְּהוֹמָא", gloss: "the deep", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "tehoma", punctBefore: "", punctAfter: "." }
+      ]
+    },
+    {
+      id: "arc-3",
+      translation: "And a wind from before the Lord was blowing upon the surface of the waters.",
+      tokens: [
+        { id: "arc16", surface: "וְרוּחָא", normalized: "ורוחא", lemma: "רוּחָא", gloss: "and a wind, spirit", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "verucha", punctBefore: "", punctAfter: " " },
+        { id: "arc17", surface: "מִן", normalized: "מן", lemma: "מִן", gloss: "from", morphology: { partOfSpeech: "preposition" }, transliteration: "min", punctBefore: "", punctAfter: " " },
+        { id: "arc18", surface: "קֳדָם", normalized: "קדם", lemma: "קֳדָם", gloss: "before, in front of", morphology: { partOfSpeech: "preposition" }, transliteration: "kodam", punctBefore: "", punctAfter: " " },
+        { id: "arc19", surface: "יְיָ", normalized: "יי", lemma: "יְיָ", gloss: "the Lord", morphology: { partOfSpeech: "proper noun" }, transliteration: "YHWH", punctBefore: "", punctAfter: " " },
+        { id: "arc20", surface: "מְנַשְּׁבָא", normalized: "מנשבא", lemma: "נְשַׁב", gloss: "was blowing", morphology: { partOfSpeech: "verb", tense: "participle" }, transliteration: "menashba", punctBefore: "", punctAfter: " " },
+        { id: "arc21", surface: "עַל", normalized: "על", lemma: "עַל", gloss: "upon", morphology: { partOfSpeech: "preposition" }, transliteration: "'al", punctBefore: "", punctAfter: " " },
+        { id: "arc22", surface: "אַפֵּי", normalized: "אפי", lemma: "אַפִּין", gloss: "the surface of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "'appei", punctBefore: "", punctAfter: " " },
+        { id: "arc23", surface: "מַיָּא", normalized: "מיא", lemma: "מַיָּא", gloss: "the waters", morphology: { partOfSpeech: "noun", state: "emphatic" }, transliteration: "mayya", punctBefore: "", punctAfter: "." }
+      ]
     }
   ]
 };
@@ -1673,6 +2177,30 @@ export const AKKADIAN_GILGAMESH_1_1: TextSection = {
         { id: "akk3", surface: "īmuru", normalized: "imuru", lemma: "amāru", gloss: "saw", morphology: { partOfSpeech: "verb" }, punctBefore: "", punctAfter: " " },
         { id: "akk4", surface: "išdi", normalized: "isdi", lemma: "išdu", gloss: "foundation", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
         { id: "akk5", surface: "māti", normalized: "mati", lemma: "mātu", gloss: "of the land", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: "." }
+      ]
+    },
+    {
+      id: "akk-2",
+      translation: "He who saw everything to the ends of the world, who experienced all things, understood all things.",
+      tokens: [
+        { id: "akk6", surface: "ša", normalized: "sa", lemma: "ša", gloss: "he who", morphology: { partOfSpeech: "pronoun" }, transliteration: "ša", punctBefore: "", punctAfter: " " },
+        { id: "akk7", surface: "kalāma", normalized: "kalama", lemma: "kalāma", gloss: "everything, all things", morphology: { partOfSpeech: "noun" }, transliteration: "kalāma", punctBefore: "", punctAfter: " " },
+        { id: "akk8", surface: "īmuru", normalized: "imuru", lemma: "amāru", gloss: "saw, experienced", morphology: { partOfSpeech: "verb", tense: "preterite", person: "third", number: "singular" }, transliteration: "īmuru", punctBefore: "", punctAfter: " " },
+        { id: "akk9", surface: "ana", normalized: "ana", lemma: "ana", gloss: "to, for", morphology: { partOfSpeech: "preposition" }, transliteration: "ana", punctBefore: "", punctAfter: " " },
+        { id: "akk10", surface: "kibrat", normalized: "kibrat", lemma: "kibratu", gloss: "the corners of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "kibrat", punctBefore: "", punctAfter: " " },
+        { id: "akk11", surface: "erbetti", normalized: "erbetti", lemma: "arba", gloss: "four, the four", morphology: { partOfSpeech: "numeral" }, transliteration: "erbetti", punctBefore: "", punctAfter: "." }
+      ]
+    },
+    {
+      id: "akk-3",
+      translation: "Surpassing all kings, heroic in stature, brave scion of Uruk, a goring wild bull.",
+      tokens: [
+        { id: "akk12", surface: "šar", normalized: "sar", lemma: "šarru", gloss: "king of", morphology: { partOfSpeech: "noun", state: "construct" }, transliteration: "šar", punctBefore: "", punctAfter: " " },
+        { id: "akk13", surface: "kiššatim", normalized: "kissatim", lemma: "kiššatu", gloss: "all, totality", morphology: { partOfSpeech: "noun", case: "genitive" }, transliteration: "kiššatim", punctBefore: "", punctAfter: " " },
+        { id: "akk14", surface: "Gilgameš", normalized: "gilgames", lemma: "Gilgameš", gloss: "Gilgamesh", morphology: { partOfSpeech: "proper noun" }, transliteration: "Gilgameš", punctBefore: "", punctAfter: " " },
+        { id: "akk15", surface: "šū", normalized: "su", lemma: "šū", gloss: "he, that", morphology: { partOfSpeech: "pronoun" }, transliteration: "šū", punctBefore: "", punctAfter: " " },
+        { id: "akk16", surface: "dumqi", normalized: "dumqi", lemma: "damqu", gloss: "handsome, beautiful", morphology: { partOfSpeech: "adjective", case: "genitive" }, transliteration: "dumqi", punctBefore: "", punctAfter: " " },
+        { id: "akk17", surface: "zīmīšu", normalized: "zimisu", lemma: "zīmu", gloss: "his form, appearance", morphology: { partOfSpeech: "noun", suffix: "3ms" }, transliteration: "zīmīšu", punctBefore: "", punctAfter: "." }
       ]
     }
   ]
@@ -1694,6 +2222,30 @@ export const SANSKRIT_GITA_1_1: TextSection = {
         { id: "san4", surface: "कुरुक्षेत्रे", normalized: "kurukshetre", lemma: "kurukṣetra", gloss: "in Kurukshetra", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
         { id: "san5", surface: "समवेता", normalized: "samaveta", lemma: "samaveta", gloss: "assembled", morphology: { partOfSpeech: "adjective" }, punctBefore: "", punctAfter: " " },
         { id: "san6", surface: "युयुत्सवः", normalized: "yuyutsavah", lemma: "yuyutsu", gloss: "eager for battle", morphology: { partOfSpeech: "adjective" }, punctBefore: "", punctAfter: " || " }
+      ]
+    },
+    {
+      id: "san-2",
+      translation: "Sanjaya said: O King, having seen the army of the Pandavas arrayed in military formation,",
+      tokens: [
+        { id: "san7", surface: "सञ्जय", normalized: "sanjaya", lemma: "sañjaya", gloss: "Sanjaya", morphology: { partOfSpeech: "proper noun", case: "nominative" }, transliteration: "sañjaya", punctBefore: "", punctAfter: " " },
+        { id: "san8", surface: "उवाच", normalized: "uvaca", lemma: "vac", gloss: "said", morphology: { partOfSpeech: "verb", tense: "perfect", person: "third", number: "singular" }, transliteration: "uvāca", punctBefore: "", punctAfter: " | " },
+        { id: "san9", surface: "दृष्ट्वा", normalized: "drishtvaa", lemma: "dṛś", gloss: "having seen", morphology: { partOfSpeech: "verb", tense: "gerund" }, transliteration: "dṛṣṭvā", punctBefore: "", punctAfter: " " },
+        { id: "san10", surface: "तु", normalized: "tu", lemma: "tu", gloss: "but, now", morphology: { partOfSpeech: "particle" }, transliteration: "tu", punctBefore: "", punctAfter: " " },
+        { id: "san11", surface: "पाण्डवानीकं", normalized: "pandavaniikaṃ", lemma: "pāṇḍava", gloss: "the Pandava army", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular" }, transliteration: "pāṇḍavānīkaṃ", punctBefore: "", punctAfter: " " },
+        { id: "san12", surface: "व्यूढं", normalized: "vyudhaṃ", lemma: "vyūḍha", gloss: "arrayed, drawn up", morphology: { partOfSpeech: "adjective", case: "accusative" }, transliteration: "vyūḍhaṃ", punctBefore: "", punctAfter: " || " }
+      ]
+    },
+    {
+      id: "san-3",
+      translation: "King Duryodhana then approached his teacher Drona and spoke these words:",
+      tokens: [
+        { id: "san13", surface: "दुर्योधनस्", normalized: "duryodhanas", lemma: "duryodhana", gloss: "Duryodhana", morphology: { partOfSpeech: "proper noun", case: "nominative" }, transliteration: "duryodhanas", punctBefore: "", punctAfter: " " },
+        { id: "san14", surface: "तदा", normalized: "tada", lemma: "tadā", gloss: "then, at that time", morphology: { partOfSpeech: "adverb" }, transliteration: "tadā", punctBefore: "", punctAfter: " " },
+        { id: "san15", surface: "राजा", normalized: "raja", lemma: "rājan", gloss: "king", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular" }, transliteration: "rājā", punctBefore: "", punctAfter: " " },
+        { id: "san16", surface: "द्रोणाचार्यं", normalized: "dronacaryaṃ", lemma: "droṇa", gloss: "Drona the teacher", morphology: { partOfSpeech: "proper noun", case: "accusative" }, transliteration: "droṇācāryaṃ", punctBefore: "", punctAfter: " " },
+        { id: "san17", surface: "उपसंगम्य", normalized: "upasaṃgamya", lemma: "upa-sam-gam", gloss: "approaching", morphology: { partOfSpeech: "verb", tense: "gerund" }, transliteration: "upasaṃgamya", punctBefore: "", punctAfter: " " },
+        { id: "san18", surface: "अब्रवीत्", normalized: "abravit", lemma: "brū", gloss: "spoke", morphology: { partOfSpeech: "verb", tense: "imperfect", person: "third", number: "singular" }, transliteration: "abravīt", punctBefore: "", punctAfter: " || " }
       ]
     }
   ]
@@ -1740,6 +2292,211 @@ export const EGYPTIAN_PTAHHOTEP_1_1: TextSection = {
   ]
 };
 
+export const ANCIENT_GREEK_CORPUS: Corpus = {
+  id: "ANCIENT_GREEK",
+  title: "Classical Greek Texts",
+  description: "Classical Attic and Ionic Greek prose and poetry",
+  language: "grc",
+  sourceAttributionId: "perseus-texts",
+  licenseSummary: "CC BY-SA 3.0",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["perseus-texts"]],
+};
+
+export const TEXT_ANABASIS: Text = {
+  id: "Anab-1",
+  corpusId: "ANCIENT_GREEK",
+  title: "Ἀνάβασις",
+  canonicalRef: "Anabasis 1.1",
+  author: "Xenophon",
+  language: "grc",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sectionsPreview: [{ id: "Anab-1-1", label: "Book 1, Chapter 1" }],
+};
+
+export const TEXT_ILIAD: Text = {
+  id: "Iliad-1",
+  corpusId: "ANCIENT_GREEK",
+  title: "Ἰλιάς",
+  canonicalRef: "Iliad Book 1",
+  author: "Homer",
+  language: "grc",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sectionsPreview: [{ id: "Iliad-1-1", label: "Book 1, Lines 1-10" }],
+};
+
+export const ANABASIS_1_1: TextSection = {
+  id: "Anab-1-1",
+  textId: "Anab-1",
+  sequence: 1,
+  label: "Book 1, Chapter 1",
+  sentences: [
+    {
+      id: "anab-1",
+      translation: "Darius and Parysatis had two sons born to them; the elder was Artaxerxes, and the younger was Cyrus.",
+      tokens: [
+        { id: "an1", surface: "Δαρείου", normalized: "δαρειου", lemma: "Δαρεῖος", gloss: "of Darius", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "Dareiou", punctBefore: "", punctAfter: " " },
+        { id: "an2", surface: "καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "kai", punctBefore: "", punctAfter: " " },
+        { id: "an3", surface: "Παρυσάτιδος", normalized: "παρυσατιδος", lemma: "Παρύσατις", gloss: "of Parysatis", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "feminine" }, transliteration: "Parysatidos", punctBefore: "", punctAfter: " " },
+        { id: "an4", surface: "γίγνονται", normalized: "γιγνονται", lemma: "γίγνομαι", gloss: "are born, come to be", morphology: { partOfSpeech: "verb", tense: "present", voice: "middle", mood: "indicative", person: "third", number: "plural" }, transliteration: "gigontai", punctBefore: "", punctAfter: " " },
+        { id: "an5", surface: "παῖδες", normalized: "παιδες", lemma: "παῖς", gloss: "sons, children", morphology: { partOfSpeech: "noun", case: "nominative", number: "plural", gender: "masculine" }, transliteration: "paides", punctBefore: "", punctAfter: " " },
+        { id: "an6", surface: "δύο", normalized: "δυο", lemma: "δύο", gloss: "two", morphology: { partOfSpeech: "numeral", case: "nominative" }, transliteration: "dyo", punctBefore: "", punctAfter: ", " },
+        { id: "an7", surface: "πρεσβύτερος", normalized: "πρεσβυτερος", lemma: "πρέσβυς", gloss: "older, elder", morphology: { partOfSpeech: "adjective", case: "nominative", number: "singular", gender: "masculine", degree: "comparative" }, transliteration: "presbyteros", punctBefore: "", punctAfter: " " },
+        { id: "an8", surface: "μὲν", normalized: "μεν", lemma: "μέν", gloss: "on the one hand", morphology: { partOfSpeech: "particle" }, transliteration: "men", punctBefore: "", punctAfter: " " },
+        { id: "an9", surface: "Ἀρταξέρξης", normalized: "αρταξερξης", lemma: "Ἀρταξέρξης", gloss: "Artaxerxes", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "Artaxerxēs", punctBefore: "", punctAfter: ", " },
+        { id: "an10", surface: "νεώτερος", normalized: "νεωτερος", lemma: "νέος", gloss: "younger", morphology: { partOfSpeech: "adjective", case: "nominative", number: "singular", gender: "masculine", degree: "comparative" }, transliteration: "neōteros", punctBefore: "", punctAfter: " " },
+        { id: "an11", surface: "δὲ", normalized: "δε", lemma: "δέ", gloss: "but, and", morphology: { partOfSpeech: "particle" }, transliteration: "de", punctBefore: "", punctAfter: " " },
+        { id: "an12", surface: "Κῦρος", normalized: "κυρος", lemma: "Κῦρος", gloss: "Cyrus", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "Kyros", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "anab-2",
+      translation: "When Darius was ill and suspected the end of his life was near, he wished both his sons to be present.",
+      tokens: [
+        { id: "an13", surface: "ἐπεὶ", normalized: "επει", lemma: "ἐπεί", gloss: "when, since", morphology: { partOfSpeech: "conjunction" }, transliteration: "epei", punctBefore: "", punctAfter: " " },
+        { id: "an14", surface: "δὲ", normalized: "δε", lemma: "δέ", gloss: "but, now", morphology: { partOfSpeech: "particle" }, transliteration: "de", punctBefore: "", punctAfter: " " },
+        { id: "an15", surface: "ἠσθένει", normalized: "ησθενει", lemma: "ἀσθενέω", gloss: "was ill, was sick", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "ēsthenei", punctBefore: "", punctAfter: " " },
+        { id: "an16", surface: "Δαρεῖος", normalized: "δαρειος", lemma: "Δαρεῖος", gloss: "Darius", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "Dareios", punctBefore: "", punctAfter: " " },
+        { id: "an17", surface: "καὶ", normalized: "και", lemma: "καί", gloss: "and", morphology: { partOfSpeech: "conjunction" }, transliteration: "kai", punctBefore: "", punctAfter: " " },
+        { id: "an18", surface: "ὑπώπτευε", normalized: "υπωπτευε", lemma: "ὑποπτεύω", gloss: "suspected, had a presentiment", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "hypōpteve", punctBefore: "", punctAfter: " " },
+        { id: "an19", surface: "τελευτὴν", normalized: "τελευτην", lemma: "τελευτή", gloss: "the end, death", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "feminine" }, transliteration: "teleutēn", punctBefore: "", punctAfter: " " },
+        { id: "an20", surface: "τοῦ", normalized: "του", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "tou", punctBefore: "", punctAfter: " " },
+        { id: "an21", surface: "βίου", normalized: "βιου", lemma: "βίος", gloss: "life", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "biou", punctBefore: "", punctAfter: ", " },
+        { id: "an22", surface: "ἐβούλετο", normalized: "εβουλετο", lemma: "βούλομαι", gloss: "he wished, desired", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "middle", mood: "indicative", person: "third", number: "singular" }, transliteration: "ebouleto", punctBefore: "", punctAfter: " " },
+        { id: "an23", surface: "τὼ", normalized: "τω", lemma: "ὁ", gloss: "both, the two", morphology: { partOfSpeech: "article", case: "accusative", number: "dual", gender: "masculine" }, transliteration: "tō", punctBefore: "", punctAfter: " " },
+        { id: "an24", surface: "παῖδε", normalized: "παιδε", lemma: "παῖς", gloss: "sons", morphology: { partOfSpeech: "noun", case: "accusative", number: "dual", gender: "masculine" }, transliteration: "paide", punctBefore: "", punctAfter: " " },
+        { id: "an25", surface: "ἀμφοτέρω", normalized: "αμφοτερω", lemma: "ἀμφότερος", gloss: "both", morphology: { partOfSpeech: "adjective", case: "accusative", number: "dual", gender: "masculine" }, transliteration: "amphoterō", punctBefore: "", punctAfter: " " },
+        { id: "an26", surface: "παρεῖναι", normalized: "παρειναι", lemma: "πάρειμι", gloss: "to be present", morphology: { partOfSpeech: "verb", tense: "present", voice: "active", mood: "infinitive" }, transliteration: "pareinai", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "anab-3",
+      translation: "The elder, Artaxerxes, was present; but Cyrus he summoned from the province over which he had made him satrap.",
+      tokens: [
+        { id: "an27", surface: "ὁ", normalized: "ο", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "ho", punctBefore: "", punctAfter: " " },
+        { id: "an28", surface: "μὲν", normalized: "μεν", lemma: "μέν", gloss: "on the one hand", morphology: { partOfSpeech: "particle" }, transliteration: "men", punctBefore: "", punctAfter: " " },
+        { id: "an29", surface: "οὖν", normalized: "ουν", lemma: "οὖν", gloss: "therefore, then", morphology: { partOfSpeech: "particle" }, transliteration: "oun", punctBefore: "", punctAfter: " " },
+        { id: "an30", surface: "πρεσβύτερος", normalized: "πρεσβυτερος", lemma: "πρέσβυς", gloss: "the elder", morphology: { partOfSpeech: "adjective", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "presbyteros", punctBefore: "", punctAfter: " " },
+        { id: "an31", surface: "Ἀρταξέρξης", normalized: "αρταξερξης", lemma: "Ἀρταξέρξης", gloss: "Artaxerxes", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "Artaxerxēs", punctBefore: "", punctAfter: " " },
+        { id: "an32", surface: "παρῆν", normalized: "παρην", lemma: "πάρειμι", gloss: "was present", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "parēn", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "anab-4",
+      translation: "Cyrus he summoned from the province over which he had made him satrap.",
+      tokens: [
+        { id: "an33", surface: "Κῦρον", normalized: "κυρον", lemma: "Κῦρος", gloss: "Cyrus", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "Kyron", punctBefore: "", punctAfter: " " },
+        { id: "an34", surface: "δὲ", normalized: "δε", lemma: "δέ", gloss: "but, and", morphology: { partOfSpeech: "particle" }, transliteration: "de", punctBefore: "", punctAfter: " " },
+        { id: "an35", surface: "μεταπέμπεται", normalized: "μεταπεμπεται", lemma: "μεταπέμπω", gloss: "sends for, summons", morphology: { partOfSpeech: "verb", tense: "present", voice: "middle", mood: "indicative", person: "third", number: "singular" }, transliteration: "metapempetai", punctBefore: "", punctAfter: " " },
+        { id: "an36", surface: "ἀπὸ", normalized: "απο", lemma: "ἀπό", gloss: "from", morphology: { partOfSpeech: "preposition" }, transliteration: "apo", punctBefore: "", punctAfter: " " },
+        { id: "an37", surface: "τῆς", normalized: "της", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "genitive", number: "singular", gender: "feminine" }, transliteration: "tēs", punctBefore: "", punctAfter: " " },
+        { id: "an38", surface: "ἀρχῆς", normalized: "αρχης", lemma: "ἀρχή", gloss: "province, rule", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "feminine" }, transliteration: "archēs", punctBefore: "", punctAfter: " " },
+        { id: "an39", surface: "ἧς", normalized: "ης", lemma: "ὅς", gloss: "which", morphology: { partOfSpeech: "pronoun", case: "genitive", number: "singular", gender: "feminine" }, transliteration: "hēs", punctBefore: "", punctAfter: " " },
+        { id: "an40", surface: "αὐτὸν", normalized: "αυτον", lemma: "αὐτός", gloss: "him", morphology: { partOfSpeech: "pronoun", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "auton", punctBefore: "", punctAfter: " " },
+        { id: "an41", surface: "σατράπην", normalized: "σατραπην", lemma: "σατράπης", gloss: "satrap, governor", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "masculine" }, transliteration: "satrapēn", punctBefore: "", punctAfter: " " },
+        { id: "an42", surface: "ἐποίησε", normalized: "εποιησε", lemma: "ποιέω", gloss: "had made, appointed", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "epoiēse", punctBefore: "", punctAfter: "." },
+      ],
+    },
+    {
+      id: "anab-5",
+      translation: "When Cyrus arrived, he accused him before his father, saying that he was plotting against his brother.",
+      tokens: [
+        { id: "an43", surface: "ὡς", normalized: "ως", lemma: "ὡς", gloss: "when", morphology: { partOfSpeech: "conjunction" }, transliteration: "hōs", punctBefore: "", punctAfter: " " },
+        { id: "an44", surface: "δὲ", normalized: "δε", lemma: "δέ", gloss: "and, but", morphology: { partOfSpeech: "particle" }, transliteration: "de", punctBefore: "", punctAfter: " " },
+        { id: "an45", surface: "ἀφίκετο", normalized: "αφικετο", lemma: "ἀφικνέομαι", gloss: "arrived, came", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "middle", mood: "indicative", person: "third", number: "singular" }, transliteration: "aphiketo", punctBefore: "", punctAfter: ", " },
+        { id: "an46", surface: "κατηγόρει", normalized: "κατηγορει", lemma: "κατηγορέω", gloss: "accused", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "katēgorei", punctBefore: "", punctAfter: " " },
+        { id: "an47", surface: "αὐτοῦ", normalized: "αυτου", lemma: "αὐτός", gloss: "of him", morphology: { partOfSpeech: "pronoun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "autou", punctBefore: "", punctAfter: " " },
+        { id: "an48", surface: "Τισσαφέρνης", normalized: "τισσαφερνης", lemma: "Τισσαφέρνης", gloss: "Tissaphernes", morphology: { partOfSpeech: "noun", case: "nominative", number: "singular", gender: "masculine" }, transliteration: "Tissaphernēs", punctBefore: "", punctAfter: " " },
+        { id: "an49", surface: "ὡς", normalized: "ως", lemma: "ὡς", gloss: "that", morphology: { partOfSpeech: "conjunction" }, transliteration: "hōs", punctBefore: "", punctAfter: " " },
+        { id: "an50", surface: "βουλεύοι", normalized: "βουλευοι", lemma: "βουλεύω", gloss: "was plotting", morphology: { partOfSpeech: "verb", tense: "present", voice: "active", mood: "optative", person: "third", number: "singular" }, transliteration: "bouleuoi", punctBefore: "", punctAfter: " " },
+        { id: "an51", surface: "ἐπὶ", normalized: "επι", lemma: "ἐπί", gloss: "against", morphology: { partOfSpeech: "preposition" }, transliteration: "epi", punctBefore: "", punctAfter: " " },
+        { id: "an52", surface: "τῷ", normalized: "τω", lemma: "ὁ", gloss: "the", morphology: { partOfSpeech: "article", case: "dative", number: "singular", gender: "masculine" }, transliteration: "tō", punctBefore: "", punctAfter: " " },
+        { id: "an53", surface: "ἀδελφῷ", normalized: "αδελφω", lemma: "ἀδελφός", gloss: "brother", morphology: { partOfSpeech: "noun", case: "dative", number: "singular", gender: "masculine" }, transliteration: "adelphō", punctBefore: "", punctAfter: "." },
+      ],
+    },
+  ],
+};
+
+export const ILIAD_1_1: TextSection = {
+  id: "Iliad-1-1",
+  textId: "Iliad-1",
+  sequence: 1,
+  label: "Book 1, Lines 1-10",
+  sentences: [
+    {
+      id: "il-1",
+      translation: "Sing, O goddess, the anger of Achilles son of Peleus, that brought countless ills upon the Achaeans.",
+      tokens: [
+        { id: "il1", surface: "Μῆνιν", normalized: "μηνιν", lemma: "μῆνις", gloss: "wrath, anger", morphology: { partOfSpeech: "noun", case: "accusative", number: "singular", gender: "feminine" }, transliteration: "Mēnin", punctBefore: "", punctAfter: " " },
+        { id: "il2", surface: "ἄειδε", normalized: "αειδε", lemma: "ἀείδω", gloss: "sing!", morphology: { partOfSpeech: "verb", tense: "present", voice: "active", mood: "imperative", person: "second", number: "singular" }, transliteration: "aeide", punctBefore: "", punctAfter: ", " },
+        { id: "il3", surface: "θεά", normalized: "θεα", lemma: "θεά", gloss: "goddess", morphology: { partOfSpeech: "noun", case: "vocative", number: "singular", gender: "feminine" }, transliteration: "thea", punctBefore: "", punctAfter: ", " },
+        { id: "il4", surface: "Πηληϊάδεω", normalized: "πηληιαδεω", lemma: "Πηληϊάδης", gloss: "son of Peleus", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "Pēlēiadeō", punctBefore: "", punctAfter: " " },
+        { id: "il5", surface: "Ἀχιλῆος", normalized: "αχιληος", lemma: "Ἀχιλλεύς", gloss: "of Achilles", morphology: { partOfSpeech: "noun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "Achilēos", punctBefore: "", punctAfter: "," },
+      ],
+    },
+    {
+      id: "il-2",
+      translation: "the accursed wrath that brought countless ills upon the Achaeans",
+      tokens: [
+        { id: "il6", surface: "οὐλομένην", normalized: "ουλομενην", lemma: "ὀλλύμι", gloss: "accursed, destructive", morphology: { partOfSpeech: "verb", tense: "present", voice: "middle", mood: "participle", case: "accusative", number: "singular", gender: "feminine" }, transliteration: "ouloménēn", punctBefore: "", punctAfter: ", " },
+        { id: "il7", surface: "ἣ", normalized: "η", lemma: "ὅς", gloss: "which, that", morphology: { partOfSpeech: "pronoun", case: "nominative", number: "singular", gender: "feminine" }, transliteration: "hē", punctBefore: "", punctAfter: " " },
+        { id: "il8", surface: "μυρί'", normalized: "μυρια", lemma: "μυρίος", gloss: "countless, innumerable", morphology: { partOfSpeech: "adjective", case: "accusative", number: "plural", gender: "neuter" }, transliteration: "myri'", punctBefore: "", punctAfter: " " },
+        { id: "il9", surface: "Ἀχαιοῖς", normalized: "αχαιοις", lemma: "Ἀχαιός", gloss: "upon the Achaeans", morphology: { partOfSpeech: "noun", case: "dative", number: "plural", gender: "masculine" }, transliteration: "Achaiois", punctBefore: "", punctAfter: " " },
+        { id: "il10", surface: "ἄλγε'", normalized: "αλγεα", lemma: "ἄλγος", gloss: "pains, ills", morphology: { partOfSpeech: "noun", case: "accusative", number: "plural", gender: "neuter" }, transliteration: "alge'", punctBefore: "", punctAfter: " " },
+        { id: "il11", surface: "ἔθηκε", normalized: "εθηκε", lemma: "τίθημι", gloss: "caused, brought", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "ethēke", punctBefore: "", punctAfter: "," },
+      ],
+    },
+    {
+      id: "il-3",
+      translation: "and sent the souls of many brave heroes to Hades",
+      tokens: [
+        { id: "il12", surface: "πολλὰς", normalized: "πολλας", lemma: "πολύς", gloss: "many", morphology: { partOfSpeech: "adjective", case: "accusative", number: "plural", gender: "feminine" }, transliteration: "pollas", punctBefore: "", punctAfter: " " },
+        { id: "il13", surface: "δ'", normalized: "δε", lemma: "δέ", gloss: "but, and", morphology: { partOfSpeech: "particle" }, transliteration: "d'", punctBefore: "", punctAfter: " " },
+        { id: "il14", surface: "ἰφθίμους", normalized: "ιφθιμους", lemma: "ἴφθιμος", gloss: "mighty, brave", morphology: { partOfSpeech: "adjective", case: "accusative", number: "plural", gender: "feminine" }, transliteration: "iphthimous", punctBefore: "", punctAfter: " " },
+        { id: "il15", surface: "ψυχὰς", normalized: "ψυχας", lemma: "ψυχή", gloss: "souls", morphology: { partOfSpeech: "noun", case: "accusative", number: "plural", gender: "feminine" }, transliteration: "psychas", punctBefore: "", punctAfter: " " },
+        { id: "il16", surface: "Ἄϊδι", normalized: "αιδι", lemma: "Ἀΐδης", gloss: "to Hades", morphology: { partOfSpeech: "proper noun", case: "dative", number: "singular", gender: "masculine" }, transliteration: "Aidi", punctBefore: "", punctAfter: " " },
+        { id: "il17", surface: "προΐαψεν", normalized: "προιαψεν", lemma: "προΐαπτω", gloss: "sent forth, hurled", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "proiapsen", punctBefore: "", punctAfter: " " },
+        { id: "il18", surface: "ἡρώων", normalized: "ηρωων", lemma: "ἥρως", gloss: "of heroes", morphology: { partOfSpeech: "noun", case: "genitive", number: "plural", gender: "masculine" }, transliteration: "hērōōn", punctBefore: "", punctAfter: "," },
+      ],
+    },
+    {
+      id: "il-4",
+      translation: "and made their bodies prey for dogs and all the birds — and the plan of Zeus was fulfilled —",
+      tokens: [
+        { id: "il19", surface: "αὐτοὺς", normalized: "αυτους", lemma: "αὐτός", gloss: "themselves, their bodies", morphology: { partOfSpeech: "pronoun", case: "accusative", number: "plural", gender: "masculine" }, transliteration: "autous", punctBefore: "", punctAfter: " " },
+        { id: "il20", surface: "δὲ", normalized: "δε", lemma: "δέ", gloss: "but, and", morphology: { partOfSpeech: "particle" }, transliteration: "de", punctBefore: "", punctAfter: " " },
+        { id: "il21", surface: "ἑλώρια", normalized: "ελωρια", lemma: "ἑλώριον", gloss: "prey, spoil", morphology: { partOfSpeech: "noun", case: "accusative", number: "plural", gender: "neuter" }, transliteration: "helōria", punctBefore: "", punctAfter: " " },
+        { id: "il22", surface: "τεῦχε", normalized: "τευχε", lemma: "τεύχω", gloss: "made, caused to be", morphology: { partOfSpeech: "verb", tense: "imperfect", voice: "active", mood: "indicative", person: "third", number: "singular" }, transliteration: "teuche", punctBefore: "", punctAfter: " " },
+        { id: "il23", surface: "κύνεσσιν", normalized: "κυνεσσιν", lemma: "κύων", gloss: "for dogs", morphology: { partOfSpeech: "noun", case: "dative", number: "plural", gender: "masculine" }, transliteration: "kynessin", punctBefore: "", punctAfter: " " },
+        { id: "il24", surface: "οἰωνοῖσί", normalized: "οιωνοισι", lemma: "οἰωνός", gloss: "to birds", morphology: { partOfSpeech: "noun", case: "dative", number: "plural", gender: "masculine" }, transliteration: "oiōnoisi", punctBefore: "", punctAfter: " " },
+        { id: "il25", surface: "τε", normalized: "τε", lemma: "τε", gloss: "and", morphology: { partOfSpeech: "particle" }, transliteration: "te", punctBefore: "", punctAfter: " " },
+        { id: "il26", surface: "πᾶσι", normalized: "πασι", lemma: "πᾶς", gloss: "all", morphology: { partOfSpeech: "adjective", case: "dative", number: "plural", gender: "masculine" }, transliteration: "pasi", punctBefore: "", punctAfter: "," },
+      ],
+    },
+    {
+      id: "il-5",
+      translation: "from when first the two parted in strife — Atreus' son, lord of men, and godlike Achilles.",
+      tokens: [
+        { id: "il27", surface: "ἐξ", normalized: "εξ", lemma: "ἐκ", gloss: "from", morphology: { partOfSpeech: "preposition" }, transliteration: "ex", punctBefore: "", punctAfter: " " },
+        { id: "il28", surface: "οὗ", normalized: "ου", lemma: "ὅς", gloss: "when, from which time", morphology: { partOfSpeech: "pronoun", case: "genitive", number: "singular", gender: "masculine" }, transliteration: "hou", punctBefore: "", punctAfter: " " },
+        { id: "il29", surface: "δὴ", normalized: "δη", lemma: "δή", gloss: "truly, then", morphology: { partOfSpeech: "particle" }, transliteration: "dē", punctBefore: "", punctAfter: " " },
+        { id: "il30", surface: "τὰ", normalized: "τα", lemma: "ὁ", gloss: "these, the", morphology: { partOfSpeech: "article", case: "accusative", number: "plural", gender: "neuter" }, transliteration: "ta", punctBefore: "", punctAfter: " " },
+        { id: "il31", surface: "πρῶτα", normalized: "πρωτα", lemma: "πρῶτος", gloss: "first", morphology: { partOfSpeech: "adjective", case: "accusative", number: "plural", gender: "neuter" }, transliteration: "prōta", punctBefore: "", punctAfter: " " },
+        { id: "il32", surface: "διαστήτην", normalized: "διαστητην", lemma: "διΐστημι", gloss: "parted, stood apart", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "indicative", person: "third", number: "dual" }, transliteration: "diastatēn", punctBefore: "", punctAfter: " " },
+        { id: "il33", surface: "ἐρίσαντε", normalized: "εριοαντε", lemma: "ἐρίζω", gloss: "having quarreled", morphology: { partOfSpeech: "verb", tense: "aorist", voice: "active", mood: "participle", case: "nominative", number: "dual" }, transliteration: "erisante", punctBefore: "", punctAfter: "." },
+      ],
+    },
+  ],
+};
+
 import { getMockTexts, getMockSections } from "./mockTexts";
 
 export const CorpusDB = {
@@ -1755,6 +2512,8 @@ export const CorpusDB = {
     TEXT_SANSKRIT_GITA,
     TEXT_HITTITE_ANNALS,
     TEXT_EGYPTIAN_PTAHHOTEP,
+    TEXT_ANABASIS,
+    TEXT_ILIAD,
     ...getMockTexts()
   ],
   getText: (id: string) =>
@@ -1770,6 +2529,8 @@ export const CorpusDB = {
       TEXT_SANSKRIT_GITA,
       TEXT_HITTITE_ANNALS,
       TEXT_EGYPTIAN_PTAHHOTEP,
+      TEXT_ANABASIS,
+      TEXT_ILIAD,
       ...getMockTexts()
     ].find((t) => t.id === id),
   getSection: (sectionId: string) => {
@@ -1784,10 +2545,12 @@ export const CorpusDB = {
     if (sectionId === "San-Gita-1-1") return SANSKRIT_GITA_1_1;
     if (sectionId === "Hit-Annals-1-1") return HITTITE_ANNALS_1_1;
     if (sectionId === "Egy-Ptah-1-1") return EGYPTIAN_PTAHHOTEP_1_1;
-    
+    if (sectionId === "Anab-1-1") return ANABASIS_1_1;
+    if (sectionId === "Iliad-1-1") return ILIAD_1_1;
+
     const mockMatch = getMockSections().find(s => s.id === sectionId);
     if (mockMatch) return mockMatch;
-    
+
     return null;
   },
   getCorpusOverview: (corpusId: string) => {
@@ -1801,6 +2564,7 @@ export const CorpusDB = {
     if (corpusId === "SANSKRIT_MAHABHARATA") return SANSKRIT_CORPUS;
     if (corpusId === "HITTITE_ANNALS") return HITTITE_CORPUS;
     if (corpusId === "EGYPTIAN_TEXTS") return EGYPTIAN_CORPUS;
+    if (corpusId === "ANCIENT_GREEK") return ANCIENT_GREEK_CORPUS;
     return null;
   },
   findSentencesWithLemma: (
@@ -1821,6 +2585,8 @@ export const CorpusDB = {
       SANSKRIT_GITA_1_1,
       HITTITE_ANNALS_1_1,
       EGYPTIAN_PTAHHOTEP_1_1,
+      ANABASIS_1_1,
+      ILIAD_1_1,
       ...getMockSections()
     ];
     for (const section of allSections) {
