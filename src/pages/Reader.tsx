@@ -493,30 +493,44 @@ export const Reader = () => {
 
       if (!selectedWord) {
         if (e.key === "ArrowRight") {
-          if (
-            readingMode === "page" &&
-            currentSentenceIndex < chapter.sentences.length - 1
-          ) {
-            setCurrentSentenceIndex((prev) => prev + 1);
-            setAudioPos({ sentenceIdx: currentSentenceIndex + 1, wordIdx: 0 });
-          } else if (readingMode === "scroll") {
+          if (readingMode === "page") {
+            if (currentSentenceIndex < chapter.sentences.length - 1) {
+              setCurrentSentenceIndex((prev) => prev + 1);
+              setAudioPos({ sentenceIdx: currentSentenceIndex + 1, wordIdx: 0 });
+            } else if (currentChapterIndex < chapters.length - 1) {
+              setCurrentChapterIndex(currentChapterIndex + 1);
+              setCurrentSentenceIndex(0);
+              setAudioPos({ sentenceIdx: 0, wordIdx: 0 });
+            }
+          } else {
             if (currentScrollPage < totalPages - 1) {
               setCurrentScrollPage(prev => prev + 1);
               document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
             } else if (currentChapterIndex < chapters.length - 1) {
-              setCurrentChapterIndex(prev => prev + 1);
+              setCurrentChapterIndex(currentChapterIndex + 1);
+              setCurrentScrollPage(0);
             }
           }
         } else if (e.key === "ArrowLeft") {
-          if (readingMode === "page" && currentSentenceIndex > 0) {
-            setCurrentSentenceIndex((prev) => prev - 1);
-            setAudioPos({ sentenceIdx: currentSentenceIndex - 1, wordIdx: 0 });
-          } else if (readingMode === "scroll") {
+          if (readingMode === "page") {
+            if (currentSentenceIndex > 0) {
+              setCurrentSentenceIndex((prev) => prev - 1);
+              setAudioPos({ sentenceIdx: currentSentenceIndex - 1, wordIdx: 0 });
+            } else if (currentChapterIndex > 0) {
+              const prevChapter = chapters[currentChapterIndex - 1];
+              setCurrentChapterIndex(currentChapterIndex - 1);
+              setCurrentSentenceIndex(prevChapter.sentences.length - 1);
+              setAudioPos({ sentenceIdx: prevChapter.sentences.length - 1, wordIdx: 0 });
+            }
+          } else {
             if (currentScrollPage > 0) {
               setCurrentScrollPage(prev => prev - 1);
               document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
             } else if (currentChapterIndex > 0) {
-              setCurrentChapterIndex(prev => prev - 1);
+              const prevChapter = chapters[currentChapterIndex - 1];
+              const prevTotalPages = Math.ceil((prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
+              setCurrentChapterIndex(currentChapterIndex - 1);
+              setCurrentScrollPage(prevTotalPages - 1);
             }
           }
         }
@@ -532,7 +546,7 @@ export const Reader = () => {
     chapter, 
     readingMode, 
     currentSentenceIndex, 
-    chapters.length, 
+    chapters, 
     currentChapterIndex, 
     setWordState, 
     text?.languageId,
@@ -540,7 +554,7 @@ export const Reader = () => {
     totalPages
   ]);
   
-  const handleMarkPageKnown = () => {
+  const handleMarkPageKnown = (andAdvance: boolean = true) => {
     let tokensToMark: any[];
     if (readingMode === "page") {
       tokensToMark = chapter.sentences[currentSentenceIndex]?.tokens || [];
@@ -556,6 +570,8 @@ export const Reader = () => {
     
     // Explicitly add to read count
     addReadWords(tokensToMark.length);
+
+    if (!andAdvance) return;
 
     if (readingMode === "page") {
       if (currentSentenceIndex < chapter.sentences.length - 1) {
@@ -575,6 +591,7 @@ export const Reader = () => {
         setSelectedWord(null);
       } else if (currentChapterIndex < chapters.length - 1) {
         setCurrentChapterIndex(currentChapterIndex + 1);
+        setCurrentScrollPage(0);
         setSelectedWord(null);
       }
     }
@@ -656,6 +673,13 @@ export const Reader = () => {
             alert(t("reader.sentenceSaved"));
           }}
           onMarkPageKnown={handleMarkPageKnown}
+          onSwipe={(direction) => {
+            if (direction === 'left') {
+              handleMarkPageKnown(true);
+            } else {
+              handleMarkPageKnown(true);
+            }
+          }}
           onNextPage={() => {
             setCurrentScrollPage(prev => prev + 1);
             document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
@@ -673,19 +697,52 @@ export const Reader = () => {
           readingMode={readingMode}
           currentSentenceIndex={currentSentenceIndex}
           totalSentences={chapter.sentences.length}
-          canGoPrev={!(currentChapterIndex === 0 && (readingMode === "scroll" || currentSentenceIndex === 0))}
-          canGoNext={!(currentChapterIndex === chapters.length - 1 && (readingMode === "scroll" || currentSentenceIndex === chapter.sentences.length - 1))}
+          canGoPrev={
+            readingMode === "page"
+              ? !(currentChapterIndex === 0 && currentSentenceIndex === 0)
+              : !(currentChapterIndex === 0 && currentScrollPage === 0)
+          }
+          canGoNext={
+            readingMode === "page"
+              ? !(currentChapterIndex === chapters.length - 1 && currentSentenceIndex === chapter.sentences.length - 1)
+              : !(currentChapterIndex === chapters.length - 1 && currentScrollPage === totalPages - 1)
+          }
           onPrev={() => {
-            if (readingMode === "page" && currentSentenceIndex > 0)
-              setCurrentSentenceIndex(p => p - 1);
-            else if (currentChapterIndex > 0)
-              setCurrentChapterIndex(currentChapterIndex - 1);
+            if (readingMode === "page") {
+              if (currentSentenceIndex > 0) {
+                setCurrentSentenceIndex(p => p - 1);
+              } else if (currentChapterIndex > 0) {
+                const prevChapter = chapters[currentChapterIndex - 1];
+                setCurrentChapterIndex(currentChapterIndex - 1);
+                setCurrentSentenceIndex(prevChapter.sentences.length - 1);
+              }
+            } else {
+              if (currentScrollPage > 0) {
+                setCurrentScrollPage(p => p - 1);
+              } else if (currentChapterIndex > 0) {
+                const prevChapter = chapters[currentChapterIndex - 1];
+                const prevTotalPages = Math.ceil((prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
+                setCurrentChapterIndex(currentChapterIndex - 1);
+                setCurrentScrollPage(prevTotalPages - 1);
+              }
+            }
           }}
           onNext={() => {
-            if (readingMode === "page" && currentSentenceIndex < chapter.sentences.length - 1)
-              setCurrentSentenceIndex(p => p + 1);
-            else if (currentChapterIndex < chapters.length - 1)
-              setCurrentChapterIndex(currentChapterIndex + 1);
+            if (readingMode === "page") {
+              if (currentSentenceIndex < chapter.sentences.length - 1) {
+                setCurrentSentenceIndex(p => p + 1);
+              } else if (currentChapterIndex < chapters.length - 1) {
+                setCurrentChapterIndex(currentChapterIndex + 1);
+                setCurrentSentenceIndex(0);
+              }
+            } else {
+              if (currentScrollPage < totalPages - 1) {
+                setCurrentScrollPage(p => p + 1);
+              } else if (currentChapterIndex < chapters.length - 1) {
+                setCurrentChapterIndex(currentChapterIndex + 1);
+                setCurrentScrollPage(0);
+              }
+            }
           }}
           onMarkKnown={handleMarkPageKnown}
         />
