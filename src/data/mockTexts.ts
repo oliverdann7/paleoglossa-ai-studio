@@ -50,7 +50,6 @@ const generateMocks = () => {
     ],
     'grc-koine': [
       { text: TEXT_JOHN_1, section: JOHN_1_1 },
-      { text: TEXT_SYRIAC_JOHN, section: SYRIAC_JOHN_1_1 },
     ],
     'hbo': [
       { text: TEXT_GENESIS, section: GENESIS_1 },
@@ -101,7 +100,10 @@ const generateMocks = () => {
           author: newAuthor,
           language: lang,
           level: level,
-          sectionsPreview: [{ id: `${newTextId}-sec1`, label: "Sample Selection" }]
+          sectionsPreview: [
+            { id: `${newTextId}-sec1`, label: "Part 1" },
+            { id: `${newTextId}-sec2`, label: "Part 2" },
+          ]
         };
         
         const allTokens = base.section.sentences.flatMap(s => s.tokens);
@@ -129,15 +131,27 @@ const generateMocks = () => {
           });
         }
         
-        const newSection: TextSection = {
+        const splitIndex = Math.max(1, Math.ceil(syntheticSentences.length / 2));
+        const newSection1: TextSection = {
           ...base.section,
           id: `${newTextId}-sec1`,
           textId: newTextId,
-          sentences: syntheticSentences,
+          sequence: 1,
+          label: "Part 1",
+          sentences: syntheticSentences.slice(0, splitIndex),
+        };
+
+        const newSection2: TextSection = {
+          ...base.section,
+          id: `${newTextId}-sec2`,
+          textId: newTextId,
+          sequence: 2,
+          label: "Part 2",
+          sentences: syntheticSentences.slice(splitIndex),
         };
 
         generatedTexts.push(newText);
-        generatedSections.push(newSection);
+        generatedSections.push(newSection1, newSection2);
       }
     });
   });
