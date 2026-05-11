@@ -1,11 +1,12 @@
 import { createApiApp } from '../server';
 
-if (!process.env.GEMINI_API_KEY) {
-  console.error('GEMINI_API_KEY is not set');
-}
-
 const app = createApiApp();
 
 export default function handler(req: any, res: any) {
-  app(req, res);
+  app(req, res, function next() {
+    if (!res.headersSent) {
+      res.statusCode = 404;
+      res.end(JSON.stringify({ error: 'Not found' }));
+    }
+  });
 }
