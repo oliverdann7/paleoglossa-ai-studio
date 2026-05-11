@@ -290,7 +290,7 @@ export const LexDrawerPanel = ({
                 onClick={() => setWordState(selectedWord.lemma, WordState.LEARNING, textLanguageId, selectedWord.sentenceText)}
                 className="w-full py-3 bg-blue text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all active:scale-[0.98]"
               >
-                Save as LingQ / Add to Review
+                Save Word / Add to Review
               </button>
             </div>
           </div>
