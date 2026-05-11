@@ -30,6 +30,7 @@ export const useKnowledge = () => {
         statsHook.updateStatsState(s => ({ ...s, totalKnown: knownCount }));
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vocab.isLoading, statsHook.isLoading, vocab.knowledge]);
 
   const refreshImports = useCallback(async () => {

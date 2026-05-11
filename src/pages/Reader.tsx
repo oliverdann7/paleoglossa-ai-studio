@@ -233,17 +233,17 @@ export const Reader = () => {
           id: `import-sent-${i}`,
           translation: t("reader.noTranslation"),
           parallel: t("reader.noParallelText"),
-          tokens: rawTokens.map((t: string, j: number) => ({
+          tokens: rawTokens.map((token: string, j: number) => ({
             id: `import-token-${i}-${j}`,
-            text: t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
-            lemma: t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").toLowerCase(),
+            text: token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
+            lemma: token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").toLowerCase(),
             translit: getTransliteration(
-              t.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
+              token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
               text.languageId || text.language || "",
             ),
             gloss: t("reader.userImportedWord"),
-            punctAfter: t.match(/[.,/#!$%^&*;:{}=\-_`~()]/)
-              ? t.slice(-1) + " "
+            punctAfter: token.match(/[.,/#!$%^&*;:{}=\-_`~()]/)
+              ? token.slice(-1) + " "
               : " ",
           })),
         };
@@ -258,7 +258,7 @@ export const Reader = () => {
       ];
     }
     return [];
-  }, [text]);
+  }, [text, t]);
 
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
     const saved = localStorage.getItem(`${STORAGE_KEYS.READER_CHAPTER_PREFIX}${text?.id}`);
