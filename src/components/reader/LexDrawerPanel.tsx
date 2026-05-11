@@ -185,7 +185,7 @@ export const LexDrawerPanel = ({
             </button>
           )}
 
-          {selectedWord.morphology && (
+          {selectedWord.morphology && Object.keys(selectedWord.morphology).length > 0 && (
             <div className="mb-10">
               <div className="eyebrow mb-3 flex items-center gap-2 text-ink">
                 <span>Morphology</span>
@@ -202,8 +202,13 @@ export const LexDrawerPanel = ({
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {['grc', 'grc-koine', 'lat', 'san', 'akk', 'hit', 'syr', 'arc', 'hbo', 'cop'].includes(textLanguageId) && (
+            <div className="mb-10">
               <button
-                className="w-full mt-6 py-3 border-2 border-gold/30 text-gold text-[13px] font-bold rounded-xl hover:bg-gold/5 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 border border-gold/30 text-gold text-[13px] font-bold rounded-xl hover:bg-gold/5 transition-all flex items-center justify-center gap-2"
                 onClick={() => setIsParadigmOpen(true)}
               >
                 <Sparkles className="w-4 h-4" />
