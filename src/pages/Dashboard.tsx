@@ -13,6 +13,7 @@ import {
   STATE_LABELS,
 } from "../lib/constants/wordStates";
 import { ProgressRing } from "../components/reader/ProgressRing";
+import { DashboardSkeleton } from "../components/Skeleton";
 
 const StatCard = ({
   label,
@@ -31,7 +32,7 @@ const StatCard = ({
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const { knowledge, stats, getAllProgress, userImports } = useKnowledge();
+  const { knowledge, stats, getAllProgress, userImports, isLoading } = useKnowledge();
   const { t } = useTranslation();
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const hour = new Date().getHours();
@@ -105,6 +106,8 @@ export const Dashboard = () => {
     }
     return { ...builtInTexts[0], lastPosition: 0 };
   }, [readingProgress, userImports]);
+
+  if (isLoading) return <DashboardSkeleton />;
 
   return (
     <div className="p-6 md:p-12 max-w-6xl mx-auto font-sans min-h-screen">

@@ -17,11 +17,15 @@ import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { AuthProvider } from './lib/contexts/AuthContext';
+import { ToastProvider } from './lib/contexts/ToastContext';
 import { AppLayout } from './components/AppLayout';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
   return (
     <AuthProvider>
+      <ToastProvider>
+      <ErrorBoundary>
       <BrowserRouter>
         <Routes>
           {/* Marketing (Public) */}
@@ -57,6 +61,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </ErrorBoundary>
+      </ToastProvider>
     </AuthProvider>
   );
 }

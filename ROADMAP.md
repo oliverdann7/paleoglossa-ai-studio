@@ -24,7 +24,7 @@ This document outlines the strategic roadmap for transforming Paleoglossa from a
 ---
 
 ## Phase 2: Real reader workflow
-**Goal:** Optimize the `Reader` to handle massive texts without lag and provide a seamless "flow state" interaction.
+**Goal:** Optimize the `Reader` to handle massive texts without lag and provide a "flow state" reading experience.
 **User value:** A frictionless, immersive reading experience where interaction (marking words) is intuitive and lightning fast. 
 **Technical tasks:**
 - Implement pagination or virtualized rendering for long chapters to avoid React DOM lag (rendering 5000 individual `<span>` tokens is extremely slow).
@@ -113,7 +113,7 @@ This document outlines the strategic roadmap for transforming Paleoglossa from a
 ---
 
 ## Phase 7: Ancient-language scholarly depth
-**Goal:** Tailor the reading and vocabulary acquisition model specifically for highly inflected dead languages.
+**Goal:** Tailor the reading model specifically for highly inflected dead languages.
 **User value:** Users get deeper structural explanations, crucial for complex grammar, rather than just 1-to-1 definitions.
 **Technical tasks:**
 - Refine the `ParadigmModal` to natively fetch tables from scholarly APIs (e.g., Morpheus for Latin/Greek) or use highly-structured AI generation.

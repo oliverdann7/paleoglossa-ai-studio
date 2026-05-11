@@ -141,3 +141,11 @@
 .font-greek { font-family: 'Cormorant Garamond', Georgia, serif; }
 .font-hebrew { font-family: 'Noto Serif Hebrew', 'SBL Hebrew', serif; direction: rtl; }
 
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
+

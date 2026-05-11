@@ -87,10 +87,16 @@ export interface ImportedText {
 export interface UserSettings {
   theme: 'parchment' | 'sepia' | 'dark';
   fontSize: number;
+  showParallelDefault: boolean;
+  dailyGoalWords: number;
+  dailyGoalMinutes: number;
+  showTranslit: boolean;
+  highlightIntensity: 'subtle' | 'normal' | 'strong';
+  audioSpeedDefault: number;
+  activeLanguages: string[];
   transliterationMode: 'none' | 'phonetic' | 'roman';
   targetLanguage: string;
   uiLanguage: string;
-  showParallelDefault: boolean;
 }
 
 export interface ReviewLog {
