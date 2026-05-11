@@ -31,10 +31,11 @@ export const Settings = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     localStorage.removeItem("paleoglossa_knowledge");
     localStorage.removeItem("paleoglossa_stats");
     localStorage.removeItem("paleoglossa_reading_sessions");
+    // TODO: A more robust wipe would clear firestore as well
     window.location.reload();
   };
 
