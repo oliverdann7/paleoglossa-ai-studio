@@ -2,17 +2,15 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, GraduationCap, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../lib/hooks/useAuth";
 
 export const Landing = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { setDemoMode } = useAuth();
   
   const onEnter = () => navigate("/auth/login");
   
   const onDemoMode = () => {
-    setDemoMode(true);
+    localStorage.setItem('paleoglossa_demo_mode', 'true');
     navigate("/app");
   };
   

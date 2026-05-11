@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { AuthContext, UserStats } from './AuthContextInstance';
@@ -7,8 +8,14 @@ import { AuthContext, UserStats } from './AuthContextInstance';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDemoMode, setDemoMode] = useState(false);
+  const [isDemoMode, setDemoModeState] = useState(() => localStorage.getItem('paleoglossa_demo_mode') === 'true');
   const [stats, setStats] = useState<UserStats | null>(null);
+
+  const setDemoMode = (val: boolean) => {
+    setDemoModeState(val);
+    if (val) localStorage.setItem('paleoglossa_demo_mode', 'true');
+    else localStorage.removeItem('paleoglossa_demo_mode');
+  };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
