@@ -320,6 +320,40 @@ export const Reader = () => {
     return () => clearInterval(timer);
   }, [incrementReadingTime]);
 
+  // TTS language map (same as LexDrawerPanel)
+  const ttsLangMap: Record<string, string> = {
+    grc: "el-GR",
+    "grc-koine": "el-GR",
+    hbo: "he-IL",
+    lat: "it-IT",
+    syr: "ar-SA",
+    arc: "ar-SA",
+    cop: "el-GR",
+    akk: "ar-SA",
+    san: "hi-IN",
+  };
+
+  // Speak current word via TTS when audio position advances
+  useEffect(() => {
+    if (!isPlaying || !window.speechSynthesis) return;
+    const currentSentence = chapter?.sentences[audioPos.sentenceIdx];
+    if (!currentSentence) return;
+    const token = currentSentence.tokens[audioPos.wordIdx];
+    if (!token || token.type === 'whitespace' || !token.text) return;
+
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(token.text);
+    u.lang = ttsLangMap[text?.languageId || ''] || 'el-GR';
+    u.rate = Math.min(audioSpeed, 1.1);
+    window.speechSynthesis.speak(u);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioPos.sentenceIdx, audioPos.wordIdx]);
+
+  // Cancel TTS when paused
+  useEffect(() => {
+    if (!isPlaying) window.speechSynthesis?.cancel();
+  }, [isPlaying]);
+
   // Audio Playback Effect
   useEffect(() => {
     if (!isPlaying) return;

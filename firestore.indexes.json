@@ -1,0 +1,53 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "vocabulary",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "nextReview", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "vocabulary",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "nextReview", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "vocabulary",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "languageId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "nextReview", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "vocabItemId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "readingProgress",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "textId", "order": "ASCENDING" },
+        { "fieldPath": "lastReadAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
