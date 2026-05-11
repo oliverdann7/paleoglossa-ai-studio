@@ -1,39 +1,46 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Landing } from './pages/Landing';
-import { Dashboard } from './pages/Dashboard';
-import { Reader } from './pages/Reader';
-import { Library } from './pages/Library';
-import { Language } from './pages/Language';
-import { Vocabulary } from './pages/Vocabulary';
-import { Import } from './pages/Import';
-import { Review } from './pages/Review';
-import { Statistics } from './pages/Statistics';
-import { Subscription } from './pages/Subscription';
-import { Settings } from './pages/Settings';
-import { Onboarding } from './pages/Onboarding';
-import { Notes } from './pages/Notes';
-import { SearchPage } from './pages/Search';
-import { Grammar } from './pages/Grammar';
-import { Tutor } from './pages/Tutor';
-import { Syntax } from './pages/Syntax';
-import { Notebooks } from './pages/Notebooks';
-import { Manuscripts } from './pages/Manuscripts';
-import { Courses } from './pages/Courses';
-import { AudioLab } from './pages/AudioLab';
-import { SignIn } from './pages/auth/SignIn';
-import { SignUp } from './pages/auth/SignUp';
-import { ForgotPassword } from './pages/auth/ForgotPassword';
-import { ResetPassword } from './pages/auth/ResetPassword';
-import { AuthProvider } from './lib/contexts/AuthContext';
 import { ToastProvider } from './lib/contexts/ToastProvider';
-import { AppLayout } from './components/AppLayout';
 import { ErrorBoundary } from './components/ErrorBoundary';
+
+const Landing = lazy(() => import('./pages/Landing').then(module => ({ default: module.Landing })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const Reader = lazy(() => import('./pages/Reader').then(module => ({ default: module.Reader })));
+const Library = lazy(() => import('./pages/Library').then(module => ({ default: module.Library })));
+const Language = lazy(() => import('./pages/Language').then(module => ({ default: module.Language })));
+const Vocabulary = lazy(() => import('./pages/Vocabulary').then(module => ({ default: module.Vocabulary })));
+const Import = lazy(() => import('./pages/Import').then(module => ({ default: module.Import })));
+const Review = lazy(() => import('./pages/Review').then(module => ({ default: module.Review })));
+const Statistics = lazy(() => import('./pages/Statistics').then(module => ({ default: module.Statistics })));
+const Subscription = lazy(() => import('./pages/Subscription').then(module => ({ default: module.Subscription })));
+const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
+const Onboarding = lazy(() => import('./pages/Onboarding').then(module => ({ default: module.Onboarding })));
+const Notes = lazy(() => import('./pages/Notes').then(module => ({ default: module.Notes })));
+const SearchPage = lazy(() => import('./pages/Search').then(module => ({ default: module.SearchPage })));
+const Grammar = lazy(() => import('./pages/Grammar').then(module => ({ default: module.Grammar })));
+const Tutor = lazy(() => import('./pages/Tutor').then(module => ({ default: module.Tutor })));
+const Syntax = lazy(() => import('./pages/Syntax').then(module => ({ default: module.Syntax })));
+const Notebooks = lazy(() => import('./pages/Notebooks').then(module => ({ default: module.Notebooks })));
+const Manuscripts = lazy(() => import('./pages/Manuscripts').then(module => ({ default: module.Manuscripts })));
+const Courses = lazy(() => import('./pages/Courses').then(module => ({ default: module.Courses })));
+const AudioLab = lazy(() => import('./pages/AudioLab').then(module => ({ default: module.AudioLab })));
+const SignIn = lazy(() => import('./pages/auth/SignIn').then(module => ({ default: module.SignIn })));
+const SignUp = lazy(() => import('./pages/auth/SignUp').then(module => ({ default: module.SignUp })));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword').then(module => ({ default: module.ResetPassword })));
+const AppLayout = lazy(() => import('./components/AppLayout').then(module => ({ default: module.AppLayout })));
+
+const PageFallback = () => (
+  <div className="min-h-screen bg-parch flex items-center justify-center text-ink2 font-sans">
+    <div className="card px-6 py-4 text-sm font-medium">Loading...</div>
+  </div>
+);
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
+    <ToastProvider>
       <ErrorBoundary>
+      <Suspense fallback={<PageFallback />}>
       <BrowserRouter>
         <Routes>
           {/* Marketing (Public) */}
@@ -77,9 +84,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </Suspense>
       </ErrorBoundary>
       </ToastProvider>
-    </AuthProvider>
   );
 }
-

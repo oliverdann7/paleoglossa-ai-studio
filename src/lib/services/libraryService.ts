@@ -1,6 +1,18 @@
 import { ImportService, ImportedText } from './importService';
 import { CorpusDB } from '../../data/corpus';
 
+const corpusTokensCache = new Map<string, any[]>();
+
+function getCorpusTokens(text: any) {
+  const cached = corpusTokensCache.get(text.id);
+  if (cached) return cached;
+
+  const sections = text.sectionsPreview?.map((p: any) => CorpusDB.getSection(p.id)).filter(Boolean) || [];
+  const tokens = sections.flatMap((s: any) => s?.sentences.flatMap((sent: any) => sent.tokens) || []);
+  corpusTokensCache.set(text.id, tokens);
+  return tokens;
+}
+
 export interface LibraryFilter {
   language?: string;
   level?: string;
@@ -89,8 +101,7 @@ export class LibraryService {
 
         if (tx.sourceType === 'corpus') {
             const t = tx.rawTextReference;
-            const sections = t.sectionsPreview?.map((p: any) => CorpusDB.getSection(p.id)).filter(Boolean) || [];
-            const allTokens = sections.flatMap((s: any) => s?.sentences.flatMap((sent: any) => sent.tokens) || []);
+            const allTokens = getCorpusTokens(t);
             totalWords = allTokens.length;
             tx.totalWords = totalWords;
             allTokens.forEach((tok: any) => {

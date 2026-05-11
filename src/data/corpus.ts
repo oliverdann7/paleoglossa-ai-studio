@@ -2829,7 +2829,7 @@ const SECTION_SPLITS: Record<string, { base: TextSection; part: SplitPart; label
 };
 
 const splitTextSection = (base: TextSection, id: string, label: string, part: SplitPart): TextSection => {
-  let sentences = base.sentences;
+  let sentences: TextSection['sentences'];
 
   if (base.sentences.length > 1) {
     const midpoint = Math.max(1, Math.ceil(base.sentences.length / 2));

@@ -1,5 +1,4 @@
-import { useRef, useCallback } from 'react';
-import { motion } from 'motion/react';
+import { memo, useRef, useCallback } from 'react';
 import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS } from '@/lib/constants/wordStates';
@@ -53,16 +52,13 @@ interface Props {
 }
 
 function getWordStyle(
-  token: TokenData,
-  knowledge: Record<string, any>,
+  wordInfo: any,
   isAudioActive: boolean,
   maskKnown: boolean,
   highlightIntensity: 'subtle' | 'normal' | 'strong',
-  selectedWordId?: string,
+  isSelected: boolean,
 ) {
-  const info = knowledge[token.lemma];
-  const state = info ? (typeof info === 'object' ? info.state : info) : WordState.NEW;
-  const isSelected = selectedWordId === token.id;
+  const state = wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW;
   const isKnown = state === WordState.KNOWN;
   const colors = STATE_COLORS[state as WordState] || STATE_COLORS[WordState.NEW];
 
@@ -90,6 +86,60 @@ function getWordStyle(
     transition: 'all 0.15s ease',
   };
 }
+
+const ReaderToken = memo(function ReaderToken({
+  token,
+  sentenceText,
+  sentenceIndex,
+  readingMode,
+  fontSize,
+  wordInfo,
+  isAudioActive,
+  maskKnown,
+  highlightIntensity,
+  isSelected,
+  showTranslit,
+  onWordClick,
+}: {
+  token: TokenData;
+  sentenceText: string;
+  sentenceIndex: number;
+  readingMode: 'scroll' | 'page';
+  fontSize: number;
+  wordInfo: any;
+  isAudioActive: boolean;
+  maskKnown: boolean;
+  highlightIntensity: 'subtle' | 'normal' | 'strong';
+  isSelected: boolean;
+  showTranslit: boolean;
+  onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
+}) {
+  return (
+    <span key={token.id} className="inline">
+      {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
+      <span
+        onClick={() => onWordClick(token, sentenceText, sentenceIndex)}
+        className="cursor-pointer transition-all px-1 rounded-sm inline-flex flex-col items-center align-top leading-none"
+        style={{
+          fontSize: readingMode === 'page' ? `${fontSize * 1.2}px` : `${fontSize}px`,
+          ...getWordStyle(wordInfo, isAudioActive, maskKnown, highlightIntensity, isSelected),
+        }}
+      >
+        <bdi className="leading-tight mb-1">{token.text}</bdi>
+        {showTranslit && token.translit && (
+          <span className="text-[0.45em] text-muted opacity-70 font-sans tracking-wide">
+            {token.translit}
+          </span>
+        )}
+      </span>
+      {token.punctAfter !== undefined && token.punctAfter !== null ? (
+        <span className="opacity-40 whitespace-pre-wrap">{token.punctAfter}</span>
+      ) : (
+        <span> </span>
+      )}
+    </span>
+  );
+});
 
 export function ReadingPane({
   sentences, readingMode, currentSentenceIndex, fontSize, highlightIntensity,
@@ -144,6 +194,7 @@ export function ReadingPane({
             {sentences.map((sentence, idx) => {
               const sIdx = sentenceSliceStart + idx;
               const isActivePageMode = readingMode === 'page' ? sIdx === currentSentenceIndex : true;
+              const sentenceText = sentence.tokens.map(t => t.text).join(' ');
 
               return (
                 <span
@@ -160,33 +211,23 @@ export function ReadingPane({
                       return <span key={token.id} className="whitespace-pre"> </span>;
                     }
                     const isAudioActive = audioPos.sentenceIdx === sIdx && audioPos.wordIdx === tIdx;
-                    const sentenceText = sentence.tokens.map(t => t.text).join(' ');
 
                     return (
-                      <span key={token.id} className="inline">
-                        {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
-                        <motion.span
-                          layoutId={`word-${token.id}`}
-                          onClick={() => onWordClick(token, sentenceText, sIdx)}
-                          className="cursor-pointer transition-all px-1 rounded-sm inline-flex flex-col items-center align-top leading-none"
-                          style={{
-                            fontSize: readingMode === 'page' ? `${fontSize * 1.2}px` : `${fontSize}px`,
-                            ...getWordStyle(token, knowledge, isAudioActive, maskKnown, highlightIntensity, selectedWordId),
-                          }}
-                        >
-                          <bdi className="leading-tight mb-1">{token.text}</bdi>
-                          {showTranslit && token.translit && (
-                            <span className="text-[0.45em] text-muted opacity-70 font-sans tracking-wide">
-                              {token.translit}
-                            </span>
-                          )}
-                        </motion.span>
-                        {token.punctAfter !== undefined && token.punctAfter !== null ? (
-                          <span className="opacity-40 whitespace-pre-wrap">{token.punctAfter}</span>
-                        ) : (
-                          <span> </span>
-                        )}
-                      </span>
+                      <ReaderToken
+                        key={token.id}
+                        token={token}
+                        sentenceText={sentenceText}
+                        sentenceIndex={sIdx}
+                        readingMode={readingMode}
+                        fontSize={fontSize}
+                        wordInfo={knowledge[token.lemma]}
+                        isAudioActive={isAudioActive}
+                        maskKnown={maskKnown}
+                        highlightIntensity={highlightIntensity}
+                        isSelected={selectedWordId === token.id}
+                        showTranslit={showTranslit}
+                        onWordClick={onWordClick}
+                      />
                     );
                   })}
                 </span>
