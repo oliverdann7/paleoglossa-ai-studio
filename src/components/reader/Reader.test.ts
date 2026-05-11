@@ -52,6 +52,19 @@ export function runReaderSmokeTests() {
     }
   });
 
+  // 1b. Every listed section resolves and contains readable content.
+  CorpusDB.getTexts().forEach(text => {
+    text.sectionsPreview?.forEach(preview => {
+      const section = CorpusDB.getSection(preview.id);
+      assert(!!section, `Section "${preview.id}" resolves for "${text.id}"`);
+      assert((section?.sentences.length || 0) > 0, `Section "${preview.id}" has sentences`);
+      assert(
+        (section?.sentences.flatMap(sentence => sentence.tokens).length || 0) > 0,
+        `Section "${preview.id}" has tokens`,
+      );
+    });
+  });
+
   // 2. Section data has complete tokens
   const sections = [ILIAD_1_1, ODYSSEY_1_1, ANABASIS_1_1, AESOP_1_1];
   sections.forEach(section => {

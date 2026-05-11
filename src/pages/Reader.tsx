@@ -18,12 +18,14 @@ import { getTransliteration } from "../lib/transliterate";
 import { AIClient } from "../lib/services/aiClient";
 import { ImportService } from "../lib/services/importService";
 import { useAuth } from "../lib/hooks/useAuth";
+import { useToast } from "../lib/hooks/useToast";
 import { STORAGE_KEYS } from "../lib/constants/storage";
 
 export const Reader = () => {
   const { textId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addToast } = useToast();
   const { t } = useTranslation();
   const onBack = () => navigate("/app/library");
 
@@ -58,7 +60,6 @@ export const Reader = () => {
     getWordInfo,
     fetchTextProgress,
     saveTextProgress,
-    markPageAsSeen,
     setWordContext
   } = useKnowledge();
   const { settings } = useSettings();
@@ -566,10 +567,16 @@ export const Reader = () => {
     const validTokens = tokensToMark.filter(t => t.lemma && t.lemma.length > 0)
       .map(t => ({ lemma: t.lemma, languageId: text?.languageId || "unknown" }));
     
-    markPageAsSeen(validTokens);
+    validTokens.forEach(({ lemma, languageId }) => {
+      setWordState(lemma, WordState.KNOWN, languageId);
+    });
     
     // Explicitly add to read count
     addReadWords(tokensToMark.length);
+    addToast(
+      `${validTokens.length} ${validTokens.length === 1 ? "word" : "words"} marked known`,
+      "success",
+    );
 
     if (!andAdvance) return;
 
