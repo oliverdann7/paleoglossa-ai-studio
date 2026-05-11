@@ -2,39 +2,22 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import path from 'path';
-import fs from 'fs';
 
-// --- Persistent Rate Limiting ---
+// --- In-memory Rate Limiting (per-process; does not persist across serverless invocations) ---
 const RATE_LIMIT_COUNT = 100;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const RATE_LIMIT_FILE = path.join(process.cwd(), '.ratelimit.json');
-
-interface RateRecord { count: number; resetAt: number; }
-
-function loadRateLimits(): Record<string, RateRecord> {
-  try {
-    return JSON.parse(fs.readFileSync(RATE_LIMIT_FILE, 'utf-8'));
-  } catch {
-    return {};
-  }
-}
-
-function saveRateLimits(data: Record<string, RateRecord>) {
-  fs.writeFileSync(RATE_LIMIT_FILE, JSON.stringify(data));
-}
+const rateData = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(userId: string | undefined): boolean {
   if (!userId) return true;
   const now = Date.now();
-  const data = loadRateLimits();
-  let record = data[userId];
+  let record = rateData.get(userId);
   if (!record || now > record.resetAt) {
     record = { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS };
   }
   if (record.count >= RATE_LIMIT_COUNT) return false;
   record.count++;
-  data[userId] = record;
-  saveRateLimits(data);
+  rateData.set(userId, record);
   return true;
 }
 
@@ -105,16 +88,32 @@ const PROMPTS = {
   }
 };
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+function isValidUrl(string: string) {
+  try {
+    const url = new URL(string);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
 
-async function startServer() {
+export function createApiApp() {
   const app = express();
-  const PORT = 3000;
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
   app.use(express.json({ limit: '10mb' }));
 
+  // CORS headers for cross-origin API calls
+  app.use((_req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-User-Id');
+    if (_req.method === 'OPTIONS') return res.sendStatus(204);
+    next();
+  });
+
   // AI Route Wrapper with Rate Limiter
-  const constructAiEndpoint = (path: string, handler: (req: express.Request, res: express.Response, ai: GoogleGenAI) => Promise<void>) => {
+  const constructAiEndpoint = (path: string, handler: (req: express.Request, res: express.Response, ai: GoogleGenAI) => Promise<any>) => {
     app.post(path, async (req, res) => {
       const userId = req.header('X-User-Id') || req.body.userId;
       if (!checkRateLimit(userId)) {
@@ -129,7 +128,6 @@ async function startServer() {
         await handler(req, res, ai);
       } catch (error: any) {
         console.error(`AI Error on ${path}:`, error);
-        // Handle unsafe/safety errors
         if (error.message?.includes('SAFETY')) {
           return res.status(400).json({ error: 'Request blocked by safety filters.', code: 'UNSAFE_CONTENT' });
         }
@@ -153,7 +151,6 @@ async function startServer() {
     } else {
       prompt = PROMPTS.v1.word(targetLangId, targetWord, targetLemma);
     }
-    
     const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
     res.json({ explanation: response.text, text: response.text });
   });
@@ -210,7 +207,10 @@ async function startServer() {
 
   constructAiEndpoint('/api/ai/scrape', async (req, res, ai) => {
     const { url } = req.body;
-    const response = await fetch(url);
+    if (!url || !isValidUrl(url)) {
+      return res.status(400).json({ error: 'Invalid or disallowed URL.', code: 'INVALID_URL' });
+    }
+    const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
     const html = await response.text();
     const prompt = `Extract the main article text from this HTML content. Ignore navigation, ads, and footers. Return ONLY the article text:\n\n${html.slice(0, 10000)}`;
     const aiResponse = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
@@ -251,29 +251,22 @@ async function startServer() {
   app.get('/api/lemmas/:lemma', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.get('/api/lemmas', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.get('/api/lemmas/:lemma/paradigm', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
-
   app.get('/api/grammar/concepts', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.get('/api/grammar/concepts/:conceptId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.get('/api/grammar/pathway', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
-
   app.post('/api/search', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
-
   app.get('/api/syntax', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.get('/api/syntax/:textId/:sentenceIndex', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
-
   app.get('/api/notebooks', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.post('/api/notebooks', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.delete('/api/notebooks/:notebookId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.get('/api/notes', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.post('/api/notes', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.delete('/api/notes/:noteId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
-
   app.get('/api/manuscripts', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.get('/api/manuscripts/:manuscriptId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
-
   app.post('/api/audio/tts', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.post('/api/audio/recordings', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
-
   app.get('/api/courses', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.get('/api/courses/:courseId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
   app.post('/api/courses', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
@@ -285,7 +278,14 @@ async function startServer() {
     res.redirect(307, '/api/ai/scrape');
   });
 
-  // Vite integration
+  return app;
+}
+
+// Local dev: add Vite/static middleware and listen
+async function startServer() {
+  const app = createApiApp();
+  const PORT = 3000;
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -312,4 +312,6 @@ async function startServer() {
   process.on('SIGINT', shutdown);
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
