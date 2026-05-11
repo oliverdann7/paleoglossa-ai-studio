@@ -85,11 +85,11 @@ export default defineConfig(({mode}) => {
             if (id.includes('/firebase/')) return 'vendor-firebase';
             if (id.includes('/react') || id.includes('/react-dom') || id.includes('/react-router-dom')) return 'vendor-react';
             if (id.includes('/motion/')) return 'vendor-motion';
-            if (id.includes('/recharts/')) return 'vendor-charts';
             return undefined;
           },
         },
       },
+      chunkSizeWarningLimit: 800,
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
