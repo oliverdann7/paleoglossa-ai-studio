@@ -21,6 +21,7 @@ import { ResetPassword } from './pages/auth/ResetPassword';
 import { seedKnowledge } from './lib/data/seeding';
 import { AuthProvider } from './lib/contexts/AuthContext';
 import { useAuth } from './lib/hooks/useAuth';
+import { useSettings } from './lib/hooks/useSettings';
 import { Loader2 } from 'lucide-react';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -43,6 +44,9 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 }
 
 function AppLayout() {
+  // Call useSettings here so global dark mode setting takes effect everywhere
+  useSettings();
+  
   return (
     <div className="min-h-screen">
       <Navbar />
