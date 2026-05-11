@@ -76,10 +76,16 @@ export interface Text {
   language: string; // e.g., "grc"
   direction?: 'ltr' | 'rtl';
   level?: string; // e.g., 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'
+  date?: string;
+  period?: string;
+  genre?: string;
+  corpusType?: 'biblical' | 'classical' | 'patristic' | 'inscription' | 'manuscript' | 'islamicate' | 'other';
   sourceAttributionId?: string;
   hasMorphology?: boolean;
   hasTranslation?: boolean;
   hasTransliteration?: boolean;
+  hasAudio?: boolean;
+  hasSyntax?: boolean;
   sectionsPreview?: { id: string; label: string }[];
 }
 
