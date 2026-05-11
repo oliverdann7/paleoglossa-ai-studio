@@ -40,6 +40,8 @@ export interface LibraryText {
   licenseName?: string;
   sourceName?: string;
   sourceUrl?: string;
+  isSample?: boolean;
+  sourceStatus?: string;
   availableTools: {
     morphology: boolean;
     translation: boolean;
@@ -114,7 +116,7 @@ export class LibraryService {
             ? ATTRIBUTIONS[corpus.sourceAttributionId]
             : undefined;
         const metadata = getTextMetadata(t);
-        rawTexts.push({
+          rawTexts.push({
           id: t.id,
           title: t.title,
           author: t.author || 'Ancient Text',
@@ -129,6 +131,8 @@ export class LibraryService {
           licenseName: attribution?.licenseName || corpus?.licenseSummary,
           sourceName: attribution?.sourceName || corpus?.title,
           sourceUrl: attribution?.sourceUrl,
+          isSample: t.isSample,
+          sourceStatus: t.sourceStatus,
           availableTools: {
             morphology: !!t.hasMorphology,
             translation: !!t.hasTranslation,

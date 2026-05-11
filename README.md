@@ -50,6 +50,38 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | Pronunciation lab | 🚧 |
 | Classroom / course builder | 🚧 |
 
+## Corpus Status
+
+Texts are marked with their completion status in the app (Sample / In Progress / Complete). Current state:
+
+| Text | Language | Status | Morphology | Notes |
+|------|----------|--------|------------|-------|
+| John 1 (SBLGNT) | Koine Greek | Partial (18 verses) | Full (vv. 1-5), Basic (vv. 6-18) | Full text, partial morphology |
+| Genesis 1 (OSHB) | Biblical Hebrew | Partial (31 verses) | Full (v. 1), Basic (vv. 2-31) | Full text, partial morphology |
+| Psalm 23 (OSHB) | Biblical Hebrew | Complete (6 verses) | Full (vv. 1-2), Basic (vv. 3-6) | Complete psalm |
+| Iliad Book 1 (Perseus) | Ancient Greek | Partial (lines 1-100) | Full (ll. 1-7), Basic (ll. 8-100) | Substantial extract |
+| Anabasis 1.1 (Perseus) | Ancient Greek | Partial (15 sentences) | Full (§1-3), Basic (§4-6) | Substantial extract |
+| Aeneid Book 1 (Perseus) | Latin | Partial (lines 1-100) | Full (ll. 1-7), Basic (ll. 8-100) | Substantial extract |
+| Aesop's Fables | Ancient Greek | Sample (1 sentence) | Basic | Demo excerpt |
+| Odyssey Book 1 | Ancient Greek | Sample (1 sentence) | Basic | Demo excerpt |
+| Syriac Peshitta John | Syriac | Sample (3 sentences) | Basic | Demo excerpt |
+| Coptic Sahidic John | Coptic | Sample (3 sentences) | Basic | Demo excerpt |
+| Targum Onkelos | Aramaic | Sample (1 sentence) | Basic | Demo excerpt |
+| Gilgamesh Tablet I | Akkadian | Sample (1 sentence) | Basic | Demo excerpt |
+| Bhagavad Gita | Sanskrit | Sample (1 sentence) | Basic | Demo excerpt |
+| Annals of Mursili II | Hittite | Sample (1 sentence) | Basic | Demo excerpt |
+| Maxims of Ptahhotep | Egyptian | Sample (1 sentence) | Basic | Demo excerpt |
+
+### How to add a full text
+
+1. Add raw sentences to `src/data/corpus/expanded-sections.ts` following the existing `sent()` helper pattern
+2. Register the new section(s) in `CorpusDB.getSection()` in `src/data/corpus.ts`
+3. Update the `Text` definition to include the new section IDs in `sectionsPreview`
+4. Set `sourceStatus`, `isSample`, and `sentenceCount` appropriately
+5. Run `npm run tsc --noEmit`, `npm run lint`, `npm run build`
+
+For texts with full morphology, add tokens directly to the `src/data/corpus.ts` section definitions using the existing richly-tokenized format.
+
 ## Stack
 
 | Layer | Technology |

@@ -59,23 +59,27 @@ export interface Sentence {
   translation?: string; // e.g. ESV, if allowed, or Berean
 }
 
+export type SourceStatus = 'complete' | 'partial' | 'excerpt' | 'stub' | 'needs_import';
+
 export interface TextSection {
-  id: string; // e.g., "Mt-1"
+  id: string;
   textId: string;
-  sequence: number; // e.g., 1 for Chapter 1
-  label: string; // "Chapter 1"
+  sequence: number;
+  label: string;
   sentences: Sentence[];
+  nextSectionId?: string;
+  previousSectionId?: string;
 }
 
 export interface Text {
-  id: string; // e.g. "Matthew"
+  id: string;
   corpusId: string;
   title: string;
   canonicalRef?: string;
   author?: string;
-  language: string; // e.g., "grc"
+  language: string;
   direction?: 'ltr' | 'rtl';
-  level?: string; // e.g., 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'
+  level?: string;
   date?: string;
   period?: string;
   genre?: string;
@@ -86,6 +90,10 @@ export interface Text {
   hasTransliteration?: boolean;
   hasAudio?: boolean;
   hasSyntax?: boolean;
+  sourceStatus?: SourceStatus;
+  isComplete?: boolean;
+  isSample?: boolean;
+  sentenceCount?: number;
   sectionsPreview?: { id: string; label: string }[];
 }
 
@@ -96,6 +104,6 @@ export interface Corpus {
   language: string;
   sourceAttributionId?: string;
   licenseSummary?: string;
-  importStatus?: string;
+  importStatus?: SourceStatus;
   attribution?: SourceAttribution[]; // Kept for backwards compatibility for now if needed? The instructions say "sourceAttributionId", so maybe we maintain a global database of Attributions? For MVP we can just attach it here too alongside.
 }

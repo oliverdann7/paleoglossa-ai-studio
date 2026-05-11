@@ -466,7 +466,22 @@ export const Library = () => {
                              </div>
                            </div>
 
-                           <div className="flex flex-wrap gap-1.5 mb-5">
+                            <div className="flex flex-wrap gap-1.5 mb-5">
+                              {text.isSample && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-amber/5 text-amber border-amber/20">
+                                  Sample
+                                </span>
+                              )}
+                              {text.sourceStatus === 'complete' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-green/5 text-green border-green/20">
+                                  Complete
+                                </span>
+                              )}
+                              {text.sourceStatus === 'partial' && !text.isSample && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border-blue/20">
+                                  In Progress
+                                </span>
+                              )}
                              {[
                                { key: 'morphology', label: 'Morphology', icon: Languages, active: text.availableTools.morphology },
                                { key: 'translation', label: 'Translation', icon: BookOpen, active: text.availableTools.translation },
