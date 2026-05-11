@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, Volume2, Sparkles, Loader2, Repeat } from 'lucide-react';
+import { ExternalLink, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, STATE_LABELS } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { ParadigmModal } from './ParadigmModal';
+import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 
 interface LexDrawerPanelProps {
   selectedWord: any;
@@ -56,6 +57,20 @@ export const LexDrawerPanel = ({
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
+
+  const sourceInfo = useMemo(() => {
+    if (!text?.corpusId) return null;
+    const corpus = CorpusDB.getCorpusOverview(text.corpusId);
+    if (!corpus?.sourceAttributionId) return null;
+    const attribution = ATTRIBUTIONS[corpus.sourceAttributionId];
+    if (!attribution) return null;
+    return {
+      name: attribution.sourceName,
+      license: attribution.licenseName,
+      url: attribution.sourceUrl,
+      requiresAttribution: attribution.requiresAttribution,
+    };
+  }, [text]);
 
   const handleAiWordExplain = async () => {
     if (isAiWordLoading || !selectedWord) return;
@@ -147,9 +162,11 @@ export const LexDrawerPanel = ({
             <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
               {getWordInfo(selectedWord.lemma).userGloss || selectedWord.gloss}
             </div>
-            <div className="text-[10px] text-muted italic mb-4">
-              Source: PalæoGlossa Ancient Corpus & AI Analysis
-            </div>
+            {!sourceInfo && (
+              <div className="text-[10px] text-muted italic mb-4">
+                Source: PalæoGlossa Ancient Corpus & AI Analysis
+              </div>
+            )}
             
             <div className="mt-4 pt-4 border-t border-bdr/20">
               <div className="text-[10px] uppercase font-bold text-muted mb-2 tracking-widest">
@@ -164,6 +181,24 @@ export const LexDrawerPanel = ({
               />
             </div>
           </div>
+
+          {sourceInfo && (
+            <div className="mb-6 p-4 rounded-2xl bg-parch2/30 border border-bdr/20">
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-jade" />
+                <span className="text-[10px] uppercase font-bold text-muted tracking-widest">Data Source</span>
+              </div>
+              <p className="text-[13px] text-ink2 font-medium">{sourceInfo.name}</p>
+              <p className="text-[10px] text-muted mt-1">
+                License: {sourceInfo.license}
+                {sourceInfo.requiresAttribution && (
+                  <span className="inline-flex items-center gap-1 ml-2 text-amber">
+                    <ShieldAlert className="w-3 h-3" /> Attribution required
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
 
           {(aiWordInsight || isAiWordLoading) && (
             <div className="mb-10 p-5 rounded-2xl bg-blue/5 border border-blue/10">
@@ -253,6 +288,14 @@ export const LexDrawerPanel = ({
               <div className="eyebrow mb-3 flex items-center gap-2 text-ink">
                 <span>Morphology</span>
               </div>
+
+              {selectedWord.morphology.partOfSpeech && (
+                <div className="mb-3">
+                  <span className="inline-block px-4 py-1.5 bg-parch3/60 text-ink border border-bdr/60 rounded-full text-[13px] font-bold tracking-wide uppercase">
+                    {selectedWord.morphology.partOfSpeech}
+                  </span>
+                </div>
+              )}
 
               <div className="flex flex-wrap gap-2">
                 {Object.entries(selectedWord.morphology).map(([key, value]) => {
