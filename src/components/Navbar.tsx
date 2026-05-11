@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText } from 'lucide-react';
+import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from "react-i18next";
 
@@ -71,8 +71,18 @@ export const Navbar = () => {
           <DesktopNavItem icon={Library} label={t("nav.library", "Library")} isActive={path.startsWith('/app/library') || path.startsWith('/app/reader')} to="/app/library" />
           <DesktopNavItem icon={Brain} label={t("nav.review", "Review")} isActive={path === '/app/review'} to="/app/review" />
           <DesktopNavItem icon={GraduationCap} label={t("nav.vocabulary", "Vocabulary")} isActive={path === '/app/vocabulary'} to="/app/vocabulary" />
+          <DesktopNavItem icon={Search} label={t("nav.search", "Search")} isActive={path.startsWith('/app/search')} to="/app/search" />
+          <DesktopNavItem icon={MessageCircle} label={t("nav.tutor", "Tutor")} isActive={path.startsWith('/app/tutor')} to="/app/tutor" />
           <DesktopNavItem icon={FileText} label={t("nav.notes", "Notes")} isActive={path === '/app/notes'} to="/app/notes" />
+          <DesktopNavItem icon={BookMarked} label={t("nav.notebooks", "Notebooks")} isActive={path.startsWith('/app/notebooks')} to="/app/notebooks" />
           <DesktopNavItem icon={BarChart3} label={t("nav.statistics", "Statistics")} isActive={path === '/app/statistics'} to="/app/statistics" />
+          
+          <div className="nav-label px-3 mb-1 mt-6">{t("nav.tools", "Tools")}</div>
+          <DesktopNavItem icon={GraduationCap} label={t("nav.grammar", "Grammar")} isActive={path.startsWith('/app/grammar')} to="/app/grammar" />
+          <DesktopNavItem icon={GitBranch} label={t("nav.syntax", "Syntax")} isActive={path.startsWith('/app/syntax')} to="/app/syntax" />
+          <DesktopNavItem icon={ScanLine} label={t("nav.manuscripts", "Manuscripts")} isActive={path.startsWith('/app/manuscripts')} to="/app/manuscripts" />
+          <DesktopNavItem icon={Headphones} label={t("nav.audioLab", "Audio Lab")} isActive={path.startsWith('/app/audio-lab')} to="/app/audio-lab" />
+          <DesktopNavItem icon={Users} label={t("nav.courses", "Courses")} isActive={path.startsWith('/app/courses')} to="/app/courses" />
           
           <div className="nav-label px-3 mb-1 mt-6">{t("nav.manage", "Manage")}</div>
           <DesktopNavItem icon={PlusCircle} label={t("nav.import", "Import")} isActive={path === '/admin/import'} to="/admin/import" />

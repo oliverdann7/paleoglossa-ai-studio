@@ -122,4 +122,26 @@ export class AIClient {
   static async generateAudioPronunciationGuide(languageId: string, text: string, userId?: string) {
     return this.request('pronunciation', { languageId, text }, TextResponseSchema, userId);
   }
+
+  static async startTutorSession(languageId: string, textId?: string, userId?: string): Promise<string> {
+    const data = await this.request('tutor/start', { languageId, textId }, TextResponseSchema, userId);
+    return data.text;
+  }
+
+  static async sendTutorMessage(sessionId: string, message: string, context?: {
+    textId?: string; sentenceIndex?: number; lemma?: string;
+  }, userId?: string): Promise<string> {
+    const data = await this.request('tutor/message', { sessionId, message, context }, TextResponseSchema, userId);
+    return data.text;
+  }
+
+  static async generateMorphologyQuiz(languageId: string, lemma: string, form: string, userId?: string): Promise<string> {
+    const data = await this.request('quiz', { languageId, lemma, form, type: 'morphology' }, TextResponseSchema, userId);
+    return data.text;
+  }
+
+  static async analyzeSyntax(languageId: string, sentence: string, userId?: string): Promise<string> {
+    const data = await this.request('syntax', { languageId, sentence }, TextResponseSchema, userId);
+    return data.text;
+  }
 }
