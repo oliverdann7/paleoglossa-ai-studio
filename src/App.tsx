@@ -25,7 +25,7 @@ import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { AuthProvider } from './lib/contexts/AuthContext';
-import { ToastProvider } from './lib/contexts/ToastContext';
+import { ToastProvider } from './lib/contexts/ToastProvider';
 import { AppLayout } from './components/AppLayout';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
