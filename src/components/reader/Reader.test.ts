@@ -12,6 +12,7 @@
  */
 
 import { CorpusDB, ILIAD_1_1, ANABASIS_1_1, AESOP_1_1, ODYSSEY_1_1 } from '../../data/corpus';
+import { runCorpusValidation } from '../../data/corpus/validation';
 import { WordState, STATE_COLORS, STATE_LABELS } from '../../lib/constants/wordStates';
 import { getTransliteration } from '../../lib/transliterate';
 
@@ -157,6 +158,10 @@ export function runReaderSmokeTests() {
   const examples = CorpusDB.findSentencesWithLemma('ἀείδω', undefined, 3);
   assert(examples.length > 0, 'findSentencesWithLemma returns examples');
   assert(examples.length <= 3, 'findSentencesWithLemma respects max limit');
+
+  // 7. Corpus validation passes
+  const validation = runCorpusValidation();
+  assert(validation.valid, `Corpus validation passed (${validation.messages.length} check(s))`);
 
   console.log(`--- Results: ${passed} passed, ${failed} failed ---`);
   return { passed, failed };

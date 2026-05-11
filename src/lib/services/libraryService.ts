@@ -228,8 +228,17 @@ export class LibraryService {
                   const info = getWordInfo(w.toLowerCase());
                   if (info.state === 'KNOWN') knownCount++;
                   else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
-               });
-            }
+});
+    }
+
+    // Calculate totalWords for corpus texts from section tokens
+    rawTexts.forEach(tx => {
+      if (tx.sourceType === 'corpus' && tx.rawTextReference) {
+        const t = tx.rawTextReference;
+        const allTokens = getCorpusTokens(t);
+        tx.totalWords = allTokens.length;
+      }
+    });
         }
 
         if (totalWords > 0) {
