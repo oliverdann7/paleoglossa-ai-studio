@@ -114,6 +114,7 @@ export default defineConfig(({mode}) => {
       }
     ],
     define: {
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       '__FIREBASE_CONFIG__': JSON.stringify(firebaseDefine),
     },
     resolve: {
