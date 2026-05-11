@@ -6,6 +6,24 @@ import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
+
+  // Load Firebase config: prefer the AI Studio-injected JSON, fall back to VITE_* env vars
+  let fbJson: Record<string, string> = {};
+  const fbJsonPath = path.resolve(__dirname, 'firebase-applet-config.json');
+  if (fs.existsSync(fbJsonPath)) {
+    try { fbJson = JSON.parse(fs.readFileSync(fbJsonPath, 'utf-8')); } catch { /* ignore */ }
+  }
+  const firebaseDefine = {
+    projectId:         fbJson.projectId         || env.VITE_FIREBASE_PROJECT_ID          || '',
+    appId:             fbJson.appId             || env.VITE_FIREBASE_APP_ID              || '',
+    apiKey:            fbJson.apiKey            || env.VITE_FIREBASE_API_KEY             || '',
+    authDomain:        fbJson.authDomain        || env.VITE_FIREBASE_AUTH_DOMAIN         || '',
+    storageBucket:     fbJson.storageBucket     || env.VITE_FIREBASE_STORAGE_BUCKET      || '',
+    messagingSenderId: fbJson.messagingSenderId || env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+    measurementId:     fbJson.measurementId     || env.VITE_FIREBASE_MEASUREMENT_ID      || '',
+    firestoreDatabaseId: fbJson.firestoreDatabaseId || env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || '(default)',
+  };
+
   return {
     plugins: [
       react(), 
@@ -28,6 +46,7 @@ export default defineConfig(({mode}) => {
     ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      '__FIREBASE_CONFIG__': JSON.stringify(firebaseDefine),
     },
     resolve: {
       alias: {
