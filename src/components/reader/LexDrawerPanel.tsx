@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { BookOpen, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, STATE_LABELS } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
@@ -27,14 +28,8 @@ interface LexDrawerPanelProps {
   text?: any;
 }
 
-const getDictionaryUrl = (lemma: string, langId: string) => {
-  switch (langId) {
-    case 'grc': return `https://lsj.gr/wiki/${encodeURIComponent(lemma)}`;
-    case 'lat': return `https://www.perseus.tufts.edu/hopper/morph?l=${encodeURIComponent(lemma)}&la=la`;
-    case 'san': return `https://www.sanskrit-lexicon.uni-koeln.de/scans/MWScan/2014/web/webtc/indexcaller.php?key=${encodeURIComponent(lemma)}`;
-    default: return `https://en.wiktionary.org/wiki/${encodeURIComponent(lemma)}#${langId}`;
-  }
-};
+const getDictionaryPath = (lemma: string, langId: string) =>
+  `/app/dictionary/${encodeURIComponent(langId)}/${encodeURIComponent(lemma)}`;
 
 export const LexDrawerPanel = ({
   selectedWord,
@@ -163,14 +158,13 @@ export const LexDrawerPanel = ({
           <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-[20px]">
             <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
               <span>{t('reader.meaning', "Meaning")}</span>
-              <a 
-                href={getDictionaryUrl(selectedWord.lemma, textLanguageId)} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-ink transition-colors"
+              <Link
+                to={getDictionaryPath(selectedWord.lemma, textLanguageId)}
+                className="inline-flex items-center gap-1 hover:text-ink transition-colors"
               >
-                <ExternalLink className="w-3" />
-              </a>
+                <BookOpen className="w-3" />
+                <span className="normal-case tracking-normal text-[11px]">Entry</span>
+              </Link>
             </div>
             <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
               {getWordInfo(selectedWord.lemma).userGloss || selectedWord.gloss}

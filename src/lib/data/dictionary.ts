@@ -1,7 +1,182 @@
-import { CorpusDB } from '../../data/corpus';
+import { ATTRIBUTIONS, CorpusDB } from '../../data/corpus';
 import * as tokenArrays from '../../data/tokens';
+import { SourceAttribution, Token } from '../../types/corpus';
+
+export interface DictionarySource {
+  id: string;
+  name: string;
+  licenseName: string;
+  url?: string;
+  licenseUrl?: string;
+  attributionText?: string;
+}
+
+export interface CorpusExample {
+  id: string;
+  textId: string;
+  textTitle: string;
+  sectionId: string;
+  sectionLabel: string;
+  sentenceId: string;
+  sentenceText: string;
+  translation?: string;
+  tokenId: string;
+  surface: string;
+}
+
+export interface DictionaryEntry {
+  id: string;
+  lemma: string;
+  languageId: string;
+  language: string;
+  transliteration?: string;
+  partOfSpeech?: string;
+  shortGloss: string;
+  fullDefinition: string;
+  semanticDomain: string[];
+  relatedForms: string[];
+  corpusExamples: CorpusExample[];
+  source: DictionarySource;
+  dictionaries: DictionarySource[];
+  frequency: number;
+}
+
+interface EntryAccumulator {
+  lemma: string;
+  languageId: string;
+  language: string;
+  transliteration?: string;
+  glosses: Set<string>;
+  partsOfSpeech: Set<string>;
+  forms: Set<string>;
+  semanticDomain: Set<string>;
+  examples: CorpusExample[];
+  sources: Map<string, DictionarySource>;
+  firstToken?: any;
+  frequency: number;
+}
 
 let _dictCache: Record<string, any> | null = null;
+let _entriesCache: DictionaryEntry[] | null = null;
+
+const LANGUAGE_ALIASES: Record<string, string> = {
+  'Ancient Greek': 'grc',
+  'Koine Greek': 'grc-koine',
+  'Biblical Hebrew': 'hbo',
+  Hebrew: 'hbo',
+  Greek: 'grc',
+  Latin: 'lat',
+  'Classical Latin': 'lat',
+  Syriac: 'syr',
+  Coptic: 'cop',
+  Aramaic: 'arc',
+  Akkadian: 'akk',
+  Sanskrit: 'san',
+  'Egyptian Hieroglyphs': 'egy',
+  Hittite: 'hit',
+};
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  grc: 'Ancient Greek',
+  'grc-koine': 'Koine Greek',
+  hbo: 'Biblical Hebrew',
+  lat: 'Classical Latin',
+  syr: 'Syriac',
+  cop: 'Coptic',
+  arc: 'Aramaic',
+  akk: 'Akkadian',
+  san: 'Sanskrit',
+  egy: 'Egyptian Hieroglyphs',
+  hit: 'Hittite',
+};
+
+const DEFAULT_SOURCE: DictionarySource = {
+  id: 'paleoglossa-corpus-index',
+  name: 'PalæoGlossa Corpus-Derived Lexical Index',
+  licenseName: 'Derived from in-app corpus tokens; no copyrighted lexicon imported',
+};
+
+function normalizeLanguageId(language?: string) {
+  if (!language) return 'unknown';
+  return LANGUAGE_ALIASES[language] || language;
+}
+
+function languageName(languageId: string) {
+  return LANGUAGE_NAMES[languageId] || languageId || 'Unknown';
+}
+
+function normalizeSearch(value: string) {
+  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+function getPartOfSpeech(token: any) {
+  return token?.morphology?.partOfSpeech || token?.morphology?.part || token?.morphology?.pos;
+}
+
+function sourceFromAttribution(attribution?: SourceAttribution): DictionarySource | undefined {
+  if (!attribution) return undefined;
+  return {
+    id: attribution.id,
+    name: attribution.sourceName,
+    licenseName: attribution.licenseName,
+    url: attribution.sourceUrl,
+    licenseUrl: attribution.licenseUrl,
+    attributionText: attribution.attributionText,
+  };
+}
+
+function makeEntryKey(languageId: string, lemma: string) {
+  return `${languageId}:${lemma}`;
+}
+
+function addTokenToEntry(
+  entries: Map<string, EntryAccumulator>,
+  token: any,
+  languageId: string,
+  options?: { source?: DictionarySource; example?: CorpusExample },
+) {
+  if (!token?.lemma) return;
+
+  const normalizedLanguageId = normalizeLanguageId(languageId || token.language);
+  const key = makeEntryKey(normalizedLanguageId, token.lemma);
+  const current: EntryAccumulator = entries.get(key) || {
+    lemma: token.lemma,
+    languageId: normalizedLanguageId,
+    language: languageName(normalizedLanguageId),
+    glosses: new Set<string>(),
+    partsOfSpeech: new Set<string>(),
+    forms: new Set<string>(),
+    semanticDomain: new Set<string>(),
+    examples: [],
+    sources: new Map<string, DictionarySource>(),
+    firstToken: token,
+    frequency: 0,
+  };
+
+  const surface = token.surface || token.text || token.normalized;
+  const partOfSpeech = getPartOfSpeech(token);
+
+  if (!current.transliteration && (token.transliteration || token.translit)) {
+    current.transliteration = token.transliteration || token.translit;
+  }
+  if (token.gloss) current.glosses.add(token.gloss);
+  if (partOfSpeech) {
+    current.partsOfSpeech.add(partOfSpeech);
+    current.semanticDomain.add(partOfSpeech);
+  }
+  if (surface) current.forms.add(surface);
+  if (token.normalized) current.forms.add(token.normalized);
+  if (token.text) current.forms.add(token.text);
+  if (options?.source) current.sources.set(options.source.id, options.source);
+  if (options?.example && current.examples.length < 8) current.examples.push(options.example);
+
+  current.frequency += 1;
+  entries.set(key, current);
+}
+
+function sentenceToText(tokens: Token[]) {
+  return tokens.map(token => `${token.punctBefore || ''}${token.surface}${token.punctAfter || ''}`).join(' ');
+}
 
 export const getGlobalDictionary = () => {
   if (_dictCache) return _dictCache;
@@ -53,4 +228,120 @@ export const getLangForLemma = (lemma: string) => {
 
 export const getTokenInfo = (lemma: string) => {
   return getGlobalDictionary()[lemma];
+};
+
+export const getDictionaryEntries = (): DictionaryEntry[] => {
+  if (_entriesCache) return _entriesCache;
+
+  const entries = new Map<string, EntryAccumulator>();
+
+  for (const key of Object.keys(tokenArrays)) {
+    const list = (tokenArrays as any)[key];
+    if (!Array.isArray(list)) continue;
+    for (const token of list) {
+      addTokenToEntry(entries, token, normalizeLanguageId(token.language), {
+        source: DEFAULT_SOURCE,
+      });
+    }
+  }
+
+  for (const text of CorpusDB.getTexts()) {
+    const corpus = CorpusDB.getCorpusOverview(text.corpusId);
+    const corpusSource = sourceFromAttribution(corpus?.sourceAttributionId ? ATTRIBUTIONS[corpus.sourceAttributionId] : undefined) || DEFAULT_SOURCE;
+
+    for (const preview of text.sectionsPreview || []) {
+      const section = CorpusDB.getSection(preview.id);
+      if (!section) continue;
+
+      for (const sentence of section.sentences) {
+        const sentenceText = sentenceToText(sentence.tokens);
+        for (const token of sentence.tokens) {
+          addTokenToEntry(entries, token, text.language, {
+            source: corpusSource,
+            example: {
+              id: `${text.id}:${section.id}:${sentence.id}:${token.id}`,
+              textId: text.id,
+              textTitle: text.canonicalRef || text.title,
+              sectionId: section.id,
+              sectionLabel: section.label,
+              sentenceId: sentence.id,
+              sentenceText,
+              translation: sentence.translation,
+              tokenId: token.id,
+              surface: token.surface,
+            },
+          });
+        }
+      }
+    }
+  }
+
+  _entriesCache = Array.from(entries.values())
+    .map((entry) => {
+      const shortGloss = Array.from(entry.glosses)[0] || 'Definition unavailable';
+      const glosses = Array.from(entry.glosses).filter(Boolean);
+      const partOfSpeech = Array.from(entry.partsOfSpeech)[0];
+      const dictionaries = Array.from(entry.sources.values());
+      const relatedForms = Array.from(entry.forms)
+        .filter(form => form && form !== entry.lemma)
+        .slice(0, 12);
+
+      return {
+        id: makeEntryKey(entry.languageId, entry.lemma),
+        lemma: entry.lemma,
+        languageId: entry.languageId,
+        language: entry.language,
+        transliteration: entry.transliteration,
+        partOfSpeech,
+        shortGloss,
+        fullDefinition: glosses.length > 1 ? glosses.join('; ') : shortGloss,
+        semanticDomain: Array.from(entry.semanticDomain),
+        relatedForms,
+        corpusExamples: entry.examples,
+        source: dictionaries[0] || DEFAULT_SOURCE,
+        dictionaries: dictionaries.length > 0 ? dictionaries : [DEFAULT_SOURCE],
+        frequency: entry.frequency,
+      } satisfies DictionaryEntry;
+    })
+    .sort((a, b) => b.frequency - a.frequency || a.lemma.localeCompare(b.lemma));
+
+  return _entriesCache;
+};
+
+export const findDictionaryEntry = (lemma: string, languageId?: string) => {
+  const normalizedLanguageId = languageId ? normalizeLanguageId(languageId) : undefined;
+  return getDictionaryEntries().find(entry => {
+    if (normalizedLanguageId && entry.languageId !== normalizedLanguageId) return false;
+    return entry.lemma === lemma;
+  }) || null;
+};
+
+export const searchDictionaryEntries = (query: string, languageId?: string, limit: number = 50) => {
+  const normalizedQuery = normalizeSearch(query);
+  const normalizedLanguageId = languageId ? normalizeLanguageId(languageId) : undefined;
+
+  return getDictionaryEntries()
+    .filter(entry => {
+      if (normalizedLanguageId && entry.languageId !== normalizedLanguageId) return false;
+      if (!normalizedQuery) return true;
+
+      const haystack = [
+        entry.lemma,
+        entry.transliteration || '',
+        entry.shortGloss,
+        entry.fullDefinition,
+        ...entry.relatedForms,
+      ].map(normalizeSearch);
+
+      return haystack.some(value => value.includes(normalizedQuery));
+    })
+    .slice(0, limit);
+};
+
+export const getDictionaryLanguages = () => {
+  const seen = new Map<string, string>();
+  getDictionaryEntries().forEach(entry => seen.set(entry.languageId, entry.language));
+  return Array.from(seen.entries())
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 };

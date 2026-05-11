@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked } from 'lucide-react';
+import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked, BookText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from "react-i18next";
 
@@ -71,6 +71,7 @@ export const Navbar = () => {
           <DesktopNavItem icon={Library} label={t("nav.library", "Library")} isActive={path.startsWith('/app/library') || path.startsWith('/app/reader')} to="/app/library" />
           <DesktopNavItem icon={Brain} label={t("nav.review", "Review")} isActive={path === '/app/review'} to="/app/review" />
           <DesktopNavItem icon={GraduationCap} label={t("nav.vocabulary", "Vocabulary")} isActive={path === '/app/vocabulary'} to="/app/vocabulary" />
+          <DesktopNavItem icon={BookText} label={t("nav.dictionary", "Dictionary")} isActive={path.startsWith('/app/dictionary')} to="/app/dictionary" />
           <DesktopNavItem icon={Search} label={t("nav.search", "Search")} isActive={path.startsWith('/app/search')} to="/app/search" />
           <DesktopNavItem icon={MessageCircle} label={t("nav.tutor", "Tutor")} isActive={path.startsWith('/app/tutor')} to="/app/tutor" />
           <DesktopNavItem icon={FileText} label={t("nav.notes", "Notes")} isActive={path === '/app/notes'} to="/app/notes" />
@@ -129,4 +130,3 @@ export const Navbar = () => {
     </>
   );
 };
-
