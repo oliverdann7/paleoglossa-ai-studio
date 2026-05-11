@@ -193,7 +193,7 @@ export const TEXT_JOHN_1: Text = {
   level: "A1",
   hasMorphology: true,
   hasTranslation: true,
-  hasTransliteration: true,
+  hasTransliteration: false,
   sectionsPreview: [{ id: "Jn-1-1", label: "John 1" }],
 };
 
@@ -298,7 +298,7 @@ export const TEXT_AKKADIAN_GILGAMESH: Text = {
   level: "B1",
   hasMorphology: true,
   hasTranslation: true,
-  hasTransliteration: false,
+  hasTransliteration: true,
   sectionsPreview: [{ id: "Akk-Gilg-1-1", label: "Tablet I" }],
 };
 
@@ -343,7 +343,7 @@ export const TEXT_EGYPTIAN_PTAHHOTEP: Text = {
   level: "B1",
   hasMorphology: true,
   hasTranslation: true,
-  hasTransliteration: true,
+  hasTransliteration: false,
   sectionsPreview: [{ id: "Egy-Ptah-1-1", label: "Maxim 1" }],
 };
 
@@ -2678,8 +2678,8 @@ export const SANSKRIT_GITA_1_1: TextSection = {
         { id: "san5", surface: "समवेता", normalized: "samaveta", lemma: "samaveta", gloss: "assembled", morphology: { partOfSpeech: "adjective" }, punctBefore: "", punctAfter: " " },
         { id: "san6", surface: "युयुत्सवः", normalized: "yuyutsavah", lemma: "yuyutsu", gloss: "eager for battle", morphology: { partOfSpeech: "adjective" }, punctBefore: "", punctAfter: " " },
         { id: "san7", surface: "मामकाः", normalized: "mamakah", lemma: "māmaka", gloss: "my people", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
-        { id: "san8", surface: "पाण्डवाः", normalized: "pandavah", lemma: "pāṇḍava", gloss: "sons of Pandu", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: "" },
-        { id: "san9", surface: "च", normalized: "ca", lemma: "ca", gloss: "and", morphology: { partOfSpeech: "conjunction" }, punctBefore: "", punctAfter: "" },
+        { id: "san8", surface: "पाण्डवाः", normalized: "pandavah", lemma: "pāṇḍava", gloss: "sons of Pandu", morphology: { partOfSpeech: "noun" }, punctBefore: "", punctAfter: " " },
+        { id: "san9", surface: "च", normalized: "ca", lemma: "ca", gloss: "and", morphology: { partOfSpeech: "conjunction" }, punctBefore: "", punctAfter: " " },
         { id: "san10", surface: "एव", normalized: "eva", lemma: "eva", gloss: "indeed", morphology: { partOfSpeech: "particle" }, punctBefore: "", punctAfter: " " },
         { id: "san11", surface: "किम्", normalized: "kim", lemma: "kim", gloss: "what", morphology: { partOfSpeech: "pronoun" }, punctBefore: "", punctAfter: " " },
         { id: "san12", surface: "अकुर्वत", normalized: "akurvata", lemma: "kṛ", gloss: "did they do", morphology: { partOfSpeech: "verb" }, punctBefore: "", punctAfter: " " },
@@ -2699,9 +2699,9 @@ export const HITTITE_ANNALS_1_1: TextSection = {
       id: "hit-1",
       translation: "Thus speaks My Sun, Mursili, the Great King, King of Hatti, Hero.",
       tokens: [
-        { id: "hit1", surface: " UM", normalized: "UM", lemma: "umma", gloss: "thus", morphology: { partOfSpeech: "particle" }, transliteration: "UM", punctBefore: "", punctAfter: "-" },
+        { id: "hit1", surface: "UM", normalized: "UM", lemma: "umma", gloss: "thus", morphology: { partOfSpeech: "particle" }, transliteration: "UM", punctBefore: "", punctAfter: "-" },
         { id: "hit2", surface: "MA", normalized: "MA", lemma: "umma", gloss: "thus", morphology: { partOfSpeech: "particle" }, transliteration: "MA", punctBefore: "", punctAfter: " " },
-        { id: "hit3", surface: "dUTU", normalized: "UTU", lemma: "UTU", gloss: "Sun-god", morphology: { partOfSpeech: "noun" }, transliteration: "d UTU", punctBefore: "", punctAfter: "-" },
+        { id: "hit3", surface: "dUTU", normalized: "UTU", lemma: "UTU", gloss: "Sun-god", morphology: { partOfSpeech: "noun" }, transliteration: "dUTU", punctBefore: "", punctAfter: "-" },
         { id: "hit4", surface: "ŠI", normalized: "SI", lemma: "ŠI", gloss: "my", morphology: { partOfSpeech: "pronoun" }, transliteration: "ŠI", punctBefore: "", punctAfter: " " },
         { id: "hit5", surface: "m", normalized: "m", lemma: "mursili", gloss: "Mursili", morphology: { partOfSpeech: "proper_noun" }, transliteration: "m", punctBefore: "", punctAfter: "-" },
         { id: "hit6", surface: "Mur-ši-li", normalized: "mursili", lemma: "mursili", gloss: "Mursili", morphology: { partOfSpeech: "proper_noun" }, transliteration: "Mur-ši-li", punctBefore: "", punctAfter: " " },
@@ -2730,6 +2730,121 @@ export const EGYPTIAN_PTAHHOTEP_1_1: TextSection = {
   ]
 };
 
+type SplitPart = 1 | 2;
+
+const SECTION_PREVIEW_OVERRIDES: Record<string, { id: string; label: string }[]> = {
+  "Jn-1": [
+    { id: "Jn-1-1", label: "John 1 (Part 1)" },
+    { id: "Jn-1-2", label: "John 1 (Part 2)" },
+  ],
+  "Gen": [
+    { id: "Gen-1", label: "Chapter 1 (Part 1)" },
+    { id: "Gen-2", label: "Chapter 1 (Part 2)" },
+  ],
+  "Aeneid-1": [
+    { id: "Aen-1-1", label: "Book 1 (Part 1)" },
+    { id: "Aen-1-2", label: "Book 1 (Part 2)" },
+  ],
+  "Ps-23": [
+    { id: "Ps-23-1", label: "Psalm 23 (Part 1)" },
+    { id: "Ps-23-2", label: "Psalm 23 (Part 2)" },
+  ],
+  "Syr-Jn-1": [
+    { id: "Syr-Jn-1-1", label: "John 1 (Part 1)" },
+    { id: "Syr-Jn-1-2", label: "John 1 (Part 2)" },
+  ],
+  "Cop-Jn-1": [
+    { id: "Cop-Jn-1-1", label: "John 1 (Part 1)" },
+    { id: "Cop-Jn-1-2", label: "John 1 (Part 2)" },
+  ],
+  "Arc-Gen-1": [
+    { id: "Arc-Gen-1-1", label: "Genesis 1 (Part 1)" },
+    { id: "Arc-Gen-1-2", label: "Genesis 1 (Part 2)" },
+  ],
+  "Akk-Gilg-1": [
+    { id: "Akk-Gilg-1-1", label: "Tablet I (Part 1)" },
+    { id: "Akk-Gilg-1-2", label: "Tablet I (Part 2)" },
+  ],
+  "San-Gita-1": [
+    { id: "San-Gita-1-1", label: "Chapter 1 (Part 1)" },
+    { id: "San-Gita-1-2", label: "Chapter 1 (Part 2)" },
+  ],
+  "Hit-Annals-1": [
+    { id: "Hit-Annals-1-1", label: "Year 1 (Part 1)" },
+    { id: "Hit-Annals-1-2", label: "Year 1 (Part 2)" },
+  ],
+  "Egy-Ptah-1": [
+    { id: "Egy-Ptah-1-1", label: "Maxim 1 (Part 1)" },
+    { id: "Egy-Ptah-1-2", label: "Maxim 1 (Part 2)" },
+  ],
+  "Anab-1": [
+    { id: "Anab-1-1", label: "Book 1, Chapter 1 (Part 1)" },
+    { id: "Anab-1-2", label: "Book 1, Chapter 1 (Part 2)" },
+  ],
+  "Iliad-1": [
+    { id: "Iliad-1-1", label: "Book 1 (Part 1)" },
+    { id: "Iliad-1-2", label: "Book 1 (Part 2)" },
+  ],
+  "Odyssey-1": [
+    { id: "Odyssey-1-1", label: "Book 1 (Part 1)" },
+    { id: "Odyssey-1-2", label: "Book 1 (Part 2)" },
+  ],
+  "Aesop-1": [
+    { id: "Aesop-1-1", label: "The Fox and the Grapes (Part 1)" },
+    { id: "Aesop-1-2", label: "The Fox and the Grapes (Part 2)" },
+  ],
+};
+
+const SECTION_SPLITS: Record<string, { base: TextSection; part: SplitPart; label: string }> = {
+  "Jn-1-1": { base: JOHN_1_1, part: 1, label: "John 1 (Part 1)" },
+  "Jn-1-2": { base: JOHN_1_1, part: 2, label: "John 1 (Part 2)" },
+  "Gen-1": { base: GENESIS_1, part: 1, label: "Chapter 1 (Part 1)" },
+  "Gen-2": { base: GENESIS_1, part: 2, label: "Chapter 1 (Part 2)" },
+  "Aen-1-1": { base: AENEID_1_1, part: 1, label: "Book 1 (Part 1)" },
+  "Aen-1-2": { base: AENEID_1_1, part: 2, label: "Book 1 (Part 2)" },
+  "Ps-23-1": { base: PSALM_23_1, part: 1, label: "Psalm 23 (Part 1)" },
+  "Ps-23-2": { base: PSALM_23_1, part: 2, label: "Psalm 23 (Part 2)" },
+  "Syr-Jn-1-1": { base: SYRIAC_JOHN_1_1, part: 1, label: "John 1 (Part 1)" },
+  "Syr-Jn-1-2": { base: SYRIAC_JOHN_1_1, part: 2, label: "John 1 (Part 2)" },
+  "Cop-Jn-1-1": { base: COPTIC_JOHN_1_1, part: 1, label: "John 1 (Part 1)" },
+  "Cop-Jn-1-2": { base: COPTIC_JOHN_1_1, part: 2, label: "John 1 (Part 2)" },
+  "Arc-Gen-1-1": { base: ARAMAIC_GENESIS_1_1, part: 1, label: "Genesis 1 (Part 1)" },
+  "Arc-Gen-1-2": { base: ARAMAIC_GENESIS_1_1, part: 2, label: "Genesis 1 (Part 2)" },
+  "Akk-Gilg-1-1": { base: AKKADIAN_GILGAMESH_1_1, part: 1, label: "Tablet I (Part 1)" },
+  "Akk-Gilg-1-2": { base: AKKADIAN_GILGAMESH_1_1, part: 2, label: "Tablet I (Part 2)" },
+  "San-Gita-1-1": { base: SANSKRIT_GITA_1_1, part: 1, label: "Chapter 1 (Part 1)" },
+  "San-Gita-1-2": { base: SANSKRIT_GITA_1_1, part: 2, label: "Chapter 1 (Part 2)" },
+  "Hit-Annals-1-1": { base: HITTITE_ANNALS_1_1, part: 1, label: "Year 1 (Part 1)" },
+  "Hit-Annals-1-2": { base: HITTITE_ANNALS_1_1, part: 2, label: "Year 1 (Part 2)" },
+  "Egy-Ptah-1-1": { base: EGYPTIAN_PTAHHOTEP_1_1, part: 1, label: "Maxim 1 (Part 1)" },
+  "Egy-Ptah-1-2": { base: EGYPTIAN_PTAHHOTEP_1_1, part: 2, label: "Maxim 1 (Part 2)" },
+  "Anab-1-1": { base: ANABASIS_1_1, part: 1, label: "Book 1, Chapter 1 (Part 1)" },
+  "Anab-1-2": { base: ANABASIS_1_1, part: 2, label: "Book 1, Chapter 1 (Part 2)" },
+  "Iliad-1-1": { base: ILIAD_1_1, part: 1, label: "Book 1 (Part 1)" },
+  "Iliad-1-2": { base: ILIAD_1_1, part: 2, label: "Book 1 (Part 2)" },
+  "Odyssey-1-1": { base: ODYSSEY_1_1, part: 1, label: "Book 1 (Part 1)" },
+  "Odyssey-1-2": { base: ODYSSEY_1_1, part: 2, label: "Book 1 (Part 2)" },
+  "Aesop-1-1": { base: AESOP_1_1, part: 1, label: "The Fox and the Grapes (Part 1)" },
+  "Aesop-1-2": { base: AESOP_1_1, part: 2, label: "The Fox and the Grapes (Part 2)" },
+};
+
+const splitTextSection = (base: TextSection, id: string, label: string, part: SplitPart): TextSection => {
+  const midpoint = Math.max(1, Math.ceil(base.sentences.length / 2));
+  const sentences = part === 1 ? base.sentences.slice(0, midpoint) : base.sentences.slice(midpoint);
+  return {
+    ...base,
+    id,
+    label,
+    sequence: part,
+    sentences,
+  };
+};
+
+const enhanceText = (text: Text): Text => ({
+  ...text,
+  sectionsPreview: SECTION_PREVIEW_OVERRIDES[text.id] || text.sectionsPreview,
+});
+
 import { getMockTexts, getMockSections } from "./mockTexts";
 
 export const CorpusDB = {
@@ -2750,7 +2865,7 @@ export const CorpusDB = {
     TEXT_ODYSSEY,
     TEXT_AESOP,
     ...getMockTexts()
-  ],
+  ].map(enhanceText),
   getText: (id: string) =>
     [
       TEXT_JOHN_1,
@@ -2769,8 +2884,11 @@ export const CorpusDB = {
       TEXT_ODYSSEY,
       TEXT_AESOP,
       ...getMockTexts()
-    ].find((t) => t.id === id),
+    ].map(enhanceText).find((t) => t.id === id),
   getSection: (sectionId: string) => {
+    const split = SECTION_SPLITS[sectionId];
+    if (split) return splitTextSection(split.base, sectionId, split.label, split.part);
+
     if (sectionId === "Jn-1-1") return JOHN_1_1;
     if (sectionId === "Gen-1") return GENESIS_1;
     if (sectionId === "Aen-1-1") return AENEID_1_1;
