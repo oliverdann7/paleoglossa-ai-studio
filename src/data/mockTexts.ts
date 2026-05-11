@@ -4,7 +4,8 @@ import {
   JOHN_1_1, SYRIAC_JOHN_1_1, TEXT_SYRIAC_JOHN,
   COPTIC_JOHN_1_1, TEXT_COPTIC_JOHN, ARAMAIC_GENESIS_1_1, TEXT_ARAMAIC_GENESIS,
   AKKADIAN_GILGAMESH_1_1, TEXT_AKKADIAN_GILGAMESH, SANSKRIT_GITA_1_1, TEXT_SANSKRIT_GITA,
-  HITTITE_ANNALS_1_1, TEXT_HITTITE_ANNALS, EGYPTIAN_PTAHHOTEP_1_1, TEXT_EGYPTIAN_PTAHHOTEP
+  HITTITE_ANNALS_1_1, TEXT_HITTITE_ANNALS, EGYPTIAN_PTAHHOTEP_1_1, TEXT_EGYPTIAN_PTAHHOTEP,
+  TEXT_ILIAD, ILIAD_1_1, TEXT_ANABASIS, ANABASIS_1_1, TEXT_ODYSSEY, ODYSSEY_1_1, TEXT_AESOP, AESOP_1_1
 } from "./corpus";
 
 const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -39,28 +40,54 @@ export const getMockSections = () => {
 };
 
 const generateMocks = () => {
-  const baseMap: Record<string, { text: Text, section: TextSection }> = {
-    'grc': { text: TEXT_JOHN_1, section: JOHN_1_1 },
-    'grc-koine': { text: TEXT_JOHN_1, section: JOHN_1_1 },
-    'hbo': { text: TEXT_GENESIS, section: GENESIS_1 },
-    'lat': { text: TEXT_AENEID_1, section: AENEID_1_1 },
-    'syr': { text: TEXT_SYRIAC_JOHN, section: SYRIAC_JOHN_1_1 },
-    'cop': { text: TEXT_COPTIC_JOHN, section: COPTIC_JOHN_1_1 },
-    'arc': { text: TEXT_ARAMAIC_GENESIS, section: ARAMAIC_GENESIS_1_1 },
-    'akk': { text: TEXT_AKKADIAN_GILGAMESH, section: AKKADIAN_GILGAMESH_1_1 },
-    'san': { text: TEXT_SANSKRIT_GITA, section: SANSKRIT_GITA_1_1 },
-    'egy': { text: TEXT_EGYPTIAN_PTAHHOTEP, section: EGYPTIAN_PTAHHOTEP_1_1 },
-    'hit': { text: TEXT_HITTITE_ANNALS, section: HITTITE_ANNALS_1_1 }
+  const baseMap: Record<string, { text: Text, section: TextSection }[]> = {
+    'grc': [
+      { text: TEXT_JOHN_1, section: JOHN_1_1 },
+      { text: TEXT_ILIAD, section: ILIAD_1_1 },
+      { text: TEXT_ANABASIS, section: ANABASIS_1_1 },
+      { text: TEXT_ODYSSEY, section: ODYSSEY_1_1 },
+      { text: TEXT_AESOP, section: AESOP_1_1 },
+    ],
+    'grc-koine': [
+      { text: TEXT_JOHN_1, section: JOHN_1_1 },
+      { text: TEXT_SYRIAC_JOHN, section: SYRIAC_JOHN_1_1 },
+    ],
+    'hbo': [
+      { text: TEXT_GENESIS, section: GENESIS_1 },
+    ],
+    'lat': [
+      { text: TEXT_AENEID_1, section: AENEID_1_1 },
+    ],
+    'syr': [
+      { text: TEXT_SYRIAC_JOHN, section: SYRIAC_JOHN_1_1 },
+    ],
+    'cop': [
+      { text: TEXT_COPTIC_JOHN, section: COPTIC_JOHN_1_1 },
+    ],
+    'arc': [
+      { text: TEXT_ARAMAIC_GENESIS, section: ARAMAIC_GENESIS_1_1 },
+    ],
+    'akk': [
+      { text: TEXT_AKKADIAN_GILGAMESH, section: AKKADIAN_GILGAMESH_1_1 },
+    ],
+    'san': [
+      { text: TEXT_SANSKRIT_GITA, section: SANSKRIT_GITA_1_1 },
+    ],
+    'egy': [
+      { text: TEXT_EGYPTIAN_PTAHHOTEP, section: EGYPTIAN_PTAHHOTEP_1_1 },
+    ],
+    'hit': [
+      { text: TEXT_HITTITE_ANNALS, section: HITTITE_ANNALS_1_1 },
+    ]
   };
 
-  Object.entries(baseMap).forEach(([lang, base]) => {
+  Object.entries(baseMap).forEach(([lang, bases]) => {
     let nameIndex = 0;
     const titles = titlesByLanguage[lang] || ["Text 1", "Text 2", "Text 3", "Text 4"];
     levels.forEach(level => {
-      // Determine how many texts per level (random between 3-5 for realism, wait no, strict count)
-      // Actually we'll just do 3-5 texts per level depending on array logic
       const genCount = level === 'C2' ? 3 : 4;
       for(let count = 1; count <= genCount; count++) {
+        const base = bases[nameIndex % bases.length];
         const newTextId = `mock-${lang}-${level}-${count}`;
         const titleName = titles[Math.min(nameIndex++, titles.length - 1)]; 
         const newTitle = `${titleName} (${level} Text ${count})`;
@@ -79,11 +106,10 @@ const generateMocks = () => {
         
         const allTokens = base.section.sentences.flatMap(s => s.tokens);
         
-        // Generate pseudo-random sentences from base tokens to make texts visually distinct
         const syntheticSentences = [];
-        const numSentences = 3 + (count % 3); // 3 to 5 sentences
+        const numSentences = 3 + (count % 3);
         for (let sIdx = 0; sIdx < numSentences; sIdx++) {
-          const numTokens = 5 + ((count * sIdx) % 8); // 5 to 12 tokens
+          const numTokens = 5 + ((count * sIdx) % 8);
           const syntheticTokens = [];
           for (let tIdx = 0; tIdx < numTokens; tIdx++) {
             const sourceToken = allTokens[(count * 7 + sIdx * 3 + tIdx) % allTokens.length];
@@ -92,7 +118,6 @@ const generateMocks = () => {
                 ...sourceToken,
                 id: `${newTextId}-sec1-s${sIdx}-t${tIdx}`
               };
-              // Add a bit of spacing
               newToken.punctBefore = tIdx === 0 ? "" : " ";
               newToken.punctAfter = tIdx === numTokens - 1 ? "." : "";
               syntheticTokens.push(newToken);
