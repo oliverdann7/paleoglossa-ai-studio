@@ -1,10 +1,12 @@
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { ImportedText as FSImportedText } from '../../types/firestore';
+import { normalizeTimestamp } from '../utils';
+import { STORAGE_KEYS } from '../constants/storage';
 
 export type ImportedText = FSImportedText;
 
-const STORAGE_KEY = 'paleoglossa_imports';
+const STORAGE_KEY = STORAGE_KEYS.IMPORTS;
 
 export class ImportService {
   static async getImports(userId: string | null): Promise<ImportedText[]> {
@@ -18,14 +20,11 @@ export class ImportService {
       const imports: ImportedText[] = [];
       snap.forEach(doc => {
         const data = doc.data();
-        const createdAt = data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt;
-        const updatedAt = data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt;
-        
         imports.push({ 
           ...data, 
           id: doc.id,
-          createdAt: createdAt || new Date().toISOString(),
-          updatedAt: updatedAt || new Date().toISOString()
+          createdAt: normalizeTimestamp(data.createdAt),
+          updatedAt: normalizeTimestamp(data.updatedAt)
         } as ImportedText);
       });
       return imports;
@@ -65,13 +64,11 @@ export class ImportService {
       const snap = await getDoc(doc(db, `users/${userId}/imports`, importId));
       if (snap.exists()) {
         const data = snap.data();
-        const createdAt = data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt;
-        const updatedAt = data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt;
         return { 
           ...data, 
           id: snap.id,
-          createdAt: createdAt || new Date().toISOString(),
-          updatedAt: updatedAt || new Date().toISOString()
+          createdAt: normalizeTimestamp(data.createdAt),
+          updatedAt: normalizeTimestamp(data.updatedAt)
         } as ImportedText;
       }
       return null;

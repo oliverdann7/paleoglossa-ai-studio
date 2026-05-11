@@ -1,5 +1,7 @@
 import { db } from '../firebase';
 import { doc, getDoc, updateDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { normalizeTimestamp } from '../utils';
+import { STORAGE_KEYS } from '../constants/storage';
 
 export interface DailyStat {
   date: string; // YYYY-MM-DD
@@ -29,7 +31,7 @@ export interface TextProgress {
   sentenceIndex?: number;
 }
 
-const STATS_STORAGE_KEY = 'paleoglossa_stats';
+const STATS_STORAGE_KEY = STORAGE_KEYS.STATS;
 
 export class StatsService {
   static async getStats(userId: string | null): Promise<ReadingStats> {
@@ -99,7 +101,7 @@ export class StatsService {
   // Text Progress specific methods (can stay here or move to progressService, but user asked for statsService)
   static async getTextProgress(userId: string | null, textId: string): Promise<TextProgress | null> {
     if (!userId) {
-      const saved = localStorage.getItem(`reading_progress_${textId}`);
+      const saved = localStorage.getItem(`${STORAGE_KEYS.READING_PROGRESS_PREFIX}${textId}`);
       return saved ? JSON.parse(saved) : null;
     }
 
@@ -114,11 +116,11 @@ export class StatsService {
 
   static async setTextProgress(userId: string | null, progress: TextProgress) {
     if (!userId) {
-      localStorage.setItem(`reading_progress_${progress.textId}`, JSON.stringify(progress));
-      const recent = JSON.parse(localStorage.getItem('recent_reading_progress') || '[]');
+      localStorage.setItem(`${STORAGE_KEYS.READING_PROGRESS_PREFIX}${progress.textId}`, JSON.stringify(progress));
+      const recent = JSON.parse(localStorage.getItem(STORAGE_KEYS.RECENT_PROGRESS) || '[]');
       const filtered = recent.filter((r: any) => r.textId !== progress.textId);
       filtered.unshift({ ...progress, lastReadAt: new Date().toISOString() });
-      localStorage.setItem('recent_reading_progress', JSON.stringify(filtered.slice(0, 10)));
+      localStorage.setItem(STORAGE_KEYS.RECENT_PROGRESS, JSON.stringify(filtered.slice(0, 10)));
       return;
     }
 
@@ -134,7 +136,7 @@ export class StatsService {
 
   static async getAllProgress(userId: string | null): Promise<TextProgress[]> {
     if (!userId) {
-      return JSON.parse(localStorage.getItem('recent_reading_progress') || '[]');
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.RECENT_PROGRESS) || '[]');
     }
 
     try {
@@ -142,8 +144,7 @@ export class StatsService {
       const results: TextProgress[] = [];
       snap.forEach(doc => {
         const data = doc.data();
-        const lastReadAt = data.lastReadAt?.toDate ? data.lastReadAt.toDate().toISOString() : data.lastReadAt;
-        results.push({ ...data, lastReadAt } as TextProgress);
+        results.push({ ...data, lastReadAt: normalizeTimestamp(data.lastReadAt) } as TextProgress);
       });
       return results.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime());
     } catch (e) {

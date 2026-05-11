@@ -3,6 +3,7 @@ import { WordState } from '../constants/wordStates';
 import { VocabularyService, KnowledgeMap, WordInfo, SRSData } from '../services/vocabularyService';
 import { StatsService, ReadingStats } from '../services/statsService';
 import { ImportService } from '../services/importService';
+import { STORAGE_KEYS } from '../constants/storage';
 import { useAuth } from './useAuth';
 
 export const useKnowledge = () => {
@@ -35,7 +36,7 @@ export const useKnowledge = () => {
         
         // Handle migration if user just logged in and has local data
         if (userId) {
-          const localKnowledge = localStorage.getItem('paleoglossa_knowledge');
+          const localKnowledge = localStorage.getItem(STORAGE_KEYS.KNOWLEDGE);
           if (localKnowledge) {
             const hasData = Object.keys(JSON.parse(localKnowledge)).length > 0;
             if (hasData) {
@@ -49,7 +50,7 @@ export const useKnowledge = () => {
             }
           }
           
-          const localStats = localStorage.getItem('paleoglossa_stats');
+          const localStats = localStorage.getItem(STORAGE_KEYS.STATS);
           if (localStats) {
             await StatsService.migrateLocalStorage(userId);
             // Re-fetch stats
@@ -314,7 +315,7 @@ export const useKnowledge = () => {
       knowledge,
       stats,
       imports,
-      settings: JSON.parse(localStorage.getItem('paleoglossa_settings') || '{}')
+      settings: JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || '{}')
     };
   }, [knowledge, stats, userId]);
 

@@ -1,12 +1,14 @@
 import { db } from '../firebase';
-import { doc, getDoc, collection, getDocs, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, serverTimestamp, writeBatch, increment } from 'firebase/firestore';
 import { WordState } from '../constants/wordStates';
-import { WordStatus, SRSData } from '../../types/firestore';
+import { STORAGE_KEYS } from '../constants/storage';
+import { SRSData } from '../../types/firestore';
+import { normalizeTimestamp } from '../utils';
 
 export type { SRSData };
 
 export interface WordInfo {
-  state: WordStatus | WordState;
+  state: WordState;
   srs?: SRSData;
   notes?: string;
   userGloss?: string;
@@ -17,7 +19,7 @@ export interface WordInfo {
 
 export type KnowledgeMap = Record<string, WordInfo>;
 
-const STORAGE_KEY = 'paleoglossa_knowledge';
+const STORAGE_KEY = STORAGE_KEYS.KNOWLEDGE;
 
 function getTermId(term: string, languageId: string): string {
   // Use languageId + term to avoid collisions
@@ -93,8 +95,8 @@ export class VocabularyService {
       const map: KnowledgeMap = {};
       vocabSnap.forEach(doc => {
         const data = doc.data();
-        const nextReview = data.nextReview?.toDate ? data.nextReview.toDate().toISOString() : data.nextReview;
-        const addedAt = data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt;
+        const nextReview = normalizeTimestamp(data.nextReview);
+        const addedAt = normalizeTimestamp(data.createdAt);
         
         map[data.term] = {
           state: data.status,
@@ -119,7 +121,7 @@ export class VocabularyService {
     }
   }
 
-  static async setWordState(userId: string | null, term: string, state: WordStatus | WordState, languageId: string = "unknown", srs?: SRSData) {
+  static async setWordState(userId: string | null, term: string, state: WordState, languageId: string = "unknown", srs?: SRSData) {
     if (!userId) {
       // Local fallback
       const ls = localStorage.getItem(STORAGE_KEY);
@@ -155,8 +157,6 @@ export class VocabularyService {
   }
 
   static async incrementEncounter(userId: string | null, term: string, languageId: string = "unknown") {
-    // In a batch queue, incrementing can be tricky. We'll fallback to regular updateDoc for now 
-    // since it relies on previous state, but we could also use Firestore's increment().
     if (!userId) return;
     
     const termId = getTermId(term, languageId);
@@ -164,9 +164,8 @@ export class VocabularyService {
       const docRef = doc(db, `users/${userId}/vocabulary`, termId);
       const snap = await getDoc(docRef);
       if (snap.exists()) {
-        const current = snap.data().encounterCount || 0;
         enqueueVocabWrite(userId, termId, {
-          encounterCount: current + 1,
+          encounterCount: increment,
           lastSeenAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         }, false);
@@ -222,7 +221,7 @@ export class VocabularyService {
       let count = 0;
       
       for (const [term, info] of entries) {
-        await this.setWordState(userId, term, info.state as WordStatus, info.languageId || "unknown", info.srs);
+        await this.setWordState(userId, term, info.state, info.languageId || "unknown", info.srs);
         count++;
       }
       

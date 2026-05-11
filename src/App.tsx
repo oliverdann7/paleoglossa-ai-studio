@@ -1,6 +1,4 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Navbar } from './components/Navbar';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Landing } from './pages/Landing';
 import { Dashboard } from './pages/Dashboard';
 import { Reader } from './pages/Reader';
@@ -18,52 +16,10 @@ import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
-import { seedKnowledge } from './lib/data/seeding';
 import { AuthProvider } from './lib/contexts/AuthContext';
-import { useAuth } from './lib/hooks/useAuth';
-import { useSettings } from './lib/hooks/useSettings';
-import { Loader2 } from 'lucide-react';
-
-function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading, isDemoMode } = useAuth();
-  const location = useLocation();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-parch">
-        <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
-      </div>
-    );
-  }
-
-  if (!user && !isDemoMode) {
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
-  }
-
-  return <>{children}</>;
-}
-
-function AppLayout() {
-  // Call useSettings here so global dark mode setting takes effect everywhere
-  useSettings();
-  
-  return (
-    <div className="min-h-screen">
-      <Navbar />
-      <main className="md:pl-[220px] pb-20 md:pb-0 min-h-screen">
-        <AuthGuard>
-          <Outlet />
-        </AuthGuard>
-      </main>
-    </div>
-  );
-}
+import { AppLayout } from './components/AppLayout';
 
 export default function App() {
-  useEffect(() => {
-    seedKnowledge();
-  }, []);
-
   return (
     <AuthProvider>
       <BrowserRouter>
