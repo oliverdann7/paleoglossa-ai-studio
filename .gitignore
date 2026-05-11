@@ -8,3 +8,4 @@ coverage/
 !.env.example
 firebase-applet-config.json
 .vercel
+.ratelimit.json

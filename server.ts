@@ -2,22 +2,39 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import path from 'path';
+import fs from 'fs';
 
-// --- Rate Limiting Setup ---
-const rateLimits = new Map<string, { count: number, resetAt: number }>();
-const RATE_LIMIT_COUNT = 100; // allow 100 requests per window
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+// --- Persistent Rate Limiting ---
+const RATE_LIMIT_COUNT = 100;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_FILE = path.join(process.cwd(), '.ratelimit.json');
+
+interface RateRecord { count: number; resetAt: number; }
+
+function loadRateLimits(): Record<string, RateRecord> {
+  try {
+    return JSON.parse(fs.readFileSync(RATE_LIMIT_FILE, 'utf-8'));
+  } catch {
+    return {};
+  }
+}
+
+function saveRateLimits(data: Record<string, RateRecord>) {
+  fs.writeFileSync(RATE_LIMIT_FILE, JSON.stringify(data));
+}
 
 function checkRateLimit(userId: string | undefined): boolean {
-  if (!userId) return true; // Could enforce auth, but allowing anonymous for now
+  if (!userId) return true;
   const now = Date.now();
-  let record = rateLimits.get(userId);
+  const data = loadRateLimits();
+  let record = data[userId];
   if (!record || now > record.resetAt) {
     record = { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS };
   }
   if (record.count >= RATE_LIMIT_COUNT) return false;
   record.count++;
-  rateLimits.set(userId, record);
+  data[userId] = record;
+  saveRateLimits(data);
   return true;
 }
 

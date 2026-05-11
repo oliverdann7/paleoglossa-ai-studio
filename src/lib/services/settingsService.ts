@@ -30,14 +30,20 @@ export class SettingsService {
     }
   }
 
-  static async saveSettings(userId: string | null, settings: UserSettings) {
+  static async saveSettings(userId: string | null, settings: Partial<UserSettings>) {
     if (!userId) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      const existing = localStorage.getItem(STORAGE_KEY);
+      const merged = existing ? { ...JSON.parse(existing), ...settings } : { ...DEFAULT_SETTINGS, ...settings };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
       return;
     }
 
     try {
-      await setDoc(doc(db, `users/${userId}/settings`, 'main'), {
+      const ref = doc(db, `users/${userId}/settings`, 'main');
+      const existing = (await getDoc(ref)).data() as UserSettings | undefined;
+      await setDoc(ref, {
+        ...DEFAULT_SETTINGS,
+        ...existing,
         ...settings,
         updatedAt: serverTimestamp()
       });

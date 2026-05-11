@@ -25,6 +25,13 @@ export const en = {
     "reader.occurrences": "Occurrences in Library",
     "reader.matches": "matches",
     "reader.yourKnowledge": "Your Knowledge",
+    "reader.fullText": "Full Text",
+    "reader.noTranslation": "No translation.",
+    "reader.noParallelText": "No parallel text.",
+    "reader.ancientWord": "Ancient word",
+    "reader.userImportedWord": "User imported word",
+    "reader.errorTranslating": "Error translating text.",
+    "reader.sentenceSaved": "Sentence saved to your vocabulary!",
 
     "import.title": "Import New Lesson",
     "import.description": "Your personal library. Paste anything from the ancient world and the system will map it to your knowledge.",

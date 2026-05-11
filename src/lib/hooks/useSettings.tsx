@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { SettingsService } from '../services/settingsService';
-import { UserSettings } from '../../types/firestore';
-
 export interface Settings {
   dailyGoalWords: number;
   dailyGoalMinutes: number;
@@ -47,7 +45,7 @@ export const useSettings = () => {
   const updateSettings = useCallback(async (updates: Partial<Settings>) => {
     const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
-    await SettingsService.saveSettings(userId, newSettings as unknown as UserSettings);
+    await SettingsService.saveSettings(userId, newSettings);
   }, [userId, settings]);
 
   return { settings, updateSettings };
