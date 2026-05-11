@@ -4,6 +4,7 @@ import { useSettings } from "../lib/hooks/useSettings";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useTranslation } from "react-i18next";
+import { db } from "../lib/firebase";
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
@@ -35,7 +36,30 @@ export const Settings = () => {
     localStorage.removeItem("paleoglossa_knowledge");
     localStorage.removeItem("paleoglossa_stats");
     localStorage.removeItem("paleoglossa_reading_sessions");
-    // TODO: A more robust wipe would clear firestore as well
+    
+    if (db) {
+      try {
+        const { getAuth } = await import("firebase/auth");
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (user) {
+          const { collection, getDocs, writeBatch } = await import("firebase/firestore");
+          const collectionsToClear = ['vocabulary', 'imports', 'readingProgress', 'reviewLogs'];
+          
+          for (const coll of collectionsToClear) {
+            const querySnapshot = await getDocs(collection(db, `users/${user.uid}/${coll}`));
+            const batch = writeBatch(db);
+            querySnapshot.forEach((doc) => {
+              batch.delete(doc.ref);
+            });
+            await batch.commit();
+          }
+        }
+      } catch (err) {
+        console.error("Failed to wipe firestore data:", err);
+      }
+    }
+    
     window.location.reload();
   };
 
