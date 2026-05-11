@@ -49,9 +49,12 @@ export const useKnowledge = () => {
   }, [vocab.knowledge, statsHook.stats, userId]);
 
   const setWordStateWithStats = useCallback((lemma: string, state: WordState, languageId: string = "unknown", context?: string) => {
+    const previousState = vocab.getWordInfo(lemma).state;
     vocab.setWordState(lemma, state, languageId, context);
-    if (state === WordState.KNOWN) {
+    if (state === WordState.KNOWN && previousState !== WordState.KNOWN) {
       statsHook.updateStatsState(s => ({ ...s, totalKnown: s.totalKnown + 1 }));
+    } else if (state !== WordState.KNOWN && previousState === WordState.KNOWN) {
+      statsHook.updateStatsState(s => ({ ...s, totalKnown: Math.max(0, s.totalKnown - 1) }));
     }
   }, [vocab, statsHook]);
 

@@ -2829,8 +2829,24 @@ const SECTION_SPLITS: Record<string, { base: TextSection; part: SplitPart; label
 };
 
 const splitTextSection = (base: TextSection, id: string, label: string, part: SplitPart): TextSection => {
-  const midpoint = Math.max(1, Math.ceil(base.sentences.length / 2));
-  const sentences = part === 1 ? base.sentences.slice(0, midpoint) : base.sentences.slice(midpoint);
+  let sentences = base.sentences;
+
+  if (base.sentences.length > 1) {
+    const midpoint = Math.max(1, Math.ceil(base.sentences.length / 2));
+    sentences = part === 1 ? base.sentences.slice(0, midpoint) : base.sentences.slice(midpoint);
+  } else {
+    const sentence = base.sentences[0];
+    const midpoint = Math.max(1, Math.ceil(sentence.tokens.length / 2));
+    const tokens = part === 1 ? sentence.tokens.slice(0, midpoint) : sentence.tokens.slice(midpoint);
+    sentences = [
+      {
+        ...sentence,
+        id: `${sentence.id}-part-${part}`,
+        tokens,
+      },
+    ];
+  }
+
   return {
     ...base,
     id,
