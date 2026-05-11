@@ -1,5 +1,5 @@
+import serverless from 'serverless-http';
 import { createApiApp } from '../server';
 
 const app = createApiApp();
-
-export default app;
+export const handler = serverless(app);
