@@ -50,6 +50,26 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | Pronunciation lab | 🚧 |
 | Classroom / course builder | 🚧 |
 
+## API Routes (Stubs)
+
+The following API endpoints are registered but return empty/stub responses. Full implementations require a Gemini API key and Firebase backend:
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/test` | POST | Health check |
+| `/api/lemmas/:lemma` | GET | Lemma lookup |
+| `/api/lemmas` | GET | Lemma search |
+| `/api/lemmas/:lemma/paradigm` | GET | Paradigm inflection |
+| `/api/ai/...` | POST | AI (analyze, translate, explain, OCR, pronunciation, etc.) |
+| `/api/audio/tts` | POST | Text-to-speech generation |
+| `/api/audio/recordings` | POST | User recording upload |
+| `/api/search` | POST | Corpus search |
+| `/api/grammar/...` | GET | Grammar pathways & concepts |
+| `/api/syntax/...` | GET | Syntax treebank |
+| `/api/manuscripts` | GET | Manuscript metadata |
+| `/api/courses` | GET/POST | Classroom management |
+| `/api/notebooks`, `/api/notes` | GET/POST/DELETE | Research notebooks |
+
 ## Corpus Status
 
 Texts are marked with their completion status in the app (Sample / In Progress / Complete). Current state:
