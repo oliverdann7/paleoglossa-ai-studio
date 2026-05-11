@@ -12,6 +12,14 @@ import { Subscription } from './pages/Subscription';
 import { Settings } from './pages/Settings';
 import { Onboarding } from './pages/Onboarding';
 import { Notes } from './pages/Notes';
+import { SearchPage } from './pages/Search';
+import { Grammar } from './pages/Grammar';
+import { Tutor } from './pages/Tutor';
+import { Syntax } from './pages/Syntax';
+import { Notebooks } from './pages/Notebooks';
+import { Manuscripts } from './pages/Manuscripts';
+import { Courses } from './pages/Courses';
+import { AudioLab } from './pages/AudioLab';
 import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
@@ -49,6 +57,14 @@ export default function App() {
             <Route path="review" element={<Review />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="notes" element={<Notes />} />
+            <Route path="notebooks" element={<Notebooks />} />
+            <Route path="search" element={<SearchPage />} />
+            <Route path="grammar" element={<Grammar />} />
+            <Route path="tutor" element={<Tutor />} />
+            <Route path="syntax" element={<Syntax />} />
+            <Route path="manuscripts" element={<Manuscripts />} />
+            <Route path="courses" element={<Courses />} />
+            <Route path="audio-lab" element={<AudioLab />} />
             <Route path="settings" element={<Settings />} />
             <Route path="subscription" element={<Subscription />} />
           </Route>

@@ -217,6 +217,69 @@ async function startServer() {
     res.json({ text: aiResponse.text });
   });
 
+  // --- New Module AI Endpoints ---
+  constructAiEndpoint('/api/ai/tutor/start', async (req, res, ai) => {
+    const { languageId, textId } = req.body;
+    const prompt = `You are a philology tutor specializing in ${languageId || 'ancient languages'}. The student is reading ${textId || 'a text'}. Greet them and ask what grammatical feature they would like to explore. Keep your response concise (2-3 sentences).`;
+    const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
+    res.json({ text: response.text });
+  });
+
+  constructAiEndpoint('/api/ai/tutor/message', async (req, res, ai) => {
+    const { sessionId, message, context } = req.body;
+    const contextInfo = context?.textId ? ` (context: ${context.textId}${context.sentenceIndex !== undefined ? `:${context.sentenceIndex}` : ''}${context.lemma ? `, lemma: ${context.lemma}` : ''})` : '';
+    const prompt = `You are a philology tutor. The student asks: "${message}"${contextInfo}. Provide a clear, scholarly answer with examples where relevant. Be precise but pedagogical.`;
+    const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
+    res.json({ text: response.text });
+  });
+
+  constructAiEndpoint('/api/ai/quiz', async (req, res, ai) => {
+    const { languageId, lemma, form, type } = req.body;
+    const prompt = `Generate a ${type || 'morphology'} quiz question for a student of ${languageId}. Focus on the word "${form}" (lemma: "${lemma}"). Ask the student to parse the form and provide the correct answer. Format as: "Question: ... Answer: ..."`;
+    const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
+    res.json({ text: response.text });
+  });
+
+  constructAiEndpoint('/api/ai/syntax', async (req, res, ai) => {
+    const { languageId, sentence } = req.body;
+    const prompt = `Analyze the syntax of this ${languageId} sentence: "${sentence}". Identify the main clause, dependencies, and grammatical relations. Return the analysis as a structured description.`;
+    const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
+    res.json({ text: response.text });
+  });
+
+  // --- Stub API Routes for New Modules ---
+  app.get('/api/lemmas/:lemma', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/lemmas', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/lemmas/:lemma/paradigm', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+
+  app.get('/api/grammar/concepts', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/grammar/concepts/:conceptId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/grammar/pathway', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+
+  app.post('/api/search', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+
+  app.get('/api/syntax', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/syntax/:textId/:sentenceIndex', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+
+  app.get('/api/notebooks', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.post('/api/notebooks', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.delete('/api/notebooks/:notebookId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/notes', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.post('/api/notes', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.delete('/api/notes/:noteId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+
+  app.get('/api/manuscripts', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/manuscripts/:manuscriptId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+
+  app.post('/api/audio/tts', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.post('/api/audio/recordings', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+
+  app.get('/api/courses', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/courses/:courseId', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.post('/api/courses', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.get('/api/courses/:courseId/members', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+  app.post('/api/courses/:courseId/members', (_req, res) => res.status(501).json({ error: 'Not implemented' }));
+
   // Alias
   app.post('/api/scrape', (_req, res) => {
     res.redirect(307, '/api/ai/scrape');
