@@ -44,6 +44,12 @@ service cloud.firestore {
     // USER-SPECIFIC DATA
     match /users/{userId} {
       allow get: if isOwner(userId);
+      // Profile creation (sign-up) and stats/progress updates both write here.
+      // currentPlan may only be set by the backend (Cloud Function / Admin SDK).
+      allow create: if isOwner(userId) &&
+                       incoming().keys().hasAll(['email', 'displayName', 'createdAt', 'currentPlan', 'stats']);
+      allow update: if isOwner(userId) &&
+                       !incoming().diff(existing()).affectedKeys().hasAny(['currentPlan']);
       
       // Vocabulary
       match /vocabulary/{termId} {
@@ -84,10 +90,11 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
 
-      // Review Logs
+      // Review Logs (path already scopes to the owner — no userId field required)
       match /reviewLogs/{logId} {
         allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && incoming().userId == userId;
+        allow create: if isOwner(userId) &&
+                         incoming().keys().hasAll(['vocabItemId', 'rating', 'timestamp']);
       }
     }
   }
