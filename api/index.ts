@@ -1,23 +1,5 @@
 import express from 'express';
 
-// --- In-memory Rate Limiting (per-process; does not persist across serverless invocations) ---
-const RATE_LIMIT_COUNT = 100;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const rateData = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(userId: string | undefined): boolean {
-  if (!userId) return true;
-  const now = Date.now();
-  let record = rateData.get(userId);
-  if (!record || now > record.resetAt) {
-    record = { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS };
-  }
-  if (record.count >= RATE_LIMIT_COUNT) return false;
-  record.count++;
-  rateData.set(userId, record);
-  return true;
-}
-
 // Build the Express API app
 const app = express();
 app.use(express.json({ limit: '10mb' }));

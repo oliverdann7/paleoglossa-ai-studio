@@ -665,6 +665,7 @@ export const Reader = () => {
           audioPos={audioPos}
           aiTranslations={aiTranslations}
           translatingId={isTranslatingId}
+          isSample={text?.isSample}
           onWordClick={(token, sentenceText, sentenceIndex) => {
             setSelectedWord({ ...token, sentenceText });
             incrementEncounter(token.lemma, currentLanguageId);

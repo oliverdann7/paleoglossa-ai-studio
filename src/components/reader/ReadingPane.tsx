@@ -37,6 +37,7 @@ interface Props {
   audioPos: { sentenceIdx: number; wordIdx: number };
   aiTranslations: Record<string, string>;
   translatingId: string | null;
+  isSample?: boolean;
   onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
   onAITranslate: (sentenceId: string, tokens: TokenData[]) => void;
   onSavePhrase: (sentence: SentenceData) => void;
@@ -146,6 +147,7 @@ export function ReadingPane({
   knowledge, selectedWordId, showTranslit, showParallel, maskKnown,
   isHebrewFont, isRtl, audioPos,
   aiTranslations, translatingId,
+  isSample,
   onWordClick, onAITranslate, onSavePhrase,
   onMarkPageKnown, onNextPage, onNextChapter, onSwipe,
   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
@@ -181,6 +183,13 @@ export function ReadingPane({
           showParallel ? "max-w-screen-xl lg:grid grid-cols-2 gap-8 items-center" : "max-w-3xl",
         )}
       >
+        {isSample && (
+          <div className="col-span-full mb-4">
+            <span className="inline-block bg-amber/10 text-amber text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+              Sample excerpt
+            </span>
+          </div>
+        )}
         <div className="col-span-1 border-r-0 lg:border-r border-bdr/40 lg:pr-8">
           <div
             dir={isRtl ? 'rtl' : 'ltr'}
@@ -241,9 +250,19 @@ export function ReadingPane({
                   {currentScrollPage >= totalPages - 1 ? (
                     <div className="text-center">
                       <h4 className="font-serif text-[24px] text-ink mb-2">
-                        You've reached the end of this chapter.
+                        {isSample
+                          ? "You've reached the end of this sample excerpt."
+                          : currentChapterIndex < totalChapters - 1
+                            ? "You've reached the end of this chapter."
+                            : "You've reached the end of this section."}
                       </h4>
-                      <p className="text-muted text-[14px]">Ready to move on to the next one?</p>
+                      <p className="text-muted text-[14px]">
+                        {isSample
+                          ? "This text is a sample excerpt. Full text coming soon."
+                          : currentChapterIndex < totalChapters - 1
+                            ? "Ready to move on to the next one?"
+                            : "This is the last available section for this text."}
+                      </p>
                     </div>
                   ) : (
                     <div className="text-center">
