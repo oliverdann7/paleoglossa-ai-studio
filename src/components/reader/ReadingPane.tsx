@@ -1,3 +1,4 @@
+import { useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -43,6 +44,7 @@ interface Props {
   onMarkPageKnown: () => void;
   onNextPage: () => void;
   onNextChapter: () => void;
+  onSwipe: (direction: 'left' | 'right') => void;
   currentScrollPage: number;
   totalPages: number;
   currentChapterIndex: number;
@@ -95,13 +97,32 @@ export function ReadingPane({
   isHebrewFont, isRtl, audioPos,
   aiTranslations, translatingId,
   onWordClick, onAITranslate, onSavePhrase,
-  onMarkPageKnown, onNextPage, onNextChapter,
+  onMarkPageKnown, onNextPage, onNextChapter, onSwipe,
   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
   sentenceSliceStart,
 }: Props) {
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    const SWIPE_THRESHOLD = 60;
+    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      onSwipe(dx > 0 ? 'right' : 'left');
+    }
+  }, [onSwipe]);
+
   return (
     <div
       id="reading-area-scroll"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       className="flex-1 overflow-y-auto px-4 md:px-12 py-8 md:py-16 scroll-smooth bg-transparent relative"
     >
       <div
@@ -192,7 +213,7 @@ export function ReadingPane({
                   )}
                   <div className="flex gap-4">
                     <button
-                      onClick={onMarkPageKnown}
+                      onClick={() => onMarkPageKnown()}
                       className="px-8 py-3 bg-blue text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95"
                     >
                       {currentScrollPage >= totalPages - 1
