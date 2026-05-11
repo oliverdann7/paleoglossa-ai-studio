@@ -1,5 +1,4 @@
 import express from 'express';
-import { GoogleGenAI } from '@google/genai';
 import path from 'path';
 
 // --- In-memory Rate Limiting (per-process; does not persist across serverless invocations) ---
@@ -97,6 +96,7 @@ function isValidUrl(string: string) {
 }
 
 export function createApiApp() {
+  const { GoogleGenAI } = require('@google/genai') as any;
   const app = express();
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
@@ -112,7 +112,7 @@ export function createApiApp() {
   });
 
   // AI Route Wrapper with Rate Limiter
-  const constructAiEndpoint = (path: string, handler: (req: express.Request, res: express.Response, ai: GoogleGenAI) => Promise<any>) => {
+  const constructAiEndpoint = (path: string, handler: (req: express.Request, res: express.Response, ai: any) => Promise<any>) => {
     app.post(path, async (req, res) => {
       const userId = req.header('X-User-Id') || req.body.userId;
       if (!checkRateLimit(userId)) {
