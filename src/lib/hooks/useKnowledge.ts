@@ -6,7 +6,7 @@ import { ImportService } from '../services/importService';
 import { useAuth } from './useAuth';
 
 export const useKnowledge = () => {
-  const { user } = useAuth();
+  const { user, isDemoMode } = useAuth();
   const userId = user ? user.uid : null;
   const [knowledge, setKnowledge] = useState<KnowledgeMap>({});
   const [stats, setStats] = useState<ReadingStats | null>(null);
@@ -149,16 +149,18 @@ export const useKnowledge = () => {
     setStats(prev => {
       if (!prev) return null;
       const next = updater(prev);
-      
-      // Debounced sync to Firestore for high-frequency updates
-      if (statsUpdateTimer.current) clearTimeout(statsUpdateTimer.current);
-      statsUpdateTimer.current = setTimeout(() => {
-        StatsService.updateStats(userId, next);
-      }, 2000);
-      
+
+      if (!isDemoMode) {
+        // Debounced sync to Firestore for high-frequency updates
+        if (statsUpdateTimer.current) clearTimeout(statsUpdateTimer.current);
+        statsUpdateTimer.current = setTimeout(() => {
+          StatsService.updateStats(userId, next);
+        }, 2000);
+      }
+
       return next;
     });
-  }, [userId]);
+  }, [userId, isDemoMode]);
 
   const setWordState = useCallback((lemma: string, state: WordState, languageId: string = "unknown", context?: string) => {
     setKnowledge(prev => {
@@ -181,29 +183,30 @@ export const useKnowledge = () => {
       return { ...prev, [lemma]: info };
     });
     
-    VocabularyService.setWordState(userId, lemma, state, languageId);
-    
+    if (!isDemoMode) VocabularyService.setWordState(userId, lemma, state, languageId);
+
     // UI update for known count
     if (state === WordState.KNOWN) {
       updateStatsState(s => ({ ...s, totalKnown: s.totalKnown + 1 }));
     }
-  }, [userId, updateStatsState]);
+  }, [userId, isDemoMode, updateStatsState]);
 
   const updateWordSRS = useCallback((lemma: string, srs: SRSData, state: WordState, languageId: string = "unknown") => {
     setKnowledge(prev => {
       const current = prev[lemma] || { addedAt: new Date().toISOString() };
       return { ...prev, [lemma]: { ...current, srs, state, languageId } };
     });
-    VocabularyService.updateSRS(userId, lemma, srs, state, languageId);
-  }, [userId]);
+    if (!isDemoMode) VocabularyService.updateSRS(userId, lemma, srs, state, languageId);
+  }, [userId, isDemoMode]);
 
   const fetchTextProgress = useCallback(async (textId: string) => {
     return StatsService.getTextProgress(userId, textId);
   }, [userId]);
 
   const saveTextProgress = useCallback(async (progress: any) => {
+    if (isDemoMode) return;
     return StatsService.setTextProgress(userId, progress);
-  }, [userId]);
+  }, [userId, isDemoMode]);
 
   const getAllProgress = useCallback(async () => {
     return StatsService.getAllProgress(userId);
@@ -247,15 +250,17 @@ export const useKnowledge = () => {
       return next;
     });
     
-    // Sync to Firestore in bulk
-    tokens.forEach(token => {
-      if (!token.lemma) return;
-      const state = knowledge[token.lemma] ? (typeof knowledge[token.lemma] === "object" ? (knowledge[token.lemma] as any).state : knowledge[token.lemma]) : WordState.NEW;
-      if (state === WordState.NEW) {
-        VocabularyService.setWordState(userId, token.lemma, WordState.KNOWN, token.languageId || "unknown");
-      }
-    });
-  }, [userId, knowledge]);
+    if (!isDemoMode) {
+      // Sync to Firestore in bulk
+      tokens.forEach(token => {
+        if (!token.lemma) return;
+        const state = knowledge[token.lemma] ? (typeof knowledge[token.lemma] === "object" ? (knowledge[token.lemma] as any).state : knowledge[token.lemma]) : WordState.NEW;
+        if (state === WordState.NEW) {
+          VocabularyService.setWordState(userId, token.lemma, WordState.KNOWN, token.languageId || "unknown");
+        }
+      });
+    }
+  }, [userId, isDemoMode, knowledge]);
 
   const addReadWords = useCallback((count: number) => {
     updateStatsState(prev => ({
@@ -278,20 +283,20 @@ export const useKnowledge = () => {
       const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
       return { ...prev, [lemma]: { ...current, notes } };
     });
-    VocabularyService.setWordNote(userId, lemma, notes, languageId);
-  }, [userId]);
+    if (!isDemoMode) VocabularyService.setWordNote(userId, lemma, notes, languageId);
+  }, [userId, isDemoMode]);
 
   const incrementEncounter = useCallback((lemma: string, languageId: string = "unknown") => {
-    VocabularyService.incrementEncounter(userId, lemma, languageId);
-  }, [userId]);
+    if (!isDemoMode) VocabularyService.incrementEncounter(userId, lemma, languageId);
+  }, [userId, isDemoMode]);
 
   const updateGloss = useCallback((lemma: string, gloss: string, languageId: string = "unknown") => {
     setKnowledge(prev => {
       const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
       return { ...prev, [lemma]: { ...current, userGloss: gloss } as any };
     });
-    VocabularyService.updateGloss(userId, lemma, gloss, languageId);
-  }, [userId]);
+    if (!isDemoMode) VocabularyService.updateGloss(userId, lemma, gloss, languageId);
+  }, [userId, isDemoMode]);
 
   const setWordContext = useCallback((lemma: string, context: string, languageId: string = "unknown") => {
     setKnowledge(prev => {
@@ -300,8 +305,8 @@ export const useKnowledge = () => {
       if (contexts.includes(context)) return prev;
       return { ...prev, [lemma]: { ...current, contexts: [...contexts, context].slice(-5) } };
     });
-    VocabularyService.setWordContext(userId, lemma, context, languageId);
-  }, [userId]);
+    if (!isDemoMode) VocabularyService.setWordContext(userId, lemma, context, languageId);
+  }, [userId, isDemoMode]);
 
   const exportData = useCallback(async () => {
     const imports = await ImportService.getImports(userId);

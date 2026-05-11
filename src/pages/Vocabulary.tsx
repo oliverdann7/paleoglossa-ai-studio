@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Search, Trash2, ExternalLink, History, TrendingUp, Brain, GraduationCap } from "lucide-react";
+import { Search, Trash2, ExternalLink, History, TrendingUp, Brain, GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordInfo } from "../lib/services/vocabularyService";
@@ -9,10 +9,13 @@ import { WordState, STATE_LABELS } from "../lib/constants/wordStates";
 import { getTokenInfo } from "../lib/data/dictionary";
 import { useTranslation } from "react-i18next";
 
+const PAGE_SIZE = 50;
+
 export const Vocabulary = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
   const { knowledge, setWordState } = useKnowledge();
   const { t } = useTranslation();
 
@@ -83,6 +86,14 @@ export const Vocabulary = () => {
         learning: words.filter(w => w.status === "Learning").length,
      }
   }, [words]);
+
+  // Reset to page 0 whenever filter or search changes
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [activeFilter, searchQuery]);
+
+  const totalPages = Math.ceil(filteredWords.length / PAGE_SIZE);
+  const pagedWords = filteredWords.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
   return (
     <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
@@ -162,7 +173,7 @@ export const Vocabulary = () => {
 
       <div className="flex flex-col gap-3 pb-20">
         {filteredWords.length > 0 ? (
-          filteredWords.map((word, i) => (
+          pagedWords.map((word, i) => (
             <motion.div
               key={word.id}
               initial={{ opacity: 0, y: 15 }}
@@ -222,6 +233,29 @@ export const Vocabulary = () => {
             <Brain className="w-12 h-12 text-muted mb-4 opacity-50" />
             <h3 className="font-serif text-[24px] text-ink mb-2">No Words Found</h3>
             <p className="text-ink3 max-w-sm mx-auto mb-6">Read texts or import vocabulary to begin building your personal lexicon.</p>
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 py-8">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+              disabled={currentPage === 0}
+              className="p-2 rounded-full border border-bdr/60 text-ink3 hover:text-blue hover:border-blue/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <span className="text-[13px] font-bold text-muted">
+              Page {currentPage + 1} of {totalPages}
+              <span className="font-normal ml-2">({filteredWords.length} words)</span>
+            </span>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={currentPage >= totalPages - 1}
+              className="p-2 rounded-full border border-bdr/60 text-ink3 hover:text-blue hover:border-blue/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
         )}
       </div>

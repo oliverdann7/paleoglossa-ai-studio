@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, Volume2, Sparkles, Loader2, Repeat } from 'lucide-react';
+import { ExternalLink, Volume2, Sparkles, Loader2, Repeat, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, STATE_LABELS } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useSubscription, incrementAiUsage } from '@/lib/hooks/useSubscription';
 import { ParadigmModal } from './ParadigmModal';
 
 interface LexDrawerPanelProps {
@@ -52,16 +53,23 @@ export const LexDrawerPanel = ({
 }: LexDrawerPanelProps) => {
   const { user } = useAuth();
   const { t } = useTranslation();
-  
+  const { canUseAi, aiUsageRemaining, isPro } = useSubscription();
+
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
 
   const handleAiWordExplain = async () => {
     if (isAiWordLoading || !selectedWord) return;
+    if (!canUseAi()) {
+      setShowUpgradePrompt(true);
+      return;
+    }
     setIsAiWordLoading(true);
     setAiWordInsight("");
-    
+    incrementAiUsage();
+
     try {
       const languageName = text?.language || selectedWord.language || "ancient language";
       const explanation = await AIClient.explainWord(languageName, selectedWord.text, selectedWord.lemma, user?.uid);
@@ -72,6 +80,15 @@ export const LexDrawerPanel = ({
     } finally {
       setIsAiWordLoading(false);
     }
+  };
+
+  const handleShowParadigm = () => {
+    if (!canUseAi()) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+    incrementAiUsage();
+    setIsParadigmOpen(true);
   };
 
   if (!selectedWord) return <AnimatePresence />;
@@ -209,7 +226,7 @@ export const LexDrawerPanel = ({
             <div className="mb-10">
               <button
                 className="w-full py-3 border border-gold/30 text-gold text-[13px] font-bold rounded-xl hover:bg-gold/5 transition-all flex items-center justify-center gap-2"
-                onClick={() => setIsParadigmOpen(true)}
+                onClick={handleShowParadigm}
               >
                 <Sparkles className="w-4 h-4" />
                 {t("reader.showFullParadigm", "Show Full Paradigm")}
@@ -357,7 +374,20 @@ export const LexDrawerPanel = ({
             </div>
           )}
         </div>
+
+        {/* Free tier AI usage indicator */}
+        {!isPro && (
+          <div className="px-6 py-3 border-t border-bdr/30 flex items-center justify-between bg-parch/30">
+            <span className="text-[11px] text-muted">
+              AI requests today: {5 - aiUsageRemaining()}/5
+            </span>
+            <a href="/pricing" className="text-[11px] font-bold text-blue hover:underline flex items-center gap-1">
+              <Crown className="w-3 h-3" /> Upgrade
+            </a>
+          </div>
+        )}
       </motion.div>
+
       <ParadigmModal
         isOpen={isParadigmOpen}
         onClose={() => setIsParadigmOpen(false)}
@@ -365,6 +395,47 @@ export const LexDrawerPanel = ({
         languageId={textLanguageId}
         word={selectedWord.text}
       />
+
+      {/* Upgrade prompt */}
+      <AnimatePresence>
+        {showUpgradePrompt && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowUpgradePrompt(false)}
+              className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative bg-parch2 rounded-[28px] p-10 shadow-2xl max-w-sm w-full text-center"
+            >
+              <div className="w-14 h-14 bg-amber/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Crown className="w-7 h-7 text-amber" />
+              </div>
+              <h3 className="font-serif text-[24px] text-ink mb-2">Daily Limit Reached</h3>
+              <p className="text-[14px] text-ink2 mb-6 leading-relaxed">
+                You've used all 5 free AI requests for today. Upgrade to the Fellowship plan for unlimited insights, paradigms, and translations.
+              </p>
+              <a
+                href="/pricing"
+                className="block w-full py-3 bg-blue text-white rounded-xl font-bold text-[14px] hover:bg-blue/90 transition-colors mb-3"
+              >
+                Upgrade to Fellowship
+              </a>
+              <button
+                onClick={() => setShowUpgradePrompt(false)}
+                className="text-[13px] text-muted hover:text-ink transition-colors"
+              >
+                Maybe later
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, RefreshCcw, Settings as SettingsIcon } from "lucide-react";
+import { Download, RefreshCcw, Settings as SettingsIcon, Snowflake } from "lucide-react";
 import { useSettings } from "../lib/hooks/useSettings";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
@@ -8,7 +8,11 @@ import { db } from "../lib/firebase";
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
-  const { exportData } = useKnowledge();
+  const { exportData, stats } = useKnowledge();
+
+  const freezesTotal = stats?.freezesTotal ?? 2;
+  const freezesUsed = stats?.freezesUsed ?? 0;
+  const freezesRemaining = freezesTotal - freezesUsed;
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const { t, i18n } = useTranslation();
 
@@ -134,15 +138,18 @@ export const Settings = () => {
           </div>
           <div className="mt-8 p-4 bg-blue/5 border border-blue/10 rounded-xl flex justify-between items-center">
             <div>
-              <h4 className="font-bold text-[14px] text-blue">
+              <h4 className="font-bold text-[14px] text-blue flex items-center gap-2">
+                <Snowflake className="w-4 h-4" />
                 {t("settings.streakFreezes", "Streak Freezes")}
               </h4>
               <p className="text-[12px] text-ink3">
-                {t("settings.freezesRemaining", "You have 2 freezes remaining this month.")}
+                {freezesRemaining > 0
+                  ? t("settings.freezesRemaining", `You have ${freezesRemaining} freeze${freezesRemaining !== 1 ? 's' : ''} remaining this month.`, { count: freezesRemaining })
+                  : t("settings.freezesNone", "No streak freezes remaining this month.")}
               </p>
             </div>
-            <div className="bg-white/50 px-3 py-1 rounded text-blue font-bold shadow-sm">
-              2/2
+            <div className={cn("px-3 py-1 rounded font-bold shadow-sm text-[14px]", freezesRemaining > 0 ? "bg-white/50 text-blue" : "bg-red-50 text-red-500")}>
+              {freezesRemaining}/{freezesTotal}
             </div>
           </div>
         </section>
