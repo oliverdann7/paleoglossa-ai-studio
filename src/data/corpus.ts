@@ -2819,78 +2819,9 @@ export const EGYPTIAN_PTAHHOTEP_1_1: TextSection = {
 
 type SplitPart = 1 | 2;
 
-const SECTION_PREVIEW_OVERRIDES: Record<string, { id: string; label: string }[]> = {
-  "Jn-1": [
-    { id: "Jn-1-1", label: "John 1 (Part 1)" },
-    { id: "Jn-1-2", label: "John 1 (Part 2)" },
-  ],
-  "Gen": [
-    { id: "Gen-1", label: "Chapter 1 (Part 1)" },
-    { id: "Gen-2", label: "Chapter 1 (Part 2)" },
-  ],
-  "Aeneid-1": [
-    { id: "Aen-1-1", label: "Book 1 (Part 1)" },
-    { id: "Aen-1-2", label: "Book 1 (Part 2)" },
-  ],
-  "Ps-23": [
-    { id: "Ps-23-1", label: "Psalm 23 (Part 1)" },
-    { id: "Ps-23-2", label: "Psalm 23 (Part 2)" },
-  ],
-  "Syr-Jn-1": [
-    { id: "Syr-Jn-1-1", label: "John 1 (Part 1)" },
-    { id: "Syr-Jn-1-2", label: "John 1 (Part 2)" },
-  ],
-  "Cop-Jn-1": [
-    { id: "Cop-Jn-1-1", label: "John 1 (Part 1)" },
-    { id: "Cop-Jn-1-2", label: "John 1 (Part 2)" },
-  ],
-  "Arc-Gen-1": [
-    { id: "Arc-Gen-1-1", label: "Genesis 1 (Part 1)" },
-    { id: "Arc-Gen-1-2", label: "Genesis 1 (Part 2)" },
-  ],
-  "Akk-Gilg-1": [
-    { id: "Akk-Gilg-1-1", label: "Tablet I (Part 1)" },
-    { id: "Akk-Gilg-1-2", label: "Tablet I (Part 2)" },
-  ],
-  "San-Gita-1": [
-    { id: "San-Gita-1-1", label: "Chapter 1 (Part 1)" },
-    { id: "San-Gita-1-2", label: "Chapter 1 (Part 2)" },
-  ],
-  "Hit-Annals-1": [
-    { id: "Hit-Annals-1-1", label: "Year 1 (Part 1)" },
-    { id: "Hit-Annals-1-2", label: "Year 1 (Part 2)" },
-  ],
-  "Egy-Ptah-1": [
-    { id: "Egy-Ptah-1-1", label: "Maxim 1 (Part 1)" },
-    { id: "Egy-Ptah-1-2", label: "Maxim 1 (Part 2)" },
-  ],
-  "Anab-1": [
-    { id: "Anab-1-1", label: "Book 1, Chapter 1 (Part 1)" },
-    { id: "Anab-1-2", label: "Book 1, Chapter 1 (Part 2)" },
-  ],
-  "Iliad-1": [
-    { id: "Iliad-1-1", label: "Book 1 (Part 1)" },
-    { id: "Iliad-1-2", label: "Book 1 (Part 2)" },
-  ],
-  "Odyssey-1": [
-    { id: "Odyssey-1-1", label: "Book 1 (Part 1)" },
-    { id: "Odyssey-1-2", label: "Book 1 (Part 2)" },
-  ],
-  "Aesop-1": [
-    { id: "Aesop-1-1", label: "The Fox and the Grapes (Part 1)" },
-    { id: "Aesop-1-2", label: "The Fox and the Grapes (Part 2)" },
-  ],
-};
+const SECTION_PREVIEW_OVERRIDES: Record<string, { id: string; label: string }[]> = {};
 
 const SECTION_SPLITS: Record<string, { base: TextSection; part: SplitPart; label: string }> = {
-  "Jn-1-1": { base: JOHN_1_1, part: 1, label: "John 1 (Part 1)" },
-  "Jn-1-2": { base: JOHN_1_1, part: 2, label: "John 1 (Part 2)" },
-  "Gen-1": { base: GENESIS_1, part: 1, label: "Chapter 1 (Part 1)" },
-  "Gen-2": { base: GENESIS_1, part: 2, label: "Chapter 1 (Part 2)" },
-  "Aen-1-1": { base: AENEID_1_1, part: 1, label: "Book 1 (Part 1)" },
-  "Aen-1-2": { base: AENEID_1_1, part: 2, label: "Book 1 (Part 2)" },
-  "Ps-23-1": { base: PSALM_23_1, part: 1, label: "Psalm 23 (Part 1)" },
-  "Ps-23-2": { base: PSALM_23_1, part: 2, label: "Psalm 23 (Part 2)" },
   "Syr-Jn-1-1": { base: SYRIAC_JOHN_1_1, part: 1, label: "John 1 (Part 1)" },
   "Syr-Jn-1-2": { base: SYRIAC_JOHN_1_1, part: 2, label: "John 1 (Part 2)" },
   "Cop-Jn-1-1": { base: COPTIC_JOHN_1_1, part: 1, label: "John 1 (Part 1)" },
@@ -2905,14 +2836,6 @@ const SECTION_SPLITS: Record<string, { base: TextSection; part: SplitPart; label
   "Hit-Annals-1-2": { base: HITTITE_ANNALS_1_1, part: 2, label: "Year 1 (Part 2)" },
   "Egy-Ptah-1-1": { base: EGYPTIAN_PTAHHOTEP_1_1, part: 1, label: "Maxim 1 (Part 1)" },
   "Egy-Ptah-1-2": { base: EGYPTIAN_PTAHHOTEP_1_1, part: 2, label: "Maxim 1 (Part 2)" },
-  "Anab-1-1": { base: ANABASIS_1_1, part: 1, label: "Book 1, Chapter 1 (Part 1)" },
-  "Anab-1-2": { base: ANABASIS_1_1, part: 2, label: "Book 1, Chapter 1 (Part 2)" },
-  "Iliad-1-1": { base: ILIAD_1_1, part: 1, label: "Book 1 (Part 1)" },
-  "Iliad-1-2": { base: ILIAD_1_1, part: 2, label: "Book 1 (Part 2)" },
-  "Odyssey-1-1": { base: ODYSSEY_1_1, part: 1, label: "Book 1 (Part 1)" },
-  "Odyssey-1-2": { base: ODYSSEY_1_1, part: 2, label: "Book 1 (Part 2)" },
-  "Aesop-1-1": { base: AESOP_1_1, part: 1, label: "The Fox and the Grapes (Part 1)" },
-  "Aesop-1-2": { base: AESOP_1_1, part: 2, label: "The Fox and the Grapes (Part 2)" },
 };
 
 const splitTextSection = (base: TextSection, id: string, label: string, part: SplitPart): TextSection => {
@@ -2951,6 +2874,21 @@ const enhanceText = (text: Text): Text => ({
 import { getMockTexts, getMockSections } from "./mockTexts";
 import {
   ALL_EXPANDED_SECTIONS,
+  JOHN_1_VERSES_6_18,
+  ILIAD_LINES_8_32,
+  ILIAD_LINES_33_67,
+  ILIAD_LINES_68_100,
+  ANABASIS_P2_5,
+  GENESIS_2_5,
+  GENESIS_6_10,
+  GENESIS_11_15,
+  GENESIS_16_20,
+  GENESIS_21_25,
+  GENESIS_26_31,
+  PSALM_23_3_6,
+  AENEID_LINES_8_33,
+  AENEID_LINES_34_66,
+  AENEID_LINES_67_100,
 } from "./corpus/expanded-sections";
 
 export const CorpusDB = {
@@ -3010,6 +2948,23 @@ export const CorpusDB = {
     if (sectionId === "Iliad-1-1") return ILIAD_1_1;
     if (sectionId === "Odyssey-1-1") return ODYSSEY_1_1;
     if (sectionId === "Aesop-1-1") return AESOP_1_1;
+    
+    // Expanded sections
+    if (sectionId === "Jn-1-2") return JOHN_1_VERSES_6_18;
+    if (sectionId === "Iliad-1-2") return ILIAD_LINES_8_32;
+    if (sectionId === "Iliad-1-3") return ILIAD_LINES_33_67;
+    if (sectionId === "Iliad-1-4") return ILIAD_LINES_68_100;
+    if (sectionId === "Anab-1-2") return ANABASIS_P2_5;
+    if (sectionId === "Gen-1-2") return GENESIS_2_5;
+    if (sectionId === "Gen-1-3") return GENESIS_6_10;
+    if (sectionId === "Gen-1-4") return GENESIS_11_15;
+    if (sectionId === "Gen-1-5") return GENESIS_16_20;
+    if (sectionId === "Gen-1-6") return GENESIS_21_25;
+    if (sectionId === "Gen-1-7") return GENESIS_26_31;
+    if (sectionId === "Ps-23-2") return PSALM_23_3_6;
+    if (sectionId === "Aen-1-2") return AENEID_LINES_8_33;
+    if (sectionId === "Aen-1-3") return AENEID_LINES_34_66;
+    if (sectionId === "Aen-1-4") return AENEID_LINES_67_100;
     
     const expandedMatch = ALL_EXPANDED_SECTIONS.find(s => s.id === sectionId);
     if (expandedMatch) return expandedMatch;
