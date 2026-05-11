@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, Library as LibraryIcon, Play, Filter, Clock, BookOpen, Crown, ChevronDown } from "lucide-react";
+import { Search, Library as LibraryIcon, Play, Filter, Clock, BookOpen, Crown, ChevronDown, CalendarDays, FileText, GitBranch, Languages, ShieldCheck, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,57 @@ import { LibraryService, LibraryText } from "../lib/services/libraryService";
 import { useAuth } from "../lib/hooks/useAuth";
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
+
+const PERIOD_FILTERS = [
+  'Hellenistic / Roman',
+  'Iron Age',
+  'Augustan',
+  'Late Antique',
+  'Classical',
+  'Archaic',
+  'Ancient Near Eastern',
+  'Classical Sanskrit',
+  'Late Bronze Age',
+  'Middle Egyptian',
+];
+
+const GENRE_FILTERS = [
+  'Gospel',
+  'Narrative',
+  'Epic',
+  'Psalm',
+  'History',
+  'Fable',
+  'Early Christian',
+  'Christian literature',
+  'Biblical prose/poetry',
+  'Royal / literary text',
+  'Wisdom instruction',
+];
+
+const CORPUS_TYPE_FILTERS = [
+  'biblical',
+  'classical',
+  'patristic',
+  'inscription',
+  'manuscript',
+  'islamicate',
+  'other',
+];
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  grc: "Ancient Greek",
+  "grc-koine": "Koine Greek",
+  hbo: "Biblical Hebrew",
+  lat: "Classical Latin",
+  syr: "Syriac",
+  cop: "Coptic",
+  arc: "Aramaic",
+  akk: "Akkadian",
+  san: "Sanskrit",
+  egy: "Egyptian Hieroglyphs",
+  hit: "Hittite",
+};
 
 export const Library = () => {
   const navigate = useNavigate();
@@ -27,6 +78,9 @@ export const Library = () => {
   const [minKnown, setMinKnown] = useState(0);
   const [activeSort, setActiveSort] = useState<SortOption>('comprehensible');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'corpus' | 'import'>('all');
+  const [periodFilter, setPeriodFilter] = useState('all');
+  const [genreFilter, setGenreFilter] = useState('all');
+  const [corpusTypeFilter, setCorpusTypeFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -40,6 +94,9 @@ export const Library = () => {
         language: activeLang,
         search: searchQuery,
         minKnownPercent: minKnown,
+        period: periodFilter,
+        genre: genreFilter,
+        corpusType: corpusTypeFilter,
         source: sourceFilter === 'all' ? undefined : sourceFilter
       }, getWordInfo);
       setTexts(data);
@@ -51,7 +108,7 @@ export const Library = () => {
       fetchLibrary();
     }, 300);
     return () => clearTimeout(timeoutId);
-  }, [user?.uid, activeLang, searchQuery, minKnown, sourceFilter, getWordInfo]);
+  }, [user?.uid, activeLang, searchQuery, minKnown, sourceFilter, periodFilter, genreFilter, corpusTypeFilter, getWordInfo]);
 
   const mainFilters = [
     { name: "All", id: "all", icon: "📚" },
@@ -108,6 +165,7 @@ export const Library = () => {
     sortedTexts.forEach(t => {
       let collectionName = "Other";
       if (t.sourceType === 'import') collectionName = "Your Imports";
+      else if (t.corpusTitle) collectionName = t.corpusTitle;
       else if (t.language === 'grc-koine' || t.language === 'grc') collectionName = "Greek Texts";
       else if (t.language === 'hbo') collectionName = "Hebrew Bible";
       else if (t.language === 'lat') collectionName = "Latin Library";
@@ -126,7 +184,7 @@ export const Library = () => {
             {t("library.title", "Library")}
           </h2>
           <p className="font-body text-[15px] italic text-ink2">
-            {t("library.subtitle", "Ancient wisdom, now familiar. Every word tracked, every text a milestone.")}
+            {t("library.subtitle", "Browse curated corpora, inspect metadata, and open texts in the reader.")}
           </p>
         </div>
       </header>
@@ -171,7 +229,7 @@ export const Library = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="text"
-              placeholder={t("library.searchPlaceholder", "Search lessons, authors...")}
+              placeholder={t("library.searchPlaceholder", "Search texts, corpora, authors, genres...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-white border border-bdr rounded-[12px] text-[14px] font-sans focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all shadow-sm"
@@ -240,7 +298,7 @@ export const Library = () => {
                     </div>
                  </div>
 
-                 <div className="w-full lg:w-48">
+                  <div className="w-full lg:w-48">
                      <label className="block text-[11px] font-bold text-muted uppercase mb-4">
                         Source
                       </label>
@@ -284,6 +342,48 @@ export const Library = () => {
                      <div className="h-6 bg-parch3 rounded w-3/4 mb-4"></div>
                      <div className="h-4 bg-parch3 rounded w-1/2 mb-8"></div>
                      <div className="h-2 bg-parch3 rounded w-full mb-4"></div>
+                  </div>
+
+                  <div className="w-full lg:w-48">
+                      <label className="block text-[11px] font-bold text-muted uppercase mb-4">
+                        Period
+                       </label>
+                       <select
+                          value={periodFilter}
+                          onChange={e => setPeriodFilter(e.target.value)}
+                          className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none"
+                       >
+                          <option value="all">All Periods</option>
+                          {PERIOD_FILTERS.map(period => <option key={period} value={period}>{period}</option>)}
+                       </select>
+                  </div>
+
+                  <div className="w-full lg:w-48">
+                      <label className="block text-[11px] font-bold text-muted uppercase mb-4">
+                        Genre
+                       </label>
+                       <select
+                          value={genreFilter}
+                          onChange={e => setGenreFilter(e.target.value)}
+                          className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none"
+                       >
+                          <option value="all">All Genres</option>
+                          {GENRE_FILTERS.map(genre => <option key={genre} value={genre}>{genre}</option>)}
+                       </select>
+                  </div>
+
+                  <div className="w-full lg:w-48">
+                      <label className="block text-[11px] font-bold text-muted uppercase mb-4">
+                        Corpus Type
+                       </label>
+                       <select
+                          value={corpusTypeFilter}
+                          onChange={e => setCorpusTypeFilter(e.target.value)}
+                          className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none"
+                       >
+                          <option value="all">All Types</option>
+                          {CORPUS_TYPE_FILTERS.map(type => <option key={type} value={type}>{type}</option>)}
+                       </select>
                   </div>
                   <div className="h-8 bg-parch3 rounded w-1/3 ml-auto"></div>
                </div>
@@ -331,10 +431,10 @@ export const Library = () => {
                             </div>
                         )}
                         <div>
-                          <div className="flex justify-between items-start mb-2 pr-8">
-                            <h4 className="text-[18px] font-serif font-medium text-ink leading-snug">
-                              {text.title}
-                            </h4>
+                           <div className="flex justify-between items-start mb-2 pr-8">
+                             <h4 className="text-[18px] font-serif font-medium text-ink leading-snug">
+                               {text.title}
+                             </h4>
                           </div>
           
                           <div className="flex items-center gap-2 mb-4">
@@ -343,20 +443,71 @@ export const Library = () => {
                              </div>
                              <span className="opacity-30 text-[10px]">•</span>
                              <span className="text-[10px] text-blue font-sans uppercase tracking-widest font-bold">
-                                {{
-                                  grc: "Ancient Greek",
-                                  "grc-koine": "Koine Greek",
-                                  hbo: "Biblical Hebrew",
-                                  lat: "Classical Latin",
-                                  syr: "Syriac",
-                                  cop: "Coptic",
-                                  arc: "Aramaic",
-                                  akk: "Akkadian",
-                                  san: "Sanskrit",
-                                  egy: "Egyptian Hieroglyphs",
-                                }[text.language] || text.language}
-                              </span>
-                          </div>
+                                 {LANGUAGE_LABELS[text.language] || text.language}
+                               </span>
+                           </div>
+
+                           <div className="grid grid-cols-2 gap-2 mb-5 text-[11px] text-ink3">
+                             <div className="flex items-center gap-1.5 min-w-0">
+                               <CalendarDays className="w-3.5 h-3.5 text-muted shrink-0" />
+                               <span className="truncate">{text.date || text.period || "Date unknown"}</span>
+                             </div>
+                             <div className="flex items-center gap-1.5 min-w-0">
+                               <FileText className="w-3.5 h-3.5 text-muted shrink-0" />
+                               <span className="truncate">{text.genre || "Text"}</span>
+                             </div>
+                             <div className="flex items-center gap-1.5 min-w-0">
+                               <LibraryIcon className="w-3.5 h-3.5 text-muted shrink-0" />
+                               <span className="truncate capitalize">{text.corpusType || "other"}</span>
+                             </div>
+                             <div className="flex items-center gap-1.5 min-w-0">
+                               <ShieldCheck className="w-3.5 h-3.5 text-muted shrink-0" />
+                               <span className="truncate">{text.licenseName || "License unknown"}</span>
+                             </div>
+                           </div>
+
+                           <div className="flex flex-wrap gap-1.5 mb-5">
+                             {[
+                               { key: 'morphology', label: 'Morphology', icon: Languages, active: text.availableTools.morphology },
+                               { key: 'translation', label: 'Translation', icon: BookOpen, active: text.availableTools.translation },
+                               { key: 'audio', label: 'Audio', icon: Volume2, active: text.availableTools.audio },
+                               { key: 'syntax', label: 'Syntax', icon: GitBranch, active: text.availableTools.syntax },
+                             ].map(tool => {
+                               const ToolIcon = tool.icon;
+                               return (
+                                 <span
+                                   key={tool.key}
+                                   className={cn(
+                                    "inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider",
+                                    tool.active ? "bg-blue/5 text-blue border-blue/20" : "bg-white text-muted border-bdr/40 opacity-60"
+                                   )}
+                                 >
+                                   <ToolIcon className="w-3 h-3" />
+                                   {tool.label}
+                                 </span>
+                               );
+                             })}
+                           </div>
+
+                           {text.sectionsPreview && text.sectionsPreview.length > 0 && (
+                             <div className="mb-5">
+                               <div className="text-[9px] uppercase font-bold tracking-widest text-muted mb-2">Open Section</div>
+                               <div className="flex flex-wrap gap-1.5">
+                                 {text.sectionsPreview.slice(0, 4).map(section => (
+                                   <button
+                                     key={section.id}
+                                     onClick={(event) => {
+                                       event.stopPropagation();
+                                       navigate(`/app/reader/${text.id}?section=${encodeURIComponent(section.id)}`);
+                                     }}
+                                     className="px-2 py-1 rounded-md bg-white border border-bdr/50 text-[10px] font-bold text-ink3 hover:text-blue hover:border-blue/30 transition-colors"
+                                   >
+                                     {section.label}
+                                   </button>
+                                 ))}
+                               </div>
+                             </div>
+                           )}
           
                           {/* Knowledge bars at a glance */}
                           <div className="flex h-1 gap-0.5 mb-6 opacity-40 group-hover:opacity-100 transition-opacity">
@@ -438,4 +589,3 @@ export const Library = () => {
     </div>
   );
 };
-
