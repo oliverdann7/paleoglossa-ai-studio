@@ -9,6 +9,7 @@ const Reader = lazy(() => import('./pages/Reader').then(module => ({ default: mo
 const Library = lazy(() => import('./pages/Library').then(module => ({ default: module.Library })));
 const Language = lazy(() => import('./pages/Language').then(module => ({ default: module.Language })));
 const Vocabulary = lazy(() => import('./pages/Vocabulary').then(module => ({ default: module.Vocabulary })));
+const Dictionary = lazy(() => import('./pages/Dictionary').then(module => ({ default: module.Dictionary })));
 const Import = lazy(() => import('./pages/Import').then(module => ({ default: module.Import })));
 const Review = lazy(() => import('./pages/Review').then(module => ({ default: module.Review })));
 const Statistics = lazy(() => import('./pages/Statistics').then(module => ({ default: module.Statistics })));
@@ -61,6 +62,8 @@ export default function App() {
             <Route path="language/:langId" element={<Language />} />
             <Route path="reader/:textId" element={<Reader />} />
             <Route path="vocabulary" element={<Vocabulary />} />
+            <Route path="dictionary" element={<Dictionary />} />
+            <Route path="dictionary/:languageId/:lemma" element={<Dictionary />} />
             <Route path="review" element={<Review />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="notes" element={<Notes />} />

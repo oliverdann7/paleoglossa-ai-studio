@@ -61,12 +61,14 @@ export const Vocabulary = () => {
     return matchesFilter && matchesSearch;
   });
 
-  const getDictionaryUrl = (lemma: string, langId: string) => {
+  const getDictionaryPath = (lemma: string, langId: string) => {
     const code = langId?.toLowerCase() || '';
-    if (code.includes('greek') || code === 'grc') return `https://lsj.gr/wiki/${encodeURIComponent(lemma)}`;
-    if (code.includes('latin') || code === 'lat') return `https://www.perseus.tufts.edu/hopper/morph?l=${encodeURIComponent(lemma)}&la=la`;
-    if (code.includes('hebrew') || code === 'hbo' || code === 'heb') return `https://www.pealim.com/search/?q=${encodeURIComponent(lemma)}`;
-    return `https://en.wiktionary.org/wiki/${encodeURIComponent(lemma)}`;
+    const languageId = code.includes('koine') ? 'grc-koine'
+      : code.includes('greek') ? 'grc'
+      : code.includes('hebrew') ? 'hbo'
+      : code.includes('latin') ? 'lat'
+      : langId;
+    return `/app/dictionary/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}`;
   };
 
   const getStatusClass = (status: string) => {
@@ -218,10 +220,10 @@ export const Vocabulary = () => {
                 </div>
 
                 <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                  <a href={getDictionaryUrl(word.term, word.language)} target="_blank" rel="noopener noreferrer"
-                     className="p-1.5 rounded text-muted hover:text-blue hover:bg-blue/5 transition-colors">
+                  <button onClick={() => navigate(getDictionaryPath(word.term, word.language))}
+                     className="p-1.5 rounded text-muted hover:text-blue hover:bg-blue/5 transition-colors" title="Open dictionary entry">
                     <ExternalLink className="w-4 h-4" />
-                  </a>
+                  </button>
                   <button onClick={() => handleDelete(word.id)} className="p-1.5 rounded text-ruby/40 hover:text-ruby hover:bg-ruby/5 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -263,4 +265,3 @@ export const Vocabulary = () => {
     </div>
   );
 };
-
