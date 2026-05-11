@@ -287,6 +287,7 @@ export const Reader = () => {
 
   const isHebrewFont = ["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "Hebrew"].includes(text?.language || "");
   const isRtl = text?.direction === "rtl" || ["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "egy", "Egyptian Hieroglyphs"].includes(text?.language || "");
+  const currentLanguageId = text?.language || text?.languageId || "unknown";
 
   const exampleSentences = useMemo(() => {
     if (!selectedWord) return [];
@@ -332,7 +333,7 @@ export const Reader = () => {
 
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(token.text);
-    u.lang = ttsLangMap[text?.languageId || ''] || 'el-GR';
+    u.lang = ttsLangMap[currentLanguageId] || 'el-GR';
     u.rate = Math.min(audioSpeed, 1.1);
     window.speechSynthesis.speak(u);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -444,31 +445,31 @@ export const Reader = () => {
       // Shortcuts for selected word
       if (selectedWord) {
         if (e.key === "1") {
-          setWordState(selectedWord.lemma, WordState.LEARNING, text?.languageId || "unknown");
+          setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
           return;
         }
         if (e.key === "2") {
-          setWordState(selectedWord.lemma, WordState.FAMILIAR, text?.languageId || "unknown");
+          setWordState(selectedWord.lemma, WordState.FAMILIAR, currentLanguageId);
           return;
         }
         if (e.key === "3") {
-          setWordState(selectedWord.lemma, WordState.KNOWN, text?.languageId || "unknown");
+          setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
           return;
         }
         if (e.key === "4") {
-          setWordState(selectedWord.lemma, WordState.IGNORED, text?.languageId || "unknown");
+          setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
           return;
         }
         if (e.key === "k" || e.key === "K") {
-          setWordState(selectedWord.lemma, WordState.KNOWN, text?.languageId || "unknown");
+          setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
           return;
         }
         if (e.key === "l" || e.key === "L") {
-          setWordState(selectedWord.lemma, WordState.LEARNING, text?.languageId || "unknown");
+          setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
           return;
         }
         if (e.key === "i" || e.key === "I") {
-          setWordState(selectedWord.lemma, WordState.IGNORED, text?.languageId || "unknown");
+          setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
           return;
         }
         if (e.key === "Escape") {
@@ -550,7 +551,7 @@ export const Reader = () => {
     chapters, 
     currentChapterIndex, 
     setWordState, 
-    text?.languageId,
+    currentLanguageId,
     currentScrollPage,
     totalPages
   ]);
@@ -565,7 +566,7 @@ export const Reader = () => {
 
     // Capture standard tokens (for seen state)
     const validTokens = tokensToMark.filter(t => t.lemma && t.lemma.length > 0)
-      .map(t => ({ lemma: t.lemma, languageId: text?.languageId || "unknown" }));
+      .map(t => ({ lemma: t.lemma, languageId: currentLanguageId }));
     
     validTokens.forEach(({ lemma, languageId }) => {
       setWordState(lemma, WordState.KNOWN, languageId);
@@ -666,16 +667,16 @@ export const Reader = () => {
           translatingId={isTranslatingId}
           onWordClick={(token, sentenceText, sentenceIndex) => {
             setSelectedWord({ ...token, sentenceText });
-            incrementEncounter(token.lemma, text?.languageId || "unknown");
-            setWordContext(token.lemma, sentenceText, text?.languageId || "unknown");
+            incrementEncounter(token.lemma, currentLanguageId);
+            setWordContext(token.lemma, sentenceText, currentLanguageId);
             if (readingMode === "page") setCurrentSentenceIndex(sentenceIndex);
           }}
           onAITranslate={handleAITranslate}
           onSavePhrase={(sentence) => {
             const phrase = sentence.tokens.map((t: any) => t.text).join(" ");
-            setWordState(phrase, WordState.LEARNING, text?.languageId || "unknown");
+            setWordState(phrase, WordState.LEARNING, currentLanguageId);
             if (sentence.translation || aiTranslations[sentence.id]) {
-              updateGloss(phrase, aiTranslations[sentence.id] || sentence.translation || "", text?.languageId || "unknown");
+              updateGloss(phrase, aiTranslations[sentence.id] || sentence.translation || "", currentLanguageId);
             }
             alert(t("reader.sentenceSaved"));
           }}
@@ -767,7 +768,7 @@ export const Reader = () => {
         showTranslit={showTranslit}
         isHebrewFont={isHebrewFont}
         isRtl={isRtl}
-        textLanguageId={text?.languageId || "unknown"}
+        textLanguageId={currentLanguageId}
         exampleSentences={exampleSentences}
         playTTS={(textStr, lang) => {
           if (!window.speechSynthesis) return;
