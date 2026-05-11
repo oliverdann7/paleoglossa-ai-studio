@@ -226,7 +226,7 @@ async function startServer() {
   });
 
   constructAiEndpoint('/api/ai/tutor/message', async (req, res, ai) => {
-    const { sessionId, message, context } = req.body;
+    const { message, context } = req.body;
     const contextInfo = context?.textId ? ` (context: ${context.textId}${context.sentenceIndex !== undefined ? `:${context.sentenceIndex}` : ''}${context.lemma ? `, lemma: ${context.lemma}` : ''})` : '';
     const prompt = `You are a philology tutor. The student asks: "${message}"${contextInfo}. Provide a clear, scholarly answer with examples where relevant. Be precise but pedagogical.`;
     const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });

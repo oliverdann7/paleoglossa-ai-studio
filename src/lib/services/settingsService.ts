@@ -8,10 +8,16 @@ const STORAGE_KEY = STORAGE_KEYS.SETTINGS;
 const DEFAULT_SETTINGS: UserSettings = {
   theme: 'parchment',
   fontSize: 24,
+  showParallelDefault: false,
+  dailyGoalWords: 50,
+  dailyGoalMinutes: 15,
+  showTranslit: false,
+  highlightIntensity: 'normal',
+  audioSpeedDefault: 1.0,
+  activeLanguages: [],
   transliterationMode: 'phonetic',
   targetLanguage: 'grc',
   uiLanguage: 'en',
-  showParallelDefault: false
 };
 
 export class SettingsService {

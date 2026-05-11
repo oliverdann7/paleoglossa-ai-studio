@@ -43,7 +43,7 @@ export function useSubscription() {
 
   useEffect(() => {
     if (!user || isDemoMode) {
-      setPlan('free');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(false);
       return;
     }

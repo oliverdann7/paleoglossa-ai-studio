@@ -89,6 +89,7 @@ export const Vocabulary = () => {
 
   // Reset to page 0 whenever filter or search changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(0);
   }, [activeFilter, searchQuery]);
 
