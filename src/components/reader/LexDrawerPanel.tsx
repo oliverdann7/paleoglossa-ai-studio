@@ -8,6 +8,7 @@ import { AIClient } from '@/lib/services/aiClient';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { ParadigmModal } from './ParadigmModal';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
+import { MorphologyService } from '@/lib/services/morphologyService';
 
 interface LexDrawerPanelProps {
   selectedWord: any;
@@ -71,6 +72,18 @@ export const LexDrawerPanel = ({
       requiresAttribution: attribution.requiresAttribution,
     };
   }, [text]);
+
+  const morphologyDisplay = useMemo(() => {
+    if (!selectedWord) return null;
+    return MorphologyService.formatMorphologyForDisplay(
+      textLanguageId,
+      selectedWord.morphology,
+      {
+        source: sourceInfo?.name || selectedWord.source,
+        confidence: selectedWord.confidence,
+      },
+    );
+  }, [selectedWord, sourceInfo?.name, textLanguageId]);
 
   const handleAiWordExplain = async () => {
     if (isAiWordLoading || !selectedWord) return;
@@ -283,31 +296,44 @@ export const LexDrawerPanel = ({
             </button>
           )}
 
-          {selectedWord.morphology && (
+          {morphologyDisplay && (
             <div className="mb-10">
-              <div className="eyebrow mb-3 flex items-center gap-2 text-ink">
+              <div className="eyebrow mb-3 flex items-center justify-between text-ink">
                 <span>Morphology</span>
+                {morphologyDisplay.confidence !== undefined && (
+                  <span className="text-[10px] text-muted normal-case tracking-normal">
+                    {Math.round(morphologyDisplay.confidence * 100)}% confidence
+                  </span>
+                )}
               </div>
 
-              {selectedWord.morphology.partOfSpeech && (
-                <div className="mb-3">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                {!morphologyDisplay.missing && (
                   <span className="inline-block px-4 py-1.5 bg-parch3/60 text-ink border border-bdr/60 rounded-full text-[13px] font-bold tracking-wide uppercase">
-                    {selectedWord.morphology.partOfSpeech}
+                    {morphologyDisplay.compact}
                   </span>
+                )}
+                {morphologyDisplay.source && (
+                  <span className="text-[11px] text-muted bg-white border border-bdr/40 rounded-full px-3 py-1">
+                    Source: {morphologyDisplay.source}
+                  </span>
+                )}
+              </div>
+
+              {morphologyDisplay.missing ? (
+                <div className="p-4 bg-parch/40 border border-dashed border-bdr rounded-xl text-[13px] text-muted">
+                  Morphological parsing is not available for this token yet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-2">
+                  {morphologyDisplay.expanded.map(({ label, value }) => (
+                    <div key={label} className="flex justify-between gap-3 px-3 py-2 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px]">
+                      <span className="opacity-60 lowercase">{label}</span>
+                      <span className="font-bold text-right">{value}</span>
+                    </div>
+                  ))}
                 </div>
               )}
-
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(selectedWord.morphology).map(([key, value]) => {
-                  if (key === 'partOfSpeech' || !value) return null;
-                  return (
-                    <div key={key} className="px-3 py-1 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px]">
-                      <span className="opacity-50 lowercase mr-1.5">{key}:</span>
-                      <span className="font-bold">{String(value)}</span>
-                    </div>
-                  );
-                })}
-              </div>
               <button
                 className="w-full mt-6 py-3 border-2 border-gold/30 text-gold text-[13px] font-bold rounded-xl hover:bg-gold/5 transition-all flex items-center justify-center gap-2"
                 onClick={() => setIsParadigmOpen(true)}
