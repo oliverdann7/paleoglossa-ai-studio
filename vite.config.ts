@@ -27,7 +27,11 @@ export default defineConfig(({mode}) => {
 
   return {
     plugins: [
-      react(), 
+      react({
+        babel: {
+          plugins: [['babel-plugin-react-compiler', {}]],
+        },
+      }),
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
