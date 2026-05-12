@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Library as LibraryIcon, Play, Filter, Clock, BookOpen, Crown, ChevronDown, CalendarDays, FileText, GitBranch, Languages, ShieldCheck, Volume2, Globe, Share2, Lock, GitFork } from "lucide-react";
@@ -69,7 +69,7 @@ export const Library = () => {
   const { getWordInfo, getAllProgress } = useKnowledge();
   // Stable ref so the fetch effect doesn't re-run when word states change
   const getWordInfoRef = useRef(getWordInfo);
-  getWordInfoRef.current = getWordInfo;
+  useLayoutEffect(() => { getWordInfoRef.current = getWordInfo; });
   const { t } = useTranslation();
   
   const [texts, setTexts] = useState<LibraryText[]>([]);
