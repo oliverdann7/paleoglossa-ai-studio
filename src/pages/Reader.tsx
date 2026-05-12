@@ -750,6 +750,7 @@ export const Reader = () => {
           sectionLabel={chapter?.title || ''}
           hasMorphology={!!text?.hasMorphology}
           sentenceCount={chapter?.sentences?.length ?? 0}
+          analysisStatus={text?.analysisStatus}
           onWordClick={handleWordClick}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}

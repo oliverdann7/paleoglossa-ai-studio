@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   ChevronDown,
   Globe2,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImportService, ImportedText } from "../lib/services/importService";
@@ -42,6 +43,7 @@ export const Import = () => {
   const [imageMimeType, setImageMimeType] = useState<string | null>(null);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langSelectRef = useRef<HTMLDivElement>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -63,6 +65,26 @@ export const Import = () => {
       setImageBase64(dataUrl.split(",")[1]);
     };
     reader.readAsDataURL(file);
+  };
+
+  const buildTitleFromText = (rawText: string): string => {
+    const firstLine = rawText.trim().split(/[\n.!?]/)[0]?.trim() || rawText.trim();
+    const candidate = firstLine.length > 0 ? firstLine : rawText.trim();
+    return candidate.length > 80 ? candidate.slice(0, 80) + "…" : candidate;
+  };
+
+  const buildRawSentences = (rawText: string): ImportedSentence[] => {
+    const sentenceTexts = rawText.split(/(?<=[.?!\n])\s+/).filter(s => s.trim().length > 0);
+    return sentenceTexts.map(sRaw => ({
+      tokens: sRaw.split(/\s+/).filter(Boolean).map(word => {
+        const clean = word.replace(/[.,/#!$%^&*;:{}=\-_`~()[\]»«"""'']/g, "").trim();
+        return {
+          text: clean || word,
+          lemma: (clean || word).toLowerCase(),
+          type: 'word' as const,
+        };
+      }).filter(t => t.text.length > 0),
+    }));
   };
 
   const calculateStats = (sentences: ImportedSentence[]) => {
@@ -167,42 +189,63 @@ export const Import = () => {
     if (!text.trim()) return;
     setIsProcessing(true);
     setProcessingStep("Linguistic analysis...");
+    setAnalysisError(null);
+
+    let sentences: ImportedSentence[];
+    let analysisStatus: 'analyzed' | 'raw' = 'analyzed';
+    let stats: ReturnType<typeof calculateStats>;
 
     try {
-      // Step 1: Analyze text (Segment, Tokenize, Lemmatize, Gloss, Transliterate)
-      const sentences = await AIClient.analyzeText(languageId, text, user?.uid);
-      
+      sentences = await AIClient.analyzeText(languageId, text, user?.uid);
       setProcessingStep("Mapping to your knowledge...");
-      
-      // Step 2: Calculate real stats
-      const stats = calculateStats(sentences);
-
-      const imported: ImportedText = {
-        id: `imp-${Date.now()}`,
-        userId: user?.uid || 'anonymous',
-        title: text.slice(0, 40) + (text.length > 40 ? "..." : ""),
-        rawContent: text,
-        sentences,
-        languageId,
-        sourceType: activeTab === 'ocr' ? 'image' : 'paste',
-        status: 'complete',
-        visibility: 'private',
-        stats,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      await ImportService.saveImport(user ? user.uid : null, imported);
-      refreshImports();
-
-      setResult(imported);
+      stats = calculateStats(sentences);
     } catch (error: any) {
-      console.error("Import failed:", error);
-      alert("Import failed: " + error.message);
-    } finally {
-      setIsProcessing(false);
-      setProcessingStep("");
+      console.error("AI analysis failed:", error);
+      // Graceful degradation: save raw text so the user can still read it
+      sentences = buildRawSentences(text);
+      analysisStatus = 'raw';
+      const wordsList = text.split(/\s+/).filter(Boolean);
+      stats = {
+        totalWords: wordsList.length,
+        uniqueWords: new Set(wordsList.map(w => w.toLowerCase())).size,
+        knownWords: 0,
+        newWords: wordsList.length,
+        learningWords: 0,
+        percentKnown: 0,
+        percentLearning: 0,
+      };
+      setAnalysisError(error.message || "AI analysis unavailable");
+      setProcessingStep("Saving without AI analysis...");
     }
+
+    const sourceTypeMap: Record<string, ImportedText['sourceType']> = {
+      paste: 'paste',
+      file: 'file',
+      url: 'url',
+      ocr: 'image',
+    };
+
+    const imported: ImportedText = {
+      id: `imp-${Date.now()}`,
+      userId: user?.uid || 'anonymous',
+      title: buildTitleFromText(text),
+      rawContent: text,
+      sentences,
+      languageId,
+      sourceType: sourceTypeMap[activeTab] || 'paste',
+      status: 'complete',
+      analysisStatus,
+      visibility: 'private',
+      stats,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    await ImportService.saveImport(user ? user.uid : null, imported);
+    refreshImports();
+    setResult(imported);
+    setIsProcessing(false);
+    setProcessingStep("");
   };
 
   const handleSample = (sample: string, langId: string) => {
@@ -524,6 +567,18 @@ export const Import = () => {
           </div>
 
           <div className="p-10">
+            {analysisError && (
+              <div className="mb-8 p-4 bg-amber/10 border border-amber/20 rounded-xl flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-bold text-amber text-[13px] mb-1">AI analysis unavailable</div>
+                  <p className="text-[12px] text-ink3 leading-relaxed">
+                    Your text was saved with basic tokenization only — no morphology or glosses.
+                    You can still read it in the Reader. AI analysis can be retried later.
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
               <div className="text-center">
                 <div className="text-[32px] font-serif font-bold text-ink">
