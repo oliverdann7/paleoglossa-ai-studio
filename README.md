@@ -82,15 +82,15 @@ Texts are marked with their completion status in the app (Sample / In Progress /
 | Iliad Book 1 (Perseus) | Ancient Greek | ✅ Complete (lines 1-100) | Full (ll. 1-7), Basic (ll. 8-100) | Perseus (CC BY-SA 3.0) |
 | Anabasis 1.1 (Perseus) | Ancient Greek | ✅ Complete | Full (§1-3), Basic (§4-6) | Perseus (CC BY-SA 3.0) |
 | Aeneid Book 1 (Perseus) | Latin | ✅ Complete (lines 1-100) | Full (ll. 1-7), Basic (ll. 8-100) | Perseus (CC BY-SA 3.0) |
-| Aesop's Fables | Ancient Greek | 🧪 Sample (1 sentence) | Basic | Perseus (CC BY-SA 3.0) |
-| Odyssey Book 1 | Ancient Greek | 🧪 Sample (1 sentence) | Basic | Perseus (CC BY-SA 3.0) |
-| Syriac Peshitta John | Syriac | 🧪 Sample (3 sentences) | Basic | Project Gutenberg (Public Domain) |
-| Coptic Sahidic John | Coptic | 🧪 Sample (3 sentences) | Basic | Project Gutenberg (Public Domain) |
-| Targum Onkelos | Aramaic | 🧪 Sample (1 sentence) | Basic | Project Gutenberg (Public Domain) |
-| Gilgamesh Tablet I | Akkadian | 🧪 Sample (1 sentence) | Basic | Project Gutenberg (Public Domain) |
-| Bhagavad Gita | Sanskrit | 🧪 Sample (1 sentence) | Basic | Project Gutenberg (Public Domain) |
-| Annals of Mursili II | Hittite | 🧪 Sample (1 sentence) | Basic | Project Gutenberg (Public Domain) |
-| Maxims of Ptahhotep | Egyptian | 🧪 Sample (1 sentence) | Basic | Project Gutenberg (Public Domain) |
+| Aesop's Fables | Ancient Greek | ✅ Partial (7 sentences) | Word-by-word tokens | Perseus (CC BY-SA 3.0) |
+| Odyssey Book 1 | Ancient Greek | ✅ Partial (10 sentences) | Full (ll. 1-5), Basic (ll. 6-21) | Perseus (CC BY-SA 3.0) |
+| Syriac Peshitta John | Syriac | ✅ Partial (6 sentences) | Basic tokens | Project Gutenberg (Public Domain) |
+| Coptic Sahidic John | Coptic | ✅ Partial (6 sentences) | Basic tokens | Project Gutenberg (Public Domain) |
+| Targum Onkelos | Aramaic | ✅ Partial (6 sentences) | Basic tokens | Project Gutenberg (Public Domain) |
+| Gilgamesh Tablet I | Akkadian | ✅ Partial (6 sentences) | Basic tokens | Project Gutenberg (Public Domain) |
+| Bhagavad Gita | Sanskrit | ✅ Partial (6 sentences) | Basic tokens | Project Gutenberg (Public Domain) |
+| Annals of Mursili II | Hittite | ✅ Partial (6 sentences) | Basic tokens | Project Gutenberg (Public Domain) |
+| Maxims of Ptahhotep | Egyptian | ✅ Partial (6 sentences) | Basic tokens | Project Gutenberg (Public Domain) |
 
 ### How to add a full text
 

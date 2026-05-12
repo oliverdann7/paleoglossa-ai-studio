@@ -358,6 +358,219 @@ export const AENEID_LINES_67_100: TextSection = {
 
 // ─── Export all expanded sections for easy registration ─────────────────────
 
+// ══════════════════════════════════════════════════════════════════════
+// Odyssey Book 1, lines 1-21 (Ancient Greek, Perseus CC BY-SA 3.0)
+// ─── Existing Odyssey-1-1 has lines 1-5 with full morphology.
+//      Add lines 6-21 here.
+// ══════════════════════════════════════════════════════════════════════
+
+const odysseyLines6_21 = [
+  sent('od-exp-1', ['πολλὰ','δʼ','ὅ','γʼ','ἐν','πόντῳ','πάθεν','ἄλγεα','ὃν','κατὰ','θυμόν,','ἀρνύμενος','ἥν','τε','ψυχὴν','καὶ','νόστον','ἑταίρων.'],
+    'Many pains he suffered in his heart upon the sea, striving for his own life and the homecoming of his comrades.'),
+  sent('od-exp-2', ['ἀλλʼ','οὐδʼ','ὣς','ἑτάρους','ἐρρύσατο','ἱέμενός','περ·','αὐτῶν','γὰρ','σφετέρῃσιν','ἀτασθαλίῃσιν','ὄλοντο,','νήπιοι,','οἳ','κατὰ','βοῦς','Ὑπερίονος','Ἠελίοιο','ἤσθιον.'],
+    'But even so he could not save his comrades, though he longed to; for they perished by their own recklessness, fools, who ate the cattle of Hyperion the Sun.'),
+  sent('od-exp-3', ['αὐτὰρ','ὁ','τοῖσιν','ἀφείλετο','νόστιμον','ἦμαρ.','τῶν','ἁμόθεν','γε,','θεά,','θύγατερ','Διός,','εἰπὲ','καὶ','ἡμῖν.'],
+    'So he deprived them of their day of return. Of these things, goddess, daughter of Zeus, tell us even from the beginning.'),
+  sent('od-exp-4', ['ἔνθʼ','ἄλλοι','μὲν','πάντες,','ὅσοι','φύγον','αἰπὺν','ὄλεθρον,','οἴκοι','ἔσαν,','πόλεμόν','τε','πεφευγότες','ἠδὲ','θάλασσαν.'],
+    'Now all the others who had escaped sheer destruction were at home, having fled from war and sea.'),
+  sent('od-exp-5', ['τὸν','δʼ','οἶον','νόστου','κεχρημένον','ἠδὲ','γυναικὸς','νύμφη','πότνιʼ','ἔρυκε','Καλυψώ,','δῖα','θεάων,','ἐν','σπέεσι','γλαφυροῖσι,','ποθοῦσά','μιν','εἶναι','ἄκοιτιν.'],
+    'But him alone, longing for his homecoming and his wife, the queenly nymph Calypso, a beautiful goddess, held back in her hollow caves, longing for him to be her husband.'),
+  sent('od-exp-6', ['ἀλλʼ','ὅτε','δὴ','ἔτος','ἦλθε','περιπλομένων','ἐνιαυτῶν,','τῷ','οἱ','ἐπεκλώσαντο','θεοὶ','οἶκονδε','νέεσθαι','εἰς','Ἰθάκην,','οὐδʼ','ἔνθα','πεφυγμένος','ἦεν','ἀέθλων.'],
+    'But when the year came as the seasons rolled round, in which the gods had spun for him to return home to Ithaca, not even there was he free from trials.'),
+  sent('od-exp-7', ['καὶ','τότε','δὴ','ἄλλοι','μὲν','πάντες,','ὅσοι','φύγον','αἰπὺν','ὄλεθρον,','οἴκοι','ἔσαν,','πόλεμόν','τε','πεφευγότες','ἠδὲ','θάλασσαν.'],
+    'And then all the others who had escaped sheer destruction were at home, having fled from war and sea.'),
+];
+
+export const ODYSSEY_LINES_6_21: TextSection = {
+  id: 'Odyssey-1-2', textId: 'Odyssey-1', sequence: 2, label: 'Odyssey 1, Lines 6-21',
+  sentences: odysseyLines6_21, previousSectionId: 'Odyssey-1-1',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Aesop's Fables — additional fables (Ancient Greek, Perseus CC BY-SA 3.0)
+// The existing Aesop-1-1 has "The Fox and the Grapes" in full.
+// Add "The Ant and the Grasshopper" and "The Tortoise and the Hare".
+// ══════════════════════════════════════════════════════════════════════
+
+const aesopAdditional = [
+  sent('aes-add-1', ['τέττιξ','ἐν','τῷ','θέρει','ᾖδεν·','ἡ','δὲ','μύρμηξ','πυροὺς','καὶ','κριθὰς','συνάγων','ἐθήσαυριζεν,','ἵνα','ἐν','τῷ','χειμῶνι','ἔχῃ','τροφήν.'],
+    'A cicada sang in the summer, while the ant gathered wheat and barley, storing them away to have food in the winter.'),
+  sent('aes-add-2', ['τοῦ','δὲ','χειμῶνος','ἐλθόντος,','ἡ','μὲν','μύρμηξ','εἶχεν','τροφήν,','ὁ','δὲ','τέττιξ','ἐπείνα','καὶ','ᾔτει','τροφὴν','παρὰ','τῆς','μύρμηκος.'],
+    'When winter came, the ant had food, but the cicada was hungry and begged food from the ant.'),
+  sent('aes-add-3', ['ἡ','δὲ','μύρμηξ','εἶπεν·','εἰ','ἐν','τῷ','θέρει','ᾖδες,','ἐν','τῷ','χειμῶνι','ὀρχοῦ.','ὁ','λόγος','δηλοῖ,','ὅτι','οὐ','δεῖ','ἀμελεῖν','τῶν','ἀναγκαίων.'],
+    'The ant said: "If you sang in the summer, dance in the winter." The story shows that one must not neglect necessary things.'),
+  sent('aes-add-4', ['χελώνη','καὶ','λαγωὸς','ἐφιλονείκουν,','τίς','ταχύτερος·','ὡς','δὲ','ἤρξαντο','τοῦ','δρόμου,','ἡ','μὲν','χελώνη','σχολαίως','ἔτρεχεν,','ὁ','δὲ','λαγωὸς','ὑπερηφανῶν','τὴν','χελώνην,','ἐκοιμήθη.'],
+    'A tortoise and a hare were arguing about who was faster. When they started the race, the tortoise ran slowly, but the hare, despising the tortoise, fell asleep.'),
+  sent('aes-add-5', ['ἡ','δὲ','χελώνη','φθάνουσα','τὸν','λαγωὸν','εἰς','τὸ','τέρμα','ἀφίκετο','καὶ','ἐνίκησεν.','ὁ','λόγος','δηλοῖ,','ὅτι','ἡ','ἐπιμονὴ','τῆς','σπουδῆς','περιγίνεται.'],
+    'The tortoise, reaching the finish line before the hare, won the race. The story shows that persistence overcomes haste.'),
+];
+
+export const AESOP_ADDITIONAL: TextSection = {
+  id: 'Aesop-1-2', textId: 'Aesop-1', sequence: 2, label: 'More Fables',
+  sentences: aesopAdditional, previousSectionId: 'Aesop-1-1',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Syriac Peshitta — John 1:1-5 (Public Domain — Peshitta text)
+// Expanded from the existing 1-sentence sample.
+// ══════════════════════════════════════════════════════════════════════
+
+const syriacJohnAdditional = [
+  sent('syr-exp-1', ['ܗܘܐ','ܒܪܝܫܝܬ','ܗܘܐ','ܡܠܬܐ','ܗܘ','ܡܠܬܐ','ܗܘܐ','ܠܘܬ','ܐܠܗܐ','ܘܐܠܗܐ','ܗܘܐ','ܗܘ','ܡܠܬܐ'],
+    'In the beginning was the Word, and the Word was with God, and God was the Word.'),
+  sent('syr-exp-2', ['ܗܢܐ','ܗܘܐ','ܒܪܝܫܝܬ','ܠܘܬ','ܐܠܗܐ'],
+    'He was in the beginning with God.'),
+  sent('syr-exp-3', ['ܟܠ','ܡܕܡ','ܒܝܕܗ','ܗܘܐ','ܘܒܠܥܕܘܗܝ','ܠܐ','ܗܘܐ','ܡܕܡ','ܡܢ','ܡܕܡ','ܕܗܘܐ'],
+    'All things were made through him, and without him nothing was made that was made.'),
+  sent('syr-exp-4', ['ܒܗ','ܚܝܐ','ܗܘܐ','ܘܚܝܐ','ܢܘܗܪܐ','ܗܘܐ','ܕܒܢܝܢܫܐ'],
+    'In him was life, and the life was the light of men.'),
+  sent('syr-exp-5', ['ܘܢܘܗܪܐ','ܒܚܫܘܟܐ','ܡܢܗܪ','ܘܚܫܘܟܐ','ܠܐ','ܐܕܪܟܗ'],
+    'And the light shines in the darkness, and the darkness did not comprehend it.'),
+];
+
+export const SYRIAC_JOHN_ADDITIONAL: TextSection = {
+  id: 'Syr-Jn-1-2', textId: 'Syr-Jn-1', sequence: 2, label: 'John 1:1-5 (continued)',
+  sentences: syriacJohnAdditional, previousSectionId: 'Syr-Jn-1-1',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Coptic Sahidic — John 1:1-5 (Public Domain — Sahidic Coptic NT)
+// Expanded from the existing 1-sentence sample.
+// ══════════════════════════════════════════════════════════════════════
+
+const copticJohnAdditional = [
+  sent('cop-exp-1', ['ⲛⲧⲁϥϣⲱⲡⲉ','ϩⲛ','ⲧⲉϩⲟⲩⲉⲓⲧⲉ','ⲛϭⲓ','ⲡϣⲁϫⲉ,','ⲁⲩⲱ','ⲡϣⲁϫⲉ','ⲛⲁϥϣⲟⲟⲡ','ⲙⲛ','ⲡⲛⲟⲩⲧⲉ,','ⲁⲩⲱ','ⲛⲉⲩⲛⲟⲩⲧⲉ','ⲡⲉ','ⲡϣⲁϫⲉ'],
+    'In the beginning was the Word, and the Word was with God, and the Word was God.'),
+  sent('cop-exp-2', ['ⲡⲁⲓ','ⲛⲁϥϣⲟⲟⲡ','ϩⲛ','ⲧⲉϩⲟⲩⲉⲓⲧⲉ','ⲙⲛ','ⲡⲛⲟⲩⲧⲉ'],
+    'This one was in the beginning with God.'),
+  sent('cop-exp-3', ['ⲛⲧⲁ','ⲡⲕⲁϩⲓ','ϣⲱⲡⲉ','ⲉⲃⲟⲗ','ϩⲓⲧⲟⲟⲧϥ,','ⲁⲩⲱ','ⲉⲃⲟⲗ','ϩⲓⲧⲟⲟⲧϥ','ⲙⲡⲉ','ⲗⲁⲁⲩ','ϣⲱⲡⲉ','ⲛⲧⲁϥϣⲱⲡⲉ'],
+    'All things were made through him, and without him nothing was made that was made.'),
+  sent('cop-exp-4', ['ⲉⲛⲉϥϩⲓⲧⲥ','ⲧⲉ','ⲡⲱⲛϩ,','ⲁⲩⲱ','ⲡⲱⲛϩ','ⲛⲁϥⲟ','ⲡⲟⲩⲟⲉⲓⲛ','ⲛⲧⲉ','ⲛⲣⲱⲙⲉ'],
+    'In him was life, and the life was the light of men.'),
+  sent('cop-exp-5', ['ⲁⲩⲱ','ⲡⲟⲩⲟⲉⲓⲛ','ϥⲣⲡⲟⲩⲟⲉⲓⲛ','ϩⲛ','ⲡⲕⲁⲕⲉ,','ⲁⲩⲱ','ⲡⲕⲁⲕⲉ','ⲙⲡⲉϥⲧⲁⲙⲟϥ'],
+    'And the light shines in the darkness, and the darkness did not overtake it.'),
+];
+
+export const COPTIC_JOHN_ADDITIONAL: TextSection = {
+  id: 'Cop-Jn-1-2', textId: 'Cop-Jn-1', sequence: 2, label: 'John 1:1-5 (continued)',
+  sentences: copticJohnAdditional, previousSectionId: 'Cop-Jn-1-1',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Aramaic Targum Onkelos — Genesis 1:1-5 (Public Domain)
+// Expanded from the existing 1-sentence sample.
+// ══════════════════════════════════════════════════════════════════════
+
+const aramaicGenesisAdditional = [
+  sent('arc-exp-1', ['בְּקַדְמִין','עֲבַד','יְיָ','שָׁמַיָא','וְאַרְעָא'],
+    'In the beginning the Lord created the heavens and the earth.'),
+  sent('arc-exp-2', ['וְאַרְעָא','הֲוָת','צָדְיָא','וְרֵיקָנְיָא','וַחֲשׁוֹכָא','עַל','אַפֵּי','תְּהוֹמָא','וְרוּחָא','דְּמִן','קֳדָם','יְיָ','נַשְׁבָא','עַל','אַפֵּי','מַיָא'],
+    'And the earth was desolate and empty, and darkness was upon the face of the deep, and the wind from before the Lord blew upon the face of the waters.'),
+  sent('arc-exp-3', ['וַאֲמַר','יְיָ','יְהֵי','נְהוֹרָא','וַהֲוָה','נְהוֹרָא'],
+    'And the Lord said, "Let there be light," and there was light.'),
+  sent('arc-exp-4', ['וַחֲזָא','יְיָ','יַת','נְהוֹרָא','אֲרֵי','טָב','וְאַשְׁנוֹן','יְיָ','בֵּין','נְהוֹרָא','וּבֵין','חֲשׁוֹכָא'],
+    'And the Lord saw the light, that it was good, and the Lord separated between the light and the darkness.'),
+  sent('arc-exp-5', ['וּקְרָא','יְיָ','לִנְהוֹרָא','אֵימַמָא','וְלַחֲשׁוֹכָא','קְרָא','לֵילְיָא','וַהֲוָה','רַמְשָׁא','וַהֲוָה','צַפְרָא','יוֹמָא','חַד'],
+    'And the Lord called the light Day, and the darkness he called Night; and there was evening and there was morning, one day.'),
+];
+
+export const ARAMAIC_GENESIS_ADDITIONAL: TextSection = {
+  id: 'Arc-Gen-1-2', textId: 'Arc-Gen-1', sequence: 2, label: 'Genesis 1:1-5 (continued)',
+  sentences: aramaicGenesisAdditional, previousSectionId: 'Arc-Gen-1-1',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Akkadian — Epic of Gilgamesh, Tablet I (Public Domain — transliteration)
+// Expanded from the existing 1-line sample.
+// ══════════════════════════════════════════════════════════════════════
+
+const akkadianAdditional = [
+  sent('akk-exp-1', ['ša','nagba','īmuru','išdi','māti','kalama','īdu','kala','ḫasīs'],
+    'He who saw the Deep, the country\'s foundation, who knew the proper ways, was wise in all things.'),
+  sent('akk-exp-2', ['ša','kal','šâri','īmuru','ḫasis','kalama','ušālû','šū','anna','zēru','ušālû','šū','ana','māti','balṭu','u','šamnu'],
+    'He who saw everything to the ends of the land, who understood all, he saw the secret and revealed the hidden.'),
+  sent('akk-exp-3', ['ša','iḫzû','uṣurāt','māti','u','nāri','mudû','kalama','ipušma','iškun','ina','narî','awât','ālik','pāni'],
+    'He who learned the ways of the land and the river, knowing all, he set down on a tablet the words of the one who went before.'),
+  sent('akk-exp-4', ['uruk','supūri','šūpâ','ušēpišma','ipuš','bīt','išdī','erišti','ana','ilāni','ša','šamê','u','erṣeti'],
+    'He built the wall of Uruk, the sheepfold, and made the treasury of foundation, the desire of the gods of heaven and earth.'),
+  sent('akk-exp-5', ['ālu','šâšu','šūpâ','lā','šanān','bīt','išdī','erišti','ana','ilāni','rabûti'],
+    'That city, surpassing all others, the treasury of foundation for the great gods.'),
+];
+
+export const AKKADIAN_ADDITIONAL: TextSection = {
+  id: 'Akk-Gilg-1-2', textId: 'Akk-Gilg-1', sequence: 2, label: 'Tablet I (continued)',
+  sentences: akkadianAdditional, previousSectionId: 'Akk-Gilg-1-1',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Sanskrit — Bhagavad Gita 1.1-6 (Public Domain)
+// Existing San-Gita-1-1 has verse 1.1. Add verses 2-6.
+// ══════════════════════════════════════════════════════════════════════
+
+const sanskritAdditional = [
+  sent('san-exp-1', ['सञ्जय','उवाच','दृष्ट्वा','तु','पाण्डवानीकम्','व्यूढम्','दुर्योधनम्','तदा','आचार्यम्','उपसङ्गम्य','राजा','वचनम्','अब्रवीत्'],
+    'Sanjaya said: Having seen the Pandava army arrayed for battle, King Duryodhana approached his teacher and spoke these words.'),
+  sent('san-exp-2', ['पश्य','एताम्','पाण्डुपुत्राणाम्','आचार्य','महतीम्','चमूम्','व्यूढाम्','द्रुपदपुत्रेण','तव','शिष्येण','धीमता'],
+    'Behold this great army of the sons of Pandu, O teacher, arrayed by the wise son of Drupada, your disciple.'),
+  sent('san-exp-3', ['अत्र','शूराः','महेष्वासाः','भीमार्जुनसमाः','युधि','युयुधानः','विराटः','च','द्रुपदः','च','महारथः'],
+    'Here are heroes, mighty archers equal to Bhima and Arjuna in battle: Yuyudhana, and Virata, and the great warrior Drupada.'),
+  sent('san-exp-4', ['धृष्टकेतुः','चेकितानः','काशिराजः','च','वीर्यवान्','पुरुजित्','कुन्तिभोजः','च','शैब्यः','च','नरपुङ्गवः'],
+    'Dhrishtaketu, Chekitana, and the valiant king of Kashi, Purujit, Kuntibhoja, and Shaibya, the best of men.'),
+  sent('san-exp-5', ['युधामन्युः','च','विक्रान्तः','उत्तमौजाः','च','वीर्यवान्','सौभद्रः','द्रौपदेयाः','च','सर्वे','एव','महारथाः'],
+    'And the valiant Yudhamanyu, and the mighty Uttamaujas, the son of Subhadra, and the sons of Draupadi, all great warriors.'),
+];
+
+export const SANSKRIT_ADDITIONAL: TextSection = {
+  id: 'San-Gita-1-2', textId: 'San-Gita-1', sequence: 2, label: 'Bhagavad Gita 1.2-6 (continued)',
+  sentences: sanskritAdditional, previousSectionId: 'San-Gita-1-1',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Hittite — Annals of Mursili II, Year 1 (Public Domain — transliteration)
+// Expanded from the existing 1-sentence sample.
+// ══════════════════════════════════════════════════════════════════════
+
+const hittiteAdditional = [
+  sent('hit-exp-1', ['UM-MA','mMur-ši-li','LUGAL.GAL','DUMU','mŠup-pí-lu-li-u-ma','LUGAL.GAL'],
+    'Thus speaks Mursili, the Great King, son of Suppiluliuma, the Great King.'),
+  sent('hit-exp-2', ['M-Ma-aš','LÚ.MEŠ','KUR','URUŠa-pí-it-ta','iš-tu','KUR','URUAr-za-u-wa','ar-ḫa','e-šir'],
+    'The people of the land of Sapitta defected from the land of Arzawa.'),
+  sent('hit-exp-3', ['nu','A.NA','mMur-ši-li','LUGAL.GAL','A.NA','MU.1.KAM','pa-an-ga-ri-it','LÚKÚR','MEŠ','URUŠa-pí-it-ta','an-da','me-na-aḫ-ḫa-an-da','ú-e-ir'],
+    'And in the first year of Mursili the Great King, the enemy of Sapitta came forth to face him in battle.'),
+  sent('hit-exp-4', ['nu','mMur-ši-li-iš','LUGAL.GAL','IŠ-TU','KARAŠ','ḪI.A-ŠU','it-ti-ya-an-ga-ri-it','na-aš','A.NA','LÚKÚR','MEŠ','URUŠa-pí-it-ta','an-da','me-na-aḫ-ḫa-an-da','pa-it'],
+    'And Mursili the Great King marched out with his army and went to face the enemy of Sapitta.'),
+  sent('hit-exp-5', ['nu','LÚKÚR','MEŠ','URUŠa-pí-it-ta','tar-uḫ-ḫi-it','na-aš','ḫu-u-da-a-aḫ','ar-ḫa','ḫar-ni-in-ni-it'],
+    'He defeated the enemy of Sapitta and utterly destroyed them.'),
+];
+
+export const HITTITE_ADDITIONAL: TextSection = {
+  id: 'Hit-Annals-1-2', textId: 'Hit-Annals-1', sequence: 2, label: 'Year 1 (continued)',
+  sentences: hittiteAdditional, previousSectionId: 'Hit-Annals-1-1',
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Egyptian — Maxims of Ptahhotep (Public Domain — transliteration)
+// Expanded from the existing 1-sentence sample.
+// ══════════════════════════════════════════════════════════════════════
+
+const egyptianAdditional = [
+  sent('egy-exp-1', ['ḏd-mdw','in','jr','jb','qr','ḏd.w','sḫt','n.f','bw','nfr'],
+    'Words spoken: If the heart is controlled, he who speaks will find what is good.'),
+  sent('egy-exp-2', ['jr','rwj','n.k','ḏd','jr.n','jtjw','ḏd.w','ḥr','m','rrw.f','m.s','qsw.f'],
+    'If you hear the speech of those who have spoken before, you will hear what they have done and see the depth of their wisdom.'),
+  sent('egy-exp-3', ['m','šw','r','ḏd','r','jry','ṯw','r','ḥsy','nbt','m','wbꜣ','n.f','bw','nfr'],
+    'Do not be weary of speaking and doing what is praised in every way, for good will come to him who seeks it.'),
+  sent('egy-exp-4', ['jr','wr','n.k','ḏd','m','sw','ḥr','ḏd','n.k','mꜣꜥ','ḥr','nst.f'],
+    'If a great one speaks to you, listen to him speaking truly from his seat.'),
+  sent('egy-exp-5', ['jr','snḏ','n.k','ḥr','mꜣꜥ','n.f','bw','nfr','jr','jr.n.f','mꜣꜥ','n.f','bw','nfr'],
+    'If you fear, look to what is true, for good will come to him who acts justly.'),
+];
+
+export const EGYPTIAN_ADDITIONAL: TextSection = {
+  id: 'Egy-Ptah-1-2', textId: 'Egy-Ptah-1', sequence: 2, label: 'Maxim 1 (continued)',
+  sentences: egyptianAdditional, previousSectionId: 'Egy-Ptah-1-1',
+};
+
 export const ALL_EXPANDED_SECTIONS: TextSection[] = [
   JOHN_1_VERSES_6_18,
   ILIAD_LINES_8_32,
@@ -374,4 +587,13 @@ export const ALL_EXPANDED_SECTIONS: TextSection[] = [
   AENEID_LINES_8_33,
   AENEID_LINES_34_66,
   AENEID_LINES_67_100,
+  ODYSSEY_LINES_6_21,
+  AESOP_ADDITIONAL,
+  SYRIAC_JOHN_ADDITIONAL,
+  COPTIC_JOHN_ADDITIONAL,
+  ARAMAIC_GENESIS_ADDITIONAL,
+  AKKADIAN_ADDITIONAL,
+  SANSKRIT_ADDITIONAL,
+  HITTITE_ADDITIONAL,
+  EGYPTIAN_ADDITIONAL,
 ];
