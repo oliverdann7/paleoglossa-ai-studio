@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { WordState } from '../constants/wordStates';
 import { VocabularyService, KnowledgeMap, WordInfo, SRSData } from '../services/vocabularyService';
 import { STORAGE_KEYS } from '../constants/storage';
@@ -10,6 +10,10 @@ export const useVocabulary = () => {
   const [knowledge, setKnowledge] = useState<KnowledgeMap>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Always-current reference to knowledge — used by stable callbacks so they
+  // never need to close over the changing state object.
+  const knowledgeRef = useRef<KnowledgeMap>(knowledge);
+  knowledgeRef.current = knowledge;
 
   useEffect(() => {
     let active = true;
@@ -74,17 +78,18 @@ export const useVocabulary = () => {
     VocabularyService.updateSRS(userId, lemma, srs, state, languageId);
   }, [userId]);
 
+  // Stable reference — safe to pass as a prop or dep without causing re-renders.
+  // Always reads the latest knowledge via knowledgeRef.
   const getWordInfo = useCallback((lemma: string): WordInfo => {
-    const val = knowledge[lemma];
+    const val = knowledgeRef.current[lemma];
     if (!val) return { state: WordState.NEW, addedAt: new Date().toISOString() };
     return val;
-  }, [knowledge]);
+  }, []);
 
   const markPageAsSeen = useCallback((tokens: any[]) => {
-    // Filter to NEW tokens using the current snapshot before state update
     const newTokens = tokens.filter(token => {
       if (!token.lemma) return false;
-      const info = knowledge[token.lemma];
+      const info = knowledgeRef.current[token.lemma];
       const state = info ? (typeof info === "object" ? (info as any).state : info) : WordState.NEW;
       return state === WordState.NEW;
     });
@@ -102,7 +107,7 @@ export const useVocabulary = () => {
     newTokens.forEach(token => {
       VocabularyService.setWordState(userId, token.lemma, WordState.KNOWN, token.languageId || "unknown");
     });
-  }, [userId, knowledge]);
+  }, [userId]);
 
   const setWordNote = useCallback((lemma: string, notes: string, languageId: string = "unknown") => {
     setKnowledge(prev => {
