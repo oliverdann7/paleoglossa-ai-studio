@@ -1,5 +1,6 @@
 import { ImportService, ImportedText } from './importService';
 import { ATTRIBUTIONS, CorpusDB } from '../../data/corpus';
+import { LANGUAGES } from '../constants/languages';
 
 const corpusTokensCache = new Map<string, any[]>();
 
@@ -284,20 +285,7 @@ export class LibraryService {
     // Apply client side filters
     let result = rawTexts;
     if (filters?.language && filters.language !== 'All') {
-       const langMap: Record<string, string> = {
-        "Ancient Greek": "grc",
-        "Koine Greek": "grc-koine",
-        "Biblical Hebrew": "hbo",
-        "Classical Latin": "lat",
-        Syriac: "syr",
-        Coptic: "cop",
-        Aramaic: "arc",
-        Akkadian: "akk",
-        Sanskrit: "san",
-        "Egyptian Hieroglyphs": "egy",
-        "Hittite": "hit",
-      };
-      const code = langMap[filters.language] || filters.language;
+      const code = LANGUAGES.find(l => l.name === filters.language)?.id || filters.language;
       result = result.filter(t => t.language === code);
     }
 
