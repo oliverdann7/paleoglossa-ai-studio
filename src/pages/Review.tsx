@@ -5,6 +5,7 @@ import { ChevronLeft, Award, Sparkles, Loader2, Brain, History, Target } from "l
 import { cn } from "@/lib/utils";
 import { useAuth } from "../lib/hooks/useAuth";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { WordState } from "../lib/constants/wordStates";
 import { getTokenInfo } from "../lib/data/dictionary";
 import { useTranslation } from "react-i18next";
@@ -35,6 +36,7 @@ export const Review = () => {
   const { t } = useTranslation();
   const { user, isDemoMode } = useAuth();
   const { knowledge, stats, updateWordSRS, recordReviewSession } = useKnowledge();
+  const { activeLanguageId } = useActiveLanguage();
   // Stable ref so the queue-load effect doesn't re-run on every word state change
   const knowledgeRef = useRef(knowledge);
   useLayoutEffect(() => { knowledgeRef.current = knowledge; });
@@ -113,6 +115,13 @@ export const Review = () => {
             .filter(([, info]: [string, any]) => {
               const state = typeof info === "object" ? info.state : info;
               if (state === WordState.NEW || state === WordState.IGNORED || state === WordState.SEEN) return false;
+              return true;
+            })
+            .filter(([, info]: [string, any]) => {
+              const lang = typeof info === "object" ? (info as any).languageId || '' : '';
+              return !lang || lang === activeLanguageId;
+            })
+            .filter(([, info]: [string, any]) => {
               if (!info.srs?.nextReview) return true;
               return new Date(info.srs.nextReview) <= new Date();
             })

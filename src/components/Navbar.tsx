@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked, BookText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -53,6 +54,11 @@ export const Navbar = () => {
             Παλαιόγλωσσα
           </Link>
           <span className="eyebrow" style={{fontSize: '9px', textTransform: 'none'}}>{t("nav.slogan", "Where ancient texts come alive")}</span>
+        </div>
+        
+        {/* Active Language Switcher */}
+        <div className="px-4 mb-4">
+          <LanguageSwitcher />
         </div>
 
         <div className="px-4 mb-6">

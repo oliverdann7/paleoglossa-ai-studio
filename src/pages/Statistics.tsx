@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useReadingProgress } from "../lib/hooks/useReadingProgress";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { TextProgress } from "../lib/services/statsService";
 import { WordState } from "../lib/constants/wordStates";
 import { useTranslation } from "react-i18next";
@@ -91,6 +92,7 @@ export const Statistics = () => {
   const navigate = useNavigate();
   const { stats, knowledge } = useKnowledge();
   const { getAllProgress } = useReadingProgress();
+  const { activeLanguageId } = useActiveLanguage();
   const { t } = useTranslation();
   const [allProgress, setAllProgress] = useState<TextProgress[]>([]);
 
@@ -103,13 +105,15 @@ export const Statistics = () => {
     let known = 0, learning = 0, seen = 0, ignored = 0;
     for (const info of Object.values(knowledge)) {
       const state = typeof info === "object" ? info.state : info;
+      const lang = typeof info === "object" ? (info as any).languageId || '' : '';
+      if (lang && lang !== activeLanguageId) continue;
       if (state === WordState.KNOWN) known++;
       else if (state === WordState.LEARNING) learning++;
       else if (state === WordState.SEEN) seen++;
       else if (state === WordState.IGNORED) ignored++;
     }
     return { known, learning, seen, ignored };
-  }, [knowledge]);
+  }, [knowledge, activeLanguageId]);
 
   // ── Real week-over-week trends ────────────────────────────────────────────
   const trends = useMemo(() => {

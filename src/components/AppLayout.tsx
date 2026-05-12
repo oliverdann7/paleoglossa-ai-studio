@@ -3,6 +3,7 @@ import { Navbar } from './Navbar';
 import { AuthGuard } from './AuthGuard';
 import { useSettings } from '../lib/hooks/useSettings';
 import { AuthProvider } from '../lib/contexts/AuthContext';
+import { ActiveLanguageProvider } from '../lib/contexts/ActiveLanguageContext';
 
 function AppLayoutContent() {
   useSettings();
@@ -22,7 +23,9 @@ function AppLayoutContent() {
 export function AppLayout() {
   return (
     <AuthProvider>
-      <AppLayoutContent />
+      <ActiveLanguageProvider>
+        <AppLayoutContent />
+      </ActiveLanguageProvider>
     </AuthProvider>
   );
 }

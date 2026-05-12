@@ -18,6 +18,7 @@ import { ProgressRing } from "../components/reader/ProgressRing";
 import { DashboardSkeleton } from "../components/Skeleton";
 
 import { getLanguageDisplayName } from "../lib/constants/languages";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 
 const RTL_LANGS = new Set(["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "Hebrew", "egy"]);
 
@@ -41,6 +42,7 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const { settings } = useSettings();
   const { knowledge, stats, getAllProgress, userImports, isLoading } = useKnowledge();
+  const { activeLanguageId } = useActiveLanguage();
   const { t } = useTranslation();
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const [progressLoaded, setProgressLoaded] = useState(false);
@@ -63,6 +65,8 @@ export const Dashboard = () => {
     for (const [lemma, info] of Object.entries(knowledge)) {
       const i = typeof info === "object" ? (info as any) : { state: info };
       const state: WordState = i.state;
+      const wordLang = i.languageId || 'unknown';
+      if (wordLang !== activeLanguageId && activeLanguageId !== 'all') continue;
 
       if (state === WordState.KNOWN) {
         known++;
