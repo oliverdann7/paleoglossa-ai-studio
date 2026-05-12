@@ -50,6 +50,7 @@ export const useKnowledge = (languageId?: string) => {
 
   return {
     knowledge: vocab.knowledge,
+    knowledgeVersion: vocab.knowledgeVersion,
     getWordInfo: vocab.getWordInfo,
     setWordState: setWordStateWithStats,
     updateWordSRS: vocab.updateWordSRS,

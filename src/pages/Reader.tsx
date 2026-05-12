@@ -63,6 +63,7 @@ export const Reader = () => {
   
   const {
     knowledge,
+    knowledgeVersion,
     setWordState,
     stats,
     addReadWords,
@@ -432,14 +433,14 @@ export const Reader = () => {
     } else if (
       tutorialStep === 2 &&
       selectedWord &&
-      knowledge[selectedWord.lemma] &&
-      knowledge[selectedWord.lemma]?.state === WordState.KNOWN
+      getWordInfo(selectedWord.lemma) &&
+      getWordInfo(selectedWord.lemma)?.state === WordState.KNOWN
     ) {
       setTutorialStep(3);
     } else if (tutorialStep === 3 && scrollProgress > 80) {
       setTutorialStep(4);
     }
-  }, [tutorialStep, selectedWord, knowledge, scrollProgress]);
+  }, [tutorialStep, selectedWord, knowledgeVersion, getWordInfo, scrollProgress]);
 
   const dismissTutorial = () => {
     setTutorialStep(0);
@@ -738,7 +739,8 @@ export const Reader = () => {
           currentSentenceIndex={currentSentenceIndex}
           fontSize={settings.fontSize}
           highlightIntensity={settings.highlightIntensity}
-          knowledge={knowledge}
+          getWordInfo={getWordInfo}
+          knowledgeVersion={knowledgeVersion}
           selectedWordId={selectedWord?.id}
           showTranslit={showTranslit}
           showParallel={showParallel}

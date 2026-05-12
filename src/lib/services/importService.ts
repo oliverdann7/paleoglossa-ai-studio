@@ -8,6 +8,9 @@ export type ImportedText = FSImportedText;
 
 const STORAGE_KEY = STORAGE_KEYS.IMPORTS;
 
+const importsCache = new Map<string, { data: ImportedText[]; at: number }>();
+const IMPORTS_CACHE_TTL = 5 * 60_000;
+
 export class ImportService {
   static async getImports(userId: string | null): Promise<ImportedText[]> {
     if (!userId) {
@@ -15,18 +18,24 @@ export class ImportService {
       return saved ? JSON.parse(saved) : [];
     }
 
+    const cached = importsCache.get(userId);
+    if (cached && Date.now() - cached.at < IMPORTS_CACHE_TTL) {
+      return cached.data;
+    }
+
     try {
       const snap = await getDocs(collection(db, `users/${userId}/imports`));
       const imports: ImportedText[] = [];
       snap.forEach(doc => {
         const data = doc.data();
-        imports.push({ 
-          ...data, 
+        imports.push({
+          ...data,
           id: doc.id,
           createdAt: normalizeTimestamp(data.createdAt),
           updatedAt: normalizeTimestamp(data.updatedAt)
         } as ImportedText);
       });
+      importsCache.set(userId, { data: imports, at: Date.now() });
       return imports;
     } catch (e) {
       console.error("Import Fetch Error:", e);
@@ -126,6 +135,7 @@ export class ImportService {
 
     const cleanedPayload = this.stripUndefined(payload);
 
+    importsCache.delete(userId);
     try {
       await setDoc(doc(db, `users/${userId}/imports`, importId), {
         ...cleanedPayload,
@@ -256,6 +266,7 @@ export class ImportService {
       
       // Create a copy in user's imports
       const newId = `fork_${publicTextId}_${Date.now()}`;
+      importsCache.delete(userId);
       await setDoc(doc(db, `users/${userId}/imports`, newId), {
         ...data,
         id: newId,
