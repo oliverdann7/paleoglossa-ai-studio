@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { ChevronRight, Brain, Library, Sparkles } from "lucide-react";
+import { ChevronRight, Brain, BookOpen, Library, Sparkles } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
 import { getLangForLemma } from "../lib/data/dictionary";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
@@ -296,36 +296,36 @@ export const Dashboard = () => {
             </div>
           </div>
         ) : (
-          /* New user — no reading history yet; import is the primary action */
-          <div className="lg:col-span-2 card p-8 flex flex-col justify-between min-h-[300px] border-2 border-dashed border-blue/20 bg-blue/[0.02]">
+          /* New user — no reading history yet */
+          <div className="lg:col-span-2 card p-8 flex flex-col justify-between min-h-[300px] border-2 border-dashed border-bdr/60 bg-parch2/30">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-blue" />
-                <span className="eyebrow text-blue font-bold">
+                <BookOpen className="w-5 h-5 text-gold" />
+                <span className="eyebrow text-gold font-bold">
                   {t("dashboard.startJourney", "Start Your Journey")}
                 </span>
               </div>
               <h3 className="text-[28px] font-serif font-semibold text-ink leading-tight mb-3">
-                {t("dashboard.importFirstText", "Import your first text.")}
+                {t("dashboard.noReadingYet", "You haven't read any texts yet.")}
               </h3>
               <p className="font-body text-[15px] text-ink3 leading-relaxed max-w-sm">
-                {t("dashboard.importFirstDesc", "Paste any ancient text and Paleoglossa will analyze it, map it to your vocabulary, and make it readable. Your progress follows your texts.")}
+                {t("dashboard.pickFirstText", "Choose a text from the library, or import your own, to begin reading in the original languages.")}
               </p>
             </div>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <button
-                onClick={() => navigate("/app/import")}
+                onClick={() => navigate("/app/library")}
                 className="btn-primary flex items-center justify-center gap-2 px-6 py-3"
+              >
+                <Library className="w-4 h-4" />
+                {t("dashboard.browseLibrary", "Browse Library")}
+              </button>
+              <button
+                onClick={() => navigate("/app/import")}
+                className="btn-secondary flex items-center justify-center gap-2 px-6 py-3"
               >
                 <Sparkles className="w-4 h-4" />
                 {t("dashboard.importText", "Import a Text")}
-              </button>
-              <button
-                onClick={() => navigate("/app/library")}
-                className="btn-secondary flex items-center justify-center gap-2 px-6 py-3"
-              >
-                <Library className="w-4 h-4" />
-                {t("dashboard.browseLibrary", "Browse Curated Library")}
               </button>
             </div>
           </div>
@@ -354,20 +354,20 @@ export const Dashboard = () => {
           <h3 className="eyebrow mb-6 font-bold text-ink3">{t("dashboard.getStarted", "Get Started")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
-              onClick={() => navigate("/app/import")}
-              className="card p-6 text-left hover:border-blue/30 hover:shadow-md transition-all group border-blue/20 bg-blue/[0.02]"
-            >
-              <Sparkles className="w-8 h-8 text-blue mb-4 group-hover:scale-110 transition-transform" />
-              <h4 className="font-serif text-[18px] text-ink mb-1">{t("dashboard.importOwn", "Import Your Own Text")}</h4>
-              <p className="text-[13px] text-ink3">{t("dashboard.importOwnDesc", "Paste or upload a text. AI will parse morphology and glosses automatically.")}</p>
-            </button>
-            <button
               onClick={() => navigate("/app/library")}
               className="card p-6 text-left hover:border-blue/30 hover:shadow-md transition-all group"
             >
-              <Library className="w-8 h-8 text-ink3 mb-4 group-hover:scale-110 transition-transform" />
+              <Library className="w-8 h-8 text-blue mb-4 group-hover:scale-110 transition-transform" />
               <h4 className="font-serif text-[18px] text-ink mb-1">{t("dashboard.exploreLibrary", "Explore the Library")}</h4>
               <p className="text-[13px] text-ink3">{t("dashboard.exploreLibraryDesc", "Browse curated ancient texts in Greek, Hebrew, Latin, and more.")}</p>
+            </button>
+            <button
+              onClick={() => navigate("/app/import")}
+              className="card p-6 text-left hover:border-blue/30 hover:shadow-md transition-all group"
+            >
+              <Sparkles className="w-8 h-8 text-amber mb-4 group-hover:scale-110 transition-transform" />
+              <h4 className="font-serif text-[18px] text-ink mb-1">{t("dashboard.importOwn", "Import Your Own Text")}</h4>
+              <p className="text-[13px] text-ink3">{t("dashboard.importOwnDesc", "Paste or upload a text. AI will parse morphology and glosses automatically.")}</p>
             </button>
             <button
               onClick={() => navigate("/app/vocabulary")}
