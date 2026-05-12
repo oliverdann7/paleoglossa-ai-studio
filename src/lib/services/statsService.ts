@@ -44,7 +44,7 @@ export class StatsService {
       readToday: 0,
       readingTime: 0,
       lastActive: offsetDate.toISOString(),
-      streak: 1,
+      streak: 0,
       history: [],
       freezesTotal: 2,
       freezesUsed: 0
