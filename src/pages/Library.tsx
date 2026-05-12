@@ -13,6 +13,7 @@ import { LANGUAGES, getLanguageDisplayName } from "../lib/constants/languages";
 import { LibraryService, LibraryText } from "../lib/services/libraryService";
 import { useAuth } from "../lib/hooks/useAuth";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
+import { useSubscription } from "../lib/contexts/SubscriptionContext";
 import { ImportService } from "../lib/services/importService";
 import { CorpusDB } from "../data/corpus";
 
@@ -33,14 +34,16 @@ const CORPUS_TYPE_FILTERS = [
   'biblical', 'classical', 'patristic', 'inscription', 'manuscript', 'islamicate', 'other',
 ];
 
-function LanguageCard({ lang, isActive, textCount, importCount, knownWords, onClick }: {
+function LanguageCard({ lang, isActive, isLocked, textCount, importCount, knownWords, onClick }: {
   lang: { id: string; name: string; shortName: string; icon: string; symbol: string; corpusStatus: string; };
-  isActive: boolean; textCount: number; importCount: number; knownWords: number; onClick: () => void;
+  isActive: boolean; isLocked?: boolean; textCount: number; importCount: number; knownWords: number; onClick: () => void;
 }) {
   return (
     <button onClick={onClick}
-      className={cn("card p-5 flex flex-col items-start text-left gap-2 transition-all hover:shadow-md active:scale-[0.98] border-2 min-w-[180px]",
-        isActive ? "border-blue bg-blue/[0.03]" : "border-transparent")}>
+      className={cn("card p-5 flex flex-col items-start text-left gap-2 transition-all border-2 min-w-[180px]",
+        isLocked ? "opacity-60 border-transparent cursor-pointer" :
+        isActive ? "border-blue bg-blue/[0.03] hover:shadow-md active:scale-[0.98]" :
+        "border-transparent hover:shadow-md active:scale-[0.98]")}>
       <div className="flex items-center gap-3 w-full">
         <span className="text-2xl w-9 text-center">{lang.icon}</span>
         <div className="flex-1 min-w-0">
@@ -48,6 +51,7 @@ function LanguageCard({ lang, isActive, textCount, importCount, knownWords, onCl
           <div className="text-[10px] text-muted uppercase tracking-wider font-bold truncate">{lang.name}</div>
         </div>
         {isActive && <span className="w-2.5 h-2.5 rounded-full bg-blue shrink-0" />}
+        {isLocked && <Lock className="w-3.5 h-3.5 text-muted shrink-0" />}
       </div>
       <div className="flex gap-3 text-[11px] text-ink3 font-medium mt-1">
         <span>{textCount} texts</span>
@@ -55,9 +59,10 @@ function LanguageCard({ lang, isActive, textCount, importCount, knownWords, onCl
         <span>{knownWords} known</span>
       </div>
       <div className={cn("text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full",
+        isLocked ? "bg-parch3 text-muted" :
         lang.corpusStatus === 'available' ? "bg-emerald-50 text-emerald-700" :
         lang.corpusStatus === 'partial' ? "bg-blue/10 text-blue" : "bg-amber/10 text-amber")}>
-        {lang.corpusStatus === 'available' ? 'Available' : lang.corpusStatus === 'partial' ? 'In Progress' : 'Sample'}
+        {isLocked ? 'Locked' : lang.corpusStatus === 'available' ? 'Available' : lang.corpusStatus === 'partial' ? 'In Progress' : 'Sample'}
       </div>
     </button>
   );
@@ -67,6 +72,7 @@ export const Library = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activeLanguageId, setActiveLanguageId } = useActiveLanguage();
+  const { canAccessLanguage } = useSubscription();
   const { getWordInfo, getAllProgress, knowledge } = useKnowledge(activeLanguageId);
   const getWordInfoRef = useRef(getWordInfo);
   useLayoutEffect(() => { getWordInfoRef.current = getWordInfo; });
@@ -225,20 +231,25 @@ export const Library = () => {
       <div className="mb-10">
         <h3 className="eyebrow mb-4 opacity-50">Your Languages</h3>
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {langStats.map(({ lang, textCount, importCount, knownWords }) => (
-            <LanguageCard
-              key={lang.id}
-              lang={lang}
-              isActive={lang.id === activeLanguageId}
-              textCount={textCount}
-              importCount={importCount}
-              knownWords={knownWords}
-              onClick={() => {
-                setActiveLanguageId(lang.id);
-                navigate(`/app/language/${lang.id}`);
-              }}
-            />
-          ))}
+          {langStats.map(({ lang, textCount, importCount, knownWords }) => {
+            const isLocked = !canAccessLanguage(lang.id);
+            return (
+              <LanguageCard
+                key={lang.id}
+                lang={lang}
+                isActive={lang.id === activeLanguageId}
+                isLocked={isLocked}
+                textCount={textCount}
+                importCount={importCount}
+                knownWords={knownWords}
+                onClick={() => {
+                  if (isLocked) { navigate('/app/subscription'); return; }
+                  setActiveLanguageId(lang.id);
+                  navigate(`/app/language/${lang.id}`);
+                }}
+              />
+            );
+          })}
         </div>
       </div>
 
