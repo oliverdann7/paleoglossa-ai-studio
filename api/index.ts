@@ -375,7 +375,7 @@ const PRICE_IDS: Record<string, { monthly?: string; yearly?: string }> = {
 
 app.post('/api/stripe/create-checkout-session', async (req: any, res: any) => {
   try {
-    const { planId, billingCycle = 'monthly', userId, email, successUrl, cancelUrl } = req.body;
+    const { planId, billingCycle = 'monthly', userId, email, successUrl, cancelUrl, trialDays } = req.body;
 
     if (!planId || !userId) {
       return res.status(400).json({ error: 'Missing planId or userId' });
@@ -398,7 +398,7 @@ app.post('/api/stripe/create-checkout-session', async (req: any, res: any) => {
     const stripe = new (await import('stripe')).default(stripeKey);
     initStripePlans();
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: any = {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
@@ -410,7 +410,13 @@ app.post('/api/stripe/create-checkout-session', async (req: any, res: any) => {
       subscription_data: {
         metadata: { planId, userId },
       },
-    });
+    };
+
+    if (trialDays && trialDays > 0) {
+      sessionConfig.subscription_data.trial_period_days = trialDays;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     res.status(200).json({ url: session.url, sessionId: session.id });
   } catch (err: any) {
