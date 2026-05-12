@@ -17,19 +17,7 @@ import {
 import { ProgressRing } from "../components/reader/ProgressRing";
 import { DashboardSkeleton } from "../components/Skeleton";
 
-const LANGUAGE_LABELS: Record<string, string> = {
-  grc: "Ancient Greek",
-  "grc-koine": "Koine Greek",
-  hbo: "Biblical Hebrew",
-  lat: "Classical Latin",
-  syr: "Syriac",
-  cop: "Coptic",
-  arc: "Aramaic",
-  akk: "Akkadian",
-  san: "Sanskrit",
-  egy: "Egyptian Hieroglyphs",
-  hit: "Hittite",
-};
+import { getLanguageDisplayName } from "../lib/constants/languages";
 
 const RTL_LANGS = new Set(["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "Hebrew", "egy"]);
 
@@ -280,7 +268,7 @@ export const Dashboard = () => {
                 )}
                 {continueText.language && (
                   <span className="text-[14px] font-mono text-muted uppercase tracking-widest">
-                    {LANGUAGE_LABELS[continueText.language as string] || continueText.language}
+                    {getLanguageDisplayName(continueText.language as string)}
                   </span>
                 )}
               </div>

@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "../lib/constants/languages";
 import { LibraryService, LibraryText } from "../lib/services/libraryService";
 import { useAuth } from "../lib/hooks/useAuth";
+import { getLanguageDisplayName } from "../lib/constants/languages";
 import { ImportService } from "../lib/services/importService";
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
@@ -52,20 +53,6 @@ const CORPUS_TYPE_FILTERS = [
   'islamicate',
   'other',
 ];
-
-const LANGUAGE_LABELS: Record<string, string> = {
-  grc: "Ancient Greek",
-  "grc-koine": "Koine Greek",
-  hbo: "Biblical Hebrew",
-  lat: "Classical Latin",
-  syr: "Syriac",
-  cop: "Coptic",
-  arc: "Aramaic",
-  akk: "Akkadian",
-  san: "Sanskrit",
-  egy: "Egyptian Hieroglyphs",
-  hit: "Hittite",
-};
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 type BadgeDef = { label: string; className: string; icon?: React.FC<{ className?: string }> };
@@ -586,7 +573,7 @@ export const Library = () => {
                           </div>
                           <span className="opacity-30 text-[10px]">•</span>
                           <span className="text-[10px] text-blue font-sans uppercase tracking-widest font-bold">
-                            {LANGUAGE_LABELS[text.language] || text.language}
+                            {getLanguageDisplayName(text.language)}
                           </span>
                         </div>
 
