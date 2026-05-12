@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   ChevronDown,
   Globe2,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImportService, ImportedText } from "../lib/services/importService";
@@ -42,6 +43,7 @@ export const Import = () => {
   const [imageMimeType, setImageMimeType] = useState<string | null>(null);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langSelectRef = useRef<HTMLDivElement>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -63,6 +65,12 @@ export const Import = () => {
       setImageBase64(dataUrl.split(",")[1]);
     };
     reader.readAsDataURL(file);
+  };
+
+  const buildTitleFromText = (rawText: string): string => {
+    const firstLine = rawText.trim().split(/[\n.!?]/)[0]?.trim() || rawText.trim();
+    const candidate = firstLine.length > 0 ? firstLine : rawText.trim();
+    return candidate.length > 80 ? candidate.slice(0, 80) + "…" : candidate;
   };
 
   const calculateStats = (sentences: ImportedSentence[]) => {
@@ -193,33 +201,42 @@ export const Import = () => {
     if (!text.trim()) return;
     setIsProcessing(true);
     setProcessingStep("Linguistic analysis...");
+    setAnalysisError(null);
 
-    let warningMessage: string | null = null;
     let sentences: ImportedSentence[];
+    let analysisStatus: 'analyzed' | 'raw' = 'analyzed';
+    let stats: ReturnType<typeof calculateStats>;
 
     try {
-      // Step 1: Try AI analysis
       sentences = await AIClient.analyzeText(languageId, text, user?.uid);
-    } catch (aiError: any) {
-      console.warn("AI analysis failed, using basic tokenization:", aiError);
+      setProcessingStep("Mapping to your knowledge...");
+      stats = calculateStats(sentences);
+    } catch (error: any) {
+      console.warn("AI analysis failed, using basic tokenization:", error);
       sentences = basicTokenize(text);
-      warningMessage = "AI analysis unavailable. Saved with basic tokenization. AI analysis can be retried later.";
+      analysisStatus = 'raw';
+      stats = calculateStats(sentences);
+      setAnalysisError(error.message || "AI analysis unavailable");
+      setProcessingStep("Saving without AI analysis...");
     }
 
-    setProcessingStep("Mapping to your knowledge...");
-    
-    // Step 2: Calculate real stats
-    const stats = calculateStats(sentences);
+    const sourceTypeMap: Record<string, ImportedText['sourceType']> = {
+      paste: 'paste',
+      file: 'file',
+      url: 'url',
+      ocr: 'image',
+    };
 
     const imported: ImportedText = {
       id: `imp-${Date.now()}`,
       userId: user?.uid || 'anonymous',
-      title: text.slice(0, 60) + (text.length > 60 ? "..." : ""),
+      title: buildTitleFromText(text),
       rawContent: text,
       sentences,
       languageId,
-      sourceType: activeTab === 'ocr' ? 'image' : 'paste',
+      sourceType: sourceTypeMap[activeTab] || 'paste',
       status: 'complete',
+      analysisStatus,
       visibility: 'private',
       stats,
       createdAt: new Date().toISOString(),
@@ -237,11 +254,6 @@ export const Import = () => {
     }
 
     refreshImports();
-
-    if (warningMessage) {
-      alert(warningMessage);
-    }
-
     setResult(imported);
     setIsProcessing(false);
     setProcessingStep("");
@@ -566,6 +578,18 @@ export const Import = () => {
           </div>
 
           <div className="p-10">
+            {analysisError && (
+              <div className="mb-8 p-4 bg-amber/10 border border-amber/20 rounded-xl flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-bold text-amber text-[13px] mb-1">AI analysis unavailable</div>
+                  <p className="text-[12px] text-ink3 leading-relaxed">
+                    Your text was saved with basic tokenization only — no morphology or glosses.
+                    You can still read it in the Reader. AI analysis can be retried later.
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
               <div className="text-center">
                 <div className="text-[32px] font-serif font-bold text-ink">

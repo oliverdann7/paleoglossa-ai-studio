@@ -1,8 +1,11 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+type SourceKind = 'import' | 'sample' | 'partial' | 'complete';
+
 interface Props {
   scrollProgress: number;
   readingMode: 'scroll' | 'page';
+  sourceKind: SourceKind;
   currentSentenceIndex: number;
   totalSentences: number;
   canGoPrev: boolean;
@@ -13,7 +16,7 @@ interface Props {
 }
 
 export function ReaderBottomNav({
-  scrollProgress, readingMode, currentSentenceIndex, totalSentences,
+  scrollProgress, readingMode, sourceKind, currentSentenceIndex, totalSentences,
   canGoPrev, canGoNext, onPrev, onNext, onMarkKnown,
 }: Props) {
   return (
@@ -48,7 +51,13 @@ export function ReaderBottomNav({
           onClick={onMarkKnown}
           className="bg-blue text-white px-4 md:px-5 py-1.5 rounded-full text-[12px] font-bold hover:bg-blue/90 shadow-sm transition-all whitespace-nowrap"
         >
-          {readingMode === 'page' ? 'Mark Known & Next' : 'Mark Page Known'}
+          {readingMode === 'page'
+            ? 'Mark Known & Next'
+            : sourceKind === 'sample'
+              ? 'Mark Sample as Seen'
+              : sourceKind === 'import'
+                ? 'Mark as Seen'
+                : 'Mark Page Known'}
         </button>
         <button
           onClick={onNext}

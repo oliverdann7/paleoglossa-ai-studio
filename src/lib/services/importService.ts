@@ -103,6 +103,7 @@ export class ImportService {
       ...text,
       id: importId,
       status: text.status || 'complete',
+      analysisStatus: text.analysisStatus || 'analyzed',
       visibility: text.visibility || 'private',
       sourceType: text.sourceType || 'paste',
       languageId: text.languageId || 'grc',
@@ -215,6 +216,7 @@ export class ImportService {
           sourceType: rawData.sourceType as 'paste' | 'file' | 'url' | 'image' | 'pdf' || 'file',
           rawContent: content,
           status: rawData.status as 'pending' | 'processing' | 'complete' | 'failed' || 'complete',
+          analysisStatus: rawData.analysisStatus as 'analyzed' | 'raw' | 'needs_ai' || 'analyzed',
           visibility: rawData.visibility as 'private' | 'shared' | 'public' || 'public',
           sentences: sentences.map((s: string) => ({ text: s, tokens: [] })),
           stats: {
