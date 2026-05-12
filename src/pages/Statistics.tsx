@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useReadingProgress } from "../lib/hooks/useReadingProgress";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
+import { getLanguageDisplayName } from "../lib/constants/languages";
 import { TextProgress } from "../lib/services/statsService";
 import { WordState } from "../lib/constants/wordStates";
 import { useTranslation } from "react-i18next";
@@ -90,9 +91,9 @@ const StatCard = ({
 
 export const Statistics = () => {
   const navigate = useNavigate();
-  const { stats, knowledge } = useKnowledge();
-  const { getAllProgress } = useReadingProgress();
   const { activeLanguageId } = useActiveLanguage();
+  const { stats, knowledge } = useKnowledge(activeLanguageId);
+  const { getAllProgress } = useReadingProgress(activeLanguageId);
   const { t } = useTranslation();
   const [allProgress, setAllProgress] = useState<TextProgress[]>([]);
 
@@ -338,6 +339,9 @@ export const Statistics = () => {
             "Knowledge is a marathon. Every page read is a stone in your intellectual fortress.",
           )}
         </p>
+        <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-blue/10 text-blue text-[12px] font-bold rounded-lg">
+          Stats shown for: {getLanguageDisplayName(activeLanguageId)}
+        </div>
       </header>
 
       {isEmpty ? (
