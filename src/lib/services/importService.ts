@@ -226,8 +226,28 @@ export class ImportService {
     if (!userId) return null;
 
     try {
-      const json = await apiFetch<{ id: string }>('/api/public/texts/' + publicTextId + '/fork', {
-        method: 'POST',
+      // Get the public text
+      const publicRef = doc(db, 'publicTexts', publicTextId);
+      const snap = await getDoc(publicRef);
+      
+      if (!snap.exists()) return null;
+      
+      const data = snap.data();
+      
+      // Create a copy in user's imports
+      const newId = `fork_${publicTextId}_${Date.now()}`;
+      importsCache.delete(userId);
+      await setDoc(doc(db, `users/${userId}/imports`, newId), {
+        ...data,
+        id: newId,
+        title: `${data.title} (forked)`,
+        visibility: 'private',
+        forkedFrom: publicTextId,
+        authorId: data.authorId,
+        authorName: data.authorName,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        publishedAt: null
       });
       return json.id || null;
     } catch {

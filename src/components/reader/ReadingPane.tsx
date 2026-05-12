@@ -34,6 +34,7 @@ interface Props {
   fontSize: number;
   highlightIntensity: 'subtle' | 'normal' | 'strong';
   getWordInfo: (lemma: string) => any;
+  knowledgeVersion: number;
   selectedWordId?: string;
   showTranslit: boolean;
   showParallel: boolean;
@@ -187,16 +188,16 @@ const ReaderToken = memo(function ReaderToken({
 });
 
 export function ReadingPane({
-   sentences, readingMode, currentSentenceIndex, fontSize, highlightIntensity,
-   getWordInfo, selectedWordId, showTranslit, showParallel, maskKnown,
-   isHebrewFont, isRtl, audioPos,
-   aiTranslations, translatingId,
-   sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
-   showGlossTooltip, glossTooltipForKnown, interlinearMode,
-   onWordClick, onAITranslate, onSavePhrase,
-   onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
-   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
-   sentenceSliceStart,
+  sentences, readingMode, currentSentenceIndex, fontSize, highlightIntensity,
+  getWordInfo, knowledgeVersion: _knowledgeVersion, selectedWordId, showTranslit, showParallel, maskKnown,
+  isHebrewFont, isRtl, audioPos,
+  aiTranslations, translatingId,
+  sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
+  showGlossTooltip, glossTooltipForKnown, interlinearMode,
+  onWordClick, onAITranslate, onSavePhrase,
+  onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
+  currentScrollPage, totalPages, currentChapterIndex, totalChapters,
+  sentenceSliceStart,
 }: Props) {
   const { t } = useTranslation();
   const touchStartX = useRef(0);
