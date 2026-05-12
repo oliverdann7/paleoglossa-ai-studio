@@ -19,20 +19,20 @@ export const Vocabulary = () => {
   const { knowledge, setWordState } = useKnowledge();
   const { t } = useTranslation();
 
-  const filters = ["All", "Due", "Known", "Familiar", "Learning", "Seen"];
+  const filters = ["All", "Due", "Known", "Familiar", "Learning", "Seen", "Ignored"];
 
   const words = useMemo(() => {
     return Object.entries(knowledge)
       .filter(([, info]) => {
         const state = typeof info === "object" ? (info as any).state : info;
-        return state !== WordState.NEW && state !== WordState.IGNORED;
+        return state !== WordState.NEW;
       })
       .map(([lemma, info]) => {
         const wordInfo = typeof info === "object" ? (info as WordInfo) : ({ state: info } as unknown as WordInfo);
         const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview as any) : new Date();
         const tokenInfo = getTokenInfo(lemma);
-        const definition = (wordInfo as any).userGloss || tokenInfo?.gloss || "Definition missing";
-        const languageDesc = tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F]/u) ? "Hebrew" : "Greek");
+        const definition = wordInfo.userGloss || tokenInfo?.gloss || "Definition missing";
+        const languageDesc = wordInfo.languageId || tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F]/u) ? "Hebrew" : "Greek");
 
         return {
           id: lemma,
@@ -43,6 +43,8 @@ export const Vocabulary = () => {
           status: STATE_LABELS[wordInfo.state as WordState],
           nextReview: nextReview.toISOString(),
           isDue: nextReview <= new Date(),
+          encounterCount: wordInfo.encounterCount ?? 0,
+          lastSeenAt: wordInfo.lastSeenAt,
         };
       })
       .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime()); // sort due earliest
@@ -77,6 +79,7 @@ export const Vocabulary = () => {
       case "Familiar": return "cefr-b";
       case "Learning": return "cefr-a";
       case "Seen": return "cefr-a opacity-50";
+      case "Ignored": return "bg-ink3/10 text-ink3 border-ink3/20";
       default: return "";
     }
   };
@@ -215,10 +218,18 @@ export const Vocabulary = () => {
               </div>
 
               <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t border-bdr/50 md:border-none">
-                <div className="flex flex-col items-start md:items-end w-24">
+                <div className="flex flex-col items-start md:items-end gap-1 w-36">
                   <div className={cn("pill px-2 py-0.5 text-[10.5px] font-bold shadow-sm", getStatusClass(word.status))}>
                     {t(`vocab.${word.status.toLowerCase()}`, word.status)}
                   </div>
+                  {word.encounterCount > 0 && (
+                    <div className="text-[10px] text-muted font-mono">
+                      {word.encounterCount}× seen
+                      {word.lastSeenAt && (
+                        <span className="ml-1 opacity-70">· {new Date(word.lastSeenAt).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">

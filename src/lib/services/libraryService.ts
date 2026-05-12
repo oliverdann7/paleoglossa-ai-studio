@@ -56,6 +56,7 @@ export interface LibraryText {
   isImported?: boolean;
   isPublic?: boolean;
   sourceType: 'corpus' | 'import' | 'public';
+  analysisStatus?: 'analyzed' | 'raw' | 'needs_ai';
   rawTextReference?: any; // To keep the original text object
   addedAt?: string;
 }
@@ -152,24 +153,27 @@ export class LibraryService {
     if ((!filters?.source || filters.source === 'import') && userId) {
       const userImports = await ImportService.getImports(userId);
       userImports.forEach(t => {
+        const hasAiMorphology = t.analysisStatus === 'analyzed' ||
+          (t.sentences?.some((s: any) => s.tokens?.some((tok: any) => tok.pos || tok.gloss)));
         rawTexts.push({
           id: t.id || 'unknown',
           title: t.title,
-          author: 'Your Import',
+          author: 'Your Text',
           language: t.languageId || 'grc',
           level: 'Varies',
-          genre: 'User import',
+          genre: 'Your import',
           period: 'User supplied',
           corpusType: 'other',
-          corpusTitle: 'Your Imports',
-          licenseName: 'User supplied',
-          sourceName: 'Private import',
+          corpusTitle: 'Your Texts',
+          licenseName: 'Private',
+          sourceName: 'Your import',
           availableTools: {
-            morphology: false,
-            translation: false,
+            morphology: hasAiMorphology,
+            translation: hasAiMorphology,
             audio: false,
             syntax: false,
           },
+          analysisStatus: t.analysisStatus || (hasAiMorphology ? 'analyzed' : 'raw'),
           tags: [],
           totalWords: t.stats?.totalWords || 0,
           sourceType: 'import',

@@ -64,6 +64,7 @@ export interface ImportedText {
   userId: string;
   title: string;
   languageId: string;
+  /** How the text entered the system */
   sourceType: 'paste' | 'file' | 'url' | 'image' | 'pdf';
   rawContent: string;
   processedContent?: string;
@@ -78,7 +79,10 @@ export interface ImportedText {
     percentLearning?: number;
   };
   aiAnalysis?: any;
+  /** Lifecycle status of the import record */
   status: 'pending' | 'processing' | 'complete' | 'failed';
+  /** Quality of linguistic analysis */
+  analysisStatus: 'analyzed' | 'raw' | 'needs_ai';
   visibility: 'private' | 'shared' | 'public';
   createdAt: string | Timestamp;
   updatedAt: string | Timestamp;

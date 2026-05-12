@@ -34,7 +34,7 @@ export const Review = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, isDemoMode } = useAuth();
-  const { knowledge, updateWordSRS, recordReviewSession } = useKnowledge();
+  const { knowledge, stats, updateWordSRS, recordReviewSession } = useKnowledge();
   // Stable ref so the queue-load effect doesn't re-run on every word state change
   const knowledgeRef = useRef(knowledge);
   useLayoutEffect(() => { knowledgeRef.current = knowledge; });
@@ -283,7 +283,9 @@ export const Review = () => {
                 <History className="w-4 h-4 text-blue" />
                 <span className="eyebrow text-[10px] text-muted">Accuracy Trend</span>
               </div>
-              <div className="text-[32px] font-bold text-ink">88%</div>
+              <div className="text-[32px] font-bold text-ink">
+                {stats?.lastAccuracy != null ? `${stats.lastAccuracy}%` : "—"}
+              </div>
             </div>
           </div>
 
@@ -298,12 +300,29 @@ export const Review = () => {
                 <ChevronLeft className="w-5 h-5 rotate-180" />
               </span>
             </button>
-            <button
-              onClick={onBack}
-              className="text-muted font-bold text-[14px] hover:text-ink transition-colors"
-            >
-              {t("review.maybeLater", "Return to Library")}
-            </button>
+            {queue.length === 0 ? (
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => navigate("/app/library")}
+                  className="text-blue font-bold text-[14px] hover:text-blue/80 transition-colors"
+                >
+                  Browse the Library
+                </button>
+                <button
+                  onClick={() => navigate("/app/import")}
+                  className="text-muted font-bold text-[14px] hover:text-ink transition-colors"
+                >
+                  Import a Text
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={onBack}
+                className="text-muted font-bold text-[14px] hover:text-ink transition-colors"
+              >
+                {t("review.maybeLater", "Return to Library")}
+              </button>
+            )}
           </div>
         </motion.div>
       </div>
