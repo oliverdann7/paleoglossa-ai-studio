@@ -1,21 +1,21 @@
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { normalizeTimestamp } from '../utils';
 import { STORAGE_KEYS } from '../constants/storage';
 
 export interface DailyStat {
-  date: string; // YYYY-MM-DD
+  date: string;
   knownWords: number;
   readWords: number;
   minutes: number;
-  accuracy?: number; // 0 to 100
+  accuracy?: number;
 }
 
 export interface ReadingStats {
   totalKnown: number;
   readToday: number;
-  readingTime: number; // minutes
-  lastActive: string; // ISO date
+  readingTime: number;
+  lastActive: string;
   streak: number;
   history: DailyStat[];
   lastAccuracy?: number;
@@ -25,6 +25,7 @@ export interface ReadingStats {
 
 export interface TextProgress {
   textId: string;
+  languageId?: string;
   lastPosition: number;
   completed: boolean;
   lastReadAt: string;
@@ -33,12 +34,23 @@ export interface TextProgress {
 
 const STATS_STORAGE_KEY = STORAGE_KEYS.STATS;
 
+function getStatsDocRef(userId: string, languageId: string) {
+  return doc(db, `users/${userId}/languageStats`, languageId);
+}
+
+function getLegacyStatsDocRef(userId: string) {
+  return doc(db, `users/${userId}`);
+}
+
+function getStorageKey(languageId: string): string {
+  return `${STATS_STORAGE_KEY}_${languageId}`;
+}
+
 export class StatsService {
-  static async getStats(userId: string | null): Promise<ReadingStats> {
-    // Default to a 4am reset for "today"
+  static async getStats(userId: string | null, languageId?: string): Promise<ReadingStats> {
     const offsetDate = new Date();
     offsetDate.setUTCHours(offsetDate.getUTCHours() - 4);
-    
+
     const initialStats: ReadingStats = {
       totalKnown: 0,
       readToday: 0,
@@ -47,37 +59,60 @@ export class StatsService {
       streak: 0,
       history: [],
       freezesTotal: 2,
-      freezesUsed: 0
+      freezesUsed: 0,
     };
 
     if (!userId) {
-      const saved = localStorage.getItem(STATS_STORAGE_KEY);
+      const key = languageId ? getStorageKey(languageId) : STATS_STORAGE_KEY;
+      const saved = localStorage.getItem(key);
       return saved ? { ...initialStats, ...JSON.parse(saved) } : initialStats;
     }
 
+    const lang = languageId || 'unknown';
+
     try {
-      const snap = await getDoc(doc(db, `users/${userId}`));
-      if (snap.exists() && snap.data().stats) {
-        return { ...initialStats, ...snap.data().stats } as ReadingStats;
+      // Try language-scoped stats first
+      const snap = await getDoc(getStatsDocRef(userId, lang));
+      if (snap.exists()) {
+        return { ...initialStats, ...snap.data() } as ReadingStats;
       }
-    } catch (e) {
-      console.error("Error fetching stats:", e);
+    } catch {
+      // Fall through to legacy
     }
-    
+
+    // Fallback: try legacy user document stats
+    if (!languageId) {
+      try {
+        const legacySnap = await getDoc(getLegacyStatsDocRef(userId));
+        if (legacySnap.exists() && legacySnap.data().stats) {
+          const legacyStats = { ...initialStats, ...legacySnap.data().stats } as ReadingStats;
+          // Migrate to language-scoped
+          await this.updateStats(userId, 'unknown', legacyStats);
+          return legacyStats;
+        }
+      } catch {
+        // Ignore legacy read failure
+      }
+    }
+
     return initialStats;
   }
 
-  static async updateStats(userId: string | null, newStats: ReadingStats) {
+  static async updateStats(userId: string | null, languageId: string, newStats: ReadingStats) {
+    const lang = languageId || 'unknown';
+
     if (!userId) {
-      localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(newStats));
+      const key = getStorageKey(lang);
+      localStorage.setItem(key, JSON.stringify(newStats));
       return;
     }
 
     try {
-      await updateDoc(doc(db, `users/${userId}`), {
-        stats: newStats,
-        updatedAt: serverTimestamp()
-      });
+      await setDoc(getStatsDocRef(userId, lang), {
+        ...newStats,
+        languageId: lang,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
     } catch (e) {
       console.error("Error updating stats:", e);
     }
@@ -89,7 +124,7 @@ export class StatsService {
 
     try {
       const stats = JSON.parse(saved) as ReadingStats;
-      await this.updateStats(userId, stats);
+      await this.updateStats(userId, 'unknown', stats);
       localStorage.removeItem(STATS_STORAGE_KEY);
       return stats;
     } catch (e) {
@@ -98,7 +133,8 @@ export class StatsService {
     }
   }
 
-  // Text Progress specific methods (can stay here or move to progressService, but user asked for statsService)
+  // ── Text Progress ────────────────────────────────────────────────────
+
   static async getTextProgress(userId: string | null, textId: string): Promise<TextProgress | null> {
     if (!userId) {
       const saved = localStorage.getItem(`${STORAGE_KEYS.READING_PROGRESS_PREFIX}${textId}`);
@@ -127,14 +163,14 @@ export class StatsService {
     try {
       await setDoc(doc(db, `users/${userId}/readingProgress`, progress.textId), {
         ...progress,
-        lastReadAt: serverTimestamp()
+        lastReadAt: serverTimestamp(),
       }, { merge: true });
     } catch (e) {
       console.error("Error saving text progress:", e);
     }
   }
 
-  static async getAllProgress(userId: string | null): Promise<TextProgress[]> {
+  static async getAllProgress(userId: string | null, languageId?: string): Promise<TextProgress[]> {
     if (!userId) {
       return JSON.parse(localStorage.getItem(STORAGE_KEYS.RECENT_PROGRESS) || '[]');
     }
@@ -144,7 +180,10 @@ export class StatsService {
       const results: TextProgress[] = [];
       snap.forEach(doc => {
         const data = doc.data();
-        results.push({ ...data, lastReadAt: normalizeTimestamp(data.lastReadAt) } as TextProgress);
+        const progress = { ...data, lastReadAt: normalizeTimestamp(data.lastReadAt) } as TextProgress;
+        // Filter by language if specified
+        if (languageId && progress.languageId && progress.languageId !== languageId) return;
+        results.push(progress);
       });
       return results.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime());
     } catch (e) {
