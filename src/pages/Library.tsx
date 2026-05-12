@@ -68,17 +68,20 @@ function LanguageCard({ lang, isActive, isLocked, textCount, importCount, knownW
   );
 }
 
+const SOURCE_MAP: Record<string, 'corpus' | 'import' | 'public'> = {
+  library: 'corpus', imports: 'import', public: 'public',
+};
+
 export const Library = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activeLanguageId, setActiveLanguageId } = useActiveLanguage();
   const { canAccessLanguage } = useSubscription();
   const { getWordInfo, getAllProgress, knowledge } = useKnowledge(activeLanguageId);
-  const getWordInfoRef = useRef(getWordInfo);
-  useLayoutEffect(() => { getWordInfoRef.current = getWordInfo; });
   const { t } = useTranslation();
 
-  const [texts, setTexts] = useState<LibraryText[]>([]);
+  // ── Phase A state: raw texts (refetch only on tab / auth change) ─────
+  const [rawTexts, setRawTexts] = useState<LibraryText[]>([]);
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -108,46 +111,68 @@ export const Library = () => {
     getAllProgress().then(setReadingProgress);
   }, [getAllProgress]);
 
+  // Phase A: fetch raw texts only when tab or user changes (no coverage work here)
   useEffect(() => {
-    const fetchLibrary = async () => {
-      setIsLoading(true);
-      const sourceMap: Record<string, 'corpus' | 'import' | 'public'> = {
-        'library': 'corpus', 'imports': 'import', 'public': 'public'
-      };
-      const data = await LibraryService.getLibrary(user?.uid || null, {
-        language: activeLang,
-        search: searchQuery,
-        minKnownPercent: minKnown,
-        period: periodFilter,
-        genre: genreFilter,
-        corpusType: corpusTypeFilter,
-        source: sourceMap[activeTab]
-      }, getWordInfoRef.current);
-      setTexts(data);
-      setIsLoading(false);
-    };
-    const timeoutId = setTimeout(fetchLibrary, 300);
-    return () => clearTimeout(timeoutId);
-  }, [user?.uid, activeLang, searchQuery, minKnown, periodFilter, genreFilter, corpusTypeFilter, activeTab]);
+    let active = true;
+    setIsLoading(true);
+    LibraryService.getRawTexts(user?.uid || null, SOURCE_MAP[activeTab]).then(data => {
+      if (active) { setRawTexts(data); setIsLoading(false); }
+    });
+    return () => { active = false; };
+  }, [user?.uid, activeTab]);
+
+  // Phase B: compute coverage — only reruns when vocabulary or raw texts change,
+  // NOT on every filter keystroke. getWordInfo is stable (Fix 3); knowledge is
+  // the dep that signals when word states have changed.
+  const coverageMap = useMemo(
+    () => LibraryService.computeCoverage(rawTexts, getWordInfo),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rawTexts, knowledge],
+  );
+
+  // Merge coverage into raw texts once per knowledge/rawTexts change
+  const textsWithCoverage = useMemo(
+    () => rawTexts.map(tx => ({ ...tx, ...coverageMap.get(tx.id) })),
+    [rawTexts, coverageMap],
+  );
+
+  // Phase C: filter — pure sync O(texts), no debounce needed
+  const filteredTexts = useMemo(() => {
+    let result = textsWithCoverage;
+
+    if (activeLang !== 'All') {
+      const code = LANGUAGES.find(l => l.name === activeLang)?.id || activeLang;
+      result = result.filter(t => t.language === code);
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(t => t._searchText?.includes(q));
+    }
+    if (periodFilter !== 'all') result = result.filter(t => t.period === periodFilter);
+    if (genreFilter !== 'all') result = result.filter(t => t.genre === genreFilter);
+    if (corpusTypeFilter !== 'all') result = result.filter(t => t.corpusType === corpusTypeFilter);
+    if (minKnown > 0) result = result.filter(t => (t.percentKnown || 0) >= minKnown);
+
+    return result;
+  }, [textsWithCoverage, activeLang, searchQuery, periodFilter, genreFilter, corpusTypeFilter, minKnown]);
 
   // ── Language card data ───────────────────────────────────────────────
   const corpusTexts = useMemo(() => CorpusDB.getTexts(), []);
   const langStats = useMemo(() => {
     return LANGUAGES.map(lang => {
-      const langTexts = texts.filter(t => t.language === lang.id);
       const langCorpus = corpusTexts.filter(t => t.language === lang.id);
-      const langImports = langTexts.filter(t => t.sourceType === 'import');
+      const langImports = rawTexts.filter(t => t.language === lang.id && t.sourceType === 'import');
       const knownInLang = Object.entries(knowledge).filter(([, info]: any) => {
         return info.languageId === lang.id && (info.state === 'KNOWN' || info.state === 3);
       }).length;
       return { lang, textCount: langCorpus.length, importCount: langImports.length, knownWords: knownInLang };
     });
-  }, [texts, corpusTexts, knowledge]);
+  }, [rawTexts, corpusTexts, knowledge]);
 
   const mainFilters = [{ name: "All", id: "all", icon: "📚" }, ...LANGUAGES];
 
   const sortedTexts = useMemo(() => {
-    const copy = [...texts];
+    const copy = [...filteredTexts];
     switch (activeSort) {
       case 'comprehensible': return copy.sort((a, b) => (b.percentKnown || 0) - (a.percentKnown || 0));
       case 'hardest': return copy.sort((a, b) => (a.percentKnown || 0) - (b.percentKnown || 0));
@@ -160,12 +185,14 @@ export const Library = () => {
       });
       default: return copy;
     }
-  }, [texts, activeSort]);
+  }, [filteredTexts, activeSort]);
 
   const recentTexts = useMemo(() => {
     if (readingProgress.length === 0) return [];
-    return readingProgress.map(p => { const t = texts.find(tx => tx.id === p.textId); return t ? { ...t, lastPosition: p.lastPosition || 0 } : null; }).filter(Boolean).slice(0, 4);
-  }, [readingProgress, texts]);
+    return readingProgress
+      .map(p => { const tx = textsWithCoverage.find(t => t.id === p.textId); return tx ? { ...tx, lastPosition: p.lastPosition || 0 } : null; })
+      .filter(Boolean).slice(0, 4);
+  }, [readingProgress, textsWithCoverage]);
 
   const getCefrClass = (level: string) => {
     if (level?.startsWith("A")) return "cefr-a";
@@ -193,7 +220,7 @@ export const Library = () => {
     setSharingId(textId);
     try {
       await ImportService.sharePublic(user.uid, textId);
-      setTexts(prev => prev.map(t => t.id === textId ? { ...t, isPublic: true, sourceType: 'public' } : t));
+      setRawTexts(prev => prev.map(t => t.id === textId ? { ...t, isPublic: true, sourceType: 'public' as const } : t));
     } catch (e) { console.error("Error sharing:", e); }
     setSharingId(null);
   };
@@ -202,7 +229,7 @@ export const Library = () => {
     setSharingId(textId);
     try {
       await ImportService.unsharePublic(user.uid, textId);
-      setTexts(prev => prev.map(t => t.id === textId ? { ...t, isPublic: false, sourceType: 'import' } : t));
+      setRawTexts(prev => prev.map(t => t.id === textId ? { ...t, isPublic: false, sourceType: 'import' as const } : t));
     } catch (e) { console.error("Error unsharing:", e); }
     setSharingId(null);
   };

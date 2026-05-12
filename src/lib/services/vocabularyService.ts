@@ -23,6 +23,9 @@ export type KnowledgeMap = Record<string, WordInfo>;
 
 const STORAGE_KEY = STORAGE_KEYS.KNOWLEDGE;
 
+const vocabCache = new Map<string, { data: KnowledgeMap; at: number }>();
+const VOCAB_CACHE_TTL = 5 * 60_000;
+
 function getTermId(term: string, languageId: string): string {
   const key = `${languageId}:${term.toLowerCase().trim()}`;
   return btoa(encodeURIComponent(key)).replace(/[+/=]/g, '_').substring(0, 120);
@@ -88,6 +91,11 @@ export class VocabularyService {
       return saved ? JSON.parse(saved) : {};
     }
 
+    const cached = vocabCache.get(userId);
+    if (cached && Date.now() - cached.at < VOCAB_CACHE_TTL) {
+      return cached.data;
+    }
+
     try {
       const vocabSnap = await getDocs(collection(db, `users/${userId}/vocabulary`));
       const map: KnowledgeMap = {};
@@ -95,7 +103,7 @@ export class VocabularyService {
         const data = doc.data();
         const nextReview = normalizeTimestamp(data.nextReview);
         const addedAt = normalizeTimestamp(data.createdAt);
-        
+
         map[data.term] = {
           state: data.status,
           srs: nextReview ? {
@@ -114,6 +122,7 @@ export class VocabularyService {
           lastSeenAt: normalizeTimestamp(data.lastSeenAt) || undefined
         };
       });
+      vocabCache.set(userId, { data: map, at: Date.now() });
       return map;
     } catch (e) {
       console.error("Error fetching vocabulary", e);
@@ -196,20 +205,22 @@ export class VocabularyService {
   static async migrateLocalStorage(userId: string): Promise<number> {
     const ls = localStorage.getItem(STORAGE_KEY);
     if (!ls) return 0;
-    
+
     try {
       const map = JSON.parse(ls) as KnowledgeMap;
       const entries = Object.entries(map);
       let count = 0;
-      
+
       for (const [term, info] of entries) {
         await this.setWordState(userId, term, info.state, info.languageId || "unknown", info.srs);
         count++;
       }
-      
+
       // Flush now for migration
       await flushVocabWrites();
-      
+
+      // Invalidate cache so the next getVocabulary call reads the migrated data
+      vocabCache.delete(userId);
       localStorage.removeItem(STORAGE_KEY);
       return count;
     } catch (e) {
