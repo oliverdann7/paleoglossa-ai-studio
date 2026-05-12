@@ -165,7 +165,7 @@ export class VocabularyService {
       const snap = await getDoc(docRef);
       if (snap.exists()) {
         enqueueVocabWrite(userId, termId, {
-          encounterCount: increment,
+          encounterCount: increment(1),
           lastSeenAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         }, false);
