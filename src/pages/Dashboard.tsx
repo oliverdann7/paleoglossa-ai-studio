@@ -41,8 +41,8 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { settings } = useSettings();
-  const { knowledge, stats, getAllProgress, userImports, isLoading } = useKnowledge();
   const { activeLanguageId } = useActiveLanguage();
+  const { knowledge, stats, getAllProgress, userImports, isLoading } = useKnowledge(activeLanguageId);
   const { t } = useTranslation();
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const [progressLoaded, setProgressLoaded] = useState(false);

@@ -18,8 +18,8 @@ export const Vocabulary = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
-  const { knowledge, setWordState } = useKnowledge();
   const { activeLanguageId } = useActiveLanguage();
+  const { knowledge, setWordState } = useKnowledge(activeLanguageId);
   const { t } = useTranslation();
 
   const filters = ["All", "Due", "Known", "Familiar", "Learning", "Seen", "Ignored"];

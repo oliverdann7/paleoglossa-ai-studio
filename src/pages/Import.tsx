@@ -29,8 +29,8 @@ export const Import = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { refreshImports, knowledge } = useKnowledge();
   const { activeLanguageId } = useActiveLanguage();
+  const { refreshImports, knowledge } = useKnowledge(activeLanguageId);
   const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
   const [url, setUrl] = useState("");
   const [activeTab, setActiveTab] = useState<"paste" | "file" | "url" | "ocr">("paste");
