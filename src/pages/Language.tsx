@@ -5,128 +5,14 @@ import { ArrowLeft, BookOpen, Play, AlertCircle } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
 import { cn } from "../lib/utils";
 import { useTranslation } from "react-i18next";
-
-import { LANGUAGES } from "../lib/constants/languages";
+import { getLanguageById, getLanguageDirection, isRtlLanguage } from "../lib/constants/languages";
 
 export const Language = () => {
   const { langId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const langIcon = LANGUAGES.find(l => l.id === langId)?.icon;
-
-  const langMap: Record<string, any> = {
-    grc: {
-      name: "Ancient Greek",
-      description: "The language of Homer, Plato, and the New Testament.",
-      type: "ltr",
-      era: "c. 1500 BC – 300 BC",
-      region: "Ancient Greece",
-      writingSystem: "Greek Alphabet",
-      sample: "μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος",
-    },
-    "grc-koine": {
-      name: "Koine Greek",
-      description:
-        "The common Greek spoken and written during the Hellenistic period, the Roman Empire, and the early Byzantine Empire.",
-      type: "ltr",
-      era: "c. 300 BC – AD 300",
-      region: "Mediterranean & Middle East",
-      writingSystem: "Greek Alphabet",
-      sample: "Ἐν ἀρχῇ ἦν ὁ λόγος",
-    },
-    hbo: {
-      name: "Biblical Hebrew",
-      description:
-        "The archaic form of the Hebrew language, in which the Hebrew Bible is written.",
-      type: "rtl",
-      era: "c. 1000 BC – 100 AD",
-      region: "Ancient Israel / Levant",
-      writingSystem: "Hebrew Alphabet (abjad)",
-      sample: "בְּרֵאשִׁית בָּרָא אֱלֹהִים",
-    },
-    lat: {
-      name: "Classical Latin",
-      description:
-        "The standard register of the Latin language of the Roman classical period.",
-      type: "ltr",
-      era: "c. 75 BC – AD 300",
-      region: "Roman Empire",
-      writingSystem: "Latin Alphabet",
-      sample: "Arma virumque cano",
-    },
-    syr: {
-      name: "Syriac",
-      description:
-        "A dialect of Middle Aramaic that was once spoken across much of the Fertile Crescent and Eastern Arabia.",
-      type: "rtl",
-      era: "1st century AD – Present",
-      region: "Fertile Crescent",
-      writingSystem: "Syriac Alphabet (abjad)",
-      sample: "ܒܪܫܝܬ ܐܝܬܘܗܝ ܗܘܐ ܡܠܬܐ",
-    },
-    cop: {
-      name: "Coptic",
-      description:
-        "The latest stage of the Egyptian language, a northern Afroasiatic language spoken in Egypt until at least the 17th century.",
-      type: "ltr",
-      era: "2nd century AD – Present (Liturgical)",
-      region: "Egypt",
-      writingSystem: "Coptic Alphabet",
-      sample: "ϩⲛ ⲧⲉϩⲟⲩⲓⲧⲉ ⲛⲉϥϣⲟⲟⲡ ⲛϭⲓ ⲡϣⲁϫⲉ",
-    },
-    arc: {
-      name: "Aramaic",
-      description:
-        "An ancient language belonging to the Northwest Semitic group of the Afroasiatic language family.",
-      type: "rtl",
-      era: "c. 3000 BC – Present",
-      region: "Near East",
-      writingSystem: "Aramaic Alphabet (abjad)",
-      sample: "ܐܒܘܢ ܕܒܫܡܝܐ नित",
-    },
-    akk: {
-      name: "Akkadian",
-      description:
-        "An extinct East Semitic language that was spoken in ancient Mesopotamia.",
-      type: "ltr",
-      era: "c. 2500 BC – 100 AD",
-      region: "Mesopotamia",
-      writingSystem: "Cuneiform (logo-syllabic)",
-      sample: "𒀭 𒂗 𒆤 لة",
-    },
-    san: {
-      name: "Sanskrit",
-      description:
-        "An ancient Indo-Aryan language that is the classical language of India and of Hinduism.",
-      type: "ltr",
-      era: "c. 1500 BC – Present",
-      region: "South Asia",
-      writingSystem: "Devanagari (abugida)",
-      sample: "धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः",
-    },
-    egy: {
-      name: "Egyptian Hieroglyphs",
-      description:
-        "The formal writing system used in Ancient Egypt, featuring a combination of logographic, syllabic and alphabetic elements.",
-      type: "ltr",
-      era: "c. 3200 BC – AD 400",
-      region: "Ancient Egypt",
-      writingSystem: "Hieroglyphs",
-      sample: "𓐍𓂤𓅱 𓈖 𓊵𓏏𓊪𓅆",
-    },
-    hit: {
-      name: "Hittite",
-      description: "An extinct Indo-European language spoken by the Hittites in Anatolia.",
-      type: "ltr",
-      era: "c. 1600 BC – 1180 BC",
-      region: "Anatolia",
-      writingSystem: "Cuneiform",
-      sample: " UM-MA dUTU-ŠI m",
-    },
-  };
-
-  const languageInfo = langMap[langId || ""];
+  const languageInfo = getLanguageById(langId || "");
 
   const allTexts = useMemo(() => {
     return CorpusDB.getTexts().filter((t) => t.language === langId);
@@ -145,6 +31,9 @@ export const Language = () => {
       </div>
     );
   }
+
+  const dir = getLanguageDirection(langId || "");
+  const rtl = isRtlLanguage(langId || "");
 
   const beginnerTexts = allTexts.filter(
     (t) => t.level === "A1" || t.level === "A2",
@@ -173,9 +62,9 @@ export const Language = () => {
             <h3
               className={cn(
                 "text-[20px] font-serif mb-1",
-                text.direction === "rtl" ? "font-hebrew text-right" : "",
+                rtl ? "font-hebrew text-right" : "",
               )}
-              dir={text.direction}
+              dir={dir}
             >
               {text.title}
             </h3>
@@ -271,9 +160,9 @@ export const Language = () => {
           <div className="flex flex-col md:flex-row gap-12 items-start">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-4">
-                {langIcon && (
+                {languageInfo.icon && (
                   <span className="w-14 h-14 bg-parch2 text-ink rounded-full flex items-center justify-center text-3xl font-serif">
-                    {langIcon}
+                    {languageInfo.icon}
                   </span>
                 )}
                 <h1 className="text-4xl md:text-5xl font-serif text-ink tracking-tight">
@@ -306,14 +195,14 @@ export const Language = () => {
               </div>
             </div>
             
-            {languageInfo.sample && (
+            {languageInfo.sampleText && (
               <div className="w-full md:w-1/3 bg-sand p-6 rounded-2xl border border-bdr flex flex-col items-center justify-center min-h-[160px]">
                 <span className="text-muted uppercase tracking-wider text-[10px] block mb-4 w-full text-center">{t("language.sample", "Sample")}</span>
                 <span 
-                  dir={languageInfo.type}
-                  className={cn("text-2xl text-ink font-serif text-center leading-loose", languageInfo.type === "rtl" ? "font-hebrew text-right" : "")}
+                  dir={dir}
+                  className={cn("text-2xl text-ink font-serif text-center leading-loose", rtl ? "font-hebrew text-right" : "")}
                 >
-                  {languageInfo.sample}
+                  {languageInfo.sampleText}
                 </span>
               </div>
             )}
