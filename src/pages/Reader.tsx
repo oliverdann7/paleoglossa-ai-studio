@@ -21,6 +21,19 @@ import { useAuth } from "../lib/hooks/useAuth";
 import { useToast } from "../lib/hooks/useToast";
 import { STORAGE_KEYS } from "../lib/constants/storage";
 
+// Module-level constant — avoids object recreation on every render
+const TTS_LANG_MAP: Record<string, string> = {
+  grc: "el-GR",
+  "grc-koine": "el-GR",
+  hbo: "he-IL",
+  lat: "it-IT",
+  syr: "ar-SA",
+  arc: "ar-SA",
+  cop: "el-GR",
+  akk: "ar-SA",
+  san: "hi-IN",
+};
+
 export const Reader = () => {
   const { textId } = useParams();
   const navigate = useNavigate();
@@ -77,7 +90,6 @@ export const Reader = () => {
   });
 
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [elapsedTime, setElapsedTime] = useState(0); // seconds
 
   // Refs for progress saving to avoid re-renders
   const scrollProgressRef = useRef(0);
@@ -313,16 +325,6 @@ export const Reader = () => {
     );
   }, [selectedWord, chapter, currentSentenceIndex]);
 
-  // Stats & Time tracking - use ref-based timer to avoid re-renders
-  const elapsedRef = useRef(0);
-  useEffect(() => {
-    const timer = setInterval(() => {
-      elapsedRef.current += 1;
-      setElapsedTime(elapsedRef.current);
-      if (elapsedRef.current > 0 && elapsedRef.current % 60 === 0) incrementReadingTime(1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [incrementReadingTime]);
 
   // Update refs when state changes (eslint disabled intentionally - we only want to update refs, not trigger re-renders)
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -335,19 +337,6 @@ export const Reader = () => {
     currentSentenceIndexRef.current = currentSentenceIndex;
   }, [currentSentenceIndex]);
 
-  // TTS language map (same as LexDrawerPanel)
-  const ttsLangMap: Record<string, string> = {
-    grc: "el-GR",
-    "grc-koine": "el-GR",
-    hbo: "he-IL",
-    lat: "it-IT",
-    syr: "ar-SA",
-    arc: "ar-SA",
-    cop: "el-GR",
-    akk: "ar-SA",
-    san: "hi-IN",
-  };
-
   // Speak current word via TTS when audio position advances
   useEffect(() => {
     if (!isPlaying || !window.speechSynthesis) return;
@@ -358,7 +347,7 @@ export const Reader = () => {
 
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(token.text);
-    u.lang = ttsLangMap[currentLanguageId] || 'el-GR';
+    u.lang = TTS_LANG_MAP[currentLanguageId] || 'el-GR';
     u.rate = Math.min(audioSpeed, 1.1);
     window.speechSynthesis.speak(u);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -658,6 +647,35 @@ export const Reader = () => {
     }
   }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, totalPages]);
 
+  const handleSwipe = useCallback(() => {
+    handleMarkPageKnown(true);
+  }, [handleMarkPageKnown]);
+
+  const handleNextPage = useCallback(() => {
+    setCurrentScrollPage(prev => prev + 1);
+    document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+  }, []);
+
+  const handleNextChapter = useCallback(() => {
+    setCurrentChapterIndex(currentChapterIndex + 1);
+  }, [currentChapterIndex]);
+
+  const handleWordClick = useCallback((token: any, sentenceText: string, sentenceIndex: number) => {
+    setSelectedWord({ ...token, sentenceText });
+    incrementEncounter(token.lemma, currentLanguageId);
+    setWordContext(token.lemma, sentenceText, currentLanguageId);
+    if (readingMode === "page") setCurrentSentenceIndex(sentenceIndex);
+  }, [incrementEncounter, setWordContext, currentLanguageId, readingMode]);
+
+  const handleSavePhrase = useCallback((sentence: any) => {
+    const phrase = sentence.tokens.map((tk: any) => tk.text).join(" ");
+    setWordState(phrase, WordState.LEARNING, currentLanguageId);
+    if (sentence.translation || aiTranslations[sentence.id]) {
+      updateGloss(phrase, aiTranslations[sentence.id] || sentence.translation || "", currentLanguageId);
+    }
+    addToast(t("reader.sentenceSaved"), "success");
+  }, [setWordState, updateGloss, currentLanguageId, aiTranslations, addToast, t]);
+
   if (!text || chapters.length === 0 || !chapter) {
     return <ReaderSkeleton />;
   }
@@ -667,9 +685,9 @@ export const Reader = () => {
       <div className="flex-1 flex flex-col relative z-20 overflow-hidden">
         <ReaderProgressHeader
           readToday={stats?.readToday || 0}
-          elapsedTime={elapsedTime}
           dailyGoalWords={settings.dailyGoalWords}
           onBack={onBack}
+          onMinuteElapsed={() => incrementReadingTime(1)}
         />
 
         <ReaderToolbar
@@ -719,34 +737,13 @@ export const Reader = () => {
           aiTranslations={aiTranslations}
           translatingId={isTranslatingId}
           isSample={text?.isSample}
-          onWordClick={(token, sentenceText, sentenceIndex) => {
-            setSelectedWord({ ...token, sentenceText });
-            incrementEncounter(token.lemma, currentLanguageId);
-            setWordContext(token.lemma, sentenceText, currentLanguageId);
-            if (readingMode === "page") setCurrentSentenceIndex(sentenceIndex);
-          }}
+          onWordClick={handleWordClick}
           onAITranslate={handleAITranslate}
-          onSavePhrase={(sentence) => {
-            const phrase = sentence.tokens.map((t: any) => t.text).join(" ");
-            setWordState(phrase, WordState.LEARNING, currentLanguageId);
-            if (sentence.translation || aiTranslations[sentence.id]) {
-              updateGloss(phrase, aiTranslations[sentence.id] || sentence.translation || "", currentLanguageId);
-            }
-            alert(t("reader.sentenceSaved"));
-          }}
+          onSavePhrase={handleSavePhrase}
           onMarkPageKnown={handleMarkPageKnown}
-          onSwipe={(direction) => {
-            if (direction === 'left') {
-              handleMarkPageKnown(true);
-            } else {
-              handleMarkPageKnown(true);
-            }
-          }}
-          onNextPage={() => {
-            setCurrentScrollPage(prev => prev + 1);
-            document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
-          }}
-          onNextChapter={() => setCurrentChapterIndex(currentChapterIndex + 1)}
+          onSwipe={handleSwipe}
+          onNextPage={handleNextPage}
+          onNextChapter={handleNextChapter}
           currentScrollPage={currentScrollPage}
           totalPages={totalPages}
           currentChapterIndex={currentChapterIndex}
@@ -828,18 +825,7 @@ export const Reader = () => {
           if (!window.speechSynthesis) return;
           window.speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(textStr);
-          const langCodeMap: Record<string, string> = {
-            grc: "el-GR",
-            "grc-koine": "el-GR",
-            hbo: "he-IL",
-            lat: "it-IT",
-            syr: "ar-SA",
-            arc: "ar-SA",
-            cop: "el-GR",
-            akk: "ar-SA",
-            san: "hi-IN",
-          };
-          u.lang = langCodeMap[lang] || "en-US";
+          u.lang = TTS_LANG_MAP[lang] || "en-US";
           u.rate = 0.9;
           window.speechSynthesis.speak(u);
         }}

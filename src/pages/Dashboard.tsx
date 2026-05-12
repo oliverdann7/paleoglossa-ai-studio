@@ -41,55 +41,43 @@ export const Dashboard = () => {
     getAllProgress().then(setReadingProgress);
   }, [getAllProgress]);
 
-  const knownCount = useMemo(
-    () =>
-      Object.values(knowledge).filter((info) => {
-        const state = typeof info === "object" ? (info as any).state : info;
-        return state === WordState.KNOWN;
-      }).length,
-    [knowledge],
-  );
+  const { knownCount, learningCount, reviewCount, recentVocab } = useMemo(() => {
+    const now = new Date();
+    let known = 0;
+    let learning = 0;
+    let review = 0;
+    const activeEntries: [string, any][] = [];
 
-  const learningCount = useMemo(
-    () =>
-      Object.values(knowledge).filter((info) => {
-        const state = typeof info === "object" ? (info as any).state : info;
-        return state === WordState.LEARNING || state === WordState.FAMILIAR;
-      }).length,
-    [knowledge],
-  );
-
-  const reviewCount = useMemo(() => {
-    return Object.values(knowledge).filter((info) => {
+    for (const [lemma, info] of Object.entries(knowledge)) {
       const i = typeof info === "object" ? (info as any) : { state: info };
-      if (i.state !== WordState.LEARNING && i.state !== WordState.FAMILIAR)
-        return false;
-      if (!i.srs?.nextReview) return true; // Newly learned words are due immediately
-      return new Date(i.srs.nextReview) <= new Date();
-    }).length;
-  }, [knowledge]);
+      const state: WordState = i.state;
 
-  const recentVocab = useMemo(() => {
-    const highlighted = Object.entries(knowledge)
-      .filter(([, info]) => {
-        const state = typeof info === "object" ? (info as any).state : info;
-        return state !== WordState.NEW && state !== WordState.IGNORED;
-      })
+      if (state === WordState.KNOWN) {
+        known++;
+      } else if (state === WordState.LEARNING || state === WordState.FAMILIAR) {
+        learning++;
+        const isDue = !i.srs?.nextReview || new Date(i.srs.nextReview) <= now;
+        if (isDue) review++;
+        activeEntries.push([lemma, info]);
+      } else if (state !== WordState.NEW && state !== WordState.IGNORED) {
+        activeEntries.push([lemma, info]);
+      }
+    }
+
+    const recent = activeEntries
       .sort((a, b) => {
         const aDate = typeof a[1] === "object" ? new Date((a[1] as any).addedAt || 0).getTime() : 0;
         const bDate = typeof b[1] === "object" ? new Date((b[1] as any).addedAt || 0).getTime() : 0;
         return bDate - aDate;
       })
-      .slice(0, 6);
-    return highlighted.map(([lemma, info]) => {
-      const state = typeof info === "object" ? (info as any).state : info;
-      const dictLang = getLangForLemma(lemma);
-      return {
+      .slice(0, 6)
+      .map(([lemma, info]) => ({
         lemma,
-        state,
-        lang: dictLang,
-      };
-    });
+        state: typeof info === "object" ? (info as any).state : info,
+        lang: getLangForLemma(lemma),
+      }));
+
+    return { knownCount: known, learningCount: learning, reviewCount: review, recentVocab: recent };
   }, [knowledge]);
 
   let greeting = t("dashboard.evening", "Good evening");

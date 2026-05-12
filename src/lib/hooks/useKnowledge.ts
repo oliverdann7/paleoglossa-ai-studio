@@ -23,15 +23,6 @@ export const useKnowledge = () => {
     return () => { active = false; };
   }, [userId]);
 
-  useEffect(() => {
-    if (!vocab.isLoading && !statsHook.isLoading) {
-      const knownCount = Object.values(vocab.knowledge).filter(v => v.state === WordState.KNOWN).length;
-      if (statsHook.stats.totalKnown !== knownCount) {
-        statsHook.updateStatsState(s => ({ ...s, totalKnown: knownCount }));
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocab.isLoading, statsHook.isLoading, vocab.knowledge]);
 
   const refreshImports = useCallback(async () => {
     const dbImports = await ImportService.getImports(userId);

@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { doc, getDoc, collection, getDocs, serverTimestamp, writeBatch, increment } from 'firebase/firestore';
+import { doc, collection, getDocs, serverTimestamp, writeBatch, increment, arrayUnion } from 'firebase/firestore';
 import { WordState } from '../constants/wordStates';
 import { STORAGE_KEYS } from '../constants/storage';
 import { SRSData } from '../../types/firestore';
@@ -22,12 +22,8 @@ export type KnowledgeMap = Record<string, WordInfo>;
 const STORAGE_KEY = STORAGE_KEYS.KNOWLEDGE;
 
 function getTermId(term: string, languageId: string): string {
-  // Use languageId + term to avoid collisions
   const key = `${languageId}:${term.toLowerCase().trim()}`;
-  const hex = Array.from(new TextEncoder().encode(key))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-  return hex.length > 120 ? hex.substring(0, 120) : hex;
+  return btoa(encodeURIComponent(key)).replace(/[+/=]/g, '_').substring(0, 120);
 }
 
 // Global queue for batching vocabulary writes to reduce Firestore costs
@@ -156,25 +152,18 @@ export class VocabularyService {
     enqueueVocabWrite(userId, termId, payload, true);
   }
 
-  static async incrementEncounter(userId: string | null, term: string, languageId: string = "unknown") {
+  static incrementEncounter(userId: string | null, term: string, languageId: string = "unknown") {
     if (!userId) return;
-    
     const termId = getTermId(term, languageId);
-    try {
-      const docRef = doc(db, `users/${userId}/vocabulary`, termId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        enqueueVocabWrite(userId, termId, {
-          encounterCount: increment(1),
-          lastSeenAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        }, false);
-      } else {
-        await this.setWordState(userId, term, WordState.NEW, languageId);
-      }
-    } catch (e) {
-      console.error("Failed to increment encounter", e);
-    }
+    // Use merge=true so the write creates the doc if it doesn't exist yet
+    enqueueVocabWrite(userId, termId, {
+      term,
+      normalizedTerm: term.toLowerCase().trim(),
+      languageId,
+      encounterCount: increment(1),
+      lastSeenAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }, true);
   }
 
   static async updateGloss(userId: string | null, term: string, gloss: string, languageId: string = "unknown") {
@@ -190,25 +179,14 @@ export class VocabularyService {
     return this.setWordState(userId, term, state, languageId, srs);
   }
 
-  static async setWordContext(userId: string | null, term: string, context: string, languageId: string = "unknown") {
+  static setWordContext(userId: string | null, term: string, context: string, languageId: string = "unknown") {
     if (!userId) return;
     const termId = getTermId(term, languageId);
-    try {
-      const docRef = doc(db, `users/${userId}/vocabulary`, termId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        const data = snap.data();
-        const contexts = data.contexts || [];
-        if (!contexts.includes(context)) {
-          enqueueVocabWrite(userId, termId, {
-            contexts: [...contexts, context].slice(-5),
-            updatedAt: serverTimestamp()
-          }, false);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    // arrayUnion is idempotent and avoids a read round-trip; the 5-item limit is enforced locally
+    enqueueVocabWrite(userId, termId, {
+      contexts: arrayUnion(context),
+      updatedAt: serverTimestamp(),
+    }, true);
   }
 
   static async migrateLocalStorage(userId: string): Promise<number> {

@@ -1,15 +1,14 @@
 import { db } from '../firebase';
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  addDoc, 
-  doc, 
-  updateDoc, 
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
   serverTimestamp,
   orderBy,
-  limit
+  limit,
+  writeBatch
 } from 'firebase/firestore';
 import { calculateSM2, SRSState, Rating } from '../srs/sm2';
 import { calculateFSRS, FSRSState, FSRRating } from '../srs/fsrs';
@@ -128,11 +127,10 @@ export class ReviewService {
     }
     
     const vocabDocRef = doc(db, `users/${userId}/vocabulary`, item.id);
-    const logRef = collection(db, `users/${userId}/reviewLogs`);
-    
-    // 1. Update vocabulary item
+    const logDocRef = doc(collection(db, `users/${userId}/reviewLogs`));
+
     const status = this.determineNewStatus(item.status, nextState, rating);
-    
+
     const updateData: any = {
       status,
       interval: nextState.interval,
@@ -142,18 +140,16 @@ export class ReviewService {
       nextReview: nextState.nextReview,
       updatedAt: serverTimestamp()
     };
-    
-    // Add FSRS-specific fields if using FSRS
+
     if (USE_FSRS) {
-      // Store FSRS metrics
       updateData.fsrsStability = nextState.interval;
       updateData.fsrsDifficulty = 5;
     }
-    
-    await updateDoc(vocabDocRef, updateData);
-    
-    // 2. Add log entry
-    await addDoc(logRef, {
+
+    // Batch vocab update + log write into a single round-trip
+    const batch = writeBatch(db);
+    batch.update(vocabDocRef, updateData);
+    batch.set(logDocRef, {
       vocabItemId: item.id,
       term: item.term,
       rating,
@@ -166,6 +162,7 @@ export class ReviewService {
       createdAt: serverTimestamp(),
       algorithm: USE_FSRS ? 'FSRS' : 'SM-2'
     });
+    await batch.commit();
     
     return nextState;
   }

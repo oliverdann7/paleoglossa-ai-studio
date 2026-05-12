@@ -2891,27 +2891,14 @@ import {
   AENEID_LINES_67_100,
 } from "./corpus/expanded-sections";
 
-export const CorpusDB = {
-  getTexts: () => [
-    TEXT_JOHN_1,
-    TEXT_GENESIS,
-    TEXT_AENEID_1,
-    TEXT_PSALM_23,
-    TEXT_SYRIAC_JOHN,
-    TEXT_COPTIC_JOHN,
-    TEXT_ARAMAIC_GENESIS,
-    TEXT_AKKADIAN_GILGAMESH,
-    TEXT_SANSKRIT_GITA,
-    TEXT_HITTITE_ANNALS,
-    TEXT_EGYPTIAN_PTAHHOTEP,
-    TEXT_ANABASIS,
-    TEXT_ILIAD,
-    TEXT_ODYSSEY,
-    TEXT_AESOP,
-    ...getMockTexts()
-  ].map(enhanceText),
-  getText: (id: string) =>
-    [
+// Module-level caches — corpus data is static at runtime
+let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
+let _textByIdCache: Map<string, ReturnType<typeof enhanceText>> | null = null;
+let _lemmaIndexCache: Map<string, Array<{ sentence: any; sectionId: string; textId: string }>> | null = null;
+
+function getAllEnhancedTexts() {
+  if (!_textsCache) {
+    _textsCache = [
       TEXT_JOHN_1,
       TEXT_GENESIS,
       TEXT_AENEID_1,
@@ -2928,7 +2915,47 @@ export const CorpusDB = {
       TEXT_ODYSSEY,
       TEXT_AESOP,
       ...getMockTexts()
-    ].map(enhanceText).find((t) => t.id === id),
+    ].map(enhanceText);
+  }
+  return _textsCache;
+}
+
+function getTextByIdMap() {
+  if (!_textByIdCache) {
+    _textByIdCache = new Map(getAllEnhancedTexts().map(t => [t.id, t]));
+  }
+  return _textByIdCache;
+}
+
+function getLemmaIndex() {
+  if (_lemmaIndexCache) return _lemmaIndexCache;
+  const index = new Map<string, Array<{ sentence: any; sectionId: string; textId: string }>>();
+  const allSections = [
+    JOHN_1_1, GENESIS_1, AENEID_1_1, PSALM_23_1, SYRIAC_JOHN_1_1,
+    COPTIC_JOHN_1_1, ARAMAIC_GENESIS_1_1, AKKADIAN_GILGAMESH_1_1,
+    SANSKRIT_GITA_1_1, HITTITE_ANNALS_1_1, EGYPTIAN_PTAHHOTEP_1_1,
+    ANABASIS_1_1, ILIAD_1_1, ODYSSEY_1_1, AESOP_1_1,
+    ...ALL_EXPANDED_SECTIONS,
+    ...getMockSections()
+  ];
+  for (const section of allSections) {
+    for (const sentence of section.sentences) {
+      for (const token of sentence.tokens) {
+        if (!token.lemma) continue;
+        const entry = { sentence, sectionId: section.id, textId: (section as any).textId };
+        const existing = index.get(token.lemma);
+        if (existing) existing.push(entry);
+        else index.set(token.lemma, [entry]);
+      }
+    }
+  }
+  _lemmaIndexCache = index;
+  return index;
+}
+
+export const CorpusDB = {
+  getTexts: () => getAllEnhancedTexts(),
+  getText: (id: string) => getTextByIdMap().get(id),
   getSection: (sectionId: string) => {
     const split = SECTION_SPLITS[sectionId];
     if (split) return splitTextSection(split.base, sectionId, split.label, split.part);
@@ -2993,38 +3020,14 @@ export const CorpusDB = {
     currentSentenceId?: string,
     max: number = 3,
   ) => {
+    const index = getLemmaIndex();
+    const entries = index.get(lemma);
+    if (!entries) return [];
     const results: any[] = [];
-    const allSections = [
-      JOHN_1_1,
-      GENESIS_1,
-      AENEID_1_1,
-      PSALM_23_1,
-      SYRIAC_JOHN_1_1,
-      COPTIC_JOHN_1_1,
-      ARAMAIC_GENESIS_1_1,
-      AKKADIAN_GILGAMESH_1_1,
-      SANSKRIT_GITA_1_1,
-      HITTITE_ANNALS_1_1,
-      EGYPTIAN_PTAHHOTEP_1_1,
-      ANABASIS_1_1,
-      ILIAD_1_1,
-      ODYSSEY_1_1,
-      AESOP_1_1,
-      ...ALL_EXPANDED_SECTIONS,
-      ...getMockSections()
-    ];
-    for (const section of allSections) {
-      for (const sentence of section.sentences) {
-        if (sentence.id === currentSentenceId) continue;
-        if (sentence.tokens.some((t: any) => t.lemma === lemma)) {
-          results.push({
-            sentence,
-            sectionId: section.id,
-            textId: section.textId,
-          });
-          if (results.length >= max) return results;
-        }
-      }
+    for (const entry of entries) {
+      if (entry.sentence.id === currentSentenceId) continue;
+      results.push(entry);
+      if (results.length >= max) break;
     }
     return results;
   },

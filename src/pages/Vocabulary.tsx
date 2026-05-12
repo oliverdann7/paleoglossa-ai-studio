@@ -82,11 +82,13 @@ export const Vocabulary = () => {
   };
 
   const stats = useMemo(() => {
-     return {
-        due: words.filter(w => w.isDue && w.status !== "Seen").length,
-        known: words.filter(w => w.status === "Known" || w.status === "Familiar").length,
-        learning: words.filter(w => w.status === "Learning").length,
-     }
+    let due = 0, known = 0, learning = 0;
+    for (const w of words) {
+      if (w.isDue && w.status !== "Seen") due++;
+      if (w.status === "Known" || w.status === "Familiar") known++;
+      if (w.status === "Learning") learning++;
+    }
+    return { due, known, learning };
   }, [words]);
 
   // Reset to page 0 whenever filter or search changes

@@ -55,6 +55,13 @@ export const LexDrawerPanel = ({
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
 
+  // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
+  const wordInfo = useMemo(
+    () => selectedWord ? getWordInfo(selectedWord.lemma) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedWord?.lemma, knowledge]
+  );
+
   const sourceInfo = useMemo(() => {
     if (!text?.corpusId) return null;
     const corpus = CorpusDB.getCorpusOverview(text.corpusId);
@@ -168,8 +175,8 @@ export const LexDrawerPanel = ({
               </Link>
             </div>
              <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
-               {getWordInfo(selectedWord.lemma).userGloss || 
-                 (findDictionaryEntry(selectedWord.lemma, textLanguageId)?.shortGloss || 
+               {wordInfo?.userGloss ||
+                 (findDictionaryEntry(selectedWord.lemma, textLanguageId)?.shortGloss ||
                   selectedWord.gloss)}
              </div>
             {!sourceInfo && (
@@ -186,7 +193,7 @@ export const LexDrawerPanel = ({
                 type="text"
                 className="w-full bg-white border border-bdr/50 rounded-lg px-3 py-2 text-sm focus:border-blue outline-none"
                 placeholder="Enter your own gloss..."
-                value={getWordInfo(selectedWord.lemma).userGloss || ""}
+                value={wordInfo?.userGloss || ""}
                 onChange={(e) => updateGloss(selectedWord.lemma, e.target.value, textLanguageId)}
               />
             </div>
@@ -234,8 +241,7 @@ export const LexDrawerPanel = ({
                 WordState.KNOWN,
                 WordState.IGNORED,
               ].map((state) => {
-                const info = getWordInfo(selectedWord.lemma);
-                const isActive = info.state === state || (info.state === WordState.NEW && state === WordState.NEW && !knowledge[selectedWord.lemma]);
+                const isActive = wordInfo?.state === state || (wordInfo?.state === WordState.NEW && state === WordState.NEW && !knowledge[selectedWord.lemma]);
                 
                 return (
                   <button
@@ -342,14 +348,14 @@ export const LexDrawerPanel = ({
           )}
 
           {/* Contextual Examples */}
-          {getWordInfo(selectedWord.lemma).contexts && (getWordInfo(selectedWord.lemma).contexts?.length ?? 0) > 0 && (
+          {(wordInfo?.contexts?.length ?? 0) > 0 && (
             <div className="mb-10">
               <div className="eyebrow mb-4 text-ink flex items-center justify-between">
                 <span>Example Sentences</span>
                 <Repeat className="w-3 h-3 opacity-50" />
               </div>
               <div className="space-y-3">
-                {(getWordInfo(selectedWord.lemma).contexts || []).map((ctx: string, i: number) => (
+                {(wordInfo?.contexts || []).map((ctx: string, i: number) => (
                   <div key={i} className="p-3 bg-white border border-bdr/30 rounded-xl text-[13px] leading-relaxed italic text-ink/80 border-l-2 border-l-blue/30">
                     "{ctx}"
                   </div>
@@ -363,7 +369,7 @@ export const LexDrawerPanel = ({
             <textarea
               className="w-full h-24 p-3 bg-white border border-bdr rounded-xl text-[13px] font-body resize-none focus:outline-none focus:border-blue transition-colors"
               placeholder={t('reader.addNote', "Add a note about this word...")}
-              value={getWordInfo(selectedWord.lemma).notes || ""}
+              value={wordInfo?.notes || ""}
               onChange={(e) =>
                 setWordNote(selectedWord.lemma, e.target.value)
               }
