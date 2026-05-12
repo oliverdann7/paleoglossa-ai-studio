@@ -26,6 +26,14 @@ export interface LibraryFilter {
   search?: string;
 }
 
+export interface CoverageResult {
+  totalWords: number;
+  percentKnown: number;
+  percentLearning: number;
+  percentKnownUnique: number;
+  difficultyTier: 'beginner' | 'accessible' | 'challenging' | 'advanced';
+}
+
 export interface LibraryText {
   id: string;
   title: string;
@@ -60,8 +68,10 @@ export interface LibraryText {
   isPublic?: boolean;
   sourceType: 'corpus' | 'import' | 'public';
   analysisStatus?: 'analyzed' | 'raw' | 'needs_ai';
-  rawTextReference?: any; // To keep the original text object
+  rawTextReference?: any;
   addedAt?: string;
+  /** Pre-normalised lowercase string for fast search — built once in getRawTexts. */
+  _searchText?: string;
 }
 
 const DEFAULT_TEXT_METADATA: Record<string, Partial<LibraryText>> = {
@@ -105,12 +115,20 @@ function getTextMetadata(text: any): Partial<LibraryText> {
   };
 }
 
+function buildSearchText(...parts: (string | undefined)[]): string {
+  return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
 export class LibraryService {
-  static async getLibrary(userId: string | null, filters?: LibraryFilter, getWordInfo?: (lemma: string) => any): Promise<LibraryText[]> {
+  /**
+   * Phase A — fetch raw LibraryText objects without coverage data.
+   * Re-run only when tab or auth changes (not on every filter keystroke).
+   */
+  static async getRawTexts(userId: string | null, source?: 'corpus' | 'import' | 'public'): Promise<LibraryText[]> {
     const rawTexts: LibraryText[] = [];
 
     // 1. Built-in Corpus
-    if (!filters?.source || filters.source === 'corpus') {
+    if (!source || source === 'corpus') {
       const builtIn = CorpusDB.getTexts();
       builtIn.forEach(t => {
         const corpus = CorpusDB.getCorpusOverview(t.corpusId);
@@ -120,7 +138,7 @@ export class LibraryService {
             ? ATTRIBUTIONS[corpus.sourceAttributionId]
             : undefined;
         const metadata = getTextMetadata(t);
-          rawTexts.push({
+        const tx: LibraryText = {
           id: t.id,
           title: t.title,
           author: t.author || 'Ancient Text',
@@ -145,20 +163,22 @@ export class LibraryService {
           },
           sectionsPreview: t.sectionsPreview,
           tags: [metadata.genre || "Text", metadata.corpusType || "other"],
-          totalWords: 0, // Will calculate below
+          totalWords: 0,
           sourceType: 'corpus',
-          rawTextReference: t
-        });
+          rawTextReference: t,
+        };
+        tx._searchText = buildSearchText(tx.title, tx.author, tx.corpusTitle, tx.genre);
+        rawTexts.push(tx);
       });
     }
 
     // 2. User Imports
-    if ((!filters?.source || filters.source === 'import') && userId) {
+    if ((!source || source === 'import') && userId) {
       const userImports = await ImportService.getImports(userId);
       userImports.forEach(t => {
         const hasAiMorphology = t.analysisStatus === 'analyzed' ||
           (t.sentences?.some((s: any) => s.tokens?.some((tok: any) => tok.pos || tok.gloss)));
-        rawTexts.push({
+        const tx: LibraryText = {
           id: t.id || 'unknown',
           title: t.title,
           author: 'Your Text',
@@ -181,130 +201,144 @@ export class LibraryService {
           totalWords: t.stats?.totalWords || 0,
           sourceType: 'import',
           rawTextReference: t,
-          addedAt: typeof t.createdAt === 'string' ? t.createdAt : undefined
-        });
+          addedAt: typeof t.createdAt === 'string' ? t.createdAt : undefined,
+        };
+        tx._searchText = buildSearchText(tx.title, tx.author, tx.corpusTitle, tx.genre);
+        rawTexts.push(tx);
       });
     }
 
     // 3. Public/Shared
-    if ((!filters?.source || filters.source === 'public') && userId) {
-       try {
-         const publicTexts = await ImportService.getPublicTexts(50);
-         publicTexts.forEach(t => {
-           rawTexts.push({
-             id: t.id || 'unknown',
-             title: t.title,
-             author: t.authorName || 'Anonymous',
-             language: t.languageId || 'grc',
-             level: 'Varies',
-             genre: 'Shared text',
-             period: 'User supplied',
-             corpusType: 'other',
-             corpusTitle: 'Public Library',
-             licenseName: 'Shared publicly',
-             sourceName: `Shared by ${t.authorName || 'Anonymous'}`,
-             sourceUrl: t.forkedFrom ? `/app/reader/${t.forkedFrom}` : undefined,
-             availableTools: {
-               morphology: false,
-               translation: false,
-               audio: false,
-               syntax: false,
-             },
-             tags: [],
-             totalWords: t.stats?.totalWords || 0,
-             sourceType: 'public',
-             isPublic: true,
-             rawTextReference: t,
-             addedAt: typeof t.publishedAt === 'string' ? t.publishedAt : undefined
-           });
-         });
-       } catch (e) {
-         console.warn("Public query failed", e);
-       }
+    if ((!source || source === 'public') && userId) {
+      try {
+        const publicTexts = await ImportService.getPublicTexts(50);
+        publicTexts.forEach(t => {
+          const tx: LibraryText = {
+            id: t.id || 'unknown',
+            title: t.title,
+            author: t.authorName || 'Anonymous',
+            language: t.languageId || 'grc',
+            level: 'Varies',
+            genre: 'Shared text',
+            period: 'User supplied',
+            corpusType: 'other',
+            corpusTitle: 'Public Library',
+            licenseName: 'Shared publicly',
+            sourceName: `Shared by ${t.authorName || 'Anonymous'}`,
+            sourceUrl: t.forkedFrom ? `/app/reader/${t.forkedFrom}` : undefined,
+            availableTools: {
+              morphology: false,
+              translation: false,
+              audio: false,
+              syntax: false,
+            },
+            tags: [],
+            totalWords: t.stats?.totalWords || 0,
+            sourceType: 'public',
+            isPublic: true,
+            rawTextReference: t,
+            addedAt: typeof t.publishedAt === 'string' ? t.publishedAt : undefined,
+          };
+          tx._searchText = buildSearchText(tx.title, tx.author, tx.corpusTitle, tx.genre);
+          rawTexts.push(tx);
+        });
+      } catch (e) {
+        console.warn("Public query failed", e);
+      }
     }
 
-    // Process Word Counts & Percentages if getWordInfo provided
-    if (getWordInfo) {
-      rawTexts.forEach(tx => {
-        let totalWords = tx.totalWords;
-        let knownCount = 0;
-        let learningCount = 0;
-        const uniqueLemmas = new Set<string>();
-        const knownUniqueLemmas = new Set<string>();
+    return rawTexts;
+  }
 
-        if (tx.sourceType === 'corpus') {
-          const t = tx.rawTextReference;
-          const allTokens = getCorpusTokens(t);
-          totalWords = allTokens.length;
-          tx.totalWords = totalWords;
-          allTokens.forEach((tok: any) => {
-            const info = getWordInfo(tok.lemma);
-            if (tok.lemma) uniqueLemmas.add(tok.lemma);
-            if (info.state === 'KNOWN') { knownCount++; if (tok.lemma) knownUniqueLemmas.add(tok.lemma); }
-            else if (info.state !== 'NEW') learningCount++;
+  /**
+   * Phase B — compute word coverage for all raw texts.
+   * Run only when knowledge changes, not on every filter keystroke.
+   * Returns a Map<textId, CoverageResult> for O(1) lookup in Phase C.
+   */
+  static computeCoverage(rawTexts: LibraryText[], getWordInfo: (lemma: string) => any): Map<string, CoverageResult> {
+    const map = new Map<string, CoverageResult>();
+
+    rawTexts.forEach(tx => {
+      let totalWords = tx.totalWords;
+      let knownCount = 0;
+      let learningCount = 0;
+      const uniqueLemmas = new Set<string>();
+      const knownUniqueLemmas = new Set<string>();
+
+      if (tx.sourceType === 'corpus') {
+        const allTokens = getCorpusTokens(tx.rawTextReference);
+        totalWords = allTokens.length;
+        allTokens.forEach((tok: any) => {
+          const info = getWordInfo(tok.lemma);
+          if (tok.lemma) uniqueLemmas.add(tok.lemma);
+          if (info.state === 'KNOWN') { knownCount++; if (tok.lemma) knownUniqueLemmas.add(tok.lemma); }
+          else if (info.state !== 'NEW') learningCount++;
+        });
+      } else if (tx.sourceType === 'import') {
+        const t = tx.rawTextReference as ImportedText;
+        const tokens = t.sentences?.flatMap((s: any) => s.tokens).filter((tok: any) => tok.type === 'word') || [];
+        if (tokens.length > 0) {
+          totalWords = tokens.length;
+          tokens.forEach((tok: any) => {
+            const lemma = tok.lemma || tok.text;
+            const info = getWordInfo(lemma);
+            if (lemma) uniqueLemmas.add(lemma);
+            if (info.state === 'KNOWN') { knownCount++; knownUniqueLemmas.add(lemma); }
+            else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
           });
-        } else if (tx.sourceType === 'import') {
-          const t = tx.rawTextReference as ImportedText;
-          const tokens = t.sentences?.flatMap((s: any) => s.tokens).filter((tok: any) => tok.type === 'word') || [];
-          if (tokens.length > 0) {
-            totalWords = tokens.length;
-            tx.totalWords = totalWords;
-            tokens.forEach((tok: any) => {
-              const lemma = tok.lemma || tok.text;
-              const info = getWordInfo(lemma);
-              if (lemma) uniqueLemmas.add(lemma);
-              if (info.state === 'KNOWN') { knownCount++; knownUniqueLemmas.add(lemma); }
-              else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
-            });
-          } else {
-            const content = t.rawContent || "";
-            const words = content.split(/\s+/).filter(Boolean);
-            totalWords = words.length;
-            tx.totalWords = totalWords;
-            words.forEach((w: string) => {
-              const lemma = w.toLowerCase();
-              const info = getWordInfo(lemma);
-              uniqueLemmas.add(lemma);
-              if (info.state === 'KNOWN') { knownCount++; knownUniqueLemmas.add(lemma); }
-              else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
-            });
-          }
-        }
-
-        if (totalWords > 0) {
-          tx.percentKnown = Math.round((knownCount / totalWords) * 100);
-          tx.percentLearning = Math.round((learningCount / totalWords) * 100);
         } else {
-          tx.percentKnown = 0;
-          tx.percentLearning = 0;
+          const content = t.rawContent || "";
+          const words = content.split(/\s+/).filter(Boolean);
+          totalWords = words.length;
+          words.forEach((w: string) => {
+            const lemma = w.toLowerCase();
+            const info = getWordInfo(lemma);
+            uniqueLemmas.add(lemma);
+            if (info.state === 'KNOWN') { knownCount++; knownUniqueLemmas.add(lemma); }
+            else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
+          });
         }
+      }
+      // Public texts: no token data, leave coverage at zero
 
-        const uniqueTotal = uniqueLemmas.size;
-        const pku = uniqueTotal > 0 ? Math.round((knownUniqueLemmas.size / uniqueTotal) * 100) : 0;
-        tx.percentKnownUnique = pku;
-        tx.difficultyTier =
-          pku >= 95 ? 'beginner'
-          : pku >= 85 ? 'accessible'
-          : pku >= 70 ? 'challenging'
-          : 'advanced';
-      });
-    }
+      const percentKnown = totalWords > 0 ? Math.round((knownCount / totalWords) * 100) : 0;
+      const percentLearning = totalWords > 0 ? Math.round((learningCount / totalWords) * 100) : 0;
+      const uniqueTotal = uniqueLemmas.size;
+      const percentKnownUnique = uniqueTotal > 0 ? Math.round((knownUniqueLemmas.size / uniqueTotal) * 100) : 0;
+      const difficultyTier: CoverageResult['difficultyTier'] =
+        percentKnownUnique >= 95 ? 'beginner'
+        : percentKnownUnique >= 85 ? 'accessible'
+        : percentKnownUnique >= 70 ? 'challenging'
+        : 'advanced';
 
-    // Apply client side filters
-    let result = rawTexts;
+      map.set(tx.id, { totalWords, percentKnown, percentLearning, percentKnownUnique, difficultyTier });
+    });
+
+    return map;
+  }
+
+  /**
+   * Phase C — apply filters. Pure sync, O(texts).
+   * Merges coverage data from the map into each matching text.
+   */
+  static applyFilters(
+    rawTexts: LibraryText[],
+    coverageMap: Map<string, CoverageResult>,
+    filters?: LibraryFilter,
+  ): LibraryText[] {
+    let result: LibraryText[] = rawTexts.map(tx => {
+      const cov = coverageMap.get(tx.id);
+      return cov ? { ...tx, ...cov } : tx;
+    });
+
     if (filters?.language && filters.language !== 'All') {
       const code = LANGUAGES.find(l => l.name === filters.language)?.id || filters.language;
       result = result.filter(t => t.language === code);
     }
 
     if (filters?.search) {
-       const q = filters.search.toLowerCase();
-       result = result.filter(t =>
-        t.title.toLowerCase().includes(q) ||
-        t.author?.toLowerCase().includes(q) ||
-        t.corpusTitle?.toLowerCase().includes(q) ||
-        t.genre?.toLowerCase().includes(q)
-      );
+      const q = filters.search.toLowerCase();
+      result = result.filter(t => t._searchText?.includes(q) ?? true);
     }
 
     if (filters?.period && filters.period !== 'all') {
@@ -328,5 +362,14 @@ export class LibraryService {
     }
 
     return result;
+  }
+
+  /**
+   * Legacy entry point — composes A + B + C for any callers still using this API.
+   */
+  static async getLibrary(userId: string | null, filters?: LibraryFilter, getWordInfo?: (lemma: string) => any): Promise<LibraryText[]> {
+    const rawTexts = await this.getRawTexts(userId, filters?.source);
+    const coverageMap = getWordInfo ? this.computeCoverage(rawTexts, getWordInfo) : new Map<string, CoverageResult>();
+    return this.applyFilters(rawTexts, coverageMap, filters);
   }
 }
