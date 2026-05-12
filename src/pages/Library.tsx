@@ -15,6 +15,9 @@ import { useAuth } from "../lib/hooks/useAuth";
 import { getLanguageDisplayName } from "../lib/constants/languages";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { ImportService } from "../lib/services/importService";
+import { CoverageBadge } from "../components/library/CoverageBadge";
+import { RecommendationRail } from "../components/library/RecommendationRail";
+import { computeRecommendations } from "../lib/services/recommendationService";
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
 
@@ -88,7 +91,7 @@ function getStatusBadge(text: LibraryText): BadgeDef | null {
 export const Library = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { getWordInfo, getAllProgress } = useKnowledge();
+  const { getWordInfo, getAllProgress, knowledge } = useKnowledge();
   // Stable ref so the fetch effect doesn't re-run when word states change
   const getWordInfoRef = useRef(getWordInfo);
   useLayoutEffect(() => { getWordInfoRef.current = getWordInfo; });
@@ -119,6 +122,7 @@ export const Library = () => {
   const [periodFilter, setPeriodFilter] = useState('all');
   const [genreFilter, setGenreFilter] = useState('all');
   const [corpusTypeFilter, setCorpusTypeFilter] = useState('all');
+  const [difficultyFilter, setDifficultyFilter] = useState<'all' | 'beginner' | 'accessible' | 'challenging' | 'advanced'>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<'library' | 'imports' | 'public'>('library');
   const [sharingId, setSharingId] = useState<string | null>(null);
@@ -160,7 +164,10 @@ export const Library = () => {
   ];
 
   const sortedTexts = useMemo(() => {
-    const copy = [...texts];
+    let copy = [...texts];
+    if (difficultyFilter !== 'all') {
+      copy = copy.filter(t => t.difficultyTier === difficultyFilter);
+    }
     switch (activeSort) {
       case 'comprehensible':
         return copy.sort((a, b) => (b.percentKnown || 0) - (a.percentKnown || 0));
@@ -179,7 +186,7 @@ export const Library = () => {
       default:
         return copy;
     }
-  }, [texts, activeSort]);
+  }, [texts, activeSort, difficultyFilter]);
 
   // Only show actual reading progress — never fake "Continue Reading" from corpus
   const recentTexts = useMemo(() => {
@@ -216,6 +223,11 @@ export const Library = () => {
     });
     return map;
   }, [sortedTexts]);
+
+  const recommendations = useMemo(
+    () => computeRecommendations(sortedTexts, knowledge),
+    [sortedTexts, knowledge],
+  );
 
   const handleShare = async (textId: string) => {
     if (!user?.uid) return;
@@ -465,6 +477,30 @@ export const Library = () => {
                   {CORPUS_TYPE_FILTERS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
+
+              <div className="w-full">
+                <label className="block text-[11px] font-bold text-muted uppercase mb-4">Difficulty</label>
+                <div className="flex flex-wrap gap-2">
+                  {([
+                    { id: 'all' as const, label: 'All Levels', active: 'bg-ink text-parch border-ink', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'beginner' as const, label: 'Comfortable', active: 'bg-ink3/20 text-ink3 border-ink3/30', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'accessible' as const, label: 'Optimal', active: 'bg-green-100 text-green-700 border-green-300', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'challenging' as const, label: 'Developing', active: 'bg-amber/20 text-amber border-amber/30', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'advanced' as const, label: 'Challenging', active: 'bg-ruby/15 text-ruby border-ruby/25', inactive: 'bg-white text-ink3 border-bdr/60' },
+                  ]).map(d => (
+                    <button
+                      key={d.id}
+                      onClick={() => setDifficultyFilter(d.id)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all",
+                        difficultyFilter === d.id ? d.active : d.inactive,
+                      )}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -538,6 +574,9 @@ export const Library = () => {
         )
       ) : (
         <div className="space-y-12 pb-20">
+          {activeTab === 'library' && Object.keys(knowledge).length >= 20 && recommendations.length > 0 && (
+            <RecommendationRail texts={recommendations} />
+          )}
           {Object.entries(collections).map(([collectionName, colTexts]) => (
             <div key={collectionName} className="scroll-mt-8">
               <h3 className="font-serif text-[22px] font-bold text-ink flex items-center gap-3 mb-6">
@@ -732,7 +771,7 @@ export const Library = () => {
                             <Clock className="w-3 h-3" />
                             {text.totalWords} wds · ~{Math.ceil(text.totalWords / 150)} min
                           </span>
-                          <span className="text-blue">{text.percentKnown}% known</span>
+                          <CoverageBadge percent={text.percentKnown ?? 0} size="sm" />
                         </div>
                       </div>
 

@@ -54,6 +54,8 @@ export interface LibraryText {
   totalWords: number;
   percentKnown?: number;
   percentLearning?: number;
+  percentKnownUnique?: number;
+  difficultyTier?: 'beginner' | 'accessible' | 'challenging' | 'advanced';
   isImported?: boolean;
   isPublic?: boolean;
   sourceType: 'corpus' | 'import' | 'public';
@@ -227,58 +229,64 @@ export class LibraryService {
         let totalWords = tx.totalWords;
         let knownCount = 0;
         let learningCount = 0;
+        const uniqueLemmas = new Set<string>();
+        const knownUniqueLemmas = new Set<string>();
 
         if (tx.sourceType === 'corpus') {
-            const t = tx.rawTextReference;
-            const allTokens = getCorpusTokens(t);
-            totalWords = allTokens.length;
-            tx.totalWords = totalWords;
-            allTokens.forEach((tok: any) => {
-                const info = getWordInfo(tok.lemma);
-                if (info.state === 'KNOWN') knownCount++;
-                else if (info.state !== 'NEW') learningCount++;
-            });
+          const t = tx.rawTextReference;
+          const allTokens = getCorpusTokens(t);
+          totalWords = allTokens.length;
+          tx.totalWords = totalWords;
+          allTokens.forEach((tok: any) => {
+            const info = getWordInfo(tok.lemma);
+            if (tok.lemma) uniqueLemmas.add(tok.lemma);
+            if (info.state === 'KNOWN') { knownCount++; if (tok.lemma) knownUniqueLemmas.add(tok.lemma); }
+            else if (info.state !== 'NEW') learningCount++;
+          });
         } else if (tx.sourceType === 'import') {
-            const t = tx.rawTextReference as ImportedText;
-            const tokens = t.sentences?.flatMap((s: any) => s.tokens).filter((tok: any) => tok.type === 'word') || [];
-            if (tokens.length > 0) {
-              totalWords = tokens.length;
-              tx.totalWords = totalWords;
-              tokens.forEach((tok: any) => {
-                const info = getWordInfo(tok.lemma || tok.text);
-                if (info.state === 'KNOWN') knownCount++;
-                else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
-              });
-            } else {
-               // Fallback estimating based on spaces
-               const content = t.rawContent || "";
-               const words = content.split(/\s+/).filter(Boolean);
-               totalWords = words.length;
-               tx.totalWords = totalWords;
-               words.forEach((w: string) => {
-                  const info = getWordInfo(w.toLowerCase());
-                  if (info.state === 'KNOWN') knownCount++;
-                  else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
-});
-    }
-
-    // Calculate totalWords for corpus texts from section tokens
-    rawTexts.forEach(tx => {
-      if (tx.sourceType === 'corpus' && tx.rawTextReference) {
-        const t = tx.rawTextReference;
-        const allTokens = getCorpusTokens(t);
-        tx.totalWords = allTokens.length;
-      }
-    });
+          const t = tx.rawTextReference as ImportedText;
+          const tokens = t.sentences?.flatMap((s: any) => s.tokens).filter((tok: any) => tok.type === 'word') || [];
+          if (tokens.length > 0) {
+            totalWords = tokens.length;
+            tx.totalWords = totalWords;
+            tokens.forEach((tok: any) => {
+              const lemma = tok.lemma || tok.text;
+              const info = getWordInfo(lemma);
+              if (lemma) uniqueLemmas.add(lemma);
+              if (info.state === 'KNOWN') { knownCount++; knownUniqueLemmas.add(lemma); }
+              else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
+            });
+          } else {
+            const content = t.rawContent || "";
+            const words = content.split(/\s+/).filter(Boolean);
+            totalWords = words.length;
+            tx.totalWords = totalWords;
+            words.forEach((w: string) => {
+              const lemma = w.toLowerCase();
+              const info = getWordInfo(lemma);
+              uniqueLemmas.add(lemma);
+              if (info.state === 'KNOWN') { knownCount++; knownUniqueLemmas.add(lemma); }
+              else if (info.state !== 'NEW' && info.state !== 'IGNORED') learningCount++;
+            });
+          }
         }
 
         if (totalWords > 0) {
-           tx.percentKnown = Math.round((knownCount / totalWords) * 100);
-           tx.percentLearning = Math.round((learningCount / totalWords) * 100);
+          tx.percentKnown = Math.round((knownCount / totalWords) * 100);
+          tx.percentLearning = Math.round((learningCount / totalWords) * 100);
         } else {
-           tx.percentKnown = 0;
-           tx.percentLearning = 0;
+          tx.percentKnown = 0;
+          tx.percentLearning = 0;
         }
+
+        const uniqueTotal = uniqueLemmas.size;
+        const pku = uniqueTotal > 0 ? Math.round((knownUniqueLemmas.size / uniqueTotal) * 100) : 0;
+        tx.percentKnownUnique = pku;
+        tx.difficultyTier =
+          pku >= 95 ? 'beginner'
+          : pku >= 85 ? 'accessible'
+          : pku >= 70 ? 'challenging'
+          : 'advanced';
       });
     }
 
