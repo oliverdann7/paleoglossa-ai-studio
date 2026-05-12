@@ -23,6 +23,8 @@ interface SentenceData {
   _displayOffset?: number;
 }
 
+type SourceKind = 'import' | 'sample' | 'partial' | 'complete';
+
 interface Props {
   sentences: SentenceData[];
   readingMode: 'scroll' | 'page';
@@ -39,13 +41,18 @@ interface Props {
   audioPos: { sentenceIdx: number; wordIdx: number };
   aiTranslations: Record<string, string>;
   translatingId: string | null;
-  isSample?: boolean;
+  sourceKind: SourceKind;
+  textTitle: string;
+  sectionLabel: string;
+  hasMorphology: boolean;
+  sentenceCount: number;
   onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
   onAITranslate: (sentenceId: string, tokens: TokenData[]) => void;
   onSavePhrase: (sentence: SentenceData) => void;
   onMarkPageKnown: () => void;
   onNextPage: () => void;
   onNextChapter: () => void;
+  onBackToLibrary: () => void;
   onSwipe: (direction: 'left' | 'right') => void;
   currentScrollPage: number;
   totalPages: number;
@@ -150,9 +157,9 @@ export function ReadingPane({
   knowledge, selectedWordId, showTranslit, showParallel, maskKnown,
   isHebrewFont, isRtl, audioPos,
   aiTranslations, translatingId,
-  isSample,
+  sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount,
   onWordClick, onAITranslate, onSavePhrase,
-  onMarkPageKnown, onNextPage, onNextChapter, onSwipe,
+  onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
   sentenceSliceStart,
 }: Props) {
@@ -207,13 +214,39 @@ export function ReadingPane({
           showParallel ? "max-w-screen-xl lg:grid grid-cols-2 gap-8 items-center" : "max-w-3xl",
         )}
       >
-        {isSample && (
-          <div className="col-span-full mb-4">
-            <span className="inline-block bg-amber/10 text-amber text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
-              Sample excerpt
-            </span>
+        {/* Metadata strip — always visible so the user knows exactly what they're reading */}
+        <div className="col-span-full mb-5 flex flex-wrap items-start gap-x-4 gap-y-1">
+          <div className="flex flex-col leading-tight">
+            {textTitle && <span className="text-[13px] font-bold text-ink">{textTitle}</span>}
+            {sectionLabel && <span className="text-[11px] text-muted">{sectionLabel}</span>}
           </div>
-        )}
+          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+            {sourceKind === 'sample' && (
+              <span className="inline-block bg-amber/10 text-amber text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                Sample Excerpt
+              </span>
+            )}
+            {sourceKind === 'partial' && (
+              <span className="inline-block bg-blue/10 text-blue text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                Partial Section
+              </span>
+            )}
+            {sourceKind === 'complete' && (
+              <span className="inline-block bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                Complete
+              </span>
+            )}
+            {sourceKind === 'import' && (
+              <span className="inline-block bg-purple-100 text-purple-700 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                Your Import
+              </span>
+            )}
+            <span className="text-[10px] text-muted">{sentenceCount} {sentenceCount === 1 ? 'sentence' : 'sentences'}</span>
+            {hasMorphology && (
+              <span className="text-[10px] text-muted">· Morphology</span>
+            )}
+          </div>
+        </div>
         <div className="col-span-1 border-r-0 lg:border-r border-bdr/40 lg:pr-8">
           <div
             dir={isRtl ? 'rtl' : 'ltr'}
@@ -278,18 +311,26 @@ export function ReadingPane({
                   {currentScrollPage >= totalPages - 1 ? (
                     <div className="text-center">
                       <h4 className="font-serif text-[24px] text-ink mb-2">
-                        {isSample
-                          ? "You've reached the end of this sample excerpt."
-                          : currentChapterIndex < totalChapters - 1
-                            ? "You've reached the end of this chapter."
-                            : "You've reached the end of this section."}
+                        {sourceKind === 'import'
+                          ? 'End of your imported text.'
+                          : sourceKind === 'sample'
+                            ? 'End of sample excerpt.'
+                            : currentChapterIndex < totalChapters - 1
+                              ? 'End of this section.'
+                              : sourceKind === 'partial'
+                                ? 'End of available section.'
+                                : 'End of chapter.'}
                       </h4>
                       <p className="text-muted text-[14px]">
-                        {isSample
-                          ? "This text is a sample excerpt. Full text coming soon."
-                          : currentChapterIndex < totalChapters - 1
-                            ? "Ready to move on to the next one?"
-                            : "This is the last available section for this text."}
+                        {sourceKind === 'import'
+                          ? 'You can import more text from the library.'
+                          : sourceKind === 'sample'
+                            ? 'The full text is available in the library.'
+                            : currentChapterIndex < totalChapters - 1
+                              ? 'Ready to move on to the next section?'
+                              : sourceKind === 'partial'
+                                ? 'No next section is available yet.'
+                                : "You've finished this text."}
                       </p>
                     </div>
                   ) : (
@@ -299,21 +340,37 @@ export function ReadingPane({
                       </h4>
                     </div>
                   )}
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 flex-wrap justify-center">
                     <button
                       onClick={() => onMarkPageKnown()}
                       className="px-8 py-3 bg-blue text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95"
                     >
                       {currentScrollPage >= totalPages - 1
-                        ? 'Mark Chapter as Seen & Finish'
+                        ? sourceKind === 'import'
+                          ? 'Mark Text as Seen'
+                          : sourceKind === 'sample'
+                            ? 'Mark Sample as Seen'
+                            : sourceKind === 'partial'
+                              ? 'Mark Section as Seen'
+                              : 'Mark Chapter as Seen'
                         : 'Mark Page as Seen & Next'}
                     </button>
+                    {/* Next section — only shown when a real next section exists */}
                     {currentScrollPage >= totalPages - 1 && currentChapterIndex < totalChapters - 1 && (
                       <button
                         onClick={onNextChapter}
                         className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
                       >
-                        Next Chapter
+                        Next Section
+                      </button>
+                    )}
+                    {/* Back to library / import — shown when there is no next section */}
+                    {currentScrollPage >= totalPages - 1 && currentChapterIndex >= totalChapters - 1 && (
+                      <button
+                        onClick={onBackToLibrary}
+                        className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
+                      >
+                        {sourceKind === 'import' ? 'Import More Text' : 'Back to Library'}
                       </button>
                     )}
                     {currentScrollPage < totalPages - 1 && (
