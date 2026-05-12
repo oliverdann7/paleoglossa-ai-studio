@@ -7,10 +7,10 @@ import { useStats } from './useStats';
 import { useReadingProgress } from './useReadingProgress';
 import { useAuth } from './useAuth';
 
-export const useKnowledge = () => {
+export const useKnowledge = (languageId?: string) => {
   const vocab = useVocabulary();
-  const statsHook = useStats();
-  const progress = useReadingProgress();
+  const statsHook = useStats(languageId);
+  const progress = useReadingProgress(languageId);
   const { user } = useAuth();
   const userId = user ? user.uid : null;
   const [userImports, setUserImports] = useState<any[]>([]);
@@ -23,7 +23,6 @@ export const useKnowledge = () => {
     return () => { active = false; };
   }, [userId]);
 
-
   const refreshImports = useCallback(async () => {
     const dbImports = await ImportService.getImports(userId);
     setUserImports(dbImports);
@@ -35,13 +34,13 @@ export const useKnowledge = () => {
       knowledge: vocab.knowledge,
       stats: statsHook.stats,
       imports,
-      settings: JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || '{}')
+      settings: JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || '{}'),
     };
   }, [vocab.knowledge, statsHook.stats, userId]);
 
-  const setWordStateWithStats = useCallback((lemma: string, state: WordState, languageId: string = "unknown", context?: string) => {
+  const setWordStateWithStats = useCallback((lemma: string, state: WordState, langId: string = "unknown", context?: string) => {
     const previousState = vocab.getWordInfo(lemma).state;
-    vocab.setWordState(lemma, state, languageId, context);
+    vocab.setWordState(lemma, state, langId, context);
     if (state === WordState.KNOWN && previousState !== WordState.KNOWN) {
       statsHook.updateStatsState(s => ({ ...s, totalKnown: s.totalKnown + 1 }));
     } else if (state !== WordState.KNOWN && previousState === WordState.KNOWN) {
@@ -70,6 +69,6 @@ export const useKnowledge = () => {
     saveTextProgress: progress.saveTextProgress,
     getAllProgress: progress.getAllProgress,
     isLoading: vocab.isLoading || statsHook.isLoading,
-    error: vocab.error || statsHook.error
+    error: vocab.error || statsHook.error,
   };
 };

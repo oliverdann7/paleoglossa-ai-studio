@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { StatsService } from '../services/statsService';
 import { useAuth } from './useAuth';
 
-export const useReadingProgress = () => {
+export const useReadingProgress = (languageId?: string) => {
   const { user } = useAuth();
   const userId = user ? user.uid : null;
 
@@ -11,12 +11,12 @@ export const useReadingProgress = () => {
   }, [userId]);
 
   const saveTextProgress = useCallback(async (progress: any) => {
-    return StatsService.setTextProgress(userId, progress);
-  }, [userId]);
+    return StatsService.setTextProgress(userId, { ...progress, languageId });
+  }, [userId, languageId]);
 
   const getAllProgress = useCallback(async () => {
-    return StatsService.getAllProgress(userId);
-  }, [userId]);
+    return StatsService.getAllProgress(userId, languageId);
+  }, [userId, languageId]);
 
   return { fetchTextProgress, saveTextProgress, getAllProgress };
 };
