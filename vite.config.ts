@@ -31,7 +31,7 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        includeAssets: ['icon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
           name: 'PalæoGlossa',
           short_name: 'PalæoGlossa',

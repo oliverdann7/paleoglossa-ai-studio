@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "generate:icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.0.1",
@@ -46,6 +47,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "jest": "^30.4.2",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.0.0",
     "ts-jest": "^29.4.9",
     "tsx": "^4.19.2",
