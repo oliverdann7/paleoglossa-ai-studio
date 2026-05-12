@@ -74,23 +74,23 @@ The following API endpoints are registered but return empty/stub responses. Full
 
 Texts are marked with their completion status in the app (Sample / In Progress / Complete). Current state:
 
-| Text | Language | Status | Morphology | Notes |
-|------|----------|--------|------------|-------|
-| John 1 (SBLGNT) | Koine Greek | Partial (18 verses) | Full (vv. 1-5), Basic (vv. 6-18) | Full text, partial morphology |
-| Genesis 1 (OSHB) | Biblical Hebrew | Partial (31 verses) | Full (v. 1), Basic (vv. 2-31) | Full text, partial morphology |
-| Psalm 23 (OSHB) | Biblical Hebrew | Complete (6 verses) | Full (vv. 1-2), Basic (vv. 3-6) | Complete psalm |
-| Iliad Book 1 (Perseus) | Ancient Greek | Partial (lines 1-100) | Full (ll. 1-7), Basic (ll. 8-100) | Substantial extract |
-| Anabasis 1.1 (Perseus) | Ancient Greek | Partial (15 sentences) | Full (§1-3), Basic (§4-6) | Substantial extract |
-| Aeneid Book 1 (Perseus) | Latin | Partial (lines 1-100) | Full (ll. 1-7), Basic (ll. 8-100) | Substantial extract |
-| Aesop's Fables | Ancient Greek | Sample (1 sentence) | Basic | Demo excerpt |
-| Odyssey Book 1 | Ancient Greek | Sample (1 sentence) | Basic | Demo excerpt |
-| Syriac Peshitta John | Syriac | Sample (3 sentences) | Basic | Demo excerpt |
-| Coptic Sahidic John | Coptic | Sample (3 sentences) | Basic | Demo excerpt |
-| Targum Onkelos | Aramaic | Sample (1 sentence) | Basic | Demo excerpt |
-| Gilgamesh Tablet I | Akkadian | Sample (1 sentence) | Basic | Demo excerpt |
-| Bhagavad Gita | Sanskrit | Sample (1 sentence) | Basic | Demo excerpt |
-| Annals of Mursili II | Hittite | Sample (1 sentence) | Basic | Demo excerpt |
-| Maxims of Ptahhotep | Egyptian | Sample (1 sentence) | Basic | Demo excerpt |
+| Text | Language | Status | Morphology | Source |
+|------|----------|--------|------------|--------|
+| John 1 (SBLGNT) | Koine Greek | ✅ Complete | Full (vv. 1-5), Basic (vv. 6-18) | SBLGNT (non-commercial), MorphGNT (CC BY-SA 3.0) |
+| Genesis 1 (OSHB) | Biblical Hebrew | ✅ Complete | Word-by-word tokens | OSHB (CC BY 4.0) |
+| Psalm 23 (OSHB) | Biblical Hebrew | ✅ Complete | Word-by-word tokens | OSHB (CC BY 4.0) |
+| Iliad Book 1 (Perseus) | Ancient Greek | ✅ Complete (ll. 1-611) | Full (ll. 1-7), Basic (ll. 8-611) | Perseus (CC BY-SA 3.0) |
+| Anabasis 1.1 (Perseus) | Ancient Greek | ✅ Complete (Ch 1-9) | Full (§1-3), Basic (§4-9) | Perseus (CC BY-SA 3.0) |
+| Aeneid Book 1 (Perseus) | Latin | ✅ Complete (ll. 1-756) | Full (ll. 1-7), Basic (ll. 8-756) | Perseus (CC BY-SA 3.0) |
+| Aesop's Fables | Ancient Greek | ✅ Partial (13 sent.) | Word-by-word tokens | Perseus (CC BY-SA 3.0) |
+| Odyssey Book 1 | Ancient Greek | ✅ Partial (27 sent.) | Full (ll. 1-5), Basic (ll. 6-444) | Perseus (CC BY-SA 3.0) |
+| Syriac Peshitta John | Syriac | ✅ Partial (16 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
+| Coptic Sahidic John | Coptic | ✅ Partial (16 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
+| Targum Onkelos | Aramaic | ✅ Partial (15 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
+| Gilgamesh Tablet I | Akkadian | ✅ Partial (11 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
+| Bhagavad Gita | Sanskrit | ✅ Partial (21 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
+| Annals of Mursili II | Hittite | ✅ Partial (11 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
+| Maxims of Ptahhotep | Egyptian | ✅ Partial (11 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
 
 ### How to add a full text
 
