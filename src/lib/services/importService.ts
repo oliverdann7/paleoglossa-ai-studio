@@ -78,7 +78,26 @@ export class ImportService {
     }
   }
 
+  static stripUndefined(obj: any): any {
+    if (obj === null || obj === undefined) return obj;
+    if (Array.isArray(obj)) return obj.map(v => this.stripUndefined(v));
+    if (typeof obj === 'object') {
+      const cleaned: Record<string, any> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (value !== undefined) {
+          cleaned[key] = this.stripUndefined(value);
+        }
+      }
+      return cleaned;
+    }
+    return obj;
+  }
+
   static async saveImport(userId: string | null, text: Partial<ImportedText>) {
+    if (!text.rawContent || text.rawContent.trim().length === 0) {
+      throw new Error('Cannot save empty text');
+    }
+
     const importId = text.id || `imp_${Date.now()}`;
     const payload = {
       ...text,
@@ -105,14 +124,18 @@ export class ImportService {
       return;
     }
 
+    const cleanedPayload = this.stripUndefined(payload);
+
     try {
       await setDoc(doc(db, `users/${userId}/imports`, importId), {
-        ...payload,
+        ...cleanedPayload,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
     } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
       console.error("Import Save Error:", e);
+      throw new Error(`Failed to save import to Firestore: ${message}`, e instanceof Error ? { cause: e } : undefined);
     }
   }
 

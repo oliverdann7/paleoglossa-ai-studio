@@ -46,7 +46,8 @@ const MetadataResponseSchema = z.object({
 export class AIClient {
   private static async request<T>(endpoint: string, payload: any, schema: z.ZodType<T>, userId?: string): Promise<T> {
     try {
-      const response = await fetch(`/api/ai/${endpoint}`, {
+      const url = `/api/ai/${endpoint}`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,24 +57,39 @@ export class AIClient {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        let errorData: any = {};
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          errorData = await response.json().catch(() => ({}));
+        } else {
+          const text = await response.text().catch(() => '');
+          console.error(`Server returned non-JSON response from ${url}: ${text.slice(0, 200)}`);
+          throw new AIError(`Server returned an invalid response from ${url}`, 'INVALID_SERVER_RESPONSE');
+        }
         if (response.status === 429) throw new AIError('Rate limit exceeded. Please try again later.', 'QUOTA_EXCEEDED');
         throw new AIError(errorData.error || `Server error: ${response.status}`, errorData.code || 'SERVER_ERROR');
       }
 
-      const data = await response.json();
+      let data: any;
+      try {
+        data = await response.json();
+      } catch {
+        const text = await response.text().catch(() => '');
+        console.error(`Invalid JSON from ${url}: ${text.slice(0, 200)}`);
+        throw new AIError(`Server returned an invalid response from ${url}`, 'INVALID_SERVER_RESPONSE');
+      }
       
       // Validate structure to never trust AI output blindly
       const result = schema.safeParse(data);
       if (!result.success) {
-        console.error("AI Output Validation Failed: ", result.error);
+        console.error(`AI Output Validation Failed for ${url}: `, result.error);
         throw new AIError('Received malformed response from AI', 'MALFORMED_RESPONSE');
       }
 
       return result.data;
     } catch (err: any) {
       if (err instanceof AIError) throw err;
-      if (err.name === 'AbortError' || err.message.includes('fetch')) {
+      if (err.name === 'AbortError' || err.message?.includes('fetch') || err.message?.includes('NetworkError')) {
         throw new AIError('Network error or timeout connecting to AI service', 'NETWORK_ERROR');
       }
       throw new AIError(err.message || 'Unknown AI Error', 'UNKNOWN');
