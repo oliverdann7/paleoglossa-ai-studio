@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { useAuth } from '../hooks/useAuth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { PlanId, SubscriptionStatus, getPlanById, canAddLanguage as canAddByPlan, canAccessLanguage as canAccessByPlan } from '../constants/plans';
+import { PlanId, SubscriptionStatus, getPlanById, canAddLanguage as canAddByPlan, canAccessLanguage as canAccessByPlan, TRIAL_DAYS } from '../constants/plans';
 
 const SUBSCRIPTION_STORAGE_KEY = 'paleoglossa_subscription';
 
@@ -11,6 +11,7 @@ interface UserSubscription {
   selectedLanguageIds: string[];
   subscriptionStatus: SubscriptionStatus;
   stripeCustomerId?: string;
+  trialEnd?: string;
 }
 
 interface SubscriptionContextValue {
@@ -22,6 +23,7 @@ interface SubscriptionContextValue {
   remainingSlots: number;
   isLoaded: boolean;
   isAdmin: boolean;
+  isOnTrial: () => boolean;
   createCheckoutSession: (planId: PlanId, billingCycle?: 'monthly' | 'yearly') => Promise<string | null>;
   createPortalSession: () => Promise<string | null>;
 }
@@ -119,15 +121,26 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     });
   }, [persist]);
 
-  const checkAccess = useCallback((languageId: string): boolean => {
+  const isOnTrial = useCallback((): boolean => {
+    if (!subscription.trialEnd) return false;
+    return new Date(subscription.trialEnd) > new Date();
+  }, [subscription.trialEnd]);
+
+  const hasTrialAccess = useCallback((): boolean => {
     if (isAdmin) return true;
+    if (isOnTrial()) return true;
+    return false;
+  }, [isAdmin, isOnTrial]);
+
+  const checkAccess = useCallback((languageId: string): boolean => {
+    if (hasTrialAccess()) return true;
     return canAccessByPlan(subscription.currentPlan, languageId, subscription.selectedLanguageIds);
-  }, [subscription, isAdmin]);
+  }, [subscription, isAdmin, hasTrialAccess]);
 
   const checkCanAdd = useCallback((): boolean => {
-    if (isAdmin) return true;
+    if (hasTrialAccess()) return true;
     return canAddByPlan(subscription.currentPlan, subscription.selectedLanguageIds);
-  }, [subscription, isAdmin]);
+  }, [subscription, isAdmin, hasTrialAccess]);
 
   const createCheckoutSession = useCallback(async (planId: PlanId, billingCycle: 'monthly' | 'yearly' = 'monthly'): Promise<string | null> => {
     try {
@@ -139,12 +152,20 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           billingCycle,
           userId: user?.uid,
           email: user?.email,
+          trialDays: TRIAL_DAYS,
         }),
       });
       const data = await response.json();
       if (data.devMode) {
-        // Dev mode: just set the plan directly
-        setPlan(planId);
+        // Dev mode: set plan with trial period
+        const trialEnd = new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString();
+        setSubscription(prev => ({
+          ...prev,
+          currentPlan: planId,
+          subscriptionStatus: 'trialing',
+          trialEnd,
+        }));
+        persist({ ...subscription, currentPlan: planId, subscriptionStatus: 'trialing', trialEnd });
         return null;
       }
       return data.url || null;
@@ -152,7 +173,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       console.error('Checkout error:', err);
       return null;
     }
-  }, [user, setPlan]);
+  }, [user, setPlan, subscription, persist]);
 
   const createPortalSession = useCallback(async (): Promise<string | null> => {
     try {
@@ -172,7 +193,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, [subscription]);
 
-  const remainingSlots = isAdmin ? Infinity : subscription.currentPlan === 'full_all'
+  const remainingSlots = isAdmin || isOnTrial() ? Infinity : subscription.currentPlan === 'full_all'
     ? Infinity
     : (getPlanById(subscription.currentPlan).languageLimit as number) - subscription.selectedLanguageIds.length;
 
@@ -186,6 +207,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       remainingSlots,
       isLoaded,
       isAdmin,
+      isOnTrial,
       createCheckoutSession,
       createPortalSession,
     }}>
