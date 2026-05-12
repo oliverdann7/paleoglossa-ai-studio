@@ -3,13 +3,14 @@ import { StatsService, ReadingStats } from '../services/statsService';
 import { useAuth } from './useAuth';
 import { STORAGE_KEYS } from '../constants/storage';
 
-export const useStats = () => {
+export const useStats = (languageId?: string) => {
   const { user } = useAuth();
   const userId = user ? user.uid : null;
   const [stats, setStats] = useState<ReadingStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const statsUpdateTimer = useRef<NodeJS.Timeout | null>(null);
+  const langRef = useRef(languageId);
 
   const DEFAULT_STATS: ReadingStats = {
     totalKnown: 0,
@@ -19,8 +20,12 @@ export const useStats = () => {
     streak: 0,
     history: [],
     freezesTotal: 2,
-    freezesUsed: 0
+    freezesUsed: 0,
   };
+
+  useEffect(() => {
+    langRef.current = languageId;
+  }, [languageId]);
 
   useEffect(() => {
     let active = true;
@@ -28,14 +33,14 @@ export const useStats = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const dbStats = await StatsService.getStats(userId);
+        const dbStats = await StatsService.getStats(userId, languageId);
         if (!active) return;
 
         if (userId) {
           const localStats = localStorage.getItem(STORAGE_KEYS.STATS);
           if (localStats) {
             await StatsService.migrateLocalStorage(userId);
-            const updatedStats = await StatsService.getStats(userId);
+            const updatedStats = await StatsService.getStats(userId, languageId);
             if (!active) return;
             setStats(updatedStats);
             return;
@@ -87,7 +92,7 @@ export const useStats = () => {
                   date: lastStr,
                   knownWords: currentStats.totalKnown,
                   readWords: currentStats.readToday,
-                  minutes: currentStats.readingTime
+                  minutes: currentStats.readingTime,
                 });
                 if (history.length > 90) history.shift();
                 currentStats.history = history;
@@ -105,7 +110,7 @@ export const useStats = () => {
 
         setStats(currentStats);
         if (needUpdate) {
-          StatsService.updateStats(userId, currentStats);
+          StatsService.updateStats(userId, languageId || 'unknown', currentStats);
         }
       } catch (e: any) {
         console.error("useStats init error:", e);
@@ -116,7 +121,7 @@ export const useStats = () => {
     };
     init();
     return () => { active = false; };
-  }, [userId]);
+  }, [userId, languageId]);
 
   const updateStatsState = useCallback((updater: (prev: ReadingStats) => ReadingStats) => {
     setStats(prev => {
@@ -124,17 +129,17 @@ export const useStats = () => {
       const next = updater(prev);
       if (statsUpdateTimer.current) clearTimeout(statsUpdateTimer.current);
       statsUpdateTimer.current = setTimeout(() => {
-        StatsService.updateStats(userId, next);
-      }, 10000); // 10s debounce — stats don't need sub-second Firestore writes
+        StatsService.updateStats(userId, languageId || 'unknown', next);
+      }, 10000);
       return next;
     });
-  }, [userId]);
+  }, [userId, languageId]);
 
   const addReadWords = useCallback((count: number) => {
     updateStatsState(prev => ({
       ...prev,
       readToday: (prev.readToday || 0) + count,
-      lastActive: new Date().toISOString()
+      lastActive: new Date().toISOString(),
     }));
   }, [updateStatsState]);
 
@@ -142,7 +147,7 @@ export const useStats = () => {
     updateStatsState(prev => ({
       ...prev,
       readingTime: (prev.readingTime || 0) + minutes,
-      lastActive: new Date().toISOString()
+      lastActive: new Date().toISOString(),
     }));
   }, [updateStatsState]);
 
@@ -150,7 +155,7 @@ export const useStats = () => {
     updateStatsState(prev => ({
       ...prev,
       lastAccuracy: accuracy,
-      lastActive: new Date().toISOString()
+      lastActive: new Date().toISOString(),
     }));
   }, [updateStatsState]);
 
@@ -161,6 +166,6 @@ export const useStats = () => {
     recordReviewSession,
     updateStatsState,
     isLoading,
-    error
+    error,
   };
 };
