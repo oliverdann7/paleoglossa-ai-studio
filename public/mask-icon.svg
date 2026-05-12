@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Safari pinned-tab mask: single-color black paths only -->
+  <text
+    x="256"
+    y="356"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="310"
+    font-weight="700"
+    fill="#000000"
+    text-anchor="middle"
+    dominant-baseline="auto">Π</text>
+  <rect x="86" y="382" width="340" height="14" rx="7" fill="#000000"/>
+</svg>
