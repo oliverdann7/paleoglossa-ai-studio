@@ -85,6 +85,7 @@ export const Reader = () => {
   );
   const [readingMode, setReadingMode] = useState<"scroll" | "page">("scroll");
   const [maskKnown, setMaskKnown] = useState(false);
+  const [interlinearMode, setInterlinearMode] = useState(() => settings.interlinearMode);
   const [tutorialStep, setTutorialStep] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED) ? 0 : 1;
   });
@@ -711,6 +712,8 @@ export const Reader = () => {
           onToggleMaskKnown={() => setMaskKnown(!maskKnown)}
           readingMode={readingMode}
           onChangeReadingMode={setReadingMode}
+          interlinearMode={interlinearMode}
+          onToggleInterlinear={() => setInterlinearMode(m => !m)}
         />
 
         <ReaderAudioBar
@@ -751,6 +754,9 @@ export const Reader = () => {
           hasMorphology={!!text?.hasMorphology}
           sentenceCount={chapter?.sentences?.length ?? 0}
           analysisStatus={text?.analysisStatus}
+          showGlossTooltip={settings.showGlossTooltip}
+          glossTooltipForKnown={settings.glossTooltipForKnown}
+          interlinearMode={interlinearMode}
           onWordClick={handleWordClick}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}

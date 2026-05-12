@@ -11,6 +11,9 @@ export interface Settings {
   audioSpeedDefault: number;
   theme: 'parchment' | 'sepia' | 'dark';
   activeLanguages: string[];
+  showGlossTooltip: boolean;
+  glossTooltipForKnown: boolean;
+  interlinearMode: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -22,7 +25,10 @@ const DEFAULT_SETTINGS: Settings = {
   highlightIntensity: 'normal',
   audioSpeedDefault: 1.0,
   theme: 'parchment',
-  activeLanguages: ['grc', 'hbo', 'lat', 'syr']
+  activeLanguages: ['grc', 'hbo', 'lat', 'syr'],
+  showGlossTooltip: true,
+  glossTooltipForKnown: false,
+  interlinearMode: false,
 };
 
 export const useSettings = () => {
