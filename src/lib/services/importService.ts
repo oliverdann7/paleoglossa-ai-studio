@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, deleteDoc, query } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { ImportedText as FSImportedText } from '../../types/firestore';
 import { normalizeTimestamp } from '../utils';
 import { STORAGE_KEYS } from '../constants/storage';
@@ -180,22 +180,34 @@ export class ImportService {
       const texts: ImportedText[] = [];
       snap.forEach(d => {
         const rawData = d.data() as Record<string, unknown>;
+        const content = rawData.content as string || '';
+        const sentences = rawData.sentences as string[] || [];
+        const wordCount = content.split(/\s+/).filter(Boolean).length;
+        
         texts.push({
           id: d.id,
           userId: rawData.userId as string || '',
           title: rawData.title as string || '',
           languageId: rawData.languageId as string || 'grc',
-          sourceType: rawData.sourceType as string || 'import',
-          status: rawData.status as string || 'complete',
-          visibility: rawData.visibility as string || 'private',
-          content: rawData.content as string || '',
-          sentences: rawData.sentences as string[] || [],
+          sourceType: rawData.sourceType as 'paste' | 'file' | 'url' | 'image' | 'pdf' || 'file',
+          rawContent: content,
+          status: rawData.status as 'pending' | 'processing' | 'complete' | 'failed' || 'complete',
+          visibility: rawData.visibility as 'private' | 'shared' | 'public' || 'public',
+          sentences: sentences.map((s: string) => ({ text: s, tokens: [] })),
+          stats: {
+            totalWords: wordCount,
+            uniqueWords: new Set(content.split(/\s+/)).size,
+            knownWords: 0,
+            newWords: wordCount,
+            learningWords: 0
+          },
           createdAt: normalizeTimestamp(rawData.createdAt as string | undefined),
           updatedAt: normalizeTimestamp(rawData.updatedAt as string | undefined),
           publishedAt: normalizeTimestamp(rawData.publishedAt as string | undefined),
           authorName: rawData.authorName as string | undefined,
+          authorId: rawData.authorId as string | undefined,
           forkedFrom: rawData.forkedFrom as string | undefined
-        } as ImportedText);
+        });
       });
       
       return texts.slice(0, maxItems);

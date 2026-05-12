@@ -181,12 +181,38 @@ export class LibraryService {
 
     // 3. Public/Shared
     if ((!filters?.source || filters.source === 'public') && userId) {
-       // Query 'imports' anywhere with visibility == 'public'
        try {
-         // Because we don't have a collection group setup explicitly, we'll assume we can't easily query this without indexes. 
-         // So for now, we'll mock public or handle if someone has built indexes.
+         const publicTexts = await ImportService.getPublicTexts(50);
+         publicTexts.forEach(t => {
+           rawTexts.push({
+             id: t.id || 'unknown',
+             title: t.title,
+             author: t.authorName || 'Anonymous',
+             language: t.languageId || 'grc',
+             level: 'Varies',
+             genre: 'Shared text',
+             period: 'User supplied',
+             corpusType: 'other',
+             corpusTitle: 'Public Library',
+             licenseName: 'Shared publicly',
+             sourceName: `Shared by ${t.authorName || 'Anonymous'}`,
+             sourceUrl: t.forkedFrom ? `/app/reader/${t.forkedFrom}` : undefined,
+             availableTools: {
+               morphology: false,
+               translation: false,
+               audio: false,
+               syntax: false,
+             },
+             tags: [],
+             totalWords: t.stats?.totalWords || 0,
+             sourceType: 'public',
+             isPublic: true,
+             rawTextReference: t,
+             addedAt: typeof t.publishedAt === 'string' ? t.publishedAt : undefined
+           });
+         });
        } catch (e) {
-         console.warn("Public query failed, likely missing index", e);
+         console.warn("Public query failed", e);
        }
     }
 

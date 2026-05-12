@@ -82,6 +82,10 @@ export interface ImportedText {
   visibility: 'private' | 'shared' | 'public';
   createdAt: string | Timestamp;
   updatedAt: string | Timestamp;
+  authorName?: string;
+  authorId?: string;
+  forkedFrom?: string;
+  publishedAt?: string | Timestamp;
 }
 
 export interface UserSettings {
