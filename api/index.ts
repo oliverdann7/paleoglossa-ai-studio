@@ -2,6 +2,21 @@ import express from 'express';
 
 // Build the Express API app
 const app = express();
+
+// Preserve raw body for Stripe webhook verification
+app.use((req: any, _res: any, next: any) => {
+  if (req.url === '/api/stripe/webhook') {
+    let data = '';
+    req.on('data', (chunk: string) => { data += chunk; });
+    req.on('end', () => {
+      req.rawBody = data;
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
 app.use(express.json({ limit: '10mb' }));
 
 // CORS headers for cross-origin API calls
@@ -326,6 +341,206 @@ app.post('/api/imports/:importId/unshare', async (req: any, res: any) => {
   const success = await ImportService.unsharePublic(userId, req.params.importId);
   
   res.status(200).json({ success });
+});
+
+// ─── Stripe Payment Integration ────────────────────────────────────────
+const PLANS_BY_PRICE: Record<string, { planId: string; name: string }> = {};
+
+function initStripePlans() {
+  if (process.env.STRIPE_BASIC_PRICE_ID) {
+    PLANS_BY_PRICE[process.env.STRIPE_BASIC_PRICE_ID] = { planId: 'basic_1', name: 'Basic' };
+  }
+  if (process.env.STRIPE_DUO_PRICE_ID) {
+    PLANS_BY_PRICE[process.env.STRIPE_DUO_PRICE_ID] = { planId: 'duo_2', name: 'Duo' };
+  }
+  if (process.env.STRIPE_FULL_PRICE_ID) {
+    PLANS_BY_PRICE[process.env.STRIPE_FULL_PRICE_ID] = { planId: 'full_all', name: 'Full Pack' };
+  }
+}
+
+const PRICE_IDS: Record<string, { monthly?: string; yearly?: string }> = {
+  basic_1: {
+    monthly: process.env.STRIPE_BASIC_PRICE_ID,
+    yearly: process.env.STRIPE_BASIC_YEARLY_PRICE_ID,
+  },
+  duo_2: {
+    monthly: process.env.STRIPE_DUO_PRICE_ID,
+    yearly: process.env.STRIPE_DUO_YEARLY_PRICE_ID,
+  },
+  full_all: {
+    monthly: process.env.STRIPE_FULL_PRICE_ID,
+    yearly: process.env.STRIPE_FULL_YEARLY_PRICE_ID,
+  },
+};
+
+app.post('/api/stripe/create-checkout-session', async (req: any, res: any) => {
+  try {
+    const { planId, billingCycle = 'monthly', userId, email, successUrl, cancelUrl } = req.body;
+
+    if (!planId || !userId) {
+      return res.status(400).json({ error: 'Missing planId or userId' });
+    }
+
+    const priceId = PRICE_IDS[planId]?.[billingCycle as 'monthly' | 'yearly'];
+    if (!priceId) {
+      return res.status(400).json({ error: `No price configured for plan ${planId} (${billingCycle})` });
+    }
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      return res.status(200).json({
+        devMode: true,
+        url: null,
+        message: 'Stripe not configured. Set STRIPE_SECRET_KEY for production payments.',
+      });
+    }
+
+    const stripe = new (await import('stripe')).default(stripeKey);
+    initStripePlans();
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      customer_email: email,
+      client_reference_id: userId,
+      metadata: { planId, userId },
+      success_url: successUrl || `${req.headers.origin || 'https://paleoglossa-ai-studio.vercel.app'}/app/subscription?success=true`,
+      cancel_url: cancelUrl || `${req.headers.origin || 'https://paleoglossa-ai-studio.vercel.app'}/app/subscription?canceled=true`,
+      subscription_data: {
+        metadata: { planId, userId },
+      },
+    });
+
+    res.status(200).json({ url: session.url, sessionId: session.id });
+  } catch (err: any) {
+    console.error('Stripe checkout error:', err);
+    res.status(500).json({ error: err.message || 'Failed to create checkout session' });
+  }
+});
+
+app.post('/api/stripe/create-portal-session', async (req: any, res: any) => {
+  try {
+    const { customerId, returnUrl } = req.body;
+    if (!customerId) {
+      return res.status(400).json({ error: 'Missing customerId' });
+    }
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      return res.status(200).json({ devMode: true, url: null, message: 'Stripe not configured' });
+    }
+
+    const stripe = new (await import('stripe')).default(stripeKey);
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl || `${req.headers.origin || ''}/app/subscription`,
+    });
+
+    res.status(200).json({ url: session.url });
+  } catch (err: any) {
+    console.error('Stripe portal error:', err);
+    res.status(500).json({ error: err.message || 'Failed to create portal session' });
+  }
+});
+
+app.post('/api/stripe/webhook', async (req: any, res: any) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!sig || !webhookSecret) {
+    return res.status(200).json({ received: true, devMode: true });
+  }
+
+  try {
+    const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!);
+    const rawBody = req.rawBody || JSON.stringify(req.body);
+    const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const userId = session.client_reference_id || session.metadata?.userId;
+        const planId = session.metadata?.planId || 'basic_1';
+
+        if (userId) {
+          const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
+          const { db } = await import('../src/lib/firebase');
+          await setDoc(doc(db, `users/${userId}`), {
+            currentPlan: planId,
+            subscriptionStatus: 'active',
+            stripeCustomerId: session.customer,
+            stripeSubscriptionId: session.subscription,
+            selectedLanguageIds: planId === 'full_all' ? ['grc', 'grc-koine', 'hbo', 'lat', 'syr', 'cop', 'arc', 'akk', 'san', 'egy', 'hit'] : ['grc'],
+            subscriptionUpdatedAt: serverTimestamp(),
+          }, { merge: true });
+        }
+        break;
+      }
+
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object;
+        const customerId = subscription.customer as string;
+        const status = subscription.status;
+        const items = subscription.items?.data || [];
+        const priceId = items[0]?.price?.id;
+
+        const planInfo = priceId ? PLANS_BY_PRICE[priceId] : null;
+        const planId = planInfo?.planId || 'basic_1';
+        const subscriptionStatus = status === 'active' ? 'active' as const : status === 'past_due' ? 'past_due' as const : status === 'canceled' || status === 'unpaid' ? 'canceled' as const : 'past_due' as const;
+
+        // Update user's plan in Firestore
+        try {
+          const { collection, getDocs, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+          const { db } = await import('../src/lib/firebase');
+          const usersSnap = await getDocs(collection(db, 'users'));
+          for (const userDoc of usersSnap.docs) {
+            const data = userDoc.data();
+            if (data.stripeCustomerId === customerId) {
+              await setDoc(doc(db, `users/${userDoc.id}`), {
+                currentPlan: planId,
+                subscriptionStatus,
+                subscriptionUpdatedAt: serverTimestamp(),
+              }, { merge: true });
+              break;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to update user subscription from webhook:', e);
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const deletedSub = event.data.object;
+        const deletedCustomerId = deletedSub.customer as string;
+        try {
+          const { collection, getDocs, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+          const { db } = await import('../src/lib/firebase');
+          const usersSnap = await getDocs(collection(db, 'users'));
+          for (const userDoc of usersSnap.docs) {
+            const data = userDoc.data();
+            if (data.stripeCustomerId === deletedCustomerId) {
+              await setDoc(doc(db, `users/${userDoc.id}`), {
+                currentPlan: 'free',
+                subscriptionStatus: 'canceled',
+                subscriptionUpdatedAt: serverTimestamp(),
+              }, { merge: true });
+              break;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to cancel subscription from webhook:', e);
+        }
+        break;
+      }
+    }
+
+    res.status(200).json({ received: true });
+  } catch (err: any) {
+    console.error('Stripe webhook error:', err);
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // Vercel handler
