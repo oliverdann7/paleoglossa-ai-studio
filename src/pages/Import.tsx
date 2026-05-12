@@ -163,46 +163,88 @@ export const Import = () => {
     }
   };
 
+  function basicTokenize(rawText: string): ImportedSentence[] {
+    const sentences = rawText
+      .split(/(?<=[.?!])\s+/)
+      .filter(Boolean)
+      .map(sentenceText => {
+        const tokens = sentenceText
+          .split(/(\s+)/)
+          .filter(t => t && t.trim())
+          .map(tokenText => {
+            const isWhitespace = /^\s+$/.test(tokenText);
+            const isPunctuation = /^[,;:!?()[\]{}«»–—]+$/.test(tokenText);
+            const isNumber = /^[0-9]+([.,][0-9]+)?$/.test(tokenText);
+            const cleaned = tokenText.replace(/[,;:!?()[\]{}«»–—]/g, '');
+            const type = isWhitespace ? 'whitespace' as const : isPunctuation ? 'punctuation' as const : isNumber ? 'number' as const : 'word' as const;
+            return {
+              text: tokenText,
+              lemma: type === 'word' ? cleaned.toLowerCase() : undefined,
+              normalized: type === 'word' ? cleaned.toLowerCase() : undefined,
+              type,
+            };
+          });
+        return { tokens, translation: undefined };
+      });
+    return sentences;
+  }
+
   const handleProcess = async () => {
     if (!text.trim()) return;
     setIsProcessing(true);
     setProcessingStep("Linguistic analysis...");
 
+    let warningMessage: string | null = null;
+    let sentences: ImportedSentence[];
+
     try {
-      // Step 1: Analyze text (Segment, Tokenize, Lemmatize, Gloss, Transliterate)
-      const sentences = await AIClient.analyzeText(languageId, text, user?.uid);
-      
-      setProcessingStep("Mapping to your knowledge...");
-      
-      // Step 2: Calculate real stats
-      const stats = calculateStats(sentences);
+      // Step 1: Try AI analysis
+      sentences = await AIClient.analyzeText(languageId, text, user?.uid);
+    } catch (aiError: any) {
+      console.warn("AI analysis failed, using basic tokenization:", aiError);
+      sentences = basicTokenize(text);
+      warningMessage = "AI analysis unavailable. Saved with basic tokenization. AI analysis can be retried later.";
+    }
 
-      const imported: ImportedText = {
-        id: `imp-${Date.now()}`,
-        userId: user?.uid || 'anonymous',
-        title: text.slice(0, 40) + (text.length > 40 ? "..." : ""),
-        rawContent: text,
-        sentences,
-        languageId,
-        sourceType: activeTab === 'ocr' ? 'image' : 'paste',
-        status: 'complete',
-        visibility: 'private',
-        stats,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+    setProcessingStep("Mapping to your knowledge...");
+    
+    // Step 2: Calculate real stats
+    const stats = calculateStats(sentences);
 
+    const imported: ImportedText = {
+      id: `imp-${Date.now()}`,
+      userId: user?.uid || 'anonymous',
+      title: text.slice(0, 60) + (text.length > 60 ? "..." : ""),
+      rawContent: text,
+      sentences,
+      languageId,
+      sourceType: activeTab === 'ocr' ? 'image' : 'paste',
+      status: 'complete',
+      visibility: 'private',
+      stats,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    try {
       await ImportService.saveImport(user ? user.uid : null, imported);
-      refreshImports();
-
-      setResult(imported);
-    } catch (error: any) {
-      console.error("Import failed:", error);
-      alert("Import failed: " + error.message);
-    } finally {
+    } catch (saveError: any) {
+      console.error("Import save failed:", saveError);
+      alert("Text analysis succeeded, but saving failed: " + saveError.message);
       setIsProcessing(false);
       setProcessingStep("");
+      return;
     }
+
+    refreshImports();
+
+    if (warningMessage) {
+      alert(warningMessage);
+    }
+
+    setResult(imported);
+    setIsProcessing(false);
+    setProcessingStep("");
   };
 
   const handleSample = (sample: string, langId: string) => {
