@@ -13,6 +13,7 @@ import { LANGUAGES } from "../lib/constants/languages";
 import { LibraryService, LibraryText } from "../lib/services/libraryService";
 import { useAuth } from "../lib/hooks/useAuth";
 import { getLanguageDisplayName } from "../lib/constants/languages";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { ImportService } from "../lib/services/importService";
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
@@ -98,7 +99,20 @@ export const Library = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Filters & Sorting state
-  const [activeLang, setActiveLang] = useState("All");
+  const { activeLanguageId } = useActiveLanguage();
+  const [activeLang, setActiveLang] = useState(
+    () => LANGUAGES.find(l => l.id === activeLanguageId)?.name || "All"
+  );
+
+  // Sync active language with filter when changed externally
+  const prevLangRef = useRef(activeLanguageId);
+  useLayoutEffect(() => {
+    if (prevLangRef.current !== activeLanguageId) {
+      prevLangRef.current = activeLanguageId;
+      const langName = LANGUAGES.find(l => l.id === activeLanguageId)?.name || "All";
+      setActiveLang(langName);
+    }
+  }, [activeLanguageId]);
   const [searchQuery, setSearchQuery] = useState("");
   const [minKnown, setMinKnown] = useState(0);
   const [activeSort, setActiveSort] = useState<SortOption>('comprehensible');

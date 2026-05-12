@@ -23,17 +23,19 @@ import { WordState } from "../lib/constants/wordStates";
 import { ImportedSentence } from "../types/firestore";
 
 import { LANGUAGES } from "../lib/constants/languages";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 
 export const Import = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
   const { refreshImports, knowledge } = useKnowledge();
+  const { activeLanguageId } = useActiveLanguage();
   const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
   const [url, setUrl] = useState("");
   const [activeTab, setActiveTab] = useState<"paste" | "file" | "url" | "ocr">("paste");
   const [text, setText] = useState("");
-  const [languageId, setLanguageId] = useState("grc");
+  const [languageId, setLanguageId] = useState(activeLanguageId || "grc");
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState("");
   const [result, setResult] = useState<ImportedText | null>(null);
