@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage';
 import { getLanguageIcon } from '../lib/constants/languages';
+import { useSubscription } from '../lib/contexts/SubscriptionContext';
 
 export function LanguageSwitcher() {
   const { activeLanguageId, setActiveLanguageId, currentLanguage, availableLanguages } = useActiveLanguage();
+  const { canAccessLanguage, remainingSlots } = useSubscription();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -28,6 +30,9 @@ export function LanguageSwitcher() {
       >
         <span className="text-[16px]">{icon}</span>
         <span className="hidden sm:inline">{currentLanguage?.shortName || currentLanguage?.name || 'Select Language'}</span>
+        {remainingSlots !== Infinity && remainingSlots <= 1 && (
+          <span className="text-[9px] font-bold text-amber bg-amber/10 px-1.5 py-0.5 rounded-full">{remainingSlots} slot</span>
+        )}
         <ChevronDown className={cn("w-3.5 h-3.5 text-muted transition-transform", open && "rotate-180")} />
       </button>
 
@@ -43,33 +48,41 @@ export function LanguageSwitcher() {
             <div className="p-1.5">
               {availableLanguages.map(lang => {
                 const isActive = lang.id === activeLanguageId;
+                const isLocked = !canAccessLanguage(lang.id);
                 return (
                   <button
                     key={lang.id}
-                    onClick={() => { setActiveLanguageId(lang.id); setOpen(false); }}
+                    onClick={() => {
+                      if (isLocked) return;
+                      setActiveLanguageId(lang.id);
+                      setOpen(false);
+                    }}
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all text-[13px]",
                       isActive
                         ? "bg-blue/10 text-blue font-bold"
-                        : "text-ink2 hover:bg-parch2 font-medium"
+                        : isLocked
+                          ? "text-muted opacity-50 cursor-not-allowed"
+                          : "text-ink2 hover:bg-parch2 font-medium"
                     )}
                   >
                     <span className="text-[18px] w-7 text-center">{getLanguageIcon(lang.id)}</span>
                     <div className="flex-1 min-w-0">
                       <div className="truncate">{lang.name}</div>
-                      <div className={cn(
-                        "text-[10px] uppercase tracking-wider",
-                        isActive ? "text-blue/70" : "text-muted"
-                      )}>
-                        {lang.corpusStatus === 'available' ? 'Available' : lang.corpusStatus === 'partial' ? 'In Progress' : 'Sample'}
+                      <div className={cn("text-[10px] uppercase tracking-wider", isActive ? "text-blue/70" : "text-muted")}>
+                        {isLocked ? 'Locked' : lang.corpusStatus === 'available' ? 'Available' : lang.corpusStatus === 'partial' ? 'In Progress' : 'Sample'}
                       </div>
                     </div>
-                    {isActive && (
-                      <span className="w-2 h-2 rounded-full bg-blue shrink-0" />
-                    )}
+                    {isActive && <span className="w-2 h-2 rounded-full bg-blue shrink-0" />}
+                    {isLocked && <Lock className="w-3.5 h-3.5 text-muted shrink-0" />}
                   </button>
                 );
               })}
+            </div>
+            <div className="border-t border-bdr/40 p-2">
+              <a href="/app/subscription" className="block w-full text-center text-[11px] font-bold text-blue hover:underline py-1">
+                Upgrade plan for more languages
+              </a>
             </div>
           </motion.div>
         )}

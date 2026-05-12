@@ -4,6 +4,7 @@ import { AuthGuard } from './AuthGuard';
 import { useSettings } from '../lib/hooks/useSettings';
 import { AuthProvider } from '../lib/contexts/AuthContext';
 import { ActiveLanguageProvider } from '../lib/contexts/ActiveLanguageContext';
+import { SubscriptionProvider } from '../lib/contexts/SubscriptionContext';
 
 function AppLayoutContent() {
   useSettings();
@@ -24,7 +25,9 @@ export function AppLayout() {
   return (
     <AuthProvider>
       <ActiveLanguageProvider>
-        <AppLayoutContent />
+        <SubscriptionProvider>
+          <AppLayoutContent />
+        </SubscriptionProvider>
       </ActiveLanguageProvider>
     </AuthProvider>
   );
