@@ -12,7 +12,11 @@ import {
   limit
 } from 'firebase/firestore';
 import { calculateSM2, SRSState, Rating } from '../srs/sm2';
+import { calculateFSRS, FSRSState, FSRRating } from '../srs/fsrs';
 import { WordState } from '../constants/wordStates';
+
+// Toggle to use FSRS algorithm
+const USE_FSRS = true;
 
 export interface ReviewItem {
   id: string; // The doc ID in users/userId/vocabulary
@@ -86,7 +90,42 @@ export class ReviewService {
     responseMs: number
   ): Promise<SRSState> {
     const now = new Date();
-    const nextState = calculateSM2(rating, item.srs, now);
+    
+    let nextState: SRSState;
+    
+    if (USE_FSRS) {
+      // Convert rating to FSRS format
+      const fsrsRating: FSRRating = rating === 'AGAIN' ? 'again' 
+        : rating === 'HARD' ? 'hard' 
+        : rating === 'GOOD' ? 'good' 
+        : 'easy';
+      
+      // Convert current state to FSRS format
+      const fsrsState: FSRSState = {
+        stability: item.srs.interval || 1,
+        difficulty: 5, // Default
+        interval: item.srs.interval || 0,
+        dueDate: now,
+        repetitions: item.srs.step || 0,
+        ease: item.srs.ease || 2.5,
+        step: item.srs.step || 0,
+        lastReviewed: item.srs.lastReviewed,
+        nextReview: item.srs.nextReview || now.toISOString()
+      };
+      
+      const nextFSRS = calculateFSRS(fsrsRating, fsrsState, now);
+      
+      // Convert back to SRSState format
+      nextState = {
+        interval: nextFSRS.interval,
+        ease: nextFSRS.ease,
+        step: nextFSRS.repetitions,
+        lastReviewed: nextFSRS.lastReviewed,
+        nextReview: nextFSRS.nextReview
+      };
+    } else {
+      nextState = calculateSM2(rating, item.srs, now);
+    }
     
     const vocabDocRef = doc(db, `users/${userId}/vocabulary`, item.id);
     const logRef = collection(db, `users/${userId}/reviewLogs`);
@@ -94,7 +133,7 @@ export class ReviewService {
     // 1. Update vocabulary item
     const status = this.determineNewStatus(item.status, nextState, rating);
     
-    await updateDoc(vocabDocRef, {
+    const updateData: any = {
       status,
       interval: nextState.interval,
       ease: nextState.ease,
@@ -102,7 +141,16 @@ export class ReviewService {
       lastReviewed: nextState.lastReviewed,
       nextReview: nextState.nextReview,
       updatedAt: serverTimestamp()
-    });
+    };
+    
+    // Add FSRS-specific fields if using FSRS
+    if (USE_FSRS) {
+      // Store FSRS metrics
+      updateData.fsrsStability = nextState.interval;
+      updateData.fsrsDifficulty = 5;
+    }
+    
+    await updateDoc(vocabDocRef, updateData);
     
     // 2. Add log entry
     await addDoc(logRef, {
@@ -115,7 +163,8 @@ export class ReviewService {
       easeBefore: item.srs.ease,
       easeAfter: nextState.ease,
       timestamp: now.toISOString(),
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      algorithm: USE_FSRS ? 'FSRS' : 'SM-2'
     });
     
     return nextState;
