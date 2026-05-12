@@ -287,6 +287,15 @@ export const Reader = () => {
     return [];
   }, [text, t]);
 
+  // Determine what kind of content is being read so UI can be honest about it
+  const sourceKind: 'import' | 'sample' | 'partial' | 'complete' = useMemo(() => {
+    if (!text) return 'complete';
+    if (typeof textId === 'string' && textId.startsWith('import-') && !CorpusDB.getText(textId)) return 'import';
+    if (text.isSample) return 'sample';
+    if (text.isComplete || text.sourceStatus === 'complete') return 'complete';
+    return 'partial';
+  }, [text, textId]);
+
   const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
     const saved = localStorage.getItem(`${STORAGE_KEYS.READER_CHAPTER_PREFIX}${text?.id}`);
     const parsed = saved ? parseInt(saved, 10) || 0 : 0;
@@ -736,7 +745,11 @@ export const Reader = () => {
           audioPos={audioPos}
           aiTranslations={aiTranslations}
           translatingId={isTranslatingId}
-          isSample={text?.isSample}
+          sourceKind={sourceKind}
+          textTitle={text?.title || text?.canonicalRef || ''}
+          sectionLabel={chapter?.title || ''}
+          hasMorphology={!!text?.hasMorphology}
+          sentenceCount={chapter?.sentences?.length ?? 0}
           onWordClick={handleWordClick}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}
@@ -744,6 +757,7 @@ export const Reader = () => {
           onSwipe={handleSwipe}
           onNextPage={handleNextPage}
           onNextChapter={handleNextChapter}
+          onBackToLibrary={onBack}
           currentScrollPage={currentScrollPage}
           totalPages={totalPages}
           currentChapterIndex={currentChapterIndex}
@@ -754,6 +768,7 @@ export const Reader = () => {
         <ReaderBottomNav
           scrollProgress={scrollProgress}
           readingMode={readingMode}
+          sourceKind={sourceKind}
           currentSentenceIndex={currentSentenceIndex}
           totalSentences={chapter.sentences.length}
           canGoPrev={
