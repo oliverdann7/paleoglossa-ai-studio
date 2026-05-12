@@ -5,6 +5,7 @@ import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCi
 import { cn } from '@/lib/utils';
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { PaleoIcon } from './PaleoIcon';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -50,8 +51,9 @@ export const Navbar = () => {
     <>  
       <nav className="hidden md:flex fixed left-0 top-0 h-full w-[220px] border-r border-bdr bg-parch2 flex-col z-50 overflow-y-auto">
         <div className="p-5 flex flex-col gap-1">
-          <Link to="/app" className="text-[17px] font-serif font-semibold text-blue flex items-center gap-2">
-            Παλαιόγλωσσα
+          <Link to="/app" className="flex items-center gap-2.5">
+            <PaleoIcon className="w-7 h-7 flex-shrink-0" />
+            <span className="text-[17px] font-serif font-semibold text-blue">Παλαιόγλωσσα</span>
           </Link>
           <span className="eyebrow" style={{fontSize: '9px', textTransform: 'none'}}>{t("nav.slogan", "Where ancient texts come alive")}</span>
         </div>
