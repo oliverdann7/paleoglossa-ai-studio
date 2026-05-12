@@ -1,7 +1,8 @@
-import { memo, useRef, useCallback, useMemo } from 'react';
+import { memo, useRef, useCallback, useMemo, useState } from 'react';
 import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS } from '@/lib/constants/wordStates';
+import { GlossTooltip } from './GlossTooltip';
 
 interface TokenData {
   id: string;
@@ -47,6 +48,9 @@ interface Props {
   hasMorphology: boolean;
   sentenceCount: number;
   analysisStatus?: 'analyzed' | 'raw' | 'needs_ai';
+  showGlossTooltip?: boolean;
+  glossTooltipForKnown?: boolean;
+  interlinearMode?: boolean;
   onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
   onAITranslate: (sentenceId: string, tokens: TokenData[]) => void;
   onSavePhrase: (sentence: SentenceData) => void;
@@ -111,7 +115,12 @@ const ReaderToken = memo(function ReaderToken({
   highlightIntensity,
   isSelected,
   showTranslit,
+  interlinearMode,
+  showGlossTooltip,
+  glossTooltipForKnown,
   onWordClick,
+  onWordHover,
+  onWordLeave,
 }: {
   token: TokenData;
   sentenceText: string;
@@ -124,13 +133,31 @@ const ReaderToken = memo(function ReaderToken({
   highlightIntensity: 'subtle' | 'normal' | 'strong';
   isSelected: boolean;
   showTranslit: boolean;
+  interlinearMode?: boolean;
+  showGlossTooltip?: boolean;
+  glossTooltipForKnown?: boolean;
   onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
+  onWordHover: (gloss: string, x: number, y: number) => void;
+  onWordLeave: () => void;
 }) {
+  const state = wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW;
+  const isKnown = state === WordState.KNOWN;
+  const gloss = token.gloss;
+  const showTooltip = showGlossTooltip && !!gloss && (glossTooltipForKnown || !isKnown);
+
+  const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
+    if (!showTooltip) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    onWordHover(gloss!, rect.left + rect.width / 2, rect.top);
+  }, [showTooltip, gloss, onWordHover]);
+
   return (
     <span key={token.id} className="inline">
       {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
       <span
         onClick={() => onWordClick(token, sentenceText, sentenceIndex)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={onWordLeave}
         className="cursor-pointer transition-all px-1 rounded-sm inline-flex flex-col items-center align-top leading-none"
         style={{
           fontSize: readingMode === 'page' ? `${fontSize * 1.2}px` : `${fontSize}px`,
@@ -141,6 +168,11 @@ const ReaderToken = memo(function ReaderToken({
         {showTranslit && token.translit && (
           <span className="text-[0.45em] text-muted opacity-70 font-sans tracking-wide">
             {token.translit}
+          </span>
+        )}
+        {interlinearMode && gloss && (
+          <span dir="ltr" className="text-[0.42em] text-blue/70 font-sans tracking-wide leading-tight">
+            {gloss}
           </span>
         )}
       </span>
@@ -159,6 +191,7 @@ export function ReadingPane({
   isHebrewFont, isRtl, audioPos,
   aiTranslations, translatingId,
   sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
+  showGlossTooltip, glossTooltipForKnown, interlinearMode,
   onWordClick, onAITranslate, onSavePhrase,
   onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
@@ -166,6 +199,12 @@ export function ReadingPane({
 }: Props) {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
+
+  const [hoverGloss, setHoverGloss] = useState<{ text: string; x: number; y: number } | null>(null);
+  const handleWordHover = useCallback((gloss: string, x: number, y: number) => {
+    setHoverGloss({ text: gloss, x, y });
+  }, []);
+  const handleWordLeave = useCallback(() => { setHoverGloss(null); }, []);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -302,7 +341,12 @@ export function ReadingPane({
                         highlightIntensity={highlightIntensity}
                         isSelected={selectedWordId === token.id}
                         showTranslit={showTranslit}
+                        interlinearMode={interlinearMode}
+                        showGlossTooltip={showGlossTooltip}
+                        glossTooltipForKnown={glossTooltipForKnown}
                         onWordClick={onWordClick}
+                        onWordHover={handleWordHover}
+                        onWordLeave={handleWordLeave}
                       />
                     );
                   })}
@@ -441,6 +485,12 @@ export function ReadingPane({
           </div>
         )}
       </div>
+      <GlossTooltip
+        text={hoverGloss?.text ?? null}
+        x={hoverGloss?.x ?? 0}
+        y={hoverGloss?.y ?? 0}
+        visible={hoverGloss !== null}
+      />
     </div>
   );
 }
