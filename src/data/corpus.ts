@@ -2914,7 +2914,7 @@ function getAllEnhancedTexts() {
       TEXT_ILIAD,
       TEXT_ODYSSEY,
       TEXT_AESOP,
-      ...getMockTexts()
+      ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
   return _textsCache;
@@ -2936,7 +2936,7 @@ function getLemmaIndex() {
     SANSKRIT_GITA_1_1, HITTITE_ANNALS_1_1, EGYPTIAN_PTAHHOTEP_1_1,
     ANABASIS_1_1, ILIAD_1_1, ODYSSEY_1_1, AESOP_1_1,
     ...ALL_EXPANDED_SECTIONS,
-    ...getMockSections()
+    ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
     for (const sentence of section.sentences) {
@@ -2996,8 +2996,10 @@ export const CorpusDB = {
     const expandedMatch = ALL_EXPANDED_SECTIONS.find(s => s.id === sectionId);
     if (expandedMatch) return expandedMatch;
     
-    const mockMatch = getMockSections().find(s => s.id === sectionId);
-    if (mockMatch) return mockMatch;
+    if (import.meta.env.DEV) {
+      const mockMatch = getMockSections().find(s => s.id === sectionId);
+      if (mockMatch) return mockMatch;
+    }
     
     return null;
   },
