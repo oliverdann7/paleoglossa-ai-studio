@@ -1,13 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, Library as LibraryIcon, Play, Filter, Clock, BookOpen, Crown, ChevronDown, CalendarDays, FileText, GitBranch, Languages, ShieldCheck, Volume2 } from "lucide-react";
+import { Search, Library as LibraryIcon, Play, Filter, Clock, BookOpen, Crown, ChevronDown, CalendarDays, FileText, GitBranch, Languages, ShieldCheck, Volume2, Globe, Share2, Lock, GitFork } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "../lib/constants/languages";
 import { LibraryService, LibraryText } from "../lib/services/libraryService";
 import { useAuth } from "../lib/hooks/useAuth";
+import { ImportService } from "../lib/services/importService";
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
 
@@ -82,6 +83,8 @@ export const Library = () => {
   const [genreFilter, setGenreFilter] = useState('all');
   const [corpusTypeFilter, setCorpusTypeFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [activeTab, setActiveTab] = useState<'library' | 'imports' | 'public'>('library');
+  const [sharingId, setSharingId] = useState<string | null>(null);
 
   useEffect(() => {
     getAllProgress().then(setReadingProgress);
@@ -90,6 +93,11 @@ export const Library = () => {
   useEffect(() => {
     const fetchLibrary = async () => {
       setIsLoading(true);
+      const sourceMap: Record<string, 'corpus' | 'import' | 'public'> = {
+        'library': 'corpus',
+        'imports': 'import',
+        'public': 'public'
+      };
       const data = await LibraryService.getLibrary(user?.uid || null, {
         language: activeLang,
         search: searchQuery,
@@ -97,7 +105,7 @@ export const Library = () => {
         period: periodFilter,
         genre: genreFilter,
         corpusType: corpusTypeFilter,
-        source: sourceFilter === 'all' ? undefined : sourceFilter
+        source: sourceMap[activeTab]
       }, getWordInfo);
       setTexts(data);
       setIsLoading(false);
@@ -108,7 +116,7 @@ export const Library = () => {
       fetchLibrary();
     }, 300);
     return () => clearTimeout(timeoutId);
-  }, [user?.uid, activeLang, searchQuery, minKnown, sourceFilter, periodFilter, genreFilter, corpusTypeFilter, getWordInfo]);
+  }, [user?.uid, activeLang, searchQuery, minKnown, periodFilter, genreFilter, corpusTypeFilter, getWordInfo, activeTab]);
 
   const mainFilters = [
     { name: "All", id: "all", icon: "📚" },
@@ -176,6 +184,50 @@ export const Library = () => {
     return map;
   }, [sortedTexts]);
 
+  const handleShare = async (textId: string) => {
+    if (!user?.uid) return;
+    setSharingId(textId);
+    try {
+      await ImportService.sharePublic(user.uid, textId);
+      // Refresh the library
+      setTexts(prev => prev.map(t => 
+        t.id === textId ? { ...t, isPublic: true, sourceType: 'public' } : t
+      ));
+    } catch (e) {
+      console.error("Error sharing:", e);
+    }
+    setSharingId(null);
+  };
+
+  const handleUnshare = async (textId: string) => {
+    if (!user?.uid) return;
+    setSharingId(textId);
+    try {
+      await ImportService.unsharePublic(user.uid, textId);
+      // Refresh the library
+      setTexts(prev => prev.map(t => 
+        t.id === textId ? { ...t, isPublic: false, sourceType: 'import' } : t
+      ));
+    } catch (e) {
+      console.error("Error unsharing:", e);
+    }
+    setSharingId(null);
+  };
+
+  const handleFork = async (textId: string) => {
+    if (!user?.uid) return;
+    setSharingId(textId);
+    try {
+      const newId = await ImportService.forkPublic(user.uid, textId);
+      if (newId) {
+        navigate(`/app/reader/${newId}`);
+      }
+    } catch (e) {
+      console.error("Error forking:", e);
+    }
+    setSharingId(null);
+  };
+
   return (
     <div className="p-6 md:p-12 max-w-7xl mx-auto font-sans min-h-screen">
       <header className="mb-10 flex justify-between items-end">
@@ -189,8 +241,48 @@ export const Library = () => {
         </div>
       </header>
 
-      {/* Continue Reading Carousel */}
-      {recentTexts.length > 0 && (
+      {/* Tab Navigation */}
+      <div className="flex gap-2 mb-8">
+        <button
+          onClick={() => setActiveTab('library')}
+          className={cn(
+            "px-4 py-2 rounded-lg text-[13px] font-bold font-sans transition-all flex items-center gap-2",
+            activeTab === 'library'
+              ? "bg-blue text-white shadow-md"
+              : "bg-white text-ink3 border border-bdr/40 hover:bg-parch"
+          )}
+        >
+          <LibraryIcon className="w-4 h-4" />
+          Curated Library
+        </button>
+        <button
+          onClick={() => setActiveTab('imports')}
+          className={cn(
+            "px-4 py-2 rounded-lg text-[13px] font-bold font-sans transition-all flex items-center gap-2",
+            activeTab === 'imports'
+              ? "bg-purple-600 text-white shadow-md"
+              : "bg-white text-ink3 border border-bdr/40 hover:bg-parch"
+          )}
+        >
+          <BookOpen className="w-4 h-4" />
+          My Imports
+        </button>
+        <button
+          onClick={() => setActiveTab('public')}
+          className={cn(
+            "px-4 py-2 rounded-lg text-[13px] font-bold font-sans transition-all flex items-center gap-2",
+            activeTab === 'public'
+              ? "bg-emerald-600 text-white shadow-md"
+              : "bg-white text-ink3 border border-bdr/40 hover:bg-parch"
+          )}
+        >
+          <Globe className="w-4 h-4" />
+          Public Library
+        </button>
+      </div>
+
+      {/* Continue Reading Carousel - hide for public tab */}
+      {recentTexts.length > 0 && activeTab !== 'public' && (
         <div className="mb-14 fade-in">
           <h3 className="eyebrow mb-4 opacity-50">{t("library.continueReading", "Continue Reading")}</h3>
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide py-1">
@@ -578,13 +670,57 @@ export const Library = () => {
                         </div>
           
                         <div className="flex items-end justify-between pt-4 mt-auto border-t border-dashed border-bdr/40">
-                          <span className={cn(
-                             "text-[10px] uppercase font-bold tracking-widest flex items-center gap-1",
-                             text.sourceType === 'import' ? "text-purple-600/60" : "text-emerald-600/60"
-                          )}>
-                            {text.sourceType === 'import' && <BookOpen className="w-3 h-3" />}
-                            {text.sourceType === 'import' ? "Private Import" : "Curated Library"}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={cn(
+                               "text-[10px] uppercase font-bold tracking-widest flex items-center gap-1",
+                               text.sourceType === 'import' ? "text-purple-600/60" : 
+                               text.sourceType === 'public' ? "text-emerald-600/60" : "text-emerald-600/60"
+                            )}>
+                              {text.sourceType === 'import' && <BookOpen className="w-3 h-3" />}
+                              {text.sourceType === 'public' && <Globe className="w-3 h-3" />}
+                              {text.sourceType === 'import' ? "Private Import" : 
+                               text.sourceType === 'public' ? "Public" : "Curated Library"}
+                            </span>
+                            
+                            {/* Share/Unshare buttons for imports */}
+                            {text.sourceType === 'import' && user && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (text.isPublic) {
+                                    handleUnshare(text.id);
+                                  } else {
+                                    handleShare(text.id);
+                                  }
+                                }}
+                                disabled={sharingId === text.id}
+                                className={cn(
+                                  "text-[9px] uppercase font-bold tracking-widest flex items-center gap-1 px-2 py-0.5 rounded transition-colors",
+                                  text.isPublic 
+                                    ? "text-emerald-600 bg-emerald-50 hover:bg-emerald-100" 
+                                    : "text-blue bg-blue-50 hover:bg-blue-100"
+                                )}
+                              >
+                                {text.isPublic ? <Lock className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
+                                {text.isPublic ? "Unshare" : "Share"}
+                              </button>
+                            )}
+                            
+                            {/* Fork button for public texts */}
+                            {text.sourceType === 'public' && user && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleFork(text.id);
+                                }}
+                                disabled={sharingId === text.id}
+                                className="text-[9px] uppercase font-bold tracking-widest flex items-center gap-1 px-2 py-0.5 rounded text-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors"
+                              >
+                                <GitFork className="w-3 h-3" />
+                                Fork
+                              </button>
+                            )}
+                          </div>
                           <span
                             className={cn(
                               "pill text-[10px] px-2 py-0.5",
