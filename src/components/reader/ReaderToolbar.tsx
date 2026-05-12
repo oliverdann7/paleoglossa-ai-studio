@@ -1,4 +1,4 @@
-import { Type, Layout, EyeOff } from 'lucide-react';
+import { Type, Layout, EyeOff, AlignJustify } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
   onToggleMaskKnown: () => void;
   readingMode: 'scroll' | 'page';
   onChangeReadingMode: (mode: 'scroll' | 'page') => void;
+  interlinearMode: boolean;
+  onToggleInterlinear: () => void;
 }
 
 export function ReaderToolbar({
@@ -21,6 +23,7 @@ export function ReaderToolbar({
   showParallel, onToggleParallel,
   maskKnown, onToggleMaskKnown,
   readingMode, onChangeReadingMode,
+  interlinearMode, onToggleInterlinear,
 }: Props) {
   return (
     <div className="h-12 border-b border-bdr/40 flex items-center justify-between px-4 md:px-6 bg-parch/30 backdrop-blur-sm shrink-0">
@@ -62,6 +65,15 @@ export function ReaderToolbar({
           )}
         >
           <EyeOff className="w-3.5 h-3.5" /> Mask Known
+        </button>
+        <button
+          onClick={onToggleInterlinear}
+          className={cn(
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors text-[10px] font-bold uppercase tracking-widest hidden md:flex",
+            interlinearMode ? "bg-green-100 text-green-700" : "text-muted hover:bg-parch3",
+          )}
+        >
+          <AlignJustify className="w-3.5 h-3.5" /> Interlinear
         </button>
         <div className="w-px h-4 bg-bdr m-1 hidden md:block" />
         <div className="flex bg-parch3 p-0.5 rounded-lg border border-bdr shrink-0">
