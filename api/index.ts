@@ -31,6 +31,34 @@ app.get('/api/lemmas/:lemma/paradigm', (_req: any, res: any) => {
   res.status(200).json([]);
 });
 
+// ─── Dictionary ───────────────────────────────────────────────────────────────
+import { getDictionaryEntry, getDictionaryLanguages, searchDictionaryEntries } from '../src/lib/data/dictionaryDB';
+
+app.get('/api/dictionary', (_req: any, res: any) => {
+  const languages = getDictionaryLanguages();
+  res.status(200).json(languages);
+});
+
+app.get('/api/dictionary/:lemma/:lang', (req: any, res: any) => {
+  const { lemma, lang } = req.params;
+  const entry = getDictionaryEntry(lemma, lang);
+  if (entry) {
+    res.status(200).json(entry);
+  } else {
+    res.status(404).json({ error: 'Entry not found' });
+  }
+});
+
+app.get('/api/dictionary/search', (req: any, res: any) => {
+  const { q: query, lang, limit } = req.query;
+  const results = searchDictionaryEntries(
+    query && typeof query === 'string' ? query : '',
+    lang && typeof lang === 'string' ? lang : undefined,
+    limit && typeof limit === 'string' ? parseInt(limit, 10) : 20
+  );
+  res.status(200).json(results);
+});
+
 // ─── AI endpoints ────────────────────────────────────────────────────────────
 app.post('/api/ai/analyze', (_req: any, res: any) => {
   res.status(200).json({ sentences: [] });
@@ -168,6 +196,7 @@ app.get('/api/grammar/pathway', (_req: any, res: any) => {
 });
 
 // Vercel handler
+export const expressApp = app;
 export default function handler(req: any, res: any) {
   app(req, res, () => {
     if (!res.headersSent) {

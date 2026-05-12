@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { ParadigmModal } from './ParadigmModal';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
+import { findDictionaryEntry } from '@/lib/data/dictionary';
 
 interface LexDrawerPanelProps {
   selectedWord: any;
@@ -166,9 +167,11 @@ export const LexDrawerPanel = ({
                 <span className="normal-case tracking-normal text-[11px]">Entry</span>
               </Link>
             </div>
-            <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
-              {getWordInfo(selectedWord.lemma).userGloss || selectedWord.gloss}
-            </div>
+             <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
+               {getWordInfo(selectedWord.lemma).userGloss || 
+                 (findDictionaryEntry(selectedWord.lemma, textLanguageId)?.shortGloss || 
+                  selectedWord.gloss)}
+             </div>
             {!sourceInfo && (
               <div className="text-[10px] text-muted italic mb-4">
                 Source: PalæoGlossa Ancient Corpus & AI Analysis
