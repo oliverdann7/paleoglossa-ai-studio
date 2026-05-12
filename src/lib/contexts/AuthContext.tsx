@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               readToday: 0,
               readingTime: 0,
               lastActive: now.toISOString(),
-              streak: 1,
+              streak: 0,
               freezesTotal: 2,
               freezesUsed: 0
             };

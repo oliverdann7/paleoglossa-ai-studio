@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { ProgressRing } from './ProgressRing';
 
@@ -16,7 +16,7 @@ function formatTime(sec: number) {
 export function ReaderProgressHeader({ readToday, dailyGoalWords, onBack, onMinuteElapsed }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const onMinuteElapsedRef = useRef(onMinuteElapsed);
-  onMinuteElapsedRef.current = onMinuteElapsed;
+  useLayoutEffect(() => { onMinuteElapsedRef.current = onMinuteElapsed; });
 
   useEffect(() => {
     const timer = setInterval(() => {

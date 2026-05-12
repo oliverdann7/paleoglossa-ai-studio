@@ -16,7 +16,7 @@ export const useStats = () => {
     readToday: 0,
     readingTime: 0,
     lastActive: new Date().toISOString(),
-    streak: 1,
+    streak: 0,
     history: [],
     freezesTotal: 2,
     freezesUsed: 0
