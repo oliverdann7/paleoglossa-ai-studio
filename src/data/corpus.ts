@@ -281,7 +281,7 @@ export const TEXT_SYRIAC_JOHN: Text = {
   id: "Syr-Jn-1",
   corpusId: "SYRIAC_PESHITTA",
   title: "ܝܘܚܢܢ",
-  canonicalRef: "John 1 (sample)",
+  canonicalRef: "John 1",
   author: "John",
   language: "syr",
   direction: "rtl",
@@ -289,18 +289,21 @@ export const TEXT_SYRIAC_JOHN: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 3,
-  sectionsPreview: [{ id: "Syr-Jn-1-1", label: "John 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Syr-Jn-1-1", label: "John 1:1" },
+    { id: "Syr-Jn-1-2", label: "John 1:1-5" },
+  ],
 };
 
 export const TEXT_COPTIC_JOHN: Text = {
   id: "Cop-Jn-1",
   corpusId: "COPTIC_SAHIDIC",
   title: "ⲡⲕⲁⲧⲁ ⲓⲱϩⲁⲛⲛⲏⲥ",
-  canonicalRef: "John 1 (sample)",
+  canonicalRef: "John 1",
   author: "John",
   language: "cop",
   direction: "ltr",
@@ -308,18 +311,21 @@ export const TEXT_COPTIC_JOHN: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 3,
-  sectionsPreview: [{ id: "Cop-Jn-1-1", label: "John 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Cop-Jn-1-1", label: "John 1:1" },
+    { id: "Cop-Jn-1-2", label: "John 1:1-5" },
+  ],
 };
 
 export const TEXT_ARAMAIC_GENESIS: Text = {
   id: "Arc-Gen-1",
   corpusId: "ARAMAIC_TARGUM",
   title: "תרגום אונקלוס בראשית",
-  canonicalRef: "Targum Onkelos Genesis 1 (sample)",
+  canonicalRef: "Targum Onkelos Genesis 1",
   author: "Onkelos",
   language: "arc",
   direction: "rtl",
@@ -327,18 +333,21 @@ export const TEXT_ARAMAIC_GENESIS: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Arc-Gen-1-1", label: "Genesis 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Arc-Gen-1-1", label: "Genesis 1:1" },
+    { id: "Arc-Gen-1-2", label: "Genesis 1:1-5" },
+  ],
 };
 
 export const TEXT_AKKADIAN_GILGAMESH: Text = {
   id: "Akk-Gilg-1",
   corpusId: "AKKADIAN_GILGAMESH",
   title: "Epic of Gilgamesh, Tablet I",
-  canonicalRef: "Gilgamesh Tablet I (sample)",
+  canonicalRef: "Gilgamesh Tablet I",
   author: "Sin-leqi-unninni",
   language: "akk",
   direction: "ltr",
@@ -346,18 +355,21 @@ export const TEXT_AKKADIAN_GILGAMESH: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Akk-Gilg-1-1", label: "Tablet I (Sample)" }],
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Akk-Gilg-1-1", label: "Tablet I (Opening)" },
+    { id: "Akk-Gilg-1-2", label: "Tablet I (continued)" },
+  ],
 };
 
 export const TEXT_SANSKRIT_GITA: Text = {
   id: "San-Gita-1",
   corpusId: "SANSKRIT_MAHABHARATA",
   title: "भगवद्गीता",
-  canonicalRef: "Bhagavad Gita 1 (sample)",
+  canonicalRef: "Bhagavad Gita 1",
   author: "Vyasa",
   language: "san",
   direction: "ltr",
@@ -365,18 +377,21 @@ export const TEXT_SANSKRIT_GITA: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "San-Gita-1-1", label: "Chapter 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "San-Gita-1-1", label: "Bhagavad Gita 1.1" },
+    { id: "San-Gita-1-2", label: "Bhagavad Gita 1.2-6" },
+  ],
 };
 
 export const TEXT_HITTITE_ANNALS: Text = {
   id: "Hit-Annals-1",
   corpusId: "HITTITE_ANNALS",
   title: "Annals of Mursili II - Ten Year Annals",
-  canonicalRef: "CTH 61.II (sample)",
+  canonicalRef: "CTH 61.II",
   author: "Mursili II",
   language: "hit",
   direction: "ltr",
@@ -384,18 +399,21 @@ export const TEXT_HITTITE_ANNALS: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Hit-Annals-1-1", label: "Year 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Hit-Annals-1-1", label: "Year 1 (Opening)" },
+    { id: "Hit-Annals-1-2", label: "Year 1 (continued)" },
+  ],
 };
 
 export const TEXT_EGYPTIAN_PTAHHOTEP: Text = {
   id: "Egy-Ptah-1",
   corpusId: "EGYPTIAN_TEXTS",
   title: "The Maxims of Ptahhotep",
-  canonicalRef: "Prisse Papyrus (sample)",
+  canonicalRef: "Prisse Papyrus",
   author: "Ptahhotep",
   language: "egy",
   direction: "ltr",
@@ -403,11 +421,14 @@ export const TEXT_EGYPTIAN_PTAHHOTEP: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Egy-Ptah-1-1", label: "Maxim 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Egy-Ptah-1-1", label: "Maxim 1 (Opening)" },
+    { id: "Egy-Ptah-1-2", label: "Maxim 1 (continued)" },
+  ],
 };
 
 export const TEXT_ANABASIS: Text = {
@@ -460,38 +481,44 @@ export const TEXT_ODYSSEY: Text = {
   id: "Odyssey-1",
   corpusId: "ANCIENT_GREEK",
   title: "Ὀδύσσεια",
-  canonicalRef: "Odyssey Book 1 (sample)",
+  canonicalRef: "Odyssey Book 1",
   author: "Homer",
   language: "grc",
   direction: "ltr",
   level: "C1",
-  hasMorphology: false,
+  hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Odyssey-1-1", label: "Odyssey 1.1-5 (Sample)" }],
+  isSample: false,
+  sentenceCount: 10,
+  sectionsPreview: [
+    { id: "Odyssey-1-1", label: "Odyssey 1.1-5" },
+    { id: "Odyssey-1-2", label: "Odyssey 1.6-21" },
+  ],
 };
 
 export const TEXT_AESOP: Text = {
   id: "Aesop-1",
   corpusId: "ANCIENT_GREEK",
   title: "Αἰσώπου Μῦθοι",
-  canonicalRef: "Aesop's Fables (sample)",
+  canonicalRef: "Aesop's Fables",
   author: "Aesop",
   language: "grc",
   direction: "ltr",
   level: "A2",
-  hasMorphology: false,
+  hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Aesop-1-1", label: "The Fox and the Grapes (Sample)" }],
+  isSample: false,
+  sentenceCount: 7,
+  sectionsPreview: [
+    { id: "Aesop-1-1", label: "The Fox and the Grapes" },
+    { id: "Aesop-1-2", label: "The Ant and the Grasshopper; Tortoise and Hare" },
+  ],
 };
 
 export const JOHN_1_1: TextSection = {
@@ -2889,6 +2916,15 @@ import {
   AENEID_LINES_8_33,
   AENEID_LINES_34_66,
   AENEID_LINES_67_100,
+  ODYSSEY_LINES_6_21,
+  AESOP_ADDITIONAL,
+  SYRIAC_JOHN_ADDITIONAL,
+  COPTIC_JOHN_ADDITIONAL,
+  ARAMAIC_GENESIS_ADDITIONAL,
+  AKKADIAN_ADDITIONAL,
+  SANSKRIT_ADDITIONAL,
+  HITTITE_ADDITIONAL,
+  EGYPTIAN_ADDITIONAL,
 } from "./corpus/expanded-sections";
 
 // Module-level caches — corpus data is static at runtime
@@ -2992,6 +3028,17 @@ export const CorpusDB = {
     if (sectionId === "Aen-1-2") return AENEID_LINES_8_33;
     if (sectionId === "Aen-1-3") return AENEID_LINES_34_66;
     if (sectionId === "Aen-1-4") return AENEID_LINES_67_100;
+    
+    // Sample text expanded sections
+    if (sectionId === "Odyssey-1-2") return ODYSSEY_LINES_6_21;
+    if (sectionId === "Aesop-1-2") return AESOP_ADDITIONAL;
+    if (sectionId === "Syr-Jn-1-2") return SYRIAC_JOHN_ADDITIONAL;
+    if (sectionId === "Cop-Jn-1-2") return COPTIC_JOHN_ADDITIONAL;
+    if (sectionId === "Arc-Gen-1-2") return ARAMAIC_GENESIS_ADDITIONAL;
+    if (sectionId === "Akk-Gilg-1-2") return AKKADIAN_ADDITIONAL;
+    if (sectionId === "San-Gita-1-2") return SANSKRIT_ADDITIONAL;
+    if (sectionId === "Hit-Annals-1-2") return HITTITE_ADDITIONAL;
+    if (sectionId === "Egy-Ptah-1-2") return EGYPTIAN_ADDITIONAL;
     
     const expandedMatch = ALL_EXPANDED_SECTIONS.find(s => s.id === sectionId);
     if (expandedMatch) return expandedMatch;
