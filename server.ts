@@ -26,7 +26,7 @@ async function startServer() {
     // For production server (non-Vercel), start Express directly
     const distApp = expressApp || (handler as any).__expressApp;
     if (distApp) {
-      distApp.use(express.static(distPath));
+      distApp.use(express.static(distPath, { maxAge: '1y', immutable: true }));
       distApp.get('/*all', (_req: any, res: any) => {
         res.sendFile(path.join(distPath, 'index.html'));
       });

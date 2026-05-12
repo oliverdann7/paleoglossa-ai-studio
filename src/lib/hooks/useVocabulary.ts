@@ -81,24 +81,26 @@ export const useVocabulary = () => {
   }, [knowledge]);
 
   const markPageAsSeen = useCallback((tokens: any[]) => {
+    // Filter to NEW tokens using the current snapshot before state update
+    const newTokens = tokens.filter(token => {
+      if (!token.lemma) return false;
+      const info = knowledge[token.lemma];
+      const state = info ? (typeof info === "object" ? (info as any).state : info) : WordState.NEW;
+      return state === WordState.NEW;
+    });
+    if (newTokens.length === 0) return;
+
     setKnowledge(prev => {
       const next = { ...prev };
-      tokens.forEach(token => {
-        if (!token.lemma) return;
+      newTokens.forEach(token => {
         const current = next[token.lemma] || { addedAt: new Date().toISOString() };
-        const state = typeof current === "object" ? (current as any).state : current;
-        if (state === WordState.NEW) {
-          next[token.lemma] = { ...current, state: WordState.KNOWN, languageId: token.languageId || "unknown" } as any;
-        }
+        next[token.lemma] = { ...current, state: WordState.KNOWN, languageId: token.languageId || "unknown" } as any;
       });
       return next;
     });
-    tokens.forEach(token => {
-      if (!token.lemma) return;
-      const state = knowledge[token.lemma] ? (typeof knowledge[token.lemma] === "object" ? (knowledge[token.lemma] as any).state : knowledge[token.lemma]) : WordState.NEW;
-      if (state === WordState.NEW) {
-        VocabularyService.setWordState(userId, token.lemma, WordState.KNOWN, token.languageId || "unknown");
-      }
+
+    newTokens.forEach(token => {
+      VocabularyService.setWordState(userId, token.lemma, WordState.KNOWN, token.languageId || "unknown");
     });
   }, [userId, knowledge]);
 

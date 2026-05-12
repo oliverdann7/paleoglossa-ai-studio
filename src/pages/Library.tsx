@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Library as LibraryIcon, Play, Filter, Clock, BookOpen, Crown, ChevronDown, CalendarDays, FileText, GitBranch, Languages, ShieldCheck, Volume2, Globe, Share2, Lock, GitFork } from "lucide-react";
@@ -67,6 +67,9 @@ export const Library = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { getWordInfo, getAllProgress } = useKnowledge();
+  // Stable ref so the fetch effect doesn't re-run when word states change
+  const getWordInfoRef = useRef(getWordInfo);
+  getWordInfoRef.current = getWordInfo;
   const { t } = useTranslation();
   
   const [texts, setTexts] = useState<LibraryText[]>([]);
@@ -106,7 +109,7 @@ export const Library = () => {
         genre: genreFilter,
         corpusType: corpusTypeFilter,
         source: sourceMap[activeTab]
-      }, getWordInfo);
+      }, getWordInfoRef.current);
       setTexts(data);
       setIsLoading(false);
     };
@@ -116,7 +119,9 @@ export const Library = () => {
       fetchLibrary();
     }, 300);
     return () => clearTimeout(timeoutId);
-  }, [user?.uid, activeLang, searchQuery, minKnown, periodFilter, genreFilter, corpusTypeFilter, getWordInfo, activeTab]);
+  // getWordInfo intentionally excluded — use stable ref to avoid re-fetching on every word state change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, activeLang, searchQuery, minKnown, periodFilter, genreFilter, corpusTypeFilter, activeTab]);
 
   const mainFilters = [
     { name: "All", id: "all", icon: "📚" },
