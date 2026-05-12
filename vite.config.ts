@@ -150,6 +150,10 @@ export default defineConfig(({mode}) => {
             if (id.includes('/firebase/')) return 'vendor-firebase';
             if (id.includes('/react') || id.includes('/react-dom') || id.includes('/react-router-dom')) return 'vendor-react';
             if (id.includes('/motion/')) return 'vendor-motion';
+            if (id.includes('/recharts/') || id.includes('/victory-') || id.includes('/d3-')) return 'vendor-charts';
+            if (id.includes('/react-markdown/') || id.includes('/remark-') || id.includes('/rehype-') || id.includes('/micromark') || id.includes('/mdast') || id.includes('/hast') || id.includes('/unified') || id.includes('/vfile')) return 'vendor-markdown';
+            if (id.includes('/date-fns/')) return 'vendor-datefns';
+            if (id.includes('/@google/genai/') || id.includes('/google-genai/')) return 'vendor-genai';
             return undefined;
           },
         },

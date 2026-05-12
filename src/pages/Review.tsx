@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, Award, Sparkles, Loader2, Brain, History, Target } from "lucide-react";
@@ -35,6 +35,9 @@ export const Review = () => {
   const { t } = useTranslation();
   const { user, isDemoMode } = useAuth();
   const { knowledge, updateWordSRS, recordReviewSession } = useKnowledge();
+  // Stable ref so the queue-load effect doesn't re-run on every word state change
+  const knowledgeRef = useRef(knowledge);
+  knowledgeRef.current = knowledge;
   
   const [isStarted, setIsStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,7 +109,7 @@ export const Review = () => {
           items = await ReviewService.getDueItems(user.uid, 50);
         } else {
           // Local fallback
-          items = Object.entries(knowledge)
+          items = Object.entries(knowledgeRef.current)
             .filter(([, info]: [string, any]) => {
               const state = typeof info === "object" ? info.state : info;
               if (state === WordState.NEW || state === WordState.IGNORED || state === WordState.SEEN) return false;
@@ -135,7 +138,9 @@ export const Review = () => {
     };
 
     loadQueue();
-  }, [user, isDemoMode, knowledge]);
+  // knowledge intentionally excluded — use stable ref to avoid resetting the queue mid-session
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isDemoMode]);
 
   const handleStart = () => {
     setIsStarted(true);

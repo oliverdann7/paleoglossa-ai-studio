@@ -125,7 +125,7 @@ export const useStats = () => {
       if (statsUpdateTimer.current) clearTimeout(statsUpdateTimer.current);
       statsUpdateTimer.current = setTimeout(() => {
         StatsService.updateStats(userId, next);
-      }, 2000);
+      }, 10000); // 10s debounce — stats don't need sub-second Firestore writes
       return next;
     });
   }, [userId]);
