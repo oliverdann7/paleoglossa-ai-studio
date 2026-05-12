@@ -240,6 +240,53 @@ app.get('/api/grammar/pathway', (_req: any, res: any) => {
   res.status(200).json([]);
 });
 
+// ─── Public Library ─────────────────────────────────────────────────────
+app.get('/api/public/texts', async (_req: any, res: any) => {
+  const { ImportService } = await import('../src/lib/services/importService');
+  const texts = await ImportService.getPublicTexts(50);
+  res.status(200).json(texts);
+});
+
+app.post('/api/public/texts/:textId/fork', async (req: any, res: any) => {
+  const userId = req.headers['x-user-id'];
+  if (!userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  const { ImportService } = await import('../src/lib/services/importService');
+  const newId = await ImportService.forkPublic(userId, req.params.textId);
+  
+  if (newId) {
+    res.status(200).json({ id: newId });
+  } else {
+    res.status(500).json({ error: 'Failed to fork text' });
+  }
+});
+
+app.post('/api/imports/:importId/share', async (req: any, res: any) => {
+  const userId = req.headers['x-user-id'];
+  if (!userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  const { ImportService } = await import('../src/lib/services/importService');
+  const success = await ImportService.sharePublic(userId, req.params.importId);
+  
+  res.status(200).json({ success });
+});
+
+app.post('/api/imports/:importId/unshare', async (req: any, res: any) => {
+  const userId = req.headers['x-user-id'];
+  if (!userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  const { ImportService } = await import('../src/lib/services/importService');
+  const success = await ImportService.unsharePublic(userId, req.params.importId);
+  
+  res.status(200).json({ success });
+});
+
 // Vercel handler
 export const expressApp = app;
 export default function handler(req: any, res: any) {

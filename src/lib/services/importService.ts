@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, deleteDoc, query } from 'firebase/firestore';
 import { ImportedText as FSImportedText } from '../../types/firestore';
 import { normalizeTimestamp } from '../utils';
 import { STORAGE_KEYS } from '../constants/storage';
@@ -112,6 +112,130 @@ export class ImportService {
       });
     } catch (e) {
       console.error("Import Save Error:", e);
+    }
+  }
+
+  // ==================== Public Library ====================
+  
+  static async sharePublic(userId: string, importId: string): Promise<boolean> {
+    if (!userId) return false;
+    
+    try {
+      const importRef = doc(db, `users/${userId}/imports`, importId);
+      const snap = await getDoc(importRef);
+      
+      if (!snap.exists()) return false;
+      
+      // Update to public
+      await setDoc(importRef, {
+        visibility: 'public',
+        publishedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      
+      // Also add to public collection
+      const data = snap.data();
+      await setDoc(doc(db, 'publicTexts', importId), {
+        ...data,
+        authorId: userId,
+        authorName: data.authorName || 'Anonymous',
+        publishedAt: serverTimestamp()
+      });
+      
+      return true;
+    } catch (e) {
+      console.error("Error sharing text:", e);
+      return false;
+    }
+  }
+
+  static async unsharePublic(userId: string, importId: string): Promise<boolean> {
+    if (!userId) return false;
+    
+    try {
+      const importRef = doc(db, `users/${userId}/imports`, importId);
+      await setDoc(importRef, {
+        visibility: 'private',
+        publishedAt: null,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      
+      // Remove from public collection
+      try {
+        await deleteDoc(doc(db, 'publicTexts', importId));
+      } catch {
+        // Ignore if doesn't exist
+      }
+      
+      return true;
+    } catch (e) {
+      console.error("Error unsharing text:", e);
+      return false;
+    }
+  }
+
+  static async getPublicTexts(maxItems: number = 50): Promise<ImportedText[]> {
+    try {
+      const snap = await getDocs(collection(db, 'publicTexts'));
+      const texts: ImportedText[] = [];
+      snap.forEach(d => {
+        const rawData = d.data() as Record<string, unknown>;
+        texts.push({
+          id: d.id,
+          userId: rawData.userId as string || '',
+          title: rawData.title as string || '',
+          languageId: rawData.languageId as string || 'grc',
+          sourceType: rawData.sourceType as string || 'import',
+          status: rawData.status as string || 'complete',
+          visibility: rawData.visibility as string || 'private',
+          content: rawData.content as string || '',
+          sentences: rawData.sentences as string[] || [],
+          createdAt: normalizeTimestamp(rawData.createdAt as string | undefined),
+          updatedAt: normalizeTimestamp(rawData.updatedAt as string | undefined),
+          publishedAt: normalizeTimestamp(rawData.publishedAt as string | undefined),
+          authorName: rawData.authorName as string | undefined,
+          forkedFrom: rawData.forkedFrom as string | undefined
+        } as ImportedText);
+      });
+      
+      return texts.slice(0, maxItems);
+    } catch (e) {
+      console.error("Error fetching public texts:", e);
+      return [];
+    }
+  }
+
+  static async forkPublic(userId: string, publicTextId: string): Promise<string | null> {
+    if (!userId) return null;
+    
+    try {
+      // Get the public text
+      const publicRef = doc(db, 'publicTexts', publicTextId);
+      const snap = await getDoc(publicRef);
+      
+      if (!snap.exists()) return null;
+      
+      const data = snap.data();
+      
+      // Create a copy in user's imports
+      const newId = `fork_${publicTextId}_${Date.now()}`;
+      await setDoc(doc(db, `users/${userId}/imports`, newId), {
+        ...data,
+        id: newId,
+        title: `${data.title} (forked)`,
+        visibility: 'private',
+        forkedFrom: publicTextId,
+        authorId: data.authorId,
+        authorName: data.authorName,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        publishedAt: null
+      });
+      
+      return newId;
+    } catch (e) {
+      console.error("Error forking text:", e);
+      return null;
     }
   }
 }
