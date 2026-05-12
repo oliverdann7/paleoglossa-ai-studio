@@ -15,6 +15,8 @@ export interface WordInfo {
   contexts?: string[];
   addedAt: string;
   languageId?: string;
+  encounterCount?: number;
+  lastSeenAt?: string;
 }
 
 export type KnowledgeMap = Record<string, WordInfo>;
@@ -107,7 +109,9 @@ export class VocabularyService {
           userGloss: data.userGloss,
           contexts: data.contexts || [],
           addedAt: addedAt || new Date().toISOString(),
-          languageId: data.languageId
+          languageId: data.languageId,
+          encounterCount: data.encounterCount ?? 0,
+          lastSeenAt: normalizeTimestamp(data.lastSeenAt) || undefined
         };
       });
       return map;

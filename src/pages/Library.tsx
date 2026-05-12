@@ -204,7 +204,7 @@ export const Library = () => {
     const map: Record<string, LibraryText[]> = {};
     sortedTexts.forEach(t => {
       let collectionName = "Other";
-      if (t.sourceType === 'import') collectionName = "Your Imports";
+      if (t.sourceType === 'import') collectionName = "Your Texts";
       else if (t.corpusTitle) collectionName = t.corpusTitle;
       else if (t.language === 'grc-koine' || t.language === 'grc') collectionName = "Greek Texts";
       else if (t.language === 'hbo') collectionName = "Hebrew Bible";
@@ -269,31 +269,31 @@ export const Library = () => {
         </div>
       </header>
 
-      {/* Tab Navigation */}
-      <div className="flex gap-2 mb-8">
-        <button
-          onClick={() => setActiveTab('library')}
-          className={cn(
-            "px-4 py-2 rounded-lg text-[13px] font-bold font-sans transition-all flex items-center gap-2",
-            activeTab === 'library'
-              ? "bg-blue text-white shadow-md"
-              : "bg-white text-ink3 border border-bdr/40 hover:bg-parch"
-          )}
-        >
-          <LibraryIcon className="w-4 h-4" />
-          Curated Library
-        </button>
+      {/* Tab Navigation — Your Texts first, corpus second */}
+      <div className="flex gap-2 mb-8 flex-wrap">
         <button
           onClick={() => setActiveTab('imports')}
           className={cn(
             "px-4 py-2 rounded-lg text-[13px] font-bold font-sans transition-all flex items-center gap-2",
             activeTab === 'imports'
-              ? "bg-purple-600 text-white shadow-md"
+              ? "bg-blue text-white shadow-md"
               : "bg-white text-ink3 border border-bdr/40 hover:bg-parch"
           )}
         >
           <BookOpen className="w-4 h-4" />
-          My Imports
+          Your Texts
+        </button>
+        <button
+          onClick={() => setActiveTab('library')}
+          className={cn(
+            "px-4 py-2 rounded-lg text-[13px] font-bold font-sans transition-all flex items-center gap-2",
+            activeTab === 'library'
+              ? "bg-ink text-parch shadow-md"
+              : "bg-white text-ink3 border border-bdr/40 hover:bg-parch"
+          )}
+        >
+          <LibraryIcon className="w-4 h-4" />
+          Curated Library
         </button>
         <button
           onClick={() => setActiveTab('public')}
@@ -491,25 +491,56 @@ export const Library = () => {
           ))}
         </div>
       ) : sortedTexts.length === 0 ? (
-        <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
-          <LibraryIcon className="w-12 h-12 text-muted mb-4" />
-          <h3 className="font-serif text-[24px] text-ink mb-2">{t("library.shelfEmpty", "Shelf Empty")}</h3>
-          <p className="text-ink3 max-w-sm mx-auto mb-6">
-            {t("library.shelfEmptyDesc", "Import a text or pick one from the curated library to begin. Try adjusting your filters if you can't find what you're looking for.")}
-          </p>
-          <button
-            onClick={() => navigate('/app/import')}
-            className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-md"
-          >
-            Import New Text
-          </button>
-        </div>
+        activeTab === 'imports' ? (
+          /* Empty "Your Texts" — strong first-class import CTA */
+          <div className="card p-12 text-center border-2 border-dashed border-blue/20 bg-blue/[0.02] flex flex-col items-center">
+            <BookOpen className="w-16 h-16 text-blue/30 mb-6" />
+            <h3 className="font-serif text-[28px] text-ink mb-3">Your library is empty.</h3>
+            <p className="text-ink3 max-w-md mx-auto mb-8 text-[15px] leading-relaxed">
+              Import any ancient text — paste it, upload a file, or scrape a URL.
+              Paleoglossa will analyze the morphology, map it to your vocabulary,
+              and make it immediately readable.
+            </p>
+            <button
+              onClick={() => navigate('/app/import')}
+              className="px-8 py-4 bg-blue text-white font-bold rounded-2xl hover:shadow-xl transition-all shadow-lg text-[15px]"
+            >
+              Import Your First Text
+            </button>
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-lg text-left">
+              {[
+                { label: "Ancient Greek", hint: "Plato, Xenophon, Homer, NT" },
+                { label: "Classical Latin", hint: "Cicero, Virgil, Caesar, Livy" },
+                { label: "Biblical Hebrew", hint: "Psalms, Genesis, Proverbs" },
+              ].map(s => (
+                <div key={s.label} className="px-4 py-3 rounded-xl bg-parch2 border border-bdr/40">
+                  <div className="text-[12px] font-bold text-ink mb-0.5">{s.label}</div>
+                  <div className="text-[11px] text-muted">{s.hint}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
+            <LibraryIcon className="w-12 h-12 text-muted mb-4" />
+            <h3 className="font-serif text-[24px] text-ink mb-2">{t("library.shelfEmpty", "Shelf Empty")}</h3>
+            <p className="text-ink3 max-w-sm mx-auto mb-6">
+              {t("library.shelfEmptyDesc", "Import a text or pick one from the curated library to begin. Try adjusting your filters if you can't find what you're looking for.")}
+            </p>
+            <button
+              onClick={() => navigate('/app/import')}
+              className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-md"
+            >
+              Import New Text
+            </button>
+          </div>
+        )
       ) : (
         <div className="space-y-12 pb-20">
           {Object.entries(collections).map(([collectionName, colTexts]) => (
             <div key={collectionName} className="scroll-mt-8">
               <h3 className="font-serif text-[22px] font-bold text-ink flex items-center gap-3 mb-6">
-                {collectionName === "Your Imports" && <BookOpen className="w-5 h-5 text-blue" />}
+                {collectionName === "Your Texts" && <BookOpen className="w-5 h-5 text-blue" />}
                 {collectionName}
                 <span className="text-sm font-sans font-normal text-muted bg-parch3 px-2 py-0.5 rounded-full">
                   {colTexts.length}
@@ -585,9 +616,22 @@ export const Library = () => {
                         <div className="flex flex-wrap gap-1.5 mb-4">
                           {/* Source type for imports */}
                           {text.sourceType === 'import' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-purple-50 text-purple-600 border-purple-200">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border-blue/20">
                               <BookOpen className="w-3 h-3" />
-                              Your Import
+                              Your Text
+                            </span>
+                          )}
+                          {/* Analysis quality for imports */}
+                          {text.sourceType === 'import' && text.analysisStatus === 'raw' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-amber/5 text-amber border-amber/20">
+                              <AlertCircle className="w-3 h-3" />
+                              No AI Analysis
+                            </span>
+                          )}
+                          {text.sourceType === 'import' && text.analysisStatus === 'needs_ai' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-amber/5 text-amber border-amber/20">
+                              <AlertCircle className="w-3 h-3" />
+                              Analysis Needed
                             </span>
                           )}
                           {text.sourceType === 'public' && (

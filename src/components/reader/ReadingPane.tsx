@@ -46,6 +46,7 @@ interface Props {
   sectionLabel: string;
   hasMorphology: boolean;
   sentenceCount: number;
+  analysisStatus?: 'analyzed' | 'raw' | 'needs_ai';
   onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
   onAITranslate: (sentenceId: string, tokens: TokenData[]) => void;
   onSavePhrase: (sentence: SentenceData) => void;
@@ -157,7 +158,7 @@ export function ReadingPane({
   knowledge, selectedWordId, showTranslit, showParallel, maskKnown,
   isHebrewFont, isRtl, audioPos,
   aiTranslations, translatingId,
-  sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount,
+  sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
   onWordClick, onAITranslate, onSavePhrase,
   onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
@@ -242,8 +243,13 @@ export function ReadingPane({
               </span>
             )}
             <span className="text-[10px] text-muted">{sentenceCount} {sentenceCount === 1 ? 'sentence' : 'sentences'}</span>
-            {hasMorphology && (
+            {hasMorphology && analysisStatus !== 'raw' && (
               <span className="text-[10px] text-muted">· Morphology</span>
+            )}
+            {(analysisStatus === 'raw' || analysisStatus === 'needs_ai') && (
+              <span className="inline-block bg-amber/10 text-amber text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+                AI analysis unavailable
+              </span>
             )}
           </div>
         </div>
