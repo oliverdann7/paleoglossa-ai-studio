@@ -44,6 +44,7 @@ export const Review = () => {
   const knowledgeRef = useRef(knowledge);
   useLayoutEffect(() => { knowledgeRef.current = knowledge; });
 
+
   const [isStarted, setIsStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [queue, setQueue] = useState<ReviewCard[]>([]);
