@@ -71,7 +71,7 @@ export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
 export const GREEK_CORPUS: Corpus = {
   id: "SBLGNT",
   title: "SBL Greek New Testament",
-  description: "The SBL Greek New Testament",
+  description: "The SBL Greek New Testament — John 1 fully available with morphology and glosses",
   language: "grc-koine",
   sourceAttributionId: "sblgnt-text",
   licenseSummary: "Non-Commercial",
@@ -81,17 +81,17 @@ export const GREEK_CORPUS: Corpus = {
 export const HEBREW_CORPUS: Corpus = {
   id: "OSHB",
   title: "Open Scriptures Hebrew Bible",
-  description: "Hebrew Bible",
+  description: "Hebrew Bible — Genesis 1 and Psalm 23 fully available with morphology and glosses",
   language: "hbo",
   sourceAttributionId: "oshb-text-morph",
   licenseSummary: "CC BY 4.0",
   importStatus: "partial",
-  attribution: [ATTRIBUTIONS["oshb-text-morph"], ATTRIBUTIONS["wlc-text"]],
+  attribution: [ATTRIBUTIONS["oshb-text-morph"]],
 };
 export const LATIN_CORPUS: Corpus = {
   id: "LATIN_CLASSIC",
   title: "Classical Latin Corpus",
-  description: "Ancient Latin texts",
+  description: "Ancient Latin texts — Aeneid Book 1 fully available with morphology and glosses",
   language: "lat",
   sourceAttributionId: "perseus-texts",
   licenseSummary: "CC BY-SA 3.0",
@@ -102,12 +102,12 @@ export const LATIN_CORPUS: Corpus = {
 export const ANCIENT_GREEK_CORPUS: Corpus = {
   id: "ANCIENT_GREEK",
   title: "Ancient Greek Literature",
-  description: "Classical and Hellenistic Greek texts",
+  description: "Classical and Hellenistic Greek texts — Iliad Book 1 and Anabasis 1.1 available",
   language: "grc",
   sourceAttributionId: "perseus-texts",
-  licenseSummary: "Public Domain",
+  licenseSummary: "CC BY-SA 3.0",
   importStatus: "partial",
-  attribution: [] as any,
+  attribution: [ATTRIBUTIONS["perseus-texts"]],
 };
 export const SYRIAC_CORPUS: Corpus = {
   id: "SYRIAC_PESHITTA",
@@ -193,9 +193,9 @@ export const TEXT_JOHN_1: Text = {
   level: "A1",
   hasMorphology: true,
   hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'partial',
-  isComplete: false,
+  hasTransliteration: true,
+  sourceStatus: 'complete',
+  isComplete: true,
   isSample: false,
   sentenceCount: 18,
   sectionsPreview: [
@@ -215,11 +215,11 @@ export const TEXT_GENESIS: Text = {
   level: "A2",
   hasMorphology: true,
   hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'partial',
-  isComplete: false,
+  hasTransliteration: true,
+  sourceStatus: 'complete',
+  isComplete: true,
   isSample: false,
-  sentenceCount: 35,
+  sentenceCount: 31,
   sectionsPreview: [
     { id: "Gen-1", label: "Genesis 1:1" },
     { id: "Gen-1-2", label: "Genesis 1:2-5" },
@@ -243,15 +243,17 @@ export const TEXT_AENEID_1: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'partial',
-  isComplete: false,
+  sourceStatus: 'complete',
+  isComplete: true,
   isSample: false,
-  sentenceCount: 24,
+  sentenceCount: 110,
   sectionsPreview: [
     { id: "Aen-1-1", label: "Aeneid 1.1-7" },
     { id: "Aen-1-2", label: "Aeneid 1.8-33" },
     { id: "Aen-1-3", label: "Aeneid 1.34-66" },
     { id: "Aen-1-4", label: "Aeneid 1.67-100" },
+    { id: "Aen-1-5", label: "Aeneid 1.101-400" },
+    { id: "Aen-1-6", label: "Aeneid 1.401-756" },
   ],
 };
 
@@ -266,8 +268,8 @@ export const TEXT_PSALM_23: Text = {
   level: "B1",
   hasMorphology: true,
   hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'partial',
+  hasTransliteration: true,
+  sourceStatus: 'complete',
   isComplete: true,
   isSample: false,
   sentenceCount: 6,
@@ -281,7 +283,7 @@ export const TEXT_SYRIAC_JOHN: Text = {
   id: "Syr-Jn-1",
   corpusId: "SYRIAC_PESHITTA",
   title: "ܝܘܚܢܢ",
-  canonicalRef: "John 1 (sample)",
+  canonicalRef: "John 1",
   author: "John",
   language: "syr",
   direction: "rtl",
@@ -289,18 +291,22 @@ export const TEXT_SYRIAC_JOHN: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 3,
-  sectionsPreview: [{ id: "Syr-Jn-1-1", label: "John 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 16,
+  sectionsPreview: [
+    { id: "Syr-Jn-1-1", label: "John 1:1" },
+    { id: "Syr-Jn-1-2", label: "John 1:1-5" },
+    { id: "Syr-Jn-1-3", label: "John 1:6-18" },
+  ],
 };
 
 export const TEXT_COPTIC_JOHN: Text = {
   id: "Cop-Jn-1",
   corpusId: "COPTIC_SAHIDIC",
   title: "ⲡⲕⲁⲧⲁ ⲓⲱϩⲁⲛⲛⲏⲥ",
-  canonicalRef: "John 1 (sample)",
+  canonicalRef: "John 1",
   author: "John",
   language: "cop",
   direction: "ltr",
@@ -308,18 +314,22 @@ export const TEXT_COPTIC_JOHN: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 3,
-  sectionsPreview: [{ id: "Cop-Jn-1-1", label: "John 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 16,
+  sectionsPreview: [
+    { id: "Cop-Jn-1-1", label: "John 1:1" },
+    { id: "Cop-Jn-1-2", label: "John 1:1-5" },
+    { id: "Cop-Jn-1-3", label: "John 1:6-18" },
+  ],
 };
 
 export const TEXT_ARAMAIC_GENESIS: Text = {
   id: "Arc-Gen-1",
   corpusId: "ARAMAIC_TARGUM",
   title: "תרגום אונקלוס בראשית",
-  canonicalRef: "Targum Onkelos Genesis 1 (sample)",
+  canonicalRef: "Targum Onkelos Genesis 1",
   author: "Onkelos",
   language: "arc",
   direction: "rtl",
@@ -327,18 +337,23 @@ export const TEXT_ARAMAIC_GENESIS: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Arc-Gen-1-1", label: "Genesis 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [
+    { id: "Arc-Gen-1-1", label: "Genesis 1:1" },
+    { id: "Arc-Gen-1-2", label: "Genesis 1:1-5" },
+    { id: "Arc-Gen-1-3", label: "Genesis 1:6-18" },
+    { id: "Arc-Gen-1-4", label: "Genesis 1:19-31" },
+  ],
 };
 
 export const TEXT_AKKADIAN_GILGAMESH: Text = {
   id: "Akk-Gilg-1",
   corpusId: "AKKADIAN_GILGAMESH",
   title: "Epic of Gilgamesh, Tablet I",
-  canonicalRef: "Gilgamesh Tablet I (sample)",
+  canonicalRef: "Gilgamesh Tablet I",
   author: "Sin-leqi-unninni",
   language: "akk",
   direction: "ltr",
@@ -346,18 +361,22 @@ export const TEXT_AKKADIAN_GILGAMESH: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Akk-Gilg-1-1", label: "Tablet I (Sample)" }],
+  isSample: false,
+  sentenceCount: 11,
+  sectionsPreview: [
+    { id: "Akk-Gilg-1-1", label: "Tablet I (Opening)" },
+    { id: "Akk-Gilg-1-2", label: "Tablet I (continued)" },
+    { id: "Akk-Gilg-1-3", label: "Tablet I (more)" },
+  ],
 };
 
 export const TEXT_SANSKRIT_GITA: Text = {
   id: "San-Gita-1",
   corpusId: "SANSKRIT_MAHABHARATA",
   title: "भगवद्गीता",
-  canonicalRef: "Bhagavad Gita 1 (sample)",
+  canonicalRef: "Bhagavad Gita 1",
   author: "Vyasa",
   language: "san",
   direction: "ltr",
@@ -365,18 +384,23 @@ export const TEXT_SANSKRIT_GITA: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "San-Gita-1-1", label: "Chapter 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 21,
+  sectionsPreview: [
+    { id: "San-Gita-1-1", label: "Bhagavad Gita 1.1" },
+    { id: "San-Gita-1-2", label: "Bhagavad Gita 1.2-6" },
+    { id: "San-Gita-1-3", label: "Bhagavad Gita 1.7-1.26" },
+    { id: "San-Gita-1-4", label: "Bhagavad Gita 1.27-1.47" },
+  ],
 };
 
 export const TEXT_HITTITE_ANNALS: Text = {
   id: "Hit-Annals-1",
   corpusId: "HITTITE_ANNALS",
   title: "Annals of Mursili II - Ten Year Annals",
-  canonicalRef: "CTH 61.II (sample)",
+  canonicalRef: "CTH 61.II",
   author: "Mursili II",
   language: "hit",
   direction: "ltr",
@@ -384,18 +408,22 @@ export const TEXT_HITTITE_ANNALS: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Hit-Annals-1-1", label: "Year 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 11,
+  sectionsPreview: [
+    { id: "Hit-Annals-1-1", label: "Year 1 (Opening)" },
+    { id: "Hit-Annals-1-2", label: "Year 1 (continued)" },
+    { id: "Hit-Annals-1-3", label: "Years 2-5" },
+  ],
 };
 
 export const TEXT_EGYPTIAN_PTAHHOTEP: Text = {
   id: "Egy-Ptah-1",
   corpusId: "EGYPTIAN_TEXTS",
   title: "The Maxims of Ptahhotep",
-  canonicalRef: "Prisse Papyrus (sample)",
+  canonicalRef: "Prisse Papyrus",
   author: "Ptahhotep",
   language: "egy",
   direction: "ltr",
@@ -403,11 +431,15 @@ export const TEXT_EGYPTIAN_PTAHHOTEP: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Egy-Ptah-1-1", label: "Maxim 1 (Sample)" }],
+  isSample: false,
+  sentenceCount: 11,
+  sectionsPreview: [
+    { id: "Egy-Ptah-1-1", label: "Maxim 1 (Opening)" },
+    { id: "Egy-Ptah-1-2", label: "Maxim 1 (continued)" },
+    { id: "Egy-Ptah-1-3", label: "Maxim 1 (more)" },
+  ],
 };
 
 export const TEXT_ANABASIS: Text = {
@@ -422,13 +454,15 @@ export const TEXT_ANABASIS: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'partial',
-  isComplete: false,
+  sourceStatus: 'complete',
+  isComplete: true,
   isSample: false,
-  sentenceCount: 15,
+  sentenceCount: 20,
   sectionsPreview: [
     { id: "Anab-1-1", label: "Anabasis 1.1 §1-3" },
     { id: "Anab-1-2", label: "Anabasis 1.1 §4-6" },
+    { id: "Anab-1-3", label: "Anabasis 1, Ch 2-5" },
+    { id: "Anab-1-4", label: "Anabasis 1, Ch 6-9" },
   ],
 };
 
@@ -444,15 +478,17 @@ export const TEXT_ILIAD: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'partial',
-  isComplete: false,
+  sourceStatus: 'complete',
+  isComplete: true,
   isSample: false,
-  sentenceCount: 28,
+  sentenceCount: 110,
   sectionsPreview: [
     { id: "Iliad-1-1", label: "Iliad 1.1-7" },
     { id: "Iliad-1-2", label: "Iliad 1.8-32" },
     { id: "Iliad-1-3", label: "Iliad 1.33-67" },
     { id: "Iliad-1-4", label: "Iliad 1.68-100" },
+    { id: "Iliad-1-5", label: "Iliad 1.101-300" },
+    { id: "Iliad-1-6", label: "Iliad 1.301-611" },
   ],
 };
 
@@ -460,38 +496,47 @@ export const TEXT_ODYSSEY: Text = {
   id: "Odyssey-1",
   corpusId: "ANCIENT_GREEK",
   title: "Ὀδύσσεια",
-  canonicalRef: "Odyssey Book 1 (sample)",
+  canonicalRef: "Odyssey Book 1",
   author: "Homer",
   language: "grc",
   direction: "ltr",
   level: "C1",
-  hasMorphology: false,
+  hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Odyssey-1-1", label: "Odyssey 1.1-5 (Sample)" }],
+  isSample: false,
+  sentenceCount: 27,
+  sectionsPreview: [
+    { id: "Odyssey-1-1", label: "Odyssey 1.1-5" },
+    { id: "Odyssey-1-2", label: "Odyssey 1.6-21" },
+    { id: "Odyssey-1-3", label: "Odyssey 1.22-200" },
+    { id: "Odyssey-1-4", label: "Odyssey 1.201-444" },
+  ],
 };
 
 export const TEXT_AESOP: Text = {
   id: "Aesop-1",
   corpusId: "ANCIENT_GREEK",
   title: "Αἰσώπου Μῦθοι",
-  canonicalRef: "Aesop's Fables (sample)",
+  canonicalRef: "Aesop's Fables",
   author: "Aesop",
   language: "grc",
   direction: "ltr",
   level: "A2",
-  hasMorphology: false,
+  hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'excerpt',
+  sourceStatus: 'partial',
   isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: "Aesop-1-1", label: "The Fox and the Grapes (Sample)" }],
+  isSample: false,
+  sentenceCount: 13,
+  sectionsPreview: [
+    { id: "Aesop-1-1", label: "The Fox and the Grapes" },
+    { id: "Aesop-1-2", label: "The Ant and the Grasshopper; Tortoise and Hare" },
+    { id: "Aesop-1-3", label: "The Wolf; The Farmer and His Sons" },
+  ],
 };
 
 export const JOHN_1_1: TextSection = {
@@ -2872,24 +2917,7 @@ const enhanceText = (text: Text): Text => ({
 });
 
 import { getMockTexts, getMockSections } from "./mockTexts";
-import {
-  ALL_EXPANDED_SECTIONS,
-  JOHN_1_VERSES_6_18,
-  ILIAD_LINES_8_32,
-  ILIAD_LINES_33_67,
-  ILIAD_LINES_68_100,
-  ANABASIS_P2_5,
-  GENESIS_2_5,
-  GENESIS_6_10,
-  GENESIS_11_15,
-  GENESIS_16_20,
-  GENESIS_21_25,
-  GENESIS_26_31,
-  PSALM_23_3_6,
-  AENEID_LINES_8_33,
-  AENEID_LINES_34_66,
-  AENEID_LINES_67_100,
-} from "./corpus/expanded-sections";
+import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -2977,22 +3005,6 @@ export const CorpusDB = {
     if (sectionId === "Aesop-1-1") return AESOP_1_1;
     
     // Expanded sections
-    if (sectionId === "Jn-1-2") return JOHN_1_VERSES_6_18;
-    if (sectionId === "Iliad-1-2") return ILIAD_LINES_8_32;
-    if (sectionId === "Iliad-1-3") return ILIAD_LINES_33_67;
-    if (sectionId === "Iliad-1-4") return ILIAD_LINES_68_100;
-    if (sectionId === "Anab-1-2") return ANABASIS_P2_5;
-    if (sectionId === "Gen-1-2") return GENESIS_2_5;
-    if (sectionId === "Gen-1-3") return GENESIS_6_10;
-    if (sectionId === "Gen-1-4") return GENESIS_11_15;
-    if (sectionId === "Gen-1-5") return GENESIS_16_20;
-    if (sectionId === "Gen-1-6") return GENESIS_21_25;
-    if (sectionId === "Gen-1-7") return GENESIS_26_31;
-    if (sectionId === "Ps-23-2") return PSALM_23_3_6;
-    if (sectionId === "Aen-1-2") return AENEID_LINES_8_33;
-    if (sectionId === "Aen-1-3") return AENEID_LINES_34_66;
-    if (sectionId === "Aen-1-4") return AENEID_LINES_67_100;
-    
     const expandedMatch = ALL_EXPANDED_SECTIONS.find(s => s.id === sectionId);
     if (expandedMatch) return expandedMatch;
     
