@@ -21,9 +21,12 @@ interface SubscriptionContextValue {
   canAddLanguage: () => boolean;
   remainingSlots: number;
   isLoaded: boolean;
+  isAdmin: boolean;
   createCheckoutSession: (planId: PlanId, billingCycle?: 'monthly' | 'yearly') => Promise<string | null>;
   createPortalSession: () => Promise<string | null>;
 }
+
+const ADMIN_EMAILS = ['danezolv@gmail.com'];
 
 const DEFAULT_SUBSCRIPTION: UserSubscription = {
   currentPlan: 'free',
@@ -35,6 +38,7 @@ const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
   const [subscription, setSubscription] = useState<UserSubscription>(DEFAULT_SUBSCRIPTION);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -116,12 +120,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [persist]);
 
   const checkAccess = useCallback((languageId: string): boolean => {
+    if (isAdmin) return true;
     return canAccessByPlan(subscription.currentPlan, languageId, subscription.selectedLanguageIds);
-  }, [subscription]);
+  }, [subscription, isAdmin]);
 
   const checkCanAdd = useCallback((): boolean => {
+    if (isAdmin) return true;
     return canAddByPlan(subscription.currentPlan, subscription.selectedLanguageIds);
-  }, [subscription]);
+  }, [subscription, isAdmin]);
 
   const createCheckoutSession = useCallback(async (planId: PlanId, billingCycle: 'monthly' | 'yearly' = 'monthly'): Promise<string | null> => {
     try {
@@ -166,7 +172,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, [subscription]);
 
-  const remainingSlots = subscription.currentPlan === 'full_all'
+  const remainingSlots = isAdmin ? Infinity : subscription.currentPlan === 'full_all'
     ? Infinity
     : (getPlanById(subscription.currentPlan).languageLimit as number) - subscription.selectedLanguageIds.length;
 
@@ -179,6 +185,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       canAddLanguage: checkCanAdd,
       remainingSlots,
       isLoaded,
+      isAdmin,
       createCheckoutSession,
       createPortalSession,
     }}>
