@@ -1,11 +1,12 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { Library, BookOpen, GraduationCap, Settings, User, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked, BookText } from 'lucide-react';
+import { Library, BookOpen, GraduationCap, Settings, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked, BookText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { PaleoIcon } from './PaleoIcon';
+import { InterfaceLanguageSwitcher } from './InterfaceLanguageSwitcher';
+import { UserProfileCard } from './UserProfileCard';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -99,31 +100,9 @@ export const Navbar = () => {
           <DesktopNavItem icon={Crown} label={t("nav.upgrade", "Upgrade")} isActive={path === '/app/subscription'} to="/app/subscription" />
         </div>
 
-        <div className="p-4 border-t border-bdr">
-          <div className="card shadow-none border-amberxl bg-[#FFF8E1] p-3 mb-3">
-            <div className="flex justify-between items-start mb-2">
-              <span className="font-mono text-[9px] uppercase tracking-widest text-amber">{t("nav.readingLevel", "Reading Level")}</span>
-              <span className="pill cefr-b" style={{fontSize: '9px', padding: '1px 4px'}}>B1</span>
-            </div>
-            <div className="h-1 w-full bg-amberxl rounded-full overflow-hidden mb-1">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: '65%' }}
-                className="h-full bg-amber"
-              />
-            </div>
-            <p className="text-[10px] text-ink3 font-sans">{t("nav.wordsToLevel", "2.4k words to B2")}</p>
-          </div>
-          
-          <Link to="/app/subscription" className="flex items-center gap-3 w-full p-2 hover:bg-parch3 rounded-lg transition-colors group">
-            <div className="w-8 h-8 rounded-full bg-parch3 border border-bdr flex items-center justify-center overflow-hidden">
-               <User className="w-4 h-4 text-ink3 group-hover:text-blue" />
-            </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[12.5px] font-bold font-sans text-ink">E. L. Scholar</span>
-              <span className="text-[10px] font-sans text-muted group-hover:text-amber transition-colors">{t("nav.freePlan", "Free Plan →")}</span>
-            </div>
-          </Link>
+        <div className="p-2 border-t border-bdr space-y-1">
+          <InterfaceLanguageSwitcher />
+          <UserProfileCard />
         </div>
       </nav>
 
