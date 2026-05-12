@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { motion } from "motion/react";
-import { ArrowLeft, BookOpen, Play } from "lucide-react";
+import { ArrowLeft, BookOpen, Play, AlertCircle } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
 import { cn } from "../lib/utils";
 import { useTranslation } from "react-i18next";
@@ -156,40 +156,102 @@ export const Language = () => {
     (t) => t.level === "C1" || t.level === "C2",
   );
 
-  const TextCard = ({ t }: { t: any }) => (
-    <div
-      key={t.id}
-      className="bg-sand p-6 rounded-2xl border border-bdr/50 flex flex-col hover:border-blue transition-colors"
-    >
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3
-            className={cn(
-              "text-[20px] font-serif mb-1",
-              t.direction === "rtl" ? "font-hebrew text-right" : "",
-            )}
-            dir={t.direction}
-          >
-            {t.title}
-          </h3>
-          {t.author && <p className="text-muted text-[14px]">{t.author}</p>}
-        </div>
-        <span className="text-[12px] uppercase tracking-wider font-bold text-muted bg-bdr/20 px-2 py-1 rounded">
-          {t.level || "A1"}
-        </span>
-      </div>
+  const TextCard = ({ t: text }: { t: any }) => {
+    const isExcerpt = text.isSample || text.sourceStatus === 'excerpt';
+    const isPartial = text.sourceStatus === 'partial' && !text.isSample;
+    const isComplete = text.sourceStatus === 'complete' || text.isComplete;
 
-      <div className="mt-auto pt-6 flex gap-3">
-        <button
-          onClick={() => navigate(`/app/reader/${t.id}`)}
-          className="flex-1 flex items-center justify-center bg-blue text-sand py-2.5 rounded-lg font-medium hover:bg-blue/90 transition-colors"
-        >
-          <Play className="w-4 h-4 mr-2 fill-current" />
-          Read
-        </button>
+    return (
+      <div
+        className={cn(
+          "bg-sand p-6 rounded-2xl border flex flex-col hover:border-blue transition-colors",
+          isExcerpt ? "border-amber/30" : "border-bdr/50",
+        )}
+      >
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex-1 pr-3">
+            <h3
+              className={cn(
+                "text-[20px] font-serif mb-1",
+                text.direction === "rtl" ? "font-hebrew text-right" : "",
+              )}
+              dir={text.direction}
+            >
+              {text.title}
+            </h3>
+            {text.author && <p className="text-muted text-[14px]">{text.author}</p>}
+          </div>
+          <span className={cn(
+            "text-[11px] uppercase tracking-wider font-bold px-2 py-1 rounded shrink-0",
+            text.level?.startsWith("A") ? "bg-green-100 text-green-800"
+              : text.level?.startsWith("B") ? "bg-blue/10 text-blue"
+              : "bg-purple-100 text-purple-800"
+          )}>
+            {text.level || "?"}
+          </span>
+        </div>
+
+        {/* Status badges */}
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {isComplete && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Complete
+            </span>
+          )}
+          {isPartial && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border border-blue/20">
+              Partial
+            </span>
+          )}
+          {isExcerpt && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber/5 text-amber border border-amber/20">
+              <AlertCircle className="w-2.5 h-2.5" />
+              Sample Excerpt
+            </span>
+          )}
+          {text.hasMorphology && (
+            <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border border-blue/15">
+              Morphology
+            </span>
+          )}
+          {text.hasTranslation && (
+            <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border border-blue/15">
+              Translation
+            </span>
+          )}
+        </div>
+
+        {/* Honest excerpt notice */}
+        {isExcerpt && (
+          <p className="text-[11px] italic text-amber/80 mb-4">
+            Sample excerpt — full text not yet imported.
+          </p>
+        )}
+        {isPartial && (
+          <p className="text-[11px] italic text-blue/70 mb-4">
+            Partial corpus — more sections coming.
+          </p>
+        )}
+
+        {/* Sentence count if known */}
+        {text.sentenceCount != null && (
+          <p className="text-[11px] text-muted mb-4">
+            {text.sentenceCount} sentence{text.sentenceCount !== 1 ? 's' : ''} available
+          </p>
+        )}
+
+        <div className="mt-auto pt-4 flex gap-3">
+          <button
+            onClick={() => navigate(`/app/reader/${text.id}`)}
+            className="flex-1 flex items-center justify-center bg-blue text-sand py-2.5 rounded-lg font-medium hover:bg-blue/90 transition-colors"
+          >
+            <Play className="w-4 h-4 mr-2 fill-current" />
+            {isExcerpt ? "Read Sample" : "Read"}
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex-1 overflow-y-auto">
