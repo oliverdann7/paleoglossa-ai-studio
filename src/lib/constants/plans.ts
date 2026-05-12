@@ -2,6 +2,8 @@ export type PlanId = 'free' | 'basic_1' | 'duo_2' | 'full_all';
 
 export type SubscriptionStatus = 'free' | 'trialing' | 'active' | 'past_due' | 'canceled';
 
+export const TRIAL_DAYS = 14;
+
 export interface Plan {
   id: PlanId;
   name: string;
@@ -33,7 +35,7 @@ export const PLANS: Plan[] = [
     id: 'basic_1',
     name: 'Basic',
     monthlyPriceUsd: 6,
-    yearlyPriceUsd: 60,
+    yearlyPriceUsd: 50,
     languageLimit: 1,
     importLimit: 50,
     aiAnalysisLimit: 200,
@@ -49,7 +51,7 @@ export const PLANS: Plan[] = [
     id: 'duo_2',
     name: 'Duo',
     monthlyPriceUsd: 10,
-    yearlyPriceUsd: 100,
+    yearlyPriceUsd: 90,
     languageLimit: 2,
     importLimit: 200,
     aiAnalysisLimit: 1000,
@@ -68,7 +70,7 @@ export const PLANS: Plan[] = [
     id: 'full_all',
     name: 'Full Pack',
     monthlyPriceUsd: 15,
-    yearlyPriceUsd: 150,
+    yearlyPriceUsd: 130,
     languageLimit: 'all',
     importLimit: 'all',
     aiAnalysisLimit: 'all',
