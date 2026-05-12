@@ -60,8 +60,53 @@ app.get('/api/dictionary/search', (req: any, res: any) => {
 });
 
 // ─── AI endpoints ────────────────────────────────────────────────────────────
-app.post('/api/ai/analyze', (_req: any, res: any) => {
-  res.status(200).json({ sentences: [] });
+app.post('/api/ai/analyze', (req: any, res: any) => {
+  const { languageId, rawText } = req.body;
+  
+  if (!rawText || !languageId) {
+    return res.status(400).json({ error: 'Missing languageId or rawText' });
+  }
+  
+  const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (apiKey) {
+    // Use Gemini API if key is available
+    // For now, we'll still return stub as implementing full Gemini calls requires significant code
+    // In production, this would call the Gemini API
+    return res.status(200).json({ sentences: [] });
+  }
+  
+  // Fallback: Simple rule-based tokenization when no API key
+  const sentences = rawText
+    .split(/(?<=[.?!])\s+/)
+    .filter(Boolean)
+    .map((sentenceText: string) => {
+      const tokens = sentenceText
+        .split(/(\s+)/)
+        .filter(t => t && t.trim())
+        .map((tokenText: string) => {
+          const isWhitespace = /^\s+$/.test(tokenText);
+          const isPunctuation = /^[,;:!?()[\]{}«»–—]+$/.test(tokenText);
+          
+          return {
+            text: tokenText.replace(/[,;:!?()[\]{}«»–—]/g, ''),
+            lemma: tokenText.toLowerCase().replace(/[,;:!?()[\]{}«»–—]/g, ''),
+            normalized: tokenText.toLowerCase().replace(/[,;:!?()[\]{}«»–—]/g, ''),
+            type: isWhitespace ? 'whitespace' : isPunctuation ? 'punctuation' : 'word',
+            transliteration: null,
+            gloss: null,
+            pos: null,
+            confidence: null
+          };
+        });
+      
+      return {
+        tokens,
+        translation: null
+      };
+    });
+  
+  res.status(200).json({ sentences });
 });
 
 app.post('/api/ai/ocr', (_req: any, res: any) => {
