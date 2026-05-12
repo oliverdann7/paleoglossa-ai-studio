@@ -15,9 +15,6 @@ import { useAuth } from "../lib/hooks/useAuth";
 import { getLanguageDisplayName } from "../lib/constants/languages";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { ImportService } from "../lib/services/importService";
-import { CoverageBadge } from "../components/library/CoverageBadge";
-import { RecommendationRail } from "../components/library/RecommendationRail";
-import { computeRecommendations } from "../lib/services/recommendationService";
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
 
@@ -91,7 +88,8 @@ function getStatusBadge(text: LibraryText): BadgeDef | null {
 export const Library = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { getWordInfo, getAllProgress, knowledge } = useKnowledge();
+  const { activeLanguageId } = useActiveLanguage();
+  const { getWordInfo, getAllProgress } = useKnowledge(activeLanguageId);
   // Stable ref so the fetch effect doesn't re-run when word states change
   const getWordInfoRef = useRef(getWordInfo);
   useLayoutEffect(() => { getWordInfoRef.current = getWordInfo; });
@@ -102,7 +100,6 @@ export const Library = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Filters & Sorting state
-  const { activeLanguageId } = useActiveLanguage();
   const [activeLang, setActiveLang] = useState(
     () => LANGUAGES.find(l => l.id === activeLanguageId)?.name || "All"
   );
@@ -223,11 +220,6 @@ export const Library = () => {
     });
     return map;
   }, [sortedTexts]);
-
-  const recommendations = useMemo(
-    () => computeRecommendations(sortedTexts, knowledge),
-    [sortedTexts, knowledge],
-  );
 
   const handleShare = async (textId: string) => {
     if (!user?.uid) return;
@@ -574,9 +566,6 @@ export const Library = () => {
         )
       ) : (
         <div className="space-y-12 pb-20">
-          {activeTab === 'library' && Object.keys(knowledge).length >= 20 && recommendations.length > 0 && (
-            <RecommendationRail texts={recommendations} />
-          )}
           {Object.entries(collections).map(([collectionName, colTexts]) => (
             <div key={collectionName} className="scroll-mt-8">
               <h3 className="font-serif text-[22px] font-bold text-ink flex items-center gap-3 mb-6">
@@ -771,7 +760,7 @@ export const Library = () => {
                             <Clock className="w-3 h-3" />
                             {text.totalWords} wds · ~{Math.ceil(text.totalWords / 150)} min
                           </span>
-                          <CoverageBadge percent={text.percentKnown ?? 0} size="sm" />
+                          <span className="text-[10px] font-bold text-blue">{text.percentKnown ?? 0}% Known</span>
                         </div>
                       </div>
 
