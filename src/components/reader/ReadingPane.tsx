@@ -32,7 +32,8 @@ interface Props {
   currentSentenceIndex: number;
   fontSize: number;
   highlightIntensity: 'subtle' | 'normal' | 'strong';
-  knowledge: Record<string, any>;
+  getWordInfo: (lemma: string) => any;
+  knowledgeVersion: number;
   selectedWordId?: string;
   showTranslit: boolean;
   showParallel: boolean;
@@ -187,7 +188,7 @@ const ReaderToken = memo(function ReaderToken({
 
 export function ReadingPane({
   sentences, readingMode, currentSentenceIndex, fontSize, highlightIntensity,
-  knowledge, selectedWordId, showTranslit, showParallel, maskKnown,
+  getWordInfo, knowledgeVersion: _knowledgeVersion, selectedWordId, showTranslit, showParallel, maskKnown,
   isHebrewFont, isRtl, audioPos,
   aiTranslations, translatingId,
   sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
@@ -335,7 +336,7 @@ export function ReadingPane({
                         sentenceIndex={sIdx}
                         readingMode={readingMode}
                         fontSize={fontSize}
-                        wordInfo={knowledge[token.lemma]}
+                        wordInfo={getWordInfo(token.lemma)}
                         isAudioActive={isAudioActive}
                         maskKnown={maskKnown}
                         highlightIntensity={highlightIntensity}
