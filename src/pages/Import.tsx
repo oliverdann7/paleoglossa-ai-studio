@@ -73,20 +73,6 @@ export const Import = () => {
     return candidate.length > 80 ? candidate.slice(0, 80) + "…" : candidate;
   };
 
-  const buildRawSentences = (rawText: string): ImportedSentence[] => {
-    const sentenceTexts = rawText.split(/(?<=[.?!\n])\s+/).filter(s => s.trim().length > 0);
-    return sentenceTexts.map(sRaw => ({
-      tokens: sRaw.split(/\s+/).filter(Boolean).map(word => {
-        const clean = word.replace(/[.,/#!$%^&*;:{}=\-_`~()[\]»«"""'']/g, "").trim();
-        return {
-          text: clean || word,
-          lemma: (clean || word).toLowerCase(),
-          type: 'word' as const,
-        };
-      }).filter(t => t.text.length > 0),
-    }));
-  };
-
   const calculateStats = (sentences: ImportedSentence[]) => {
     const allTokens = sentences.flatMap(s => s.tokens).filter(t => t.type === 'word');
     const totalWords = allTokens.length;
@@ -185,6 +171,32 @@ export const Import = () => {
     }
   };
 
+  function basicTokenize(rawText: string): ImportedSentence[] {
+    const sentences = rawText
+      .split(/(?<=[.?!])\s+/)
+      .filter(Boolean)
+      .map(sentenceText => {
+        const tokens = sentenceText
+          .split(/(\s+)/)
+          .filter(t => t && t.trim())
+          .map(tokenText => {
+            const isWhitespace = /^\s+$/.test(tokenText);
+            const isPunctuation = /^[,;:!?()[\]{}«»–—]+$/.test(tokenText);
+            const isNumber = /^[0-9]+([.,][0-9]+)?$/.test(tokenText);
+            const cleaned = tokenText.replace(/[,;:!?()[\]{}«»–—]/g, '');
+            const type = isWhitespace ? 'whitespace' as const : isPunctuation ? 'punctuation' as const : isNumber ? 'number' as const : 'word' as const;
+            return {
+              text: tokenText,
+              lemma: type === 'word' ? cleaned.toLowerCase() : undefined,
+              normalized: type === 'word' ? cleaned.toLowerCase() : undefined,
+              type,
+            };
+          });
+        return { tokens, translation: undefined };
+      });
+    return sentences;
+  }
+
   const handleProcess = async () => {
     if (!text.trim()) return;
     setIsProcessing(true);
@@ -200,20 +212,10 @@ export const Import = () => {
       setProcessingStep("Mapping to your knowledge...");
       stats = calculateStats(sentences);
     } catch (error: any) {
-      console.error("AI analysis failed:", error);
-      // Graceful degradation: save raw text so the user can still read it
-      sentences = buildRawSentences(text);
+      console.warn("AI analysis failed, using basic tokenization:", error);
+      sentences = basicTokenize(text);
       analysisStatus = 'raw';
-      const wordsList = text.split(/\s+/).filter(Boolean);
-      stats = {
-        totalWords: wordsList.length,
-        uniqueWords: new Set(wordsList.map(w => w.toLowerCase())).size,
-        knownWords: 0,
-        newWords: wordsList.length,
-        learningWords: 0,
-        percentKnown: 0,
-        percentLearning: 0,
-      };
+      stats = calculateStats(sentences);
       setAnalysisError(error.message || "AI analysis unavailable");
       setProcessingStep("Saving without AI analysis...");
     }
@@ -241,7 +243,16 @@ export const Import = () => {
       updatedAt: new Date().toISOString()
     };
 
-    await ImportService.saveImport(user ? user.uid : null, imported);
+    try {
+      await ImportService.saveImport(user ? user.uid : null, imported);
+    } catch (saveError: any) {
+      console.error("Import save failed:", saveError);
+      alert("Text analysis succeeded, but saving failed: " + saveError.message);
+      setIsProcessing(false);
+      setProcessingStep("");
+      return;
+    }
+
     refreshImports();
     setResult(imported);
     setIsProcessing(false);
