@@ -1,4 +1,4 @@
-import { memo, useRef, useCallback } from 'react';
+import { memo, useRef, useCallback, useMemo } from 'react';
 import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS } from '@/lib/constants/wordStates';
@@ -19,6 +19,8 @@ interface SentenceData {
   tokens: TokenData[];
   translation?: string;
   parallel?: string;
+  _cachedText?: string;
+  _displayOffset?: number;
 }
 
 interface Props {
@@ -84,7 +86,8 @@ function getWordStyle(
     color: colors.text,
     fontStyle: state === WordState.IGNORED ? 'italic' : 'normal',
     opacity: state === WordState.IGNORED ? 0.6 : 1,
-    transition: 'all 0.15s ease',
+    // Only transition color and background, not all properties
+    transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
   };
 }
 
@@ -170,6 +173,27 @@ export function ReadingPane({
     }
   }, [onSwipe]);
 
+  // Precompute sentence texts once per sentence to avoid recomputation
+  const processedSentences = useMemo(() => {
+    return sentences.map(sentence => ({
+      ...sentence,
+      _cachedText: sentence._cachedText || sentence.tokens.map(t => t.text).join(' ')
+    }));
+  }, [sentences]);
+
+  // Windowing for page mode - only render nearby sentences
+  const visibleSentences = useMemo(() => {
+    if (readingMode !== 'page') return processedSentences;
+    
+    const WINDOW_SIZE = 5; // Show 5 sentences around current
+    const start = Math.max(0, currentSentenceIndex - WINDOW_SIZE);
+    const end = Math.min(processedSentences.length, currentSentenceIndex + WINDOW_SIZE + 1);
+    return processedSentences.slice(start, end).map((s, i) => ({
+      ...s,
+      _displayOffset: start + i - currentSentenceIndex // Track position relative to current
+    }));
+  }, [processedSentences, readingMode, currentSentenceIndex]);
+
   return (
     <div
       id="reading-area-scroll"
@@ -200,10 +224,14 @@ export function ReadingPane({
               readingMode === 'page' ? "text-[24px] leading-[2.5]" : "leading-[2.2]",
             )}
           >
-            {sentences.map((sentence, idx) => {
-              const sIdx = sentenceSliceStart + idx;
-              const isActivePageMode = readingMode === 'page' ? sIdx === currentSentenceIndex : true;
-              const sentenceText = sentence.tokens.map(t => t.text).join(' ');
+            {visibleSentences.map((sentence, idx) => {
+              const sIdx = sentenceSliceStart + (readingMode === 'page' 
+                ? (currentSentenceIndex + (sentence._displayOffset || 0)) 
+                : idx);
+              const isActivePageMode = readingMode === 'page' 
+                ? (sentence._displayOffset === 0) 
+                : true;
+              const sentenceText = sentence._cachedText;
 
               return (
                 <span
@@ -305,13 +333,16 @@ export function ReadingPane({
 
         {showParallel && (
           <div className="col-span-1 pt-8 lg:pt-0 pb-16">
-            {sentences.map((sentence, idx) => {
-              const sIdx = sentenceSliceStart + idx;
-              const isActivePageMode = readingMode === 'page' ? sIdx === currentSentenceIndex : true;
+            {visibleSentences.map((sentence, idx) => {
+              // Note: sIdx computed but not needed for parallel view
+              const isActivePageMode = readingMode === 'page' 
+                ? (sentence._displayOffset === 0) 
+                : true;
 
               return (
                 <div
                   key={`par-${sentence.id}`}
+                  data-sentence-idx={sentenceSliceStart + idx}
                   className={cn(
                     "font-serif text-ink2 mb-3 transition-opacity duration-500",
                     readingMode === 'page' ? "text-[20px] leading-[2.2]" : "text-[18px] leading-[2.2]",

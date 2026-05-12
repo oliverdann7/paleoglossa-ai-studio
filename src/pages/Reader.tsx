@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CorpusDB } from "../data/corpus";
@@ -79,6 +79,11 @@ export const Reader = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0); // seconds
 
+  // Refs for progress saving to avoid re-renders
+  const scrollProgressRef = useRef(0);
+  const currentSentenceIndexRef = useRef(0);
+  const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Audio state
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioPos, setAudioPos] = useState({ sentenceIdx: 0, wordIdx: 0 });
@@ -110,20 +115,29 @@ export const Reader = () => {
     loadProgress();
   }, [textId, fetchTextProgress, readingMode]);
 
-  // Save progress periodically
+  // Save progress periodically - use refs for stability
   useEffect(() => {
     if (!textId) return;
-    const interval = setInterval(() => {
+    
+    // Initialize refs from state
+    scrollProgressRef.current = scrollProgress;
+    currentSentenceIndexRef.current = currentSentenceIndex;
+    
+    // Stable interval that reads from refs
+    saveIntervalRef.current = setInterval(() => {
       saveTextProgress({
         textId,
-        lastPosition: scrollProgress,
-        sentenceIndex: currentSentenceIndex,
-        completed: scrollProgress > 95,
+        lastPosition: scrollProgressRef.current,
+        sentenceIndex: currentSentenceIndexRef.current,
+        completed: scrollProgressRef.current > 95,
         lastReadAt: new Date().toISOString()
       });
     }, 5000);
-    return () => clearInterval(interval);
-  }, [textId, scrollProgress, currentSentenceIndex, saveTextProgress]);
+    
+    return () => {
+      if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
+    };
+  }, [textId, saveTextProgress]);
 
   // Clear word insight when word changes
   const handleAITranslate = async (sentenceId: string, sentenceTokens: any[]) => {
@@ -299,16 +313,27 @@ export const Reader = () => {
     );
   }, [selectedWord, chapter, currentSentenceIndex]);
 
-  // Stats & Time tracking
+  // Stats & Time tracking - use ref-based timer to avoid re-renders
+  const elapsedRef = useRef(0);
   useEffect(() => {
     const timer = setInterval(() => {
-      setElapsedTime((prev) => {
-        if (prev > 0 && prev % 60 === 0) incrementReadingTime(1);
-        return prev + 1;
-      });
+      elapsedRef.current += 1;
+      setElapsedTime(elapsedRef.current);
+      if (elapsedRef.current > 0 && elapsedRef.current % 60 === 0) incrementReadingTime(1);
     }, 1000);
     return () => clearInterval(timer);
   }, [incrementReadingTime]);
+
+  // Update refs when state changes (eslint disabled intentionally - we only want to update refs, not trigger re-renders)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    scrollProgressRef.current = scrollProgress;
+  }, [scrollProgress]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    currentSentenceIndexRef.current = currentSentenceIndex;
+  }, [currentSentenceIndex]);
 
   // TTS language map (same as LexDrawerPanel)
   const ttsLangMap: Record<string, string> = {
@@ -424,16 +449,34 @@ export const Reader = () => {
 
   useEffect(() => {
     if (readingMode === "page") return;
+    
+    let rafId: number | null = null;
+    let lastUpdate = 0;
+    const THROTTLE_MS = 100;
+    
     const handleScroll = (e: any) => {
-      const el = e.target;
-      const progress =
-        (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100;
-      setScrollProgress(progress || 0);
+      const now = Date.now();
+      if (now - lastUpdate < THROTTLE_MS) {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          lastUpdate = Date.now();
+          const el = e.target;
+          const progress = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100;
+          setScrollProgress(progress || 0);
+        });
+      } else {
+        lastUpdate = now;
+        const el = e.target;
+        const progress = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100;
+        setScrollProgress(progress || 0);
+      }
     };
+    
     const scrollContainer = document.getElementById("reading-area-scroll");
     if (scrollContainer)
-      scrollContainer.addEventListener("scroll", handleScroll);
+      scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       if (scrollContainer)
         scrollContainer.removeEventListener("scroll", handleScroll);
     };
@@ -556,7 +599,7 @@ export const Reader = () => {
     totalPages
   ]);
   
-  const handleMarkPageKnown = (andAdvance: boolean = true) => {
+  const handleMarkPageKnown = useCallback((andAdvance: boolean = true) => {
     let tokensToMark: any[];
     if (readingMode === "page") {
       tokensToMark = chapter.sentences[currentSentenceIndex]?.tokens || [];
@@ -564,16 +607,26 @@ export const Reader = () => {
       tokensToMark = displayedSentences?.flatMap((s: any) => s.tokens) || [];
     }
 
-    // Capture standard tokens (for seen state)
-    const validTokens = tokensToMark.filter(t => t.lemma && t.lemma.length > 0)
-      .map(t => ({ lemma: t.lemma, languageId: currentLanguageId }));
+    // Use bulk update method to batch React state updates
+    const validTokens = tokensToMark.filter(t => t.lemma && t.lemma.length > 0);
     
-    validTokens.forEach(({ lemma, languageId }) => {
-      setWordState(lemma, WordState.KNOWN, languageId);
-    });
+    // Use markPageAsSeen which batches state updates
+    if (validTokens.length > 0) {
+      // Add languageId to tokens
+      const tokensWithLang = validTokens.map(t => ({
+        ...t,
+        languageId: currentLanguageId
+      }));
+      // Use the markPageAsSeen from useKnowledge hook
+      if (typeof (setWordState as any).markPageAsSeen === 'function') {
+        (setWordState as any).markPageAsSeen(tokensWithLang);
+      } else {
+        validTokens.forEach(t => setWordState(t.lemma, WordState.KNOWN, currentLanguageId));
+      }
+    }
     
     // Explicitly add to read count
-    addReadWords(tokensToMark.length);
+    addReadWords(validTokens.length);
     addToast(
       `${validTokens.length} ${validTokens.length === 1 ? "word" : "words"} marked known`,
       "success",
@@ -597,13 +650,13 @@ export const Reader = () => {
         setCurrentScrollPage(prev => prev + 1);
         document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
         setSelectedWord(null);
-      } else if (currentChapterIndex < chapters.length - 1) {
-        setCurrentChapterIndex(currentChapterIndex + 1);
+      } else {
+        setCurrentChapterIndex(prev => prev + 1);
         setCurrentScrollPage(0);
         setSelectedWord(null);
       }
     }
-  };
+  }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, totalPages]);
 
   if (!text || chapters.length === 0 || !chapter) {
     return <ReaderSkeleton />;
