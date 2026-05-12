@@ -8,6 +8,8 @@ import { WordInfo } from "../lib/services/vocabularyService";
 import { WordState, STATE_LABELS } from "../lib/constants/wordStates";
 import { getTokenInfo } from "../lib/data/dictionary";
 import { useTranslation } from "react-i18next";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
+import { getLanguageDisplayName } from "../lib/constants/languages";
 
 const PAGE_SIZE = 50;
 
@@ -17,6 +19,7 @@ export const Vocabulary = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const { knowledge, setWordState } = useKnowledge();
+  const { activeLanguageId } = useActiveLanguage();
   const { t } = useTranslation();
 
   const filters = ["All", "Due", "Known", "Familiar", "Learning", "Seen", "Ignored"];
@@ -27,12 +30,16 @@ export const Vocabulary = () => {
         const state = typeof info === "object" ? (info as any).state : info;
         return state !== WordState.NEW;
       })
+      .filter(([, info]) => {
+        const lang = (typeof info === "object" ? (info as any).languageId : null) || '';
+        return !lang || lang === activeLanguageId;
+      })
       .map(([lemma, info]) => {
         const wordInfo = typeof info === "object" ? (info as WordInfo) : ({ state: info } as unknown as WordInfo);
         const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview as any) : new Date();
         const tokenInfo = getTokenInfo(lemma);
         const definition = wordInfo.userGloss || tokenInfo?.gloss || "Definition missing";
-        const languageDesc = wordInfo.languageId || tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F]/u) ? "Hebrew" : "Greek");
+        const languageDesc = wordInfo.languageId || tokenInfo?.language || (lemma.match(/[\u0590-\u05FF\u0700-\u074F]/u) ? "Hebrew" : getLanguageDisplayName(activeLanguageId));
 
         return {
           id: lemma,
