@@ -618,14 +618,6 @@ Text: ${rawText.slice(0, 5000)}`;
   }
 });
 
-app.post('/api/ai/tutor/start', (_req: any, res: any) => {
-  res.status(200).json({ text: '', warnings: ['Tutor session requires GEMINI_API_KEY.'] });
-});
-
-app.post('/api/ai/tutor/message', (_req: any, res: any) => {
-  res.status(200).json({ text: '', warnings: ['Tutor session requires GEMINI_API_KEY.'] });
-});
-
 app.post('/api/ai/quiz', async (req: any, res: any) => {
   try {
     const { languageId, lemma, form, type } = req.body;
