@@ -237,8 +237,58 @@ app.post('/api/ai/ocr', (_req: any, res: any) => {
   res.status(200).json({ text: '' });
 });
 
-app.post('/api/ai/translate', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+app.post('/api/ai/translate', async (req: any, res: any) => {
+  try {
+    const { languageId, tokens } = req.body;
+
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
+    }
+    if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
+      return res.status(400).json({ error: 'tokens must be a non-empty array of strings', code: 'INVALID_INPUT', field: 'tokens' });
+    }
+
+    const sentence = tokens.join(' ').trim();
+    if (!sentence) {
+      return res.status(400).json({ error: 'Sentence text is empty after joining tokens', code: 'INVALID_INPUT', field: 'tokens' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ text: sentence, confidence: null, notes: 'Gemini API key not configured. Returning original text.' });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+
+    const prompt = `Translate the following ${getLanguageName(languageId)} sentence into fluent English.
+
+Rules:
+- Provide a natural, idiomatic English translation.
+- If the text is fragmentary or uncertain, mark uncertain portions with [brackets] and add a note.
+- Do not include markdown, explanations, or code fences — return ONLY the translation text.
+
+Sentence: ${sentence}`;
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+    });
+
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const notes = cleaned.includes('[') ? 'Translation contains uncertain portions marked with brackets' : undefined;
+
+    res.status(200).json({
+      text: cleaned || sentence,
+      confidence: cleaned ? null : null,
+      notes,
+    });
+
+  } catch (err: any) {
+    console.error('[ai/translate] Error:', err.message);
+    res.status(500).json({ error: 'Translation failed', code: 'TRANSLATE_ERROR', text: '', confidence: null });
+  }
 });
 
 app.post('/api/ai/explain', (_req: any, res: any) => {
