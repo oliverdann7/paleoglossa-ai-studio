@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, AlertCircle } from 'lucide-react';
 import { auth, googleProvider } from '@/lib/firebase';
@@ -9,11 +9,14 @@ import { useTranslation } from "react-i18next";
 
 export const SignIn = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || '/app';
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +25,7 @@ export const SignIn = () => {
     
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/app');
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -35,7 +38,7 @@ export const SignIn = () => {
     setError(null);
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate('/app');
+      navigate(from, { replace: true });
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/popup-blocked') {
