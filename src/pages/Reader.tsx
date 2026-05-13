@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CorpusDB } from "../data/corpus";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
@@ -18,6 +18,7 @@ import { getTransliteration } from "../lib/transliterate";
 import { AIClient } from "../lib/services/aiClient";
 import { ImportService } from "../lib/services/importService";
 import { useAuth } from "../lib/hooks/useAuth";
+import { useSubscription } from "../lib/contexts/SubscriptionContext";
 import { useToast } from "../lib/hooks/useToast";
 import { STORAGE_KEYS } from "../lib/constants/storage";
 
@@ -38,6 +39,7 @@ export const Reader = () => {
   const { textId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canAccessLanguage } = useSubscription();
   const { addToast } = useToast();
   const { t } = useTranslation();
   const onBack = () => navigate("/app/library");
@@ -689,6 +691,10 @@ export const Reader = () => {
 
   if (!text || chapters.length === 0 || !chapter) {
     return <ReaderSkeleton />;
+  }
+
+  if (!canAccessLanguage(currentLanguageId)) {
+    return <Navigate to="/app/subscription" state={{ locked: currentLanguageId }} replace />;
   }
 
   return (
