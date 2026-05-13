@@ -1,46 +1,48 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, Award, Sparkles, Loader2, Brain, History, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronLeft, Award, Loader2, Brain, History, Target, Settings2 } from "lucide-react";
 import { useAuth } from "../lib/hooks/useAuth";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { WordState } from "../lib/constants/wordStates";
-import { getTokenInfo } from "../lib/data/dictionary";
-import { useTranslation } from "react-i18next";
 import { ReviewService, ReviewItem } from "../lib/services/reviewService";
 import { Rating } from "../lib/srs/sm2";
+import { CardType, ReviewCard, generateReviewCards } from "../lib/review/reviewCardFactory";
 
-enum CardType {
-  FORM_TO_MEANING = "Form → Meaning",
-  MEANING_TO_FORM = "Meaning → Form",
-  CLOZE = "Cloze Context",
-  LEMMA = "Lemma Check",
-  PARSE = "Parsing",
-  ROOT = "Root / Etymology"
+interface ReviewSettings {
+  enabledTypes: CardType[];
+  maxCards: number;
+  includeMorphology: boolean;
 }
 
-interface ReviewCard {
-  item: ReviewItem | any;
-  type: CardType;
-  question: string;
-  answer: string;
-  context?: string;
-  morphHint?: string;
-  transliteration?: string;
+const DEFAULT_SETTINGS: ReviewSettings = {
+  enabledTypes: [CardType.FORM_TO_MEANING, CardType.MEANING_TO_FORM, CardType.CLOZE, CardType.PARSE],
+  maxCards: 30,
+  includeMorphology: true,
+};
+
+const SETTINGS_KEY = 'paleoglossa_review_settings';
+
+function loadSettings(): ReviewSettings {
+  try {
+    const stored = localStorage.getItem(SETTINGS_KEY);
+    return stored ? { ...DEFAULT_SETTINGS, ...JSON.parse(stored) } : DEFAULT_SETTINGS;
+  } catch { return DEFAULT_SETTINGS; }
+}
+
+function saveSettings(s: ReviewSettings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
 }
 
 export const Review = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { user, isDemoMode } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
-  const { knowledge, stats, updateWordSRS, recordReviewSession } = useKnowledge(activeLanguageId);
-  // Stable ref so the queue-load effect doesn't re-run on every word state change
+  const { knowledge, updateWordSRS } = useKnowledge(activeLanguageId);
   const knowledgeRef = useRef(knowledge);
   useLayoutEffect(() => { knowledgeRef.current = knowledge; });
-  
+
   const [isStarted, setIsStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [queue, setQueue] = useState<ReviewCard[]>([]);
@@ -50,56 +52,36 @@ export const Review = () => {
   const [sessionResults, setSessionResults] = useState<{ lemma: string; rating: Rating; responseMs: number }[]>([]);
   const [isFinished, setIsFinished] = useState(false);
 
-  const generateCard = (item: any): ReviewCard | null => {
-    const tokenInfo = getTokenInfo(item.term);
-    const gloss = item.userGloss || tokenInfo?.gloss || "Definition missing";
-    const contexts = item.contexts || [];
-    
-    // Choose card type based on item progress and available data
-    const types: CardType[] = [CardType.FORM_TO_MEANING];
-    if (gloss && gloss !== "Definition missing") types.push(CardType.MEANING_TO_FORM);
-    if (contexts.length > 0) types.push(CardType.CLOZE);
-    
-    // For advanced users/languages, add parsing or root
-    if (tokenInfo?.morphology && Object.keys(tokenInfo.morphology).length > 2) {
-      types.push(CardType.PARSE);
+  // Settings
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState<ReviewSettings>(loadSettings);
+
+  // Analytics
+  const [reviewSummary, setReviewSummary] = useState<{
+    dueCount: number; reviewedToday: number; lastAccuracy: number | null; avgResponseMs: number | null;
+  } | null>(null);
+  const [weakLemmas, setWeakLemmas] = useState<{ lemma: string; failCount: number }[]>([]);
+  const [weakCardTypes, setWeakCardTypes] = useState<{ cardType: string; failRate: number; count: number }[]>([]);
+
+  // Load analytics on mount
+  useEffect(() => {
+    if (!user || isDemoMode) {
+      // Demo mode: compute from local knowledge
+      const due = Object.entries(knowledgeRef.current).filter(([, info]: [string, any]) => {
+        const state = typeof info === 'object' ? info.state : info;
+        if (state === WordState.NEW || state === WordState.IGNORED) return false;
+        const lang = typeof info === 'object' ? (info as any).languageId || '' : '';
+        if (lang && lang !== activeLanguageId) return false;
+        if (!info.srs?.nextReview) return true;
+        return new Date(info.srs.nextReview) <= new Date();
+      });
+      setReviewSummary({ dueCount: due.length, reviewedToday: 0, lastAccuracy: null, avgResponseMs: null });
+      return;
     }
-
-    const type = types[Math.floor(Math.random() * types.length)];
-    
-    let question = item.term;
-    let answer = gloss;
-    let context = "";
-
-    switch (type) {
-      case CardType.MEANING_TO_FORM:
-        question = gloss;
-        answer = item.term;
-        break;
-      case CardType.CLOZE:
-        context = contexts[Math.floor(Math.random() * contexts.length)];
-        question = context.replace(new RegExp(item.term, "gi"), "[_____]");
-        answer = item.term;
-        break;
-      case CardType.PARSE:
-        question = item.term;
-        answer = Object.entries(tokenInfo?.morphology || {})
-          .filter(([k, v]) => v && k !== 'partOfSpeech')
-          .map(([k, v]) => `${k}: ${v}`)
-          .join(", ");
-        break;
-    }
-
-    return {
-      item,
-      type,
-      question,
-      answer,
-      context,
-      morphHint: tokenInfo?.morphology?.partOfSpeech,
-      transliteration: tokenInfo?.transliteration
-    };
-  };
+    ReviewService.getReviewSummary(user.uid, activeLanguageId).then(setReviewSummary);
+    ReviewService.getWeakLemmas(user.uid, activeLanguageId).then(setWeakLemmas);
+    ReviewService.getWeakCardTypes(user.uid, activeLanguageId).then(setWeakCardTypes);
+  }, [user, isDemoMode, activeLanguageId]);
 
   // Load Review Queue
   useEffect(() => {
@@ -108,9 +90,8 @@ export const Review = () => {
       try {
         let items: any[] = [];
         if (!isDemoMode && user) {
-          items = await ReviewService.getDueItems(user.uid, 50);
+          items = await ReviewService.getDueItems(user.uid, settings.maxCards, activeLanguageId);
         } else {
-          // Local fallback
           items = Object.entries(knowledgeRef.current)
             .filter(([, info]: [string, any]) => {
               const state = typeof info === "object" ? info.state : info;
@@ -128,7 +109,7 @@ export const Review = () => {
             .map(([lemma, info]) => ({
               id: lemma,
               term: lemma,
-              languageId: (info as any).languageId || "unknown",
+              languageId: (info as any).languageId || activeLanguageId || "unknown",
               userGloss: (info as any).userGloss,
               contexts: (info as any).contexts,
               status: (info as any).state || info,
@@ -136,8 +117,10 @@ export const Review = () => {
             }));
         }
 
-        const cards = items.map(item => generateCard(item)).filter(Boolean) as ReviewCard[];
-        // Shuffle
+        const cards = generateReviewCards(items, {
+          enabledTypes: settings.enabledTypes,
+          includeMorphology: settings.includeMorphology,
+        });
         setQueue(cards.sort(() => Math.random() - 0.5));
       } catch (e) {
         console.error(e);
@@ -145,9 +128,8 @@ export const Review = () => {
         setIsLoading(false);
       }
     };
-
     loadQueue();
-  }, [user, isDemoMode]);
+  }, [user, isDemoMode, activeLanguageId, settings]);
 
   const handleStart = () => {
     setIsStarted(true);
@@ -161,455 +143,363 @@ export const Review = () => {
     if (!currentCard) return;
 
     const responseMs = Date.now() - cardStartTime;
-    const result = { lemma: currentCard.item.term, rating, responseMs };
+    const result = { lemma: currentCard.term, rating, responseMs };
     setSessionResults(prev => [...prev, result]);
 
     try {
       if (!isDemoMode && user) {
-        await ReviewService.logReview(user.uid, currentCard.item, rating, responseMs);
+        await ReviewService.logReview(user.uid, {
+          id: currentCard.itemId,
+          term: currentCard.term,
+          languageId: currentCard.languageId,
+          status: '',
+          srs: { interval: 0, ease: 2.5, step: 0, lastReviewed: null, nextReview: new Date().toISOString() },
+        } as ReviewItem, rating, responseMs, {
+          cardType: currentCard.type,
+          languageId: currentCard.languageId,
+          wasCorrect: rating !== 'AGAIN',
+        });
       } else {
-        // Local logic implementation (simplified SM-2 matches what updateWordSRS expects)
-        // I'll reuse the updateWordSRS but it doesn't log history as robustly
-        // In a real app we'd keep local logs too
-        const state = currentCard.item.srs;
         const nextReviewDate = new Date();
-        let interval = state.interval || 0;
-        let ease = state.ease || 2.5;
-        let step = state.step || 0;
+        let interval = 0;
+        let ease = 2.5;
+        let step = 0;
 
         if (rating === "AGAIN") {
           interval = 0; step = 0;
         } else if (rating === "GOOD") {
-          interval = interval === 0 ? 1 : Math.ceil(interval * ease);
-          step++;
+          interval = 1; step = 1;
         } else if (rating === "EASY") {
-          interval = interval === 0 ? 4 : Math.ceil(interval * ease * 1.3);
-          step++;
+          interval = 4; step = 1;
         } else {
-          interval = Math.max(1, Math.ceil(interval * 1.2));
-          ease = Math.max(1.3, ease - 0.15);
+          interval = 1; ease = Math.max(1.3, ease - 0.15);
         }
 
         nextReviewDate.setDate(nextReviewDate.getDate() + interval);
-        const updatedSRS = {
+        await updateWordSRS(currentCard.term, {
           lastReviewed: new Date().toISOString(),
           nextReview: nextReviewDate.toISOString(),
-          interval,
-          ease,
-          step
-        };
-        updateWordSRS(currentCard.item.term, updatedSRS, WordState.LEARNING);
+          interval, ease, step
+        }, rating === 'AGAIN' ? WordState.LEARNING : WordState.FAMILIAR, currentCard.languageId);
       }
     } catch (e) {
       console.error(e);
     }
 
-    if (currentCardIndex < queue.length - 1) {
-      setCurrentCardIndex(prev => prev + 1);
-      setIsRevealed(false);
-      setCardStartTime(Date.now());
-    } else {
-      const accurateCount = [...sessionResults, result].filter(r => r.rating !== "AGAIN").length;
-      const accuracy = Math.round((accurateCount / queue.length) * 100);
-      recordReviewSession(accuracy);
+    if (currentCardIndex >= queue.length - 1) {
       setIsFinished(true);
+      return;
     }
-  }, [queue, currentCardIndex, cardStartTime, isDemoMode, user, sessionResults, updateWordSRS, recordReviewSession]);
 
-  // Keyboard support
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (!isStarted || isFinished) return;
-      if (!isRevealed) {
-        if (e.key === " " || e.key === "Enter") setIsRevealed(true);
-        return;
-      }
-      if (e.key === "1") handleRate("AGAIN");
-      if (e.key === "2") handleRate("HARD");
-      if (e.key === "3") handleRate("GOOD");
-      if (e.key === "4") handleRate("EASY");
+    setCurrentCardIndex(prev => prev + 1);
+    setIsRevealed(false);
+    setCardStartTime(Date.now());
+  }, [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS]);
+
+  const handleReveal = () => setIsRevealed(true);
+
+  const currentCard = queue[currentCardIndex];
+  const progress = queue.length > 0 ? ((currentCardIndex) / queue.length * 100) : 0;
+  const correctCount = sessionResults.filter(r => r.rating !== 'AGAIN').length;
+  const accuracy = sessionResults.length > 0 ? correctCount / sessionResults.length : 0;
+
+  // ── Settings panel ───────────────────────────────────────────────────
+  if (showSettings) {
+    const allTypes = [CardType.FORM_TO_MEANING, CardType.MEANING_TO_FORM, CardType.CLOZE, CardType.PARSE];
+    const typeLabels: Record<string, string> = {
+      FORM_TO_MEANING: 'Form → Meaning',
+      MEANING_TO_FORM: 'Meaning → Form',
+      CLOZE: 'Cloze Context',
+      PARSE: 'Parsing',
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [isStarted, isFinished, isRevealed, handleRate]);
 
-  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-parch">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-blue" />
-          <p className="font-serif italic text-muted">Preparing your review deck...</p>
+      <div className="p-6 md:p-12 max-w-lg mx-auto font-sans min-h-screen">
+        <div className="flex items-center gap-3 mb-8">
+          <button onClick={() => setShowSettings(false)} className="text-muted hover:text-ink transition-colors">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h2 className="text-xl font-serif font-bold text-ink">Review Settings</h2>
+        </div>
+
+        <div className="card p-6 space-y-6">
+          <div>
+            <h3 className="text-sm font-bold text-ink mb-3">Card Types</h3>
+            <div className="space-y-2">
+              {allTypes.map(type => (
+                <label key={type} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.enabledTypes.includes(type)}
+                    onChange={() => {
+                      const next = settings.enabledTypes.includes(type)
+                        ? settings.enabledTypes.filter(t => t !== type)
+                        : [...settings.enabledTypes, type];
+                      const updated = { ...settings, enabledTypes: next.length > 0 ? next : [CardType.FORM_TO_MEANING] };
+                      setSettings(updated);
+                      saveSettings(updated);
+                    }}
+                    className="w-4 h-4 accent-blue"
+                  />
+                  <span className="text-[14px] text-ink2">{typeLabels[type] || type}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-ink mb-2 block">Cards per session: {settings.maxCards}</label>
+            <input
+              type="range"
+              min={5}
+              max={100}
+              step={5}
+              value={settings.maxCards}
+              onChange={e => {
+                const updated = { ...settings, maxCards: parseInt(e.target.value, 10) };
+                setSettings(updated);
+                saveSettings(updated);
+              }}
+              className="w-full accent-blue"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.includeMorphology}
+                onChange={() => {
+                  const updated = { ...settings, includeMorphology: !settings.includeMorphology };
+                  setSettings(updated);
+                  saveSettings(updated);
+                }}
+                className="w-4 h-4 accent-blue"
+              />
+              <span className="text-[14px] text-ink2">Include morphology/parsing cards</span>
+            </label>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ── Start Screen ─────────────────────────────────────────────────────
   if (!isStarted) {
     return (
-      <div className="p-8 md:p-12 max-w-4xl mx-auto font-sans min-h-screen flex flex-col items-center justify-center text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card p-12 w-full shadow-2xl relative overflow-hidden"
+      <div className="p-6 md:p-12 max-w-2xl mx-auto font-sans min-h-screen">
+        <div className="flex items-center justify-between mb-8">
+          <button onClick={onBack} className="text-muted hover:text-ink transition-colors flex items-center gap-1">
+            <ChevronLeft className="w-5 h-5" /> Back
+          </button>
+          <button onClick={() => setShowSettings(true)} className="text-muted hover:text-ink transition-colors flex items-center gap-1">
+            <Settings2 className="w-4 h-4" /> Settings
+          </button>
+        </div>
+
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Brain className="w-8 h-8 text-blue" />
+          </div>
+          <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Review</h2>
+          <p className="text-ink2 text-[15px]">Reinforce your vocabulary with spaced repetition</p>
+        </div>
+
+        {/* Summary */}
+        {isLoading && (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-blue" />
+          </div>
+        )}
+        {!isLoading && reviewSummary && (
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="card p-4 text-center">
+              <div className="text-[24px] font-bold text-blue">{reviewSummary.dueCount}</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Due Now</div>
+            </div>
+            <div className="card p-4 text-center">
+              <div className="text-[24px] font-bold text-jade">{reviewSummary.reviewedToday}</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Reviewed Today</div>
+            </div>
+            <div className="card p-4 text-center">
+              <div className="text-[24px] font-bold text-amber">
+                {reviewSummary.lastAccuracy !== null ? `${Math.round(reviewSummary.lastAccuracy * 100)}%` : '—'}
+              </div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Accuracy</div>
+            </div>
+          </div>
+        )}
+
+        {/* Weak lemmas */}
+        {weakLemmas.length > 0 && (
+          <div className="card p-5 mb-6">
+            <h3 className="text-[13px] font-bold text-ink mb-3 flex items-center gap-2">
+              <Target className="w-4 h-4 text-red-400" /> Most Failed Words
+            </h3>
+            <div className="space-y-2">
+              {weakLemmas.map(w => (
+                <div key={w.lemma} className="flex justify-between text-[14px]">
+                  <span className="text-ink2 font-medium">{w.lemma}</span>
+                  <span className="text-red-400 font-bold">{w.failCount}x</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Weak card types */}
+        {weakCardTypes.length > 0 && (
+          <div className="card p-5 mb-8">
+            <h3 className="text-[13px] font-bold text-ink mb-3 flex items-center gap-2">
+              <History className="w-4 h-4 text-amber" /> Weakest Card Types
+            </h3>
+            <div className="space-y-2">
+              {weakCardTypes.slice(0, 3).map(w => (
+                <div key={w.cardType} className="flex justify-between text-[14px]">
+                  <span className="text-ink2">{w.cardType}</span>
+                  <span className="text-amber font-bold">{Math.round(w.failRate * 100)}% fail</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={handleStart}
+          disabled={isLoading || (reviewSummary?.dueCount || 0) === 0}
+          className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue/5 rounded-full blur-3xl" />
-          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-gold/5 rounded-full blur-3xl" />
-          
-          <div className="w-20 h-20 bg-blue/10 text-blue rounded-[24px] rotate-3 flex items-center justify-center mx-auto mb-8 shadow-inner">
-            <Brain className="w-10 h-10" />
-          </div>
-          
-          <h2 className="text-[42px] font-serif font-bold text-ink mb-2">
-            {t("review.session", "SRS Review")}
-          </h2>
-          <p className="text-ink2 mb-10 max-w-md mx-auto leading-relaxed">
-            {queue.length === 0
-              ? t("review.noCards", "Your memory is fresh. Read more to encounter new words and grow your library.")
-              : t("review.reinforce", `Your memory is fading for ${queue.length} words. Revisit them now to lock them into long-term memory.`, { count: queue.length })}
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12 text-left">
-            <div className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-bdr/30 shadow-sm transition-transform hover:-translate-y-1">
-              <div className="flex items-center gap-3 mb-2">
-                <Target className="w-4 h-4 text-ruby" />
-                <span className="eyebrow text-[10px] text-muted">Due Today</span>
-              </div>
-              <div className="text-[32px] font-bold text-ink">
-                {queue.length}
-              </div>
-            </div>
-            <div className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-bdr/30 shadow-sm transition-transform hover:-translate-y-1">
-              <div className="flex items-center gap-3 mb-2">
-                <Sparkles className="w-4 h-4 text-gold" />
-                <span className="eyebrow text-[10px] text-muted">Awaiting Mastery</span>
-              </div>
-              <div className="text-[32px] font-bold text-ink">
-                {Object.values(knowledge).filter((i: any) => i.state === WordState.LEARNING).length}
-              </div>
-            </div>
-            <div className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-bdr/30 shadow-sm transition-transform hover:-translate-y-1 md:col-span-1 col-span-2">
-              <div className="flex items-center gap-3 mb-2">
-                <History className="w-4 h-4 text-blue" />
-                <span className="eyebrow text-[10px] text-muted">Accuracy Trend</span>
-              </div>
-              <div className="text-[32px] font-bold text-ink">
-                {stats?.lastAccuracy != null ? `${stats.lastAccuracy}%` : "—"}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <button
-              onClick={handleStart}
-              disabled={queue.length === 0}
-              className="w-full bg-ink text-parch2 py-5 rounded-[24px] font-bold text-[20px] shadow-xl hover:bg-ink/90 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed group border-b-4 border-black/20"
-            >
-              <span className="flex items-center justify-center gap-3">
-                {t("review.startSession", "Begin Recitation")}
-                <ChevronLeft className="w-5 h-5 rotate-180" />
-              </span>
-            </button>
-            {queue.length === 0 ? (
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => navigate("/app/library")}
-                  className="text-blue font-bold text-[14px] hover:text-blue/80 transition-colors"
-                >
-                  Browse the Library
-                </button>
-                <button
-                  onClick={() => navigate("/app/import")}
-                  className="text-muted font-bold text-[14px] hover:text-ink transition-colors"
-                >
-                  Import a Text
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={onBack}
-                className="text-muted font-bold text-[14px] hover:text-ink transition-colors"
-              >
-                {t("review.maybeLater", "Return to Library")}
-              </button>
-            )}
-          </div>
-        </motion.div>
+          {isLoading ? 'Loading…' : (reviewSummary?.dueCount || 0) === 0 ? 'All caught up!' : `Start Review (${queue.length} cards)`}
+        </button>
       </div>
     );
   }
 
+  // ── Finished Screen ─────────────────────────────────────────────────
   if (isFinished) {
-    const accuracy = Math.round((sessionResults.filter(r => r.rating !== "AGAIN").length / sessionResults.length) * 100);
-    const avgResponse = Math.round(sessionResults.reduce((a, b) => a + b.responseMs, 0) / sessionResults.length / 100) / 10;
-    
     return (
-      <div className="p-8 md:p-12 max-w-3xl mx-auto font-sans min-h-screen flex flex-col items-center justify-center text-center">
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="card p-12 w-full bg-ink text-parch2 shadow-2xl relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Award className="w-48 h-48" />
+      <div className="p-6 md:p-12 max-w-lg mx-auto font-sans min-h-screen flex items-center justify-center">
+        <div className="text-center w-full">
+          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Award className="w-10 h-10 text-emerald-600" />
           </div>
+          <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Session Complete!</h2>
+          <p className="text-ink2 mb-8">Great work! You reviewed {sessionResults.length} cards.</p>
 
-          <div className="w-16 h-16 bg-gold/20 text-gold rounded-full flex items-center justify-center mx-auto mb-6">
-            <Award className="w-8 h-8" />
-          </div>
-          
-          <h2 className="text-[42px] font-serif font-bold mb-2">
-            {t("review.complete", "Mastery Progressed")}
-          </h2>
-          <p className="text-parch/60 mb-12 max-w-md mx-auto">
-            Your persistence strengthens the synaptic pathways of your ancient library.
-          </p>
-
-          <div className="grid grid-cols-3 gap-8 mb-12">
-            <div>
-              <div className="text-[48px] font-bold text-gold leading-none mb-2">{accuracy}%</div>
-              <div className="text-[10px] uppercase tracking-widest font-bold opacity-50">Accuracy</div>
+          <div className="flex justify-center gap-8 mb-8">
+            <div className="text-center">
+              <div className="text-[32px] font-bold text-jade">{correctCount}</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Correct</div>
             </div>
-            <div>
-              <div className="text-[48px] font-bold text-parch2 leading-none mb-2">{sessionResults.length}</div>
-              <div className="text-[10px] uppercase tracking-widest font-bold opacity-50">Cards</div>
+            <div className="text-center">
+              <div className="text-[32px] font-bold text-red-400">{sessionResults.length - correctCount}</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Needs Review</div>
             </div>
-            <div>
-              <div className="text-[48px] font-bold text-parch2 leading-none mb-2">{avgResponse}s</div>
-              <div className="text-[10px] uppercase tracking-widest font-bold opacity-50">Avg Speed</div>
-            </div>
-          </div>
-
-          <div className="bg-parch/5 rounded-2xl p-6 mb-12 text-left">
-            <h4 className="text-[11px] uppercase tracking-widest font-bold mb-4 opacity-40">Session Breakdown</h4>
-            <div className="flex gap-1 h-3 rounded-full overflow-hidden mb-4">
-              {['AGAIN', 'HARD', 'GOOD', 'EASY'].map(r => {
-                const count = sessionResults.filter(res => res.rating === r).length;
-                const pct = (count / sessionResults.length) * 100;
-                if (pct === 0) return null;
-                return (
-                  <div 
-                    key={r}
-                    style={{ width: `${pct}%` }} 
-                    className={cn(
-                      "h-full",
-                      r === 'AGAIN' ? 'bg-ruby' : r === 'HARD' ? 'bg-amber' : r === 'GOOD' ? 'bg-green-500' : 'bg-blue'
-                    )}
-                  />
-                );
-              })}
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-               {['AGAIN', 'HARD', 'GOOD', 'EASY'].map(r => (
-                 <div key={r} className="flex flex-col">
-                   <span className="text-[10px] font-bold opacity-30">{r}</span>
-                   <span className="text-[14px] font-bold">{sessionResults.filter(res => res.rating === r).length}</span>
-                 </div>
-               ))}
+            <div className="text-center">
+              <div className="text-[32px] font-bold text-blue">{Math.round(accuracy * 100)}%</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Accuracy</div>
             </div>
           </div>
 
           <button
-            onClick={onBack}
-            className="w-full bg-parch text-ink py-4 rounded-[20px] font-bold text-[18px] hover:bg-white transition-all shadow-xl active:scale-95"
+            onClick={() => { setIsStarted(false); setIsFinished(false); setQueue([]); setCurrentCardIndex(0); setSessionResults([]); }}
+            className="w-full py-4 bg-blue text-white font-bold rounded-2xl hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg"
           >
-            {t("review.backDashboard", "Finish Session")}
+            Review Again
           </button>
-        </motion.div>
+          <button onClick={onBack} className="w-full py-3 mt-3 text-ink2 hover:text-ink transition-colors font-medium">
+            Back to Dashboard
+          </button>
+        </div>
       </div>
     );
   }
 
-  const currentCard = queue[currentCardIndex];
-  const progress = ((currentCardIndex + 1) / queue.length) * 100;
+  // ── Card Screen ────────────────────────────────────────────────────
+  if (!currentCard) {
+    return <div className="p-8 text-center text-ink2">No cards to review.</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-parch flex flex-col overflow-hidden font-sans">
-      {/* Dynamic Header */}
-      <div className="h-20 bg-white/80 backdrop-blur-md border-b border-bdr px-8 flex items-center justify-between sticky top-0 z-50">
-        <button
-          onClick={onBack}
-          className="text-muted hover:text-ink flex items-center gap-2 font-bold text-[13px] transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5" />
-          {t("review.quitSession", "Exit Deck")}
-        </button>
-        
-        <div className="flex-1 max-w-xl mx-12">
-          <div className="flex justify-between text-[9px] font-black text-muted/60 uppercase tracking-[0.2em] mb-2">
-            <span>Progressing Memory</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className="h-2 w-full bg-parch3 rounded-full overflow-hidden shadow-inner">
-            <motion.div
-              layoutId="progress-bar"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              className="h-full bg-ink"
-            />
-          </div>
+    <div className="max-w-2xl mx-auto font-sans min-h-screen p-6 md:p-12">
+      {/* Progress */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex-1 h-2 bg-parch3 rounded-full overflow-hidden">
+          <div className="h-full bg-blue rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
-
-        <div className="w-32 flex justify-end">
-          <div className="px-3 py-1 bg-ink text-parch2 rounded-full text-[11px] font-bold flex items-center gap-2">
-             <div className="w-1.5 h-1.5 bg-gold rounded-full animate-pulse" />
-             Deck Active
-          </div>
-        </div>
+        <span className="text-[12px] font-bold text-muted">{currentCardIndex + 1}/{queue.length}</span>
       </div>
 
-      {/* Card Arena */}
-      <main className="flex-1 flex items-center justify-center p-8">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentCard.item.term + currentCard.type + isRevealed}
-            initial={{ opacity: 0, scale: 0.98, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: -10 }}
-            onClick={() => !isRevealed && setIsRevealed(true)}
-            className={cn(
-              "card w-full max-w-3xl min-h-[500px] flex flex-col items-center justify-center p-16 shadow-2xl relative transition-all duration-500",
-              isRevealed ? "ring-2 ring-gold/10" : ""
-            )}
-          >
-            {/* Card Metadata */}
-            <div className="absolute top-10 left-10 flex items-center gap-4">
-              <div className="px-3 py-1.5 bg-ink text-parch text-[9px] font-black uppercase tracking-[0.15em] rounded-md">
-                {currentCard.type}
-              </div>
-              {currentCard.morphHint && (
-                <div className="text-[10px] font-bold text-muted/50 italic border-l border-bdr pl-4">
-                   {currentCard.morphHint}
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col items-center text-center w-full">
-              {/* Question Zone */}
-              <div className="mb-12 w-full">
-                <h3 
-                  className={cn(
-                    "font-serif text-ink leading-tight",
-                    currentCard.question.length > 20 ? "text-[32px] md:text-[42px]" : "text-[56px] md:text-[72px]",
-                    /[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u.test(currentCard.question) ? "font-hebrew text-right" : ""
-                  )}
-                  dir={/[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u.test(currentCard.question) ? "rtl" : "ltr"}
-                >
-                  {currentCard.question}
-                </h3>
-                {currentCard.transliteration && !isRevealed && (
-                  <div className="mt-4 text-muted text-[13px] font-mono italic opacity-40">
-                    {currentCard.transliteration}
-                  </div>
-                )}
-              </div>
-
-              {/* Reveal Zone */}
-              <AnimatePresence>
-                {isRevealed && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="w-full"
-                  >
-                    <div className="w-16 h-1 bg-gold/30 mx-auto mb-10 rounded-full" />
-                    
-                    <div 
-                      className={cn(
-                        "text-[28px] md:text-[36px] font-body text-blue font-bold leading-snug drop-shadow-sm",
-                        /[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u.test(currentCard.answer) ? "font-hebrew text-right" : ""
-                      )}
-                      dir={/[\u0590-\u05FF\u0700-\u074F\u0750-\u077F\u08A0-\u08FF\uFB1D-\uFB4F\u{13000}-\u{1342E}]/u.test(currentCard.answer) ? "rtl" : "ltr"}
-                    >
-                      {currentCard.answer}
-                    </div>
-
-                    {currentCard.context && currentCard.type !== CardType.CLOZE && (
-                      <div className="mt-12 p-6 bg-parch/30 border border-bdr/20 rounded-2xl text-[14px] leading-relaxed italic text-ink2 max-w-lg mx-auto border-l-4 border-l-gold/30">
-                        "{currentCard.context}"
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {!isRevealed && (
-              <div className="absolute bottom-12 flex flex-col items-center gap-3">
-                 <div className="px-5 py-2.5 bg-blue text-white rounded-full text-[13px] font-bold shadow-xl animate-bounce">
-                    Tap or Space to reveal
-                 </div>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-
-      {/* Control Deck */}
-      <div className="h-[140px] bg-white border-t border-bdr p-6 shadow-[0_-20px_40px_rgba(0,0,0,0.02)]">
-        <div className="max-w-3xl mx-auto h-full flex items-center justify-center">
-          {!isRevealed ? (
-            <button
-              onClick={() => setIsRevealed(true)}
-              className="w-full max-w-md bg-ink text-parch2 h-16 rounded-[20px] font-bold text-[18px] shadow-2xl hover:bg-ink/90 transition-all active:scale-95 flex items-center justify-center gap-3"
-            >
-              <Sparkles className="w-5 h-5 text-gold" />
-              {t("review.showAnswer", "Reveal Ancient Secrets")}
-            </button>
-          ) : (
-            <div className="grid grid-cols-4 gap-4 w-full">
-              <button
-                onClick={() => handleRate("AGAIN")}
-                className="flex flex-col gap-2 group"
-              >
-                <div className="h-16 bg-red-50 border-2 border-red-100 text-red-600 rounded-2xl flex items-center justify-center font-bold text-[15px] group-hover:bg-red-600 group-hover:text-white group-hover:border-red-600 transition-all shadow-sm">
-                  {t("review.again", "AGAIN")}
-                </div>
-                <div className="flex justify-between px-2 text-[9px] font-black text-muted/60 uppercase">
-                  <span>Fail</span>
-                  <span>{"<"}1m</span>
-                </div>
-              </button>
-              <button
-                onClick={() => handleRate("HARD")}
-                className="flex flex-col gap-2 group"
-              >
-                <div className="h-16 bg-amber-50 border-2 border-amber-100 text-amber-600 rounded-2xl flex items-center justify-center font-bold text-[15px] group-hover:bg-amber-600 group-hover:text-white group-hover:border-amber-600 transition-all shadow-sm">
-                  {t("review.hard", "HARD")}
-                </div>
-                <div className="flex justify-between px-2 text-[9px] font-black text-muted/60 uppercase">
-                  <span>Retain</span>
-                  <span>1-2d</span>
-                </div>
-              </button>
-              <button
-                onClick={() => handleRate("GOOD")}
-                className="flex flex-col gap-2 group"
-              >
-                <div className="h-16 bg-green-50 border-2 border-green-100 text-green-600 rounded-2xl flex items-center justify-center font-bold text-[15px] group-hover:bg-green-600 group-hover:text-white group-hover:border-green-600 transition-all shadow-sm">
-                  {t("review.good", "GOOD")}
-                </div>
-                <div className="flex justify-between px-2 text-[9px] font-black text-muted/60 uppercase">
-                  <span>Learned</span>
-                  <span>4-6d</span>
-                </div>
-              </button>
-              <button
-                onClick={() => handleRate("EASY")}
-                className="flex flex-col gap-2 group"
-              >
-                <div className="h-16 bg-blue-50 border-2 border-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-bold text-[15px] group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all shadow-sm">
-                  {t("review.easy", "EASY")}
-                </div>
-                <div className="flex justify-between px-2 text-[9px] font-black text-muted/60 uppercase">
-                  <span>Mastered</span>
-                  <span>10-14d</span>
-                </div>
-              </button>
-            </div>
+      <div className="card p-8 shadow-lg">
+        {/* Card type badge */}
+        <div className="flex items-center gap-2 mb-6">
+          <span className="text-[10px] uppercase tracking-widest font-bold text-blue bg-blue/10 px-2 py-1 rounded-full">
+            {currentCard.type === 'FORM_TO_MEANING' ? 'Form → Meaning' :
+             currentCard.type === 'MEANING_TO_FORM' ? 'Meaning → Form' :
+             currentCard.type === 'CLOZE' ? 'Cloze' :
+             currentCard.type === 'PARSE' ? 'Parsing' : currentCard.type}
+          </span>
+          {currentCard.transliteration && (
+            <span className="text-[11px] text-muted italic">{currentCard.transliteration}</span>
           )}
         </div>
+
+        {/* Question */}
+        {currentCard.context && (
+          <p className="text-[13px] text-ink2/60 italic mb-4 leading-relaxed">{currentCard.context}</p>
+        )}
+        <h3 className="text-[28px] font-serif font-bold text-ink leading-snug mb-6">{currentCard.question}</h3>
+
+        {/* Morph hint */}
+        {currentCard.morphHint && (
+          <p className="text-[12px] text-muted font-medium mb-4">{currentCard.morphHint}</p>
+        )}
+
+        {/* Answer */}
+        <AnimatePresence>
+          {isRevealed && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="border-t border-bdr pt-6 mt-6"
+            >
+              <p className="text-[11px] uppercase tracking-widest text-muted font-bold mb-2">Answer</p>
+              <p className="text-[20px] font-serif font-medium text-jade">{currentCard.answer}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Action buttons */}
+      <div className="mt-8">
+        {!isRevealed ? (
+          <button
+            onClick={handleReveal}
+            className="w-full py-4 bg-ink text-parch font-bold rounded-2xl text-[16px] hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
+          >
+            Show Answer
+          </button>
+        ) : (
+          <div className="grid grid-cols-4 gap-2">
+            <button onClick={() => handleRate("AGAIN")}
+              className="py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
+              Again
+            </button>
+            <button onClick={() => handleRate("HARD")}
+              className="py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
+              Hard
+            </button>
+            <button onClick={() => handleRate("GOOD")}
+              className="py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
+              Good
+            </button>
+            <button onClick={() => handleRate("EASY")}
+              className="py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
+              Easy
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
-

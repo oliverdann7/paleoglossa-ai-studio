@@ -18,7 +18,7 @@ import { WordState } from '../constants/wordStates';
 const USE_FSRS = true;
 
 export interface ReviewItem {
-  id: string; // The doc ID in users/userId/vocabulary
+  id: string;
   term: string;
   languageId: string;
   userGloss?: string;
@@ -26,6 +26,23 @@ export interface ReviewItem {
   notes?: string;
   status: string;
   srs: SRSState;
+}
+
+export interface ReviewLogEntry {
+  vocabItemId: string;
+  term: string;
+  languageId: string;
+  cardType: string;
+  rating: string;
+  responseMs: number;
+  intervalBefore: number;
+  intervalAfter: number;
+  easeBefore: number;
+  easeAfter: number;
+  timestamp: string;
+  createdAt: ReturnType<typeof serverTimestamp>;
+  algorithm: string;
+  wasCorrect: boolean;
 }
 
 export interface ReviewSessionSummary {
@@ -36,31 +53,38 @@ export interface ReviewSessionSummary {
 }
 
 export class ReviewService {
-  static async getDueItems(userId: string, count: number = 50): Promise<ReviewItem[]> {
+  static async getDueItems(userId: string, count: number = 50, languageId?: string): Promise<ReviewItem[]> {
     const vocabRef = collection(db, `users/${userId}/vocabulary`);
     const now = new Date().toISOString();
-    
-    // We want items where nextReview <= now and status in [LEARNING, FAMILIAR]
-    // Firestore composite queries might need indexes, but let's try a simple approach first
-    // or fetch more and filter in memory if necessary
-    const q = query(
-      vocabRef,
+
+    const constraints: any[] = [
       where('nextReview', '<=', now),
       orderBy('nextReview', 'asc'),
-      limit(count)
-    );
-    
+      limit(count * 3), // Fetch extra for in-memory language filter
+    ];
+
+    // Firestore composite index required:
+    // Collection: users/{userId}/vocabulary
+    // Fields: nextReview ASC, languageId ASC
+    // (index is created automatically if using equality filter)
+    if (languageId) {
+      constraints.unshift(where('languageId', '==', languageId));
+    }
+
+    const q = query(vocabRef, ...constraints);
+
     try {
       const snap = await getDocs(q);
       const items: ReviewItem[] = [];
       snap.forEach(doc => {
         const data = doc.data();
-        // Only include if status is one we review
         if ([WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN].includes(data.status)) {
+          // In-memory language filter if Firestore index not yet created
+          if (languageId && data.languageId !== languageId) return;
           items.push({
             id: doc.id,
             term: data.term,
-            languageId: data.languageId,
+            languageId: data.languageId || languageId || 'unknown',
             userGloss: data.userGloss,
             contexts: data.contexts,
             notes: data.notes,
@@ -75,7 +99,7 @@ export class ReviewService {
           });
         }
       });
-      return items;
+      return items.slice(0, count);
     } catch (e) {
       console.error("Error fetching due items", e);
       return [];
@@ -86,23 +110,26 @@ export class ReviewService {
     userId: string,
     item: ReviewItem,
     rating: Rating,
-    responseMs: number
+    responseMs: number,
+    metadata?: {
+      cardType?: string;
+      languageId?: string;
+      wasCorrect?: boolean;
+    }
   ): Promise<SRSState> {
     const now = new Date();
-    
+
     let nextState: SRSState;
-    
+
     if (USE_FSRS) {
-      // Convert rating to FSRS format
       const fsrsRating: FSRRating = rating === 'AGAIN' ? 'again' 
         : rating === 'HARD' ? 'hard' 
         : rating === 'GOOD' ? 'good' 
         : 'easy';
-      
-      // Convert current state to FSRS format
+
       const fsrsState: FSRSState = {
         stability: item.srs.interval || 1,
-        difficulty: 5, // Default
+        difficulty: 5,
         interval: item.srs.interval || 0,
         dueDate: now,
         repetitions: item.srs.step || 0,
@@ -111,10 +138,8 @@ export class ReviewService {
         lastReviewed: item.srs.lastReviewed,
         nextReview: item.srs.nextReview || now.toISOString()
       };
-      
+
       const nextFSRS = calculateFSRS(fsrsRating, fsrsState, now);
-      
-      // Convert back to SRSState format
       nextState = {
         interval: nextFSRS.interval,
         ease: nextFSRS.ease,
@@ -125,7 +150,7 @@ export class ReviewService {
     } else {
       nextState = calculateSM2(rating, item.srs, now);
     }
-    
+
     const vocabDocRef = doc(db, `users/${userId}/vocabulary`, item.id);
     const logDocRef = doc(collection(db, `users/${userId}/reviewLogs`));
 
@@ -146,14 +171,18 @@ export class ReviewService {
       updateData.fsrsDifficulty = 5;
     }
 
-    // Batch vocab update + log write into a single round-trip
+    const wasCorrect = metadata?.wasCorrect ?? (rating !== 'AGAIN');
+
     const batch = writeBatch(db);
     batch.update(vocabDocRef, updateData);
     batch.set(logDocRef, {
       vocabItemId: item.id,
       term: item.term,
+      languageId: metadata?.languageId || item.languageId,
+      cardType: metadata?.cardType || 'FORM_TO_MEANING',
       rating,
       responseMs,
+      wasCorrect,
       intervalBefore: item.srs.interval,
       intervalAfter: nextState.interval,
       easeBefore: item.srs.ease,
@@ -163,17 +192,99 @@ export class ReviewService {
       algorithm: USE_FSRS ? 'FSRS' : 'SM-2'
     });
     await batch.commit();
-    
+
     return nextState;
   }
 
   private static determineNewStatus(currentStatus: string, nextState: SRSState, rating: Rating): string {
     if (rating === 'AGAIN') return WordState.LEARNING;
-    
-    // If interval > 21 days, it's pretty familiar
     if (nextState.interval > 21) return WordState.KNOWN;
     if (nextState.interval > 7) return WordState.FAMILIAR;
-    
     return currentStatus === WordState.NEW ? WordState.LEARNING : currentStatus;
+  }
+
+  // ── Analytics ────────────────────────────────────────────────────────────
+
+  static async getReviewSummary(userId: string, languageId: string): Promise<{
+    dueCount: number;
+    reviewedToday: number;
+    lastAccuracy: number | null;
+    avgResponseMs: number | null;
+  }> {
+    try {
+      const dueItems = await this.getDueItems(userId, 100, languageId);
+      const today = new Date().toISOString().split('T')[0];
+      const logRef = collection(db, `users/${userId}/reviewLogs`);
+      const logSnap = await getDocs(query(logRef, where('languageId', '==', languageId), orderBy('timestamp', 'desc'), limit(200)));
+
+      let reviewedToday = 0;
+      let correctToday = 0;
+      let totalResponseMs = 0;
+      let responseCount = 0;
+
+      logSnap.forEach(d => {
+        const data = d.data();
+        const logDate = data.timestamp?.split('T')[0];
+        if (logDate === today) {
+          reviewedToday++;
+          if (data.wasCorrect) correctToday++;
+        }
+        if (data.responseMs) {
+          totalResponseMs += data.responseMs;
+          responseCount++;
+        }
+      });
+
+      return {
+        dueCount: dueItems.length,
+        reviewedToday,
+        lastAccuracy: reviewedToday > 0 ? correctToday / reviewedToday : null,
+        avgResponseMs: responseCount > 0 ? totalResponseMs / responseCount : null,
+      };
+    } catch {
+      return { dueCount: 0, reviewedToday: 0, lastAccuracy: null, avgResponseMs: null };
+    }
+  }
+
+  static async getWeakLemmas(userId: string, languageId: string, maxItems: number = 5): Promise<{ lemma: string; failCount: number }[]> {
+    try {
+      const logRef = collection(db, `users/${userId}/reviewLogs`);
+      const logSnap = await getDocs(query(logRef, where('languageId', '==', languageId), orderBy('timestamp', 'desc'), limit(500)));
+      const failMap = new Map<string, number>();
+      logSnap.forEach(d => {
+        const data = d.data();
+        if (!data.wasCorrect) {
+          const term = data.term || data.vocabItemId;
+          failMap.set(term, (failMap.get(term) || 0) + 1);
+        }
+      });
+      return Array.from(failMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, maxItems)
+        .map(([lemma, failCount]) => ({ lemma, failCount }));
+    } catch {
+      return [];
+    }
+  }
+
+  static async getWeakCardTypes(userId: string, languageId: string): Promise<{ cardType: string; failRate: number; count: number }[]> {
+    try {
+      const logRef = collection(db, `users/${userId}/reviewLogs`);
+      const logSnap = await getDocs(query(logRef, where('languageId', '==', languageId), orderBy('timestamp', 'desc'), limit(500)));
+      const typeMap = new Map<string, { total: number; failed: number }>();
+      logSnap.forEach(d => {
+        const data = d.data();
+        const ct = data.cardType || 'FORM_TO_MEANING';
+        const entry = typeMap.get(ct) || { total: 0, failed: 0 };
+        entry.total++;
+        if (!data.wasCorrect) entry.failed++;
+        typeMap.set(ct, entry);
+      });
+      return Array.from(typeMap.entries())
+        .map(([cardType, { total, failed }]) => ({ cardType, failRate: total > 0 ? failed / total : 0, count: total }))
+        .sort((a, b) => b.failRate - a.failRate);
+    } catch {
+      return [];
+    }
   }
 }
