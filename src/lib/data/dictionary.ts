@@ -1,6 +1,7 @@
 import { ATTRIBUTIONS, CorpusDB } from '../../data/corpus';
 import * as tokenArrays from '../../data/tokens';
 import { SourceAttribution, Token } from '../../types/corpus';
+import { DICTIONARY as STATIC_DICT } from './dictionaryDB';
 
 export interface DictionarySource {
   id: string;
@@ -105,8 +106,12 @@ function languageName(languageId: string) {
   return LANGUAGE_NAMES[languageId] || languageId || 'Unknown';
 }
 
-function normalizeSearch(value: string) {
+export function normalizeSearch(value: string) {
   return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+export function stripHebrewVowels(value: string): string {
+  return value.replace(/[\u0591-\u05C7\u05B0-\u05BD\u05BF\u05C1\u05C2]/g, '');
 }
 
 function getPartOfSpeech(token: any) {
@@ -218,23 +223,54 @@ export const getGlobalDictionary = () => {
 
 export const getGlossForLemma = (lemma: string) => {
   const dict = getGlobalDictionary();
-  return dict[lemma]?.gloss || "Definition unavailable";
+  return dict[lemma]?.gloss || null;
 };
 
 export const getGlossWithFallbacks = (lemma: string, languageId: string): string | null => {
-  // 1. Exact match in curated dictionary entries
-  const entry = findDictionaryEntry(lemma, languageId);
-  if (entry?.shortGloss) return entry.shortGloss;
-  // 2. Lowercase / normalized form
   const lower = lemma.toLowerCase();
+  const normalized = normalizeSearch(lemma);
+  const isHebrew = languageId === 'hbo';
+  const consonantal = isHebrew ? stripHebrewVowels(lemma) : null;
+
+  // 1. Exact match in corpus-derived dictionary entries
+  let entry = findDictionaryEntry(lemma, languageId);
+  if (entry?.shortGloss) return entry.shortGloss;
+
+  // 2. Lowercase lemma
   if (lower !== lemma) {
-    const entryLower = findDictionaryEntry(lower, languageId);
-    if (entryLower?.shortGloss) return entryLower.shortGloss;
+    entry = findDictionaryEntry(lower, languageId);
+    if (entry?.shortGloss) return entry.shortGloss;
   }
-  // 3. Corpus global dictionary (token-level glosses from imported and corpus texts)
+
+  // 3. NFD-normalized / diacritic-stripped lemma
+  if (normalized !== lemma && normalized !== lower) {
+    entry = findDictionaryEntry(normalized, languageId);
+    if (entry?.shortGloss) return entry.shortGloss;
+  }
+
+  // 4. Static dictionaryDB entries (Strong's / LSJ / Whitaker's)
+  const staticKey = `${languageId}:${lemma}`;
+  const staticEntry = STATIC_DICT[staticKey];
+  if (staticEntry?.shortGloss) return staticEntry.shortGloss;
+  const staticKeyLower = `${languageId}:${lower}`;
+  if (staticKeyLower !== staticKey) {
+    const staticLower = STATIC_DICT[staticKeyLower];
+    if (staticLower?.shortGloss) return staticLower.shortGloss;
+  }
+
+  // 5. Hebrew consonantal form (without vowel marks)
+  if (isHebrew && consonantal && consonantal !== lemma) {
+    entry = findDictionaryEntry(consonantal, languageId);
+    if (entry?.shortGloss) return entry.shortGloss;
+    const staticConsonantal = STATIC_DICT[`${languageId}:${consonantal}`];
+    if (staticConsonantal?.shortGloss) return staticConsonantal.shortGloss;
+  }
+
+  // 6. Corpus global dictionary
   const dict = getGlobalDictionary();
-  const corpusGloss = dict[lemma]?.gloss || dict[lower]?.gloss;
+  const corpusGloss = dict[lemma]?.gloss || dict[lower]?.gloss || dict[normalized]?.gloss;
   if (corpusGloss) return corpusGloss;
+
   return null;
 };
 
@@ -295,7 +331,7 @@ export const getDictionaryEntries = (): DictionaryEntry[] => {
 
   _entriesCache = Array.from(entries.values())
     .map((entry) => {
-      const shortGloss = Array.from(entry.glosses)[0] || 'Definition unavailable';
+      const shortGloss = Array.from(entry.glosses)[0] || '';
       const glosses = Array.from(entry.glosses).filter(Boolean);
       const partOfSpeech = Array.from(entry.partsOfSpeech)[0];
       const dictionaries = Array.from(entry.sources.values());
