@@ -111,15 +111,18 @@ export const Library = () => {
     getAllProgress().then(setReadingProgress);
   }, [getAllProgress]);
 
-  // Phase A: fetch raw texts only when tab or user changes (no coverage work here)
-  useEffect(() => {
-    let active = true;
-    setIsLoading(true);
-    LibraryService.getRawTexts(user?.uid || null, SOURCE_MAP[activeTab]).then(data => {
-      if (active) { setRawTexts(data); setIsLoading(false); }
-    });
-    return () => { active = false; };
-  }, [user?.uid, activeTab]);
+    // Phase A: fetch raw texts only when tab or user changes (no coverage work here)
+    useEffect(() => {
+      let active = true;
+      setIsLoading(true); // eslint-disable-line react-hooks/set-state-in-effect
+      LibraryService.getRawTexts(user?.uid || null, SOURCE_MAP[activeTab]).then(data => {
+        if (active) { 
+          setRawTexts(data); 
+          setIsLoading(false); 
+        }
+      });
+      return () => { active = false; };
+    }, [user?.uid, activeTab]);
 
   // Phase B: compute coverage — only reruns when vocabulary or raw texts change,
   // NOT on every filter keystroke. getWordInfo is stable (Fix 3); knowledge is
