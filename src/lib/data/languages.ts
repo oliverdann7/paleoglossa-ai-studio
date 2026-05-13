@@ -15,6 +15,9 @@ export interface Language {
   supportsMorphology: boolean;
   supportsTransliteration: boolean;
   supportsTTS: boolean;
+  supportsPronunciationGuide: boolean;
+  audioProvider?: string;
+  reconstructionNote?: string;
   color?: string;
 }
 
@@ -36,6 +39,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: true,
     supportsTransliteration: true,
     supportsTTS: true,
+    supportsPronunciationGuide: true,
+    audioProvider: "gemini",
+    reconstructionNote: undefined,
     color: "#2563EB",
   },
   {
@@ -55,6 +61,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: true,
     supportsTransliteration: true,
     supportsTTS: true,
+    supportsPronunciationGuide: true,
+    audioProvider: "gemini",
+    reconstructionNote: undefined,
     color: "#059669",
   },
   {
@@ -74,6 +83,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: true,
     supportsTransliteration: true,
     supportsTTS: false,
+    supportsPronunciationGuide: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
     color: "#D97706",
   },
   {
@@ -93,6 +105,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: true,
     supportsTransliteration: false,
     supportsTTS: true,
+    supportsPronunciationGuide: true,
+    audioProvider: "gemini",
+    reconstructionNote: undefined,
     color: "#7C3AED",
   },
   {
@@ -112,6 +127,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: false,
     supportsTransliteration: false,
     supportsTTS: false,
+    supportsPronunciationGuide: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
     color: "#DC2626",
   },
   {
@@ -131,6 +149,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: false,
     supportsTransliteration: false,
     supportsTTS: false,
+    supportsPronunciationGuide: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
     color: "#0891B2",
   },
   {
@@ -150,6 +171,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: false,
     supportsTransliteration: false,
     supportsTTS: false,
+    supportsPronunciationGuide: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
     color: "#CA8A04",
   },
   {
@@ -169,6 +193,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: false,
     supportsTransliteration: true,
     supportsTTS: false,
+    supportsPronunciationGuide: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
     color: "#9333EA",
   },
   {
@@ -188,6 +215,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: false,
     supportsTransliteration: true,
     supportsTTS: false,
+    supportsPronunciationGuide: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
     color: "#E11D48",
   },
   {
@@ -207,6 +237,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: false,
     supportsTransliteration: true,
     supportsTTS: false,
+    supportsPronunciationGuide: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
     color: "#B45309",
   },
   {
@@ -226,6 +259,9 @@ export const LANGUAGES: Language[] = [
     supportsMorphology: false,
     supportsTransliteration: true,
     supportsTTS: false,
+    supportsPronunciationGuide: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
     color: "#78716C",
   },
 ];

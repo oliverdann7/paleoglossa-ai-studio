@@ -23,6 +23,7 @@ const Notebooks = lazy(() => import('./pages/Notebooks').then(module => ({ defau
 const Manuscripts = lazy(() => import('./pages/Manuscripts').then(module => ({ default: module.Manuscripts })));
 const Courses = lazy(() => import('./pages/Courses').then(module => ({ default: module.Courses })));
 const AudioLab = lazy(() => import('./pages/AudioLab').then(module => ({ default: module.AudioLab })));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(module => ({ default: module.AdminDashboard })));
 const SignIn = lazy(() => import('./pages/auth/SignIn').then(module => ({ default: module.SignIn })));
 const SignUp = lazy(() => import('./pages/auth/SignUp').then(module => ({ default: module.SignUp })));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
@@ -78,6 +79,9 @@ export default function App() {
           {/* Admin */}
           <Route path="/admin/import" element={<AppLayout />}>
             <Route index element={<Import />} />
+          </Route>
+          <Route path="/admin" element={<AppLayout />}>
+            <Route index element={<AdminDashboard />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -510,8 +510,76 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
   }
 });
 
-app.post('/api/ai/pronunciation', (_req: any, res: any) => {
-  res.status(200).json({ text: '', confidence: null, warnings: ['Pronunciation guide requires GEMINI_API_KEY.'] });
+app.post('/api/ai/pronunciation', async (req: any, res: any) => {
+  try {
+    const { languageId, text, transliteration } = req.body;
+
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ guide: null, reconstructionSystem: null, warnings: ['languageId is required'], code: 'INVALID_INPUT' });
+    }
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ guide: null, reconstructionSystem: null, warnings: ['text is required'], code: 'INVALID_INPUT' });
+    }
+
+    const note = LANGUAGE_RECONSTRUCTION_NOTES[languageId] || null;
+    const apiKey = process.env.GEMINI_API_KEY;
+    const langName = getLanguageName(languageId);
+
+    if (!apiKey) {
+      return res.status(200).json({
+        guide: null,
+        reconstructionSystem: null,
+        warnings: ['Gemini API key not configured. Pronunciation guide unavailable.'].concat(note ? [note] : []),
+      });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+
+    const prompt = `You are a historical linguist specializing in ${langName}. Provide a pronunciation guide for this text.
+
+Text: "${text}"
+${transliteration ? `Transliteration: "${transliteration}"` : ''}
+
+Return ONLY valid JSON with this exact structure — no markdown, no explanation:
+{
+  "guide": "Step-by-step pronunciation guide in plain English",
+  "phoneticApproximation": "Approximate pronunciation using English examples",
+  "ipaTranscription": "IPA transcription if confidently known, or null",
+  "notes": "Notes on uncertainty or dialectal variation"
+}
+
+Rules:
+- If the exact historical pronunciation is uncertain, state that clearly.
+- For languages with reconstructed pronunciation (Akkadian, Egyptian, Hittite), add prominent uncertainty notes.
+- If you cannot provide a guide, set guide to null and explain why in notes.`;
+
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const textResponse = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = textResponse.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+    let parsed: any;
+    try { parsed = JSON.parse(cleaned); } catch { parsed = null; }
+
+    const warnings: string[] = [];
+    if (!parsed?.guide) warnings.push('Could not generate pronunciation guide.');
+    if (note) warnings.push(note);
+    if (parsed?.notes) warnings.push(parsed.notes);
+
+    res.status(200).json({
+      guide: parsed?.guide || null,
+      phoneticApproximation: parsed?.phoneticApproximation || null,
+      ipaTranscription: parsed?.ipaTranscription || null,
+      reconstructionSystem: note ? 'reconstructed' : 'standard',
+      warnings: warnings.length > 0 ? warnings : undefined,
+    });
+  } catch (err: any) {
+    console.error('[ai/pronunciation] Error:', err.message);
+    res.status(200).json({
+      guide: null, reconstructionSystem: null,
+      warnings: ['Pronunciation guide unavailable.'],
+    });
+  }
 });
 
 app.post('/api/ai/scrape', async (req: any, res: any) => {
@@ -721,12 +789,65 @@ Return ONLY the explanation text — no markdown, no JSON.`;
 });
 
 // ─── Audio ───────────────────────────────────────────────────────────────────
-app.post('/api/audio/tts', (_req: any, res: any) => {
-  res.status(200).json({ audioUrl: null });
+const TTS_SUPPORTED_LANGUAGES: Record<string, string> = {
+  'grc': 'Google Standard (Ancient Greek accent reconstruction)',
+  'lat': 'Google Standard (Restored Classical pronunciation)',
+  'grc-koine': 'Google Standard (Koine pronunciation approximation)',
+};
+
+const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
+  'grc': 'Ancient Greek pronunciation is reconstructed. The exact phonetics of the classical period (5th–4th c. BCE) are scholarly approximations based on meter, spelling errors, and comparative linguistics.',
+  'grc-koine': 'Koine Greek pronunciation shifted from classical. This synthesis uses the reconstructed Erasmian-influenced system common in academic contexts.',
+  'lat': 'Restored Classical pronunciation (1st c. BCE–1st c. CE) based on consensus of historical linguists. Medieval/Ecclesiastical pronunciation differs.',
+  'hbo': 'Biblical Hebrew pronunciation follows the Tiberian tradition. Vowel quality and some consonants are reconstructed.',
+  'syr': 'Syriac pronunciation follows the Western (Serto) tradition. Eastern and Western traditions differ significantly.',
+  'cop': 'Coptic pronunciation follows the Bohairic tradition used in liturgical contexts. Ancient phonetics are partially reconstructed.',
+  'arc': 'Aramaic pronunciation is reconstructed from vocalized manuscripts and comparative Semitic data.',
+  'akk': 'Akkadian pronunciation is reconstructed from cuneiform writing, which does not record vowels fully. Significant uncertainty remains.',
+  'san': 'Sanskrit pronunciation follows the Paninian tradition preserved in oral recitation. Ancient phonetics are well understood.',
+  'egy': 'Egyptian pronunciation is highly uncertain. The conventional Egyptological pronunciation used in the field bears unknown resemblance to ancient speech.',
+  'hit': 'Hittite pronunciation is partially reconstructed from cuneiform spelling. Significant gaps remain.',
+};
+
+app.post('/api/audio/tts', (req: any, res: any) => {
+  const { languageId } = req.body;
+
+  if (!languageId) {
+    return res.status(400).json({ audioUrl: null, supported: false, reason: 'languageId is required', code: 'INVALID_INPUT' });
+  }
+
+  const providerInfo = TTS_SUPPORTED_LANGUAGES[languageId];
+  if (!providerInfo) {
+    return res.status(200).json({
+      audioUrl: null,
+      supported: false,
+      reason: `TTS is not available for ${languageId}. ${LANGUAGE_RECONSTRUCTION_NOTES[languageId] || ''}`,
+    });
+  }
+
+  // No TTS provider configured in production. Return honest unavailable.
+  const ttsApiKey = process.env.GOOGLE_TTS_API_KEY;
+  if (!ttsApiKey) {
+    return res.status(200).json({
+      audioUrl: null,
+      supported: true,
+      reason: `TTS engine (${providerInfo}) is not configured. Set GOOGLE_TTS_API_KEY for audio.`,
+      provider: providerInfo,
+    });
+  }
+
+  // If TTS were implemented with a real provider, the audio URL would go here.
+  // For now, return honest unavailable with provider info.
+  return res.status(200).json({
+    audioUrl: null,
+    supported: true,
+    reason: `TTS engine (${providerInfo}) is available but not yet connected to a streaming endpoint.`,
+    provider: providerInfo,
+  });
 });
 
 app.post('/api/audio/recordings', (_req: any, res: any) => {
-  res.status(200).json({ audioUrl: null });
+  res.status(200).json({ audioUrl: null, supported: false, reason: 'User recordings not yet implemented.' });
 });
 
 // ─── Courses ────────────────────────────────────────────────────────────────
@@ -1526,6 +1647,86 @@ Rules:
   } catch (err: any) {
     console.error('[tutor/message] Error:', err.message);
     res.status(500).json({ error: 'Failed to process message', code: 'TUTOR_ERROR' });
+  }
+});
+
+// ─── Admin API ─────────────────────────────────────────────────────────────
+const ADMIN_EMAILS = ['ADMIN_EMAIL_REDACTED'];
+
+function requireAdmin(req: AuthenticatedRequest, res: any): boolean {
+  const email = req.user?.email;
+  if (!email || !ADMIN_EMAILS.includes(email)) {
+    res.status(403).json({ error: 'Forbidden', code: 'FORBIDDEN' });
+    return false;
+  }
+  return true;
+}
+
+app.get('/api/admin/overview', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  if (!requireAdmin(req, res)) return;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const usersSnap = await adminDb_.collection('users').get();
+    let totalUsers = 0, paidUsers = 0, freeUsers = 0;
+    usersSnap.forEach(d => {
+      totalUsers++;
+      const plan = d.data()?.currentPlan;
+      if (plan && plan !== 'free') paidUsers++;
+      else freeUsers++;
+    });
+
+    const publicTextsSnap = await adminDb_.collection('publicTexts').where('moderationStatus', '==', 'visible').get();
+    const reportsSnap = await adminDb_.collection('publicTextReports').where('status', '==', 'open').get();
+    const recentAiSnap = await adminDb_.collection('aiUsage').orderBy('updatedAt', 'desc').limit(100).get();
+    let totalAiCalls = 0;
+    recentAiSnap.forEach(d => { totalAiCalls += d.data()?.count || 0; });
+
+    res.status(200).json({ totalUsers, paidUsers, freeUsers, publicTextCount: publicTextsSnap.size, openReports: reportsSnap.size, recentAiCalls: totalAiCalls });
+  } catch (e: any) {
+    console.error('[admin/overview] Error:', e.message);
+    res.status(500).json({ error: 'Failed to get overview', code: 'INTERNAL_ERROR' });
+  }
+});
+
+app.get('/api/admin/reports', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  if (!requireAdmin(req, res)) return;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const snap = await adminDb_.collection('publicTextReports').orderBy('createdAt', 'desc').limit(50).get();
+    const reports: any[] = [];
+    snap.forEach(d => reports.push({ id: d.id, ...d.data() }));
+    res.status(200).json(reports);
+  } catch (e: any) {
+    console.error('[admin/reports] Error:', e.message);
+    res.status(500).json({ error: 'Failed to get reports', code: 'INTERNAL_ERROR' });
+  }
+});
+
+app.post('/api/admin/publicTexts/:id/hide', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  if (!requireAdmin(req, res)) return;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    await adminDb_.doc('publicTexts/' + req.params.id).update({ moderationStatus: 'hidden' });
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[admin/hide] Error:', e.message);
+    res.status(500).json({ error: 'Failed to hide text', code: 'INTERNAL_ERROR' });
+  }
+});
+
+app.post('/api/admin/publicTexts/:id/restore', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  if (!requireAdmin(req, res)) return;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    await adminDb_.doc('publicTexts/' + req.params.id).update({ moderationStatus: 'visible' });
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[admin/restore] Error:', e.message);
+    res.status(500).json({ error: 'Failed to restore text', code: 'INTERNAL_ERROR' });
   }
 });
 
