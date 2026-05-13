@@ -34,7 +34,9 @@ const ExplainResponseSchema = z.object({
 });
 
 const TextResponseSchema = z.object({
-  text: z.string()
+  text: z.string(),
+  confidence: z.number().nullable().optional(),
+  notes: z.string().nullable().optional(),
 });
 
 const MetadataResponseSchema = z.object({
