@@ -66,8 +66,8 @@ export function generateReviewCard(item: any, options?: Partial<CardGenerationOp
   // Build list of possible card types
   const candidates: CardType[] = [];
 
-  // FORM_TO_MEANING: always possible (default)
-  candidates.push(CardType.FORM_TO_MEANING);
+  // FORM_TO_MEANING: require gloss (never answer with the same term)
+  if (gloss) candidates.push(CardType.FORM_TO_MEANING);
 
   // MEANING_TO_FORM: require gloss
   if (gloss) candidates.push(CardType.MEANING_TO_FORM);
@@ -86,13 +86,13 @@ export function generateReviewCard(item: any, options?: Partial<CardGenerationOp
   const type = available[Math.floor(Math.random() * available.length)];
 
   let question = term;
-  let answer = gloss || term;
+  let answer = gloss || '';
   let context: string | undefined;
 
   switch (type) {
     case CardType.FORM_TO_MEANING:
       question = term;
-      answer = gloss || term;
+      answer = gloss!;
       break;
 
     case CardType.MEANING_TO_FORM:

@@ -1,3 +1,5 @@
+import { apiFetch } from './apiFetch';
+
 export interface PronunciationGuide {
   word: string;
   ipa: string;
@@ -12,18 +14,13 @@ export interface Syllable {
 }
 
 export class AudioService {
-  static async generateTTS(text: string, languageId: string, userId?: string): Promise<string | null> {
+  static async generateTTS(text: string, languageId: string): Promise<string | null> {
     try {
-      const response = await fetch('/api/audio/tts', {
+      const data = await apiFetch<{ audioUrl: string | null }>('/api/audio/tts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(userId ? { 'X-User-Id': userId } : {}),
-        },
-        body: JSON.stringify({ text, languageId }),
+        body: { text, languageId },
+        skipAuth: true,
       });
-      if (!response.ok) return null;
-      const data = await response.json();
       return data.audioUrl || null;
     } catch {
       return null;
@@ -39,30 +36,6 @@ export class AudioService {
       });
       if (!response.ok) return null;
       return response.json();
-    } catch {
-      return null;
-    }
-  }
-
-  static async saveRecording(userId: string, recording: Blob, metadata: {
-    textId?: string;
-    sentenceIndex?: number;
-    wordIndex?: number;
-  }): Promise<string | null> {
-    const formData = new FormData();
-    formData.append('audio', recording);
-    if (metadata.textId) formData.append('textId', metadata.textId);
-    if (metadata.sentenceIndex !== undefined) formData.append('sentenceIndex', String(metadata.sentenceIndex));
-    if (metadata.wordIndex !== undefined) formData.append('wordIndex', String(metadata.wordIndex));
-
-    try {
-      const response = await fetch(`/api/audio/recordings?userId=${encodeURIComponent(userId)}`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (!response.ok) return null;
-      const data = await response.json();
-      return data.audioUrl || null;
     } catch {
       return null;
     }
