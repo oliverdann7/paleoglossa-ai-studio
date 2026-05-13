@@ -1,5 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import type { LexicalData, StudyWordState } from '@/types/linguistics';
+
+type StudyWordState = 'new' | 'seen' | 'learning' | 'familiar' | 'known' | 'ignored';
+interface LexicalData { lemma?: string; gloss?: string; morphology?: string; [key: string]: unknown; }
 
 const STORAGE_KEY = 'paleoglossa-study-state';
 
