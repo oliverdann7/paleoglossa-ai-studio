@@ -29,6 +29,9 @@ interface SubscriptionContextValue {
   createPortalSession: () => Promise<string | null>;
 }
 
+const ADMIN_EMAILS = ['ADMIN_EMAIL_REDACTED'];
+// TODO: Migrate to Firebase custom claims so admin status is verifiable server-side.
+
 const DEFAULT_SUBSCRIPTION: UserSubscription = {
   currentPlan: 'free',
   selectedLanguageIds: ['grc'],
