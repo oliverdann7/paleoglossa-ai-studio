@@ -254,8 +254,8 @@ export class ImportService {
         },
       });
       if (!res.ok) return null;
-      const data = await res.json();
-      return data.id || null;
+      const json = await res.json();
+      return json.id || null;
     } catch {
       return null;
     }
