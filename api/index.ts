@@ -568,32 +568,48 @@ app.post('/api/stripe/webhook', async (req: any, res: any) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   const stripeKey = process.env.STRIPE_SECRET_KEY;
 
+  const isDev = process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development';
+
   if (!sig || !webhookSecret || !stripeKey) {
-    return res.status(200).json({ received: true, devMode: true });
+    if (isDev) {
+      return res.status(200).json({ received: true, devMode: true });
+    }
+    return res.status(500).json({ error: 'Stripe webhook not configured', code: 'STRIPE_NOT_CONFIGURED' });
   }
 
+  let event: any;
   try {
     const stripe = new (await import('stripe')).default(stripeKey);
     const rawBody = req.rawBody || JSON.stringify(req.body);
-    const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+  } catch (err: any) {
+    console.error('[stripe-webhook] Invalid signature:', err.message);
+    return res.status(400).json({ error: 'Invalid signature', code: 'INVALID_SIGNATURE' });
+  }
 
-    const adminDb_ = getAdminDb();
-    if (!adminDb_) {
-      console.error('[stripe-webhook] Admin DB not available');
-      return res.status(503).json({ error: 'Database unavailable', code: 'SERVICE_UNAVAILABLE' });
-    }
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) {
+    console.error('[stripe-webhook] Admin DB not available');
+    return res.status(503).json({ error: 'Database unavailable', code: 'SERVICE_UNAVAILABLE' });
+  }
 
-    const { FieldValue } = await import('firebase-admin/firestore');
-    const eventId = event.id;
+  const { FieldValue } = await import('firebase-admin/firestore');
+  const eventId = event.id;
 
-    // Idempotency: skip if already processed
+  // Idempotency: skip if already processed
+  try {
     const eventDoc = await adminDb_.doc('stripeEvents/' + eventId).get();
     if (eventDoc.exists) {
       return res.status(200).json({ received: true, duplicate: true });
     }
+  } catch (dbErr: any) {
+    console.error('[stripe-webhook] Idempotency check failed:', dbErr.message);
+    // Continue processing — better to process twice than miss an event.
+  }
 
-    const now = FieldValue.serverTimestamp();
+  const now = FieldValue.serverTimestamp();
 
+  try {
     switch (event.type) {
 
       case 'checkout.session.completed': {
@@ -609,6 +625,9 @@ app.post('/api/stripe/webhook', async (req: any, res: any) => {
         const customerId = session.customer as string | undefined;
         const subscriptionId = session.subscription as string | undefined;
         const customerEmail = session.customer_details?.email as string | undefined;
+        const periodEnd = (session as any).current_period_end
+          ? new Date((session as any).current_period_end * 1000).toISOString()
+          : null;
 
         const userData: Record<string, any> = {
           currentPlan: planId,
@@ -617,9 +636,9 @@ app.post('/api/stripe/webhook', async (req: any, res: any) => {
         };
         if (customerId) userData.stripeCustomerId = customerId;
         if (subscriptionId) userData.stripeSubscriptionId = subscriptionId;
+        if (periodEnd) userData.currentPeriodEnd = periodEnd;
         userData.selectedLanguageIds = planId === 'full_all' ? ALL_LANGUAGES : ['grc'];
 
-        // Mark the user doc
         await adminDb_.doc('users/' + userId).set(userData, { merge: true });
 
         // Create reverse lookup so subscription webhooks can find the user
@@ -631,7 +650,6 @@ app.post('/api/stripe/webhook', async (req: any, res: any) => {
             updatedAt: now,
           }, { merge: true });
         }
-
         break;
       }
 
@@ -713,12 +731,14 @@ app.post('/api/stripe/webhook', async (req: any, res: any) => {
     await adminDb_.doc('stripeEvents/' + eventId).set({
       type: event.type,
       processedAt: now,
+    }).catch((dbErr: any) => {
+      console.error('[stripe-webhook] Failed to mark event as processed:', dbErr.message);
     });
 
     res.status(200).json({ received: true });
   } catch (err: any) {
-    console.error('Stripe webhook error:', err);
-    res.status(400).json({ error: err.message });
+    console.error('[stripe-webhook] Processing error:', err);
+    res.status(500).json({ error: err.message || 'Webhook processing failed', code: 'WEBHOOK_ERROR' });
   }
 });
 
