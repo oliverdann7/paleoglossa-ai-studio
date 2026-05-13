@@ -1,5 +1,6 @@
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { apiFetch } from './apiFetch';
 import { ImportedText as FSImportedText } from '../../types/firestore';
 import { normalizeTimestamp } from '../utils';
 import { STORAGE_KEYS } from '../constants/storage';
@@ -154,20 +155,9 @@ export class ImportService {
   static async sharePublic(userId: string, importId: string): Promise<boolean> {
     if (!userId) return false;
 
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) return false;
-
     try {
-      const res = await fetch('/api/imports/' + importId + '/share', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-        },
-      });
-      if (!res.ok) return false;
-      const data = await res.json();
-      return data.success === true;
+      await apiFetch('/api/imports/' + importId + '/share', { method: 'POST' });
+      return true;
     } catch {
       return false;
     }
@@ -176,20 +166,9 @@ export class ImportService {
   static async unsharePublic(userId: string, importId: string): Promise<boolean> {
     if (!userId) return false;
 
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) return false;
-
     try {
-      const res = await fetch('/api/imports/' + importId + '/unshare', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-        },
-      });
-      if (!res.ok) return false;
-      const data = await res.json();
-      return data.success === true;
+      await apiFetch('/api/imports/' + importId + '/unshare', { method: 'POST' });
+      return true;
     } catch {
       return false;
     }
@@ -242,19 +221,10 @@ export class ImportService {
   static async forkPublic(userId: string, publicTextId: string): Promise<string | null> {
     if (!userId) return null;
 
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) return null;
-
     try {
-      const res = await fetch('/api/public/texts/' + publicTextId + '/fork', {
+      const json = await apiFetch<{ id: string }>('/api/public/texts/' + publicTextId + '/fork', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-        },
       });
-      if (!res.ok) return null;
-      const json = await res.json();
       return json.id || null;
     } catch {
       return null;
