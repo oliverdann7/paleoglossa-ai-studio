@@ -1,4 +1,5 @@
 import { TextSection, Sentence } from '../../types/corpus';
+import { ALL_JOHN_CHAPTERS } from './john-full';
 
 function sent(id: string, words: string[], translation: string, lemmaMap?: Record<string, { lemma: string; gloss: string }>): Sentence {
   return {
@@ -1006,4 +1007,5 @@ export const ALL_EXPANDED_SECTIONS: TextSection[] = [
   SANSKRIT_FINAL,
   HITTITE_MORE,
   EGYPTIAN_MORE,
+  ...ALL_JOHN_CHAPTERS,
 ];

@@ -204,6 +204,46 @@ export const TEXT_JOHN_1: Text = {
   ],
 };
 
+export const TEXT_JOHN_FULL: Text = {
+  id: "Jn-full",
+  corpusId: "SBLGNT",
+  title: "ΚΑΤΑ ΙΩΑΝΝΗΝ",
+  canonicalRef: "John 2–21",
+  author: "John",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 867,
+  sectionsPreview: [
+    { id: "Jn-2",  label: "John 2"  },
+    { id: "Jn-3",  label: "John 3"  },
+    { id: "Jn-4",  label: "John 4"  },
+    { id: "Jn-5",  label: "John 5"  },
+    { id: "Jn-6",  label: "John 6"  },
+    { id: "Jn-7",  label: "John 7"  },
+    { id: "Jn-8",  label: "John 8"  },
+    { id: "Jn-9",  label: "John 9"  },
+    { id: "Jn-10", label: "John 10" },
+    { id: "Jn-11", label: "John 11" },
+    { id: "Jn-12", label: "John 12" },
+    { id: "Jn-13", label: "John 13" },
+    { id: "Jn-14", label: "John 14" },
+    { id: "Jn-15", label: "John 15" },
+    { id: "Jn-16", label: "John 16" },
+    { id: "Jn-17", label: "John 17" },
+    { id: "Jn-18", label: "John 18" },
+    { id: "Jn-19", label: "John 19" },
+    { id: "Jn-20", label: "John 20" },
+    { id: "Jn-21", label: "John 21" },
+  ],
+};
+
 export const TEXT_GENESIS: Text = {
   id: "Gen",
   corpusId: "OSHB",
@@ -2928,6 +2968,7 @@ function getAllEnhancedTexts() {
   if (!_textsCache) {
     _textsCache = [
       TEXT_JOHN_1,
+      TEXT_JOHN_FULL,
       TEXT_GENESIS,
       TEXT_AENEID_1,
       TEXT_PSALM_23,
