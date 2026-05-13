@@ -63,8 +63,9 @@ service cloud.firestore {
 
       // Owner may create their profile on sign-up.
       // Subscription fields are not allowed on create (server sets them).
+      // The stats field is optional — SignUp does not include it, but AuthContext does.
       allow create: if isOwner(userId)
-        && incoming().keys().hasAll(['email', 'displayName', 'createdAt', 'stats'])
+        && incoming().keys().hasAll(['email', 'displayName', 'createdAt'])
         && !incoming().keys().hasAny(serverControlledFields());
 
       // Owner may update profile, but NOT server-controlled subscription fields.
