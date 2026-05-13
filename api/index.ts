@@ -23,7 +23,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use((_req: any, res: any, next: any) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-User-Id');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Id');
   if (_req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -31,6 +31,14 @@ app.use((_req: any, res: any, next: any) => {
 // ─── Test route ──────────────────────────────────────────────────────────────
 app.post('/api/test', (_req: any, res: any) => {
   res.status(200).json({ ok: true, message: 'Test route works' });
+});
+
+// ─── Auth test — verify a Firebase ID token and return user info ─────────────
+import { requireAuth } from './_lib/auth';
+import type { AuthenticatedRequest } from './_lib/auth';
+
+app.get('/api/auth/me', requireAuth as any, (req: AuthenticatedRequest, res: any) => {
+  res.status(200).json({ user: req.user });
 });
 
 // ─── Lemmas ──────────────────────────────────────────────────────────────────
