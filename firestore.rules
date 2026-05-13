@@ -135,6 +135,42 @@ service cloud.firestore {
         allow create, update: if isOwner(userId);
         allow delete: if isOwner(userId);
       }
+
+      // ── Notes ──────────────────────────────────────────
+      match /notes/{noteId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+      }
+
+      // ── Notebooks ──────────────────────────────────────
+      match /notebooks/{notebookId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+      }
+
+      // ── Tutor Sessions ────────────────────────────────
+      match /tutorSessions/{sessionId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+
+        match /messages/{messageId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId);
+          allow read, write: if isOwner(userId);
+        }
+      }
+    }
+
+    // ── Syntax Annotations (top-level, server-managed) ──
+    match /syntaxAnnotations/{annotationId} {
+      allow read: if true;   // eslint-disable-line @firebase/security-rules/no-open-reads — public annotations intentional
+      allow write: if false; // Admin SDK only
     }
   }
 }

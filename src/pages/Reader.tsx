@@ -109,6 +109,7 @@ export const Reader = () => {
 
   // Page mode state
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
+  const onAskTutor = () => navigate(`/app/tutor?textId=${textId || ''}&sentenceIndex=${currentSentenceIndex || 0}`);
   const [isTranslatingId, setIsTranslatingId] = useState<string | null>(null);
 
   const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
@@ -162,7 +163,7 @@ export const Reader = () => {
     
     try {
       const languageName = text?.language || "ancient language";
-      const result = await AIClient.translateSentence(languageName, sentenceTokens.map(t => t.text).join(" "), user?.uid);
+      const result = await AIClient.translateSentence(languageName, sentenceTokens.map(t => t.text).join(" "));
       setAiTranslations(prev => ({ ...prev, [sentenceId]: result }));
     } catch (error) {
       console.error(error);
@@ -722,6 +723,11 @@ export const Reader = () => {
           interlinearMode={interlinearMode}
           onToggleInterlinear={() => setInterlinearMode(m => !m)}
         />
+        <button onClick={onAskTutor}
+          className="fixed bottom-24 right-6 z-30 w-12 h-12 bg-ink text-parch rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95"
+          title="Ask Tutor">
+          <span className="text-[18px] font-serif font-bold">T</span>
+        </button>
 
         <ReaderAudioBar
           isPlaying={isPlaying}
