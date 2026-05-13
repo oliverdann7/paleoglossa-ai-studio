@@ -115,7 +115,7 @@ export const Import = () => {
     setIsProcessing(true);
     setProcessingStep("Performing OCR with AI...");
     try {
-      const extractedText = await AIClient.extractFromImage(languageId, imageBase64, imageMimeType, user?.uid);
+      const extractedText = await AIClient.extractFromImage(languageId, imageBase64, imageMimeType);
       setText(extractedText);
       setActiveTab("paste");
       setImageBase64(null);
@@ -134,7 +134,7 @@ export const Import = () => {
     setIsProcessing(true);
     setProcessingStep("Scraping content from URL...");
     try {
-      const extractedText = await AIClient.scrapeUrl(url, user?.uid);
+      const extractedText = await AIClient.scrapeUrl(url);
       setText(extractedText);
       setActiveTab("paste");
       setUrl("");
@@ -219,7 +219,11 @@ export const Import = () => {
     }
 
     try {
-      sentences = await AIClient.analyzeText(languageId, text, user?.uid);
+      const result = await AIClient.analyzeText(languageId, text);
+      sentences = result.sentences;
+      if (result.analysisStatus === 'analyzed') {
+        analysisStatus = 'analyzed';
+      }
       setProcessingStep("Mapping to your knowledge...");
       stats = calculateStats(sentences);
     } catch (error: any) {

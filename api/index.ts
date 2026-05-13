@@ -129,7 +129,7 @@ app.post('/api/ai/analyze', optionalAuth as any, async (req: AuthenticatedReques
     let aiWarnings: string[] = [];
 
     // ── Usage quota check ────────────────────────────────────────────
-    const uid = req.user?.uid || (req.headers['x-user-id'] as string | undefined);
+    const uid = req.user?.uid;
     if (apiKey && uid) {
       const planId = await lookupUserPlan(uid);
       const quota = await checkAndIncrementUsage(uid, planId, 'analyze', rawText.length);
@@ -190,6 +190,7 @@ ${rawText.slice(0, 20000)}`;
           return res.status(200).json({
             sentences: validated.sentences,
             aiAnalyzed: true,
+            analysisStatus: 'analyzed',
             confidence: computeOverallConfidence(validated.sentences),
             warnings: aiWarnings.length > 0 ? aiWarnings : undefined,
           });
@@ -197,6 +198,7 @@ ${rawText.slice(0, 20000)}`;
 
         // Gemini returned unparseable JSON, fall through
         aiWarnings.push('Gemini returned unparseable response');
+        if (warnings.length > 0) aiWarnings.push(...warnings);
         console.warn('[ai/analyze] Gemini unparseable, using fallback');
       } catch (geminiErr: any) {
         aiWarnings.push('Gemini API call failed: ' + geminiErr.message);
@@ -223,6 +225,7 @@ ${rawText.slice(0, 20000)}`;
     return res.status(200).json({
       sentences: fallbackSentences,
       aiAnalyzed: false,
+      analysisStatus: 'raw',
       confidence: null,
       warnings: geminiAttempted
         ? (aiWarnings.length > 0 ? aiWarnings : undefined)
@@ -253,6 +256,28 @@ function computeOverallConfidence(sentences: { tokens: { confidence: number | nu
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp', 'image/tiff'];
 const MAX_IMAGE_BASE64_LENGTH = 14 * 1024 * 1024; // ~10MB raw image
+
+// ── Scrape URL validation ────────────────────────────────────────────────
+function isPrivateIP(hostname: string): boolean {
+  return /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.0\.0\.0$|localhost$|.*\.local$)/.test(hostname);
+}
+
+function isValidScrapeUrl(urlString: string): { valid: boolean; reason?: string } {
+  let parsed: URL;
+  try { parsed = new URL(urlString); } catch {
+    return { valid: false, reason: 'Invalid URL format' };
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { valid: false, reason: 'Only http and https URLs are allowed' };
+  }
+  if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+    return { valid: false, reason: 'Localhost URLs are not allowed' };
+  }
+  if (isPrivateIP(parsed.hostname)) {
+    return { valid: false, reason: 'Private IP ranges are not allowed' };
+  }
+  return { valid: true };
+}
 
 app.post('/api/ai/ocr', async (req: any, res: any) => {
   try {
@@ -486,31 +511,221 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
 });
 
 app.post('/api/ai/pronunciation', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+  res.status(200).json({ text: '', confidence: null, warnings: ['Pronunciation guide requires GEMINI_API_KEY.'] });
 });
 
-app.post('/api/ai/scrape', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+app.post('/api/ai/scrape', async (req: any, res: any) => {
+  try {
+    const { url } = req.body;
+
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'url is required', code: 'INVALID_INPUT', text: '' });
+    }
+
+    const validation = isValidScrapeUrl(url);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.reason, code: 'INVALID_INPUT', text: '' });
+    }
+
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Paleoglossa/1.0)' },
+    });
+
+    if (!response.ok) {
+      return res.status(502).json({ error: `Remote server returned ${response.status}`, code: 'FETCH_ERROR', text: '' });
+    }
+
+    const html = await response.text();
+
+    // Basic text extraction: strip HTML tags
+    const text = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 50000);
+
+    const warnings: string[] = [];
+    if (!text) warnings.push('No readable text could be extracted from the URL.');
+    if (response.headers.get('content-type')?.includes('pdf')) warnings.push('PDF content may not extract cleanly.');
+
+    res.status(200).json({ text, confidence: null, warnings: warnings.length > 0 ? warnings : undefined });
+  } catch (err: any) {
+    console.error('[ai/scrape] Error:', err.message);
+    res.status(500).json({ text: '', confidence: null, warnings: ['Failed to fetch URL: ' + err.message] });
+  }
 });
 
-app.post('/api/ai/metadata', (_req: any, res: any) => {
-  res.status(200).json({ difficulty: '', tags: [], summary: '' });
+app.post('/api/ai/metadata', async (req: any, res: any) => {
+  try {
+    const { languageId, rawText } = req.body;
+
+    if (!languageId || typeof languageId !== 'string' || !rawText || typeof rawText !== 'string') {
+      return res.status(400).json({ error: 'languageId and rawText are required', code: 'INVALID_INPUT', difficulty: '', tags: [], summary: '', warnings: ['Invalid input'] });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', period: '', genre: '', warnings: ['Gemini API key not configured. Metadata unavailable.'] });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const prompt = `Analyze the following ${langName} text and return ONLY valid JSON.
+
+{
+  "difficulty": "beginner|intermediate|advanced|unknown",
+  "tags": ["tag1", "tag2"],
+  "summary": "One sentence summary of the content.",
+  "period": "historical period or empty string",
+  "genre": "genre or empty string"
+}
+
+Rules:
+- difficulty must be one of: beginner, intermediate, advanced, unknown
+- tags should be 2-5 relevant keywords
+- summary should be one sentence
+- period and genre are optional guesses — leave empty if uncertain
+- Do not include markdown. Return ONLY the JSON.
+
+Text: ${rawText.slice(0, 5000)}`;
+
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+    try {
+      const parsed = JSON.parse(cleaned);
+      res.status(200).json({
+        difficulty: parsed.difficulty || 'unknown',
+        tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+        summary: parsed.summary || '',
+        period: parsed.period || undefined,
+        genre: parsed.genre || undefined,
+        warnings: undefined,
+      });
+    } catch {
+      res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', warnings: ['AI returned unparseable metadata.'] });
+    }
+  } catch (err: any) {
+    console.error('[ai/metadata] Error:', err.message);
+    res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', warnings: ['Metadata generation failed.'] });
+  }
 });
 
 app.post('/api/ai/tutor/start', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+  res.status(200).json({ text: '', warnings: ['Tutor session requires GEMINI_API_KEY.'] });
 });
 
 app.post('/api/ai/tutor/message', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+  res.status(200).json({ text: '', warnings: ['Tutor session requires GEMINI_API_KEY.'] });
 });
 
-app.post('/api/ai/quiz', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+app.post('/api/ai/quiz', async (req: any, res: any) => {
+  try {
+    const { languageId, lemma, form, type } = req.body;
+
+    if (!languageId || !lemma) {
+      return res.status(400).json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Quiz requires GEMINI_API_KEY.', confidence: null });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const prompt = `Generate a short morphology or reading question for a student of ${langName}.
+
+Lemma: "${lemma}"
+${form ? `Form: "${form}"` : ''}
+Type: ${type || 'morphology'}
+
+Return ONLY valid JSON:
+{
+  "question": "The question text",
+  "choices": ["option A", "option B", "option C", "option D"],
+  "answer": "The correct choice",
+  "explanation": "Brief explanation of the correct answer."
+}
+
+Rules:
+- Question should test recognition of the form/lemma
+- Provide 4 choices, one correct
+- Explanation should be 1-2 sentences
+- Do not include markdown. Return ONLY the JSON.`;
+
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+    try {
+      const parsed = JSON.parse(cleaned);
+      res.status(200).json({
+        question: parsed.question || '',
+        choices: Array.isArray(parsed.choices) ? parsed.choices : undefined,
+        answer: parsed.answer || '',
+        explanation: parsed.explanation || '',
+        confidence: null,
+      });
+    } catch {
+      res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Failed to parse quiz response.', confidence: null });
+    }
+  } catch (err: any) {
+    console.error('[ai/quiz] Error:', err.message);
+    res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Quiz generation failed.', confidence: null });
+  }
 });
 
-app.post('/api/ai/syntax', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+app.post('/api/ai/syntax', async (req: any, res: any) => {
+  try {
+    const { languageId, sentence } = req.body;
+
+    if (!languageId || typeof languageId !== 'string' || !sentence || typeof sentence !== 'string') {
+      return res.status(400).json({ error: 'languageId and sentence are required', code: 'INVALID_INPUT', explanation: '', confidence: null });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ explanation: 'Syntax analysis requires GEMINI_API_KEY.', confidence: null, warnings: ['Gemini API key not configured.'] });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const prompt = `Provide a syntactic explanation of the following ${langName} sentence.
+
+Sentence: "${sentence}"
+
+Explain the clause structure, word order, and dependencies. Be honest about uncertainty.
+If you are not confident about the parsing, say so explicitly.
+Do not invent a full treebank. Focus on explanation.
+
+Return ONLY the explanation text — no markdown, no JSON.`;
+
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const hasUncertainty = cleaned.includes('uncertain') || cleaned.includes('not confident') || cleaned.includes('unclear');
+
+    res.status(200).json({
+      explanation: cleaned || 'No syntax explanation could be generated.',
+      confidence: null,
+      warnings: hasUncertainty ? ['AI expressed uncertainty in the analysis.'] : undefined,
+    });
+  } catch (err: any) {
+    console.error('[ai/syntax] Error:', err.message);
+    res.status(200).json({ explanation: 'Syntax analysis failed.', confidence: null, warnings: ['Analysis failed: ' + err.message] });
+  }
 });
 
 // ─── Audio ───────────────────────────────────────────────────────────────────

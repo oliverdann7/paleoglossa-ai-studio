@@ -6,7 +6,6 @@ import { BookOpen, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert 
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, STATE_LABELS } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
-import { useAuth } from '@/lib/hooks/useAuth';
 import { ParadigmModal } from './ParadigmModal';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
@@ -48,7 +47,6 @@ export const LexDrawerPanel = ({
   playTTS,
   text
 }: LexDrawerPanelProps) => {
-  const { user } = useAuth();
   const { t } = useTranslation();
   
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
@@ -95,7 +93,7 @@ export const LexDrawerPanel = ({
     
     try {
       const languageName = text?.language || selectedWord.language || "ancient language";
-      const explanation = await AIClient.explainWord(languageName, selectedWord.text, selectedWord.lemma, user?.uid);
+      const explanation = await AIClient.explainWord(languageName, selectedWord.text, selectedWord.lemma);
       setAiWordInsight(explanation);
     } catch (error) {
       console.error(error);

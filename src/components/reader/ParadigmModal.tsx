@@ -30,7 +30,7 @@ export const ParadigmModal: React.FC<ParadigmModalProps> = ({
       const fetchParadigm = async () => {
         setIsLoading(true);
         try {
-          const result = await AIClient.getParadigm(languageId, word, lemma, user?.uid);
+          const result = await AIClient.getParadigm(languageId, word, lemma);
           setParadigm(result);
         } catch (error: any) {
           console.error(error);

@@ -162,7 +162,7 @@ export const Reader = () => {
     
     try {
       const languageName = text?.language || "ancient language";
-      const result = await AIClient.translateSentence(languageName, sentenceTokens.map(t => t.text).join(" "), user?.uid);
+      const result = await AIClient.translateSentence(languageName, sentenceTokens.map(t => t.text).join(" "));
       setAiTranslations(prev => ({ ...prev, [sentenceId]: result }));
     } catch (error) {
       console.error(error);
