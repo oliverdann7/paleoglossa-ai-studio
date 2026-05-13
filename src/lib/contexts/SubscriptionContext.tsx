@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { auth, db } from '../firebase';
+import { db } from '../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { apiFetch } from '../services/apiFetch';
 import { PlanId, SubscriptionStatus, getPlanById, canAddLanguage as canAddByPlan, canAccessLanguage as canAccessByPlan, TRIAL_DAYS } from '../constants/plans';
 
 const SUBSCRIPTION_STORAGE_KEY = 'paleoglossa_subscription';
@@ -143,22 +144,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [subscription, isAdmin, hasTrialAccess]);
 
   const createCheckoutSession = useCallback(async (planId: PlanId, billingCycle: 'monthly' | 'yearly' = 'monthly'): Promise<string | null> => {
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) return null;
-
     try {
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      const data = await apiFetch<{ url: string | null; devMode?: boolean }>('/api/stripe/create-checkout-session', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-        },
-        body: JSON.stringify({
-          planId,
-          billingCycle,
-        }),
+        body: { planId, billingCycle },
       });
-      const data = await response.json();
       if (data.devMode) {
         // Dev mode: set plan with trial period
         const trialEnd = new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString();
@@ -179,18 +169,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [user, setPlan, subscription, persist]);
 
   const createPortalSession = useCallback(async (): Promise<string | null> => {
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) return null;
-
     try {
-      const response = await fetch('/api/stripe/create-portal-session', {
+      const data = await apiFetch<{ url: string | null; devMode?: boolean }>('/api/stripe/create-portal-session', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-        },
       });
-      const data = await response.json();
       if (data.devMode) return null;
       return data.url || null;
     } catch (err) {
