@@ -4,7 +4,6 @@ import { X, Volume2, Bookmark, Eye, Brain, CheckCircle2, Sparkles, Loader2 } fro
 import { cn } from '@/lib/utils';
 import { AIClient } from '../lib/services/aiClient';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../lib/hooks/useAuth';
 
 interface LexDrawerProps {
   word: any;
@@ -15,7 +14,7 @@ interface LexDrawerProps {
 }
 
 export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: LexDrawerProps) => {
-  const { user } = useAuth();
+  
   const { t } = useTranslation();
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -27,7 +26,7 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
     
     try {
       const languageName = language || word.language || "ancient language";
-      const explanation = await AIClient.explainWord(languageName, word.text, word.lemma, user?.uid);
+      const explanation = await AIClient.explainWord(languageName, word.text, word.lemma);
       setAiInsights(explanation);
     } catch (error) {
       console.error(error);
