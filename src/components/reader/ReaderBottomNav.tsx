@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type SourceKind = 'import' | 'sample' | 'partial' | 'complete';
 
@@ -19,6 +20,7 @@ export function ReaderBottomNav({
   scrollProgress, readingMode, sourceKind, currentSentenceIndex, totalSentences,
   canGoPrev, canGoNext, onPrev, onNext, onMarkKnown,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="h-12 bg-parch2 border-t border-bdr flex items-center justify-between px-4 md:px-6 shrink-0 z-30 pb-safe">
       <div className="flex items-center gap-4 md:gap-6">
@@ -52,12 +54,12 @@ export function ReaderBottomNav({
           className="bg-blue text-white px-4 md:px-5 py-1.5 rounded-full text-[12px] font-bold hover:bg-blue/90 shadow-sm transition-all whitespace-nowrap"
         >
           {readingMode === 'page'
-            ? 'Mark Known & Next'
+            ? t('reader.markKnown', 'Mark Known & Next')
             : sourceKind === 'sample'
-              ? 'Mark Sample as Seen'
+              ? t('reader.markSampleSeen', 'Mark Sample as Seen')
               : sourceKind === 'import'
-                ? 'Mark as Seen'
-                : 'Mark Page Known'}
+                ? t('reader.markTextSeen', 'Mark Text as Seen')
+                : t('reader.markPageKnown', 'Mark Page as Seen & Next')}
         </button>
         <button
           onClick={onNext}

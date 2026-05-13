@@ -221,6 +221,23 @@ export const getGlossForLemma = (lemma: string) => {
   return dict[lemma]?.gloss || "Definition unavailable";
 };
 
+export const getGlossWithFallbacks = (lemma: string, languageId: string): string | null => {
+  // 1. Exact match in curated dictionary entries
+  const entry = findDictionaryEntry(lemma, languageId);
+  if (entry?.shortGloss) return entry.shortGloss;
+  // 2. Lowercase / normalized form
+  const lower = lemma.toLowerCase();
+  if (lower !== lemma) {
+    const entryLower = findDictionaryEntry(lower, languageId);
+    if (entryLower?.shortGloss) return entryLower.shortGloss;
+  }
+  // 3. Corpus global dictionary (token-level glosses from imported and corpus texts)
+  const dict = getGlobalDictionary();
+  const corpusGloss = dict[lemma]?.gloss || dict[lower]?.gloss;
+  if (corpusGloss) return corpusGloss;
+  return null;
+};
+
 export const getLangForLemma = (lemma: string) => {
   const dict = getGlobalDictionary();
   return dict[lemma]?.language || "Unknown";

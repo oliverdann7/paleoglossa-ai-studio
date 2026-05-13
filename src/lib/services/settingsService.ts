@@ -18,6 +18,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   transliterationMode: 'phonetic',
   targetLanguage: 'grc',
   uiLanguage: 'en',
+  swipePageMovesToKnown: true,
+  activeDictionaries: ['strongs-greek', 'strongs-hebrew', 'liddell-scott', 'whitakers-words'],
 };
 
 export class SettingsService {

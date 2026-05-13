@@ -1,4 +1,5 @@
 import { memo, useRef, useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS } from '@/lib/constants/wordStates';
@@ -198,6 +199,7 @@ export function ReadingPane({
    currentScrollPage, totalPages, currentChapterIndex, totalChapters,
    sentenceSliceStart,
 }: Props) {
+  const { t } = useTranslation();
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
@@ -360,34 +362,36 @@ export function ReadingPane({
                 <div className="text-muted text-center opacity-30 text-[24px] mt-12 mb-8">❦</div>
                 <div className="flex flex-col items-center gap-6 mt-12 pb-24">
                   {currentScrollPage >= totalPages - 1 ? (
-                    <div className="text-center">
-                      <h4 className="font-serif text-[24px] text-ink mb-2">
-                        {sourceKind === 'import'
-                          ? 'End of your imported text.'
-                          : sourceKind === 'sample'
-                            ? 'End of sample excerpt.'
-                            : currentChapterIndex < totalChapters - 1
-                              ? 'End of this section.'
+                    /* Only show end-of-text messaging on the final chunk of the lesson */
+                    currentChapterIndex >= totalChapters - 1 ? (
+                      <div className="text-center">
+                        <h4 className="font-serif text-[24px] text-ink mb-2">
+                          {sourceKind === 'import'
+                            ? t('reader.endOfImport', 'End of your imported text.')
+                            : sourceKind === 'sample'
+                              ? t('reader.endOfSample', 'End of sample excerpt.')
                               : sourceKind === 'partial'
-                                ? 'End of available section.'
-                                : 'End of chapter.'}
-                      </h4>
-                      <p className="text-muted text-[14px]">
-                        {sourceKind === 'import'
-                          ? 'You can import more text from the library.'
-                          : sourceKind === 'sample'
-                            ? 'The full text is available in the library.'
-                            : currentChapterIndex < totalChapters - 1
-                              ? 'Ready to move on to the next section?'
+                                ? t('reader.endOfAvailableSection', 'End of available section.')
+                                : t('reader.endOfChapter', 'End of chapter.')}
+                        </h4>
+                        <p className="text-muted text-[14px]">
+                          {sourceKind === 'import'
+                            ? t('reader.importMoreText', 'Import More Text')
+                            : sourceKind === 'sample'
+                              ? t('reader.fullText', 'Full Text')
                               : sourceKind === 'partial'
-                                ? 'No next section is available yet.'
-                                : "You've finished this text."}
-                      </p>
-                    </div>
+                                ? t('reader.noNextSection', 'No next section is available yet.')
+                                : t('reader.finishedText', "You've finished this text.")}
+                        </p>
+                      </div>
+                    ) : null /* intermediate sections: no heading, just nav buttons */
                   ) : (
                     <div className="text-center">
                       <h4 className="font-serif text-[20px] text-ink mb-2">
-                        End of Page {currentScrollPage + 1} of {totalPages}
+                        {t('reader.endOfPage', 'End of Page {{current}} of {{total}}', {
+                          current: currentScrollPage + 1,
+                          total: totalPages,
+                        })}
                       </h4>
                     </div>
                   )}
@@ -398,13 +402,13 @@ export function ReadingPane({
                     >
                       {currentScrollPage >= totalPages - 1
                         ? sourceKind === 'import'
-                          ? 'Mark Text as Seen'
+                          ? t('reader.markTextSeen', 'Mark Text as Seen')
                           : sourceKind === 'sample'
-                            ? 'Mark Sample as Seen'
+                            ? t('reader.markSampleSeen', 'Mark Sample as Seen')
                             : sourceKind === 'partial'
-                              ? 'Mark Section as Seen'
-                              : 'Mark Chapter as Seen'
-                        : 'Mark Page as Seen & Next'}
+                              ? t('reader.markSectionSeen', 'Mark Section as Seen')
+                              : t('reader.markChapterSeen', 'Mark Chapter as Seen')
+                        : t('reader.markPageKnown', 'Mark Page as Seen & Next')}
                     </button>
                     {/* Next section — only shown when a real next section exists */}
                     {currentScrollPage >= totalPages - 1 && currentChapterIndex < totalChapters - 1 && (
@@ -412,7 +416,7 @@ export function ReadingPane({
                         onClick={onNextChapter}
                         className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
                       >
-                        Next Section
+                        {t('reader.nextSection', 'Next Section')}
                       </button>
                     )}
                     {/* Back to library / import — shown when there is no next section */}
@@ -421,7 +425,9 @@ export function ReadingPane({
                         onClick={onBackToLibrary}
                         className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
                       >
-                        {sourceKind === 'import' ? 'Import More Text' : 'Back to Library'}
+                        {sourceKind === 'import'
+                          ? t('reader.importMoreText', 'Import More Text')
+                          : t('common.backToLibrary', 'Back to Library')}
                       </button>
                     )}
                     {currentScrollPage < totalPages - 1 && (
@@ -429,7 +435,7 @@ export function ReadingPane({
                         onClick={onNextPage}
                         className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
                       >
-                        Next Page
+                        {t('reader.nextSection', 'Next Section')}
                       </button>
                     )}
                   </div>
