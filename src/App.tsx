@@ -1,7 +1,5 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastProvider } from './lib/contexts/ToastProvider';
-import { ErrorBoundary } from './components/ErrorBoundary';
 
 const Landing = lazy(() => import('./pages/Landing').then(module => ({ default: module.Landing })));
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -39,8 +37,6 @@ const PageFallback = () => (
 
 export default function App() {
   return (
-    <ToastProvider>
-      <ErrorBoundary>
       <Suspense fallback={<PageFallback />}>
       <BrowserRouter>
         <Routes>
@@ -88,7 +84,5 @@ export default function App() {
         </Routes>
       </BrowserRouter>
       </Suspense>
-      </ErrorBoundary>
-      </ToastProvider>
   );
 }

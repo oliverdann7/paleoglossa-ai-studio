@@ -22,7 +22,6 @@ export const SignUp = () => {
       await setDoc(doc(db, 'users', uid), {
         email: emailStr,
         displayName: name,
-        currentPlan: 'free',
         createdAt: serverTimestamp()
       });
     } catch (err) {

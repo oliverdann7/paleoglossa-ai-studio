@@ -42,7 +42,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               email: u.email || '',
               displayName: u.displayName || '',
               createdAt: serverTimestamp(),
-              currentPlan: 'free',
               stats: initStats
             });
             setStats(initStats);

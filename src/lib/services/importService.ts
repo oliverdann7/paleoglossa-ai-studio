@@ -1,5 +1,6 @@
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { apiFetch } from './apiFetch';
 import { ImportedText as FSImportedText } from '../../types/firestore';
 import { normalizeTimestamp } from '../utils';
 import { STORAGE_KEYS } from '../constants/storage';
@@ -153,57 +154,22 @@ export class ImportService {
   
   static async sharePublic(userId: string, importId: string): Promise<boolean> {
     if (!userId) return false;
-    
+
     try {
-      const importRef = doc(db, `users/${userId}/imports`, importId);
-      const snap = await getDoc(importRef);
-      
-      if (!snap.exists()) return false;
-      
-      // Update to public
-      await setDoc(importRef, {
-        visibility: 'public',
-        publishedAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-      
-      // Also add to public collection
-      const data = snap.data();
-      await setDoc(doc(db, 'publicTexts', importId), {
-        ...data,
-        authorId: userId,
-        authorName: data.authorName || 'Anonymous',
-        publishedAt: serverTimestamp()
-      });
-      
+      await apiFetch('/api/imports/' + importId + '/share', { method: 'POST' });
       return true;
-    } catch (e) {
-      console.error("Error sharing text:", e);
+    } catch {
       return false;
     }
   }
 
   static async unsharePublic(userId: string, importId: string): Promise<boolean> {
     if (!userId) return false;
-    
+
     try {
-      const importRef = doc(db, `users/${userId}/imports`, importId);
-      await setDoc(importRef, {
-        visibility: 'private',
-        publishedAt: null,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-      
-      // Remove from public collection
-      try {
-        await deleteDoc(doc(db, 'publicTexts', importId));
-      } catch {
-        // Ignore if doesn't exist
-      }
-      
+      await apiFetch('/api/imports/' + importId + '/unshare', { method: 'POST' });
       return true;
-    } catch (e) {
-      console.error("Error unsharing text:", e);
+    } catch {
       return false;
     }
   }
@@ -254,35 +220,13 @@ export class ImportService {
 
   static async forkPublic(userId: string, publicTextId: string): Promise<string | null> {
     if (!userId) return null;
-    
+
     try {
-      // Get the public text
-      const publicRef = doc(db, 'publicTexts', publicTextId);
-      const snap = await getDoc(publicRef);
-      
-      if (!snap.exists()) return null;
-      
-      const data = snap.data();
-      
-      // Create a copy in user's imports
-      const newId = `fork_${publicTextId}_${Date.now()}`;
-      importsCache.delete(userId);
-      await setDoc(doc(db, `users/${userId}/imports`, newId), {
-        ...data,
-        id: newId,
-        title: `${data.title} (forked)`,
-        visibility: 'private',
-        forkedFrom: publicTextId,
-        authorId: data.authorId,
-        authorName: data.authorName,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        publishedAt: null
+      const json = await apiFetch<{ id: string }>('/api/public/texts/' + publicTextId + '/fork', {
+        method: 'POST',
       });
-      
-      return newId;
-    } catch (e) {
-      console.error("Error forking text:", e);
+      return json.id || null;
+    } catch {
       return null;
     }
   }

@@ -6,6 +6,7 @@ import { CorpusDB } from "../data/corpus";
 import { cn } from "../lib/utils";
 import { useTranslation } from "react-i18next";
 import { getLanguageById, getLanguageDirection, isRtlLanguage } from "../lib/constants/languages";
+import { LanguageGuard } from "../components/LanguageGuard";
 
 export const Language = () => {
   const { langId } = useParams();
@@ -143,6 +144,7 @@ export const Language = () => {
   };
 
   return (
+    <LanguageGuard languageId={langId || ''}>
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-5xl mx-auto px-6 py-12">
         <button
@@ -291,5 +293,6 @@ export const Language = () => {
         )}
       </div>
     </div>
+    </LanguageGuard>
   );
 };
