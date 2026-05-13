@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full-fill parchment background (app stores apply corner radius) -->
+  <rect width="512" height="512" fill="#F8F3E8"/>
+  <!-- Subtle warm gradient overlay -->
+  <defs>
+    <radialGradient id="vignette" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#C8AA80" stop-opacity="0.22"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#vignette)"/>
+  <!-- Greek Pi letterform -->
+  <text
+    x="256"
+    y="356"
+    font-family="Georgia, 'Times New Roman', 'Palatino Linotype', serif"
+    font-size="310"
+    font-weight="700"
+    fill="#1E3D6E"
+    text-anchor="middle"
+    dominant-baseline="auto">Π</text>
+  <!-- Gold manuscript baseline rule -->
+  <rect x="86" y="382" width="340" height="14" rx="7" fill="#B8842A"/>
+</svg>
