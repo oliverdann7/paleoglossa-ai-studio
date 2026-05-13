@@ -649,10 +649,7 @@ export const Reader = () => {
     
     // Explicitly add to read count
     addReadWords(validTokens.length);
-    addToast(
-      `${validTokens.length} ${validTokens.length === 1 ? "word" : "words"} marked known`,
-      "success",
-    );
+    addToast(t("reader.wordsMarkedKnown", { count: validTokens.length }), "success");
 
     if (!andAdvance) return;
 
@@ -672,35 +669,47 @@ export const Reader = () => {
         setCurrentScrollPage(prev => prev + 1);
         document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
         setSelectedWord(null);
-      } else {
+      } else if (currentChapterIndex < chapters.length - 1) {
         setCurrentChapterIndex(prev => prev + 1);
         setCurrentScrollPage(0);
         setSelectedWord(null);
       }
     }
-  }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, totalPages]);
+  }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, totalPages, chapters.length, currentChapterIndex, currentScrollPage]);
 
   const handleSwipe = useCallback(() => {
     if (settings.swipePageMovesToKnown ?? true) {
       handleMarkPageKnown(true);
     } else {
       if (readingMode === 'page') {
-        setCurrentSentenceIndex(prev => prev + 1);
+        if (currentSentenceIndex < chapter.sentences.length - 1) {
+          setCurrentSentenceIndex(prev => prev + 1);
+        } else if (currentChapterIndex < chapters.length - 1) {
+          setCurrentChapterIndex(c => c + 1);
+          setCurrentSentenceIndex(0);
+        }
       } else {
-        setCurrentScrollPage(prev => prev + 1);
-        document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+        if (currentScrollPage < totalPages - 1) {
+          setCurrentScrollPage(prev => prev + 1);
+          document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+        } else if (currentChapterIndex < chapters.length - 1) {
+          setCurrentChapterIndex(c => c + 1);
+          setCurrentScrollPage(0);
+        }
       }
     }
-  }, [settings.swipePageMovesToKnown, handleMarkPageKnown, readingMode]);
+  }, [settings.swipePageMovesToKnown, handleMarkPageKnown, readingMode, currentSentenceIndex, chapter.sentences.length, currentChapterIndex, chapters.length, currentScrollPage, totalPages]);
 
   const handleNextPage = useCallback(() => {
-    setCurrentScrollPage(prev => prev + 1);
+    setCurrentScrollPage(prev => Math.min(prev + 1, totalPages - 1));
     document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
-  }, []);
+  }, [totalPages]);
 
   const handleNextChapter = useCallback(() => {
-    setCurrentChapterIndex(currentChapterIndex + 1);
-  }, [currentChapterIndex]);
+    if (currentChapterIndex < chapters.length - 1) {
+      setCurrentChapterIndex(currentChapterIndex + 1);
+    }
+  }, [currentChapterIndex, chapters.length]);
 
   const handleWordClick = useCallback((token: any, sentenceText: string, sentenceIndex: number) => {
     setSelectedWord({ ...token, sentenceText });
@@ -753,14 +762,14 @@ export const Reader = () => {
         />
         <button onClick={onAskTutor}
           className="fixed bottom-24 right-6 z-30 w-12 h-12 bg-ink text-parch rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95"
-          title="Ask Tutor">
+          title={t("reader.askTutor", "Ask Tutor")}>
           <span className="text-[18px] font-serif font-bold">T</span>
         </button>
         <button onClick={() => {
           const id = textId || '';
           if (OfflineService.isOfflineText(id)) {
             OfflineService.removeOfflineText(id);
-            addToast('Removed from offline', 'success');
+            addToast(t("reader.removedOffline", "Removed from offline"), 'success');
           } else {
             OfflineService.setOfflineText(id, text?.title || 'Text', currentLanguageId);
             const chapterSentences = chapter?.sentences || [];
@@ -784,11 +793,11 @@ export const Reader = () => {
                 source: textId?.startsWith('import-') ? 'import' : 'corpus',
               });
             }
-            addToast('Available offline', 'success');
+            addToast(t("reader.availableOffline", "Available offline"), 'success');
           }
         }}
           className="fixed bottom-40 right-6 z-30 w-12 h-12 bg-parch3 text-ink rounded-full shadow-lg flex items-center justify-center hover:bg-blue hover:text-white transition-all active:scale-95 border border-bdr"
-          title={OfflineService.isOfflineText(textId || '') ? 'Remove offline' : 'Save offline'}>
+          title={OfflineService.isOfflineText(textId || '') ? t("reader.removeOffline", "Remove offline") : t("reader.saveOffline", "Save offline")}>
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 2v10m0 0l-3-3m3 3l3-3M4 19h16" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>

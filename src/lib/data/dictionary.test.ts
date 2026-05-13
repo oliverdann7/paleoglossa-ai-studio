@@ -3,6 +3,10 @@ import {
   findDictionaryEntry,
   getDictionaryEntries,
   searchDictionaryEntries,
+  getGlossWithFallbacks,
+  getGlossForLemma,
+  normalizeSearch,
+  stripHebrewVowels,
 } from './dictionary';
 
 describe('Dictionary data', () => {
@@ -15,7 +19,7 @@ describe('Dictionary data', () => {
   it('lemma lookup resolves a Koine Greek dictionary entry', () => {
     const logos = findDictionaryEntry('λόγος', 'grc-koine');
     expect(logos).toBeTruthy();
-    expect(logos?.shortGloss).not.toBe('Definition unavailable');
+    expect(logos?.shortGloss).toBeTruthy();
     expect((logos?.corpusExamples.length || 0)).toBeGreaterThan(0);
     expect((logos?.dictionaries.length || 0)).toBeGreaterThan(0);
   });
@@ -28,5 +32,100 @@ describe('Dictionary data', () => {
   it('language filter restricts dictionary search', () => {
     const filtered = searchDictionaryEntries('created', 'hbo');
     expect(filtered.every(entry => entry.languageId === 'hbo')).toBe(true);
+  });
+});
+
+describe('getGlossWithFallbacks', () => {
+
+  it('finds exact lemma match', () => {
+    const gloss = getGlossWithFallbacks('λόγος', 'grc-koine');
+    expect(gloss).toBeTruthy();
+    expect(typeof gloss).toBe('string');
+  });
+
+  it('falls back to lowercase lemma', () => {
+    const gloss = getGlossWithFallbacks('ΛΌΓΟΣ', 'grc-koine');
+    expect(gloss).toBeTruthy();
+  });
+
+  it('falls back to NFD-normalized / diacritic-stripped lemma', () => {
+    const gloss = getGlossWithFallbacks('λόγος', 'grc-koine');
+    expect(gloss).toBeTruthy();
+  });
+
+  it('returns null for completely unknown lemma', () => {
+    const gloss = getGlossWithFallbacks('xyznonexistentword', 'grc');
+    expect(gloss).toBeNull();
+  });
+
+  it('does not fake definitions', () => {
+    const gloss = getGlossWithFallbacks('xyznonexistentword', 'grc');
+    expect(gloss).not.toBe('Definition unavailable');
+    expect(gloss).toBeNull();
+  });
+
+  it('handles empty lemma gracefully', () => {
+    const gloss = getGlossWithFallbacks('', 'grc');
+    expect(gloss).toBeNull();
+  });
+});
+
+describe('getGlossForLemma', () => {
+
+  it('returns null for unknown lemma (no fake definitions)', () => {
+    const result = getGlossForLemma('nonexistentword12345');
+    expect(result).toBeNull();
+  });
+
+  it('returns a gloss for known lemma', () => {
+    const gloss = getGlossForLemma('λόγος');
+    expect(gloss).toBeTruthy();
+  });
+});
+
+describe('normalizeSearch', () => {
+
+  it('strips Greek diacritics', () => {
+    const result = normalizeSearch('λόγος');
+    expect(result).toBe('λογος');
+  });
+
+  it('lowercases and trims', () => {
+    const result = normalizeSearch('  Ἐν  ');
+    expect(result).toBe('εν');
+  });
+
+  it('handles empty string', () => {
+    expect(normalizeSearch('')).toBe('');
+  });
+});
+
+describe('stripHebrewVowels', () => {
+
+  it('removes Hebrew vowel marks', () => {
+    const result = stripHebrewVowels('דָּבָר');
+    expect(result).toBe('דבר');
+  });
+
+  it('passes through text without vowel marks', () => {
+    const result = stripHebrewVowels('דבר');
+    expect(result).toBe('דבר');
+  });
+
+  it('handles empty string', () => {
+    expect(stripHebrewVowels('')).toBe('');
+  });
+});
+
+describe('dictionary fallback chain order', () => {
+
+  it('corpus-derived entries take priority over static dictionaryDB', () => {
+    const dictGloss = getGlossWithFallbacks('θεός', 'grc');
+    expect(dictGloss).toBeTruthy();
+  });
+
+  it('falls through all steps and returns null for nonsense input', () => {
+    const result = getGlossWithFallbacks('!!!@@@###', 'akk');
+    expect(result).toBeNull();
   });
 });
