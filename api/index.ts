@@ -251,8 +251,97 @@ function computeOverallConfidence(sentences: { tokens: { confidence: number | nu
   return allConfidences.reduce((a, b) => a + b, 0) / allConfidences.length;
 }
 
-app.post('/api/ai/ocr', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp', 'image/tiff'];
+const MAX_IMAGE_BASE64_LENGTH = 14 * 1024 * 1024; // ~10MB raw image
+
+app.post('/api/ai/ocr', async (req: any, res: any) => {
+  try {
+    const { languageId, imageBase64, mimeType } = req.body;
+
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
+    }
+    if (!imageBase64 || typeof imageBase64 !== 'string') {
+      return res.status(400).json({ error: 'imageBase64 is required', code: 'INVALID_INPUT', field: 'imageBase64' });
+    }
+    if (!mimeType || !ALLOWED_IMAGE_TYPES.includes(mimeType)) {
+      return res.status(400).json({
+        error: `Unsupported image type. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`,
+        code: 'INVALID_INPUT',
+        field: 'mimeType',
+      });
+    }
+    if (imageBase64.length > MAX_IMAGE_BASE64_LENGTH) {
+      return res.status(413).json({
+        error: 'Image too large. Maximum size is approximately 10 MB.',
+        code: 'IMAGE_TOO_LARGE',
+        maxBase64Length: MAX_IMAGE_BASE64_LENGTH,
+      });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({
+        text: '',
+        confidence: null,
+        warnings: ['Gemini API key not configured. OCR is unavailable.'],
+      });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const prompt = `Extract all visible text from this image of a ${langName} manuscript or document.
+
+Rules:
+- Preserve the original script exactly as written (including ancient scripts).
+- Preserve line breaks and paragraph structure.
+- Do not summarize, translate, or interpret — transcribe ONLY what you see.
+- If a character or word is illegible, mark it with [illegible].
+- If you are uncertain about a reading, mark it with [?] and note it.
+- Return ONLY the transcribed text, nothing else. No markdown, no explanations.`;
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType, data: imageBase64 } },
+          ],
+        },
+      ],
+    });
+
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const hasUncertainty = cleaned.includes('[illegible]') || cleaned.includes('[?]');
+    const warnings: string[] = [];
+    if (!cleaned) {
+      warnings.push('No text could be extracted from the image.');
+    }
+    if (hasUncertainty) {
+      warnings.push('Some characters were uncertain and marked with brackets.');
+    }
+
+    res.status(200).json({
+      text: cleaned,
+      confidence: cleaned ? null : null,
+      warnings: warnings.length > 0 ? warnings : undefined,
+    });
+
+  } catch (err: any) {
+    console.error('[ai/ocr] Error:', err.message);
+    res.status(500).json({
+      text: '',
+      confidence: null,
+      warnings: ['OCR processing failed: ' + err.message],
+      error: err.message,
+      code: 'OCR_ERROR',
+    });
+  }
 });
 
 app.post('/api/ai/translate', async (req: any, res: any) => {
