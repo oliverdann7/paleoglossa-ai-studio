@@ -97,6 +97,7 @@ export const Settings = () => {
               <option value="fr">Français</option>
               <option value="ru">Русский</option>
               <option value="zh">中文</option>
+              <option value="tr">Türkçe</option>
             </select>
           </div>
         </section>
