@@ -375,8 +375,6 @@ export const fr = {
     "nav.wordsToLevel": "2.4k words to B2",
     "nav.freePlan": "Free Plan →",
     "settings.freezesNone": "No streak freezes remaining this month.",
-    "settings.dictionaries": "Preferred lexical sources",
-    "settings.dictionariesDesc": "Select your preferred lexicon sources. Corpus-derived glosses are used primarily; these sources serve as metadata attributions.",
     "landing.tryDemo": "Try Demo",
     "admin.title": "Admin Dashboard",
     "admin.description": "Site overview and moderation.",
