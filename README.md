@@ -4,7 +4,7 @@
 
 Read the ancient world, word by word. Paleoglossa combines an ancient-text reader, morphology engine, spaced-repetition vocabulary, AI philology tools, and a growing corpus library — all in one scholarly-grade platform.
 
-**Production:** https://paleoglossa-ai-studio.vercel.app
+**Production:** https://paleoglossa.com
 
 ---
 
