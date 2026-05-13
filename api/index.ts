@@ -291,8 +291,91 @@ Sentence: ${sentence}`;
   }
 });
 
-app.post('/api/ai/explain', (_req: any, res: any) => {
-  res.status(200).json({ explanation: '' });
+app.post('/api/ai/explain', async (req: any, res: any) => {
+  try {
+    const { languageId, word, lemma, phrase, type } = req.body;
+
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
+    }
+
+    if (!type || !['word', 'phrase', 'paradigm'].includes(type)) {
+      return res.status(400).json({ error: 'type must be one of: word, phrase, paradigm', code: 'INVALID_INPUT', field: 'type' });
+    }
+
+    if (type === 'phrase' && (!phrase || typeof phrase !== 'string')) {
+      return res.status(400).json({ error: 'phrase is required for type=phrase', code: 'INVALID_INPUT', field: 'phrase' });
+    }
+
+    if (type !== 'phrase' && (!word || typeof word !== 'string' || !lemma || typeof lemma !== 'string')) {
+      return res.status(400).json({ error: 'word and lemma are required for type=word or type=paradigm', code: 'INVALID_INPUT', field: 'word' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ explanation: 'AI explanation not available — Gemini API key not configured.' });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    let prompt: string;
+
+    if (type === 'paradigm') {
+      prompt = `You are a philologist specializing in ${langName}. Generate a complete paradigm (inflection table) for the word "${word}" (lemma: "${lemma}") in ${langName}.
+
+Return a concise but thorough philological explanation. Include:
+
+1. LEMMA AND PART OF SPEECH
+2. PARADIGM TABLE — organized by person/number/tense as applicable for this part of speech. Use a simple text table with consistent spacing, not markdown.
+3. KEY NOTES — any irregular forms, phonological shifts, or dialectal variants
+4. USAGE NOTE — brief context on how this word is used in classical texts
+
+Keep the response focused and learner-friendly. Use plain text with clear section headers (no markdown). If you are uncertain about any form, note it with [brackets].
+`;
+    } else if (type === 'phrase') {
+      prompt = `You are a philologist specializing in ${langName}. Analyze the following phrase in ${langName}:
+
+"${phrase}"
+
+Return a concise but thorough philological explanation. Include:
+
+1. PHRASE ANALYSIS — break down each word with lemma and gloss
+2. SYNTAX — how the words relate to each other (agreement, case, etc.)
+3. OVERALL GLOSS — idiomatic English translation
+4. USAGE NOTE — brief context or literary reference if known
+
+Keep the response focused and learner-friendly. Use plain text with clear section headers (no markdown). If you are uncertain about any element, note it with [brackets].
+`;
+    } else {
+      prompt = `You are a philologist specializing in ${langName}. Analyze the word "${word}" (lemma: "${lemma}") in ${langName}.
+
+Return a concise but thorough philological explanation. Include:
+
+1. MORPHOLOGY — parse the form: person, number, tense, mood, voice, case, gender, etc.
+2. GLOSS — the most likely English meaning(s) for this form
+3. POSSIBLE PARSING — if the form is ambiguous, list alternate parsings
+4. USAGE NOTE — brief context on how this word is used in classical texts
+
+Keep the response focused and learner-friendly. Use plain text with clear section headers (no markdown). If you are uncertain about any element, note it with [brackets].
+`;
+    }
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+    });
+
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+    res.status(200).json({ explanation: cleaned || 'No explanation could be generated.' });
+
+  } catch (err: any) {
+    console.error('[ai/explain] Error:', err.message);
+    res.status(500).json({ explanation: 'Failed to generate explanation.', error: err.message, code: 'EXPLAIN_ERROR' });
+  }
 });
 
 app.post('/api/ai/pronunciation', (_req: any, res: any) => {
