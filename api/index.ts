@@ -85,57 +85,72 @@ app.get('/api/dictionary/search', (req: any, res: any) => {
 
 // ─── AI endpoints ────────────────────────────────────────────────────────────
 const MAX_TEXT_LENGTH = 100000;
+const MAX_TEXT_LENGTH_HUMAN = '100,000';
 
 import { basicAnalyze } from './_lib/basicAnalyze';
+import { parseAndValidateAIResponse } from './_lib/aiValidation';
+import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA } from './_lib/aiPrompts';
 
 app.post('/api/ai/analyze', async (req: any, res: any) => {
   try {
     const { languageId, rawText } = req.body;
 
+    // ── Input validation ──────────────────────────────────────────────
     if (!rawText || typeof rawText !== 'string' || rawText.trim().length === 0) {
-      return res.status(400).json({ error: 'rawText is required and must be a non-empty string', code: 'INVALID_INPUT' });
+      return res.status(400).json({
+        error: 'rawText is required and must be a non-empty string',
+        code: 'INVALID_INPUT',
+        field: 'rawText',
+      });
     }
     if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+      return res.status(400).json({
+        error: 'languageId is required',
+        code: 'INVALID_INPUT',
+        field: 'languageId',
+      });
     }
     if (rawText.length > MAX_TEXT_LENGTH) {
-      return res.status(413).json({ error: `Text exceeds maximum length of ${MAX_TEXT_LENGTH} characters`, code: 'TEXT_TOO_LARGE' });
+      return res.status(413).json({
+        error: `Text exceeds maximum length of ${MAX_TEXT_LENGTH_HUMAN} characters. Received ${rawText.length} characters.`,
+        code: 'TEXT_TOO_LARGE',
+        maxLength: MAX_TEXT_LENGTH,
+        received: rawText.length,
+      });
     }
 
+    const langName = getLanguageName(languageId);
+
+    // ── Gemini AI analysis ────────────────────────────────────────────
     const apiKey = process.env.GEMINI_API_KEY;
+    let geminiAttempted = false;
+    let aiWarnings: string[] = [];
 
     if (apiKey) {
+      geminiAttempted = true;
       try {
         const { GoogleGenAI } = await import('@google/genai');
         const genAI = new GoogleGenAI({ apiKey });
 
-        const prompt = `Analyze the following ${languageId} text. Return ONLY valid JSON matching this schema:
-{
-  "sentences": [
-    {
-      "tokens": [
-        {
-          "text": "...",
-          "lemma": "...",
-          "normalized": "...",
-          "type": "word|punctuation|number|whitespace",
-          "transliteration": "...",
-          "gloss": "...",
-          "pos": "...",
-          "confidence": 0.95
-        }
-      ],
-      "translation": "..."
-    }
-  ]
-}
+        // Build language-specific instruction
+        const langInstruction = LANGUAGE_INSTRUCTIONS[languageId]
+          ? LANGUAGE_INSTRUCTIONS[languageId]
+          : `Language: ${langName}. Analyze the text and return the JSON schema accurately.`;
+
+        const prompt = `You are a classical language morphology engine. Analyze the following ${langName} text.
+
+${langInstruction}
+
+Return ONLY valid JSON matching this exact schema — no markdown, no explanation:
+
+${BASE_JSON_SCHEMA}
 
 Rules:
 - Split text into sentences at natural boundaries (. ! ?)
 - For each token: text=original, lemma=base form, normalized=lowercase variant
-- type must be exactly: word, punctuation, number, or whitespace
+- type must be exactly one of: word, punctuation, number, whitespace
 - Set transliteration, gloss, pos to null if uncertain
-- confidence should be 0.0-1.0
+- confidence must be 0.0-1.0 (1.0 = certain, 0.5 = unsure, 0.0 = unable to determine)
 - translation may be null
 - Do not include markdown code blocks or any text outside the JSON
 
@@ -148,31 +163,75 @@ ${rawText.slice(0, 20000)}`;
         });
 
         const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          if (parsed.sentences && Array.isArray(parsed.sentences)) {
-            return res.status(200).json({ sentences: parsed.sentences });
-          }
+
+        // Parse, repair, and validate the AI response
+        const { data: validated, warnings } = parseAndValidateAIResponse(text);
+        aiWarnings = warnings;
+
+        if (validated) {
+          return res.status(200).json({
+            sentences: validated.sentences,
+            aiAnalyzed: true,
+            confidence: computeOverallConfidence(validated.sentences),
+            warnings: aiWarnings.length > 0 ? aiWarnings : undefined,
+          });
         }
 
-        // Gemini returned invalid JSON, fall through to basic analysis
-        console.warn('Gemini returned unparseable response, using fallback');
+        // Gemini returned unparseable JSON, fall through
+        aiWarnings.push('Gemini returned unparseable response');
+        console.warn('[ai/analyze] Gemini unparseable, using fallback');
       } catch (geminiErr: any) {
-        console.error('Gemini API call failed:', geminiErr.message);
-        // Fall through to basic analysis
+        aiWarnings.push('Gemini API call failed: ' + geminiErr.message);
+        console.error('[ai/analyze] Gemini API call failed:', geminiErr.message);
       }
     }
 
-    // Fallback: rule-based tokenization
+    // ── Fallback: rule-based tokenization ──────────────────────────────
     const result = basicAnalyze(rawText);
-    return res.status(200).json({ sentences: result.sentences });
+    const fallbackSentences = result.sentences.map(s => ({
+      tokens: s.tokens.map(t => ({
+        text: t.text,
+        lemma: t.lemma,
+        normalized: t.normalized,
+        type: t.type,
+        transliteration: t.transliteration,
+        gloss: t.gloss,
+        pos: t.pos,
+        confidence: t.confidence,
+      })),
+      translation: s.translation,
+    }));
+
+    return res.status(200).json({
+      sentences: fallbackSentences,
+      aiAnalyzed: false,
+      confidence: null,
+      warnings: geminiAttempted
+        ? (aiWarnings.length > 0 ? aiWarnings : undefined)
+        : ['Gemini API key not configured. Using basic tokenization.'],
+    });
 
   } catch (err: any) {
-    console.error('Unexpected error in /api/ai/analyze:', err);
-    return res.status(500).json({ error: 'Internal server error during analysis', code: 'INTERNAL_ERROR' });
+    console.error('[ai/analyze] Unexpected error:', err);
+    return res.status(500).json({
+      error: 'Internal server error during analysis',
+      code: 'INTERNAL_ERROR',
+    });
   }
 });
+
+function computeOverallConfidence(sentences: { tokens: { confidence: number | null }[] }[]): number | null {
+  const allConfidences: number[] = [];
+  for (const s of sentences) {
+    for (const t of s.tokens) {
+      if (t.confidence !== null && t.confidence !== undefined) {
+        allConfidences.push(t.confidence);
+      }
+    }
+  }
+  if (allConfidences.length === 0) return null;
+  return allConfidences.reduce((a, b) => a + b, 0) / allConfidences.length;
+}
 
 app.post('/api/ai/ocr', (_req: any, res: any) => {
   res.status(200).json({ text: '' });
