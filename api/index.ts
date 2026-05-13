@@ -35,6 +35,7 @@ app.post('/api/test', (_req: any, res: any) => {
 
 // ─── Auth test — verify a Firebase ID token and return user info ─────────────
 import { requireAuth } from './_lib/auth';
+import { getAdminDb } from './_lib/firebaseAdmin';
 import type { AuthenticatedRequest } from './_lib/auth';
 
 app.get('/api/auth/me', requireAuth as any, (req: AuthenticatedRequest, res: any) => {
@@ -311,44 +312,108 @@ app.get('/api/public/texts', async (_req: any, res: any) => {
   res.status(200).json(texts);
 });
 
-app.post('/api/public/texts/:textId/fork', async (req: any, res: any) => {
-  const userId = req.headers['x-user-id'];
-  if (!userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  
-  const { ImportService } = await import('../src/lib/services/importService');
-  const newId = await ImportService.forkPublic(userId, req.params.textId);
-  
-  if (newId) {
+app.post('/api/public/texts/:textId/fork', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { textId } = req.params;
+
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Database service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+  try {
+    const publicSnap = await adminDb_.doc('publicTexts/' + textId).get();
+    if (!publicSnap.exists) return res.status(404).json({ error: 'Text not found', code: 'NOT_FOUND' });
+
+    const data = publicSnap.data()!;
+    const newId = `fork_${textId}_${Date.now()}`;
+
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await adminDb_.doc(`users/${userId}/imports/${newId}`).set({
+      ...data,
+      id: newId,
+      title: `${data.title} (forked)`,
+      visibility: 'private',
+      forkedFrom: textId,
+      authorId: data.authorId || null,
+      authorName: data.authorName || null,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+      publishedAt: null,
+    });
+
     res.status(200).json({ id: newId });
-  } else {
-    res.status(500).json({ error: 'Failed to fork text' });
+  } catch (err: any) {
+    console.error('Error forking text:', err);
+    res.status(500).json({ error: 'Failed to fork text', code: 'INTERNAL_ERROR' });
   }
 });
 
-app.post('/api/imports/:importId/share', async (req: any, res: any) => {
-  const userId = req.headers['x-user-id'];
-  if (!userId) {
-    return res.status(401).json({ error: 'Authentication required' });
+app.post('/api/imports/:importId/share', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { importId } = req.params;
+
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Database service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const importRef = adminDb_.doc(`users/${userId}/imports/${importId}`);
+    const snap = await importRef.get();
+
+    if (!snap.exists) return res.status(404).json({ error: 'Import not found', code: 'NOT_FOUND' });
+
+    const data = snap.data()!;
+
+    await importRef.update({
+      visibility: 'public',
+      publishedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    await adminDb_.doc('publicTexts/' + importId).set({
+      ...data,
+      authorId: userId,
+      authorName: data.authorName || 'Anonymous',
+      publishedAt: FieldValue.serverTimestamp(),
+    });
+
+    res.status(200).json({ success: true });
+  } catch (err: any) {
+    console.error('Error sharing text:', err);
+    res.status(500).json({ error: 'Failed to share text', code: 'INTERNAL_ERROR' });
   }
-  
-  const { ImportService } = await import('../src/lib/services/importService');
-  const success = await ImportService.sharePublic(userId, req.params.importId);
-  
-  res.status(200).json({ success });
 });
 
-app.post('/api/imports/:importId/unshare', async (req: any, res: any) => {
-  const userId = req.headers['x-user-id'];
-  if (!userId) {
-    return res.status(401).json({ error: 'Authentication required' });
+app.post('/api/imports/:importId/unshare', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { importId } = req.params;
+
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Database service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const importRef = adminDb_.doc(`users/${userId}/imports/${importId}`);
+    const snap = await importRef.get();
+
+    if (!snap.exists) return res.status(404).json({ error: 'Import not found', code: 'NOT_FOUND' });
+
+    await importRef.update({
+      visibility: 'private',
+      publishedAt: null,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    try {
+      await adminDb_.doc('publicTexts/' + importId).delete();
+    } catch {
+      // Ignore if already removed
+    }
+
+    res.status(200).json({ success: true });
+  } catch (err: any) {
+    console.error('Error unsharing text:', err);
+    res.status(500).json({ error: 'Failed to unshare text', code: 'INTERNAL_ERROR' });
   }
-  
-  const { ImportService } = await import('../src/lib/services/importService');
-  const success = await ImportService.unsharePublic(userId, req.params.importId);
-  
-  res.status(200).json({ success });
 });
 
 // ─── Stripe Payment Integration ────────────────────────────────────────
