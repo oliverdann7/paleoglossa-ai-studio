@@ -39,7 +39,7 @@ export const Review = () => {
   const navigate = useNavigate();
   const { user, isDemoMode } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
-  const { knowledge, stats, updateWordSRS, recordReviewSession } = useKnowledge(activeLanguageId);
+  const { knowledge, updateWordSRS } = useKnowledge(activeLanguageId);
   // Stable ref so the queue-load effect doesn't re-run on every word state change
   const knowledgeRef = useRef(knowledge);
   useLayoutEffect(() => { knowledgeRef.current = knowledge; });
