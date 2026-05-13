@@ -29,11 +29,6 @@ useEffect(() => {
   // re-renders if its specific wordInfo reference changed).
   const bumpVersion = useCallback(() => setKnowledgeVersion(v => v + 1), []);
 
-  // Bump the version counter whenever knowledge changes so ReadingPane
-  // knows to re-render its token list (each ReaderToken.memo then only
-  // re-renders if its specific wordInfo reference changed).
-  const bumpVersion = useCallback(() => setKnowledgeVersion(v => v + 1), []);
-
   useEffect(() => {
     let active = true;
     const init = async () => {

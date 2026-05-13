@@ -12,6 +12,7 @@ export interface Plan {
   languageLimit: number | 'all';
   importLimit: number | 'all';
   aiAnalysisLimit: number | 'all';
+  aiLimited: boolean;
   features: string[];
   recommended?: boolean;
   badge?: string;
@@ -25,6 +26,7 @@ export const PLANS: Plan[] = [
     languageLimit: 1,
     importLimit: 5,
     aiAnalysisLimit: 20,
+    aiLimited: true,
     features: [
       'Access to curated texts in 1 language',
       'Basic spaced repetition (up to 20 words/day)',
@@ -39,6 +41,7 @@ export const PLANS: Plan[] = [
     languageLimit: 1,
     importLimit: 50,
     aiAnalysisLimit: 200,
+    aiLimited: true,
     features: [
       'Access to all curated texts in 1 language',
       'Unlimited spaced repetition',
@@ -55,6 +58,7 @@ export const PLANS: Plan[] = [
     languageLimit: 2,
     importLimit: 200,
     aiAnalysisLimit: 1000,
+    aiLimited: true,
     features: [
       'Access to all curated texts in 2 languages',
       'Unlimited spaced repetition',
@@ -74,6 +78,7 @@ export const PLANS: Plan[] = [
     languageLimit: 'all',
     importLimit: 'all',
     aiAnalysisLimit: 'all',
+    aiLimited: false,
     features: [
       'Access to all curated texts in all 11 languages',
       'Unlimited spaced repetition',
