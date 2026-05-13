@@ -768,55 +768,235 @@ app.get('/api/manuscripts/:manuscriptId', (_req: any, res: any) => {
 });
 
 // ─── Notebooks & Notes ──────────────────────────────────────────────────────
-app.get('/api/notebooks', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.get('/api/notebooks', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const snap = await adminDb_.collection('users').doc(userId).collection('notebooks').get();
+    const notebooks: any[] = [];
+    snap.forEach(d => notebooks.push({ id: d.id, ...d.data() }));
+    res.status(200).json(notebooks);
+  } catch (e: any) {
+    console.error('[notebooks] Error fetching:', e.message);
+    res.status(200).json([]);
+  }
 });
 
-app.post('/api/notebooks', (_req: any, res: any) => {
-  res.status(200).json(null);
+app.post('/api/notebooks', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { title, description, languageId } = req.body;
+  if (!title || typeof title !== 'string') return res.status(400).json({ error: 'title is required', code: 'INVALID_INPUT' });
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const ref = adminDb_.collection('users').doc(userId).collection('notebooks').doc();
+    await ref.set({ title, description: description || '', languageId: languageId || null, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
+    res.status(200).json({ id: ref.id, title, description, languageId, createdAt: new Date().toISOString() });
+  } catch (e: any) {
+    console.error('[notebooks] Error creating:', e.message);
+    res.status(500).json({ error: 'Failed to create notebook', code: 'INTERNAL_ERROR' });
+  }
 });
 
-app.delete('/api/notebooks/:notebookId', (_req: any, res: any) => {
-  res.status(200).json({ ok: true });
+app.delete('/api/notebooks/:notebookId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const notebookId = req.params.notebookId as string;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    await adminDb_.collection('users').doc(userId).collection('notebooks').doc(notebookId).delete();
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[notebooks] Error deleting:', e.message);
+    res.status(500).json({ error: 'Failed to delete notebook', code: 'INTERNAL_ERROR' });
+  }
 });
 
-app.get('/api/notes', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.get('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const languageId = req.query.languageId as string | undefined;
+  const targetType = req.query.targetType as string | undefined;
+  const notebookId = req.query.notebookId as string | undefined;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    let query: any = adminDb_.collection('users').doc(userId).collection('notes');
+    if (typeof languageId === "string") query = query.where('languageId', '==', languageId);
+    if (targetType) query = query.where('targetType', '==', targetType);
+    if (typeof notebookId === "string") query = query.where('notebookId', '==', notebookId);
+    const snap = await query.get();
+    const notes: any[] = [];
+    snap.forEach((d: any) => notes.push({ id: d.id, ...d.data() }));
+    res.status(200).json(notes);
+  } catch (e: any) {
+    console.error('[notes] Error fetching:', e.message);
+    res.status(200).json([]);
+  }
 });
 
-app.post('/api/notes', (_req: any, res: any) => {
-  res.status(200).json(null);
+app.post('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { content, languageId, targetType, targetId, lemma, textId, sentenceIndex, tokenIndex, tags, notebookId } = req.body;
+  if (!content && (!lemma || !targetType)) return res.status(400).json({ error: 'content or lemma+targetType required', code: 'INVALID_INPUT' });
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const ref = adminDb_.collection('users').doc(userId).collection('notes').doc();
+    await ref.set({
+      content, languageId: languageId || null, targetType: targetType || 'free', targetId: targetId || null,
+      lemma: lemma || null, textId: textId || null, sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
+      tokenIndex: tokenIndex != null ? tokenIndex : null, tags: tags || [], notebookId: notebookId || null,
+      createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
+    });
+    res.status(200).json({ id: ref.id, content, languageId, targetType, createdAt: new Date().toISOString() });
+  } catch (e: any) {
+    console.error('[notes] Error creating:', e.message);
+    res.status(500).json({ error: 'Failed to create note', code: 'INTERNAL_ERROR' });
+  }
 });
 
-app.delete('/api/notes/:noteId', (_req: any, res: any) => {
-  res.status(200).json({ ok: true });
+app.delete('/api/notes/:noteId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const noteId = req.params.noteId as string;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    await adminDb_.collection('users').doc(userId).collection('notes').doc(noteId).delete();
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[notes] Error deleting:', e.message);
+    res.status(500).json({ error: 'Failed to delete note', code: 'INTERNAL_ERROR' });
+  }
 });
 
 // ─── Syntax ─────────────────────────────────────────────────────────────────
-app.get('/api/syntax/:textId/:sentenceIndex', (_req: any, res: any) => {
-  res.status(200).json(null);
+app.get('/api/syntax/:textId/:sentenceIndex', async (req: any, res: any) => {
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(200).json(null);
+  try {
+    const textId = req.params.textId as string;
+    const sentenceIndex = req.params.sentenceIndex as string;
+    const snap = await adminDb_.doc(`syntaxAnnotations/${textId}_${sentenceIndex}`).get();
+    if (!snap.exists) return res.status(200).json(null);
+    res.status(200).json({ id: snap.id, ...snap.data() });
+  } catch { res.status(200).json(null); }
 });
 
-app.get('/api/syntax', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.post('/api/syntax/:textId/:sentenceIndex', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const textId = req.params.textId as string;
+  const sentenceIndex = req.params.sentenceIndex as string;
+  const { tokens, dependency, explanation, confidence } = req.body;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await adminDb_.doc(`syntaxAnnotations/${textId}_${sentenceIndex}`).set({
+      textId, sentenceIndex: parseInt(sentenceIndex), tokens: tokens || [], dependency: dependency || null,
+      explanation: explanation || null, confidence: confidence ?? null, source: 'ai',
+      annotatedBy: userId, generatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[syntax] Error saving:', e.message);
+    res.status(500).json({ error: 'Failed to save syntax', code: 'INTERNAL_ERROR' });
+  }
 });
 
 // ─── Search ─────────────────────────────────────────────────────────────────
-app.post('/api/search', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.post('/api/search', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { query, languageId, sourceKind, limit: reqLimit = 20 } = req.body;
+  if (!query || typeof query !== 'string') return res.status(400).json({ error: 'query is required', code: 'INVALID_INPUT' });
+
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  const q = query.toLowerCase().trim();
+  const results: any[] = [];
+
+  try {
+    const maxResults = Math.min(reqLimit || 20, 50);
+
+    // 1. Search user imports
+    const importSnap = await adminDb_.collection('users').doc(userId).collection('imports').get();
+    importSnap.forEach(d => {
+      if (results.length >= maxResults) return;
+      const data = d.data();
+      const title = (data.title || '').toLowerCase();
+      const content = (data.rawContent || '').toLowerCase();
+      if (title.includes(q) || content.includes(q)) {
+        results.push({ id: d.id, title: data.title || 'Untitled', source: 'import', languageId: data.languageId, snippet: data.rawContent?.slice(0, 200), textId: d.id });
+      }
+    });
+
+    // 2. Search vocabulary
+    const vocabSnap = await adminDb_.collection('users').doc(userId).collection('vocabulary').get();
+    vocabSnap.forEach(d => {
+      if (results.length >= maxResults) return;
+      const data = d.data();
+      const term = (data.term || '').toLowerCase();
+      const gloss = (data.userGloss || '').toLowerCase();
+      if (term.includes(q) || gloss.includes(q)) {
+        results.push({ id: d.id, term: data.term, lemma: data.term, source: 'vocabulary', languageId: data.languageId, snippet: data.userGloss || data.term, textId: null });
+      }
+    });
+
+    // 3. Search notes
+    const noteSnap = await adminDb_.collection('users').doc(userId).collection('notes').get();
+    noteSnap.forEach(d => {
+      if (results.length >= maxResults) return;
+      const data = d.data();
+      const content = (data.content || '').toLowerCase();
+      const lemma = (data.lemma || '').toLowerCase();
+      if (content.includes(q) || lemma.includes(q)) {
+        results.push({ id: d.id, title: data.lemma || 'Note', source: 'note', languageId: data.languageId, snippet: data.content?.slice(0, 200), textId: data.textId });
+      }
+    });
+
+    // 4. Search public texts (visible only)
+    if (!sourceKind || sourceKind === 'public') {
+      const publicSnap = await adminDb_.collection('publicTexts').where('moderationStatus', '==', 'visible').get();
+      publicSnap.forEach(d => {
+        if (results.length >= maxResults) return;
+        const data = d.data();
+        if (languageId && data.languageId !== languageId) return;
+        const title = (data.title || '').toLowerCase();
+        const content = (data.rawContent || '').toLowerCase();
+        if (title.includes(q) || content.includes(q)) {
+          results.push({ id: d.id, title: data.title || 'Untitled', source: 'public', languageId: data.languageId, snippet: data.rawContent?.slice(0, 200), textId: d.id, authorName: data.authorName });
+        }
+      });
+    }
+
+    // Filter by source kind if specified
+    const filtered = sourceKind && sourceKind !== 'all' ? results.filter(r => r.source === sourceKind) : results;
+    // Filter by language if specified
+    const langFiltered = languageId ? filtered.filter(r => !r.languageId || r.languageId === languageId) : filtered;
+
+    res.status(200).json(langFiltered.slice(0, maxResults));
+  } catch (e: any) {
+    console.error('[search] Error:', e.message);
+    res.status(200).json([]);
+  }
 });
 
 // ─── Grammar ────────────────────────────────────────────────────────────────
+import { GRAMMAR_CONCEPTS, PATHWAY } from './_lib/grammarData';
+
 app.get('/api/grammar/concepts', (_req: any, res: any) => {
-  res.status(200).json([]);
+  res.status(200).json(GRAMMAR_CONCEPTS);
 });
 
-app.get('/api/grammar/concepts/:conceptId', (_req: any, res: any) => {
-  res.status(200).json(null);
+app.get('/api/grammar/concepts/:conceptId', (req: any, res: any) => {
+  const concept = GRAMMAR_CONCEPTS.find(c => c.id === req.params.conceptId);
+  res.status(200).json(concept || null);
 });
 
 app.get('/api/grammar/pathway', (_req: any, res: any) => {
-  res.status(200).json([]);
+  res.status(200).json(PATHWAY);
 });
 
 // ─── Public Library ─────────────────────────────────────────────────────
@@ -830,7 +1010,7 @@ app.get('/api/public/texts', async (req: any, res: any) => {
   }
 
   try {
-    const { language } = req.query;
+    const language = req.query.language as string | undefined;
     const snap = await adminDb_.collection('publicTexts')
       .where('moderationStatus', '==', 'visible')
       .get();

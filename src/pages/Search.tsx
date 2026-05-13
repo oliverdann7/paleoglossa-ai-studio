@@ -1,53 +1,98 @@
-import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search as SearchIcon, Loader2, FileText, Globe, BookMarked, MessageSquare } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { apiFetch } from "../lib/services/apiFetch";
+
+interface SearchResult {
+  id: string;
+  title?: string;
+  term?: string;
+  lemma?: string;
+  source: string;
+  languageId?: string;
+  snippet?: string;
+  textId?: string;
+  authorName?: string;
+}
+
+const SOURCE_LABELS: Record<string, string> = { import: 'Your Import', vocabulary: 'Vocabulary', note: 'Note', public: 'Public Library' };
+const SOURCE_ICONS: Record<string, any> = { import: FileText, vocabulary: BookMarked, note: MessageSquare, public: Globe };
 
 export const SearchPage = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
-  
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setIsLoading(true);
+    setSearched(true);
+    try {
+      const data = await apiFetch<SearchResult[]>('/api/search', { method: 'POST', body: { query: query.trim() } });
+      setResults(data);
+    } catch {
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
-      <header className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue">
-            <Search className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-[28px] font-serif font-light text-ink tracking-tight mb-1">
-              {t('search.title', 'Corpus Search')}
-            </h2>
-            <p className="text-xs font-bold text-blue tracking-wider uppercase">
-              Experimental
-            </p>
-          </div>
+    <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen">
+      <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Search</h2>
+      <p className="text-ink2 text-[15px] mb-6">Search across your imports, vocabulary, notes, and the public library.</p>
+
+      <form onSubmit={handleSearch} className="relative mb-8">
+        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+        <input
+          type="text" value={query} onChange={e => setQuery(e.target.value)}
+          placeholder="Search by lemma, text, gloss, or note…"
+          className="w-full pl-12 pr-4 py-3 bg-white border border-bdr rounded-xl text-[15px] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all shadow-sm"
+        />
+      </form>
+
+      {isLoading && <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>}
+
+      {!isLoading && searched && results.length === 0 && (
+        <div className="text-center py-12 text-ink2">
+          <SearchIcon className="w-12 h-12 mx-auto mb-4 text-muted" />
+          <p className="text-[16px]">No results found.</p>
         </div>
-        <p className="font-body text-[15px] italic text-ink2 mb-8">
-          {t('search.description', 'Search across the entire corpus by lemma, inflected form, or morphology.')}
-        </p>
-      </header>
-      <div className="card p-8 text-center text-muted border-dashed border-2 border-bdr/40 bg-parch2/50">
-        <div className="space-y-6">
-          <Search className="w-16 h-16 text-muted/60 mx-auto" />
-          <p className="text-ink3 max-w-xl">
-            {t('search.comingSoon', 'Cross-corpus search with morphology filters, KWC display, and lemma-aware matching — coming soon.')}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => navigate('/app/import')}
-              className="flex-1 px-4 py-2 bg-blue text-white font-semibold rounded-lg hover:bg-blue/90 transition-colors"
-            >
-              {t('import.newLesson', 'Import New Lesson')}
-            </button>
-            <button
-              onClick={() => navigate('/app/library')}
-              className="flex-1 px-4 py-2 border border-bdr/60 text-[14px] font-semibold hover:bg-parch transition-colors"
-            >
-              {t('library.browse', 'Browse Library')}
-            </button>
-          </div>
+      )}
+
+      {!isLoading && results.length > 0 && (
+        <div className="space-y-3">
+          {results.map((r, i) => {
+            const Icon = SOURCE_ICONS[r.source] || FileText;
+            return (
+              <div key={`${r.source}-${r.id}-${i}`}
+                className={cn("card p-4 flex items-start gap-4 hover:border-blue/30 transition-all cursor-pointer",
+                  r.source === 'public' && "border-emerald-200/50")}
+                onClick={() => {
+                  if (r.textId) navigate(`/app/reader/${r.textId}`);
+                  else if (r.lemma) navigate(`/app/dictionary/${r.languageId || 'grc'}/${encodeURIComponent(r.lemma)}`);
+                }}
+              >
+                <Icon className="w-5 h-5 mt-0.5 text-muted shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[15px] font-bold text-ink truncate">{r.title || r.term || r.lemma}</span>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-muted bg-parch3 px-2 py-0.5 rounded-full shrink-0">
+                      {SOURCE_LABELS[r.source] || r.source}
+                    </span>
+                  </div>
+                  {r.snippet && <p className="text-[13px] text-ink2 line-clamp-2">{r.snippet}</p>}
+                  {r.languageId && <span className="text-[10px] text-muted mt-1 block">{r.languageId}</span>}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
     </div>
   );
 };
