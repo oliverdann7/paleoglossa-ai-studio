@@ -452,24 +452,47 @@ app.post('/api/stripe/create-checkout-session', requireAuth as any, async (req: 
       return res.status(400).json({ error: 'Invalid or missing planId', code: 'INVALID_PLAN' });
     }
 
-    const validCycles = ['monthly', 'yearly'];
-    if (!validCycles.includes(billingCycle)) {
+    if (billingCycle !== 'monthly' && billingCycle !== 'yearly') {
       return res.status(400).json({ error: 'billingCycle must be monthly or yearly', code: 'INVALID_BILLING_CYCLE' });
     }
 
     const priceId = PRICE_IDS[planId]?.[billingCycle as 'monthly' | 'yearly'];
     if (!priceId) {
-      return res.status(400).json({ error: `No price configured for plan ${planId} (${billingCycle})`, code: 'PRICE_NOT_CONFIGURED' });
+      return res.status(400).json({
+        error: `No price configured for plan ${planId} (${billingCycle})`,
+        code: 'PRICE_NOT_CONFIGURED',
+        hint: 'Set STRIPE_' + planId.toUpperCase() + (billingCycle === 'yearly' ? '_YEARLY' : '') + '_PRICE_ID in environment.',
+      });
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY;
+
+    // Dev mode: only when NODE_ENV is explicitly development.
+    const isDev = process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development';
     if (!stripeKey) {
-      return res.status(200).json({
-        devMode: true,
-        url: null,
-        message: 'Stripe not configured. Set STRIPE_SECRET_KEY for production payments.',
-      });
+      if (isDev) {
+        return res.status(200).json({
+          devMode: true,
+          url: null,
+          message: 'Stripe not configured locally. Set STRIPE_SECRET_KEY in .env for production payments.',
+        });
+      }
+      return res.status(500).json({ error: 'Stripe server configuration incomplete', code: 'STRIPE_NOT_CONFIGURED' });
     }
+
+    // Safely derive default URLs from the request origin.
+    const origin = req.headers.origin || 'https://paleoglossa-ai-studio.vercel.app';
+    const safeDefault = (path: string) => origin + path;
+
+    // Validate custom URLs point to same origin (prevent open redirect).
+    const isValidUrl = (url: string | undefined) => {
+      if (!url) return false;
+      try {
+        const parsed = new URL(url);
+        const reqOrigin = req.headers.origin;
+        return reqOrigin ? parsed.origin === reqOrigin : true;
+      } catch { return false; }
+    };
 
     const stripe = new (await import('stripe')).default(stripeKey);
 
@@ -480,8 +503,8 @@ app.post('/api/stripe/create-checkout-session', requireAuth as any, async (req: 
       customer_email: email || undefined,
       client_reference_id: uid,
       metadata: { planId, userId: uid },
-      success_url: successUrl || `${req.headers.origin || 'https://paleoglossa-ai-studio.vercel.app'}/app/subscription?success=true`,
-      cancel_url: cancelUrl || `${req.headers.origin || 'https://paleoglossa-ai-studio.vercel.app'}/app/subscription?canceled=true`,
+      success_url: isValidUrl(successUrl) ? successUrl! : safeDefault('/app/subscription?success=true'),
+      cancel_url: isValidUrl(cancelUrl) ? cancelUrl! : safeDefault('/app/subscription?canceled=true'),
       subscription_data: {
         metadata: { planId, userId: uid },
       },
