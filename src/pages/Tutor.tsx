@@ -32,15 +32,14 @@ export const Tutor = () => {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const fetchMessages = async () => {
-    if (!activeSessionId) return;
-  };
-
   // Load messages when session changes
   useEffect(() => {
+    const fetchMessages = async () => {
+      if (!activeSessionId) return;
+    };
     if (!activeSessionId || !user) return;
     fetchMessages();
-  }, [activeSessionId, user, fetchMessages]);
+  }, [activeSessionId, user]);
 
   const handleStartSession = async () => {
     try {

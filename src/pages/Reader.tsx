@@ -60,6 +60,24 @@ export const Reader = () => {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalText(tObj);
     }
+
+    // Fallback to offline payload if no text loaded
+    if (!tObj) {
+      const offline = OfflineService.getOfflinePayload(textId);
+      if (offline) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setLocalText({
+          id: offline.textId,
+          title: offline.title,
+          language: offline.languageId,
+          languageId: offline.languageId,
+          sentences: offline.sentences,
+          sourceType: offline.source === 'import' ? 'paste' : 'corpus',
+          sourceKind: offline.source === 'import' ? 'import' : 'corpus',
+          isOffline: true,
+        });
+      }
+    }
   }, [textId, user]);
   
   const text = localText;
@@ -736,6 +754,27 @@ export const Reader = () => {
             addToast('Removed from offline', 'success');
           } else {
             OfflineService.setOfflineText(id, text?.title || 'Text', currentLanguageId);
+            const chapterSentences = chapter?.sentences || [];
+            if (chapterSentences.length > 0) {
+              OfflineService.saveOfflinePayload(id, {
+                textId: id,
+                title: text?.title || 'Text',
+                languageId: currentLanguageId,
+                sentences: chapterSentences.map((s: any) => ({
+                  tokens: s.tokens?.map((t: any) => ({
+                    text: t.text || t.surface || '',
+                    lemma: t.lemma || '',
+                    gloss: t.gloss,
+                    type: t.type || 'word',
+                    transliteration: t.transliteration,
+                    pos: t.pos,
+                    confidence: t.confidence,
+                  })) || [],
+                  translation: s.translation || null,
+                })),
+                source: textId?.startsWith('import-') ? 'import' : 'corpus',
+              });
+            }
             addToast('Available offline', 'success');
           }
         }}

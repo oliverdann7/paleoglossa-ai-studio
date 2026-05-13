@@ -27,12 +27,11 @@ describe('generateReviewCard', () => {
     expect(card).toBeNull();
   });
 
-  it('does not use Definition missing as answer', () => {
+  it('skips FORM_TO_MEANING when gloss is Definition missing', () => {
     const item = { ...baseItem, userGloss: 'Definition missing', contexts: [] };
     const card = generateReviewCard(item, { enabledTypes: [CardType.FORM_TO_MEANING] });
-    // Without a real gloss, the answer falls back to term itself
-    expect(card).not.toBeNull();
-    expect(card!.answer).not.toBe('Definition missing');
+    // Without a real gloss, FORM_TO_MEANING is not a valid candidate
+    expect(card).toBeNull();
   });
 
   it('creates MEANING_TO_FORM card when enabled and gloss exists', () => {
@@ -87,8 +86,8 @@ describe('generateReviewCards', () => {
       { ...baseItem, term: 'λόγος', id: 'λόγος', userGloss: undefined, contexts: [] },
     ];
     const cards = generateReviewCards(items, { enabledTypes: [CardType.FORM_TO_MEANING] });
-    // Items 1 and 2 have gloss, item 3 doesn't but FORM_TO_MEANING always works
-    expect(cards.length).toBe(3);
+    // Items 1 and 2 have gloss and generate cards. Item 3 has no gloss, so FORM_TO_MEANING skips it.
+    expect(cards.length).toBe(2);
   });
 
   it('shuffles cards (order differs from input)', () => {
