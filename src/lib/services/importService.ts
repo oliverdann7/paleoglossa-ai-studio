@@ -180,10 +180,10 @@ export class ImportService {
       const texts: ImportedText[] = [];
       snap.forEach(d => {
         const rawData = d.data() as Record<string, unknown>;
-        const content = rawData.content as string || '';
-        const sentences = rawData.sentences as string[] || [];
+        const content = (rawData.rawContent as string) || (rawData.content as string) || '';
+        const sentences = rawData.sentences as any[] || [];
         const wordCount = content.split(/\s+/).filter(Boolean).length;
-        
+
         texts.push({
           id: d.id,
           userId: rawData.userId as string || '',
@@ -194,23 +194,27 @@ export class ImportService {
           status: rawData.status as 'pending' | 'processing' | 'complete' | 'failed' || 'complete',
           analysisStatus: rawData.analysisStatus as 'analyzed' | 'raw' | 'needs_ai' || 'analyzed',
           visibility: rawData.visibility as 'private' | 'shared' | 'public' || 'public',
-          sentences: sentences.map((s: string) => ({ text: s, tokens: [] })),
+          moderationStatus: rawData.moderationStatus as string | undefined,
+          sentences: Array.isArray(sentences)
+            ? sentences.map((s: any) => typeof s === 'string' ? { text: s, tokens: [] } : s)
+            : [],
           stats: {
-            totalWords: wordCount,
-            uniqueWords: new Set(content.split(/\s+/)).size,
-            knownWords: 0,
-            newWords: wordCount,
-            learningWords: 0
+            totalWords: (rawData.stats as any)?.totalWords ?? wordCount,
+            uniqueWords: (rawData.stats as any)?.uniqueWords ?? new Set(content.split(/\s+/)).size,
+            knownWords: (rawData.stats as any)?.knownWords ?? 0,
+            newWords: (rawData.stats as any)?.newWords ?? wordCount,
+            learningWords: (rawData.stats as any)?.learningWords ?? 0,
           },
+          authorName: rawData.authorName as string | undefined,
+          authorId: rawData.authorId as string | undefined,
+          forkCount: rawData.forkCount as number | undefined,
+          forkedFrom: rawData.forkedFrom as string | undefined,
           createdAt: normalizeTimestamp(rawData.createdAt as string | undefined),
           updatedAt: normalizeTimestamp(rawData.updatedAt as string | undefined),
           publishedAt: normalizeTimestamp(rawData.publishedAt as string | undefined),
-          authorName: rawData.authorName as string | undefined,
-          authorId: rawData.authorId as string | undefined,
-          forkedFrom: rawData.forkedFrom as string | undefined
         });
       });
-      
+
       return texts.slice(0, maxItems);
     } catch (e) {
       console.error("Error fetching public texts:", e);

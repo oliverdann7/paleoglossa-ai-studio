@@ -1,53 +1,86 @@
-import { useTranslation } from 'react-i18next';
-import { BookOpen } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { BookOpen, Loader2, Plus, Trash2, ChevronRight } from "lucide-react";
+import { useAuth } from "../lib/hooks/useAuth";
+import { apiFetch } from "../lib/services/apiFetch";
+
+interface Notebook { id: string; title: string; description?: string; languageId?: string; createdAt?: string; }
 
 export const Notebooks = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
-  
+  const { user, isDemoMode } = useAuth();
+  const [notebooks, setNotebooks] = useState<Notebook[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+
+  useEffect(() => {
+    if (!user || isDemoMode) { setIsLoading(false); return; } // eslint-disable-line react-hooks/set-state-in-effect
+    apiFetch<Notebook[]>('/api/notebooks').then(setNotebooks).catch(() => {}).finally(() => setIsLoading(false));
+  }, [user, isDemoMode]);
+
+  const handleCreate = async () => {
+    if (!newTitle.trim()) return;
+    try {
+      const nb = await apiFetch<Notebook>('/api/notebooks', { method: 'POST', body: { title: newTitle.trim(), description: newDesc.trim() } });
+      setNotebooks(prev => [...prev, nb]);
+      setNewTitle(""); setNewDesc(""); setShowCreate(false);
+    } catch { /* ignore */ }
+  };
+
+  const handleDelete = async (id: string) => {
+    try { await apiFetch('/api/notebooks/' + id, { method: 'DELETE' }); setNotebooks(prev => prev.filter(n => n.id !== id)); }
+    catch { /* ignore */ }
+  };
+
+  if (isLoading) return <div className="p-12 text-center"><Loader2 className="w-6 h-6 animate-spin text-blue mx-auto" /></div>;
+
   return (
-    <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
-      <header className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue">
-            <BookOpen className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-[28px] font-serif font-light text-ink tracking-tight mb-1">
-              {t('notebooks.title', 'Research Notebooks')}
-            </h2>
-            <p className="text-xs font-bold text-blue tracking-wider uppercase">
-              Experimental
-            </p>
-          </div>
+    <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Notebooks</h2>
+          <p className="text-ink2 text-[15px]">Organize your notes into research notebooks.</p>
         </div>
-        <p className="font-body text-[15px] italic text-ink2 mb-8">
-          {t('notebooks.description', 'Organize your research with text-anchored notes, taggable notebooks, and export.')}
-        </p>
-      </header>
-      <div className="card p-8 text-center text-muted border-dashed border-2 border-bdr/40 bg-parch2/50">
-        <div className="space-y-6">
-          <BookOpen className="w-16 h-16 text-muted/60 mx-auto" />
-          <p className="text-ink3 max-w-xl">
-            {t('notebooks.experimental', 'Research notebooks with verse-anchored notes — this feature lets you create and organize notes connected to specific passages in your library.')}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => navigate('/app/library')}
-              className="flex-1 px-4 py-2 border border-bdr/60 text-[14px] font-semibold hover:bg-parch transition-colors"
-            >
-              {t('library.browse', 'Browse Library')}
-            </button>
-            <button
-              onClick={() => navigate('/app/import')}
-              className="flex-1 px-4 py-2 bg-blue text-white font-semibold rounded-lg hover:bg-blue/90 transition-colors"
-            >
-              {t('import.newLesson', 'Import New Lesson')}
-            </button>
-          </div>
-        </div>
+        <button onClick={() => setShowCreate(!showCreate)} className="flex items-center gap-2 px-4 py-2 bg-blue text-white font-bold rounded-xl text-[13px] hover:bg-blue/90 transition-all">
+          <Plus className="w-4 h-4" /> New Notebook
+        </button>
       </div>
+
+      {showCreate && (
+        <div className="card p-5 mb-6 space-y-4">
+          <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Notebook title" className="w-full px-4 py-2 border border-bdr rounded-lg text-[14px] focus:outline-none focus:border-blue" />
+          <input type="text" value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Description (optional)" className="w-full px-4 py-2 border border-bdr rounded-lg text-[14px] focus:outline-none focus:border-blue" />
+          <button onClick={handleCreate} disabled={!newTitle.trim()} className="px-4 py-2 bg-ink text-white font-bold rounded-lg text-[13px] hover:opacity-90 disabled:opacity-50">Create</button>
+        </div>
+      )}
+
+      {notebooks.length === 0 ? (
+        <div className="text-center py-16 text-ink2">
+          <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted" />
+          <p className="text-[16px] mb-4">No notebooks yet.</p>
+          <button onClick={() => setShowCreate(true)} className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90">Create Your First Notebook</button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {notebooks.map(nb => (
+            <div key={nb.id} className="card p-5 flex items-center justify-between hover:border-blue/30 transition-all group">
+              <div className="flex items-center gap-4 min-w-0 flex-1" onClick={() => navigate('/app/notes?notebookId=' + nb.id)}>
+                <BookOpen className="w-5 h-5 text-blue shrink-0" />
+                <div className="min-w-0">
+                  <h3 className="text-[16px] font-bold text-ink truncate">{nb.title}</h3>
+                  {nb.description && <p className="text-[13px] text-ink2 truncate">{nb.description}</p>}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => navigate('/app/notes?notebookId=' + nb.id)} className="text-muted hover:text-ink p-1"><ChevronRight className="w-5 h-5" /></button>
+                <button onClick={() => handleDelete(nb.id)} className="text-muted hover:text-red-400 p-1 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

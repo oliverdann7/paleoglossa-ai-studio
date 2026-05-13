@@ -90,6 +90,11 @@ export interface ImportedText {
   authorId?: string;
   forkedFrom?: string;
   publishedAt?: string | Timestamp;
+  moderationStatus?: string;
+  forkCount?: number;
+  originalAuthorId?: string;
+  originalAuthorName?: string;
+  originalPublicTextId?: string;
 }
 
 export interface UserSettings {

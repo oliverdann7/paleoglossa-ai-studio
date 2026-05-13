@@ -129,7 +129,7 @@ app.post('/api/ai/analyze', optionalAuth as any, async (req: AuthenticatedReques
     let aiWarnings: string[] = [];
 
     // ── Usage quota check ────────────────────────────────────────────
-    const uid = req.user?.uid || (req.headers['x-user-id'] as string | undefined);
+    const uid = req.user?.uid;
     if (apiKey && uid) {
       const planId = await lookupUserPlan(uid);
       const quota = await checkAndIncrementUsage(uid, planId, 'analyze', rawText.length);
@@ -190,6 +190,7 @@ ${rawText.slice(0, 20000)}`;
           return res.status(200).json({
             sentences: validated.sentences,
             aiAnalyzed: true,
+            analysisStatus: 'analyzed',
             confidence: computeOverallConfidence(validated.sentences),
             warnings: aiWarnings.length > 0 ? aiWarnings : undefined,
           });
@@ -197,6 +198,7 @@ ${rawText.slice(0, 20000)}`;
 
         // Gemini returned unparseable JSON, fall through
         aiWarnings.push('Gemini returned unparseable response');
+        if (warnings.length > 0) aiWarnings.push(...warnings);
         console.warn('[ai/analyze] Gemini unparseable, using fallback');
       } catch (geminiErr: any) {
         aiWarnings.push('Gemini API call failed: ' + geminiErr.message);
@@ -223,6 +225,7 @@ ${rawText.slice(0, 20000)}`;
     return res.status(200).json({
       sentences: fallbackSentences,
       aiAnalyzed: false,
+      analysisStatus: 'raw',
       confidence: null,
       warnings: geminiAttempted
         ? (aiWarnings.length > 0 ? aiWarnings : undefined)
@@ -253,6 +256,28 @@ function computeOverallConfidence(sentences: { tokens: { confidence: number | nu
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp', 'image/tiff'];
 const MAX_IMAGE_BASE64_LENGTH = 14 * 1024 * 1024; // ~10MB raw image
+
+// ── Scrape URL validation ────────────────────────────────────────────────
+function isPrivateIP(hostname: string): boolean {
+  return /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.0\.0\.0$|localhost$|.*\.local$)/.test(hostname);
+}
+
+function isValidScrapeUrl(urlString: string): { valid: boolean; reason?: string } {
+  let parsed: URL;
+  try { parsed = new URL(urlString); } catch {
+    return { valid: false, reason: 'Invalid URL format' };
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { valid: false, reason: 'Only http and https URLs are allowed' };
+  }
+  if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+    return { valid: false, reason: 'Localhost URLs are not allowed' };
+  }
+  if (isPrivateIP(parsed.hostname)) {
+    return { valid: false, reason: 'Private IP ranges are not allowed' };
+  }
+  return { valid: true };
+}
 
 app.post('/api/ai/ocr', async (req: any, res: any) => {
   try {
@@ -486,31 +511,213 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
 });
 
 app.post('/api/ai/pronunciation', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+  res.status(200).json({ text: '', confidence: null, warnings: ['Pronunciation guide requires GEMINI_API_KEY.'] });
 });
 
-app.post('/api/ai/scrape', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+app.post('/api/ai/scrape', async (req: any, res: any) => {
+  try {
+    const { url } = req.body;
+
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'url is required', code: 'INVALID_INPUT', text: '' });
+    }
+
+    const validation = isValidScrapeUrl(url);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.reason, code: 'INVALID_INPUT', text: '' });
+    }
+
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Paleoglossa/1.0)' },
+    });
+
+    if (!response.ok) {
+      return res.status(502).json({ error: `Remote server returned ${response.status}`, code: 'FETCH_ERROR', text: '' });
+    }
+
+    const html = await response.text();
+
+    // Basic text extraction: strip HTML tags
+    const text = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 50000);
+
+    const warnings: string[] = [];
+    if (!text) warnings.push('No readable text could be extracted from the URL.');
+    if (response.headers.get('content-type')?.includes('pdf')) warnings.push('PDF content may not extract cleanly.');
+
+    res.status(200).json({ text, confidence: null, warnings: warnings.length > 0 ? warnings : undefined });
+  } catch (err: any) {
+    console.error('[ai/scrape] Error:', err.message);
+    res.status(500).json({ text: '', confidence: null, warnings: ['Failed to fetch URL: ' + err.message] });
+  }
 });
 
-app.post('/api/ai/metadata', (_req: any, res: any) => {
-  res.status(200).json({ difficulty: '', tags: [], summary: '' });
+app.post('/api/ai/metadata', async (req: any, res: any) => {
+  try {
+    const { languageId, rawText } = req.body;
+
+    if (!languageId || typeof languageId !== 'string' || !rawText || typeof rawText !== 'string') {
+      return res.status(400).json({ error: 'languageId and rawText are required', code: 'INVALID_INPUT', difficulty: '', tags: [], summary: '', warnings: ['Invalid input'] });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', period: '', genre: '', warnings: ['Gemini API key not configured. Metadata unavailable.'] });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const prompt = `Analyze the following ${langName} text and return ONLY valid JSON.
+
+{
+  "difficulty": "beginner|intermediate|advanced|unknown",
+  "tags": ["tag1", "tag2"],
+  "summary": "One sentence summary of the content.",
+  "period": "historical period or empty string",
+  "genre": "genre or empty string"
+}
+
+Rules:
+- difficulty must be one of: beginner, intermediate, advanced, unknown
+- tags should be 2-5 relevant keywords
+- summary should be one sentence
+- period and genre are optional guesses — leave empty if uncertain
+- Do not include markdown. Return ONLY the JSON.
+
+Text: ${rawText.slice(0, 5000)}`;
+
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+    try {
+      const parsed = JSON.parse(cleaned);
+      res.status(200).json({
+        difficulty: parsed.difficulty || 'unknown',
+        tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+        summary: parsed.summary || '',
+        period: parsed.period || undefined,
+        genre: parsed.genre || undefined,
+        warnings: undefined,
+      });
+    } catch {
+      res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', warnings: ['AI returned unparseable metadata.'] });
+    }
+  } catch (err: any) {
+    console.error('[ai/metadata] Error:', err.message);
+    res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', warnings: ['Metadata generation failed.'] });
+  }
 });
 
-app.post('/api/ai/tutor/start', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+app.post('/api/ai/quiz', async (req: any, res: any) => {
+  try {
+    const { languageId, lemma, form, type } = req.body;
+
+    if (!languageId || !lemma) {
+      return res.status(400).json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Quiz requires GEMINI_API_KEY.', confidence: null });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const prompt = `Generate a short morphology or reading question for a student of ${langName}.
+
+Lemma: "${lemma}"
+${form ? `Form: "${form}"` : ''}
+Type: ${type || 'morphology'}
+
+Return ONLY valid JSON:
+{
+  "question": "The question text",
+  "choices": ["option A", "option B", "option C", "option D"],
+  "answer": "The correct choice",
+  "explanation": "Brief explanation of the correct answer."
+}
+
+Rules:
+- Question should test recognition of the form/lemma
+- Provide 4 choices, one correct
+- Explanation should be 1-2 sentences
+- Do not include markdown. Return ONLY the JSON.`;
+
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+    try {
+      const parsed = JSON.parse(cleaned);
+      res.status(200).json({
+        question: parsed.question || '',
+        choices: Array.isArray(parsed.choices) ? parsed.choices : undefined,
+        answer: parsed.answer || '',
+        explanation: parsed.explanation || '',
+        confidence: null,
+      });
+    } catch {
+      res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Failed to parse quiz response.', confidence: null });
+    }
+  } catch (err: any) {
+    console.error('[ai/quiz] Error:', err.message);
+    res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Quiz generation failed.', confidence: null });
+  }
 });
 
-app.post('/api/ai/tutor/message', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
-});
+app.post('/api/ai/syntax', async (req: any, res: any) => {
+  try {
+    const { languageId, sentence } = req.body;
 
-app.post('/api/ai/quiz', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
-});
+    if (!languageId || typeof languageId !== 'string' || !sentence || typeof sentence !== 'string') {
+      return res.status(400).json({ error: 'languageId and sentence are required', code: 'INVALID_INPUT', explanation: '', confidence: null });
+    }
 
-app.post('/api/ai/syntax', (_req: any, res: any) => {
-  res.status(200).json({ text: '' });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({ explanation: 'Syntax analysis requires GEMINI_API_KEY.', confidence: null, warnings: ['Gemini API key not configured.'] });
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const prompt = `Provide a syntactic explanation of the following ${langName} sentence.
+
+Sentence: "${sentence}"
+
+Explain the clause structure, word order, and dependencies. Be honest about uncertainty.
+If you are not confident about the parsing, say so explicitly.
+Do not invent a full treebank. Focus on explanation.
+
+Return ONLY the explanation text — no markdown, no JSON.`;
+
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const hasUncertainty = cleaned.includes('uncertain') || cleaned.includes('not confident') || cleaned.includes('unclear');
+
+    res.status(200).json({
+      explanation: cleaned || 'No syntax explanation could be generated.',
+      confidence: null,
+      warnings: hasUncertainty ? ['AI expressed uncertainty in the analysis.'] : undefined,
+    });
+  } catch (err: any) {
+    console.error('[ai/syntax] Error:', err.message);
+    res.status(200).json({ explanation: 'Syntax analysis failed.', confidence: null, warnings: ['Analysis failed: ' + err.message] });
+  }
 });
 
 // ─── Audio ───────────────────────────────────────────────────────────────────
@@ -553,62 +760,306 @@ app.get('/api/manuscripts/:manuscriptId', (_req: any, res: any) => {
 });
 
 // ─── Notebooks & Notes ──────────────────────────────────────────────────────
-app.get('/api/notebooks', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.get('/api/notebooks', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const snap = await adminDb_.collection('users').doc(userId).collection('notebooks').get();
+    const notebooks: any[] = [];
+    snap.forEach(d => notebooks.push({ id: d.id, ...d.data() }));
+    res.status(200).json(notebooks);
+  } catch (e: any) {
+    console.error('[notebooks] Error fetching:', e.message);
+    res.status(200).json([]);
+  }
 });
 
-app.post('/api/notebooks', (_req: any, res: any) => {
-  res.status(200).json(null);
+app.post('/api/notebooks', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { title, description, languageId } = req.body;
+  if (!title || typeof title !== 'string') return res.status(400).json({ error: 'title is required', code: 'INVALID_INPUT' });
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const ref = adminDb_.collection('users').doc(userId).collection('notebooks').doc();
+    await ref.set({ title, description: description || '', languageId: languageId || null, createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
+    res.status(200).json({ id: ref.id, title, description, languageId, createdAt: new Date().toISOString() });
+  } catch (e: any) {
+    console.error('[notebooks] Error creating:', e.message);
+    res.status(500).json({ error: 'Failed to create notebook', code: 'INTERNAL_ERROR' });
+  }
 });
 
-app.delete('/api/notebooks/:notebookId', (_req: any, res: any) => {
-  res.status(200).json({ ok: true });
+app.delete('/api/notebooks/:notebookId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const notebookId = req.params.notebookId as string;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    await adminDb_.collection('users').doc(userId).collection('notebooks').doc(notebookId).delete();
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[notebooks] Error deleting:', e.message);
+    res.status(500).json({ error: 'Failed to delete notebook', code: 'INTERNAL_ERROR' });
+  }
 });
 
-app.get('/api/notes', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.get('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const languageId = req.query.languageId as string | undefined;
+  const targetType = req.query.targetType as string | undefined;
+  const notebookId = req.query.notebookId as string | undefined;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    let query: any = adminDb_.collection('users').doc(userId).collection('notes');
+    if (typeof languageId === "string") query = query.where('languageId', '==', languageId);
+    if (targetType) query = query.where('targetType', '==', targetType);
+    if (typeof notebookId === "string") query = query.where('notebookId', '==', notebookId);
+    const snap = await query.get();
+    const notes: any[] = [];
+    snap.forEach((d: any) => notes.push({ id: d.id, ...d.data() }));
+    res.status(200).json(notes);
+  } catch (e: any) {
+    console.error('[notes] Error fetching:', e.message);
+    res.status(200).json([]);
+  }
 });
 
-app.post('/api/notes', (_req: any, res: any) => {
-  res.status(200).json(null);
+app.post('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { content, languageId, targetType, targetId, lemma, textId, sentenceIndex, tokenIndex, tags, notebookId } = req.body;
+  if (!content && (!lemma || !targetType)) return res.status(400).json({ error: 'content or lemma+targetType required', code: 'INVALID_INPUT' });
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const ref = adminDb_.collection('users').doc(userId).collection('notes').doc();
+    await ref.set({
+      content, languageId: languageId || null, targetType: targetType || 'free', targetId: targetId || null,
+      lemma: lemma || null, textId: textId || null, sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
+      tokenIndex: tokenIndex != null ? tokenIndex : null, tags: tags || [], notebookId: notebookId || null,
+      createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
+    });
+    res.status(200).json({ id: ref.id, content, languageId, targetType, createdAt: new Date().toISOString() });
+  } catch (e: any) {
+    console.error('[notes] Error creating:', e.message);
+    res.status(500).json({ error: 'Failed to create note', code: 'INTERNAL_ERROR' });
+  }
 });
 
-app.delete('/api/notes/:noteId', (_req: any, res: any) => {
-  res.status(200).json({ ok: true });
+app.delete('/api/notes/:noteId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const noteId = req.params.noteId as string;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    await adminDb_.collection('users').doc(userId).collection('notes').doc(noteId).delete();
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[notes] Error deleting:', e.message);
+    res.status(500).json({ error: 'Failed to delete note', code: 'INTERNAL_ERROR' });
+  }
 });
 
 // ─── Syntax ─────────────────────────────────────────────────────────────────
-app.get('/api/syntax/:textId/:sentenceIndex', (_req: any, res: any) => {
-  res.status(200).json(null);
+app.get('/api/syntax/:textId/:sentenceIndex', async (req: any, res: any) => {
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(200).json(null);
+  try {
+    const textId = req.params.textId as string;
+    const sentenceIndex = req.params.sentenceIndex as string;
+    const snap = await adminDb_.doc(`syntaxAnnotations/${textId}_${sentenceIndex}`).get();
+    if (!snap.exists) return res.status(200).json(null);
+    res.status(200).json({ id: snap.id, ...snap.data() });
+  } catch { res.status(200).json(null); }
 });
 
-app.get('/api/syntax', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.post('/api/syntax/:textId/:sentenceIndex', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const textId = req.params.textId as string;
+  const sentenceIndex = req.params.sentenceIndex as string;
+  const { tokens, dependency, explanation, confidence } = req.body;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await adminDb_.doc(`syntaxAnnotations/${textId}_${sentenceIndex}`).set({
+      textId, sentenceIndex: parseInt(sentenceIndex), tokens: tokens || [], dependency: dependency || null,
+      explanation: explanation || null, confidence: confidence ?? null, source: 'ai',
+      annotatedBy: userId, generatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[syntax] Error saving:', e.message);
+    res.status(500).json({ error: 'Failed to save syntax', code: 'INTERNAL_ERROR' });
+  }
 });
 
 // ─── Search ─────────────────────────────────────────────────────────────────
-app.post('/api/search', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.post('/api/search', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { query, languageId, sourceKind, limit: reqLimit = 20 } = req.body;
+  if (!query || typeof query !== 'string') return res.status(400).json({ error: 'query is required', code: 'INVALID_INPUT' });
+
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  const q = query.toLowerCase().trim();
+  const results: any[] = [];
+
+  try {
+    const maxResults = Math.min(reqLimit || 20, 50);
+
+    // 1. Search user imports
+    const importSnap = await adminDb_.collection('users').doc(userId).collection('imports').get();
+    importSnap.forEach(d => {
+      if (results.length >= maxResults) return;
+      const data = d.data();
+      const title = (data.title || '').toLowerCase();
+      const content = (data.rawContent || '').toLowerCase();
+      if (title.includes(q) || content.includes(q)) {
+        results.push({ id: d.id, title: data.title || 'Untitled', source: 'import', languageId: data.languageId, snippet: data.rawContent?.slice(0, 200), textId: d.id });
+      }
+    });
+
+    // 2. Search vocabulary
+    const vocabSnap = await adminDb_.collection('users').doc(userId).collection('vocabulary').get();
+    vocabSnap.forEach(d => {
+      if (results.length >= maxResults) return;
+      const data = d.data();
+      const term = (data.term || '').toLowerCase();
+      const gloss = (data.userGloss || '').toLowerCase();
+      if (term.includes(q) || gloss.includes(q)) {
+        results.push({ id: d.id, term: data.term, lemma: data.term, source: 'vocabulary', languageId: data.languageId, snippet: data.userGloss || data.term, textId: null });
+      }
+    });
+
+    // 3. Search notes
+    const noteSnap = await adminDb_.collection('users').doc(userId).collection('notes').get();
+    noteSnap.forEach(d => {
+      if (results.length >= maxResults) return;
+      const data = d.data();
+      const content = (data.content || '').toLowerCase();
+      const lemma = (data.lemma || '').toLowerCase();
+      if (content.includes(q) || lemma.includes(q)) {
+        results.push({ id: d.id, title: data.lemma || 'Note', source: 'note', languageId: data.languageId, snippet: data.content?.slice(0, 200), textId: data.textId });
+      }
+    });
+
+    // 4. Search public texts (visible only)
+    if (!sourceKind || sourceKind === 'public') {
+      const publicSnap = await adminDb_.collection('publicTexts').where('moderationStatus', '==', 'visible').get();
+      publicSnap.forEach(d => {
+        if (results.length >= maxResults) return;
+        const data = d.data();
+        if (languageId && data.languageId !== languageId) return;
+        const title = (data.title || '').toLowerCase();
+        const content = (data.rawContent || '').toLowerCase();
+        if (title.includes(q) || content.includes(q)) {
+          results.push({ id: d.id, title: data.title || 'Untitled', source: 'public', languageId: data.languageId, snippet: data.rawContent?.slice(0, 200), textId: d.id, authorName: data.authorName });
+        }
+      });
+    }
+
+    // Filter by source kind if specified
+    const filtered = sourceKind && sourceKind !== 'all' ? results.filter(r => r.source === sourceKind) : results;
+    // Filter by language if specified
+    const langFiltered = languageId ? filtered.filter(r => !r.languageId || r.languageId === languageId) : filtered;
+
+    res.status(200).json(langFiltered.slice(0, maxResults));
+  } catch (e: any) {
+    console.error('[search] Error:', e.message);
+    res.status(200).json([]);
+  }
 });
 
 // ─── Grammar ────────────────────────────────────────────────────────────────
+import { GRAMMAR_CONCEPTS, PATHWAY } from './_lib/grammarData';
+
 app.get('/api/grammar/concepts', (_req: any, res: any) => {
-  res.status(200).json([]);
+  res.status(200).json(GRAMMAR_CONCEPTS);
 });
 
-app.get('/api/grammar/concepts/:conceptId', (_req: any, res: any) => {
-  res.status(200).json(null);
+app.get('/api/grammar/concepts/:conceptId', (req: any, res: any) => {
+  const concept = GRAMMAR_CONCEPTS.find(c => c.id === req.params.conceptId);
+  res.status(200).json(concept || null);
 });
 
 app.get('/api/grammar/pathway', (_req: any, res: any) => {
-  res.status(200).json([]);
+  res.status(200).json(PATHWAY);
 });
 
 // ─── Public Library ─────────────────────────────────────────────────────
-app.get('/api/public/texts', async (_req: any, res: any) => {
-  const { ImportService } = await import('../src/lib/services/importService');
-  const texts = await ImportService.getPublicTexts(50);
-  res.status(200).json(texts);
+app.get('/api/public/texts', async (req: any, res: any) => {
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) {
+    // Fallback to client SDK if admin DB unavailable
+    const { ImportService } = await import('../src/lib/services/importService');
+    const texts = await ImportService.getPublicTexts(50);
+    return res.status(200).json(texts);
+  }
+
+  try {
+    const language = req.query.language as string | undefined;
+    const snap = await adminDb_.collection('publicTexts')
+      .where('moderationStatus', '==', 'visible')
+      .get();
+
+    const results: any[] = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      if (language && data.languageId !== language) return;
+      results.push({ id: doc.id, ...data });
+    });
+
+    // Sort by publishedAt desc
+    results.sort((a, b) => {
+      const aTime = a.publishedAt?.toMillis?.() || 0;
+      const bTime = b.publishedAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+
+    res.status(200).json(results.slice(0, 50));
+  } catch (err: any) {
+    console.error('Error fetching public texts:', err);
+    // Fallback
+    const { ImportService } = await import('../src/lib/services/importService');
+    const texts = await ImportService.getPublicTexts(50);
+    res.status(200).json(texts);
+  }
+});
+
+app.post('/api/public/texts/:textId/report', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const { textId } = req.params;
+  const { reason } = req.body;
+
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Database service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+  try {
+    // Verify the public text exists
+    const textSnap = await adminDb_.doc('publicTexts/' + textId).get();
+    if (!textSnap.exists) return res.status(404).json({ error: 'Text not found', code: 'NOT_FOUND' });
+
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const reportId = `report_${Date.now()}`;
+
+    await adminDb_.doc('publicTextReports/' + reportId).set({
+      textId,
+      reporterId: userId,
+      reason: reason || 'No reason provided',
+      createdAt: FieldValue.serverTimestamp(),
+      status: 'open',
+    });
+
+    res.status(200).json({ success: true, reportId });
+  } catch (err: any) {
+    console.error('Error reporting text:', err);
+    res.status(500).json({ error: 'Failed to submit report', code: 'INTERNAL_ERROR' });
+  }
 });
 
 app.post('/api/public/texts/:textId/fork', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
@@ -626,17 +1077,32 @@ app.post('/api/public/texts/:textId/fork', requireAuth as any, async (req: Authe
     const newId = `fork_${textId}_${Date.now()}`;
 
     const { FieldValue } = await import('firebase-admin/firestore');
+
+    // Create fork as a private import
     await adminDb_.doc(`users/${userId}/imports/${newId}`).set({
-      ...data,
       id: newId,
       title: `${data.title} (forked)`,
+      languageId: data.languageId,
+      sourceType: data.sourceType || 'paste',
+      rawContent: data.rawContent || '',
+      sentences: data.sentences || [],
+      stats: data.stats || {},
+      analysisStatus: data.analysisStatus || 'raw',
       visibility: 'private',
       forkedFrom: textId,
       authorId: data.authorId || null,
       authorName: data.authorName || null,
+      originalAuthorId: data.authorId || null,
+      originalAuthorName: data.authorName || null,
+      originalPublicTextId: textId,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       publishedAt: null,
+    });
+
+    // Increment forkCount on the public text
+    await adminDb_.doc('publicTexts/' + textId).update({
+      forkCount: (data.forkCount || 0) + 1,
     });
 
     res.status(200).json({ id: newId });
@@ -661,19 +1127,38 @@ app.post('/api/imports/:importId/share', requireAuth as any, async (req: Authent
     if (!snap.exists) return res.status(404).json({ error: 'Import not found', code: 'NOT_FOUND' });
 
     const data = snap.data()!;
+    const now = FieldValue.serverTimestamp();
 
     await importRef.update({
       visibility: 'public',
-      publishedAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
+      publishedAt: now,
+      updatedAt: now,
     });
 
-    await adminDb_.doc('publicTexts/' + importId).set({
-      ...data,
+    const publicData: Record<string, any> = {
+      id: importId,
+      title: data.title || 'Untitled',
+      languageId: data.languageId || 'grc',
+      sourceType: data.sourceType || 'paste',
+      rawContent: data.rawContent || '',
+      sentences: data.sentences || [],
+      stats: data.stats || { totalWords: 0, uniqueWords: 0, knownWords: 0, newWords: 0, learningWords: 0 },
+      analysisStatus: data.analysisStatus || 'raw',
+      visibility: 'public',
+      moderationStatus: 'visible',
       authorId: userId,
       authorName: data.authorName || 'Anonymous',
-      publishedAt: FieldValue.serverTimestamp(),
-    });
+      forkCount: 0,
+      forkedFrom: data.forkedFrom || null,
+      originalAuthorId: data.originalAuthorId || data.authorId || null,
+      originalAuthorName: data.originalAuthorName || data.authorName || null,
+      originalPublicTextId: data.originalPublicTextId || null,
+      createdAt: data.createdAt || now,
+      updatedAt: now,
+      publishedAt: now,
+    };
+
+    await adminDb_.doc('publicTexts/' + importId).set(publicData);
 
     res.status(200).json({ success: true });
   } catch (err: any) {
@@ -860,184 +1345,187 @@ app.post('/api/stripe/create-portal-session', requireAuth as any, async (req: Au
   }
 });
 
-const ALL_LANGUAGES = ['grc', 'grc-koine', 'hbo', 'lat', 'syr', 'cop', 'arc', 'akk', 'san', 'egy', 'hit'];
 
-app.post('/api/stripe/webhook', async (req: any, res: any) => {
-  const sig = req.headers['stripe-signature'];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
+const SUGGESTED_QUESTIONS = [
+  'What does this word mean in context?',
+  'Parse this form for me.',
+  'Why is this word in this case?',
+  'Show me similar sentences.',
+  'What grammatical construction is this?',
+];
 
-  const isDev = process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development';
+app.post('/api/ai/tutor/start', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { languageId, textId, sentenceIndex } = req.body;
+    const userId = req.user!.uid;
 
-  if (!sig || !webhookSecret || !stripeKey) {
-    if (isDev) {
-      return res.status(200).json({ received: true, devMode: true });
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
     }
-    return res.status(500).json({ error: 'Stripe webhook not configured', code: 'STRIPE_NOT_CONFIGURED' });
-  }
 
-  let event: any;
-  try {
-    const stripe = new (await import('stripe')).default(stripeKey);
-    const rawBody = req.rawBody || JSON.stringify(req.body);
-    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-  } catch (err: any) {
-    console.error('[stripe-webhook] Invalid signature:', err.message);
-    return res.status(400).json({ error: 'Invalid signature', code: 'INVALID_SIGNATURE' });
-  }
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
-  const adminDb_ = getAdminDb();
-  if (!adminDb_) {
-    console.error('[stripe-webhook] Admin DB not available');
-    return res.status(503).json({ error: 'Database unavailable', code: 'SERVICE_UNAVAILABLE' });
-  }
+    const { FieldValue } = await import('firebase-admin/firestore');
 
-  const { FieldValue } = await import('firebase-admin/firestore');
-  const eventId = event.id;
+    // Check quota
+    const uid = userId;
+    const planId = await lookupUserPlan(uid);
+    const apiKey = process.env.GEMINI_API_KEY;
 
-  // Idempotency: skip if already processed
-  try {
-    const eventDoc = await adminDb_.doc('stripeEvents/' + eventId).get();
-    if (eventDoc.exists) {
-      return res.status(200).json({ received: true, duplicate: true });
-    }
-  } catch (dbErr: any) {
-    console.error('[stripe-webhook] Idempotency check failed:', dbErr.message);
-    // Continue processing — better to process twice than miss an event.
-  }
-
-  const now = FieldValue.serverTimestamp();
-
-  try {
-    switch (event.type) {
-
-      case 'checkout.session.completed': {
-        const session = event.data.object;
-        const userId = (session.client_reference_id || session.metadata?.userId) as string | undefined;
-        const planId = (session.metadata?.planId || 'basic_1') as string;
-
-        if (!userId) {
-          console.error('[stripe-webhook] No userId in checkout.session.completed');
-          break;
-        }
-
-        const customerId = session.customer as string | undefined;
-        const subscriptionId = session.subscription as string | undefined;
-        const customerEmail = session.customer_details?.email as string | undefined;
-        const periodEnd = (session as any).current_period_end
-          ? new Date((session as any).current_period_end * 1000).toISOString()
-          : null;
-
-        const userData: Record<string, any> = {
-          currentPlan: planId,
-          subscriptionStatus: 'active',
-          subscriptionUpdatedAt: now,
-        };
-        if (customerId) userData.stripeCustomerId = customerId;
-        if (subscriptionId) userData.stripeSubscriptionId = subscriptionId;
-        if (periodEnd) userData.currentPeriodEnd = periodEnd;
-        userData.selectedLanguageIds = planId === 'full_all' ? ALL_LANGUAGES : ['grc'];
-
-        await adminDb_.doc('users/' + userId).set(userData, { merge: true });
-
-        // Create reverse lookup so subscription webhooks can find the user
-        if (customerId) {
-          await adminDb_.doc('stripeCustomers/' + customerId).set({
-            userId,
-            email: customerEmail || null,
-            createdAt: now,
-            updatedAt: now,
-          }, { merge: true });
-        }
-        break;
-      }
-
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object;
-        const customerId = subscription.customer as string;
-        const status = subscription.status;
-        const items = subscription.items?.data || [];
-        const priceId = items[0]?.price?.id;
-        const currentPeriodEnd = (subscription as any).current_period_end
-          ? new Date((subscription as any).current_period_end * 1000).toISOString()
-          : null;
-
-        const lookupSnap = await adminDb_.doc('stripeCustomers/' + customerId).get();
-        if (!lookupSnap.exists) {
-          console.error('[stripe-webhook] Unknown customer:', customerId);
-          break;
-        }
-
-        const userId = lookupSnap.data()!.userId as string;
-        const planInfo = priceId ? PLANS_BY_PRICE[priceId] : null;
-        const planId = planInfo?.planId || 'basic_1';
-        const subscriptionStatus: string =
-          status === 'active' ? 'active' :
-          status === 'past_due' ? 'past_due' :
-          status === 'canceled' || status === 'unpaid' ? 'canceled' : 'past_due';
-
-        const updateData: Record<string, any> = {
-          currentPlan: planId,
-          subscriptionStatus,
-          subscriptionUpdatedAt: now,
-        };
-        if (currentPeriodEnd) updateData.currentPeriodEnd = currentPeriodEnd;
-
-        await adminDb_.doc('users/' + userId).set(updateData, { merge: true });
-        break;
-      }
-
-      case 'customer.subscription.deleted': {
-        const deletedSub = event.data.object;
-        const deletedCustomerId = deletedSub.customer as string;
-
-        const lookupSnap = await adminDb_.doc('stripeCustomers/' + deletedCustomerId).get();
-        if (!lookupSnap.exists) {
-          console.error('[stripe-webhook] Unknown customer on deletion:', deletedCustomerId);
-          break;
-        }
-
-        const userId = lookupSnap.data()!.userId as string;
-
-        await adminDb_.doc('users/' + userId).set({
-          currentPlan: 'free',
-          subscriptionStatus: 'canceled',
-          subscriptionUpdatedAt: now,
-        }, { merge: true });
-        break;
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object;
-        const invCustomerId = invoice.customer as string;
-
-        const lookupSnap = await adminDb_.doc('stripeCustomers/' + invCustomerId).get();
-        if (!lookupSnap.exists) {
-          console.error('[stripe-webhook] Unknown customer on payment failure:', invCustomerId);
-          break;
-        }
-
-        const userId = lookupSnap.data()!.userId as string;
-        await adminDb_.doc('users/' + userId).set({
-          subscriptionStatus: 'past_due',
-          subscriptionUpdatedAt: now,
-        }, { merge: true });
-        break;
+    if (apiKey && uid) {
+      const quota = await checkAndIncrementUsage(uid, planId, 'tutor', languageId.length);
+      if (!quota.allowed) {
+        return res.status(429).json({
+          error: 'Daily AI analysis limit reached. Upgrade your plan for more.',
+          code: 'QUOTA_EXCEEDED', remaining: quota.remaining, resetDate: quota.resetDate,
+        });
       }
     }
 
-    // Mark event as processed (idempotency)
-    await adminDb_.doc('stripeEvents/' + eventId).set({
-      type: event.type,
-      processedAt: now,
-    }).catch((dbErr: any) => {
-      console.error('[stripe-webhook] Failed to mark event as processed:', dbErr.message);
+    // Create session document
+    const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc();
+    const sessionId = sessionRef.id;
+
+    const sessionData: Record<string, any> = {
+      languageId, textId: textId || null, sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
+      title: `${getLanguageName(languageId)} Tutor`,
+      createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
+    };
+    await sessionRef.set(sessionData);
+
+    // Create greeting message
+    const greeting = apiKey
+      ? `I'm your ${getLanguageName(languageId)} tutor. I can help you understand this text — ask about specific words, grammar, or sentence structure.`
+      : 'Tutor session created. AI assistance requires GEMINI_API_KEY.';
+
+    await sessionRef.collection('messages').add({
+      role: 'assistant', content: greeting, context: null, warnings: apiKey ? null : ['Gemini API key not configured.'],
+      createdAt: FieldValue.serverTimestamp(),
     });
 
-    res.status(200).json({ received: true });
+    res.status(200).json({
+      sessionId, greeting, suggestedQuestions: SUGGESTED_QUESTIONS,
+    });
   } catch (err: any) {
-    console.error('[stripe-webhook] Processing error:', err);
-    res.status(500).json({ error: err.message || 'Webhook processing failed', code: 'WEBHOOK_ERROR' });
+    console.error('[tutor/start] Error:', err.message);
+    res.status(500).json({ error: 'Failed to start tutor session', code: 'TUTOR_ERROR' });
+  }
+});
+
+app.post('/api/ai/tutor/message', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { sessionId, message, context } = req.body;
+    const userId = req.user!.uid;
+
+    if (!sessionId || !message) {
+      return res.status(400).json({ error: 'sessionId and message are required', code: 'INVALID_INPUT' });
+    }
+
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    const { FieldValue } = await import('firebase-admin/firestore');
+
+    // Verify session belongs to user
+    const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc(sessionId);
+    const sessionSnap = await sessionRef.get();
+    if (!sessionSnap.exists) {
+      return res.status(404).json({ error: 'Session not found', code: 'NOT_FOUND' });
+    }
+
+    const sessionData = sessionSnap.data()!;
+
+    // Save user message
+    const messagesRef = sessionRef.collection('messages');
+    await messagesRef.add({
+      role: 'user', content: message, context: context || null,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    // Check quota
+    const planId = await lookupUserPlan(userId);
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (apiKey && userId) {
+      const quota = await checkAndIncrementUsage(userId, planId, 'tutor', message.length);
+      if (!quota.allowed) {
+        // Save an assistant message explaining quota reached
+        await messagesRef.add({
+          role: 'assistant',
+          content: 'You have reached your daily AI analysis limit. Upgrade your plan or try again tomorrow.',
+          context: null, warnings: ['Daily quota exceeded.'],
+          createdAt: FieldValue.serverTimestamp(),
+        });
+        await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
+        return res.status(200).json({
+          text: 'You have reached your daily AI analysis limit. Upgrade your plan or try again tomorrow.',
+          warnings: ['Daily quota exceeded.'],
+        });
+      }
+    }
+
+    if (!apiKey) {
+      await messagesRef.add({
+        role: 'assistant',
+        content: 'AI tutor requires a Gemini API key to be configured. You can still use the app without it.',
+        context: null, warnings: ['Gemini API key not configured.'],
+        createdAt: FieldValue.serverTimestamp(),
+      });
+      await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
+      return res.status(200).json({
+        text: 'AI tutor requires a Gemini API key to be configured.',
+        warnings: ['Gemini API key not configured.'],
+      });
+    }
+
+    // Build prompt with context
+    const langName = getLanguageName(sessionData.languageId || 'grc');
+    let prompt = `You are a ${langName} tutor helping a student read an ancient text in its original language.
+
+Rules:
+- Answer questions about morphology, syntax, and meaning based on ${langName} grammar.
+- If you are uncertain about a form or parsing, say so explicitly with "I'm not certain, but..."
+- Do NOT invent morphology or grammar rules that do not apply to ${langName}.
+- Distinguish between:
+  • KNOWN: facts confirmed by standard grammars
+  • AI-GENERATED: your analysis based on context
+  • UNCERTAIN: forms you cannot confidently parse
+- Keep answers concise (2-4 sentences). Focus on the student's specific question.`;
+
+    if (context) {
+      if (context.textTitle) prompt += `\n\nText: "${context.textTitle}"`;
+      if (context.sentenceText) prompt += `\nSentence: "${context.sentenceText}"`;
+      if (context.selectedToken) prompt += `\nSelected word: "${context.selectedToken}"`;
+      if (context.lemma) prompt += `\nLemma: ${context.lemma}`;
+      if (context.morphology) prompt += `\nKnown morphology: ${JSON.stringify(context.morphology)}`;
+      if (context.gloss) prompt += `\nGloss: ${context.gloss}`;
+    }
+
+    prompt += `\n\nStudent's question: ${message}`;
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const hasUncertainty = cleaned.includes('not certain') || cleaned.includes('uncertain') || cleaned.includes('I think');
+
+    // Save assistant response
+    await messagesRef.add({
+      role: 'assistant', content: cleaned, context: null,
+      warnings: hasUncertainty ? ['Tutor expressed uncertainty.'] : null,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
+
+    res.status(200).json({
+      text: cleaned || 'I could not generate a response.',
+      warnings: hasUncertainty ? ['Tutor expressed uncertainty.'] : undefined,
+    });
+  } catch (err: any) {
+    console.error('[tutor/message] Error:', err.message);
+    res.status(500).json({ error: 'Failed to process message', code: 'TUTOR_ERROR' });
   }
 });
 

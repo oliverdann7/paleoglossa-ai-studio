@@ -1,9 +1,6 @@
 import { z } from 'zod';
 import { ImportedSentence } from '../../types/firestore';
-
-export interface AIClientOptions {
-  userId?: string;
-}
+import { apiFetch } from './apiFetch';
 
 export class AIError extends Error {
   constructor(message: string, public code: string) {
@@ -12,7 +9,8 @@ export class AIError extends Error {
   }
 }
 
-// Validation schemas
+// ── Response schemas ─────────────────────────────────────────────────────
+
 const SentenceAnalysisSchema = z.object({
   sentences: z.array(z.object({
     tokens: z.array(z.object({
@@ -26,7 +24,11 @@ const SentenceAnalysisSchema = z.object({
       confidence: z.number().optional().nullable()
     })),
     translation: z.string().optional().nullable()
-  }))
+  })),
+  aiAnalyzed: z.boolean().optional(),
+  analysisStatus: z.string().optional(),
+  confidence: z.number().nullable().optional(),
+  warnings: z.array(z.string()).nullable().optional(),
 });
 
 const ExplainResponseSchema = z.object({
@@ -43,127 +45,140 @@ const TextResponseSchema = z.object({
 const MetadataResponseSchema = z.object({
   difficulty: z.string(),
   tags: z.array(z.string()),
-  summary: z.string()
+  summary: z.string(),
+  period: z.string().optional(),
+  genre: z.string().optional(),
+  warnings: z.array(z.string()).nullable().optional(),
+});
+
+const SyntaxResponseSchema = z.object({
+  explanation: z.string(),
+  confidence: z.number().nullable().optional(),
+  warnings: z.array(z.string()).nullable().optional(),
+});
+
+const QuizResponseSchema = z.object({
+  question: z.string(),
+  choices: z.array(z.string()).optional(),
+  answer: z.string(),
+  explanation: z.string(),
+  confidence: z.number().nullable().optional(),
 });
 
 export class AIClient {
-  private static async request<T>(endpoint: string, payload: any, schema: z.ZodType<T>, userId?: string): Promise<T> {
+  // ── Core request with apiFetch (Bearer token for auth, skipAuth for anonymous) ──
+  private static async request<T>(endpoint: string, payload: any, schema: z.ZodType<T>): Promise<T> {
     try {
-      const url = `/api/ai/${endpoint}`;
-      const response = await fetch(url, {
+      // AI endpoints work anonymously (demo mode). Server-side quota tracking
+      // uses optionalAuth to identify users when a Bearer token is available.
+      const data = await apiFetch<T>(`/api/ai/${endpoint}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(userId ? { 'X-User-Id': userId } : {})
-        },
-        body: JSON.stringify(payload),
+        body: payload,
+        skipAuth: true,
       });
 
-      if (!response.ok) {
-        let errorData: any = {};
-        const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          errorData = await response.json().catch(() => ({}));
-        } else {
-          const text = await response.text().catch(() => '');
-          console.error(`Server returned non-JSON response from ${url}: ${text.slice(0, 200)}`);
-          throw new AIError(`Server returned an invalid response from ${url}`, 'INVALID_SERVER_RESPONSE');
-        }
-        if (response.status === 429) throw new AIError(
-          'AI analysis quota reached for today. Upgrade your plan or try again tomorrow.',
-          'QUOTA_EXCEEDED'
-        );
-        throw new AIError(errorData.error || `Server error: ${response.status}`, errorData.code || 'SERVER_ERROR');
-      }
-
-      let data: any;
-      try {
-        data = await response.json();
-      } catch {
-        const text = await response.text().catch(() => '');
-        console.error(`Invalid JSON from ${url}: ${text.slice(0, 200)}`);
-        throw new AIError(`Server returned an invalid response from ${url}`, 'INVALID_SERVER_RESPONSE');
-      }
-      
-      // Validate structure to never trust AI output blindly
       const result = schema.safeParse(data);
       if (!result.success) {
-        console.error(`AI Output Validation Failed for ${url}: `, result.error);
+        console.error(`AI Output Validation Failed for /api/ai/${endpoint}:`, result.error);
         throw new AIError('Received malformed response from AI', 'MALFORMED_RESPONSE');
       }
-
       return result.data;
     } catch (err: any) {
       if (err instanceof AIError) throw err;
-      if (err.name === 'AbortError' || err.message?.includes('fetch') || err.message?.includes('NetworkError')) {
-        throw new AIError('Network error or timeout connecting to AI service', 'NETWORK_ERROR');
+      if (err.name === 'AbortError') {
+        throw new AIError('Request timed out', 'NETWORK_ERROR');
+      }
+      if (err.name === 'ApiError') {
+        throw new AIError(err.message, err.code);
+      }
+      if (err.name === 'AuthRequiredError') {
+        throw new AIError('Authentication required for this AI feature', 'AUTH_REQUIRED');
       }
       throw new AIError(err.message || 'Unknown AI Error', 'UNKNOWN');
     }
   }
 
-  static async analyzeText(languageId: string, rawText: string, userId?: string): Promise<ImportedSentence[]> {
-    const data = await this.request('analyze', { languageId, rawText }, SentenceAnalysisSchema, userId);
-    return data.sentences as ImportedSentence[];
+  // ── Public methods ──────────────────────────────────────────────────────
+
+  static async analyzeText(languageId: string, rawText: string): Promise<{
+    sentences: ImportedSentence[];
+    aiAnalyzed?: boolean;
+    analysisStatus?: string;
+    confidence?: number | null;
+    warnings?: string[] | null;
+  }> {
+    const data = await this.request('analyze', { languageId, rawText }, SentenceAnalysisSchema);
+    return {
+      sentences: data.sentences as ImportedSentence[],
+      aiAnalyzed: data.aiAnalyzed,
+      analysisStatus: data.analysisStatus,
+      confidence: data.confidence,
+      warnings: data.warnings,
+    };
   }
 
-  static async extractFromImage(languageId: string, imageBase64: string, mimeType: string, userId?: string): Promise<string> {
-    const data = await this.request('ocr', { languageId, imageBase64, mimeType }, TextResponseSchema, userId);
+  static async extractFromImage(languageId: string, imageBase64: string, mimeType: string): Promise<string> {
+    const data = await this.request('ocr', { languageId, imageBase64, mimeType }, TextResponseSchema);
     return data.text;
   }
 
-  static async translateSentence(languageId: string, sentence: string, userId?: string): Promise<string> {
-    const data = await this.request('translate', { languageId, tokens: [sentence] }, TextResponseSchema, userId);
+  static async translateSentence(languageId: string, sentence: string): Promise<string> {
+    const data = await this.request('translate', { languageId, tokens: [sentence] }, TextResponseSchema);
     return data.text;
   }
 
-  static async explainWord(languageId: string, word: string, lemma: string, userId?: string): Promise<string> {
-    const data = await this.request('explain', { languageId, word, lemma, type: 'word' }, ExplainResponseSchema, userId);
+  static async explainWord(languageId: string, word: string, lemma: string): Promise<string> {
+    const data = await this.request('explain', { languageId, word, lemma, type: 'word' }, ExplainResponseSchema);
     return data.explanation;
   }
 
-  static async explainPhrase(languageId: string, phrase: string, userId?: string): Promise<string> {
-    const data = await this.request('explain', { languageId, phrase, type: 'phrase' }, ExplainResponseSchema, userId);
-    return data.explanation;
-  }
-  
-  static async getParadigm(languageId: string, word: string, lemma: string, userId?: string): Promise<string> {
-    const data = await this.request('explain', { languageId, word, lemma, type: 'paradigm' }, ExplainResponseSchema, userId);
+  static async explainPhrase(languageId: string, phrase: string): Promise<string> {
+    const data = await this.request('explain', { languageId, phrase, type: 'phrase' }, ExplainResponseSchema);
     return data.explanation;
   }
 
-  static async scrapeUrl(url: string, userId?: string): Promise<string> {
-    const data = await this.request('scrape', { url }, TextResponseSchema, userId);
+  static async getParadigm(languageId: string, word: string, lemma: string): Promise<string> {
+    const data = await this.request('explain', { languageId, word, lemma, type: 'paradigm' }, ExplainResponseSchema);
+    return data.explanation;
+  }
+
+  static async scrapeUrl(url: string): Promise<string> {
+    const data = await this.request('scrape', { url }, TextResponseSchema);
     return data.text;
   }
 
-  static async generateLessonMetadata(languageId: string, rawText: string, userId?: string) {
-    return this.request('metadata', { languageId, rawText }, MetadataResponseSchema, userId);
+  static async generateLessonMetadata(languageId: string, rawText: string) {
+    return this.request('metadata', { languageId, rawText }, MetadataResponseSchema);
   }
 
-  static async generateAudioPronunciationGuide(languageId: string, text: string, userId?: string) {
-    return this.request('pronunciation', { languageId, text }, TextResponseSchema, userId);
+  static async generateAudioPronunciationGuide(languageId: string, text: string) {
+    return this.request('pronunciation', { languageId, text }, TextResponseSchema);
   }
 
-  static async startTutorSession(languageId: string, textId?: string, userId?: string): Promise<string> {
-    const data = await this.request('tutor/start', { languageId, textId }, TextResponseSchema, userId);
+  static async startTutorSession(languageId: string, textId?: string): Promise<string> {
+    const data = await this.request('tutor/start', { languageId, textId }, TextResponseSchema);
     return data.text;
   }
 
   static async sendTutorMessage(sessionId: string, message: string, context?: {
     textId?: string; sentenceIndex?: number; lemma?: string;
-  }, userId?: string): Promise<string> {
-    const data = await this.request('tutor/message', { sessionId, message, context }, TextResponseSchema, userId);
+  }): Promise<string> {
+    const data = await this.request('tutor/message', { sessionId, message, context }, TextResponseSchema);
     return data.text;
   }
 
-  static async generateMorphologyQuiz(languageId: string, lemma: string, form: string, userId?: string): Promise<string> {
-    const data = await this.request('quiz', { languageId, lemma, form, type: 'morphology' }, TextResponseSchema, userId);
-    return data.text;
+  static async generateMorphologyQuiz(languageId: string, lemma: string, form: string): Promise<{
+    question: string;
+    choices?: string[];
+    answer: string;
+    explanation: string;
+    confidence?: number | null;
+  }> {
+    return this.request('quiz', { languageId, lemma, form, type: 'morphology' }, QuizResponseSchema);
   }
 
-  static async analyzeSyntax(languageId: string, sentence: string, userId?: string): Promise<string> {
-    const data = await this.request('syntax', { languageId, sentence }, TextResponseSchema, userId);
-    return data.text;
+  static async analyzeSyntax(languageId: string, sentence: string): Promise<string> {
+    const data = await this.request('syntax', { languageId, sentence }, SyntaxResponseSchema);
+    return data.explanation;
   }
 }
