@@ -25,6 +25,7 @@
     "date-fns": "^4.1.0",
     "express": "^5.2.1",
     "firebase": "^11.1.0",
+    "firebase-admin": "^13.9.0",
     "i18next": "^26.0.10",
     "lucide-react": "^0.469.0",
     "motion": "^11.15.0",
