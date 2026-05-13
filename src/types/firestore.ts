@@ -110,6 +110,8 @@ export interface UserSettings {
   transliterationMode: 'none' | 'phonetic' | 'roman';
   targetLanguage: string;
   uiLanguage: string;
+  swipePageMovesToKnown?: boolean;
+  activeDictionaries?: string[];
 }
 
 export interface ReviewLog {

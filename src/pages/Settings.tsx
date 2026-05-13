@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useTranslation } from "react-i18next";
 import { db } from "../lib/firebase";
+import { DICTIONARY_SOURCES } from "../lib/data/dictionaryDB";
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
@@ -96,6 +97,7 @@ export const Settings = () => {
               <option value="fr">Français</option>
               <option value="ru">Русский</option>
               <option value="zh">中文</option>
+              <option value="tr">Türkçe</option>
             </select>
           </div>
         </section>
@@ -289,6 +291,61 @@ export const Settings = () => {
                 {t("settings.showParallel", "Show parallel text by default")}
               </span>
             </label>
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={settings.swipePageMovesToKnown ?? true}
+                onChange={(e) =>
+                  updateSettings({ swipePageMovesToKnown: e.target.checked })
+                }
+                className="w-5 h-5 rounded text-blue focus:ring-blue accent-blue border-bdr bg-white"
+              />
+              <span className="flex flex-col">
+                <span className="text-[14px] font-medium text-ink group-hover:text-blue transition-colors">
+                  {t("settings.swipeMovesToKnown", "Swipe page moves to known")}
+                </span>
+                <span className="text-[12px] text-muted">
+                  {t("settings.swipeMovesToKnownDesc", "When enabled, moving to the next page automatically marks the current page's words as known.")}
+                </span>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <section className="card p-8">
+          <h3 className="font-serif text-[20px] text-ink mb-2 pb-4 border-b border-bdr">
+            {t("settings.dictionaries", "Dictionaries & Lexicons")}
+          </h3>
+          <p className="text-[13px] text-muted mb-6">
+            {t("settings.dictionariesDesc", "Select which dictionaries to use when looking up words.")}
+          </p>
+          <div className="space-y-3">
+            {Object.values(DICTIONARY_SOURCES).map((source) => {
+              const active = settings.activeDictionaries ?? Object.keys(DICTIONARY_SOURCES);
+              const isChecked = active.includes(source.id);
+              return (
+                <label key={source.id} className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={(e) => {
+                      const current = settings.activeDictionaries ?? Object.keys(DICTIONARY_SOURCES);
+                      const next = e.target.checked
+                        ? [...current, source.id]
+                        : current.filter((id) => id !== source.id);
+                      updateSettings({ activeDictionaries: next });
+                    }}
+                    className="w-5 h-5 mt-0.5 rounded text-blue focus:ring-blue accent-blue border-bdr bg-white"
+                  />
+                  <span className="flex flex-col">
+                    <span className="text-[14px] font-medium text-ink group-hover:text-blue transition-colors">
+                      {source.name}
+                    </span>
+                    <span className="text-[11px] text-muted">{source.licenseName}</span>
+                  </span>
+                </label>
+              );
+            })}
           </div>
         </section>
 

@@ -14,6 +14,8 @@ export interface Settings {
   showGlossTooltip: boolean;
   glossTooltipForKnown: boolean;
   interlinearMode: boolean;
+  swipePageMovesToKnown: boolean;
+  activeDictionaries: string[];
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -29,6 +31,8 @@ const DEFAULT_SETTINGS: Settings = {
   showGlossTooltip: true,
   glossTooltipForKnown: false,
   interlinearMode: false,
+  swipePageMovesToKnown: true,
+  activeDictionaries: ['strongs-greek', 'strongs-hebrew', 'liddell-scott', 'whitakers-words'],
 };
 
 export const useSettings = () => {

@@ -2,14 +2,15 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { BookOpen, BookMarked, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, STATE_LABELS } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
 import { ParadigmModal } from './ParadigmModal';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
-import { findDictionaryEntry } from '@/lib/data/dictionary';
+import { findDictionaryEntry, getGlossWithFallbacks } from '@/lib/data/dictionary';
+import { useSettings } from '@/lib/hooks/useSettings';
 
 interface LexDrawerPanelProps {
   selectedWord: any;
@@ -48,7 +49,8 @@ export const LexDrawerPanel = ({
   text
 }: LexDrawerPanelProps) => {
   const { t } = useTranslation();
-  
+  const { settings } = useSettings();
+
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
@@ -114,7 +116,7 @@ export const LexDrawerPanel = ({
         className="md:!translate-y-0 fixed md:relative bottom-0 left-0 w-full md:w-[380px] h-[65vh] md:h-full bg-[#FEFAF4] border-t md:border-t-0 md:border-l border-bdr flex flex-col shrink-0 z-50 md:z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-[-10px_0_40px_rgba(35,20,10,0.04)] rounded-t-3xl md:rounded-none"
       >
         <div className="h-14 border-b border-bdr flex items-center justify-between px-4 bg-[#FEFAF4] shrink-0 rounded-t-3xl md:rounded-none">
-          <div className="eyebrow">Word Analysis</div>
+          <div className="eyebrow">{t('reader.wordAnalysis', 'Word Analysis')}</div>
           <button
             onClick={() => setSelectedWord(null)}
             className="text-muted hover:text-ink p-2 rounded-full hover:bg-parch border border-transparent"
@@ -173,13 +175,14 @@ export const LexDrawerPanel = ({
               </Link>
             </div>
              <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
-               {wordInfo?.userGloss ||
-                 (findDictionaryEntry(selectedWord.lemma, textLanguageId)?.shortGloss ||
-                  selectedWord.gloss)}
+               {wordInfo?.userGloss
+                 || getGlossWithFallbacks(selectedWord.lemma, textLanguageId)
+                 || selectedWord.gloss
+                 || <span className="text-muted italic text-[16px]">{t('reader.definitionUnavailable', 'No definition available.')}</span>}
              </div>
             {!sourceInfo && (
               <div className="text-[10px] text-muted italic mb-4">
-                Source: PalæoGlossa Ancient Corpus & AI Analysis
+                {t('reader.ancientWord', 'Ancient word')}
               </div>
             )}
             
@@ -190,42 +193,14 @@ export const LexDrawerPanel = ({
               <input
                 type="text"
                 className="w-full bg-white border border-bdr/50 rounded-lg px-3 py-2 text-sm focus:border-blue outline-none"
-                placeholder="Enter your own gloss..."
+                placeholder={t('reader.yourGlossPlaceholder', 'Enter your own gloss...')}
                 value={wordInfo?.userGloss || ""}
                 onChange={(e) => updateGloss(selectedWord.lemma, e.target.value, textLanguageId)}
               />
             </div>
           </div>
 
-          {sourceInfo && (
-            <div className="mb-6 p-4 rounded-2xl bg-parch2/30 border border-bdr/20">
-              <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-jade" />
-                <span className="text-[10px] uppercase font-bold text-muted tracking-widest">Data Source</span>
-              </div>
-              <p className="text-[13px] text-ink2 font-medium">{sourceInfo.name}</p>
-              <p className="text-[10px] text-muted mt-1">
-                License: {sourceInfo.license}
-                {sourceInfo.requiresAttribution && (
-                  <span className="inline-flex items-center gap-1 ml-2 text-amber">
-                    <ShieldAlert className="w-3 h-3" /> Attribution required
-                  </span>
-                )}
-              </p>
-            </div>
-          )}
-
-          {(aiWordInsight || isAiWordLoading) && (
-            <div className="mb-10 p-5 rounded-2xl bg-blue/5 border border-blue/10">
-              <div className="flex items-center gap-2 mb-3 text-blue font-bold text-sm">
-                {isAiWordLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                AI Insights
-              </div>
-              <p className="text-[14px] text-ink2 leading-relaxed whitespace-pre-wrap">{aiWordInsight}</p>
-            </div>
-          )}
-          
-          {/* Your Knowledge */}
+          {/* Your Knowledge — shown before Data Source per UX requirement */}
           <div className="mb-8">
             <div className="eyebrow mb-3 flex items-center justify-between text-ink">
               <span>{t('reader.yourKnowledge', "Your Knowledge")}</span>
@@ -240,7 +215,7 @@ export const LexDrawerPanel = ({
                 WordState.IGNORED,
               ].map((state) => {
                 const isActive = wordInfo?.state === state || (wordInfo?.state === WordState.NEW && state === WordState.NEW && !knowledge[selectedWord.lemma]);
-                
+
                 return (
                   <button
                     key={state}
@@ -276,31 +251,79 @@ export const LexDrawerPanel = ({
                 );
               })}
             </div>
-            
+
             <div className="mt-4">
-              <button 
+              <button
                 onClick={() => setWordState(selectedWord.lemma, WordState.LEARNING, textLanguageId, selectedWord.sentenceText)}
-                className="w-full py-3 bg-blue text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all active:scale-[0.98]"
+                className="w-full py-4 bg-blue text-white rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all active:scale-[0.98]"
               >
-                Add to Review
+                <BookMarked className="w-5 h-5" />
+                {t('reader.addToReview', 'Add to Review')}
               </button>
             </div>
           </div>
 
+          {/* Data Source */}
+          {sourceInfo && (() => {
+            const activeDicts = settings.activeDictionaries;
+            const entry = findDictionaryEntry(selectedWord.lemma, textLanguageId);
+            const visibleDicts = entry?.dictionaries
+              ? entry.dictionaries.filter(d => !activeDicts || activeDicts.length === 0 || activeDicts.includes(d.id))
+              : [];
+            return (
+              <div className="mb-6 p-4 rounded-2xl bg-parch2/30 border border-bdr/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-jade" />
+                  <span className="text-[10px] uppercase font-bold text-muted tracking-widest">
+                    {t('reader.dataSource', 'Data Source')}
+                  </span>
+                </div>
+                <p className="text-[13px] text-ink2 font-medium">{sourceInfo.name}</p>
+                {visibleDicts.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {visibleDicts.map(d => (
+                      <span key={d.id} className="text-[10px] bg-parch3 border border-bdr/40 rounded-full px-2 py-0.5 text-ink2">
+                        {d.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <p className="text-[10px] text-muted mt-1">
+                  License: {sourceInfo.license}
+                  {sourceInfo.requiresAttribution && (
+                    <span className="inline-flex items-center gap-1 ml-2 text-amber">
+                      <ShieldAlert className="w-3 h-3" /> {t('reader.attributionRequired', 'Attribution required')}
+                    </span>
+                  )}
+                </p>
+              </div>
+            );
+          })()}
+
+          {(aiWordInsight || isAiWordLoading) && (
+            <div className="mb-10 p-5 rounded-2xl bg-blue/5 border border-blue/10">
+              <div className="flex items-center gap-2 mb-3 text-blue font-bold text-sm">
+                {isAiWordLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {t('reader.aiInsights', 'AI Insights')}
+              </div>
+              <p className="text-[14px] text-ink2 leading-relaxed whitespace-pre-wrap">{aiWordInsight}</p>
+            </div>
+          )}
+
           {!aiWordInsight && !isAiWordLoading && (
-            <button 
+            <button
               onClick={handleAiWordExplain}
               className="w-full mb-10 py-3 border border-blue/20 bg-blue/5 rounded-xl font-bold text-blue text-sm flex items-center justify-center gap-2 hover:bg-blue/10 transition-colors"
             >
               <Sparkles className="w-4 h-4" />
-              Ask AI About This Word
+              {t('reader.askAiAboutWord', 'Ask AI About This Word')}
             </button>
           )}
 
           {morphologyDisplay && (
             <div className="mb-10">
               <div className="eyebrow mb-3 flex items-center justify-between text-ink">
-                <span>Morphology</span>
+                <span>{t('reader.morphology', 'Morphology')}</span>
                 {morphologyDisplay.confidence !== undefined && (
                   <span className="text-[10px] text-muted normal-case tracking-normal">
                     {Math.round(morphologyDisplay.confidence * 100)}% confidence
@@ -323,7 +346,7 @@ export const LexDrawerPanel = ({
 
               {morphologyDisplay.missing ? (
                 <div className="p-4 bg-parch/40 border border-dashed border-bdr rounded-xl text-[13px] text-muted">
-                  Morphological parsing is not available for this token yet.
+                  {t('reader.morphologyMissing', 'Morphological parsing is not available for this token yet.')}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-2">
@@ -349,7 +372,7 @@ export const LexDrawerPanel = ({
           {(wordInfo?.contexts?.length ?? 0) > 0 && (
             <div className="mb-10">
               <div className="eyebrow mb-4 text-ink flex items-center justify-between">
-                <span>Example Sentences</span>
+                <span>{t('reader.exampleSentences', 'Example Sentences')}</span>
                 <Repeat className="w-3 h-3 opacity-50" />
               </div>
               <div className="space-y-3">

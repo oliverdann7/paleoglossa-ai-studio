@@ -681,8 +681,17 @@ export const Reader = () => {
   }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, totalPages]);
 
   const handleSwipe = useCallback(() => {
-    handleMarkPageKnown(true);
-  }, [handleMarkPageKnown]);
+    if (settings.swipePageMovesToKnown ?? true) {
+      handleMarkPageKnown(true);
+    } else {
+      if (readingMode === 'page') {
+        setCurrentSentenceIndex(prev => prev + 1);
+      } else {
+        setCurrentScrollPage(prev => prev + 1);
+        document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+      }
+    }
+  }, [settings.swipePageMovesToKnown, handleMarkPageKnown, readingMode]);
 
   const handleNextPage = useCallback(() => {
     setCurrentScrollPage(prev => prev + 1);
