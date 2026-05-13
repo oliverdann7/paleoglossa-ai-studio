@@ -29,9 +29,11 @@ service cloud.firestore {
 
     // Fields that must only be written by the server (Admin SDK / Stripe webhook).
     // Client writes to the user profile may not modify these fields.
+    // selectedLanguageIds is NOT server-controlled — users may toggle languages
+    // within their plan limits on the client side.
     function serverControlledFields() {
       return ['currentPlan', 'subscriptionStatus', 'stripeCustomerId',
-              'stripeSubscriptionId', 'selectedLanguageIds', 'trialEnd',
+              'stripeSubscriptionId', 'trialEnd',
               'subscriptionUpdatedAt'];
     }
 
