@@ -90,8 +90,10 @@ const MAX_TEXT_LENGTH_HUMAN = '100,000';
 import { basicAnalyze } from './_lib/basicAnalyze';
 import { parseAndValidateAIResponse } from './_lib/aiValidation';
 import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA } from './_lib/aiPrompts';
+import { optionalAuth } from './_lib/auth';
+import { checkAndIncrementUsage } from './_lib/aiUsage';
 
-app.post('/api/ai/analyze', async (req: any, res: any) => {
+app.post('/api/ai/analyze', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, rawText } = req.body;
 
@@ -125,6 +127,22 @@ app.post('/api/ai/analyze', async (req: any, res: any) => {
     const apiKey = process.env.GEMINI_API_KEY;
     let geminiAttempted = false;
     let aiWarnings: string[] = [];
+
+    // ── Usage quota check ────────────────────────────────────────────
+    const uid = req.user?.uid || (req.headers['x-user-id'] as string | undefined);
+    if (apiKey && uid) {
+      const planId = await lookupUserPlan(uid);
+      const quota = await checkAndIncrementUsage(uid, planId, 'analyze', rawText.length);
+      if (!quota.allowed) {
+        return res.status(429).json({
+          error: 'Daily AI analysis limit reached. Upgrade your plan for more.',
+          code: 'QUOTA_EXCEEDED',
+          remaining: quota.remaining,
+          resetDate: quota.resetDate,
+          planLimit: quota.planLimit,
+        });
+      }
+    }
 
     if (apiKey) {
       geminiAttempted = true;
@@ -944,4 +962,21 @@ export default function handler(req: any, res: any) {
       res.end(JSON.stringify({ error: 'Not found' }));
     }
   });
+}
+
+/**
+ * Look up a user's current plan from Firestore.
+ * Falls back to 'free' if the user is not found or Admin DB unavailable.
+ */
+async function lookupUserPlan(uid: string): Promise<string> {
+  try {
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return 'free';
+    const snap = await adminDb_.doc('users/' + uid).get();
+    if (!snap.exists) return 'free';
+    const data = snap.data();
+    return (data?.currentPlan as string) || 'free';
+  } catch {
+    return 'free';
+  }
 }
