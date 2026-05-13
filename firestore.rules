@@ -151,6 +151,20 @@ service cloud.firestore {
         allow update: if isOwner(userId);
         allow delete: if isOwner(userId);
       }
+
+      // ── Tutor Sessions ────────────────────────────────
+      match /tutorSessions/{sessionId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+
+        match /messages/{messageId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId);
+          allow read, write: if isOwner(userId);
+        }
+      }
     }
 
     // ── Syntax Annotations (top-level, server-managed) ──
