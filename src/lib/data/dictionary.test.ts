@@ -1,26 +1,32 @@
+import { describe, it, expect } from 'vitest';
 import {
   findDictionaryEntry,
   getDictionaryEntries,
   searchDictionaryEntries,
 } from './dictionary';
 
-function assert(condition: unknown, message: string) {
-  if (!condition) throw new Error(message);
-}
+describe('Dictionary data', () => {
 
-export function runDictionaryTests() {
-  const entries = getDictionaryEntries();
-  assert(entries.length > 0, 'Dictionary index contains corpus-derived entries');
+  it('index contains corpus-derived entries', () => {
+    const entries = getDictionaryEntries();
+    expect(entries.length).toBeGreaterThan(0);
+  });
 
-  const logos = findDictionaryEntry('λόγος', 'grc-koine');
-  assert(!!logos, 'Lemma lookup resolves a Koine Greek dictionary entry');
-  assert(logos?.shortGloss && logos.shortGloss !== 'Definition unavailable', 'Entry includes a short gloss');
-  assert((logos?.corpusExamples.length || 0) > 0, 'Entry includes corpus examples');
-  assert((logos?.dictionaries.length || 0) > 0, 'Entry includes source/license metadata');
+  it('lemma lookup resolves a Koine Greek dictionary entry', () => {
+    const logos = findDictionaryEntry('λόγος', 'grc-koine');
+    expect(logos).toBeTruthy();
+    expect(logos?.shortGloss).not.toBe('Definition unavailable');
+    expect((logos?.corpusExamples.length || 0)).toBeGreaterThan(0);
+    expect((logos?.dictionaries.length || 0)).toBeGreaterThan(0);
+  });
 
-  const surfaceResults = searchDictionaryEntries('Ἐν', 'grc-koine');
-  assert(surfaceResults.some(entry => entry.lemma === 'ἐν'), 'Surface-form search maps to lemma entries');
+  it('surface-form search maps to lemma entries', () => {
+    const surfaceResults = searchDictionaryEntries('Ἐν', 'grc-koine');
+    expect(surfaceResults.some(entry => entry.lemma === 'ἐν')).toBe(true);
+  });
 
-  const filtered = searchDictionaryEntries('created', 'hbo');
-  assert(filtered.every(entry => entry.languageId === 'hbo'), 'Language filter restricts dictionary search');
-}
+  it('language filter restricts dictionary search', () => {
+    const filtered = searchDictionaryEntries('created', 'hbo');
+    expect(filtered.every(entry => entry.languageId === 'hbo')).toBe(true);
+  });
+});

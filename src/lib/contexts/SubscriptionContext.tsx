@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { apiFetch } from '../services/apiFetch';
 import { PlanId, SubscriptionStatus, getPlanById, canAddLanguage as canAddByPlan, canAccessLanguage as canAccessByPlan, TRIAL_DAYS } from '../constants/plans';
 
 const SUBSCRIPTION_STORAGE_KEY = 'paleoglossa_subscription';
@@ -16,7 +17,7 @@ interface UserSubscription {
 
 interface SubscriptionContextValue {
   subscription: UserSubscription;
-  setPlan: (planId: PlanId) => void;
+  selectFreePlan: () => void;
   toggleLanguage: (languageId: string) => void;
   canAccessLanguage: (languageId: string) => boolean;
   canAddLanguage: () => boolean;
@@ -29,12 +30,15 @@ interface SubscriptionContextValue {
 }
 
 const ADMIN_EMAILS = ['danezolv@gmail.com'];
+// TODO: Migrate to Firebase custom claims so admin status is verifiable server-side.
 
 const DEFAULT_SUBSCRIPTION: UserSubscription = {
   currentPlan: 'free',
   selectedLanguageIds: ['grc'],
   subscriptionStatus: 'free',
 };
+
+const PAID_PLANS: PlanId[] = ['basic_1', 'duo_2', 'full_all'];
 
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
 
@@ -44,6 +48,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<UserSubscription>(DEFAULT_SUBSCRIPTION);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Load subscription: trust Firestore for paid plans, fall back to localStorage for free.
   useEffect(() => {
     const load = async () => {
       if (user) {
@@ -51,11 +56,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           const snap = await getDoc(doc(db, `users/${user.uid}`));
           if (snap.exists()) {
             const data = snap.data();
-            if (data.currentPlan) {
+            const plan = data.currentPlan as PlanId | undefined;
+            // Only trust paid plans from the server (Stripe webhook).
+            // Reject free+localStorage hybrid: always read free from defaults.
+            if (plan && PAID_PLANS.includes(plan)) {
               setSubscription({
-                currentPlan: data.currentPlan as PlanId,
-                selectedLanguageIds: data.selectedLanguageIds || ['grc'],
-                subscriptionStatus: data.subscriptionStatus || 'free',
+                currentPlan: plan,
+                selectedLanguageIds: (data.selectedLanguageIds as string[]) || ['grc'],
+                subscriptionStatus: (data.subscriptionStatus as SubscriptionStatus) || 'free',
               });
               setIsLoaded(true);
               return;
@@ -65,10 +73,22 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           // Fall through to localStorage
         }
       }
+      // Guest/demo mode: read from localStorage as a transient fallback.
+      // Paid plans saved here are stale — the server is the authority.
       const stored = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
       if (stored) {
         try {
-          setSubscription(JSON.parse(stored));
+          const parsed: UserSubscription = JSON.parse(stored);
+          // Only restore free from localStorage; paid plans must come from server.
+          if (parsed.currentPlan === 'free' || parsed.currentPlan === undefined) {
+            setSubscription({
+              currentPlan: 'free',
+              selectedLanguageIds: parsed.selectedLanguageIds || ['grc'],
+              subscriptionStatus: 'free',
+            });
+            setIsLoaded(true);
+            return;
+          }
         } catch { /* ignore */ }
       }
       setIsLoaded(true);
@@ -76,32 +96,35 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     load();
   }, [user]);
 
-  const persist = useCallback((sub: UserSubscription) => {
-    localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(sub));
+  // Save selectedLanguageIds to localStorage only (guest/demo).
+  // The server (Stripe webhook) is the authority for paid subscription fields.
+  // Firestore writes for language selection are handled by the server.
+  const persistLanguages = useCallback((langIds: string[]) => {
+    const stored = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
+    const existing = stored ? JSON.parse(stored) : {};
+    localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify({ ...existing, selectedLanguageIds: langIds }));
     if (user) {
+      // Update Firestore with language selection only (not subscription fields).
       setDoc(doc(db, `users/${user.uid}`), {
-        currentPlan: sub.currentPlan,
-        selectedLanguageIds: sub.selectedLanguageIds,
-        subscriptionStatus: sub.subscriptionStatus,
-        subscriptionUpdatedAt: serverTimestamp(),
+        selectedLanguageIds: langIds,
+        updatedAt: serverTimestamp(),
       }, { merge: true }).catch(() => {});
     }
   }, [user]);
 
-  const setPlan = useCallback((planId: PlanId) => {
-    const plan = getPlanById(planId);
+  // Only callable for the free plan. Paid plans must go through createCheckoutSession
+  // which is handled server-side via the Stripe webhook.
+  const selectFreePlan = useCallback(() => {
+    const plan = getPlanById('free');
     const limit = plan.languageLimit;
-    const newSelected = limit === 'all'
-      ? [...subscription.selectedLanguageIds]
-      : subscription.selectedLanguageIds.slice(0, limit);
-    const newSub: UserSubscription = {
-      currentPlan: planId,
+    const newSelected = subscription.selectedLanguageIds.slice(0, limit as number);
+    setSubscription({
+      currentPlan: 'free',
       selectedLanguageIds: newSelected,
-      subscriptionStatus: planId === 'free' ? 'free' : 'active',
-    };
-    setSubscription(newSub);
-    persist(newSub);
-  }, [subscription.selectedLanguageIds, persist]);
+      subscriptionStatus: 'free',
+    });
+    persistLanguages(newSelected);
+  }, [subscription.selectedLanguageIds, persistLanguages]);
 
   const toggleLanguage = useCallback((languageId: string) => {
     setSubscription(prev => {
@@ -115,11 +138,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         if (!canAdd) return prev;
         newSelected = [...prev.selectedLanguageIds, languageId];
       }
-      const newSub = { ...prev, selectedLanguageIds: newSelected };
-      persist(newSub);
-      return newSub;
+      persistLanguages(newSelected);
+      return { ...prev, selectedLanguageIds: newSelected };
     });
-  }, [persist]);
+  }, [persistLanguages]);
 
   const isOnTrial = useCallback((): boolean => {
     if (!subscription.trialEnd) return false;
@@ -144,28 +166,22 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const createCheckoutSession = useCallback(async (planId: PlanId, billingCycle: 'monthly' | 'yearly' = 'monthly'): Promise<string | null> => {
     try {
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      const data = await apiFetch<{ url: string | null; devMode?: boolean }>('/api/stripe/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          planId,
-          billingCycle,
-          userId: user?.uid,
-          email: user?.email,
-          trialDays: TRIAL_DAYS,
-        }),
+        body: { planId, billingCycle },
       });
-      const data = await response.json();
       if (data.devMode) {
-        // Dev mode: set plan with trial period
+        // Dev mode: store plan in memory + localStorage (transient, no Firestore write).
+        // The Stripe webhook is the authority in production.
         const trialEnd = new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString();
-        setSubscription(prev => ({
-          ...prev,
+        const devSub: UserSubscription = {
           currentPlan: planId,
+          selectedLanguageIds: subscription.selectedLanguageIds,
           subscriptionStatus: 'trialing',
           trialEnd,
-        }));
-        persist({ ...subscription, currentPlan: planId, subscriptionStatus: 'trialing', trialEnd });
+        };
+        setSubscription(devSub);
+        localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(devSub));
         return null;
       }
       return data.url || null;
@@ -173,18 +189,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       console.error('Checkout error:', err);
       return null;
     }
-  }, [user, setPlan, subscription, persist]);
+  }, [user, subscription.selectedLanguageIds]);
 
   const createPortalSession = useCallback(async (): Promise<string | null> => {
     try {
-      const response = await fetch('/api/stripe/create-portal-session', {
+      const data = await apiFetch<{ url: string | null; devMode?: boolean }>('/api/stripe/create-portal-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerId: subscription.stripeCustomerId,
-        }),
       });
-      const data = await response.json();
       if (data.devMode) return null;
       return data.url || null;
     } catch (err) {
@@ -200,7 +211,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   return (
     <SubscriptionContext.Provider value={{
       subscription,
-      setPlan,
+      selectFreePlan,
       toggleLanguage,
       canAccessLanguage: checkAccess,
       canAddLanguage: checkCanAdd,

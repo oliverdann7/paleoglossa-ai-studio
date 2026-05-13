@@ -34,7 +34,10 @@ const ExplainResponseSchema = z.object({
 });
 
 const TextResponseSchema = z.object({
-  text: z.string()
+  text: z.string(),
+  confidence: z.number().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  warnings: z.array(z.string()).nullable().optional(),
 });
 
 const MetadataResponseSchema = z.object({
@@ -66,7 +69,10 @@ export class AIClient {
           console.error(`Server returned non-JSON response from ${url}: ${text.slice(0, 200)}`);
           throw new AIError(`Server returned an invalid response from ${url}`, 'INVALID_SERVER_RESPONSE');
         }
-        if (response.status === 429) throw new AIError('Rate limit exceeded. Please try again later.', 'QUOTA_EXCEEDED');
+        if (response.status === 429) throw new AIError(
+          'AI analysis quota reached for today. Upgrade your plan or try again tomorrow.',
+          'QUOTA_EXCEEDED'
+        );
         throw new AIError(errorData.error || `Server error: ${response.status}`, errorData.code || 'SERVER_ERROR');
       }
 

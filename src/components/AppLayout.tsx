@@ -2,11 +2,8 @@ import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { AuthGuard } from './AuthGuard';
 import { useSettings } from '../lib/hooks/useSettings';
-import { AuthProvider } from '../lib/contexts/AuthContext';
-import { ActiveLanguageProvider } from '../lib/contexts/ActiveLanguageContext';
-import { SubscriptionProvider } from '../lib/contexts/SubscriptionContext';
 
-function AppLayoutContent() {
+export function AppLayout() {
   useSettings();
 
   return (
@@ -18,17 +15,5 @@ function AppLayoutContent() {
         </AuthGuard>
       </main>
     </div>
-  );
-}
-
-export function AppLayout() {
-  return (
-    <AuthProvider>
-      <ActiveLanguageProvider>
-        <SubscriptionProvider>
-          <AppLayoutContent />
-        </SubscriptionProvider>
-      </ActiveLanguageProvider>
-    </AuthProvider>
   );
 }

@@ -16,10 +16,13 @@ export const useVocabulary = () => {
   const [knowledgeVersion, setKnowledgeVersion] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Always-current reference to knowledge — used by stable callbacks so they
-  // never need to close over the changing state object.
-  const knowledgeRef = useRef<KnowledgeMap>(knowledge);
+// Always-current reference to knowledge — used by stable callbacks so they
+// never need to close over the changing state object.
+const knowledgeRef = useRef<KnowledgeMap>(knowledge);
+// Update the ref when knowledge changes
+useEffect(() => {
   knowledgeRef.current = knowledge;
+}, [knowledge]);
 
   // Bump the version counter whenever knowledge changes so ReadingPane
   // knows to re-render its token list (each ReaderToken.memo then only

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Check, Sparkles, Crown, ArrowRight, Lock, ExternalLink, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "../lib/contexts/SubscriptionContext";
@@ -7,7 +7,7 @@ import { LANGUAGES, getLanguageIcon } from "../lib/constants/languages";
 import { useSearchParams } from "react-router-dom";
 
 export const Subscription = () => {
-  const { subscription, setPlan, toggleLanguage, canAccessLanguage, canAddLanguage: canAdd, remainingSlots, createCheckoutSession, createPortalSession } = useSubscription();
+  const { subscription, selectFreePlan, toggleLanguage, canAccessLanguage, canAddLanguage: canAdd, remainingSlots, createCheckoutSession, createPortalSession } = useSubscription();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -19,7 +19,7 @@ export const Subscription = () => {
 
   const handleChoosePlan = async (planId: string) => {
     if (planId === 'free') {
-      setPlan(planId as any);
+      selectFreePlan();
       return;
     }
 
@@ -45,12 +45,6 @@ export const Subscription = () => {
       setPortalLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (success === 'true') {
-      setPlan(subscription.currentPlan);
-    }
-  }, [success, setPlan, subscription.currentPlan]);
 
   return (
     <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen pb-24">

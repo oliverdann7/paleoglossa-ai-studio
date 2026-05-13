@@ -1,22 +1,22 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // ═══════════════════════════════════════════════════════
     // DENY ALL BY DEFAULT
+    // ═══════════════════════════════════════════════════════
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Helper functions
+    // ═══════════════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════════════
     function isSignedIn() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
     function incoming() {
@@ -27,74 +27,113 @@ service cloud.firestore {
       return resource.data;
     }
 
+    // Fields that must only be written by the server (Admin SDK / Stripe webhook).
+    // Client writes to the user profile may not modify these fields.
+    // selectedLanguageIds is NOT server-controlled — users may toggle languages
+    // within their plan limits on the client side.
+    function serverControlledFields() {
+      return ['currentPlan', 'subscriptionStatus', 'stripeCustomerId',
+              'stripeSubscriptionId', 'trialEnd',
+              'subscriptionUpdatedAt'];
+    }
+
+    // Returns true if the incoming write touches any server-controlled field.
+    function touchesServerControlled() {
+      return incoming().diff(existing()).affectedKeys().hasAny(serverControlledFields());
+    }
+
+    // ═══════════════════════════════════════════════════════
     // PUBLIC COLLECTIONS
-    match /texts/{textId} {
-      allow get, list: if true; // Everyone can read public texts
-      allow write: if false;    // For now, only system can write to root texts
+    // ═══════════════════════════════════════════════════════
+
+    // Public texts — read by anyone if marked public, write by Admin SDK only.
+    match /publicTexts/{textId} {
+      allow get: if resource.data.visibility == 'public';
+      allow list: if resource.data.visibility == 'public';
+      allow write: if false; // Admin SDK bypasses rules; client writes are never allowed
     }
 
-    match /languages/{languageId} {
-      allow get, list: if true;
-    }
-
-    match /lemmas/{lemmaId} {
-      allow get, list: if true;
-    }
-
+    // ═══════════════════════════════════════════════════════
     // USER-SPECIFIC DATA
+    // ═══════════════════════════════════════════════════════
+
     match /users/{userId} {
+
+      // ── Profile ────────────────────────────────────────
+      // Owner can read their own profile.
       allow get: if isOwner(userId);
-      // Profile creation (sign-up) and stats/progress updates both write here.
-      // currentPlan may only be set by the backend (Cloud Function / Admin SDK).
-      allow create: if isOwner(userId) &&
-                       incoming().keys().hasAll(['email', 'displayName', 'createdAt', 'currentPlan', 'stats']);
-      allow update: if isOwner(userId) &&
-                       !incoming().diff(existing()).affectedKeys().hasAny(['currentPlan']);
-      
-      // Vocabulary
+
+      // Owner may create their profile on sign-up.
+      // Subscription fields are not allowed on create (server sets them).
+      // The stats field is optional — SignUp does not include it, but AuthContext does.
+      allow create: if isOwner(userId)
+        && incoming().keys().hasAll(['email', 'displayName', 'createdAt'])
+        && !incoming().keys().hasAny(serverControlledFields());
+
+      // Owner may update profile, but NOT server-controlled subscription fields.
+      allow update: if isOwner(userId)
+        && !touchesServerControlled();
+
+      // ── Vocabulary ─────────────────────────────────────
       match /vocabulary/{termId} {
-        function isValidVocab(data) {
-          return data.keys().hasAll(['term', 'status', 'languageId']) &&
-                 data.term is string &&
-                 data.status in ['NEW', 'SEEN', 'LEARNING', 'FAMILIAR', 'KNOWN', 'IGNORED'];
+        function isValidVocabularyPayload() {
+          return incoming().keys().hasAny(['term', 'normalizedTerm', 'status', 'languageId'])
+            && (!incoming().keys().has('status') || incoming().status in
+               ['NEW', 'SEEN', 'LEARNING', 'FAMILIAR', 'KNOWN', 'IGNORED']);
         }
 
         allow get, list: if isOwner(userId);
-        allow create, update: if isOwner(userId) && isValidVocab(incoming());
+        allow create: if isOwner(userId) && isValidVocabularyPayload();
+        allow update: if isOwner(userId) && isValidVocabularyPayload();
         allow delete: if isOwner(userId);
       }
 
-      // Imports
+      // ── Imports ────────────────────────────────────────
       match /imports/{importId} {
-        function isValidImport(data) {
-          return data.keys().hasAll(['title', 'languageId', 'sourceType', 'visibility']) &&
-                 data.title is string &&
-                 data.sourceType in ['paste', 'file', 'url', 'image', 'pdf'] &&
-                 data.visibility in ['private', 'shared', 'public'];
+        function isValidImportPayload() {
+          return incoming().keys().hasAll(['title', 'languageId', 'sourceType', 'visibility'])
+            && incoming().sourceType in ['paste', 'file', 'url', 'image', 'pdf']
+            && incoming().visibility in ['private', 'shared', 'public'];
         }
 
         allow get, list: if isOwner(userId);
-        allow create, update: if isOwner(userId) && isValidImport(incoming());
+        allow create: if isOwner(userId) && isValidImportPayload();
+        allow update: if isOwner(userId) && isValidImportPayload();
         allow delete: if isOwner(userId);
       }
 
-      // Reading Progress
+      // ── Reading Progress ───────────────────────────────
       match /readingProgress/{textId} {
         allow get, list: if isOwner(userId);
-        allow create, update: if isOwner(userId) && incoming().textId == textId;
+        allow create, update: if isOwner(userId);
         allow delete: if isOwner(userId);
       }
 
-      // Settings
-      match /settings/{settingsId} {
-        allow read, write: if isOwner(userId);
+      // ── Settings ───────────────────────────────────────
+      // Covers both settings/main and settings/activeLanguage etc.
+      match /settings/{documentId=**} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId);
+        allow delete: if isOwner(userId);
       }
 
-      // Review Logs (path already scopes to the owner — no userId field required)
+      // ── Review Logs ────────────────────────────────────
       match /reviewLogs/{logId} {
+        function isValidReviewLogPayload() {
+          return incoming().keys().hasAll(['vocabItemId', 'rating', 'timestamp']);
+        }
+
         allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) &&
-                         incoming().keys().hasAll(['vocabItemId', 'rating', 'timestamp']);
+        allow create: if isOwner(userId) && isValidReviewLogPayload();
+        // Logs are append-only — no update or delete from client.
+        allow update, delete: if false;
+      }
+
+      // ── Language Stats ─────────────────────────────────
+      match /languageStats/{languageId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId);
+        allow delete: if isOwner(userId);
       }
     }
   }

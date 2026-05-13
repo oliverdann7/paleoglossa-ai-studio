@@ -187,16 +187,16 @@ const ReaderToken = memo(function ReaderToken({
 });
 
 export function ReadingPane({
-  sentences, readingMode, currentSentenceIndex, fontSize, highlightIntensity,
-  getWordInfo, knowledgeVersion: _knowledgeVersion, selectedWordId, showTranslit, showParallel, maskKnown,
-  isHebrewFont, isRtl, audioPos,
-  aiTranslations, translatingId,
-  sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
-  showGlossTooltip, glossTooltipForKnown, interlinearMode,
-  onWordClick, onAITranslate, onSavePhrase,
-  onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
-  currentScrollPage, totalPages, currentChapterIndex, totalChapters,
-  sentenceSliceStart,
+   sentences, readingMode, currentSentenceIndex, fontSize, highlightIntensity,
+   getWordInfo, selectedWordId, showTranslit, showParallel, maskKnown,
+   isHebrewFont, isRtl, audioPos,
+   aiTranslations, translatingId,
+   sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
+   showGlossTooltip, glossTooltipForKnown, interlinearMode,
+   onWordClick, onAITranslate, onSavePhrase,
+   onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
+   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
+   sentenceSliceStart,
 }: Props) {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
