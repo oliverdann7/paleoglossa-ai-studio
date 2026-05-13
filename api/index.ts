@@ -538,37 +538,77 @@ app.post('/api/stripe/create-portal-session', requireAuth as any, async (req: Au
   }
 });
 
+const ALL_LANGUAGES = ['grc', 'grc-koine', 'hbo', 'lat', 'syr', 'cop', 'arc', 'akk', 'san', 'egy', 'hit'];
+
 app.post('/api/stripe/webhook', async (req: any, res: any) => {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
 
-  if (!sig || !webhookSecret) {
+  if (!sig || !webhookSecret || !stripeKey) {
     return res.status(200).json({ received: true, devMode: true });
   }
 
   try {
-    const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!);
+    const stripe = new (await import('stripe')).default(stripeKey);
     const rawBody = req.rawBody || JSON.stringify(req.body);
     const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
 
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) {
+      console.error('[stripe-webhook] Admin DB not available');
+      return res.status(503).json({ error: 'Database unavailable', code: 'SERVICE_UNAVAILABLE' });
+    }
+
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const eventId = event.id;
+
+    // Idempotency: skip if already processed
+    const eventDoc = await adminDb_.doc('stripeEvents/' + eventId).get();
+    if (eventDoc.exists) {
+      return res.status(200).json({ received: true, duplicate: true });
+    }
+
+    const now = FieldValue.serverTimestamp();
+
     switch (event.type) {
+
       case 'checkout.session.completed': {
         const session = event.data.object;
-        const userId = session.client_reference_id || session.metadata?.userId;
-        const planId = session.metadata?.planId || 'basic_1';
+        const userId = (session.client_reference_id || session.metadata?.userId) as string | undefined;
+        const planId = (session.metadata?.planId || 'basic_1') as string;
 
-        if (userId) {
-          const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
-          const { db } = await import('../src/lib/firebase');
-          await setDoc(doc(db, `users/${userId}`), {
-            currentPlan: planId,
-            subscriptionStatus: 'active',
-            stripeCustomerId: session.customer,
-            stripeSubscriptionId: session.subscription,
-            selectedLanguageIds: planId === 'full_all' ? ['grc', 'grc-koine', 'hbo', 'lat', 'syr', 'cop', 'arc', 'akk', 'san', 'egy', 'hit'] : ['grc'],
-            subscriptionUpdatedAt: serverTimestamp(),
+        if (!userId) {
+          console.error('[stripe-webhook] No userId in checkout.session.completed');
+          break;
+        }
+
+        const customerId = session.customer as string | undefined;
+        const subscriptionId = session.subscription as string | undefined;
+        const customerEmail = session.customer_details?.email as string | undefined;
+
+        const userData: Record<string, any> = {
+          currentPlan: planId,
+          subscriptionStatus: 'active',
+          subscriptionUpdatedAt: now,
+        };
+        if (customerId) userData.stripeCustomerId = customerId;
+        if (subscriptionId) userData.stripeSubscriptionId = subscriptionId;
+        userData.selectedLanguageIds = planId === 'full_all' ? ALL_LANGUAGES : ['grc'];
+
+        // Mark the user doc
+        await adminDb_.doc('users/' + userId).set(userData, { merge: true });
+
+        // Create reverse lookup so subscription webhooks can find the user
+        if (customerId) {
+          await adminDb_.doc('stripeCustomers/' + customerId).set({
+            userId,
+            email: customerEmail || null,
+            createdAt: now,
+            updatedAt: now,
           }, { merge: true });
         }
+
         break;
       }
 
@@ -578,57 +618,79 @@ app.post('/api/stripe/webhook', async (req: any, res: any) => {
         const status = subscription.status;
         const items = subscription.items?.data || [];
         const priceId = items[0]?.price?.id;
+        const currentPeriodEnd = (subscription as any).current_period_end
+          ? new Date((subscription as any).current_period_end * 1000).toISOString()
+          : null;
 
+        const lookupSnap = await adminDb_.doc('stripeCustomers/' + customerId).get();
+        if (!lookupSnap.exists) {
+          console.error('[stripe-webhook] Unknown customer:', customerId);
+          break;
+        }
+
+        const userId = lookupSnap.data()!.userId as string;
         const planInfo = priceId ? PLANS_BY_PRICE[priceId] : null;
         const planId = planInfo?.planId || 'basic_1';
-        const subscriptionStatus = status === 'active' ? 'active' as const : status === 'past_due' ? 'past_due' as const : status === 'canceled' || status === 'unpaid' ? 'canceled' as const : 'past_due' as const;
+        const subscriptionStatus: string =
+          status === 'active' ? 'active' :
+          status === 'past_due' ? 'past_due' :
+          status === 'canceled' || status === 'unpaid' ? 'canceled' : 'past_due';
 
-        // Update user's plan in Firestore
-        try {
-          const { collection, getDocs, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-          const { db } = await import('../src/lib/firebase');
-          const usersSnap = await getDocs(collection(db, 'users'));
-          for (const userDoc of usersSnap.docs) {
-            const data = userDoc.data();
-            if (data.stripeCustomerId === customerId) {
-              await setDoc(doc(db, `users/${userDoc.id}`), {
-                currentPlan: planId,
-                subscriptionStatus,
-                subscriptionUpdatedAt: serverTimestamp(),
-              }, { merge: true });
-              break;
-            }
-          }
-        } catch (e) {
-          console.error('Failed to update user subscription from webhook:', e);
-        }
+        const updateData: Record<string, any> = {
+          currentPlan: planId,
+          subscriptionStatus,
+          subscriptionUpdatedAt: now,
+        };
+        if (currentPeriodEnd) updateData.currentPeriodEnd = currentPeriodEnd;
+
+        await adminDb_.doc('users/' + userId).set(updateData, { merge: true });
         break;
       }
 
       case 'customer.subscription.deleted': {
         const deletedSub = event.data.object;
         const deletedCustomerId = deletedSub.customer as string;
-        try {
-          const { collection, getDocs, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-          const { db } = await import('../src/lib/firebase');
-          const usersSnap = await getDocs(collection(db, 'users'));
-          for (const userDoc of usersSnap.docs) {
-            const data = userDoc.data();
-            if (data.stripeCustomerId === deletedCustomerId) {
-              await setDoc(doc(db, `users/${userDoc.id}`), {
-                currentPlan: 'free',
-                subscriptionStatus: 'canceled',
-                subscriptionUpdatedAt: serverTimestamp(),
-              }, { merge: true });
-              break;
-            }
-          }
-        } catch (e) {
-          console.error('Failed to cancel subscription from webhook:', e);
+
+        const lookupSnap = await adminDb_.doc('stripeCustomers/' + deletedCustomerId).get();
+        if (!lookupSnap.exists) {
+          console.error('[stripe-webhook] Unknown customer on deletion:', deletedCustomerId);
+          break;
         }
+
+        const userId = lookupSnap.data()!.userId as string;
+
+        await adminDb_.doc('users/' + userId).set({
+          currentPlan: 'free',
+          subscriptionStatus: 'canceled',
+          subscriptionUpdatedAt: now,
+        }, { merge: true });
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        const invCustomerId = invoice.customer as string;
+
+        const lookupSnap = await adminDb_.doc('stripeCustomers/' + invCustomerId).get();
+        if (!lookupSnap.exists) {
+          console.error('[stripe-webhook] Unknown customer on payment failure:', invCustomerId);
+          break;
+        }
+
+        const userId = lookupSnap.data()!.userId as string;
+        await adminDb_.doc('users/' + userId).set({
+          subscriptionStatus: 'past_due',
+          subscriptionUpdatedAt: now,
+        }, { merge: true });
         break;
       }
     }
+
+    // Mark event as processed (idempotency)
+    await adminDb_.doc('stripeEvents/' + eventId).set({
+      type: event.type,
+      processedAt: now,
+    });
 
     res.status(200).json({ received: true });
   } catch (err: any) {
