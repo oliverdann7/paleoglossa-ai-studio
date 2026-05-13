@@ -1353,184 +1353,187 @@ app.post('/api/stripe/create-portal-session', requireAuth as any, async (req: Au
   }
 });
 
-const ALL_LANGUAGES = ['grc', 'grc-koine', 'hbo', 'lat', 'syr', 'cop', 'arc', 'akk', 'san', 'egy', 'hit'];
 
-app.post('/api/stripe/webhook', async (req: any, res: any) => {
-  const sig = req.headers['stripe-signature'];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
+const SUGGESTED_QUESTIONS = [
+  'What does this word mean in context?',
+  'Parse this form for me.',
+  'Why is this word in this case?',
+  'Show me similar sentences.',
+  'What grammatical construction is this?',
+];
 
-  const isDev = process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development';
+app.post('/api/ai/tutor/start', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { languageId, textId, sentenceIndex } = req.body;
+    const userId = req.user!.uid;
 
-  if (!sig || !webhookSecret || !stripeKey) {
-    if (isDev) {
-      return res.status(200).json({ received: true, devMode: true });
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
     }
-    return res.status(500).json({ error: 'Stripe webhook not configured', code: 'STRIPE_NOT_CONFIGURED' });
-  }
 
-  let event: any;
-  try {
-    const stripe = new (await import('stripe')).default(stripeKey);
-    const rawBody = req.rawBody || JSON.stringify(req.body);
-    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-  } catch (err: any) {
-    console.error('[stripe-webhook] Invalid signature:', err.message);
-    return res.status(400).json({ error: 'Invalid signature', code: 'INVALID_SIGNATURE' });
-  }
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
-  const adminDb_ = getAdminDb();
-  if (!adminDb_) {
-    console.error('[stripe-webhook] Admin DB not available');
-    return res.status(503).json({ error: 'Database unavailable', code: 'SERVICE_UNAVAILABLE' });
-  }
+    const { FieldValue } = await import('firebase-admin/firestore');
 
-  const { FieldValue } = await import('firebase-admin/firestore');
-  const eventId = event.id;
+    // Check quota
+    const uid = userId;
+    const planId = await lookupUserPlan(uid);
+    const apiKey = process.env.GEMINI_API_KEY;
 
-  // Idempotency: skip if already processed
-  try {
-    const eventDoc = await adminDb_.doc('stripeEvents/' + eventId).get();
-    if (eventDoc.exists) {
-      return res.status(200).json({ received: true, duplicate: true });
-    }
-  } catch (dbErr: any) {
-    console.error('[stripe-webhook] Idempotency check failed:', dbErr.message);
-    // Continue processing — better to process twice than miss an event.
-  }
-
-  const now = FieldValue.serverTimestamp();
-
-  try {
-    switch (event.type) {
-
-      case 'checkout.session.completed': {
-        const session = event.data.object;
-        const userId = (session.client_reference_id || session.metadata?.userId) as string | undefined;
-        const planId = (session.metadata?.planId || 'basic_1') as string;
-
-        if (!userId) {
-          console.error('[stripe-webhook] No userId in checkout.session.completed');
-          break;
-        }
-
-        const customerId = session.customer as string | undefined;
-        const subscriptionId = session.subscription as string | undefined;
-        const customerEmail = session.customer_details?.email as string | undefined;
-        const periodEnd = (session as any).current_period_end
-          ? new Date((session as any).current_period_end * 1000).toISOString()
-          : null;
-
-        const userData: Record<string, any> = {
-          currentPlan: planId,
-          subscriptionStatus: 'active',
-          subscriptionUpdatedAt: now,
-        };
-        if (customerId) userData.stripeCustomerId = customerId;
-        if (subscriptionId) userData.stripeSubscriptionId = subscriptionId;
-        if (periodEnd) userData.currentPeriodEnd = periodEnd;
-        userData.selectedLanguageIds = planId === 'full_all' ? ALL_LANGUAGES : ['grc'];
-
-        await adminDb_.doc('users/' + userId).set(userData, { merge: true });
-
-        // Create reverse lookup so subscription webhooks can find the user
-        if (customerId) {
-          await adminDb_.doc('stripeCustomers/' + customerId).set({
-            userId,
-            email: customerEmail || null,
-            createdAt: now,
-            updatedAt: now,
-          }, { merge: true });
-        }
-        break;
-      }
-
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object;
-        const customerId = subscription.customer as string;
-        const status = subscription.status;
-        const items = subscription.items?.data || [];
-        const priceId = items[0]?.price?.id;
-        const currentPeriodEnd = (subscription as any).current_period_end
-          ? new Date((subscription as any).current_period_end * 1000).toISOString()
-          : null;
-
-        const lookupSnap = await adminDb_.doc('stripeCustomers/' + customerId).get();
-        if (!lookupSnap.exists) {
-          console.error('[stripe-webhook] Unknown customer:', customerId);
-          break;
-        }
-
-        const userId = lookupSnap.data()!.userId as string;
-        const planInfo = priceId ? PLANS_BY_PRICE[priceId] : null;
-        const planId = planInfo?.planId || 'basic_1';
-        const subscriptionStatus: string =
-          status === 'active' ? 'active' :
-          status === 'past_due' ? 'past_due' :
-          status === 'canceled' || status === 'unpaid' ? 'canceled' : 'past_due';
-
-        const updateData: Record<string, any> = {
-          currentPlan: planId,
-          subscriptionStatus,
-          subscriptionUpdatedAt: now,
-        };
-        if (currentPeriodEnd) updateData.currentPeriodEnd = currentPeriodEnd;
-
-        await adminDb_.doc('users/' + userId).set(updateData, { merge: true });
-        break;
-      }
-
-      case 'customer.subscription.deleted': {
-        const deletedSub = event.data.object;
-        const deletedCustomerId = deletedSub.customer as string;
-
-        const lookupSnap = await adminDb_.doc('stripeCustomers/' + deletedCustomerId).get();
-        if (!lookupSnap.exists) {
-          console.error('[stripe-webhook] Unknown customer on deletion:', deletedCustomerId);
-          break;
-        }
-
-        const userId = lookupSnap.data()!.userId as string;
-
-        await adminDb_.doc('users/' + userId).set({
-          currentPlan: 'free',
-          subscriptionStatus: 'canceled',
-          subscriptionUpdatedAt: now,
-        }, { merge: true });
-        break;
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object;
-        const invCustomerId = invoice.customer as string;
-
-        const lookupSnap = await adminDb_.doc('stripeCustomers/' + invCustomerId).get();
-        if (!lookupSnap.exists) {
-          console.error('[stripe-webhook] Unknown customer on payment failure:', invCustomerId);
-          break;
-        }
-
-        const userId = lookupSnap.data()!.userId as string;
-        await adminDb_.doc('users/' + userId).set({
-          subscriptionStatus: 'past_due',
-          subscriptionUpdatedAt: now,
-        }, { merge: true });
-        break;
+    if (apiKey && uid) {
+      const quota = await checkAndIncrementUsage(uid, planId, 'tutor', languageId.length);
+      if (!quota.allowed) {
+        return res.status(429).json({
+          error: 'Daily AI analysis limit reached. Upgrade your plan for more.',
+          code: 'QUOTA_EXCEEDED', remaining: quota.remaining, resetDate: quota.resetDate,
+        });
       }
     }
 
-    // Mark event as processed (idempotency)
-    await adminDb_.doc('stripeEvents/' + eventId).set({
-      type: event.type,
-      processedAt: now,
-    }).catch((dbErr: any) => {
-      console.error('[stripe-webhook] Failed to mark event as processed:', dbErr.message);
+    // Create session document
+    const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc();
+    const sessionId = sessionRef.id;
+
+    const sessionData: Record<string, any> = {
+      languageId, textId: textId || null, sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
+      title: `${getLanguageName(languageId)} Tutor`,
+      createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
+    };
+    await sessionRef.set(sessionData);
+
+    // Create greeting message
+    const greeting = apiKey
+      ? `I'm your ${getLanguageName(languageId)} tutor. I can help you understand this text — ask about specific words, grammar, or sentence structure.`
+      : 'Tutor session created. AI assistance requires GEMINI_API_KEY.';
+
+    await sessionRef.collection('messages').add({
+      role: 'assistant', content: greeting, context: null, warnings: apiKey ? null : ['Gemini API key not configured.'],
+      createdAt: FieldValue.serverTimestamp(),
     });
 
-    res.status(200).json({ received: true });
+    res.status(200).json({
+      sessionId, greeting, suggestedQuestions: SUGGESTED_QUESTIONS,
+    });
   } catch (err: any) {
-    console.error('[stripe-webhook] Processing error:', err);
-    res.status(500).json({ error: err.message || 'Webhook processing failed', code: 'WEBHOOK_ERROR' });
+    console.error('[tutor/start] Error:', err.message);
+    res.status(500).json({ error: 'Failed to start tutor session', code: 'TUTOR_ERROR' });
+  }
+});
+
+app.post('/api/ai/tutor/message', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { sessionId, message, context } = req.body;
+    const userId = req.user!.uid;
+
+    if (!sessionId || !message) {
+      return res.status(400).json({ error: 'sessionId and message are required', code: 'INVALID_INPUT' });
+    }
+
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    const { FieldValue } = await import('firebase-admin/firestore');
+
+    // Verify session belongs to user
+    const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc(sessionId);
+    const sessionSnap = await sessionRef.get();
+    if (!sessionSnap.exists) {
+      return res.status(404).json({ error: 'Session not found', code: 'NOT_FOUND' });
+    }
+
+    const sessionData = sessionSnap.data()!;
+
+    // Save user message
+    const messagesRef = sessionRef.collection('messages');
+    await messagesRef.add({
+      role: 'user', content: message, context: context || null,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    // Check quota
+    const planId = await lookupUserPlan(userId);
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (apiKey && userId) {
+      const quota = await checkAndIncrementUsage(userId, planId, 'tutor', message.length);
+      if (!quota.allowed) {
+        // Save an assistant message explaining quota reached
+        await messagesRef.add({
+          role: 'assistant',
+          content: 'You have reached your daily AI analysis limit. Upgrade your plan or try again tomorrow.',
+          context: null, warnings: ['Daily quota exceeded.'],
+          createdAt: FieldValue.serverTimestamp(),
+        });
+        await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
+        return res.status(200).json({
+          text: 'You have reached your daily AI analysis limit. Upgrade your plan or try again tomorrow.',
+          warnings: ['Daily quota exceeded.'],
+        });
+      }
+    }
+
+    if (!apiKey) {
+      await messagesRef.add({
+        role: 'assistant',
+        content: 'AI tutor requires a Gemini API key to be configured. You can still use the app without it.',
+        context: null, warnings: ['Gemini API key not configured.'],
+        createdAt: FieldValue.serverTimestamp(),
+      });
+      await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
+      return res.status(200).json({
+        text: 'AI tutor requires a Gemini API key to be configured.',
+        warnings: ['Gemini API key not configured.'],
+      });
+    }
+
+    // Build prompt with context
+    const langName = getLanguageName(sessionData.languageId || 'grc');
+    let prompt = `You are a ${langName} tutor helping a student read an ancient text in its original language.
+
+Rules:
+- Answer questions about morphology, syntax, and meaning based on ${langName} grammar.
+- If you are uncertain about a form or parsing, say so explicitly with "I'm not certain, but..."
+- Do NOT invent morphology or grammar rules that do not apply to ${langName}.
+- Distinguish between:
+  • KNOWN: facts confirmed by standard grammars
+  • AI-GENERATED: your analysis based on context
+  • UNCERTAIN: forms you cannot confidently parse
+- Keep answers concise (2-4 sentences). Focus on the student's specific question.`;
+
+    if (context) {
+      if (context.textTitle) prompt += `\n\nText: "${context.textTitle}"`;
+      if (context.sentenceText) prompt += `\nSentence: "${context.sentenceText}"`;
+      if (context.selectedToken) prompt += `\nSelected word: "${context.selectedToken}"`;
+      if (context.lemma) prompt += `\nLemma: ${context.lemma}`;
+      if (context.morphology) prompt += `\nKnown morphology: ${JSON.stringify(context.morphology)}`;
+      if (context.gloss) prompt += `\nGloss: ${context.gloss}`;
+    }
+
+    prompt += `\n\nStudent's question: ${message}`;
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const hasUncertainty = cleaned.includes('not certain') || cleaned.includes('uncertain') || cleaned.includes('I think');
+
+    // Save assistant response
+    await messagesRef.add({
+      role: 'assistant', content: cleaned, context: null,
+      warnings: hasUncertainty ? ['Tutor expressed uncertainty.'] : null,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
+
+    res.status(200).json({
+      text: cleaned || 'I could not generate a response.',
+      warnings: hasUncertainty ? ['Tutor expressed uncertainty.'] : undefined,
+    });
+  } catch (err: any) {
+    console.error('[tutor/message] Error:', err.message);
+    res.status(500).json({ error: 'Failed to process message', code: 'TUTOR_ERROR' });
   }
 });
 
