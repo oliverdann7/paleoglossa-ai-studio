@@ -417,19 +417,7 @@ app.post('/api/imports/:importId/unshare', requireAuth as any, async (req: Authe
 });
 
 // ─── Stripe Payment Integration ────────────────────────────────────────
-const PLANS_BY_PRICE: Record<string, { planId: string; name: string }> = {};
-
-function initStripePlans() {
-  if (process.env.STRIPE_BASIC_PRICE_ID) {
-    PLANS_BY_PRICE[process.env.STRIPE_BASIC_PRICE_ID] = { planId: 'basic_1', name: 'Basic' };
-  }
-  if (process.env.STRIPE_DUO_PRICE_ID) {
-    PLANS_BY_PRICE[process.env.STRIPE_DUO_PRICE_ID] = { planId: 'duo_2', name: 'Duo' };
-  }
-  if (process.env.STRIPE_FULL_PRICE_ID) {
-    PLANS_BY_PRICE[process.env.STRIPE_FULL_PRICE_ID] = { planId: 'full_all', name: 'Full Pack' };
-  }
-}
+const VALID_PAID_PLANS = ['basic_1', 'duo_2', 'full_all'] as const;
 
 const PRICE_IDS: Record<string, { monthly?: string; yearly?: string }> = {
   basic_1: {
@@ -446,17 +434,32 @@ const PRICE_IDS: Record<string, { monthly?: string; yearly?: string }> = {
   },
 };
 
-app.post('/api/stripe/create-checkout-session', async (req: any, res: any) => {
-  try {
-    const { planId, billingCycle = 'monthly', userId, email, successUrl, cancelUrl, trialDays } = req.body;
+// Reverse mapping for the Stripe webhook — maps a Stripe price ID back to a planId.
+const PLANS_BY_PRICE: Record<string, { planId: string; name: string }> = {};
+for (const [planId, prices] of Object.entries(PRICE_IDS)) {
+  for (const priceId of Object.values(prices)) {
+    if (priceId) PLANS_BY_PRICE[priceId] = { planId, name: planId };
+  }
+}
 
-    if (!planId || !userId) {
-      return res.status(400).json({ error: 'Missing planId or userId' });
+app.post('/api/stripe/create-checkout-session', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { planId, billingCycle = 'monthly', successUrl, cancelUrl } = req.body;
+    const uid = req.user!.uid;
+    const email = req.user!.email;
+
+    if (!planId || !VALID_PAID_PLANS.includes(planId)) {
+      return res.status(400).json({ error: 'Invalid or missing planId', code: 'INVALID_PLAN' });
+    }
+
+    const validCycles = ['monthly', 'yearly'];
+    if (!validCycles.includes(billingCycle)) {
+      return res.status(400).json({ error: 'billingCycle must be monthly or yearly', code: 'INVALID_BILLING_CYCLE' });
     }
 
     const priceId = PRICE_IDS[planId]?.[billingCycle as 'monthly' | 'yearly'];
     if (!priceId) {
-      return res.status(400).json({ error: `No price configured for plan ${planId} (${billingCycle})` });
+      return res.status(400).json({ error: `No price configured for plan ${planId} (${billingCycle})`, code: 'PRICE_NOT_CONFIGURED' });
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -469,23 +472,23 @@ app.post('/api/stripe/create-checkout-session', async (req: any, res: any) => {
     }
 
     const stripe = new (await import('stripe')).default(stripeKey);
-    initStripePlans();
 
     const sessionConfig: any = {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      customer_email: email,
-      client_reference_id: userId,
-      metadata: { planId, userId },
+      customer_email: email || undefined,
+      client_reference_id: uid,
+      metadata: { planId, userId: uid },
       success_url: successUrl || `${req.headers.origin || 'https://paleoglossa-ai-studio.vercel.app'}/app/subscription?success=true`,
       cancel_url: cancelUrl || `${req.headers.origin || 'https://paleoglossa-ai-studio.vercel.app'}/app/subscription?canceled=true`,
       subscription_data: {
-        metadata: { planId, userId },
+        metadata: { planId, userId: uid },
       },
     };
 
-    if (trialDays && trialDays > 0) {
+    const trialDays = process.env.STRIPE_TRIAL_DAYS ? parseInt(process.env.STRIPE_TRIAL_DAYS, 10) : 0;
+    if (trialDays > 0) {
       sessionConfig.subscription_data.trial_period_days = trialDays;
     }
 
@@ -494,15 +497,27 @@ app.post('/api/stripe/create-checkout-session', async (req: any, res: any) => {
     res.status(200).json({ url: session.url, sessionId: session.id });
   } catch (err: any) {
     console.error('Stripe checkout error:', err);
-    res.status(500).json({ error: err.message || 'Failed to create checkout session' });
+    res.status(500).json({ error: err.message || 'Failed to create checkout session', code: 'CHECKOUT_ERROR' });
   }
 });
 
-app.post('/api/stripe/create-portal-session', async (req: any, res: any) => {
+app.post('/api/stripe/create-portal-session', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
-    const { customerId, returnUrl } = req.body;
-    if (!customerId) {
-      return res.status(400).json({ error: 'Missing customerId' });
+    const uid = req.user!.uid;
+
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) {
+      return res.status(503).json({ error: 'Database service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    }
+
+    const userSnap = await adminDb_.doc('users/' + uid).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({ error: 'User profile not found', code: 'NOT_FOUND' });
+    }
+
+    const stripeCustomerId = userSnap.data()?.stripeCustomerId as string | undefined;
+    if (!stripeCustomerId) {
+      return res.status(404).json({ error: 'No Stripe customer ID found. Have you subscribed?', code: 'NO_CUSTOMER' });
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -512,14 +527,14 @@ app.post('/api/stripe/create-portal-session', async (req: any, res: any) => {
 
     const stripe = new (await import('stripe')).default(stripeKey);
     const session = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: returnUrl || `${req.headers.origin || ''}/app/subscription`,
+      customer: stripeCustomerId,
+      return_url: req.body.returnUrl || `${req.headers.origin || ''}/app/subscription`,
     });
 
     res.status(200).json({ url: session.url });
   } catch (err: any) {
     console.error('Stripe portal error:', err);
-    res.status(500).json({ error: err.message || 'Failed to create portal session' });
+    res.status(500).json({ error: err.message || 'Failed to create portal session', code: 'PORTAL_ERROR' });
   }
 });
 
