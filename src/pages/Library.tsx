@@ -78,6 +78,9 @@ export const Library = () => {
   const { activeLanguageId, setActiveLanguageId } = useActiveLanguage();
   const { canAccessLanguage } = useSubscription();
   const { getWordInfo, getAllProgress, knowledge } = useKnowledge(activeLanguageId);
+  // Stable ref so the fetch effect doesn't re-run when word states change
+  const getWordInfoRef = useRef(getWordInfo);
+  useLayoutEffect(() => { getWordInfoRef.current = getWordInfo; });
   const { t } = useTranslation();
 
   // ── Phase A state: raw texts (refetch only on tab / auth change) ─────
@@ -85,9 +88,12 @@ export const Library = () => {
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Filters & Sorting state
   const [activeLang, setActiveLang] = useState(
     () => LANGUAGES.find(l => l.id === activeLanguageId)?.name || "All"
   );
+
+  // Sync active language with filter when changed externally
   const prevLangRef = useRef(activeLanguageId);
   useLayoutEffect(() => {
     if (prevLangRef.current !== activeLanguageId) {
@@ -96,13 +102,13 @@ export const Library = () => {
       setActiveLang(langName);
     }
   }, [activeLanguageId]);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [minKnown, setMinKnown] = useState(0);
   const [activeSort, setActiveSort] = useState<SortOption>('comprehensible');
   const [periodFilter, setPeriodFilter] = useState('all');
   const [genreFilter, setGenreFilter] = useState('all');
   const [corpusTypeFilter, setCorpusTypeFilter] = useState('all');
+  const [difficultyFilter, setDifficultyFilter] = useState<'all' | 'beginner' | 'accessible' | 'challenging' | 'advanced'>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<'library' | 'imports' | 'public'>('library');
   const [sharingId, setSharingId] = useState<string | null>(null);
@@ -175,7 +181,10 @@ export const Library = () => {
   const mainFilters = [{ name: "All", id: "all", icon: "📚" }, ...LANGUAGES];
 
   const sortedTexts = useMemo(() => {
-    const copy = [...filteredTexts];
+    let copy = [...filteredTexts];
+    if (difficultyFilter !== 'all') {
+      copy = copy.filter(t => t.difficultyTier === difficultyFilter);
+    }
     switch (activeSort) {
       case 'comprehensible': return copy.sort((a, b) => (b.percentKnown || 0) - (a.percentKnown || 0));
       case 'hardest': return copy.sort((a, b) => (a.percentKnown || 0) - (b.percentKnown || 0));
@@ -188,7 +197,7 @@ export const Library = () => {
       });
       default: return copy;
     }
-  }, [filteredTexts, activeSort]);
+  }, [filteredTexts, activeSort, difficultyFilter]);
 
   const recentTexts = useMemo(() => {
     if (readingProgress.length === 0) return [];
@@ -393,6 +402,30 @@ export const Library = () => {
                   {CORPUS_TYPE_FILTERS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
+
+              <div className="w-full">
+                <label className="block text-[11px] font-bold text-muted uppercase mb-4">Difficulty</label>
+                <div className="flex flex-wrap gap-2">
+                  {([
+                    { id: 'all' as const, label: 'All Levels', active: 'bg-ink text-parch border-ink', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'beginner' as const, label: 'Comfortable', active: 'bg-ink3/20 text-ink3 border-ink3/30', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'accessible' as const, label: 'Optimal', active: 'bg-green-100 text-green-700 border-green-300', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'challenging' as const, label: 'Developing', active: 'bg-amber/20 text-amber border-amber/30', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'advanced' as const, label: 'Challenging', active: 'bg-ruby/15 text-ruby border-ruby/25', inactive: 'bg-white text-ink3 border-bdr/60' },
+                  ]).map(d => (
+                    <button
+                      key={d.id}
+                      onClick={() => setDifficultyFilter(d.id)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all",
+                        difficultyFilter === d.id ? d.active : d.inactive,
+                      )}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -479,6 +512,27 @@ export const Library = () => {
                           <div className="flex flex-col"><span className="text-[15px] font-bold text-amber leading-none">{text.percentLearning}%</span><span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">Learning</span></div>
                           <div className="flex flex-col ml-auto text-right"><span className="text-[15px] font-bold text-red-400 leading-none">{text.percentKnown !== undefined ? (100 - text.percentKnown - (text.percentLearning || 0)) : 0}%</span><span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">New</span></div>
                         </div>
+
+                        {/* Sections quick-open */}
+                        {text.sectionsPreview && text.sectionsPreview.length > 0 && (
+                          <div className="mt-2">
+                            <div className="text-[9px] uppercase font-bold tracking-widest text-muted mb-2">Open Section</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {text.sectionsPreview.slice(0, 4).map(section => (
+                                <button
+                                  key={section.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/app/reader/${text.id}?section=${encodeURIComponent(section.id)}`);
+                                  }}
+                                  className="px-2 py-1 rounded-md bg-white border border-bdr/50 text-[10px] font-bold text-ink3 hover:text-blue hover:border-blue/30 transition-colors"
+                                >
+                                  {section.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-end justify-between pt-4 mt-auto border-t border-dashed border-bdr/40">

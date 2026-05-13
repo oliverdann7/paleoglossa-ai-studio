@@ -190,7 +190,10 @@ export class StatsService {
       const results: TextProgress[] = [];
       snap.forEach(doc => {
         const data = doc.data();
-        results.push({ ...data, lastReadAt: normalizeTimestamp(data.lastReadAt) } as TextProgress);
+        const progress = { ...data, lastReadAt: normalizeTimestamp(data.lastReadAt) } as TextProgress;
+        // Filter by language if specified
+        if (languageId && progress.languageId && progress.languageId !== languageId) return;
+        results.push(progress);
       });
       results.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime());
       progressCache.set(userId, { data: results, at: Date.now() });

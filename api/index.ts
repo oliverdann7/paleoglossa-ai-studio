@@ -1386,7 +1386,7 @@ app.post('/api/stripe/create-checkout-session', requireAuth as any, async (req: 
     }
 
     // Safely derive default URLs from the request origin.
-    const origin = req.headers.origin || 'https://paleoglossa-ai-studio.vercel.app';
+    const origin = req.headers.origin || 'https://paleoglossa.com';
     const safeDefault = (path: string) => origin + path;
 
     // Validate custom URLs point to same origin (prevent open redirect).
