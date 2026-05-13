@@ -21,6 +21,7 @@ import { useAuth } from "../lib/hooks/useAuth";
 import { useSubscription } from "../lib/contexts/SubscriptionContext";
 import { useToast } from "../lib/hooks/useToast";
 import { STORAGE_KEYS } from "../lib/constants/storage";
+import { OfflineService } from "../lib/services/offlineService";
 
 // Module-level constant — avoids object recreation on every render
 const TTS_LANG_MAP: Record<string, string> = {
@@ -727,6 +728,22 @@ export const Reader = () => {
           className="fixed bottom-24 right-6 z-30 w-12 h-12 bg-ink text-parch rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95"
           title="Ask Tutor">
           <span className="text-[18px] font-serif font-bold">T</span>
+        </button>
+        <button onClick={() => {
+          const id = textId || '';
+          if (OfflineService.isOfflineText(id)) {
+            OfflineService.removeOfflineText(id);
+            addToast('Removed from offline', 'success');
+          } else {
+            OfflineService.setOfflineText(id, text?.title || 'Text', currentLanguageId);
+            addToast('Available offline', 'success');
+          }
+        }}
+          className="fixed bottom-40 right-6 z-30 w-12 h-12 bg-parch3 text-ink rounded-full shadow-lg flex items-center justify-center hover:bg-blue hover:text-white transition-all active:scale-95 border border-bdr"
+          title={OfflineService.isOfflineText(textId || '') ? 'Remove offline' : 'Save offline'}>
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2v10m0 0l-3-3m3 3l3-3M4 19h16" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
 
         <ReaderAudioBar
