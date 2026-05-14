@@ -33,7 +33,7 @@ export interface ReviewLogEntry {
   term: string;
   languageId: string;
   cardType: string;
-  rating: string;
+  rating: Rating;
   responseMs: number;
   intervalBefore: number;
   intervalAfter: number;

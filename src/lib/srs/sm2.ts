@@ -14,6 +14,8 @@ export type Rating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY';
 
 export const SM2_BASE_EASE = 2.5;
 export const SM2_MIN_EASE = 1.3;
+export const SM2_MAX_EASE = 3.0;
+export const SM2_MAX_INTERVAL = 365;
 
 export function calculateSM2(
   rating: Rating,
@@ -48,15 +50,15 @@ export function calculateSM2(
   if (quality >= 3) {
     ease = ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
   } else {
-    // Forget: reset step but keep ease mostly same or slightly reduced
     ease = Math.max(SM2_MIN_EASE, ease - 0.2);
   }
   
   if (ease < SM2_MIN_EASE) ease = SM2_MIN_EASE;
+  if (ease > SM2_MAX_EASE) ease = SM2_MAX_EASE;
 
   // Calculate new Interval
   if (quality < 3) {
-    interval = 1; // Repeat tomorrow if failed
+    interval = 1;
     step = 0;
   } else {
     step += 1;
@@ -74,8 +76,18 @@ export function calculateSM2(
     interval = Math.ceil(interval * 1.3);
   }
 
-  const nextReviewDate = new Date(now);
-  nextReviewDate.setDate(nextReviewDate.getDate() + interval);
+  if (interval > SM2_MAX_INTERVAL) {
+    interval = SM2_MAX_INTERVAL;
+  }
+
+  // Use UTC-based date math to avoid timezone edge cases
+  const nextReviewDate = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + interval,
+    )
+  );
 
   return {
     interval,
