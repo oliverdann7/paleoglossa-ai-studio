@@ -1,2 +1,14 @@
-export { LANGUAGES, getLanguageById, getAvailableLanguages, getLanguageDirection, getLanguageDisplayName, isRtlLanguage, getLanguageIcon } from '../data/languages';
-export type { Language } from '../data/languages';
+export {
+  LANGUAGES,
+  LANGUAGE_IDS,
+  LANGUAGE_REGISTRY,
+  getLanguageById,
+  getAvailableLanguages,
+  getLanguageDirection,
+  getLanguageDisplayName,
+  getLanguageNativeName,
+  isRtlLanguage,
+  getLanguageIcon,
+  isSupportedLanguage,
+} from '../languages/registry';
+export type { Language, TokenizationHints, DictionaryHints, KnownLanguageId } from '../languages/registry';
