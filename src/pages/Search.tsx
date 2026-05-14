@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search as SearchIcon, Loader2, FileText, Globe, BookMarked, MessageSquare } from "lucide-react";
+import { Search as SearchIcon, FileText, Globe, BookMarked, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "../lib/services/apiFetch";
 import { useTranslation } from "react-i18next";
+import { LoadingState, EmptyState } from "../components/ui";
 
 interface SearchResult {
   id: string;
@@ -56,13 +57,13 @@ export const SearchPage = () => {
         />
       </form>
 
-      {isLoading && <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>}
+      {isLoading && <LoadingState />}
 
       {!isLoading && searched && results.length === 0 && (
-        <div className="text-center py-12 text-ink2">
-          <SearchIcon className="w-12 h-12 mx-auto mb-4 text-muted" />
-          <p className="text-[16px]">{t("search.noResults", "No results found.")}</p>
-        </div>
+        <EmptyState
+          icon={<SearchIcon className="w-12 h-12" />}
+          heading={t("search.noResults", "No results found.")}
+        />
       )}
 
       {!isLoading && results.length > 0 && (

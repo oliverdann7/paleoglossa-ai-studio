@@ -13,6 +13,7 @@ import { LANGUAGES, getLanguageDisplayName } from "../lib/constants/languages";
 import { LibraryService, LibraryText } from "../lib/services/libraryService";
 import { useAuth } from "../lib/hooks/useAuth";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
+import { EmptyState } from '../components/ui';
 import { useSubscription } from "../lib/contexts/SubscriptionContext";
 import { ImportService } from "../lib/services/importService";
 import { CorpusDB } from "../data/corpus";
@@ -446,14 +447,16 @@ export const Library = () => {
           ))}
         </div>
       ) : sortedTexts.length === 0 ? (
-        <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
-          <LibraryIcon className="w-12 h-12 text-muted mb-4" />
-          <h3 className="font-serif text-[24px] text-ink mb-2">{t('library.shelfEmpty', 'Shelf Empty')}</h3>
-          <p className="text-ink3 max-w-sm mx-auto mb-6">{t('library.noTextsFound', 'No texts found for this language. Import a text or try adjusting your filters.')}</p>
-          <button onClick={() => navigate('/app/import')} className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-md">
-            {t('import.title', 'Import New Lesson')}
-          </button>
-        </div>
+        <EmptyState
+          icon={<LibraryIcon className="w-12 h-12" />}
+          heading={t('library.shelfEmpty', 'Shelf Empty')}
+          description={t('library.noTextsFound', 'No texts found for this language. Import a text or try adjusting your filters.')}
+          action={
+            <button onClick={() => navigate('/app/import')} className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-md">
+              {t('import.title', 'Import New Lesson')}
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-12 pb-20">
           {Object.entries(collections).map(([name, colTexts]) => (
