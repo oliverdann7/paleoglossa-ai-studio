@@ -4,6 +4,7 @@ import { ToastProvider } from './ToastProvider';
 import { AuthProvider } from './AuthContext';
 import { ActiveLanguageProvider } from './ActiveLanguageContext';
 import { SubscriptionProvider } from './SubscriptionContext';
+import { ReaderStateProvider } from './ReaderContext';
 
 export function RootProviders({ children }: { children: ReactNode }) {
   return (
@@ -12,7 +13,9 @@ export function RootProviders({ children }: { children: ReactNode }) {
         <AuthProvider>
           <ActiveLanguageProvider>
             <SubscriptionProvider>
-              {children}
+              <ReaderStateProvider>
+                {children}
+              </ReaderStateProvider>
             </SubscriptionProvider>
           </ActiveLanguageProvider>
         </AuthProvider>
