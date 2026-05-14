@@ -1096,7 +1096,10 @@ app.get('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, res:
 
 app.post('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
   const userId = req.user!.uid;
-  const { content, languageId, targetType, targetId, lemma, textId, sentenceIndex, tokenIndex, tags, notebookId } = req.body;
+  const {
+    content, languageId, targetType, targetId, lemma, textId, chunkId,
+    sentenceIndex, tokenIndex, token, grammarTag, source, tags, notebookId,
+  } = req.body;
   if (!content && (!lemma || !targetType)) return res.status(400).json({ error: 'content or lemma+targetType required', code: 'INVALID_INPUT' });
   const adminDb_ = getAdminDb();
   if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
@@ -1105,11 +1108,15 @@ app.post('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, res
     const ref = adminDb_.collection('users').doc(userId).collection('notes').doc();
     await ref.set({
       content, languageId: languageId || null, targetType: targetType || 'free', targetId: targetId || null,
-      lemma: lemma || null, textId: textId || null, sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
-      tokenIndex: tokenIndex != null ? tokenIndex : null, tags: tags || [], notebookId: notebookId || null,
+      lemma: lemma || null, textId: textId || null, chunkId: chunkId || null,
+      sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
+      tokenIndex: tokenIndex != null ? tokenIndex : null,
+      token: token || null, grammarTag: grammarTag || null,
+      source: source || 'manual',
+      tags: tags || [], notebookId: notebookId || null,
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     });
-    res.status(200).json({ id: ref.id, content, languageId, targetType, createdAt: new Date().toISOString() });
+    res.status(200).json({ id: ref.id, content, languageId, targetType, source: source || 'manual', createdAt: new Date().toISOString() });
   } catch (e: any) {
     console.error('[notes] Error creating:', e.message);
     res.status(500).json({ error: 'Failed to create note', code: 'INTERNAL_ERROR' });

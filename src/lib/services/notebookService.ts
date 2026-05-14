@@ -1,75 +1,66 @@
 import { ResearchNotebook, ResearchNote } from '../../types/modules';
+import { apiFetch } from './apiFetch';
+
+export type CreateNoteInput = Pick<ResearchNote, 'content'> & Partial<Pick<ResearchNote,
+  | 'notebookId' | 'languageId' | 'textId' | 'chunkId'
+  | 'token' | 'lemma' | 'grammarTag' | 'source'
+  | 'sentenceRange' | 'tokenRange' | 'tags' | 'visibility'
+>>;
 
 export class NotebookService {
-  static async getNotebooks(userId: string): Promise<ResearchNotebook[]> {
+  static async getNotebooks(): Promise<ResearchNotebook[]> {
     try {
-      const response = await fetch(`/api/notebooks?userId=${encodeURIComponent(userId)}`);
-      if (!response.ok) return [];
-      return response.json();
+      return await apiFetch<ResearchNotebook[]>('/api/notebooks');
     } catch {
       return [];
     }
   }
 
-  static async createNotebook(userId: string, title: string, description: string): Promise<ResearchNotebook | null> {
+  static async createNotebook(title: string, description?: string, languageId?: string): Promise<ResearchNotebook | null> {
     try {
-      const response = await fetch('/api/notebooks', {
+      return await apiFetch<ResearchNotebook>('/api/notebooks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, title, description }),
+        body: { title, description: description ?? '', languageId },
       });
-      if (!response.ok) return null;
-      return response.json();
     } catch {
       return null;
     }
   }
 
-  static async deleteNotebook(userId: string, notebookId: string): Promise<boolean> {
+  static async deleteNotebook(notebookId: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/notebooks/${encodeURIComponent(notebookId)}`, {
-        method: 'DELETE',
-        headers: { 'X-User-Id': userId },
-      });
-      return response.ok;
+      await apiFetch(`/api/notebooks/${encodeURIComponent(notebookId)}`, { method: 'DELETE' });
+      return true;
     } catch {
       return false;
     }
   }
 
-  static async getNotes(userId: string, notebookId?: string): Promise<ResearchNote[]> {
+  static async getNotes(filters?: { notebookId?: string; languageId?: string; targetType?: string }): Promise<ResearchNote[]> {
     try {
-      const params = new URLSearchParams({ userId });
-      if (notebookId) params.set('notebookId', notebookId);
-      const response = await fetch(`/api/notes?${params}`);
-      if (!response.ok) return [];
-      return response.json();
+      const params = new URLSearchParams();
+      if (filters?.notebookId) params.set('notebookId', filters.notebookId);
+      if (filters?.languageId) params.set('languageId', filters.languageId);
+      if (filters?.targetType) params.set('targetType', filters.targetType);
+      const qs = params.toString() ? `?${params}` : '';
+      return await apiFetch<ResearchNote[]>(`/api/notes${qs}`);
     } catch {
       return [];
     }
   }
 
-  static async createNote(userId: string, note: Partial<ResearchNote>): Promise<ResearchNote | null> {
+  static async createNote(input: CreateNoteInput): Promise<ResearchNote | null> {
     try {
-      const response = await fetch('/api/notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, ...note }),
-      });
-      if (!response.ok) return null;
-      return response.json();
+      return await apiFetch<ResearchNote>('/api/notes', { method: 'POST', body: input });
     } catch {
       return null;
     }
   }
 
-  static async deleteNote(userId: string, noteId: string): Promise<boolean> {
+  static async deleteNote(noteId: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/notes/${encodeURIComponent(noteId)}`, {
-        method: 'DELETE',
-        headers: { 'X-User-Id': userId },
-      });
-      return response.ok;
+      await apiFetch(`/api/notes/${encodeURIComponent(noteId)}`, { method: 'DELETE' });
+      return true;
     } catch {
       return false;
     }
