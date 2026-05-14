@@ -1,5 +1,5 @@
 /**
- * Gospel of John — chapters 2–21 (complete)
+ * Gospel of John — chapters 1–21 (complete)
  * Greek text: SBLGNT (Society of Biblical Literature Greek New Testament) — freely distributable.
  * English translations: World English Bible (WEB), public domain.
  * Source: https://ebible.org/web/
@@ -30,6 +30,69 @@ function sent(id: string, words: string[], translation: string): Sentence {
     translation,
   };
 }
+
+// ─── John 1 ────────────────────────────────────────────────────────────────
+const john1: Sentence[] = [
+  sent('Jn-1-1',  ['Ἐν','ἀρχῇ','ἦν','ὁ','λόγος,','καὶ','ὁ','λόγος','ἦν','πρὸς','τὸν','θεόν,','καὶ','θεὸς','ἦν','ὁ','λόγος.'], 'In the beginning was the Word, and the Word was with God, and the Word was God.'),
+  sent('Jn-1-2',  ['οὗτος','ἦν','ἐν','ἀρχῇ','πρὸς','τὸν','θεόν.'], 'The same was in the beginning with God.'),
+  sent('Jn-1-3',  ['πάντα','δι᾽','αὐτοῦ','ἐγένετο,','καὶ','χωρὶς','αὐτοῦ','ἐγένετο','οὐδὲ','ἕν','ὃ','γέγονεν.'], 'All things were made through him. Without him, nothing was made that has been made.'),
+  sent('Jn-1-4',  ['ἐν','αὐτῷ','ζωὴ','ἦν,','καὶ','ἡ','ζωὴ','ἦν','τὸ','φῶς','τῶν','ἀνθρώπων·'], 'In him was life, and the life was the light of men.'),
+  sent('Jn-1-5',  ['καὶ','τὸ','φῶς','ἐν','τῇ','σκοτίᾳ','φαίνει,','καὶ','ἡ','σκοτία','αὐτὸ','οὐ','κατέλαβεν.'], "The light shines in the darkness, and the darkness hasn't overcome it."),
+  sent('Jn-1-6',  ['Ἐγένετο','ἄνθρωπος','ἀπεσταλμένος','παρὰ','θεοῦ,','ὄνομα','αὐτῷ','Ἰωάννης·'], 'There came a man, sent from God, whose name was John.'),
+  sent('Jn-1-7',  ['οὗτος','ἦλθεν','εἰς','μαρτυρίαν,','ἵνα','μαρτυρήσῃ','περὶ','τοῦ','φωτός,','ἵνα','πάντες','πιστεύσωσιν','δι᾽','αὐτοῦ.'], 'The same came as a witness, that he might testify about the light, that all might believe through him.'),
+  sent('Jn-1-8',  ['οὐκ','ἦν','ἐκεῖνος','τὸ','φῶς,','ἀλλ᾽','ἵνα','μαρτυρήσῃ','περὶ','τοῦ','φωτός.'], 'He was not the light, but was sent that he might testify about the light.'),
+  sent('Jn-1-9',  ['Ἦν','τὸ','φῶς','τὸ','ἀληθινόν,','ὃ','φωτίζει','πάντα','ἄνθρωπον,','ἐρχόμενον','εἰς','τὸν','κόσμον.'], 'The true light that enlightens everyone was coming into the world.'),
+  sent('Jn-1-10', ['ἐν','τῷ','κόσμῳ','ἦν,','καὶ','ὁ','κόσμος','δι᾽','αὐτοῦ','ἐγένετο,','καὶ','ὁ','κόσμος','αὐτὸν','οὐκ','ἔγνω.'], "He was in the world, and the world was made through him, and the world didn't recognize him."),
+  sent('Jn-1-11', ['εἰς','τὰ','ἴδια','ἦλθεν,','καὶ','οἱ','ἴδιοι','αὐτὸν','οὐ','παρέλαβον.'], "He came to his own, and those who were his own didn't receive him."),
+  sent('Jn-1-12', ['ὅσοι','δὲ','ἔλαβον','αὐτόν,','ἔδωκεν','αὐτοῖς','ἐξουσίαν','τέκνα','θεοῦ','γενέσθαι,','τοῖς','πιστεύουσιν','εἰς','τὸ','ὄνομα','αὐτοῦ,'], "But as many as received him, to them he gave the right to become God's children, to those who believe in his name:"),
+  sent('Jn-1-13', ['οἳ','οὐκ','ἐξ','αἱμάτων','οὐδὲ','ἐκ','θελήματος','σαρκὸς','οὐδὲ','ἐκ','θελήματος','ἀνδρὸς','ἀλλ᾽','ἐκ','θεοῦ','ἐγεννήθησαν.'], 'who were born not of blood, nor of the will of the flesh, nor of the will of man, but of God.'),
+  sent('Jn-1-14', ['Καὶ','ὁ','λόγος','σὰρξ','ἐγένετο','καὶ','ἐσκήνωσεν','ἐν','ἡμῖν,','καὶ','ἐθεασάμεθα','τὴν','δόξαν','αὐτοῦ,','δόξαν','ὡς','μονογενοῦς','παρὰ','πατρός,','πλήρης','χάριτος','καὶ','ἀληθείας.'], 'The Word became flesh, and lived among us. We saw his glory, such glory as of the one and only Son of the Father, full of grace and truth.'),
+  sent('Jn-1-15', ['Ἰωάννης','μαρτυρεῖ','περὶ','αὐτοῦ','καὶ','κέκραγεν','λέγων·','οὗτος','ἦν','ὃν','εἶπον·','ὁ','ὀπίσω','μου','ἐρχόμενος','ἔμπροσθέν','μου','γέγονεν,','ὅτι','πρῶτός','μου','ἦν.'], 'John testified about him. He cried out, saying, "This was he of whom I said, \'He who comes after me has surpassed me, for he was before me.\'"'),
+  sent('Jn-1-16', ['ὅτι','ἐκ','τοῦ','πληρώματος','αὐτοῦ','ἡμεῖς','πάντες','ἐλάβομεν,','καὶ','χάριν','ἀντὶ','χάριτος·'], 'From his fullness we all received grace upon grace.'),
+  sent('Jn-1-17', ['ὅτι','ὁ','νόμος','διὰ','Μωϋσέως','ἐδόθη,','ἡ','χάρις','καὶ','ἡ','ἀλήθεια','διὰ','Ἰησοῦ','Χριστοῦ','ἐγένετο.'], 'For the law was given through Moses. Grace and truth were realized through Jesus Christ.'),
+  sent('Jn-1-18', ['Θεὸν','οὐδεὶς','ἑώρακεν','πώποτε·','μονογενὴς','θεὸς','ὁ','ὢν','εἰς','τὸν','κόλπον','τοῦ','πατρὸς','ἐκεῖνος','ἐξηγήσατο.'], 'No one has seen God at any time. The one and only Son, who is in the bosom of the Father, he has declared him.'),
+  sent('Jn-1-19', ['Καὶ','αὕτη','ἐστὶν','ἡ','μαρτυρία','τοῦ','Ἰωάννου,','ὅτε','ἀπέστειλαν','πρὸς','αὐτὸν','οἱ','Ἰουδαῖοι','ἐξ','Ἱεροσολύμων','ἱερεῖς','καὶ','Λευίτας','ἵνα','ἐρωτήσωσιν','αὐτόν·','σὺ','τίς','εἶ;'], 'This is John\'s testimony, when the Jews sent priests and Levites from Jerusalem to ask him, "Who are you?"'),
+  sent('Jn-1-20', ['καὶ','ὡμολόγησεν','καὶ','οὐκ','ἠρνήσατο,','καὶ','ὡμολόγησεν','ὅτι','Ἐγὼ','οὐκ','εἰμὶ','ὁ','χριστός.'], 'He declared, and didn\'t deny, but he declared, "I am not the Christ."'),
+  sent('Jn-1-21', ['καὶ','ἠρώτησαν','αὐτόν·','τί','οὖν;','Ἠλίας','εἶ','σύ;','καὶ','λέγει·','οὐκ','εἰμί.','ὁ','προφήτης','εἶ','σύ;','καὶ','ἀπεκρίθη·','οὔ.'], 'They asked him, "What then? Are you Elijah?" He said, "I am not." "Are you the prophet?" He answered, "No."'),
+  sent('Jn-1-22', ['εἶπαν','οὖν','αὐτῷ·','τίς','εἶ;','ἵνα','ἀπόκρισιν','δῶμεν','τοῖς','πέμψασιν','ἡμᾶς·','τί','λέγεις','περὶ','σεαυτοῦ;'], 'They said therefore to him, "Who are you? Give us an answer to take back to those who sent us. What do you say about yourself?"'),
+  sent('Jn-1-23', ['ἔφη·','Ἐγὼ','φωνὴ','βοῶντος','ἐν','τῇ','ἐρήμῳ·','εὐθύνατε','τὴν','ὁδὸν','κυρίου,','καθὼς','εἶπεν','Ἠσαΐας','ὁ','προφήτης.'], 'He said, "I am the voice of one crying in the wilderness, \'Make straight the way of the Lord,\' as Isaiah the prophet said."'),
+  sent('Jn-1-24', ['Καὶ','ἀπεσταλμένοι','ἦσαν','ἐκ','τῶν','Φαρισαίων.'], 'The ones who had been sent were from the Pharisees.'),
+  sent('Jn-1-25', ['καὶ','ἠρώτησαν','αὐτὸν','καὶ','εἶπαν','αὐτῷ·','τί','οὖν','βαπτίζεις','εἰ','σὺ','οὐκ','εἶ','ὁ','χριστὸς','οὐδὲ','Ἠλίας','οὐδὲ','ὁ','προφήτης;'], 'They asked him, "Why then do you baptize, if you are not the Christ, nor Elijah, nor the prophet?"'),
+  sent('Jn-1-26', ['ἀπεκρίθη','αὐτοῖς','ὁ','Ἰωάννης','λέγων·','ἐγὼ','βαπτίζω','ἐν','ὕδατι·','μέσος','ὑμῶν','ἕστηκεν','ὃν','ὑμεῖς','οὐκ','οἴδατε,'], 'John answered them, "I baptize in water, but among you stands one whom you don\'t know,'),
+  sent('Jn-1-27', ['ὁ','ὀπίσω','μου','ἐρχόμενος,','οὗ','οὐκ','εἰμὶ','ἐγὼ','ἄξιος','ἵνα','λύσω','αὐτοῦ','τὸν','ἱμάντα','τοῦ','ὑποδήματος.'], 'he is the one who comes after me, whose sandal strap I\'m not worthy to loosen.'),
+  sent('Jn-1-28', ['Ταῦτα','ἐν','Βηθανίᾳ','ἐγένετο','πέραν','τοῦ','Ἰορδάνου,','ὅπου','ἦν','ὁ','Ἰωάννης','βαπτίζων.'], 'These things were done in Bethany beyond the Jordan, where John was baptizing.'),
+  sent('Jn-1-29', ['Τῇ','ἐπαύριον','βλέπει','τὸν','Ἰησοῦν','ἐρχόμενον','πρὸς','αὐτόν,','καὶ','λέγει·','ἴδε','ὁ','ἀμνὸς','τοῦ','θεοῦ','ὁ','αἴρων','τὴν','ἁμαρτίαν','τοῦ','κόσμου.'], 'The next day, he saw Jesus coming to him, and said, "Behold, the Lamb of God, who takes away the sin of the world!"'),
+  sent('Jn-1-30', ['οὗτός','ἐστιν','ὑπὲρ','οὗ','ἐγὼ','εἶπον·','ὀπίσω','μου','ἔρχεται','ἀνὴρ','ὃς','ἔμπροσθέν','μου','γέγονεν,','ὅτι','πρῶτός','μου','ἦν.'], 'This is he of whom I said, "After me comes a man who is preferred before me, for he was before me."'),
+  sent('Jn-1-31', ['κἀγὼ','οὐκ','ᾔδειν','αὐτόν,','ἀλλ᾽','ἵνα','φανερωθῇ','τῷ','Ἰσραήλ,','διὰ','τοῦτο','ἦλθον','ἐγὼ','ἐν','ὕδατι','βαπτίζων.'], "I didn't know him, but for this reason I came baptizing in water: that he would be revealed to Israel."),
+  sent('Jn-1-32', ['Καὶ','ἐμαρτύρησεν','Ἰωάννης','λέγων','ὅτι','τεθέαμαι','τὸ','πνεῦμα','καταβαῖνον','ὡς','περιστερὰν','ἐξ','οὐρανοῦ,','καὶ','ἔμεινεν','ἐπ᾽','αὐτόν.'], 'John testified, saying, "I have seen the Spirit descending like a dove out of heaven, and it remained on him.'),
+  sent('Jn-1-33', ['κἀγὼ','οὐκ','ᾔδειν','αὐτόν,','ἀλλ᾽','ὁ','πέμψας','με','βαπτίζειν','ἐν','ὕδατι','ἐκεῖνός','μοι','εἶπεν·','ἐφ᾽','ὃν','ἂν','ἴδῃς','τὸ','πνεῦμα','καταβαῖνον','καὶ','μένον','ἐπ᾽','αὐτόν,','οὗτός','ἐστιν','ὁ','βαπτίζων','ἐν','πνεύματι','ἁγίῳ.'], "I didn't recognize him, but he who sent me to baptize in water said to me, 'On whomever you will see the Spirit descending and remaining on him is he who baptizes in the Holy Spirit.'"),
+  sent('Jn-1-34', ['κἀγὼ','ἑώρακα','καὶ','μεμαρτύρηκα','ὅτι','οὗτός','ἐστιν','ὁ','υἱὸς','τοῦ','θεοῦ.'], 'I have seen, and have testified that this is the Son of God."'),
+  sent('Jn-1-35', ['Τῇ','ἐπαύριον','πάλιν','εἱστήκει','ὁ','Ἰωάννης','καὶ','ἐκ','τῶν','μαθητῶν','αὐτοῦ','δύο,'], 'Again, the next day, John was standing with two of his disciples,'),
+  sent('Jn-1-36', ['καὶ','ἐμβλέψας','τῷ','Ἰησοῦ','περιπατοῦντι','λέγει·','ἴδε','ὁ','ἀμνὸς','τοῦ','θεοῦ.'], 'and he looked at Jesus as he walked, and said, "Behold, the Lamb of God!"'),
+  sent('Jn-1-37', ['καὶ','ἤκουσαν','οἱ','δύο','μαθηταὶ','αὐτοῦ','λαλοῦντος','καὶ','ἠκολούθησαν','τῷ','Ἰησοῦ.'], 'The two disciples heard him speak, and they followed Jesus.'),
+  sent('Jn-1-38', ['στραφεὶς','δὲ','ὁ','Ἰησοῦς','καὶ','θεασάμενος','αὐτοὺς','ἀκολουθοῦντας','λέγει','αὐτοῖς·','τί','ζητεῖτε;','οἱ','δὲ','εἶπαν','αὐτῷ·','ῥαββί','(ὃ','λέγεται','μεθερμηνευόμενον','διδάσκαλε),','ποῦ','μένεις;'], 'Jesus turned and saw them following, and said to them, "What are you looking for?" They said to him, "Rabbi" (which is to say, being interpreted, Teacher), "where are you staying?"'),
+  sent('Jn-1-39', ['λέγει','αὐτοῖς·','ἔρχεσθε','καὶ','ὄψεσθε.','ἦλθαν','οὖν','καὶ','εἶδαν','ποῦ','μένει,','καὶ','παρ᾽','αὐτῷ','ἔμειναν','τὴν','ἡμέραν','ἐκείνην·','ὥρα','ἦν','ὡς','δεκάτη.'], 'He said to them, "Come, and see." They came and saw where he was staying, and they stayed with him that day. It was about the tenth hour.'),
+  sent('Jn-1-40', ['Ἦν','Ἀνδρέας','ὁ','ἀδελφὸς','Σίμωνος','Πέτρου','εἷς','ἐκ','τῶν','δύο','τῶν','ἀκουσάντων','παρὰ','Ἰωάννου','καὶ','ἀκολουθησάντων','αὐτῷ·'], "One of the two who heard John, and followed him, was Andrew, Simon Peter's brother."),
+  sent('Jn-1-41', ['εὑρίσκει','οὗτος','πρῶτον','τὸν','ἀδελφὸν','τὸν','ἴδιον','Σίμωνα','καὶ','λέγει','αὐτῷ·','εὑρήκαμεν','τὸν','Μεσσίαν','(ὃ','ἐστιν','μεθερμηνευόμενον','χριστός).'], 'He first found his own brother, Simon, and said to him, "We have found the Messiah!" (which is, being interpreted, Christ).'),
+  sent('Jn-1-42', ['ἤγαγεν','αὐτὸν','πρὸς','τὸν','Ἰησοῦν.','ἐμβλέψας','αὐτῷ','ὁ','Ἰησοῦς','εἶπεν·','σὺ','εἶ','Σίμων','ὁ','υἱὸς','Ἰωάννου,','σὺ','κληθήσῃ','Κηφᾶς','(ὃ','ἑρμηνεύεται','Πέτρος).'], 'He brought him to Jesus. Jesus looked at him and said, "You are Simon the son of Jonah. You shall be called Cephas" (which is by interpretation, Peter).'),
+  sent('Jn-1-43', ['Τῇ','ἐπαύριον','ἠθέλησεν','ἐξελθεῖν','εἰς','τὴν','Γαλιλαίαν','καὶ','εὑρίσκει','Φίλιππον','καὶ','λέγει','αὐτῷ','ὁ','Ἰησοῦς·','ἀκολούθει','μοι.'], 'On the next day, he was determined to go out into Galilee, and he found Philip. Jesus said to him, "Follow me."'),
+  sent('Jn-1-44', ['ἦν','δὲ','ὁ','Φίλιππος','ἀπὸ','Βηθσαΐδα,','ἐκ','τῆς','πόλεως','Ἀνδρέου','καὶ','Πέτρου.'], 'Now Philip was from Bethsaida, of the city of Andrew and Peter.'),
+  sent('Jn-1-45', ['εὑρίσκει','Φίλιππος','τὸν','Ναθαναὴλ','καὶ','λέγει','αὐτῷ·','ὃν','ἔγραψεν','Μωϋσῆς','ἐν','τῷ','νόμῳ','καὶ','οἱ','προφῆται','εὑρήκαμεν,','Ἰησοῦν','τὸν','ἀπὸ','Ναζαρέτ','υἱὸν','Ἰωσήφ.'], 'Philip found Nathanael, and said to him, "We have found him of whom Moses in the law, and the prophets, wrote: Jesus of Nazareth, the son of Joseph."'),
+  sent('Jn-1-46', ['καὶ','εἶπεν','αὐτῷ','Ναθαναήλ·','ἐκ','Ναζαρὲτ','δύναταί','τι','ἀγαθὸν','εἶναι;','λέγει','αὐτῷ','ὁ','Φίλιππος·','ἔρχου','καὶ','ἴδε.'], 'Nathanael said to him, "Can any good thing come out of Nazareth?" Philip said to him, "Come and see."'),
+  sent('Jn-1-47', ['εἶδεν','ὁ','Ἰησοῦς','τὸν','Ναθαναὴλ','ἐρχόμενον','πρὸς','αὐτὸν','καὶ','λέγει','περὶ','αὐτοῦ·','ἴδε','ἀληθῶς','Ἰσραηλίτης','ἐν','ᾧ','δόλος','οὐκ','ἔστιν.'], 'Jesus saw Nathanael coming to him, and said about him, "Behold, an Israelite indeed, in whom is no deceit!"'),
+  sent('Jn-1-48', ['λέγει','αὐτῷ','Ναθαναήλ·','πόθεν','με','γινώσκεις;','ἀπεκρίθη','Ἰησοῦς','καὶ','εἶπεν','αὐτῷ·','πρὸ','τοῦ','σε','Φίλιππον','φωνῆσαι','ὄντα','ὑπὸ','τὴν','συκῆν','εἶδόν','σε.'], 'Nathanael said to him, "How do you know me?" Jesus answered him, "Before Philip called you, when you were under the fig tree, I saw you."'),
+  sent('Jn-1-49', ['ἀπεκρίθη','αὐτῷ','Ναθαναήλ·','ῥαββί,','σὺ','εἶ','ὁ','υἱὸς','τοῦ','θεοῦ,','σὺ','βασιλεὺς','εἶ','τοῦ','Ἰσραήλ.'], 'Nathanael answered him, "Rabbi, you are the Son of God! You are King of Israel!"'),
+  sent('Jn-1-50', ['ἀπεκρίθη','Ἰησοῦς','καὶ','εἶπεν','αὐτῷ·','ὅτι','εἶπόν','σοι','ὅτι','εἶδόν','σε','ὑποκάτω','τῆς','συκῆς,','πιστεύεις;','μείζω','τούτων','ὄψῃ.'], 'Jesus answered him, "Because I told you, \'I saw you underneath the fig tree,\' do you believe? You will see greater things than these!"'),
+  sent('Jn-1-51', ['καὶ','λέγει','αὐτῷ·','ἀμὴν','ἀμὴν','λέγω','ὑμῖν,','ὄψεσθε','τὸν','οὐρανὸν','ἀνεῳγότα','καὶ','τοὺς','ἀγγέλους','τοῦ','θεοῦ','ἀναβαίνοντας','καὶ','καταβαίνοντας','ἐπὶ','τὸν','υἱὸν','τοῦ','ἀνθρώπου.'], 'He told him, "Most certainly, I tell you, you will see heaven opened, and the angels of God ascending and descending on the Son of Man."'),
+];
+
+export const JOHN_1: TextSection = {
+  id: 'Jn-1',
+  textId: 'Jn-full',
+  sequence: 1,
+  label: 'John 1',
+  sentences: john1,
+};
 
 // ─── John 2 ────────────────────────────────────────────────────────────────
 const john2: Sentence[] = [
@@ -65,7 +128,7 @@ export const JOHN_2: TextSection = {
   textId: 'Jn-full',
   sequence: 2,
   label: 'John 2',
-  previousSectionId: 'Jn-1-2',
+  previousSectionId: 'Jn-1',
   sentences: john2,
 };
 
@@ -1073,7 +1136,7 @@ export const JOHN_21: TextSection = {
 };
 
 export const ALL_JOHN_CHAPTERS: TextSection[] = [
-  JOHN_2, JOHN_3, JOHN_4, JOHN_5, JOHN_6, JOHN_7, JOHN_8, JOHN_9, JOHN_10,
+  JOHN_1, JOHN_2, JOHN_3, JOHN_4, JOHN_5, JOHN_6, JOHN_7, JOHN_8, JOHN_9, JOHN_10,
   JOHN_11, JOHN_12, JOHN_13, JOHN_14, JOHN_15, JOHN_16, JOHN_17, JOHN_18,
   JOHN_19, JOHN_20, JOHN_21,
 ];
