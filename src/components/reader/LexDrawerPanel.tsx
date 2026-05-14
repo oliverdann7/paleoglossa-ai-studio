@@ -224,7 +224,7 @@ export const LexDrawerPanel = ({
             </div>
           </div>
 
-          <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-[20px]">
+          <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-panel">
             <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
               <span>{t('reader.meaning', "Meaning")}</span>
               <Link
@@ -288,13 +288,13 @@ export const LexDrawerPanel = ({
                 })()}
               </div>
             {!sourceInfo && (
-              <div className="text-[10px] text-muted italic mb-4">
+              <div className="text-tiny text-muted italic mb-4">
                 {t('reader.ancientWord', 'Ancient word')}
               </div>
             )}
             
             <div className="mt-4 pt-4 border-t border-bdr/20">
-              <div className="text-[10px] uppercase font-bold text-muted mb-2 tracking-widest">
+              <div className="text-tiny uppercase font-bold text-muted mb-2 tracking-widest">
                 {t('reader.yourGloss', "Your Gloss / Translation")}
               </div>
               <input
@@ -381,7 +381,7 @@ export const LexDrawerPanel = ({
               <div className="mb-6 p-4 rounded-2xl bg-parch2/30 border border-bdr/20">
                 <div className="flex items-center gap-2 mb-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-jade" />
-                  <span className="text-[10px] uppercase font-bold text-muted tracking-widest">
+                  <span className="text-tiny uppercase font-bold text-muted tracking-widest">
                     {t('reader.dataSource', 'Data Source')}
                   </span>
                 </div>
@@ -389,13 +389,13 @@ export const LexDrawerPanel = ({
                 {visibleDicts.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {visibleDicts.map(d => (
-                      <span key={d.id} className="text-[10px] bg-parch3 border border-bdr/40 rounded-full px-2 py-0.5 text-ink2">
+                      <span key={d.id} className="text-tiny bg-parch3 border border-bdr/40 rounded-full px-2 py-0.5 text-ink2">
                         {d.name}
                       </span>
                     ))}
                   </div>
                 )}
-                <p className="text-[10px] text-muted mt-1">
+                <p className="text-tiny text-muted mt-1">
                   License: {sourceInfo.license}
                   {sourceInfo.requiresAttribution && (
                     <span className="inline-flex items-center gap-1 ml-2 text-amber">
@@ -432,7 +432,7 @@ export const LexDrawerPanel = ({
               <div className="eyebrow mb-3 flex items-center justify-between text-ink">
                 <span>{t('reader.morphology', 'Morphology')}</span>
                 {morphologyDisplay.confidence !== undefined && (
-                  <span className="text-[10px] text-muted normal-case tracking-normal">
+                  <span className="text-tiny text-muted normal-case tracking-normal">
                     {Math.round(morphologyDisplay.confidence * 100)}% confidence
                   </span>
                 )}

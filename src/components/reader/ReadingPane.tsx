@@ -265,31 +265,31 @@ export function ReadingPane({
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-0.5">
             {sourceKind === 'sample' && (
-              <span className="inline-block bg-amber/10 text-amber text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+              <span className="inline-block bg-amber/10 text-amber text-tiny font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                 Sample Excerpt
               </span>
             )}
             {sourceKind === 'partial' && (
-              <span className="inline-block bg-blue/10 text-blue text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+              <span className="inline-block bg-blue/10 text-blue text-tiny font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                 Partial Section
               </span>
             )}
             {sourceKind === 'complete' && (
-              <span className="inline-block bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+              <span className="inline-block bg-green-100 text-green-700 text-tiny font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                 Complete
               </span>
             )}
             {sourceKind === 'import' && (
-              <span className="inline-block bg-purple-100 text-purple-700 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+              <span className="inline-block bg-purple-100 text-purple-700 text-tiny font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                 Your Import
               </span>
             )}
-            <span className="text-[10px] text-muted">{sentenceCount} {sentenceCount === 1 ? 'sentence' : 'sentences'}</span>
+            <span className="text-tiny text-muted">{sentenceCount} {sentenceCount === 1 ? 'sentence' : 'sentences'}</span>
             {hasMorphology && analysisStatus !== 'raw' && (
-              <span className="text-[10px] text-muted">· Morphology</span>
+              <span className="text-tiny text-muted">· Morphology</span>
             )}
             {(analysisStatus === 'raw' || analysisStatus === 'needs_ai') && (
-              <span className="inline-block bg-amber/10 text-amber text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
+              <span className="inline-block bg-amber/10 text-amber text-tiny font-bold uppercase tracking-widest px-2 py-0.5 rounded-full">
                 AI analysis unavailable
               </span>
             )}
