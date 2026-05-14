@@ -1,10 +1,12 @@
+import type { LanguageId, ScriptDirection } from '../../types/linguistics';
+
 export interface Language {
-  id: string;
+  id: LanguageId;
   name: string;
   shortName: string;
   icon: string;
   symbol: string;
-  direction: 'ltr' | 'rtl';
+  direction: ScriptDirection;
   era: string;
   region: string;
   writingSystem: string;
@@ -266,7 +268,7 @@ export const LANGUAGES: Language[] = [
   },
 ];
 
-export function getLanguageById(languageId: string): Language | undefined {
+export function getLanguageById(languageId: LanguageId): Language | undefined {
   return LANGUAGES.find(l => l.id === languageId);
 }
 
@@ -274,7 +276,7 @@ export function getAvailableLanguages(): Language[] {
   return LANGUAGES;
 }
 
-export function getLanguageDirection(languageId: string): 'ltr' | 'rtl' {
+export function getLanguageDirection(languageId: string): ScriptDirection {
   return LANGUAGES.find(l => l.id === languageId)?.direction || 'ltr';
 }
 

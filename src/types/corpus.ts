@@ -71,6 +71,8 @@ export interface TextSection {
   previousSectionId?: string;
 }
 
+import type { ScriptDirection } from './linguistics';
+
 export interface Text {
   id: string;
   corpusId: string;
@@ -78,7 +80,7 @@ export interface Text {
   canonicalRef?: string;
   author?: string;
   language: string;
-  direction?: 'ltr' | 'rtl';
+  direction?: ScriptDirection;
   level?: string;
   date?: string;
   period?: string;

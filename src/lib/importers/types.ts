@@ -1,4 +1,5 @@
 import { SourceAttribution } from '../../types/corpus';
+import type { ScriptDirection } from '../../types/linguistics';
 
 export interface NormalizedMorphology {
   partOfSpeech: string;
@@ -55,7 +56,7 @@ export interface NormalizedText {
   canonicalRef?: string;
   author?: string;
   language: string;
-  direction?: 'ltr' | 'rtl';
+  direction?: ScriptDirection;
   sourceAttributionId?: string;
   hasMorphology?: boolean;
   hasTranslation?: boolean;
