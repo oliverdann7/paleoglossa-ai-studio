@@ -1,10 +1,9 @@
 import { LemmaEntry, InflectedForm } from '../../types/modules';
 
 export class LemmaService {
-  static async getLemma(lemma: string, _languageId: string): Promise<LemmaEntry | null> {
-    void _languageId;
+  static async getLemma(lemma: string, languageId: string): Promise<LemmaEntry | null> {
     try {
-      const response = await fetch(`/api/lemmas/${encodeURIComponent(lemma)}`);
+      const response = await fetch(`/api/lemmas/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}`);
       if (!response.ok) return null;
       return response.json();
     } catch {
