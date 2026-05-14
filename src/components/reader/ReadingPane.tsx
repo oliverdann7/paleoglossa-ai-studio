@@ -34,7 +34,6 @@ interface Props {
   fontSize: number;
   highlightIntensity: 'subtle' | 'normal' | 'strong';
   getWordInfo: (lemma: string) => any;
-  knowledgeVersion: number;
   selectedWordId?: string;
   showTranslit: boolean;
   showParallel: boolean;
