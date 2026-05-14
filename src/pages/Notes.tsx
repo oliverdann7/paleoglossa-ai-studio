@@ -86,14 +86,14 @@ export const Notes = () => {
                       <button
                         onClick={() => startEdit(note.lemma, note.notes)}
                         className="p-1.5 rounded-lg text-muted hover:text-blue hover:bg-blue/5 transition-colors"
-                        title="Edit note"
+                        title={t("notes.edit", "Edit note")}
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => deleteNote(note.lemma, note.languageId)}
                         className="p-1.5 rounded-lg text-muted hover:text-ruby hover:bg-ruby/5 transition-colors"
-                        title="Delete note"
+                        title={t("notes.delete", "Delete note")}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -115,13 +115,13 @@ export const Notes = () => {
                       onClick={() => saveEdit(note.lemma, note.languageId)}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-blue text-white rounded-lg text-[12px] font-bold hover:bg-blue/90 transition-colors"
                     >
-                      <Check className="w-3.5 h-3.5" /> Save
+                      <Check className="w-3.5 h-3.5" /> {t("notes.save", "Save")}
                     </button>
                     <button
                       onClick={cancelEdit}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-parch3 text-ink2 rounded-lg text-[12px] font-bold border border-bdr hover:bg-parch2 transition-colors"
                     >
-                      <X className="w-3.5 h-3.5" /> Cancel
+                      <X className="w-3.5 h-3.5" /> {t("notes.cancel", "Cancel")}
                     </button>
                   </div>
                 </div>

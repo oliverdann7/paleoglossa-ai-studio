@@ -38,6 +38,7 @@ function LanguageCard({ lang, isActive, isLocked, textCount, importCount, knownW
   lang: { id: string; name: string; shortName: string; icon: string; symbol: string; corpusStatus: string; };
   isActive: boolean; isLocked?: boolean; textCount: number; importCount: number; knownWords: number; onClick: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <button onClick={onClick}
       className={cn("card p-5 flex flex-col items-start text-left gap-2 transition-all border-2 min-w-[180px]",
@@ -62,7 +63,7 @@ function LanguageCard({ lang, isActive, isLocked, textCount, importCount, knownW
         isLocked ? "bg-parch3 text-muted" :
         lang.corpusStatus === 'available' ? "bg-emerald-50 text-emerald-700" :
         lang.corpusStatus === 'partial' ? "bg-blue/10 text-blue" : "bg-amber/10 text-amber")}>
-        {isLocked ? 'Locked' : lang.corpusStatus === 'available' ? 'Available' : lang.corpusStatus === 'partial' ? 'In Progress' : 'Sample'}
+        {isLocked ? t('language.statusLocked', 'Locked') : lang.corpusStatus === 'available' ? t('language.statusAvailable', 'Available') : lang.corpusStatus === 'partial' ? t('language.statusInProgress', 'In Progress') : t('language.statusSample', 'Sample')}
       </div>
     </button>
   );
@@ -261,14 +262,14 @@ export const Library = () => {
             {t("library.title", "Library")}
           </h2>
           <p className="font-body text-[15px] italic text-ink2">
-            Choose a language to explore, or browse all texts below.
+            {t('library.chooseLanguage', 'Choose a language to explore, or browse all texts below.')}
           </p>
         </div>
       </header>
 
       {/* ── Language Cards ───────────────────────────────────────────── */}
       <div className="mb-10">
-        <h3 className="eyebrow mb-4 opacity-50">Your Languages</h3>
+        <h3 className="eyebrow mb-4 opacity-50">{t('library.yourLanguages', 'Your Languages')}</h3>
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
           {langStats.map(({ lang, textCount, importCount, knownWords }) => {
             const isLocked = !canAccessLanguage(lang.id);
@@ -295,18 +296,18 @@ export const Library = () => {
       {/* ── Continue Reading ─────────────────────────────────────────── */}
       {recentTexts.length > 0 && (
         <div className="mb-10">
-          <h3 className="eyebrow mb-4 opacity-50">Continue Reading</h3>
+          <h3 className="eyebrow mb-4 opacity-50">{t('dashboard.continueReading', 'Continue Reading')}</h3>
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
             {recentTexts.map((text: any, i) => (
               <div key={i} onClick={() => navigate(`/app/reader/${text.id}`)}
                 className="min-w-[300px] card bg-parch2/30 border-bdr/40 p-5 flex items-center justify-between group cursor-pointer hover:border-blue/30 hover:shadow-md transition-all">
                 <div className="max-w-[180px]">
                   <div className="text-[16px] font-serif font-bold text-ink truncate mb-1">{text.title}</div>
-                  <div className="text-[10px] uppercase font-bold text-muted tracking-widest">{text.author || "Unknown"}</div>
+                  <div className="text-[10px] uppercase font-bold text-muted tracking-widest">{text.author || t('library.authorUnknown', 'Unknown')}</div>
                   <div className="mt-3 h-1.5 w-full bg-parch3 rounded-full overflow-hidden">
                     <div className="h-full bg-gold transition-all" style={{ width: `${Math.max(text.lastPosition || 0, 2)}%` }} />
                   </div>
-                  <div className="text-[10px] text-muted mt-1 font-bold">{Math.round(text.lastPosition || 0)}% Complete</div>
+                  <div className="text-[10px] text-muted mt-1 font-bold">{Math.round(text.lastPosition || 0)}% {t('library.complete', 'Complete')}</div>
                 </div>
                 <button className="w-10 h-10 bg-white border border-bdr rounded-full flex items-center justify-center text-blue shadow-sm group-hover:bg-blue group-hover:text-white transition-all">
                   <Play className="w-4 h-4 ml-0.5" />
@@ -320,13 +321,13 @@ export const Library = () => {
       {/* ── Tab Navigation ───────────────────────────────────────────── */}
       <div className="flex gap-2 mb-6 flex-wrap">
         <button onClick={() => setActiveTab('imports')} className={cn("px-4 py-2 rounded-lg text-[13px] font-bold flex items-center gap-2 transition-all", activeTab === 'imports' ? "bg-blue text-white shadow-md" : "bg-white text-ink3 border border-bdr/40 hover:bg-parch")}>
-          <BookOpen className="w-4 h-4" /> Your Texts
+          <BookOpen className="w-4 h-4" /> {t('library.yourTexts', 'Your Texts')}
         </button>
         <button onClick={() => setActiveTab('library')} className={cn("px-4 py-2 rounded-lg text-[13px] font-bold flex items-center gap-2 transition-all", activeTab === 'library' ? "bg-ink text-parch shadow-md" : "bg-white text-ink3 border border-bdr/40 hover:bg-parch")}>
-          <LibraryIcon className="w-4 h-4" /> Curated Library
+          <LibraryIcon className="w-4 h-4" /> {t('library.curated', 'Curated Library')}
         </button>
         <button onClick={() => setActiveTab('public')} className={cn("px-4 py-2 rounded-lg text-[13px] font-bold flex items-center gap-2 transition-all", activeTab === 'public' ? "bg-emerald-600 text-white shadow-md" : "bg-white text-ink3 border border-bdr/40 hover:bg-parch")}>
-          <Globe className="w-4 h-4" /> Public Library
+          <Globe className="w-4 h-4" /> {t('library.public', 'Public Library')}
         </button>
       </div>
 
@@ -349,7 +350,7 @@ export const Library = () => {
               </button>
             ))}
             <button onClick={() => setShowFilters(!showFilters)} className={cn("px-4 py-2 rounded-full text-[12px] font-bold font-sans flex items-center gap-1.5 transition-all outline-none border", showFilters ? "bg-parch3 border-bdr text-ink" : "bg-white border-bdr/60 text-ink3 hover:bg-parch")}>
-              <Filter className="w-3.5 h-3.5" /> Filters <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", showFilters && "rotate-180")} />
+              <Filter className="w-3.5 h-3.5" /> {t('library.filters', 'Filters')} <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", showFilters && "rotate-180")} />
             </button>
           </div>
         </div>
@@ -359,59 +360,59 @@ export const Library = () => {
               className="overflow-hidden mt-6 pt-6 border-t border-bdr/30 flex flex-wrap lg:flex-nowrap gap-8">
               <div className="w-full lg:w-72">
                 <div className="flex justify-between items-center mb-4">
-                  <label className="text-[11px] font-bold text-muted uppercase">Comprehensibility</label>
-                  <span className="text-[11px] font-bold text-blue bg-blue/10 px-2 py-0.5 rounded-full">{minKnown}%+ Known</span>
+                  <label className="text-[11px] font-bold text-muted uppercase">{t('library.comprehensibility', 'Comprehensibility')}</label>
+                  <span className="text-[11px] font-bold text-blue bg-blue/10 px-2 py-0.5 rounded-full">{minKnown}%+ {t('library.known', 'Known')}</span>
                 </div>
                 <input type="range" min="0" max="95" step="5" value={minKnown}
                   onChange={e => setMinKnown(parseInt(e.target.value, 10))}
                   className="w-full accent-blue appearance-none h-1.5 bg-parch3 rounded-full cursor-pointer" />
-                <div className="flex justify-between mt-2 text-[10px] font-bold text-zinc-400"><span>Any %</span><span>Nearly All</span></div>
+                <div className="flex justify-between mt-2 text-[10px] font-bold text-zinc-400"><span>{t('library.anyPercent', 'Any %')}</span><span>{t('library.nearlyAll', 'Nearly All')}</span></div>
               </div>
               <div className="w-full lg:w-44">
-                <label className="block text-[11px] font-bold text-muted uppercase mb-4">Sort By</label>
+                <label className="block text-[11px] font-bold text-muted uppercase mb-4">{t('library.sortBy', 'Sort By')}</label>
                 <select value={activeSort} onChange={e => setActiveSort(e.target.value as SortOption)}
                   className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none">
-                  <option value="comprehensible">Most Comprehensible</option>
-                  <option value="newest">Newest Added</option>
-                  <option value="shortest">Shortest Length</option>
-                  <option value="hardest">Hardest</option>
-                  <option value="unknown">Most Unknown Words</option>
+                  <option value="comprehensible">{t('library.sortComprehensible', 'Most Comprehensible')}</option>
+                  <option value="newest">{t('library.sortNewest', 'Newest Added')}</option>
+                  <option value="shortest">{t('library.sortShortest', 'Shortest Length')}</option>
+                  <option value="hardest">{t('library.sortHardest', 'Hardest')}</option>
+                  <option value="unknown">{t('library.sortUnknown', 'Most Unknown Words')}</option>
                 </select>
               </div>
               <div className="w-full lg:w-44">
-                <label className="block text-[11px] font-bold text-muted uppercase mb-4">Period</label>
+                <label className="block text-[11px] font-bold text-muted uppercase mb-4">{t('library.period', 'Period')}</label>
                 <select value={periodFilter} onChange={e => setPeriodFilter(e.target.value)}
                   className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none">
-                  <option value="all">All Periods</option>
+                  <option value="all">{t('library.allPeriods', 'All Periods')}</option>
                   {PERIOD_FILTERS.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
               <div className="w-full lg:w-44">
-                <label className="block text-[11px] font-bold text-muted uppercase mb-4">Genre</label>
+                <label className="block text-[11px] font-bold text-muted uppercase mb-4">{t('library.genre', 'Genre')}</label>
                 <select value={genreFilter} onChange={e => setGenreFilter(e.target.value)}
                   className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none">
-                  <option value="all">All Genres</option>
+                  <option value="all">{t('library.allGenres', 'All Genres')}</option>
                   {GENRE_FILTERS.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
               <div className="w-full lg:w-44">
-                <label className="block text-[11px] font-bold text-muted uppercase mb-4">Corpus Type</label>
+                <label className="block text-[11px] font-bold text-muted uppercase mb-4">{t('library.corpusType', 'Corpus Type')}</label>
                 <select value={corpusTypeFilter} onChange={e => setCorpusTypeFilter(e.target.value)}
                   className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none">
-                  <option value="all">All Types</option>
+                  <option value="all">{t('library.allTypes', 'All Types')}</option>
                   {CORPUS_TYPE_FILTERS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
               <div className="w-full">
-                <label className="block text-[11px] font-bold text-muted uppercase mb-4">Difficulty</label>
+                <label className="block text-[11px] font-bold text-muted uppercase mb-4">{t('library.difficulty', 'Difficulty')}</label>
                 <div className="flex flex-wrap gap-2">
                   {([
-                    { id: 'all' as const, label: 'All Levels', active: 'bg-ink text-parch border-ink', inactive: 'bg-white text-ink3 border-bdr/60' },
-                    { id: 'beginner' as const, label: 'Comfortable', active: 'bg-ink3/20 text-ink3 border-ink3/30', inactive: 'bg-white text-ink3 border-bdr/60' },
-                    { id: 'accessible' as const, label: 'Optimal', active: 'bg-green-100 text-green-700 border-green-300', inactive: 'bg-white text-ink3 border-bdr/60' },
-                    { id: 'challenging' as const, label: 'Developing', active: 'bg-amber/20 text-amber border-amber/30', inactive: 'bg-white text-ink3 border-bdr/60' },
-                    { id: 'advanced' as const, label: 'Challenging', active: 'bg-ruby/15 text-ruby border-ruby/25', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'all' as const, label: t('library.allLevels', 'All Levels'), active: 'bg-ink text-parch border-ink', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'beginner' as const, label: t('library.comfortable', 'Comfortable'), active: 'bg-ink3/20 text-ink3 border-ink3/30', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'accessible' as const, label: t('library.optimal', 'Optimal'), active: 'bg-green-100 text-green-700 border-green-300', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'challenging' as const, label: t('library.developing', 'Developing'), active: 'bg-amber/20 text-amber border-amber/30', inactive: 'bg-white text-ink3 border-bdr/60' },
+                    { id: 'advanced' as const, label: t('library.challenging', 'Challenging'), active: 'bg-ruby/15 text-ruby border-ruby/25', inactive: 'bg-white text-ink3 border-bdr/60' },
                   ]).map(d => (
                     <button
                       key={d.id}
@@ -447,10 +448,10 @@ export const Library = () => {
       ) : sortedTexts.length === 0 ? (
         <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
           <LibraryIcon className="w-12 h-12 text-muted mb-4" />
-          <h3 className="font-serif text-[24px] text-ink mb-2">Shelf Empty</h3>
-          <p className="text-ink3 max-w-sm mx-auto mb-6">No texts found for this language. Import a text or try adjusting your filters.</p>
+          <h3 className="font-serif text-[24px] text-ink mb-2">{t('library.shelfEmpty', 'Shelf Empty')}</h3>
+          <p className="text-ink3 max-w-sm mx-auto mb-6">{t('library.noTextsFound', 'No texts found for this language. Import a text or try adjusting your filters.')}</p>
           <button onClick={() => navigate('/app/import')} className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-md">
-            Import New Lesson
+            {t('import.title', 'Import New Lesson')}
           </button>
         </div>
       ) : (
@@ -476,20 +477,20 @@ export const Library = () => {
                         <span className="text-[10px] text-blue uppercase tracking-widest font-bold">{getLanguageDisplayName(text.language)}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 mb-5 text-[11px] text-ink3">
-                        <div className="flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5 text-muted shrink-0" /><span className="truncate">{text.date || text.period || "Date unknown"}</span></div>
-                        <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 text-muted shrink-0" /><span className="truncate">{text.genre || "Text"}</span></div>
-                        <div className="flex items-center gap-1.5"><LibraryIcon className="w-3.5 h-3.5 text-muted shrink-0" /><span className="truncate capitalize">{text.corpusType || "other"}</span></div>
-                        <div className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-muted shrink-0" /><span className="truncate">{text.licenseName || "License unknown"}</span></div>
+                        <div className="flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5 text-muted shrink-0" /><span className="truncate">{text.date || text.period || t('library.dateUnknown', 'Date unknown')}</span></div>
+                        <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5 text-muted shrink-0" /><span className="truncate">{text.genre || t('library.defaultGenre', 'Text')}</span></div>
+                        <div className="flex items-center gap-1.5"><LibraryIcon className="w-3.5 h-3.5 text-muted shrink-0" /><span className="truncate capitalize">{text.corpusType || t('library.defaultCorpusType', 'other')}</span></div>
+                        <div className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-muted shrink-0" /><span className="truncate">{text.licenseName || t('library.licenseUnknown', 'License unknown')}</span></div>
                       </div>
                       <div className="flex flex-wrap gap-1.5 mb-5">
-                        {text.isSample && <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-amber/5 text-amber border-amber/20">Sample</span>}
-                        {text.sourceStatus === 'complete' && <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-green/5 text-green border-green/20">Complete</span>}
-                        {text.sourceStatus === 'partial' && !text.isSample && <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border-blue/20">In Progress</span>}
+                        {text.isSample && <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-amber/5 text-amber border-amber/20">{t('library.badgeSample', 'Sample')}</span>}
+                        {text.sourceStatus === 'complete' && <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-green/5 text-green border-green/20">{t('library.badgeComplete', 'Complete')}</span>}
+                        {text.sourceStatus === 'partial' && !text.isSample && <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border-blue/20">{t('library.badgeInProgress', 'In Progress')}</span>}
                         {[
-                          { key: 'morphology' as const, label: 'Morphology', icon: Languages, active: text.availableTools.morphology },
-                          { key: 'translation' as const, label: 'Translation', icon: BookOpen, active: text.availableTools.translation },
-                          { key: 'audio' as const, label: 'Audio', icon: Volume2, active: text.availableTools.audio },
-                          { key: 'syntax' as const, label: 'Syntax', icon: GitBranch, active: text.availableTools.syntax },
+                          { key: 'morphology' as const, label: t('library.toolMorphology', 'Morphology'), icon: Languages, active: text.availableTools.morphology },
+                          { key: 'translation' as const, label: t('library.toolTranslation', 'Translation'), icon: BookOpen, active: text.availableTools.translation },
+                          { key: 'audio' as const, label: t('library.toolAudio', 'Audio'), icon: Volume2, active: text.availableTools.audio },
+                          { key: 'syntax' as const, label: t('library.toolSyntax', 'Syntax'), icon: GitBranch, active: text.availableTools.syntax },
                         ].map(tool => (
                           <span key={tool.key} className={cn("inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider",
                             tool.active ? "bg-blue/5 text-blue border-blue/20" : "bg-white text-muted border-bdr/40 opacity-60")}>
@@ -504,19 +505,19 @@ export const Library = () => {
                       </div>
                       <div className="space-y-2 mb-6">
                         <div className="flex items-center justify-between text-[11.5px] font-bold">
-                          <span className="text-zinc-500 uppercase tracking-tight flex items-center gap-1.5"><Clock className="w-3 h-3" />{text.totalWords} wds ~{Math.ceil(text.totalWords / 150)} min</span>
-                          <span className="text-blue">{text.percentKnown}% Known</span>
+                          <span className="text-zinc-500 uppercase tracking-tight flex items-center gap-1.5"><Clock className="w-3 h-3" />{t('library.wordCountEstimate', '{{count}} wds ~{{minutes}} min', { count: text.totalWords, minutes: Math.ceil(text.totalWords / 150) })}</span>
+                          <span className="text-blue">{t('library.percentKnown', '{{percent}}% Known', { percent: text.percentKnown })}</span>
                         </div>
                         <div className="flex gap-4">
-                          <div className="flex flex-col"><span className="text-[15px] font-bold text-ink leading-none">{text.percentKnown}%</span><span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">Known</span></div>
-                          <div className="flex flex-col"><span className="text-[15px] font-bold text-amber leading-none">{text.percentLearning}%</span><span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">Learning</span></div>
-                          <div className="flex flex-col ml-auto text-right"><span className="text-[15px] font-bold text-red-400 leading-none">{text.percentKnown !== undefined ? (100 - text.percentKnown - (text.percentLearning || 0)) : 0}%</span><span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">New</span></div>
+                          <div className="flex flex-col"><span className="text-[15px] font-bold text-ink leading-none">{text.percentKnown}%</span><span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">{t('vocab.known', 'Known')}</span></div>
+                          <div className="flex flex-col"><span className="text-[15px] font-bold text-amber leading-none">{text.percentLearning}%</span><span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">{t('vocab.learning', 'Learning')}</span></div>
+                          <div className="flex flex-col ml-auto text-right"><span className="text-[15px] font-bold text-red-400 leading-none">{text.percentKnown !== undefined ? (100 - text.percentKnown - (text.percentLearning || 0)) : 0}%</span><span className="text-[8.5px] uppercase font-bold text-muted tracking-widest mt-1">{t('vocab.new', 'New')}</span></div>
                         </div>
 
                         {/* Sections quick-open */}
                         {text.sectionsPreview && text.sectionsPreview.length > 0 && (
                           <div className="mt-2">
-                            <div className="text-[9px] uppercase font-bold tracking-widest text-muted mb-2">Open Section</div>
+                            <div className="text-[9px] uppercase font-bold tracking-widest text-muted mb-2">{t('library.openSection', 'Open Section')}</div>
                             <div className="flex flex-wrap gap-1.5">
                               {text.sectionsPreview.slice(0, 4).map(section => (
                                 <button
@@ -541,20 +542,20 @@ export const Library = () => {
                           text.sourceType === 'import' ? "text-purple-600/60" : text.sourceType === 'public' ? "text-emerald-600/60" : "text-emerald-600/60")}>
                           {text.sourceType === 'import' && <BookOpen className="w-3 h-3" />}
                           {text.sourceType === 'public' && <Globe className="w-3 h-3" />}
-                          {text.sourceType === 'import' ? "Private Import" : text.sourceType === 'public' ? "Public" : "Curated Library"}
+                          {text.sourceType === 'import' ? t('library.privateImport', 'Private Import') : text.sourceType === 'public' ? t('library.public', 'Public') : t('library.curated', 'Curated Library')}
                         </span>
                         {text.sourceType === 'import' && user && (
                           <button onClick={e => { e.stopPropagation(); if (text.isPublic) handleUnshare(text.id); else handleShare(text.id); }} disabled={sharingId === text.id}
                             className={cn("text-[9px] uppercase font-bold tracking-widest flex items-center gap-1 px-2 py-0.5 rounded transition-colors",
                               text.isPublic ? "text-emerald-600 bg-emerald-50 hover:bg-emerald-100" : "text-blue bg-blue-50 hover:bg-blue-100")}>
                             {text.isPublic ? <Lock className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
-                            {text.isPublic ? "Unshare" : "Share"}
+                            {text.isPublic ? t('library.unshare', 'Unshare') : t('library.share', 'Share')}
                           </button>
                         )}
                         {text.sourceType === 'public' && user && (
                           <button onClick={e => { e.stopPropagation(); handleFork(text.id); }} disabled={sharingId === text.id}
                             className="text-[9px] uppercase font-bold tracking-widest flex items-center gap-1 px-2 py-0.5 rounded text-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors">
-                            <GitFork className="w-3 h-3" /> Fork
+                            <GitFork className="w-3 h-3" /> {t('library.fork', 'Fork')}
                           </button>
                         )}
                       </div>
