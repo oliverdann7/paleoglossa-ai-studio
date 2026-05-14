@@ -326,7 +326,7 @@ export const Reader = () => {
     return parsed < chapters.length ? parsed : 0;
   });
 
-  const chapter = chapters[currentChapterIndex] || chapters[0];
+  const chapter = chapters[currentChapterIndex] || chapters[0] || { id: '', title: '', sentences: [] as any[], translation: '' };
 
   const SENTENCES_PER_PAGE = 30;
   const [currentScrollPage, setCurrentScrollPage] = useState(0);
