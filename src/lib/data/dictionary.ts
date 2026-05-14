@@ -226,6 +226,24 @@ export const getGlossForLemma = (lemma: string) => {
   return dict[lemma]?.gloss || null;
 };
 
+export const GLOSS_SOURCES = {
+  USER_GLOSS: 'user_gloss',
+  CORPUS_DERIVED: 'corpus_derived',
+  STATIC_DICT: 'static_dictionary',
+  CORPUS_GLOBAL: 'corpus_global',
+  TOKEN_GLOSS: 'token_gloss',
+  AI_EXPLANATION: 'ai_explanation',
+  UNAVAILABLE: 'unavailable',
+} as const;
+
+export type GlossSource = (typeof GLOSS_SOURCES)[keyof typeof GLOSS_SOURCES];
+
+export interface LookupResult {
+  definition: string;
+  source: GlossSource;
+  sourceLabel?: string;
+}
+
 export const getGlossWithFallbacks = (lemma: string, languageId: string): string | null => {
   const lower = lemma.toLowerCase();
   const normalized = normalizeSearch(lemma);
@@ -270,6 +288,87 @@ export const getGlossWithFallbacks = (lemma: string, languageId: string): string
   const dict = getGlobalDictionary();
   const corpusGloss = dict[lemma]?.gloss || dict[lower]?.gloss || dict[normalized]?.gloss;
   if (corpusGloss) return corpusGloss;
+
+  return null;
+};
+
+export const getDefinitionWithFallbacks = (lemma: string, languageId: string): LookupResult | null => {
+  const lower = lemma.toLowerCase();
+  const normalized = normalizeSearch(lemma);
+  const isHebrew = languageId === 'hbo';
+  const consonantal = isHebrew ? stripHebrewVowels(lemma) : null;
+
+  // 1. Exact match in corpus-derived dictionary entries
+  let entry = findDictionaryEntry(lemma, languageId);
+  if (entry?.fullDefinition) {
+    return { definition: entry.fullDefinition, source: GLOSS_SOURCES.CORPUS_DERIVED };
+  }
+  if (entry?.shortGloss) {
+    return { definition: entry.shortGloss, source: GLOSS_SOURCES.CORPUS_DERIVED };
+  }
+
+  // 2. Lowercase lemma
+  if (lower !== lemma) {
+    entry = findDictionaryEntry(lower, languageId);
+    if (entry?.fullDefinition) {
+      return { definition: entry.fullDefinition, source: GLOSS_SOURCES.CORPUS_DERIVED };
+    }
+    if (entry?.shortGloss) {
+      return { definition: entry.shortGloss, source: GLOSS_SOURCES.CORPUS_DERIVED };
+    }
+  }
+
+  // 3. NFD-normalized / diacritic-stripped lemma
+  if (normalized !== lemma && normalized !== lower) {
+    entry = findDictionaryEntry(normalized, languageId);
+    if (entry?.fullDefinition) {
+      return { definition: entry.fullDefinition, source: GLOSS_SOURCES.CORPUS_DERIVED };
+    }
+    if (entry?.shortGloss) {
+      return { definition: entry.shortGloss, source: GLOSS_SOURCES.CORPUS_DERIVED };
+    }
+  }
+
+  // 4. Static dictionaryDB entries (Strong's / LSJ / Whitaker's)
+  const tryStatic = (key: string): LookupResult | null => {
+    const staticEntry = STATIC_DICT[key];
+    if (staticEntry?.fullDefinition) {
+      return { definition: staticEntry.fullDefinition, source: GLOSS_SOURCES.STATIC_DICT, sourceLabel: staticEntry.source?.name };
+    }
+    if (staticEntry?.shortGloss) {
+      return { definition: staticEntry.shortGloss, source: GLOSS_SOURCES.STATIC_DICT, sourceLabel: staticEntry.source?.name };
+    }
+    return null;
+  };
+
+  const staticResult = tryStatic(`${languageId}:${lemma}`) || tryStatic(`${languageId}:${lower}`);
+  if (staticResult) return staticResult;
+
+  // 5. Hebrew consonantal form (without vowel marks)
+  if (isHebrew && consonantal && consonantal !== lemma) {
+    entry = findDictionaryEntry(consonantal, languageId);
+    if (entry?.fullDefinition) {
+      return { definition: entry.fullDefinition, source: GLOSS_SOURCES.CORPUS_DERIVED };
+    }
+    if (entry?.shortGloss) {
+      return { definition: entry.shortGloss, source: GLOSS_SOURCES.CORPUS_DERIVED };
+    }
+    const staticConsonantal = tryStatic(`${languageId}:${consonantal}`);
+    if (staticConsonantal) return staticConsonantal;
+  }
+
+  // 6. Corpus global dictionary
+  const dict = getGlobalDictionary();
+  const token = dict[lemma] || dict[lower] || dict[normalized];
+  if (token?.gloss) {
+    return { definition: token.gloss, source: GLOSS_SOURCES.CORPUS_GLOBAL };
+  }
+  if (token?.fullDefinition) {
+    return { definition: token.fullDefinition, source: GLOSS_SOURCES.CORPUS_GLOBAL };
+  }
+  if (token?.shortGloss) {
+    return { definition: token.shortGloss, source: GLOSS_SOURCES.CORPUS_GLOBAL };
+  }
 
   return null;
 };

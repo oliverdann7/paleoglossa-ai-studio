@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +9,7 @@ import { AIClient } from '@/lib/services/aiClient';
 import { ParadigmModal } from './ParadigmModal';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
-import { findDictionaryEntry, getGlossWithFallbacks } from '@/lib/data/dictionary';
+import { findDictionaryEntry, getDefinitionWithFallbacks, LookupResult, GLOSS_SOURCES } from '@/lib/data/dictionary';
 import { useSettings } from '@/lib/hooks/useSettings';
 
 interface LexDrawerPanelProps {
@@ -54,6 +54,8 @@ export const LexDrawerPanel = ({
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
+  const [aiFallbackGloss, setAiFallbackGloss] = useState<string | null>(null);
+  const [isAiFallbackLoading, setIsAiFallbackLoading] = useState(false);
 
   // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
   const wordInfo = useMemo(
@@ -88,22 +90,78 @@ export const LexDrawerPanel = ({
     );
   }, [selectedWord, sourceInfo?.name, textLanguageId]);
 
-  const handleAiWordExplain = async () => {
+  const handleAiWordExplain = async (useAsGloss: boolean = false) => {
     if (isAiWordLoading || !selectedWord) return;
     setIsAiWordLoading(true);
-    setAiWordInsight("");
+    if (!useAsGloss) {
+      setAiWordInsight("");
+    }
     
     try {
       const languageName = text?.language || selectedWord.language || "ancient language";
       const explanation = await AIClient.explainWord(languageName, selectedWord.text, selectedWord.lemma);
-      setAiWordInsight(explanation);
+      if (useAsGloss) {
+        setAiFallbackGloss(explanation);
+      } else {
+        setAiWordInsight(explanation);
+      }
     } catch (error) {
       console.error(error);
-      setAiWordInsight("Failed to fetch insights.");
+      if (useAsGloss) {
+        setAiFallbackGloss("Failed to fetch explanation.");
+      } else {
+        setAiWordInsight("Failed to fetch insights.");
+      }
     } finally {
       setIsAiWordLoading(false);
     }
   };
+
+  const definitionLookup = useMemo(() => {
+    if (!selectedWord) return null;
+    const userGloss = wordInfo?.userGloss;
+    if (userGloss) {
+      return { definition: userGloss, source: GLOSS_SOURCES.USER_GLOSS } as LookupResult;
+    }
+    const dictResult = getDefinitionWithFallbacks(selectedWord.lemma, textLanguageId);
+    if (dictResult) return dictResult;
+    if (selectedWord.gloss) {
+      return { definition: selectedWord.gloss, source: GLOSS_SOURCES.TOKEN_GLOSS } as LookupResult;
+    }
+    return null;
+  }, [selectedWord, wordInfo?.userGloss, textLanguageId]);
+
+  const needsAiFallback = useMemo(
+    () => selectedWord && !definitionLookup && !isAiFallbackLoading && !aiFallbackGloss,
+    [selectedWord, definitionLookup, isAiFallbackLoading, aiFallbackGloss],
+  );
+
+  useEffect(() => {
+    if (!needsAiFallback) {
+      if (aiFallbackGloss || isAiFallbackLoading) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setAiFallbackGloss(null);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsAiFallbackLoading(false);
+      }
+      return;
+    }
+    setIsAiFallbackLoading(true);
+    const doAiFallback = async () => {
+      try {
+        const languageName = text?.language || selectedWord?.language || "ancient language";
+        const explanation = await AIClient.explainWord(languageName, selectedWord?.text || '', selectedWord?.lemma || '');
+        if (explanation) {
+          setAiFallbackGloss(explanation);
+        }
+      } catch (error) {
+        console.error('AI fallback failed:', error);
+      } finally {
+        setIsAiFallbackLoading(false);
+      }
+    };
+    doAiFallback();
+  }, [selectedWord?.lemma, needsAiFallback, text?.language, selectedWord?.text, selectedWord?.language]);
 
   if (!selectedWord) return <AnimatePresence />;
 
@@ -175,11 +233,57 @@ export const LexDrawerPanel = ({
               </Link>
             </div>
              <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
-               {wordInfo?.userGloss
-                 || getGlossWithFallbacks(selectedWord.lemma, textLanguageId)
-                 || selectedWord.gloss
-                 || <span className="text-muted italic text-[16px]">{t('reader.definitionUnavailable', 'No definition available.')}</span>}
-             </div>
+                {(() => {
+                  if (definitionLookup) {
+                    return (
+                      <>
+                        {definitionLookup.definition}
+                        {definitionLookup.source === GLOSS_SOURCES.USER_GLOSS && (
+                          <span className="block text-[11px] text-muted font-normal mt-1">
+                            {t('reader.yourGlossLabel', 'Your Gloss')}
+                          </span>
+                        )}
+                      </>
+                    );
+                  }
+                  if (isAiFallbackLoading) {
+                    return <span className="text-muted italic text-[16px]">Loading...</span>;
+                  }
+                  if (aiFallbackGloss) {
+                    return (
+                      <>
+                        {aiFallbackGloss}
+                        <span className="block text-[11px] text-muted font-normal mt-1">
+                          {t('reader.aiSuggestion', 'AI suggestion')}
+                        </span>
+                      </>
+                    );
+                  }
+                  return (
+                    <div>
+                      <span className="text-muted italic text-[16px]">
+                        {t('reader.definitionUnavailable', 'No definition available.')}
+                      </span>
+                      <div className="mt-2 flex flex-col gap-1">
+                        <button
+                          onClick={() => handleAiWordExplain(true)}
+                          className="text-[12px] text-blue hover:text-blue-700 underline-offset-2 hover:underline inline-flex items-center gap-1"
+                        >
+                          <Sparkles className="w-3 h-3" />
+                          {t('reader.askAiForDef', 'Ask AI for a definition')}
+                        </button>
+                        <Link
+                          to={getDictionaryPath(selectedWord.lemma, textLanguageId)}
+                          className="text-[12px] text-blue hover:text-blue-700 underline-offset-2 hover:underline inline-flex items-center gap-1"
+                        >
+                          <BookOpen className="w-3 h-3" />
+                          {t('reader.viewDictionary', 'View dictionary entry')}
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             {!sourceInfo && (
               <div className="text-[10px] text-muted italic mb-4">
                 {t('reader.ancientWord', 'Ancient word')}
@@ -312,7 +416,7 @@ export const LexDrawerPanel = ({
 
           {!aiWordInsight && !isAiWordLoading && (
             <button
-              onClick={handleAiWordExplain}
+               onClick={() => handleAiWordExplain()}
               className="w-full mb-10 py-3 border border-blue/20 bg-blue/5 rounded-xl font-bold text-blue text-sm flex items-center justify-center gap-2 hover:bg-blue/10 transition-colors"
             >
               <Sparkles className="w-4 h-4" />
