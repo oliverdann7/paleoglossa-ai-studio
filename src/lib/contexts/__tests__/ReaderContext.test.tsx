@@ -176,6 +176,14 @@ describe('ReaderStateProvider', () => {
     expect(result.current.state.audio.isPlaying).toBe(false);
   });
 
+  it('sets play state directly', () => {
+    const { result } = renderHook(() => useReaderState(), { wrapper });
+    act(() => result.current.setPlayState(true));
+    expect(result.current.state.audio.isPlaying).toBe(true);
+    act(() => result.current.setPlayState(false));
+    expect(result.current.state.audio.isPlaying).toBe(false);
+  });
+
   it('sets audio speed', () => {
     const { result } = renderHook(() => useReaderState(), { wrapper });
     act(() => result.current.setAudioSpeed(1.5));
