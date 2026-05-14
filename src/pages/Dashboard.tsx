@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { ChevronRight, Brain, Library, Sparkles } from "lucide-react";
+import { ChevronRight, Brain, Library, Sparkles, BookMarked } from "lucide-react";
 import { CorpusDB } from "../data/corpus";
 import { getLangForLemma } from "../lib/data/dictionary";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
@@ -9,6 +9,7 @@ import { useAuth } from "../lib/hooks/useAuth";
 import { useSettings } from "../lib/hooks/useSettings";
 import { cn } from "../lib/utils";
 import { useTranslation } from "react-i18next";
+import { EmptyState } from "../components/ui";
 import {
   WordState,
   STATE_COLORS,
@@ -397,11 +398,12 @@ export const Dashboard = () => {
           )}
         </div>
         {recentVocab.length === 0 ? (
-          <div className="card p-8 border-dashed border-2 border-bdr bg-parch2/50 text-center">
-            <p className="font-body text-[14px] italic text-ink3">
-              {t("dashboard.noVocab", "No vocabulary saved yet. Read texts and mark words to build your lexicon.")}
-            </p>
-          </div>
+          <EmptyState
+            compact
+            icon={<BookMarked className="w-8 h-8" />}
+            heading={t("dashboard.noVocab", "No vocabulary saved yet.")}
+            description={t("dashboard.noVocabHint", "Read texts and mark words to build your lexicon.")}
+          />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {recentVocab.map((w, i) => (
