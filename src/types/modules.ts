@@ -106,13 +106,28 @@ export interface ResearchNotebook {
   updatedAt: string | Timestamp;
 }
 
+/** Where the note was created from, for filtering and display. */
+export type ResearchNoteSource = 'reader' | 'word-analysis' | 'tutor' | 'manual';
+
 export interface ResearchNote {
   id: string;
   userId: string;
   notebookId?: string;
+  /** Language being studied when the note was created */
+  languageId?: string;
   textId?: string;
+  /** Paragraph / chunk identifier within the text */
+  chunkId?: string;
   sentenceRange?: [number, number];
   tokenRange?: [number, number];
+  /** Surface token form that triggered the note */
+  token?: string;
+  /** Dictionary lemma linked to this note */
+  lemma?: string;
+  /** Grammar tag or construction label (e.g. "dative of reference") */
+  grammarTag?: string;
+  /** Where the note originated */
+  source?: ResearchNoteSource;
   content: string;
   tags: string[];
   visibility: 'private' | 'shared' | 'public';
