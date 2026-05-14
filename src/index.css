@@ -11,7 +11,7 @@
   --color-ink: #1A1410;
   --color-ink2: #3D3020;
   --color-ink3: #6B5C48;
-  --color-muted: #9A8A72;
+  --color-muted: #7A6A52;
   --color-gold: #B8842A;
   --color-blue: #1E3D6E;
   --color-jade: #1E5C38;
@@ -23,12 +23,37 @@
   --color-amberxl: #FEF0D8;
   --color-goldxl: #FEF0D8;
   --color-rubyxl: #FDEAE8;
+  --color-surface-raised: #FEFAF4;
 
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'Crimson Pro', Georgia, serif;
   --font-mono: 'DM Mono', monospace;
   --font-hebrew: 'Noto Serif Hebrew', 'SBL Hebrew', serif;
+
+  --text-display: 48px;
+  --text-display--line-height: 1.1;
+  --text-heading: 28px;
+  --text-heading--line-height: 1.2;
+  --text-body: 18px;
+  --text-body--line-height: 1.6;
+  --text-small: 14px;
+  --text-small--line-height: 1.5;
+  --text-tiny: 11px;
+  --text-tiny--line-height: 1.4;
+
+  --radius-sm: 8px;
+  --radius-card: 16px;
+  --radius-panel: 20px;
+  --radius-pill: 9999px;
+
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.9) inset, 0 24px 48px -20px rgba(35,20,10,0.22), 0 2px 8px rgba(35,20,10,0.06);
+  --shadow-elevated: 0 4px 12px rgba(35,20,10,0.1), 0 1px 3px rgba(35,20,10,0.05);
+  --shadow-modal: 0 24px 64px rgba(35,20,10,0.25);
+
+  --spacing-section: 48px;
+  --spacing-card-gap: 24px;
+  --spacing-card-pad: 20px;
 }
 
 @layer base {
@@ -40,7 +65,7 @@
     --ink: #1A1410;
     --ink2: #3D3020;
     --ink3: #6B5C48;
-    --muted: #9A8A72;
+    --muted: #7A6A52;
     --gold: #B8842A;
     --blue: #1E3D6E;
     --jade: #1E5C38;
@@ -109,16 +134,23 @@
 
 @layer components {
   .card {
-    @apply bg-parch border border-bdr rounded-[16px];
-    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 24px 48px -20px rgba(35,20,10,0.22), 0 2px 8px rgba(35,20,10,0.06);
+    @apply bg-parch border border-bdr;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-elevated {
+    @apply bg-parch border border-bdr;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-elevated);
   }
 
   .eyebrow {
-    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted font-normal;
+    @apply font-mono text-tiny uppercase tracking-[0.16em] text-muted font-normal;
   }
 
   .nav-label {
-    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted;
+    @apply font-mono text-tiny uppercase tracking-[0.16em] text-muted;
   }
 
   .btn-primary {
@@ -130,7 +162,14 @@
   }
 
   .pill {
-    @apply rounded-full px-2 py-0.5 text-[10px] font-mono border whitespace-nowrap;
+    @apply rounded-full px-2 py-0.5 text-tiny font-mono border whitespace-nowrap;
+  }
+
+  .focus-ring {
+    @apply outline-none;
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--gold);
+    }
   }
 
   .cefr-a { @apply bg-[#E8F5E9] text-[#2E7D32] border-[#C8E6C9]; }
