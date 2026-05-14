@@ -340,7 +340,7 @@ export const Statistics = () => {
           )}
         </p>
         <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-blue/10 text-blue text-[12px] font-bold rounded-lg">
-          Stats shown for: {getLanguageDisplayName(activeLanguageId)}
+          {t('stats.shownFor', 'Stats shown for')}: {getLanguageDisplayName(activeLanguageId)}
         </div>
       </header>
 
@@ -361,19 +361,19 @@ export const Statistics = () => {
               onClick={() => navigate("/app/library")}
               className="btn-primary px-6 py-2.5"
             >
-              Browse the Library
+              {t('stats.browseLibrary', 'Browse the Library')}
             </button>
             <button
               onClick={() => navigate("/app/import")}
               className="btn-secondary px-6 py-2.5"
             >
-              Import a Text
+              {t('dashboard.importText', 'Import a Text')}
             </button>
             <button
               onClick={() => navigate("/app/review")}
               className="btn-secondary px-6 py-2.5"
             >
-              Start a Review
+              {t('stats.startReview', 'Start a Review')}
             </button>
           </div>
         </div>
@@ -396,7 +396,7 @@ export const Statistics = () => {
               trendUp={trends.wordsTrendUp}
               icon={History}
               color="amber"
-              sub={`${(stats.readToday || 0).toLocaleString()} today`}
+              sub={t('stats.xToday', '{{count}} today', { count: stats.readToday || 0 })}
             />
             <StatCard
               label={t("stats.totalReadingTime", "Total Reading Time")}
@@ -411,44 +411,44 @@ export const Statistics = () => {
               value={`🔥 ${stats.streak}`}
               icon={Zap}
               color="amber"
-              sub={stats.streak === 0 ? "Read today to start one" : `${stats.streak === 1 ? "1 day" : `${stats.streak} days`}`}
+              sub={stats.streak === 0 ? t('stats.readTodayToStart', "Read today to start one") : stats.streak === 1 ? `1 ${t('stats.day', 'day')}` : `${stats.streak} ${t('stats.days', 'days')}`}
             />
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             <StatCard
-              label="Learning Words"
+              label={t('stats.learningWords', 'Learning Words')}
               value={vocabCounts.learning.toLocaleString()}
               icon={Brain}
               color="ruby"
-              sub={`${vocabCounts.seen} seen`}
+              sub={t('stats.xSeen', '{{count}} seen', { count: vocabCounts.seen })}
             />
             <StatCard
-              label="Last Review Accuracy"
+              label={t('stats.lastReviewAccuracy', 'Last Review Accuracy')}
               value={
                 stats.lastAccuracy != null ? `${stats.lastAccuracy}%` : "—"
               }
               icon={Target}
               color="blue"
-              sub={stats.lastAccuracy == null ? "No session yet" : undefined}
+              sub={stats.lastAccuracy == null ? t('stats.noSession', 'No session yet') : undefined}
             />
             <StatCard
-              label="Texts Completed"
+              label={t('stats.textsCompleted', 'Texts Completed')}
               value={allProgress.filter((p) => p.completed).length}
               icon={FileText}
               color="green"
               sub={
                 allProgress.length > 0
-                  ? `${allProgress.length} started`
-                  : "None started yet"
+                  ? t('stats.xStarted', '{{count}} started', { count: allProgress.length })
+                  : t('stats.noneStarted', 'None started yet')
               }
             />
             <StatCard
-              label="Ignored Words"
+              label={t('stats.ignoredWords', 'Ignored Words')}
               value={vocabCounts.ignored.toLocaleString()}
               icon={BookOpen}
               color="amber"
-              sub="Skipped during reading"
+              sub={t('stats.skippedReading', 'Skipped during reading')}
             />
           </div>
 
@@ -575,7 +575,7 @@ export const Statistics = () => {
               fallback={
                 <div className="card p-6 flex items-center justify-center h-32 col-span-3">
                   <span className="text-muted animate-pulse">
-                    Loading charts…
+                    {t('stats.loadingCharts', 'Loading charts…')}
                   </span>
                 </div>
               }
@@ -649,13 +649,13 @@ export const Statistics = () => {
             <div className="card p-8 text-center border-dashed border-2 border-bdr/40 bg-parch2/30">
               <BookOpen className="w-8 h-8 text-muted mx-auto mb-3 opacity-40" />
               <p className="text-[14px] text-muted italic">
-                Language proficiency will appear after you read and mark words.
+                {t('stats.proficiencyEmpty', 'Language proficiency will appear after you read and mark words.')}
               </p>
               <button
                 onClick={() => navigate("/app/library")}
                 className="mt-4 text-blue text-[13px] font-bold hover:underline"
               >
-                Start reading →
+                {t('stats.startReading', 'Start reading →')}
               </button>
             </div>
           )}
