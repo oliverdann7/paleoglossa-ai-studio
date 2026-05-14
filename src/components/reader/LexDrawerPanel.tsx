@@ -11,6 +11,7 @@ import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
 import { findDictionaryEntry, getDefinitionWithFallbacks, LookupResult, GLOSS_SOURCES } from '@/lib/data/dictionary';
 import { useSettings } from '@/lib/hooks/useSettings';
+import { getGrammarReference } from '@/lib/grammar/references';
 
 interface LexDrawerPanelProps {
   selectedWord: any;
@@ -56,6 +57,8 @@ export const LexDrawerPanel = ({
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
   const [aiFallbackGloss, setAiFallbackGloss] = useState<string | null>(null);
   const [isAiFallbackLoading, setIsAiFallbackLoading] = useState(false);
+  const [hoveredTag, setHoveredTag] = useState<string | null>(null);
+  const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
 
   // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
   const wordInfo = useMemo(
@@ -437,7 +440,15 @@ export const LexDrawerPanel = ({
 
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 {!morphologyDisplay.missing && (
-                  <span className="inline-block px-4 py-1.5 bg-parch3/60 text-ink border border-bdr/60 rounded-full text-[13px] font-bold tracking-wide uppercase">
+                  <span
+                    className="inline-block px-4 py-1.5 bg-parch3/60 text-ink border border-bdr/60 rounded-full text-[13px] font-bold tracking-wide uppercase"
+                    title={morphologyDisplay.expanded
+                      .map(({ value }) => {
+                        const ref = getGrammarReference(value);
+                        return ref ? `${value}: ${ref.short}` : value;
+                      })
+                      .join(' · ')}
+                  >
                     {morphologyDisplay.compact}
                   </span>
                 )}
@@ -454,14 +465,51 @@ export const LexDrawerPanel = ({
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-2">
-                  {morphologyDisplay.expanded.map(({ label, value }) => (
-                    <div key={label} className="flex justify-between gap-3 px-3 py-2 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px]">
-                      <span className="opacity-60 lowercase">{label}</span>
-                      <span className="font-bold text-right">{value}</span>
-                    </div>
-                  ))}
+                  {morphologyDisplay.expanded.map(({ label, value }) => {
+                    const ref = getGrammarReference(value);
+                    return (
+                      <div
+                        key={label}
+                        className="flex justify-between gap-3 px-3 py-2 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px] relative"
+                        onMouseEnter={(e) => {
+                          if (ref) {
+                            setHoveredTag(value);
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setTagPopoverPos({ x: rect.left + rect.width / 2, y: rect.top });
+                          }
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredTag(null);
+                          setTagPopoverPos(null);
+                        }}
+                      >
+                        <span className="opacity-60 lowercase">{label}</span>
+                        <span className="font-bold text-right">{value}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
+              {hoveredTag && tagPopoverPos && (() => {
+                const ref = getGrammarReference(hoveredTag);
+                if (!ref) return null;
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.12 }}
+                    className="fixed z-50 pointer-events-none"
+                    style={{ left: tagPopoverPos.x, top: tagPopoverPos.y - 8, transform: 'translateX(-50%) translateY(-100%)' }}
+                  >
+                    <div className="bg-ink text-parch2 text-[11px] font-sans px-2.5 py-1.5 rounded-lg shadow-xl max-w-[220px] leading-relaxed">
+                      <span className="font-bold">{hoveredTag}</span>
+                      <span className="opacity-80"> — {ref.short}</span>
+                    </div>
+                    <div className="w-2 h-2 bg-ink rotate-45 mx-auto -mt-1" />
+                  </motion.div>
+                );
+              })()}
               <button
                 className="w-full mt-6 py-3 border-2 border-gold/30 text-gold text-[13px] font-bold rounded-xl hover:bg-gold/5 transition-all flex items-center justify-center gap-2"
                 onClick={() => setIsParadigmOpen(true)}
