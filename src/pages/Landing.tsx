@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, GraduationCap, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PaleoIcon } from "../components/PaleoIcon";
 
 export const Landing = () => {
   const navigate = useNavigate();
@@ -23,12 +24,10 @@ export const Landing = () => {
   return (
     <div className="relative min-h-screen bg-parch text-ink font-sans overflow-hidden paper-texture">
       <header className="absolute top-0 left-0 w-full p-8 flex justify-between items-center z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-sm flex items-center justify-center border border-ink">
-            <span className="font-serif font-bold text-xl text-ink">P</span>
-          </div>
-          <h1 className="text-xl font-serif tracking-tight text-ink hidden sm:block">
-            Paleoglossa
+        <div className="flex items-center gap-2.5">
+          <PaleoIcon className="w-8 h-8 flex-shrink-0" />
+          <h1 className="text-xl font-serif font-semibold tracking-tight text-blue hidden sm:block">
+            Παλαιόγλωσσα
           </h1>
         </div>
         <div className="flex items-center gap-6">
