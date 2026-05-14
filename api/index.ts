@@ -234,7 +234,7 @@ const MAX_TEXT_LENGTH_HUMAN = '100,000';
 
 import { basicAnalyze } from './_lib/basicAnalyze';
 import { parseAndValidateAIResponse } from './_lib/aiValidation';
-import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA } from './_lib/aiPrompts';
+import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA, buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS } from './_lib/aiPrompts';
 import { optionalAuth } from './_lib/auth';
 import { checkAndIncrementUsage } from './_lib/aiUsage';
 
@@ -1612,13 +1612,6 @@ app.post('/api/stripe/create-portal-session', requireAuth as any, async (req: Au
 });
 
 
-const SUGGESTED_QUESTIONS = [
-  'What does this word mean in context?',
-  'Parse this form for me.',
-  'Why is this word in this case?',
-  'Show me similar sentences.',
-  'What grammatical construction is this?',
-];
 
 app.post('/api/ai/tutor/start', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
@@ -1670,8 +1663,9 @@ app.post('/api/ai/tutor/start', requireAuth as any, async (req: AuthenticatedReq
       createdAt: FieldValue.serverTimestamp(),
     });
 
+    const suggestedQuestions = LANGUAGE_SUGGESTED_QUESTIONS[languageId] ?? DEFAULT_SUGGESTED_QUESTIONS;
     res.status(200).json({
-      sessionId, greeting, suggestedQuestions: SUGGESTED_QUESTIONS,
+      sessionId, greeting, suggestedQuestions,
     });
   } catch (err: any) {
     console.error('[tutor/start] Error:', err.message);
@@ -1745,30 +1739,8 @@ app.post('/api/ai/tutor/message', requireAuth as any, async (req: AuthenticatedR
       });
     }
 
-    // Build prompt with context
-    const langName = getLanguageName(sessionData.languageId || 'grc');
-    let prompt = `You are a ${langName} tutor helping a student read an ancient text in its original language.
-
-Rules:
-- Answer questions about morphology, syntax, and meaning based on ${langName} grammar.
-- If you are uncertain about a form or parsing, say so explicitly with "I'm not certain, but..."
-- Do NOT invent morphology or grammar rules that do not apply to ${langName}.
-- Distinguish between:
-  • KNOWN: facts confirmed by standard grammars
-  • AI-GENERATED: your analysis based on context
-  • UNCERTAIN: forms you cannot confidently parse
-- Keep answers concise (2-4 sentences). Focus on the student's specific question.`;
-
-    if (context) {
-      if (context.textTitle) prompt += `\n\nText: "${context.textTitle}"`;
-      if (context.sentenceText) prompt += `\nSentence: "${context.sentenceText}"`;
-      if (context.selectedToken) prompt += `\nSelected word: "${context.selectedToken}"`;
-      if (context.lemma) prompt += `\nLemma: ${context.lemma}`;
-      if (context.morphology) prompt += `\nKnown morphology: ${JSON.stringify(context.morphology)}`;
-      if (context.gloss) prompt += `\nGloss: ${context.gloss}`;
-    }
-
-    prompt += `\n\nStudent's question: ${message}`;
+    // Build prompt with language-specific instructions and reader context
+    const prompt = buildTutorPrompt(sessionData.languageId || 'grc', message, context);
 
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });

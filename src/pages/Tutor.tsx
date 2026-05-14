@@ -27,6 +27,8 @@ export const Tutor = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
   const [showSessionsList, setShowSessionsList] = useState(!sessionIdParam);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +44,8 @@ export const Tutor = () => {
   }, [activeSessionId, user]);
 
   const handleStartSession = async () => {
+    setIsStarting(true);
+    setStartError(null);
     try {
       const data = await apiFetch<{ sessionId: string; greeting: string; suggestedQuestions: string[] }>('/api/ai/tutor/start', {
         method: 'POST',
@@ -52,6 +56,9 @@ export const Tutor = () => {
       setMessages([{ role: 'assistant', content: data.greeting, warnings: undefined }]);
     } catch (err: any) {
       console.error('Failed to start session:', err);
+      setStartError(err.message || 'Could not start a tutor session. Please try again.');
+    } finally {
+      setIsStarting(false);
     }
   };
 
@@ -62,9 +69,10 @@ export const Tutor = () => {
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsSending(true);
     try {
+      const context = textIdParam ? { textId: textIdParam } : undefined;
       const data = await apiFetch<{ text: string; warnings?: string[] }>('/api/ai/tutor/message', {
         method: 'POST',
-        body: { sessionId: activeSessionId, message: userMsg, context: {} },
+        body: { sessionId: activeSessionId, message: userMsg, context },
       });
       setMessages(prev => [...prev, { role: 'assistant', content: data.text, warnings: data.warnings }]);
     } catch {
@@ -81,9 +89,17 @@ export const Tutor = () => {
       <div className="p-6 md:p-12 max-w-2xl mx-auto font-sans min-h-screen">
         <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Tutor</h2>
         <p className="text-ink2 text-[15px] mb-6">Get guided help reading ancient texts.</p>
-        <button onClick={handleStartSession} className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg mb-8">
-          Start New Session
+        <button onClick={handleStartSession} disabled={isStarting}
+          className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg mb-4 disabled:opacity-60 flex items-center justify-center gap-2">
+          {isStarting && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isStarting ? 'Starting…' : 'Start New Session'}
         </button>
+        {startError && (
+          <div className="mb-6 p-3 rounded-xl bg-ruby/10 border border-ruby/20 flex items-center gap-2 text-[13px] text-ruby">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            {startError}
+          </div>
+        )}
         {textIdParam && (
           <div className="card p-4 mb-6 bg-blue/5 border-blue/20">
             <p className="text-[13px] text-ink2">Session will be linked to the current reader text.</p>

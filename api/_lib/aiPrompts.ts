@@ -80,6 +80,103 @@ export function getLanguageName(languageId: string): string {
   return names[languageId] || languageId;
 }
 
+export interface TutorContext {
+  textTitle?: string;
+  sentenceText?: string;
+  selectedToken?: string;
+  lemma?: string;
+  morphology?: Record<string, string>;
+  gloss?: string;
+}
+
+/**
+ * Builds a grounded system prompt for the AI tutor, including language-specific
+ * instructions and any reader context (sentence, selected word, morphology).
+ */
+export function buildTutorPrompt(
+  languageId: string,
+  message: string,
+  context?: TutorContext,
+): string {
+  const langName = getLanguageName(languageId);
+  const langInstructions = LANGUAGE_INSTRUCTIONS[languageId] ?? '';
+
+  let prompt = `You are a ${langName} tutor helping a student read an ancient text in its original language.\n`;
+
+  if (langInstructions) {
+    prompt += `\nLanguage reference:\n${langInstructions}\n`;
+  }
+
+  prompt += `
+Rules:
+- Answer questions about morphology, syntax, and meaning based on ${langName} grammar.
+- If you are uncertain about a form or parsing, say so explicitly with "I'm not certain, but..."
+- Do NOT invent morphology or grammar rules that do not apply to ${langName}.
+- Distinguish between:
+  • KNOWN: facts confirmed by standard grammars
+  • AI-GENERATED: your analysis based on context
+  • UNCERTAIN: forms you cannot confidently parse
+- Keep answers concise (2-4 sentences). Focus on the student's specific question.`;
+
+  if (context) {
+    if (context.textTitle) prompt += `\n\nText: "${context.textTitle}"`;
+    if (context.sentenceText) prompt += `\nSentence: "${context.sentenceText}"`;
+    if (context.selectedToken) prompt += `\nSelected word: "${context.selectedToken}"`;
+    if (context.lemma) prompt += `\nLemma: ${context.lemma}`;
+    if (context.morphology) prompt += `\nKnown morphology: ${JSON.stringify(context.morphology)}`;
+    if (context.gloss) prompt += `\nGloss: ${context.gloss}`;
+  }
+
+  prompt += `\n\nStudent's question: ${message}`;
+  return prompt;
+}
+
+export const LANGUAGE_SUGGESTED_QUESTIONS: Record<string, string[]> = {
+  'grc': [
+    'What case is this noun and why?',
+    'Parse this verb form for me.',
+    'What does this participle modify?',
+    'What is the dictionary form of this word?',
+    'Why is this in the genitive?',
+  ],
+  'grc-koine': [
+    'What case is this noun and why?',
+    'Parse this verb form for me.',
+    'What is the Biblical meaning of this word?',
+    'What is the dictionary form of this word?',
+    'How does this word differ from Classical Greek?',
+  ],
+  'hbo': [
+    'What verbal stem (binyan) is this?',
+    'What does this construct chain mean?',
+    'What is the root of this word?',
+    'What does this suffix indicate?',
+    'How is this word used elsewhere in the Tanakh?',
+  ],
+  'lat': [
+    'What case is this and why?',
+    'Parse this verb form for me.',
+    'What does this subjunctive mean here?',
+    'What is the principal part of this verb?',
+    'What grammatical construction is this?',
+  ],
+  'syr': [
+    'What is the root of this word?',
+    'Parse this verb for me.',
+    'What does this particle mean?',
+    'What state is this noun in?',
+    'What grammatical construction is this?',
+  ],
+};
+
+export const DEFAULT_SUGGESTED_QUESTIONS = [
+  'What does this word mean in context?',
+  'Parse this form for me.',
+  'Why is this word in this case?',
+  'What is the dictionary form of this word?',
+  'What grammatical construction is this?',
+];
+
 export const BASE_JSON_SCHEMA = `{
   "sentences": [
     {
