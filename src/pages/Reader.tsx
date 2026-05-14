@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { CorpusDB } from "../data/corpus";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useSettings } from "../lib/hooks/useSettings";
+import { useReaderState } from "../lib/contexts/ReaderContext";
 import { WordState } from "../lib/constants/wordStates";
 import { ReaderTutorial } from "../components/reader/ReaderTutorial";
 import { LexDrawerPanel } from "../components/reader/LexDrawerPanel";
@@ -100,38 +101,47 @@ export const Reader = () => {
   const { settings } = useSettings();
 
   const [selectedWord, setSelectedWord] = useState<any>(null);
-
-  const [showTranslit, setShowTranslit] = useState(settings.showTranslit);
-  const [showParallel, setShowParallel] = useState(
-    settings.showParallelDefault,
-  );
-  const [readingMode, setReadingMode] = useState<"scroll" | "page">("scroll");
-  const [maskKnown, setMaskKnown] = useState(false);
-  const [interlinearMode, setInterlinearMode] = useState(() => settings.interlinearMode);
   const [tutorialStep, setTutorialStep] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED) ? 0 : 1;
   });
+  const [isTranslatingId, setIsTranslatingId] = useState<string | null>(null);
+  const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
 
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const {
+    state: {
+      display: { mode: readingMode, showTranslit, showParallel, maskKnown, interlinearMode },
+      navigation: { currentChapterIndex, currentSentenceIndex, currentScrollPage, scrollProgress },
+      audio: { isPlaying, position: audioPos, speed: audioSpeed, loopSentence, loopWord },
+    },
+    setMode, setShowTranslit, setShowParallel, setMaskKnown, setInterlinearMode,
+    setChapterIndex, setSentenceIndex, setScrollPage, setScrollProgress,
+    goToNextSentence, goToPrevSentence, goToNextChapter,
+    togglePlay, setPlayState, setAudioSpeed, toggleLoopSentence, toggleLoopWord,
+    setAudioPosition,
+    setTextId,
+  } = useReaderState();
+
+  // Track text changes to sync navigation state and init display from settings
+  const prevTextIdRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!textId) return;
+    if (textId !== prevTextIdRef.current) {
+      prevTextIdRef.current = textId;
+      setTextId(textId);
+      setShowTranslit(settings.showTranslit);
+      setShowParallel(settings.showParallelDefault);
+      setInterlinearMode(settings.interlinearMode ?? false);
+      setAudioSpeed(settings.audioSpeedDefault ?? 1.0);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textId]);
+
+  const onAskTutor = () => navigate(`/app/tutor?textId=${textId || ''}&sentenceIndex=${currentSentenceIndex || 0}`);
 
   // Refs for progress saving to avoid re-renders
   const scrollProgressRef = useRef(0);
   const currentSentenceIndexRef = useRef(0);
   const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Audio state
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioPos, setAudioPos] = useState({ sentenceIdx: 0, wordIdx: 0 });
-  const [audioSpeed, setAudioSpeed] = useState(settings.audioSpeedDefault);
-  const [loopSentence, setLoopSentence] = useState(false);
-  const [loopWord, setLoopWord] = useState(false);
-
-  // Page mode state
-  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
-  const onAskTutor = () => navigate(`/app/tutor?textId=${textId || ''}&sentenceIndex=${currentSentenceIndex || 0}`);
-  const [isTranslatingId, setIsTranslatingId] = useState<string | null>(null);
-
-  const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!textId) return;
@@ -144,7 +154,7 @@ export const Reader = () => {
             scrollContainer.scrollTop = (prog.lastPosition / 100) * (scrollContainer.scrollHeight - scrollContainer.clientHeight);
           }
         } else if (readingMode === "page" && prog.sentenceIndex !== undefined) {
-          setCurrentSentenceIndex(prog.sentenceIndex);
+          setSentenceIndex(prog.sentenceIndex);
         }
       }
     };
@@ -320,16 +330,9 @@ export const Reader = () => {
     return 'partial';
   }, [text, textId]);
 
-  const [currentChapterIndex, setCurrentChapterIndex] = useState(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEYS.READER_CHAPTER_PREFIX}${text?.id}`);
-    const parsed = saved ? parseInt(saved, 10) || 0 : 0;
-    return parsed < chapters.length ? parsed : 0;
-  });
-
   const chapter = chapters[currentChapterIndex] || chapters[0] || { id: '', title: '', sentences: [] as any[], translation: '' };
 
   const SENTENCES_PER_PAGE = 30;
-  const [currentScrollPage, setCurrentScrollPage] = useState(0);
 
   const totalPages = Math.ceil((chapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
   const sentenceSliceStart = readingMode === "page" ? 0 : currentScrollPage * SENTENCES_PER_PAGE;
@@ -340,8 +343,8 @@ export const Reader = () => {
     : chapter?.sentences?.slice(sentenceSliceStart, sentenceSliceEnd);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentScrollPage(0);
+    setScrollPage(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChapterIndex]);
 
   const isHebrewFont = ["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "Hebrew"].includes(text?.language || "");
@@ -396,8 +399,7 @@ export const Reader = () => {
     if (!isPlaying) return;
     const currentSentence = chapter?.sentences[audioPos.sentenceIdx];
     if (!currentSentence) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsPlaying(false);
+      setPlayState(false);
       return;
     }
 
@@ -408,23 +410,23 @@ export const Reader = () => {
       if (loopWord) {
         // Do not advance token
       } else if (audioPos.wordIdx < currentSentence.tokens.length - 1) {
-        setAudioPos((p) => ({ ...p, wordIdx: p.wordIdx + 1 }));
+        setAudioPosition(audioPos.sentenceIdx, audioPos.wordIdx + 1);
       } else {
         if (loopSentence) {
-          setAudioPos((p) => ({ ...p, wordIdx: 0 }));
+          setAudioPosition(audioPos.sentenceIdx, 0);
         } else if (audioPos.sentenceIdx < chapter.sentences.length - 1) {
-          setAudioPos({ sentenceIdx: audioPos.sentenceIdx + 1, wordIdx: 0 });
+          setAudioPosition(audioPos.sentenceIdx + 1, 0);
           if (readingMode === "page")
-            setCurrentSentenceIndex(audioPos.sentenceIdx + 1);
+            setSentenceIndex(audioPos.sentenceIdx + 1);
         } else {
-          setIsPlaying(false);
-
-          setAudioPos({ sentenceIdx: 0, wordIdx: 0 });
+          setPlayState(false);
+          setAudioPosition(0, 0);
         }
       }
     }, delay);
 
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isPlaying,
     audioPos,
@@ -435,15 +437,6 @@ export const Reader = () => {
     isHebrewFont,
     readingMode,
   ]);
-
-  useEffect(() => {
-    if (text?.id) {
-      localStorage.setItem(
-        `${STORAGE_KEYS.READER_CHAPTER_PREFIX}${text.id}`,
-        currentChapterIndex.toString(),
-      );
-    }
-  }, [currentChapterIndex, text?.id]);
 
   // Tutorial logic
   useEffect(() => {
@@ -545,11 +538,11 @@ export const Reader = () => {
 
       if (e.key === " ") {
         e.preventDefault();
-        setIsPlaying((p) => !p);
+        togglePlay();
         return;
       }
       if (e.key === "l" || e.key === "L") {
-        setLoopSentence((p) => !p);
+        toggleLoopSentence();
         return;
       }
       if (["!", "@", "#", "$", "%"].includes(e.key)) {
@@ -562,42 +555,40 @@ export const Reader = () => {
         if (e.key === "ArrowRight") {
           if (readingMode === "page") {
             if (currentSentenceIndex < chapter.sentences.length - 1) {
-              setCurrentSentenceIndex((prev) => prev + 1);
-              setAudioPos({ sentenceIdx: currentSentenceIndex + 1, wordIdx: 0 });
+              goToNextSentence(chapter.sentences.length);
+              setAudioPosition(currentSentenceIndex + 1, 0);
             } else if (currentChapterIndex < chapters.length - 1) {
-              setCurrentChapterIndex(currentChapterIndex + 1);
-              setCurrentSentenceIndex(0);
-              setAudioPos({ sentenceIdx: 0, wordIdx: 0 });
+              goToNextChapter(chapters.length);
+              setAudioPosition(0, 0);
             }
           } else {
             if (currentScrollPage < totalPages - 1) {
-              setCurrentScrollPage(prev => prev + 1);
+              setScrollPage(currentScrollPage + 1);
               document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
             } else if (currentChapterIndex < chapters.length - 1) {
-              setCurrentChapterIndex(currentChapterIndex + 1);
-              setCurrentScrollPage(0);
+              goToNextChapter(chapters.length);
             }
           }
         } else if (e.key === "ArrowLeft") {
           if (readingMode === "page") {
             if (currentSentenceIndex > 0) {
-              setCurrentSentenceIndex((prev) => prev - 1);
-              setAudioPos({ sentenceIdx: currentSentenceIndex - 1, wordIdx: 0 });
+              goToPrevSentence();
+              setAudioPosition(currentSentenceIndex - 1, 0);
             } else if (currentChapterIndex > 0) {
               const prevChapter = chapters[currentChapterIndex - 1];
-              setCurrentChapterIndex(currentChapterIndex - 1);
-              setCurrentSentenceIndex(prevChapter.sentences.length - 1);
-              setAudioPos({ sentenceIdx: prevChapter.sentences.length - 1, wordIdx: 0 });
+              setChapterIndex(currentChapterIndex - 1);
+              setSentenceIndex(prevChapter.sentences.length - 1);
+              setAudioPosition(prevChapter.sentences.length - 1, 0);
             }
           } else {
             if (currentScrollPage > 0) {
-              setCurrentScrollPage(prev => prev - 1);
+              setScrollPage(currentScrollPage - 1);
               document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
             } else if (currentChapterIndex > 0) {
               const prevChapter = chapters[currentChapterIndex - 1];
               const prevTotalPages = Math.ceil((prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
-              setCurrentChapterIndex(currentChapterIndex - 1);
-              setCurrentScrollPage(prevTotalPages - 1);
+              setChapterIndex(currentChapterIndex - 1);
+              setScrollPage(prevTotalPages - 1);
             }
           }
         }
@@ -608,6 +599,7 @@ export const Reader = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedWord, 
     chapter, 
@@ -629,17 +621,13 @@ export const Reader = () => {
       tokensToMark = displayedSentences?.flatMap((s: any) => s.tokens) || [];
     }
 
-    // Use bulk update method to batch React state updates
     const validTokens = tokensToMark.filter(t => t.lemma && t.lemma.length > 0);
     
-    // Use markPageAsSeen which batches state updates
     if (validTokens.length > 0) {
-      // Add languageId to tokens
       const tokensWithLang = validTokens.map(t => ({
         ...t,
         languageId: currentLanguageId
       }));
-      // Use the markPageAsSeen from useKnowledge hook
       if (typeof (setWordState as any).markPageAsSeen === 'function') {
         (setWordState as any).markPageAsSeen(tokensWithLang);
       } else {
@@ -647,7 +635,6 @@ export const Reader = () => {
       }
     }
     
-    // Explicitly add to read count
     addReadWords(validTokens.length);
     addToast(t("reader.wordsMarkedKnown", { count: validTokens.length }), "success");
 
@@ -655,27 +642,25 @@ export const Reader = () => {
 
     if (readingMode === "page") {
       if (currentSentenceIndex < chapter.sentences.length - 1) {
-        setCurrentSentenceIndex((prev) => prev + 1);
-        setAudioPos({ sentenceIdx: currentSentenceIndex + 1, wordIdx: 0 });
+        setSentenceIndex(currentSentenceIndex + 1);
+        setAudioPosition(currentSentenceIndex + 1, 0);
         setSelectedWord(null);
       } else if (currentChapterIndex < chapters.length - 1) {
-        setCurrentChapterIndex(currentChapterIndex + 1);
-        setCurrentSentenceIndex(0);
-        setAudioPos({ sentenceIdx: 0, wordIdx: 0 });
+        goToNextChapter(chapters.length);
+        setAudioPosition(0, 0);
         setSelectedWord(null);
       }
     } else {
       if (currentScrollPage < totalPages - 1) {
-        setCurrentScrollPage(prev => prev + 1);
+        setScrollPage(currentScrollPage + 1);
         document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
         setSelectedWord(null);
       } else if (currentChapterIndex < chapters.length - 1) {
-        setCurrentChapterIndex(prev => prev + 1);
-        setCurrentScrollPage(0);
+        goToNextChapter(chapters.length);
         setSelectedWord(null);
       }
     }
-  }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, totalPages, chapters.length, currentChapterIndex, currentScrollPage]);
+  }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, totalPages, chapters.length, currentChapterIndex, currentScrollPage, goToNextChapter, setSentenceIndex, setScrollPage, setAudioPosition]);
 
   const handleSwipe = useCallback(() => {
     if (settings.swipePageMovesToKnown ?? true) {
@@ -683,40 +668,38 @@ export const Reader = () => {
     } else {
       if (readingMode === 'page') {
         if (currentSentenceIndex < chapter.sentences.length - 1) {
-          setCurrentSentenceIndex(prev => prev + 1);
+          goToNextSentence(chapter.sentences.length);
         } else if (currentChapterIndex < chapters.length - 1) {
-          setCurrentChapterIndex(c => c + 1);
-          setCurrentSentenceIndex(0);
+          goToNextChapter(chapters.length);
         }
       } else {
         if (currentScrollPage < totalPages - 1) {
-          setCurrentScrollPage(prev => prev + 1);
+          setScrollPage(currentScrollPage + 1);
           document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
         } else if (currentChapterIndex < chapters.length - 1) {
-          setCurrentChapterIndex(c => c + 1);
-          setCurrentScrollPage(0);
+          goToNextChapter(chapters.length);
         }
       }
     }
-  }, [settings.swipePageMovesToKnown, handleMarkPageKnown, readingMode, currentSentenceIndex, chapter.sentences.length, currentChapterIndex, chapters.length, currentScrollPage, totalPages]);
+  }, [settings.swipePageMovesToKnown, handleMarkPageKnown, readingMode, currentSentenceIndex, chapter.sentences.length, currentChapterIndex, chapters.length, currentScrollPage, totalPages, goToNextSentence, goToNextChapter, setScrollPage]);
 
   const handleNextPage = useCallback(() => {
-    setCurrentScrollPage(prev => Math.min(prev + 1, totalPages - 1));
+    setScrollPage(Math.min(currentScrollPage + 1, totalPages - 1));
     document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
-  }, [totalPages]);
+  }, [currentScrollPage, totalPages, setScrollPage]);
 
   const handleNextChapter = useCallback(() => {
     if (currentChapterIndex < chapters.length - 1) {
-      setCurrentChapterIndex(currentChapterIndex + 1);
+      setChapterIndex(currentChapterIndex + 1);
     }
-  }, [currentChapterIndex, chapters.length]);
+  }, [currentChapterIndex, chapters.length, setChapterIndex]);
 
   const handleWordClick = useCallback((token: any, sentenceText: string, sentenceIndex: number) => {
     setSelectedWord({ ...token, sentenceText });
     incrementEncounter(token.lemma, currentLanguageId);
     setWordContext(token.lemma, sentenceText, currentLanguageId);
-    if (readingMode === "page") setCurrentSentenceIndex(sentenceIndex);
-  }, [incrementEncounter, setWordContext, currentLanguageId, readingMode]);
+    if (readingMode === "page") setSentenceIndex(sentenceIndex);
+  }, [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex]);
 
   const handleSavePhrase = useCallback((sentence: any) => {
     const phrase = sentence.tokens.map((tk: any) => tk.text).join(" ");
@@ -748,7 +731,7 @@ export const Reader = () => {
         <ReaderToolbar
           chapters={chapters}
           currentChapterIndex={currentChapterIndex}
-          onChangeChapter={setCurrentChapterIndex}
+          onChangeChapter={setChapterIndex}
           showTranslit={showTranslit}
           onToggleTranslit={() => setShowTranslit(!showTranslit)}
           showParallel={showParallel}
@@ -756,9 +739,9 @@ export const Reader = () => {
           maskKnown={maskKnown}
           onToggleMaskKnown={() => setMaskKnown(!maskKnown)}
           readingMode={readingMode}
-          onChangeReadingMode={setReadingMode}
+          onChangeReadingMode={setMode}
           interlinearMode={interlinearMode}
-          onToggleInterlinear={() => setInterlinearMode(m => !m)}
+          onToggleInterlinear={() => setInterlinearMode(!interlinearMode)}
         />
         <button onClick={onAskTutor}
           className="fixed bottom-24 right-6 z-30 w-12 h-12 bg-ink text-parch rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95"
@@ -805,7 +788,7 @@ export const Reader = () => {
 
         <ReaderAudioBar
           isPlaying={isPlaying}
-          onTogglePlay={() => setIsPlaying(!isPlaying)}
+          onTogglePlay={togglePlay}
           audioProgress={chapter.sentences.length > 0 ? audioPos.sentenceIdx / chapter.sentences.length : 0}
           audioSpeed={audioSpeed}
           onChangeSpeed={() => {
@@ -814,9 +797,9 @@ export const Reader = () => {
             setAudioSpeed(next);
           }}
           loopSentence={loopSentence}
-          onToggleLoopSentence={() => setLoopSentence(!loopSentence)}
+          onToggleLoopSentence={toggleLoopSentence}
           loopWord={loopWord}
-          onToggleLoopWord={() => setLoopWord(!loopWord)}
+          onToggleLoopWord={toggleLoopWord}
         />
 
         <ReadingPane
@@ -879,37 +862,35 @@ export const Reader = () => {
           onPrev={() => {
             if (readingMode === "page") {
               if (currentSentenceIndex > 0) {
-                setCurrentSentenceIndex(p => p - 1);
+                goToPrevSentence();
               } else if (currentChapterIndex > 0) {
                 const prevChapter = chapters[currentChapterIndex - 1];
-                setCurrentChapterIndex(currentChapterIndex - 1);
-                setCurrentSentenceIndex(prevChapter.sentences.length - 1);
+                setChapterIndex(currentChapterIndex - 1);
+                setSentenceIndex(prevChapter.sentences.length - 1);
               }
             } else {
               if (currentScrollPage > 0) {
-                setCurrentScrollPage(p => p - 1);
+                setScrollPage(currentScrollPage - 1);
               } else if (currentChapterIndex > 0) {
                 const prevChapter = chapters[currentChapterIndex - 1];
                 const prevTotalPages = Math.ceil((prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
-                setCurrentChapterIndex(currentChapterIndex - 1);
-                setCurrentScrollPage(prevTotalPages - 1);
+                setChapterIndex(currentChapterIndex - 1);
+                setScrollPage(prevTotalPages - 1);
               }
             }
           }}
           onNext={() => {
             if (readingMode === "page") {
               if (currentSentenceIndex < chapter.sentences.length - 1) {
-                setCurrentSentenceIndex(p => p + 1);
+                goToNextSentence(chapter.sentences.length);
               } else if (currentChapterIndex < chapters.length - 1) {
-                setCurrentChapterIndex(currentChapterIndex + 1);
-                setCurrentSentenceIndex(0);
+                goToNextChapter(chapters.length);
               }
             } else {
               if (currentScrollPage < totalPages - 1) {
-                setCurrentScrollPage(p => p + 1);
+                setScrollPage(currentScrollPage + 1);
               } else if (currentChapterIndex < chapters.length - 1) {
-                setCurrentChapterIndex(currentChapterIndex + 1);
-                setCurrentScrollPage(0);
+                goToNextChapter(chapters.length);
               }
             }
           }}

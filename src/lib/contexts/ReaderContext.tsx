@@ -32,6 +32,7 @@ interface ReaderContextValue {
 
   // Audio
   togglePlay: () => void;
+  setPlayState: (playing: boolean) => void;
   setAudioSpeed: (speed: number) => void;
   toggleLoopSentence: () => void;
   toggleLoopWord: () => void;
@@ -154,6 +155,7 @@ export function ReaderStateProvider({ children }: { children: ReactNode }) {
 
   // ── Audio actions ──
   const togglePlay = useCallback(() => setState(prev => ({ ...prev, audio: { ...prev.audio, isPlaying: !prev.audio.isPlaying } })), []);
+  const setPlayState = useCallback((playing: boolean) => setState(prev => ({ ...prev, audio: { ...prev.audio, isPlaying: playing } })), []);
   const setAudioSpeed = useCallback((speed: number) => updateAudio({ speed }), [updateAudio]);
   const toggleLoopSentence = useCallback(() => setState(prev => ({ ...prev, audio: { ...prev.audio, loopSentence: !prev.audio.loopSentence } })), []);
   const toggleLoopWord = useCallback(() => setState(prev => ({ ...prev, audio: { ...prev.audio, loopWord: !prev.audio.loopWord } })), []);
@@ -190,7 +192,7 @@ export function ReaderStateProvider({ children }: { children: ReactNode }) {
       setFontSize, setHighlightIntensity, setSwipeMovesToNext, resetDisplay,
       setTextId, setChapterIndex, setSentenceIndex, setScrollPage, setScrollProgress,
       goToNextSentence, goToPrevSentence, goToNextChapter, goToPrevChapter, resetNavigation,
-      togglePlay, setAudioSpeed, toggleLoopSentence, toggleLoopWord,
+      togglePlay, setPlayState, setAudioSpeed, toggleLoopSentence, toggleLoopWord,
       setAudioPosition, advanceAudioWord, advanceAudioSentence, resetAudio,
       resetAll,
     }}>
