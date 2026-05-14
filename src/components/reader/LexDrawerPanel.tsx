@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, BookMarked, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { BookOpen, BookMarked, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, STATE_LABELS } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
@@ -12,6 +12,7 @@ import { MorphologyService } from '@/lib/services/morphologyService';
 import { findDictionaryEntry, getDefinitionWithFallbacks, LookupResult, GLOSS_SOURCES } from '@/lib/data/dictionary';
 import { useSettings } from '@/lib/hooks/useSettings';
 import { getGrammarReference } from '@/lib/grammar/references';
+import { useNotebook } from '@/lib/hooks/useNotebook';
 
 interface LexDrawerPanelProps {
   selectedWord: any;
@@ -59,6 +60,10 @@ export const LexDrawerPanel = ({
   const [isAiFallbackLoading, setIsAiFallbackLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
+
+  const [researchNoteInput, setResearchNoteInput] = useState('');
+  const [noteSaved, setNoteSaved] = useState(false);
+  const { saveNote, isSaving: isSavingNote } = useNotebook({ skipFetch: true });
 
   // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
   const wordInfo = useMemo(
@@ -165,6 +170,29 @@ export const LexDrawerPanel = ({
     };
     doAiFallback();
   }, [selectedWord?.lemma, needsAiFallback, text?.language, selectedWord?.text, selectedWord?.language]);
+
+  // Reset research note fields when the selected word changes
+  useEffect(() => {
+    setResearchNoteInput(''); // eslint-disable-line react-hooks/set-state-in-effect
+    setNoteSaved(false);
+  }, [selectedWord?.lemma]);
+
+  const handleSaveResearchNote = async () => {
+    const trimmed = researchNoteInput.trim();
+    if (!trimmed) return;
+    await saveNote({
+      content: trimmed,
+      languageId: textLanguageId,
+      textId: text?.id,
+      token: selectedWord?.text,
+      lemma: selectedWord?.lemma,
+      source: 'word-analysis',
+      tags: selectedWord?.lemma ? [selectedWord.lemma] : [],
+    });
+    setResearchNoteInput('');
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 2500);
+  };
 
   if (!selectedWord) return <AnimatePresence />;
 
@@ -537,7 +565,7 @@ export const LexDrawerPanel = ({
             </div>
           )}
           {/* Notes Section */}
-          <div className="mb-8">
+          <div className="mb-6">
             <div className="eyebrow mb-3 text-ink">{t('reader.personalNotes', "Personal Notes")}</div>
             <textarea
               className="w-full h-24 p-3 bg-white border border-bdr rounded-xl text-[13px] font-body resize-none focus:outline-none focus:border-blue transition-colors"
@@ -547,6 +575,39 @@ export const LexDrawerPanel = ({
                 setWordNote(selectedWord.lemma, e.target.value)
               }
             />
+          </div>
+
+          {/* Save to Research Notebook */}
+          <div className="mb-8">
+            <div className="eyebrow mb-3 text-ink flex items-center gap-2">
+              <BookMarked className="w-3 h-3 opacity-60" />
+              {t('reader.saveToNotebook', "Save to Notebook")}
+            </div>
+            <textarea
+              className="w-full h-20 p-3 bg-white border border-bdr rounded-xl text-[13px] font-body resize-none focus:outline-none focus:border-blue transition-colors"
+              placeholder={t('reader.researchNotePlaceholder', "Research note, grammar observation, translation insight…")}
+              value={researchNoteInput}
+              onChange={(e) => setResearchNoteInput(e.target.value)}
+            />
+            <button
+              onClick={handleSaveResearchNote}
+              disabled={!researchNoteInput.trim() || isSavingNote}
+              className={cn(
+                "mt-2 w-full py-2 rounded-xl text-[12px] font-bold flex items-center justify-center gap-1.5 transition-all",
+                noteSaved
+                  ? "bg-green-100 text-green-700 border border-green-200"
+                  : "bg-parch2 border border-bdr text-ink2 hover:border-blue/40 hover:text-blue disabled:opacity-40",
+              )}
+            >
+              {isSavingNote ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : noteSaved ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : (
+                <BookMarked className="w-3.5 h-3.5" />
+              )}
+              {noteSaved ? t('reader.noteSaved', "Saved!") : t('reader.saveNote', "Save Note")}
+            </button>
           </div>
 
           {/* Example sentences */}
