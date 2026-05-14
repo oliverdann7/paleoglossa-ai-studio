@@ -65,6 +65,17 @@ const QuizResponseSchema = z.object({
   confidence: z.number().nullable().optional(),
 });
 
+const TutorStartResponseSchema = z.object({
+  sessionId: z.string(),
+  greeting: z.string(),
+  suggestedQuestions: z.array(z.string()),
+});
+
+const TutorMessageResponseSchema = z.object({
+  text: z.string(),
+  warnings: z.array(z.string()).optional(),
+});
+
 export class AIClient {
   // ── Core request with apiFetch (Bearer token for auth, skipAuth for anonymous) ──
   private static async request<T>(endpoint: string, payload: any, schema: z.ZodType<T>): Promise<T> {
@@ -155,16 +166,20 @@ export class AIClient {
     return this.request('pronunciation', { languageId, text }, TextResponseSchema);
   }
 
-  static async startTutorSession(languageId: string, textId?: string): Promise<string> {
-    const data = await this.request('tutor/start', { languageId, textId }, TextResponseSchema);
-    return data.text;
+  static async startTutorSession(languageId: string, textId?: string): Promise<{
+    sessionId: string;
+    greeting: string;
+    suggestedQuestions: string[];
+  }> {
+    return this.request('tutor/start', { languageId, textId }, TutorStartResponseSchema);
   }
 
   static async sendTutorMessage(sessionId: string, message: string, context?: {
     textId?: string; sentenceIndex?: number; lemma?: string;
-  }): Promise<string> {
-    const data = await this.request('tutor/message', { sessionId, message, context }, TextResponseSchema);
-    return data.text;
+    sentenceText?: string; selectedToken?: string;
+    morphology?: Record<string, string>; gloss?: string;
+  }): Promise<{ text: string; warnings?: string[] }> {
+    return this.request('tutor/message', { sessionId, message, context }, TutorMessageResponseSchema);
   }
 
   static async generateMorphologyQuiz(languageId: string, lemma: string, form: string): Promise<{
