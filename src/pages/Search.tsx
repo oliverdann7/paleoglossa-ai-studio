@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search as SearchIcon, Loader2, FileText, Globe, BookMarked, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "../lib/services/apiFetch";
+import { useTranslation } from "react-i18next";
 
 interface SearchResult {
   id: string;
@@ -16,11 +17,11 @@ interface SearchResult {
   authorName?: string;
 }
 
-const SOURCE_LABELS: Record<string, string> = { import: 'Your Import', vocabulary: 'Vocabulary', note: 'Note', public: 'Public Library' };
 const SOURCE_ICONS: Record<string, any> = { import: FileText, vocabulary: BookMarked, note: MessageSquare, public: Globe };
 
 export const SearchPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,14 +44,14 @@ export const SearchPage = () => {
 
   return (
     <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen">
-      <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Search</h2>
-      <p className="text-ink2 text-[15px] mb-6">Search across your imports, vocabulary, notes, and the public library.</p>
+      <h2 className="text-[28px] font-serif font-bold text-ink mb-2">{t("search.title", "Search")}</h2>
+      <p className="text-ink2 text-[15px] mb-6">{t("search.description", "Search across the entire corpus by lemma, inflected form, or morphology.")}</p>
 
       <form onSubmit={handleSearch} className="relative mb-8">
         <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
         <input
           type="text" value={query} onChange={e => setQuery(e.target.value)}
-          placeholder="Search by lemma, text, gloss, or note…"
+          placeholder={t("search.placeholder", "Search by lemma, text, gloss, or note…")}
           className="w-full pl-12 pr-4 py-3 bg-white border border-bdr rounded-xl text-[15px] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all shadow-sm"
         />
       </form>
@@ -60,7 +61,7 @@ export const SearchPage = () => {
       {!isLoading && searched && results.length === 0 && (
         <div className="text-center py-12 text-ink2">
           <SearchIcon className="w-12 h-12 mx-auto mb-4 text-muted" />
-          <p className="text-[16px]">No results found.</p>
+          <p className="text-[16px]">{t("search.noResults", "No results found.")}</p>
         </div>
       )}
 
@@ -82,7 +83,7 @@ export const SearchPage = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[15px] font-bold text-ink truncate">{r.title || r.term || r.lemma}</span>
                     <span className="text-[10px] uppercase tracking-wider font-bold text-muted bg-parch3 px-2 py-0.5 rounded-full shrink-0">
-                      {SOURCE_LABELS[r.source] || r.source}
+                      {r.source === 'import' ? t("search.sourceImport", "Your Import") : r.source === 'vocabulary' ? t("search.sourceVocabulary", "Vocabulary") : r.source === 'note' ? t("search.sourceNote", "Note") : r.source === 'public' ? t("search.sourcePublicLibrary", "Public Library") : r.source}
                     </span>
                   </div>
                   {r.snippet && <p className="text-[13px] text-ink2 line-clamp-2">{r.snippet}</p>}

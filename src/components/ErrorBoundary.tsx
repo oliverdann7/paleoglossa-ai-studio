@@ -62,7 +62,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center bg-parch p-8">
           <div className="card p-8 max-w-md text-center">
-            <h2 className="text-xl font-bold text-ink mb-2">Something went wrong</h2>
+            <h2 className="text-xl font-bold text-ink mb-2">{this.state.isChunkError ? 'App Updated' : 'Something went wrong'}</h2>
             <p className="text-ink3 text-sm mb-6">{this.state.error?.message}</p>
             {this.state.isChunkError ? (
               <>

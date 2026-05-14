@@ -113,7 +113,7 @@ export const Import = () => {
   const handleExtractText = async () => {
     if (!imageBase64 || !imageMimeType) return;
     setIsProcessing(true);
-    setProcessingStep("Performing OCR with AI...");
+    setProcessingStep(t("import.extracting", "Extracting Text..."));
     try {
       const extractedText = await AIClient.extractFromImage(languageId, imageBase64, imageMimeType);
       setText(extractedText);
@@ -122,7 +122,7 @@ export const Import = () => {
       setImageMimeType(null);
     } catch (error: any) {
       console.error("OCR Extraction failed:", error);
-      alert("Failed to extract text from image: " + error.message);
+      alert(t("import.errorImageExtract", "Failed to extract text from image") + ": " + error.message);
     } finally {
       setIsProcessing(false);
       setProcessingStep("");
@@ -132,7 +132,7 @@ export const Import = () => {
   const handleScrapeUrl = async () => {
     if (!url.trim()) return;
     setIsProcessing(true);
-    setProcessingStep("Scraping content from URL...");
+    setProcessingStep(t("import.scraping", "Scraping content from URL..."));
     try {
       const extractedText = await AIClient.scrapeUrl(url);
       setText(extractedText);
@@ -140,7 +140,7 @@ export const Import = () => {
       setUrl("");
     } catch (error: any) {
       console.error("Scrape failed:", error);
-      alert("Failed to scrape URL: " + error.message);
+      alert(t("import.errorUrlScrape", "Failed to scrape URL") + ": " + error.message);
     } finally {
       setIsProcessing(false);
       setProcessingStep("");
@@ -152,7 +152,7 @@ export const Import = () => {
     if (!file) return;
     
     setIsProcessing(true);
-    setProcessingStep("Reading file...");
+    setProcessingStep(t("import.readingFile", "Reading file..."));
     
     try {
       const reader = new FileReader();
@@ -169,7 +169,7 @@ export const Import = () => {
       reader.readAsText(file);
     } catch (error: any) {
       console.error("File upload failed:", error);
-      alert("Failed to upload file: " + error.message);
+      alert(t("import.errorUpload", "Failed to upload file") + ": " + error.message);
       setIsProcessing(false);
       setProcessingStep("");
     }
@@ -204,7 +204,7 @@ export const Import = () => {
   const handleProcess = async () => {
     if (!text.trim()) return;
     setIsProcessing(true);
-    setProcessingStep("Linguistic analysis...");
+    setProcessingStep(t("import.linguisticAnalysis", "Linguistic analysis..."));
     setAnalysisError(null);
 
     let sentences: ImportedSentence[];
@@ -212,7 +212,7 @@ export const Import = () => {
     let stats: ReturnType<typeof calculateStats>;
 
     if (!canAccessLanguage(languageId)) {
-      alert("This language is locked in your current plan. Upgrade to import texts in this language.");
+      alert(t("import.errorLanguageLocked", "This language is locked. Upgrade your plan to access it."));
       setIsProcessing(false);
       setProcessingStep("");
       return;
@@ -224,7 +224,7 @@ export const Import = () => {
       if (result.analysisStatus === 'analyzed') {
         analysisStatus = 'analyzed';
       }
-      setProcessingStep("Mapping to your knowledge...");
+      setProcessingStep(t("import.mappingKnowledge", "Mapping to your knowledge..."));
       stats = calculateStats(sentences);
     } catch (error: any) {
       console.warn("AI analysis failed, using basic tokenization:", error);
@@ -232,7 +232,7 @@ export const Import = () => {
       analysisStatus = 'raw';
       stats = calculateStats(sentences);
       setAnalysisError(error.message || "AI analysis unavailable");
-      setProcessingStep("Saving without AI analysis...");
+      setProcessingStep(t("import.savingRaw", "Saving without AI analysis..."));
     }
 
     const sourceTypeMap: Record<string, ImportedText['sourceType']> = {
@@ -262,7 +262,7 @@ export const Import = () => {
       await ImportService.saveImport(user ? user.uid : null, imported);
     } catch (saveError: any) {
       console.error("Import save failed:", saveError);
-      alert("Text analysis succeeded, but saving failed: " + saveError.message);
+      alert(t("import.errorSaveFailed", "Text analysis succeeded, but saving failed") + ": " + saveError.message);
       setIsProcessing(false);
       setProcessingStep("");
       return;
@@ -391,7 +391,7 @@ export const Import = () => {
               {LANGUAGES.find((l) => l.id === languageId)?.icon || <Globe2 className="w-4 h-4" />}
             </span>
             <span className="font-bold text-ink text-[15px]">
-              {LANGUAGES.find((l) => l.id === languageId)?.name || "Select Language"}
+              {LANGUAGES.find((l) => l.id === languageId)?.name || t("import.selectLanguage", "Select Language")}
             </span>
           </div>
           <ChevronDown className={cn("w-5 h-5 text-muted transition-transform", isLangOpen && "rotate-180")} />
@@ -453,7 +453,7 @@ export const Import = () => {
                     <textarea
                       value={text}
                       onChange={(e) => setText(e.target.value)}
-                      placeholder="Paste your text here..."
+                      placeholder={t("import.pastePlaceholder", "Paste your text here...")}
                       className="w-full h-64 p-5 bg-white border border-bdr rounded-xl text-[18px] font-serif leading-relaxed focus:ring-1 focus:ring-blue"
                     />
                   </div>
@@ -505,7 +505,7 @@ export const Import = () => {
                     <label className="eyebrow mb-2">{t("import.articleUrl", "Article URL")}</label>
                     <input
                       type="url"
-                      placeholder="https://example.com/ancient-text"
+                      placeholder={t("import.urlPlaceholder", "https://example.com/ancient-text")}
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       className="w-full p-4 bg-white border border-bdr rounded-xl text-[16px] focus:ring-1 focus:ring-blue shadow-sm"
@@ -597,10 +597,9 @@ export const Import = () => {
               <div className="mb-8 p-4 bg-amber/10 border border-amber/20 rounded-xl flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-amber shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-amber text-[13px] mb-1">AI analysis unavailable</div>
+                  <div className="font-bold text-amber text-[13px] mb-1">{t("reader.aiAnalysisUnavailable", "AI analysis unavailable")}</div>
                   <p className="text-[12px] text-ink3 leading-relaxed">
-                    Your text was saved with basic tokenization only — no morphology or glosses.
-                    You can still read it in the Reader. AI analysis can be retried later.
+                    {t("import.analysisFallback", "Your text was saved with basic tokenization only — no morphology or glosses.")}
                   </p>
                 </div>
               </div>

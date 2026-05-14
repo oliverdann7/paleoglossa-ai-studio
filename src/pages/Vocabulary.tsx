@@ -134,21 +134,21 @@ export const Vocabulary = () => {
          <div className="card p-5 border-blue/20 bg-blue/5">
             <div className="flex items-center gap-3 mb-2 opacity-70">
                <Brain className="w-4 h-4 text-blue" />
-               <h4 className="text-[12px] uppercase tracking-widest font-bold text-blue">Reviews Due</h4>
+               <h4 className="text-[12px] uppercase tracking-widest font-bold text-blue">{t("vocab.reviewsDue", "Reviews Due")}</h4>
             </div>
             <div className="text-[32px] font-serif leading-none text-ink">{stats.due}</div>
          </div>
          <div className="card p-5 border-emerald-500/20 bg-emerald-500/5">
             <div className="flex items-center gap-3 mb-2 opacity-70">
                <GraduationCap className="w-4 h-4 text-emerald-600" />
-               <h4 className="text-[12px] uppercase tracking-widest font-bold text-emerald-600">Words Known</h4>
+               <h4 className="text-[12px] uppercase tracking-widest font-bold text-emerald-600">{t("vocab.known", "Words Known")}</h4>
             </div>
             <div className="text-[32px] font-serif leading-none text-ink">{stats.known}</div>
          </div>
          <div className="card p-5 border-amber/20 bg-amber/5">
             <div className="flex items-center gap-3 mb-2 opacity-70">
                <TrendingUp className="w-4 h-4 text-amber" />
-               <h4 className="text-[12px] uppercase tracking-widest font-bold text-amber">Words Learning</h4>
+               <h4 className="text-[12px] uppercase tracking-widest font-bold text-amber">{t("vocab.learning", "Words Learning")}</h4>
             </div>
             <div className="text-[32px] font-serif leading-none text-ink">{stats.learning}</div>
          </div>
@@ -168,7 +168,7 @@ export const Vocabulary = () => {
                     : "bg-white text-ink3 border-bdr/60 hover:bg-parch hover:border-blue/30",
                 )}
               >
-                {filter} {filter === "Due" && stats.due > 0 && <span className="ml-1 opacity-70">({stats.due})</span>}
+                {t(`vocab.${filter.toLowerCase()}`, filter)} {filter === "Due" && stats.due > 0 && <span className="ml-1 opacity-70">({stats.due})</span>}
               </button>
             ))}
           </div>
@@ -177,7 +177,7 @@ export const Vocabulary = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="text"
-              placeholder="Search lexicon..."
+              placeholder={t("vocab.searchLexicon", "Search lexicon...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-white border border-bdr rounded-[12px] text-[14px] font-sans focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all shadow-sm"
@@ -214,7 +214,7 @@ export const Vocabulary = () => {
                     {word.status !== 'Seen' && (
                       <span className={cn("text-[10px] font-bold flex items-center gap-1.5 uppercase tracking-wider", word.isDue ? "text-amber" : "text-emerald-600/70")}>
                         <History className="w-3 h-3" />
-                        {word.isDue ? "Due Now" : `Due ${new Date(word.nextReview).toLocaleDateString()}`}
+                        {word.isDue ? t("vocab.dueNow", "Due Now") : t("vocab.dueDate", { date: new Date(word.nextReview).toLocaleDateString(), defaultValue: `Due ${new Date(word.nextReview).toLocaleDateString()}` })}
                       </span>
                     )}
                   </div>
@@ -231,7 +231,7 @@ export const Vocabulary = () => {
                   </div>
                   {word.encounterCount > 0 && (
                     <div className="text-[10px] text-muted font-mono">
-                      {word.encounterCount}× seen
+                      {t("vocab.timesSeen", "{{count}}× seen", { count: word.encounterCount })}
                       {word.lastSeenAt && (
                         <span className="ml-1 opacity-70">· {new Date(word.lastSeenAt).toLocaleDateString()}</span>
                       )}
@@ -241,7 +241,7 @@ export const Vocabulary = () => {
 
                 <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   <button onClick={() => navigate(getDictionaryPath(word.term, word.language))}
-                     className="p-1.5 rounded text-muted hover:text-blue hover:bg-blue/5 transition-colors" title="Open dictionary entry">
+                     className="p-1.5 rounded text-muted hover:text-blue hover:bg-blue/5 transition-colors" title={t("vocab.openDictionary", "Open dictionary entry")}>
                     <ExternalLink className="w-4 h-4" />
                   </button>
                   <button onClick={() => handleDelete(word.id)} className="p-1.5 rounded text-ruby/40 hover:text-ruby hover:bg-ruby/5 transition-colors">
@@ -254,8 +254,8 @@ export const Vocabulary = () => {
         ) : (
           <div className="card p-12 text-center col-span-full border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
             <Brain className="w-12 h-12 text-muted mb-4 opacity-50" />
-            <h3 className="font-serif text-[24px] text-ink mb-2">No Words Found</h3>
-            <p className="text-ink3 max-w-sm mx-auto mb-6">Read texts or import vocabulary to begin building your personal lexicon.</p>
+            <h3 className="font-serif text-[24px] text-ink mb-2">{t("vocab.noWordsFound", "No Words Found")}</h3>
+            <p className="text-ink3 max-w-sm mx-auto mb-6">{t("vocab.noWordsFoundDesc", "Read texts or import vocabulary to begin building your personal lexicon.")}</p>
           </div>
         )}
 
@@ -269,8 +269,8 @@ export const Vocabulary = () => {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <span className="text-[13px] font-bold text-muted">
-              Page {currentPage + 1} of {totalPages}
-              <span className="font-normal ml-2">({filteredWords.length} words)</span>
+              {t("vocab.pageOf", "Page {{current}} of {{total}}", { current: currentPage + 1, total: totalPages })}
+              <span className="font-normal ml-2">{t("vocab.totalWords", "({{count}} words)", { count: filteredWords.length })}</span>
             </span>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
