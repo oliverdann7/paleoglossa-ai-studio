@@ -35,7 +35,7 @@ app.post('/api/test', (_req: any, res: any) => {
 
 // ─── Auth test — verify a Firebase ID token and return user info ─────────────
 import { requireAuth } from './_lib/auth';
-import { getAdminDb } from './_lib/firebaseAdmin';
+import { getAdminDb, getAdminAuth } from './_lib/firebaseAdmin';
 import type { AuthenticatedRequest } from './_lib/auth';
 
 app.get('/api/auth/me', requireAuth as any, (req: AuthenticatedRequest, res: any) => {
@@ -1654,12 +1654,11 @@ Rules:
 const ADMIN_EMAILS = ['danezolv@gmail.com'];
 
 function requireAdmin(req: AuthenticatedRequest, res: any): boolean {
+  if (req.user?.claims?.admin === true) return true;
   const email = req.user?.email;
-  if (!email || !ADMIN_EMAILS.includes(email)) {
-    res.status(403).json({ error: 'Forbidden', code: 'FORBIDDEN' });
-    return false;
-  }
-  return true;
+  if (email && ADMIN_EMAILS.includes(email)) return true;
+  res.status(403).json({ error: 'Forbidden', code: 'FORBIDDEN' });
+  return false;
 }
 
 app.get('/api/admin/overview', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
@@ -1728,6 +1727,16 @@ app.post('/api/admin/publicTexts/:id/restore', requireAuth as any, async (req: A
     console.error('[admin/restore] Error:', e.message);
     res.status(500).json({ error: 'Failed to restore text', code: 'INTERNAL_ERROR' });
   }
+});
+
+app.post('/api/admin/refresh-claims', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const { uid, email } = req.user!;
+  const isAdminEmail = email ? ADMIN_EMAILS.includes(email) : false;
+  if (isAdminEmail) {
+    const auth_ = getAdminAuth();
+    if (auth_) await auth_.setCustomUserClaims(uid, { admin: true });
+  }
+  return res.status(200).json({ admin: isAdminEmail });
 });
 
 app.post('/api/stripe/webhook', async (req: any, res: any) => {
