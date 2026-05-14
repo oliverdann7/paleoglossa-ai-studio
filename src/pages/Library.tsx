@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
+import { computeRecommendations } from "../lib/services/recommendationService";
+import { RecommendationRail } from "../components/library/RecommendationRail";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES, getLanguageDisplayName } from "../lib/constants/languages";
 import { LibraryService, LibraryText } from "../lib/services/libraryService";
@@ -208,6 +210,11 @@ export const Library = () => {
       .filter(Boolean).slice(0, 4);
   }, [readingProgress, textsWithCoverage]);
 
+  const recommendations = useMemo(
+    () => computeRecommendations(textsWithCoverage, knowledge),
+    [textsWithCoverage, knowledge],
+  );
+
   const getCefrClass = (level: string) => {
     if (level?.startsWith("A")) return "cefr-a";
     if (level?.startsWith("B")) return "cefr-b";
@@ -318,6 +325,9 @@ export const Library = () => {
           </div>
         </div>
       )}
+
+      {/* ── Recommended for You ─────────────────────────────────────── */}
+      <RecommendationRail texts={recommendations} />
 
       {/* ── Tab Navigation ───────────────────────────────────────────── */}
       <div className="flex gap-2 mb-6 flex-wrap">
