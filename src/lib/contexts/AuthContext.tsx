@@ -10,6 +10,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [isDemoMode, setDemoModeState] = useState(() => localStorage.getItem('paleoglossa_demo_mode') === 'true');
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [claims, setClaimsState] = useState<Record<string, unknown>>({});
 
   const setDemoMode = (val: boolean) => {
     setDemoModeState(val);
@@ -52,6 +53,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // handle failure gently
           console.error("Auth profile error", e);
         }
+        try {
+          const token = await u.getIdToken();
+          await fetch('/api/admin/refresh-claims', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch { /* non-fatal — claim will be picked up on next login */ }
+        try {
+          const result = await u.getIdTokenResult(true);
+          setClaimsState(result.claims as Record<string, unknown>);
+        } catch {
+          setClaimsState({});
+        }
       }
       setLoading(false);
     });
@@ -59,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, isDemoMode, setDemoMode, stats }}>
+    <AuthContext.Provider value={{ user, loading, isDemoMode, setDemoMode, stats, claims }}>
       {children}
     </AuthContext.Provider>
   );

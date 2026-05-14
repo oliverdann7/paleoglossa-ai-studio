@@ -17,6 +17,7 @@ export interface AuthContextType {
   isDemoMode: boolean;
   setDemoMode: (val: boolean) => void;
   stats: UserStats | null;
+  claims: Record<string, unknown>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -25,4 +26,5 @@ export const AuthContext = createContext<AuthContextType>({
   isDemoMode: false,
   setDemoMode: () => {},
   stats: null,
+  claims: {},
 });

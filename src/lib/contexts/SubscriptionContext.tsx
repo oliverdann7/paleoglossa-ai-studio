@@ -29,9 +29,6 @@ interface SubscriptionContextValue {
   createPortalSession: () => Promise<string | null>;
 }
 
-const ADMIN_EMAILS = ['danezolv@gmail.com'];
-// TODO: Migrate to Firebase custom claims so admin status is verifiable server-side.
-
 const DEFAULT_SUBSCRIPTION: UserSubscription = {
   currentPlan: 'free',
   selectedLanguageIds: ['grc'],
@@ -43,8 +40,8 @@ const PAID_PLANS: PlanId[] = ['basic_1', 'duo_2', 'full_all'];
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
+  const { user, claims } = useAuth();
+  const isAdmin = !!claims?.admin;
   const [subscription, setSubscription] = useState<UserSubscription>(DEFAULT_SUBSCRIPTION);
   const [isLoaded, setIsLoaded] = useState(false);
 
