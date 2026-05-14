@@ -1,12 +1,26 @@
 import type { LanguageId, ScriptDirection } from '../../types/linguistics';
 
+export interface TokenizationHints {
+  wordBoundaries: 'whitespace' | 'none' | 'script-specific';
+  hasClitics?: boolean;
+  hasSandhi?: boolean;
+}
+
+export interface DictionaryHints {
+  dictionaries: string[];
+  hasCorpusGlosses: boolean;
+  grammarResources?: string[];
+}
+
 export interface Language {
   id: LanguageId;
   name: string;
+  nativeName: string;
   shortName: string;
   icon: string;
   symbol: string;
   direction: ScriptDirection;
+  scripts: string[];
   era: string;
   region: string;
   writingSystem: string;
@@ -18,19 +32,24 @@ export interface Language {
   supportsTransliteration: boolean;
   supportsTTS: boolean;
   supportsPronunciationGuide: boolean;
+  supportsAiAnalysis?: boolean;
   audioProvider?: string;
   reconstructionNote?: string;
   color?: string;
+  tokenizationHints?: TokenizationHints;
+  dictionaryHints?: DictionaryHints;
 }
 
 export const LANGUAGES: Language[] = [
   {
     id: "grc",
     name: "Ancient Greek",
+    nativeName: "Ἑλληνική",
     shortName: "Greek",
     icon: "α",
     symbol: "α",
     direction: "ltr",
+    scripts: ["Greek"],
     era: "c. 1500 BC – 300 BC",
     region: "Ancient Greece",
     writingSystem: "Greek Alphabet",
@@ -42,17 +61,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: true,
     supportsTTS: true,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: "gemini",
     reconstructionNote: undefined,
     color: "#2563EB",
+    tokenizationHints: { wordBoundaries: "whitespace" },
+    dictionaryHints: { dictionaries: ["liddell-scott", "strongs-greek"], hasCorpusGlosses: true },
   },
   {
     id: "grc-koine",
     name: "Koine Greek",
+    nativeName: "Κοινὴ Ἑλληνική",
     shortName: "Koine",
     icon: "Ω",
     symbol: "Ω",
     direction: "ltr",
+    scripts: ["Greek"],
     era: "c. 300 BC – AD 300",
     region: "Mediterranean & Middle East",
     writingSystem: "Greek Alphabet",
@@ -64,17 +88,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: true,
     supportsTTS: true,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: "gemini",
     reconstructionNote: undefined,
     color: "#059669",
+    tokenizationHints: { wordBoundaries: "whitespace" },
+    dictionaryHints: { dictionaries: ["strongs-greek", "liddell-scott"], hasCorpusGlosses: true },
   },
   {
     id: "hbo",
     name: "Biblical Hebrew",
+    nativeName: "עִבְרִית מִקְרָאִית",
     shortName: "Hebrew",
     icon: "א",
     symbol: "א",
     direction: "rtl",
+    scripts: ["Hebrew"],
     era: "c. 1000 BC – 100 AD",
     region: "Ancient Israel / Levant",
     writingSystem: "Hebrew Alphabet (abjad)",
@@ -86,17 +115,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: true,
     supportsTTS: false,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: "#D97706",
+    tokenizationHints: { wordBoundaries: "whitespace", hasClitics: true },
+    dictionaryHints: { dictionaries: ["strongs-hebrew"], hasCorpusGlosses: true },
   },
   {
     id: "lat",
     name: "Classical Latin",
+    nativeName: "Latīna",
     shortName: "Latin",
     icon: "V",
     symbol: "V",
     direction: "ltr",
+    scripts: ["Latin"],
     era: "c. 75 BC – AD 300",
     region: "Roman Empire",
     writingSystem: "Latin Alphabet",
@@ -108,17 +142,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: false,
     supportsTTS: true,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: "gemini",
     reconstructionNote: undefined,
     color: "#7C3AED",
+    tokenizationHints: { wordBoundaries: "whitespace" },
+    dictionaryHints: { dictionaries: ["whitakers-words"], hasCorpusGlosses: true },
   },
   {
     id: "syr",
     name: "Syriac",
+    nativeName: "ܠܫܢܐ ܣܘܪܝܝܐ",
     shortName: "Syriac",
     icon: "ܣ",
     symbol: "ܣ",
     direction: "rtl",
+    scripts: ["Syriac"],
     era: "1st century AD – Present",
     region: "Fertile Crescent",
     writingSystem: "Syriac Alphabet (abjad)",
@@ -130,17 +169,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: false,
     supportsTTS: false,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: "#DC2626",
+    tokenizationHints: { wordBoundaries: "whitespace", hasClitics: true },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
   {
     id: "cop",
     name: "Coptic",
+    nativeName: "ⲙⲉⲧⲣⲉⲙⲛ̀ⲭⲏⲙⲓ",
     shortName: "Coptic",
     icon: "ⲱ",
     symbol: "ⲱ",
     direction: "ltr",
+    scripts: ["Coptic"],
     era: "2nd century AD – Present (Liturgical)",
     region: "Egypt",
     writingSystem: "Coptic Alphabet",
@@ -152,17 +196,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: false,
     supportsTTS: false,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: "#0891B2",
+    tokenizationHints: { wordBoundaries: "whitespace" },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
   {
     id: "arc",
     name: "Aramaic",
+    nativeName: "ארמית / ܐܪܡܝܐ",
     shortName: "Aramaic",
     icon: "𐡀",
     symbol: "𐡀",
     direction: "rtl",
+    scripts: ["Aramaic", "Hebrew"],
     era: "c. 3000 BC – Present",
     region: "Near East",
     writingSystem: "Aramaic Alphabet (abjad)",
@@ -174,17 +223,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: false,
     supportsTTS: false,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: "#CA8A04",
+    tokenizationHints: { wordBoundaries: "whitespace", hasClitics: true },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
   {
     id: "akk",
     name: "Akkadian",
+    nativeName: "𒀝𒅗𒁺𒌑",
     shortName: "Akkadian",
     icon: "𒀭",
     symbol: "𒀭",
     direction: "ltr",
+    scripts: ["Cuneiform"],
     era: "c. 2500 BC – 100 AD",
     region: "Mesopotamia",
     writingSystem: "Cuneiform (logo-syllabic)",
@@ -196,17 +250,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: true,
     supportsTTS: false,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: "#9333EA",
+    tokenizationHints: { wordBoundaries: "whitespace" },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
   {
     id: "san",
     name: "Sanskrit",
+    nativeName: "संस्कृतम्",
     shortName: "Sanskrit",
     icon: "अ",
     symbol: "अ",
     direction: "ltr",
+    scripts: ["Devanagari", "Latin"],
     era: "c. 1500 BC – Present",
     region: "South Asia",
     writingSystem: "Devanagari (abugida)",
@@ -218,17 +277,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: true,
     supportsTTS: false,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: "#E11D48",
+    tokenizationHints: { wordBoundaries: "whitespace", hasSandhi: true },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
   {
     id: "egy",
     name: "Egyptian Hieroglyphs",
+    nativeName: "𓂋𓈖𓎡𓅱𓏏",
     shortName: "Egyptian",
     icon: "𓂋",
     symbol: "𓂋",
     direction: "ltr",
+    scripts: ["Hieroglyphs"],
     era: "c. 3200 BC – AD 400",
     region: "Ancient Egypt",
     writingSystem: "Hieroglyphs",
@@ -240,17 +304,22 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: true,
     supportsTTS: false,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: "#B45309",
+    tokenizationHints: { wordBoundaries: "none" },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
   {
     id: "hit",
     name: "Hittite",
+    nativeName: "𒉈𒅆𒇷",
     shortName: "Hittite",
     icon: "𒀭",
     symbol: "𒀭",
     direction: "ltr",
+    scripts: ["Cuneiform"],
     era: "c. 1600 BC – 1180 BC",
     region: "Anatolia",
     writingSystem: "Cuneiform",
@@ -262,11 +331,20 @@ export const LANGUAGES: Language[] = [
     supportsTransliteration: true,
     supportsTTS: false,
     supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: "#78716C",
+    tokenizationHints: { wordBoundaries: "whitespace" },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
 ];
+
+export const LANGUAGE_IDS = [
+  'grc', 'grc-koine', 'hbo', 'lat', 'syr', 'cop', 'arc', 'akk', 'san', 'egy', 'hit',
+] as const;
+
+export type KnownLanguageId = typeof LANGUAGE_IDS[number];
 
 export function getLanguageById(languageId: LanguageId): Language | undefined {
   return LANGUAGES.find(l => l.id === languageId);
@@ -284,10 +362,18 @@ export function getLanguageDisplayName(languageId: string): string {
   return LANGUAGES.find(l => l.id === languageId)?.name || languageId;
 }
 
+export function getLanguageNativeName(languageId: string): string | undefined {
+  return LANGUAGES.find(l => l.id === languageId)?.nativeName;
+}
+
 export function isRtlLanguage(languageId: string): boolean {
   return getLanguageDirection(languageId) === 'rtl';
 }
 
 export function getLanguageIcon(languageId: string): string {
   return LANGUAGES.find(l => l.id === languageId)?.icon || '🌐';
+}
+
+export function isSupportedLanguage(languageId: string): languageId is KnownLanguageId {
+  return LANGUAGE_IDS.includes(languageId as KnownLanguageId);
 }
