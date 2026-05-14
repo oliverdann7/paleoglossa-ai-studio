@@ -43,12 +43,52 @@ app.get('/api/auth/me', requireAuth as any, (req: AuthenticatedRequest, res: any
 });
 
 // ─── Lemmas ──────────────────────────────────────────────────────────────────
-app.get('/api/lemmas/:lemma', (_req: any, res: any) => {
-  res.status(200).json(null);
+import { findDictionaryEntry, searchDictionaryEntries as searchCorpusEntries } from '../src/lib/data/dictionary';
+import { getDictionaryEntry as getStaticDictEntry } from '../src/lib/data/dictionaryDB';
+
+app.get('/api/lemmas/:language/:lemma', (req: any, res: any) => {
+  try {
+    const { language, lemma } = req.params;
+    if (!lemma || typeof lemma !== 'string') {
+      return res.status(400).json({ error: 'lemma is required', code: 'INVALID_INPUT', field: 'lemma' });
+    }
+    if (!language || typeof language !== 'string') {
+      return res.status(400).json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
+    }
+
+    const entry = findDictionaryEntry(lemma, language);
+    if (entry) {
+      return res.status(200).json(entry);
+    }
+
+    const staticEntry = getStaticDictEntry(lemma, language);
+    if (staticEntry) {
+      return res.status(200).json(staticEntry);
+    }
+
+    res.status(404).json({ error: 'Lemma not found', code: 'NOT_FOUND' });
+  } catch (err: any) {
+    console.error('[lemmas/:language/:lemma] Error:', err.message);
+    res.status(500).json({ error: 'Failed to look up lemma', code: 'INTERNAL_ERROR' });
+  }
 });
 
-app.get('/api/lemmas', (_req: any, res: any) => {
-  res.status(200).json([]);
+app.get('/api/lemmas', (req: any, res: any) => {
+  try {
+    const { q: query, lang } = req.query;
+    if (!query || typeof query !== 'string' || !query.trim()) {
+      return res.status(400).json({ error: 'query parameter q is required', code: 'INVALID_INPUT', field: 'q' });
+    }
+    const results = searchCorpusEntries(
+      query.trim(),
+      lang && typeof lang === 'string' ? lang : undefined,
+      50,
+    );
+    res.status(200).json(results);
+  } catch (err: any) {
+    console.error('[lemmas] Error:', err.message);
+    res.status(500).json({ error: 'Failed to search lemmas', code: 'INTERNAL_ERROR' });
+  }
 });
 
 app.get('/api/lemmas/:lemma/paradigm', (_req: any, res: any) => {
