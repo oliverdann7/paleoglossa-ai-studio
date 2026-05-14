@@ -44,7 +44,7 @@ export const Reader = () => {
   const { canAccessLanguage } = useSubscription();
   const { addToast } = useToast();
   const { t } = useTranslation();
-  const onBack = () => navigate("/app/library");
+  const onBack = useCallback(() => navigate("/app/library"), [navigate]);
 
   const [localText, setLocalText] = useState<any>(null);
   
@@ -186,7 +186,7 @@ export const Reader = () => {
   }, [textId, saveTextProgress]);
 
   // Clear word insight when word changes
-  const handleAITranslate = async (sentenceId: string, sentenceTokens: any[]) => {
+  const handleAITranslate = useCallback(async (sentenceId: string, sentenceTokens: any[]) => {
     if (isTranslatingId === sentenceId || aiTranslations[sentenceId]) return;
     setIsTranslatingId(sentenceId);
     
@@ -200,7 +200,7 @@ export const Reader = () => {
     } finally {
       setIsTranslatingId(null);
     }
-  };
+  }, [text, t, setIsTranslatingId, setAiTranslations, isTranslatingId, aiTranslations]);
 
   useEffect(() => {
     if (readingMode === "page") {
@@ -809,7 +809,6 @@ export const Reader = () => {
           fontSize={settings.fontSize}
           highlightIntensity={settings.highlightIntensity}
           getWordInfo={getWordInfo}
-          knowledgeVersion={knowledgeVersion}
           selectedWordId={selectedWord?.id}
           showTranslit={showTranslit}
           showParallel={showParallel}
