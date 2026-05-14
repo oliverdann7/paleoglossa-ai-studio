@@ -38,12 +38,9 @@ export interface GlossEntry {
 }
 
 export interface GrammarReference {
-  concept: string;
-  languageId: string;
-  category?: string;
-  subcategory?: string;
-  description?: string;
-  difficulty?: string;
+  tag: string;
+  explanation: string;
+  category: string;
 }
 
 export interface OccurrenceLocation {
