@@ -26,9 +26,9 @@ export const Language = () => {
           onClick={() => navigate("/app/library")}
           className="text-blue flex items-center mb-6 hover:underline"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Library
+          <ArrowLeft className="w-4 h-4 mr-2" /> {t("common.backToLibrary", "Back to Library")}
         </button>
-        <h1 className="text-2xl font-serif">Language not found</h1>
+        <h1 className="text-2xl font-serif">{t("language.notFound", "Language not found")}</h1>
       </div>
     );
   }
@@ -85,28 +85,28 @@ export const Language = () => {
         <div className="flex flex-wrap gap-1.5 mb-4">
           {isComplete && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Complete
+              {t('library.badgeComplete', 'Complete')}
             </span>
           )}
           {isPartial && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border border-blue/20">
-              Partial
+              {t('language.statusPartial', 'Partial')}
             </span>
           )}
           {isExcerpt && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber/5 text-amber border border-amber/20">
               <AlertCircle className="w-2.5 h-2.5" />
-              Sample Excerpt
+              {t('reader.badgeSample', 'Sample Excerpt')}
             </span>
           )}
           {text.hasMorphology && (
             <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border border-blue/15">
-              Morphology
+              {t('library.toolMorphology', 'Morphology')}
             </span>
           )}
           {text.hasTranslation && (
             <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border border-blue/15">
-              Translation
+              {t('library.toolTranslation', 'Translation')}
             </span>
           )}
         </div>
@@ -114,19 +114,19 @@ export const Language = () => {
         {/* Honest excerpt notice */}
         {isExcerpt && (
           <p className="text-[11px] italic text-amber/80 mb-4">
-            Sample excerpt — full text not yet imported.
+            {t('language.sampleExcerptNotice', 'Sample excerpt — full text not yet imported.')}
           </p>
         )}
         {isPartial && (
           <p className="text-[11px] italic text-blue/70 mb-4">
-            Partial corpus — more sections coming.
+            {t('language.partialNotice', 'Partial corpus — more sections coming.')}
           </p>
         )}
 
         {/* Sentence count if known */}
         {text.sentenceCount != null && (
           <p className="text-[11px] text-muted mb-4">
-            {text.sentenceCount} sentence{text.sentenceCount !== 1 ? 's' : ''} available
+            {t('language.sentenceCount', '{{count}} sentence available', { count: text.sentenceCount })}
           </p>
         )}
 
@@ -136,7 +136,7 @@ export const Language = () => {
             className="flex-1 flex items-center justify-center bg-blue text-sand py-2.5 rounded-lg font-medium hover:bg-blue/90 transition-colors"
           >
             <Play className="w-4 h-4 mr-2 fill-current" />
-            {isExcerpt ? "Read Sample" : "Read"}
+            {isExcerpt ? t('language.readSample', 'Read Sample') : t('language.read', 'Read')}
           </button>
         </div>
       </div>

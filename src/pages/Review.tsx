@@ -9,6 +9,7 @@ import { WordState } from "../lib/constants/wordStates";
 import { ReviewService, ReviewItem } from "../lib/services/reviewService";
 import { Rating } from "../lib/srs/sm2";
 import { CardType, ReviewCard, generateReviewCards } from "../lib/review/reviewCardFactory";
+import { useTranslation } from "react-i18next";
 
 interface ReviewSettings {
   enabledTypes: CardType[];
@@ -40,6 +41,7 @@ export const Review = () => {
   const { user, isDemoMode } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
   const { knowledge, updateWordSRS } = useKnowledge(activeLanguageId);
+  const { t } = useTranslation();
   // Stable ref so the queue-load effect doesn't re-run on every word state change
   const knowledgeRef = useRef(knowledge);
   useLayoutEffect(() => { knowledgeRef.current = knowledge; });
@@ -209,10 +211,10 @@ export const Review = () => {
   if (showSettings) {
     const allTypes = [CardType.FORM_TO_MEANING, CardType.MEANING_TO_FORM, CardType.CLOZE, CardType.PARSE];
     const typeLabels: Record<string, string> = {
-      FORM_TO_MEANING: 'Form → Meaning',
-      MEANING_TO_FORM: 'Meaning → Form',
-      CLOZE: 'Cloze Context',
-      PARSE: 'Parsing',
+      FORM_TO_MEANING: t('review.formToMeaning', 'Form → Meaning'),
+      MEANING_TO_FORM: t('review.meaningToForm', 'Meaning → Form'),
+      CLOZE: t('review.cloze', 'Cloze Context'),
+      PARSE: t('review.parsing', 'Parsing'),
     };
 
     return (
@@ -221,12 +223,12 @@ export const Review = () => {
           <button onClick={() => setShowSettings(false)} className="text-muted hover:text-ink transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h2 className="text-xl font-serif font-bold text-ink">Review Settings</h2>
+          <h2 className="text-xl font-serif font-bold text-ink">{t('review.settingsTitle', 'Review Settings')}</h2>
         </div>
 
         <div className="card p-6 space-y-6">
           <div>
-            <h3 className="text-sm font-bold text-ink mb-3">Card Types</h3>
+            <h3 className="text-sm font-bold text-ink mb-3">{t('review.cardTypes', 'Card Types')}</h3>
             <div className="space-y-2">
               {allTypes.map(type => (
                 <label key={type} className="flex items-center gap-3 cursor-pointer">
@@ -250,7 +252,7 @@ export const Review = () => {
           </div>
 
           <div>
-            <label className="text-sm font-bold text-ink mb-2 block">Cards per session: {settings.maxCards}</label>
+            <label className="text-sm font-bold text-ink mb-2 block">{t('review.cardsPerSession', 'Cards per session')}: {settings.maxCards}</label>
             <input
               type="range"
               min={5}
@@ -278,7 +280,7 @@ export const Review = () => {
                 }}
                 className="w-4 h-4 accent-blue"
               />
-              <span className="text-[14px] text-ink2">Include morphology/parsing cards</span>
+              <span className="text-[14px] text-ink2">{t('review.includeMorphology', 'Include morphology/parsing cards')}</span>
             </label>
           </div>
         </div>
@@ -292,10 +294,10 @@ export const Review = () => {
       <div className="p-6 md:p-12 max-w-2xl mx-auto font-sans min-h-screen">
         <div className="flex items-center justify-between mb-8">
           <button onClick={onBack} className="text-muted hover:text-ink transition-colors flex items-center gap-1">
-            <ChevronLeft className="w-5 h-5" /> Back
+            <ChevronLeft className="w-5 h-5" /> {t('review.back', 'Back')}
           </button>
           <button onClick={() => setShowSettings(true)} className="text-muted hover:text-ink transition-colors flex items-center gap-1">
-            <Settings2 className="w-4 h-4" /> Settings
+            <Settings2 className="w-4 h-4" /> {t('review.settings', 'Settings')}
           </button>
         </div>
 
@@ -303,8 +305,8 @@ export const Review = () => {
           <div className="w-16 h-16 bg-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <Brain className="w-8 h-8 text-blue" />
           </div>
-          <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Review</h2>
-          <p className="text-ink2 text-[15px]">Reinforce your vocabulary with spaced repetition</p>
+          <h2 className="text-[28px] font-serif font-bold text-ink mb-2">{t('review.title', 'Review')}</h2>
+          <p className="text-ink2 text-[15px]">{t('review.subtitle', 'Reinforce your vocabulary with spaced repetition')}</p>
         </div>
 
         {/* Summary */}
@@ -317,17 +319,17 @@ export const Review = () => {
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="card p-4 text-center">
               <div className="text-[24px] font-bold text-blue">{reviewSummary.dueCount}</div>
-              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Due Now</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">{t('review.dueNow', 'Due Now')}</div>
             </div>
             <div className="card p-4 text-center">
               <div className="text-[24px] font-bold text-jade">{reviewSummary.reviewedToday}</div>
-              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Reviewed Today</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">{t('review.reviewedToday', 'Reviewed Today')}</div>
             </div>
             <div className="card p-4 text-center">
               <div className="text-[24px] font-bold text-amber">
                 {reviewSummary.lastAccuracy !== null ? `${Math.round(reviewSummary.lastAccuracy * 100)}%` : '—'}
               </div>
-              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Accuracy</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">{t('review.accuracy', 'Accuracy')}</div>
             </div>
           </div>
         )}
@@ -336,7 +338,7 @@ export const Review = () => {
         {weakLemmas.length > 0 && (
           <div className="card p-5 mb-6">
             <h3 className="text-[13px] font-bold text-ink mb-3 flex items-center gap-2">
-              <Target className="w-4 h-4 text-red-400" /> Most Failed Words
+              <Target className="w-4 h-4 text-red-400" /> {t('review.mostFailed', 'Most Failed Words')}
             </h3>
             <div className="space-y-2">
               {weakLemmas.map(w => (
@@ -353,13 +355,13 @@ export const Review = () => {
         {weakCardTypes.length > 0 && (
           <div className="card p-5 mb-8">
             <h3 className="text-[13px] font-bold text-ink mb-3 flex items-center gap-2">
-              <History className="w-4 h-4 text-amber" /> Weakest Card Types
+              <History className="w-4 h-4 text-amber" /> {t('review.weakestCardTypes', 'Weakest Card Types')}
             </h3>
             <div className="space-y-2">
               {weakCardTypes.slice(0, 3).map(w => (
                 <div key={w.cardType} className="flex justify-between text-[14px]">
                   <span className="text-ink2">{w.cardType}</span>
-                  <span className="text-amber font-bold">{Math.round(w.failRate * 100)}% fail</span>
+                  <span className="text-amber font-bold">{Math.round(w.failRate * 100)}% {t('review.fail', 'fail')}</span>
                 </div>
               ))}
             </div>
@@ -371,7 +373,7 @@ export const Review = () => {
           disabled={isLoading || (reviewSummary?.dueCount || 0) === 0}
           className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
-          {isLoading ? 'Loading…' : (reviewSummary?.dueCount || 0) === 0 ? 'All caught up!' : `Start Review (${queue.length} cards)`}
+          {isLoading ? t('review.loading', 'Loading…') : (reviewSummary?.dueCount || 0) === 0 ? t('review.allCaughtUp', 'All caught up!') : t('review.startWithCount', 'Start Review ({{count}} cards)', { count: queue.length })}
         </button>
       </div>
     );
@@ -385,21 +387,21 @@ export const Review = () => {
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Award className="w-10 h-10 text-emerald-600" />
           </div>
-          <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Session Complete!</h2>
-          <p className="text-ink2 mb-8">Great work! You reviewed {sessionResults.length} cards.</p>
+          <h2 className="text-[28px] font-serif font-bold text-ink mb-2">{t('review.sessionComplete', 'Session Complete!')}</h2>
+          <p className="text-ink2 mb-8">{t('review.greatWork', 'Great work! You reviewed {{count}} cards.', { count: sessionResults.length })}</p>
 
           <div className="flex justify-center gap-8 mb-8">
             <div className="text-center">
               <div className="text-[32px] font-bold text-jade">{correctCount}</div>
-              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Correct</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">{t('review.correct', 'Correct')}</div>
             </div>
             <div className="text-center">
               <div className="text-[32px] font-bold text-red-400">{sessionResults.length - correctCount}</div>
-              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Needs Review</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">{t('review.needsReview', 'Needs Review')}</div>
             </div>
             <div className="text-center">
               <div className="text-[32px] font-bold text-blue">{Math.round(accuracy * 100)}%</div>
-              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">Accuracy</div>
+              <div className="text-[11px] text-muted uppercase tracking-widest font-bold">{t('review.accuracy', 'Accuracy')}</div>
             </div>
           </div>
 
@@ -407,10 +409,10 @@ export const Review = () => {
             onClick={() => { setIsStarted(false); setIsFinished(false); setQueue([]); setCurrentCardIndex(0); setSessionResults([]); }}
             className="w-full py-4 bg-blue text-white font-bold rounded-2xl hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg"
           >
-            Review Again
+            {t('review.reviewAgain', 'Review Again')}
           </button>
           <button onClick={onBack} className="w-full py-3 mt-3 text-ink2 hover:text-ink transition-colors font-medium">
-            Back to Dashboard
+            {t('review.backToDashboard', 'Back to Dashboard')}
           </button>
         </div>
       </div>
@@ -419,7 +421,7 @@ export const Review = () => {
 
   // ── Card Screen ────────────────────────────────────────────────────
   if (!currentCard) {
-    return <div className="p-8 text-center text-ink2">No cards to review.</div>;
+    return <div className="p-8 text-center text-ink2">{t('review.noCards', 'No cards to review.')}</div>;
   }
 
   return (
@@ -436,10 +438,10 @@ export const Review = () => {
         {/* Card type badge */}
         <div className="flex items-center gap-2 mb-6">
           <span className="text-[10px] uppercase tracking-widest font-bold text-blue bg-blue/10 px-2 py-1 rounded-full">
-            {currentCard.type === 'FORM_TO_MEANING' ? 'Form → Meaning' :
-             currentCard.type === 'MEANING_TO_FORM' ? 'Meaning → Form' :
-             currentCard.type === 'CLOZE' ? 'Cloze' :
-             currentCard.type === 'PARSE' ? 'Parsing' : currentCard.type}
+            {currentCard.type === 'FORM_TO_MEANING' ? t('review.formToMeaning', 'Form → Meaning') :
+             currentCard.type === 'MEANING_TO_FORM' ? t('review.meaningToForm', 'Meaning → Form') :
+             currentCard.type === 'CLOZE' ? t('review.clozeShort', 'Cloze') :
+             currentCard.type === 'PARSE' ? t('review.parsingShort', 'Parsing') : currentCard.type}
           </span>
           {currentCard.transliteration && (
             <span className="text-[11px] text-muted italic">{currentCard.transliteration}</span>
@@ -465,7 +467,7 @@ export const Review = () => {
               animate={{ opacity: 1, y: 0 }}
               className="border-t border-bdr pt-6 mt-6"
             >
-              <p className="text-[11px] uppercase tracking-widest text-muted font-bold mb-2">Answer</p>
+              <p className="text-[11px] uppercase tracking-widest text-muted font-bold mb-2">{t('review.answer', 'Answer')}</p>
               <p className="text-[20px] font-serif font-medium text-jade">{currentCard.answer}</p>
             </motion.div>
           )}
@@ -479,25 +481,25 @@ export const Review = () => {
             onClick={handleReveal}
             className="w-full py-4 bg-ink text-parch font-bold rounded-2xl text-[16px] hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
           >
-            Show Answer
+            {t('review.showAnswer', 'Show Answer')}
           </button>
         ) : (
           <div className="grid grid-cols-4 gap-2">
             <button onClick={() => handleRate("AGAIN")}
               className="py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
-              Again
+              {t('review.again', 'Again')}
             </button>
             <button onClick={() => handleRate("HARD")}
               className="py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
-              Hard
+              {t('review.hard', 'Hard')}
             </button>
             <button onClick={() => handleRate("GOOD")}
               className="py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
-              Good
+              {t('review.good', 'Good')}
             </button>
             <button onClick={() => handleRate("EASY")}
               className="py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
-              Easy
+              {t('review.easy', 'Easy')}
             </button>
           </div>
         )}

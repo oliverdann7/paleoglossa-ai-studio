@@ -216,7 +216,7 @@ export const Dashboard = () => {
             </div>
             <div className="text-[72px] font-serif font-bold leading-none mb-4 flex items-baseline gap-2">
               {reviewCount}
-              <span className="text-[18px] text-parch/40 font-body font-normal">items</span>
+              <span className="text-[18px] text-parch/40 font-body font-normal">{t("dashboard.items", "items")}</span>
             </div>
             <p className="font-body text-parch/60 text-[16px] leading-relaxed max-w-[200px]">
               {reviewCount > 0
