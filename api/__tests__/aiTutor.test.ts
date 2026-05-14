@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS } from '../_lib/aiPrompts';
 
 describe('Tutor session creation', () => {
 
@@ -58,6 +59,70 @@ describe('Guardrails', () => {
   it('no false positive for certain statements', () => {
     const result = checkUncertainty('This is a dative plural form');
     expect(result).toBe(false);
+  });
+});
+
+describe('buildTutorPrompt', () => {
+
+  it('includes the student message', () => {
+    const prompt = buildTutorPrompt('grc', 'What case is this?');
+    expect(prompt).toContain("Student's question: What case is this?");
+  });
+
+  it('includes language-specific instructions for known language', () => {
+    const prompt = buildTutorPrompt('grc', 'Parse this verb.');
+    expect(prompt).toContain('Ancient Greek');
+    expect(prompt).toContain('Language reference:');
+  });
+
+  it('includes language name for unknown language gracefully', () => {
+    const prompt = buildTutorPrompt('lat', 'What is the case here?');
+    expect(prompt).toContain('Latin');
+  });
+
+  it('includes context fields when provided', () => {
+    const prompt = buildTutorPrompt('grc', 'What does this mean?', {
+      textTitle: 'Iliad Book 1',
+      sentenceText: 'μῆνιν ἄειδε θεά',
+      selectedToken: 'μῆνιν',
+      lemma: 'μῆνις',
+      gloss: 'wrath',
+    });
+    expect(prompt).toContain('Text: "Iliad Book 1"');
+    expect(prompt).toContain('Sentence: "μῆνιν ἄειδε θεά"');
+    expect(prompt).toContain('Selected word: "μῆνιν"');
+    expect(prompt).toContain('Lemma: μῆνις');
+    expect(prompt).toContain('Gloss: wrath');
+  });
+
+  it('omits context section when context is undefined', () => {
+    const prompt = buildTutorPrompt('hbo', 'What stem is this?');
+    expect(prompt).not.toContain('Text:');
+    expect(prompt).not.toContain('Selected word:');
+  });
+
+  it('includes morphology as JSON when provided', () => {
+    const prompt = buildTutorPrompt('lat', 'What case?', {
+      morphology: { case: 'nominative', number: 'singular' },
+    });
+    expect(prompt).toContain('"case":"nominative"');
+  });
+});
+
+describe('LANGUAGE_SUGGESTED_QUESTIONS', () => {
+
+  it('has language-specific questions for Greek', () => {
+    expect(LANGUAGE_SUGGESTED_QUESTIONS['grc']).toBeDefined();
+    expect(LANGUAGE_SUGGESTED_QUESTIONS['grc'].length).toBeGreaterThan(0);
+  });
+
+  it('has language-specific questions for Hebrew', () => {
+    expect(LANGUAGE_SUGGESTED_QUESTIONS['hbo']).toBeDefined();
+    expect(LANGUAGE_SUGGESTED_QUESTIONS['hbo'].some(q => q.toLowerCase().includes('stem') || q.toLowerCase().includes('verbal'))).toBe(true);
+  });
+
+  it('DEFAULT_SUGGESTED_QUESTIONS is non-empty', () => {
+    expect(DEFAULT_SUGGESTED_QUESTIONS.length).toBeGreaterThan(0);
   });
 });
 
