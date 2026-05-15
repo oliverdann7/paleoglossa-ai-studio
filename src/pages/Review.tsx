@@ -156,8 +156,8 @@ export const Review = () => {
           id: currentCard.itemId,
           term: currentCard.term,
           languageId: currentCard.languageId,
-          status: '',
-          srs: { interval: 0, ease: 2.5, step: 0, lastReviewed: null, nextReview: new Date().toISOString() },
+          status: currentCard.status,
+          srs: currentCard.srs,
         } as ReviewItem, rating, responseMs, {
           cardType: currentCard.type,
           languageId: currentCard.languageId,
@@ -201,6 +201,27 @@ export const Review = () => {
   }, [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS]);
 
   const handleReveal = () => setIsRevealed(true);
+
+  // Keyboard shortcuts for active review session
+  useEffect(() => {
+    if (!isStarted || isFinished) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (!isRevealed) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          handleReveal();
+        }
+        return;
+      }
+      if (e.key === '1') handleRate('AGAIN');
+      else if (e.key === '2') handleRate('HARD');
+      else if (e.key === '3') handleRate('GOOD');
+      else if (e.key === '4') handleRate('EASY');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isStarted, isFinished, isRevealed, handleRate]);
 
   const currentCard = queue[currentCardIndex];
   const progress = queue.length > 0 ? ((currentCardIndex) / queue.length * 100) : 0;
@@ -477,30 +498,39 @@ export const Review = () => {
       {/* Action buttons */}
       <div className="mt-8">
         {!isRevealed ? (
-          <button
-            onClick={handleReveal}
-            className="w-full py-4 bg-ink text-parch font-bold rounded-2xl text-[16px] hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
-          >
-            {t('review.showAnswer', 'Show Answer')}
-          </button>
+          <div>
+            <button
+              onClick={handleReveal}
+              className="w-full py-4 bg-ink text-parch font-bold rounded-2xl text-[16px] hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
+            >
+              {t('review.showAnswer', 'Show Answer')}
+            </button>
+            <p className="text-center text-[11px] text-muted mt-2">{t('review.spaceHint', 'Space / Enter to reveal')}</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-4 gap-2">
-            <button onClick={() => handleRate("AGAIN")}
-              className="py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
-              {t('review.again', 'Again')}
-            </button>
-            <button onClick={() => handleRate("HARD")}
-              className="py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
-              {t('review.hard', 'Hard')}
-            </button>
-            <button onClick={() => handleRate("GOOD")}
-              className="py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
-              {t('review.good', 'Good')}
-            </button>
-            <button onClick={() => handleRate("EASY")}
-              className="py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all">
-              {t('review.easy', 'Easy')}
-            </button>
+          <div>
+            <div className="grid grid-cols-4 gap-2">
+              <button onClick={() => handleRate("AGAIN")}
+                className="py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-0.5">
+                <span>{t('review.again', 'Again')}</span>
+                <span className="text-[10px] opacity-60">1</span>
+              </button>
+              <button onClick={() => handleRate("HARD")}
+                className="py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-0.5">
+                <span>{t('review.hard', 'Hard')}</span>
+                <span className="text-[10px] opacity-60">2</span>
+              </button>
+              <button onClick={() => handleRate("GOOD")}
+                className="py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-0.5">
+                <span>{t('review.good', 'Good')}</span>
+                <span className="text-[10px] opacity-60">3</span>
+              </button>
+              <button onClick={() => handleRate("EASY")}
+                className="py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-0.5">
+                <span>{t('review.easy', 'Easy')}</span>
+                <span className="text-[10px] opacity-60">4</span>
+              </button>
+            </div>
           </div>
         )}
       </div>

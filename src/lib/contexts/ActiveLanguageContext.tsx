@@ -78,6 +78,7 @@ export function ActiveLanguageProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useActiveLanguage(): ActiveLanguageContextValue {
   const ctx = useContext(ActiveLanguageContext);
   if (!ctx) throw new Error('useActiveLanguage must be used within ActiveLanguageProvider');

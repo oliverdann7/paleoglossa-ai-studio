@@ -201,6 +201,7 @@ export function ReaderStateProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useReaderState(): ReaderContextValue {
   const ctx = useContext(ReaderContext);
   if (!ctx) throw new Error('useReaderState must be used within ReaderStateProvider');
