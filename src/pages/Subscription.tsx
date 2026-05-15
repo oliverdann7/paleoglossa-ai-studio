@@ -5,9 +5,11 @@ import { useSubscription } from "../lib/contexts/SubscriptionContext";
 import { PLANS, getPlanById } from "../lib/constants/plans";
 import { LANGUAGES, getLanguageIcon } from "../lib/constants/languages";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export const Subscription = () => {
-  const { subscription, selectFreePlan, toggleLanguage, canAccessLanguage, canAddLanguage: canAdd, remainingSlots, createCheckoutSession, createPortalSession } = useSubscription();
+  const { t } = useTranslation();
+  const { subscription, selectFreePlan, toggleLanguage, canAccessLanguage, canAddLanguage: canAdd, createCheckoutSession, createPortalSession } = useSubscription();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -50,25 +52,25 @@ export const Subscription = () => {
     <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen pb-24">
       {success === 'true' && (
         <div className="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-[14px] font-medium text-center">
-          Payment successful! Your plan has been activated.
+          {t("sub.paymentSuccess")}
         </div>
       )}
       {canceled === 'true' && (
         <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[14px] font-medium text-center">
-          Payment was canceled. No changes were made.
+          {t("sub.paymentCanceled")}
         </div>
       )}
 
       <header className="mb-12 text-center max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-amberxl text-amber border border-amber/20 rounded-full font-mono text-[10px] uppercase tracking-widest mb-6">
           <Crown className="w-3.5 h-3.5" />
-          {currentPlan.name} Plan
+          {t("sub.currentPlan", { name: currentPlan.name })}
         </div>
         <h2 className="text-[36px] md:text-[42px] font-serif font-light text-ink tracking-tight mb-4 leading-tight">
-          Master classical languages without limits.
+          {t("sub.title")}
         </h2>
         <p className="font-body text-[16px] italic text-ink2 leading-relaxed">
-          Choose a plan that matches your learning goals. Powered by Stripe.
+          {t("sub.choosePlan")}
         </p>
       </header>
 
@@ -77,13 +79,13 @@ export const Subscription = () => {
           <button onClick={() => setBillingCycle("monthly")}
             className={cn("px-5 py-2 text-[13px] font-medium rounded-lg transition-all",
               billingCycle === "monthly" ? "bg-white text-ink shadow-sm" : "text-ink3 hover:text-ink")}>
-            Monthly
+            {t("sub.monthly")}
           </button>
           <button onClick={() => setBillingCycle("yearly")}
             className={cn("px-5 py-2 text-[13px] font-medium rounded-lg transition-all flex items-center gap-2",
               billingCycle === "yearly" ? "bg-white text-ink shadow-sm" : "text-ink3 hover:text-ink")}>
-            Yearly
-            <span className="bg-jadexl text-jade px-1.5 py-0.5 rounded text-[10px] font-bold">Save ~17%</span>
+            {t("sub.yearly")}
+            <span className="bg-jadexl text-jade px-1.5 py-0.5 rounded text-[10px] font-bold">{t("sub.saveYearly")}</span>
           </button>
         </div>
       </div>
@@ -105,7 +107,7 @@ export const Subscription = () => {
             )}>
               {plan.recommended && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue text-white font-mono text-[9px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
-                  <Sparkles className="w-3 h-3" /> {plan.badge || 'Recommended'}
+                  <Sparkles className="w-3 h-3" /> {plan.badge || t("sub.recommended")}
                 </div>
               )}
 
@@ -138,8 +140,8 @@ export const Subscription = () => {
                       : "bg-blue text-white hover:bg-blue/90 shadow-md active:scale-[0.98]"
                 )}
               >
-                {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Redirecting...</> :
-                 isCurrent ? 'Current Plan' : `Choose ${plan.name}`}
+                {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> {t("sub.redirecting")}</> :
+                 isCurrent ? t("sub.current") : t("sub.choose", { name: plan.name })}
                 {!isCurrent && !isLoading && <ArrowRight className="w-4 h-4" />}
               </button>
             </div>
@@ -153,18 +155,18 @@ export const Subscription = () => {
           <button onClick={handleManageBilling} disabled={portalLoading}
             className="inline-flex items-center gap-2 px-6 py-3 border border-bdr/60 rounded-xl text-[14px] font-bold text-ink hover:bg-parch2 transition-all">
             {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-            Manage Billing
+            {t("sub.manageBilling")}
           </button>
         </div>
       )}
 
       {/* Language Selection */}
       <div className="card p-8 max-w-3xl mx-auto">
-        <h3 className="font-serif text-[20px] font-medium text-ink mb-2">Your Languages</h3>
+        <h3 className="font-serif text-[20px] font-medium text-ink mb-2">{t("sub.yourLanguages")}</h3>
         <p className="text-[14px] text-ink2 mb-6">
           {currentPlan.languageLimit === 'all'
-            ? 'Your plan includes all languages.'
-            : `Your plan includes ${currentPlan.languageLimit} language${currentPlan.languageLimit !== 1 ? 's' : ''}. ${remainingSlots > 0 ? `You can add ${remainingSlots} more.` : 'Upgrade to add more.'}`}
+            ? t("sub.includesAll")
+            : t("sub.includesLimit", { count: currentPlan.languageLimit })}
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -205,8 +207,7 @@ export const Subscription = () => {
       {!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY && (
         <div className="mt-8 max-w-3xl mx-auto p-4 bg-amber/5 border border-amber/20 rounded-xl text-center">
           <p className="text-[13px] text-ink3">
-            <strong className="text-amber">⚡ Development Mode:</strong> Stripe is not configured.
-            Set <code className="bg-parch3 px-1 rounded">VITE_STRIPE_PUBLISHABLE_KEY</code> and <code className="bg-parch3 px-1 rounded">STRIPE_SECRET_KEY</code> in your environment for production payments.
+            {t("sub.devMode")} Set <code className="bg-parch3 px-1 rounded">VITE_STRIPE_PUBLISHABLE_KEY</code> and <code className="bg-parch3 px-1 rounded">STRIPE_SECRET_KEY</code> in your environment for production payments.
           </p>
         </div>
       )}
