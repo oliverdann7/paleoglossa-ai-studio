@@ -66,7 +66,7 @@ export const Notebooks = () => {
         <div className="space-y-3">
           {notebooks.map(nb => (
             <div key={nb.id} className="card p-5 flex items-center justify-between hover:border-blue/30 transition-all group">
-              <div className="flex items-center gap-4 min-w-0 flex-1" onClick={() => navigate('/app/notes?notebookId=' + nb.id)}>
+              <div className="flex items-center gap-4 min-w-0 flex-1" onClick={() => navigate('/app/notebooks/' + nb.id)}>
                 <BookOpen className="w-5 h-5 text-blue shrink-0" />
                 <div className="min-w-0">
                   <h3 className="text-[16px] font-bold text-ink truncate">{nb.title}</h3>
@@ -74,7 +74,7 @@ export const Notebooks = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => navigate('/app/notes?notebookId=' + nb.id)} className="text-muted hover:text-ink p-1"><ChevronRight className="w-5 h-5" /></button>
+                <button onClick={() => navigate('/app/notebooks/' + nb.id)} className="text-muted hover:text-ink p-1"><ChevronRight className="w-5 h-5" /></button>
                 <button onClick={() => handleDelete(nb.id)} className="text-muted hover:text-red-400 p-1 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
