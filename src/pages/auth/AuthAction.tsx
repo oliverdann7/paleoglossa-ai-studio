@@ -9,22 +9,32 @@ import { PaleoIcon } from '@/components/PaleoIcon';
 
 type Status = 'loading' | 'success' | 'error';
 
+const isAsyncMode = (mode: string | null) =>
+  mode === 'verifyEmail' || mode === 'recoverEmail';
+
 export const AuthAction = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [status, setStatus] = useState<Status>('loading');
-  const [message, setMessage] = useState('');
 
   const mode = searchParams.get('mode');
   const oobCode = searchParams.get('oobCode');
 
+  const initialStatus: Status = !oobCode || (!isAsyncMode(mode) && mode !== 'resetPassword')
+    ? 'error'
+    : 'loading';
+
+  const initialMessage = !oobCode
+    ? t('auth.invalidLink', 'This link is invalid or has expired. Please try again.')
+    : !isAsyncMode(mode) && mode !== 'resetPassword'
+      ? t('auth.unknownAction', 'This link is not recognized. Please try again from the app.')
+      : '';
+
+  const [status, setStatus] = useState<Status>(initialStatus);
+  const [message, setMessage] = useState(initialMessage);
+
   useEffect(() => {
-    if (!oobCode) {
-      setStatus('error');
-      setMessage(t('auth.invalidLink', 'This link is invalid or has expired. Please try again.'));
-      return;
-    }
+    if (!oobCode || status === 'error') return;
 
     if (mode === 'resetPassword') {
       navigate(`/auth/reset-password?oobCode=${encodeURIComponent(oobCode)}`, { replace: true });
@@ -57,10 +67,7 @@ export const AuthAction = () => {
         });
       return;
     }
-
-    setStatus('error');
-    setMessage(t('auth.unknownAction', 'This link is not recognized. Please try again from the app.'));
-  }, []);
+  }, [mode, navigate, oobCode, status, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-parch p-6">
