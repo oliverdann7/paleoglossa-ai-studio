@@ -58,7 +58,10 @@ export async function uploadAvatar(uid: string, file: File): Promise<string> {
 
 export async function updateUserProfile(uid: string, data: Partial<Omit<UserProfileData, 'uid' | 'stats' | 'createdAt'>>) {
   const profileRef = doc(db, 'users', uid);
-  await updateDoc(profileRef, data as Record<string, unknown>);
+  const sanitized = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  ) as Record<string, unknown>;
+  await updateDoc(profileRef, sanitized);
 
   const firebaseUser = auth.currentUser;
   if (firebaseUser) {
