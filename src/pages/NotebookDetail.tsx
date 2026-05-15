@@ -213,7 +213,7 @@ export const NotebookDetail = () => {
 
   useEffect(() => {
     if (!notebookId || !user || isDemoMode) {
-      setIsLoadingNotebook(false);
+      setIsLoadingNotebook(false); // eslint-disable-line react-hooks/set-state-in-effect
       setIsLoadingNotes(false);
       return;
     }
