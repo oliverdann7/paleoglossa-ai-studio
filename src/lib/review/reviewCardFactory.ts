@@ -1,4 +1,5 @@
 import { getTokenInfo } from '../data/dictionary';
+import { SRSState } from '../srs/sm2';
 
 export enum CardType {
   FORM_TO_MEANING = 'FORM_TO_MEANING',
@@ -18,6 +19,8 @@ export interface ReviewCard {
   context?: string;
   morphHint?: string;
   transliteration?: string;
+  srs: SRSState;
+  status: string;
 }
 
 export interface CardGenerationOptions {
@@ -121,6 +124,8 @@ export function generateReviewCard(item: any, options?: Partial<CardGenerationOp
     }
   }
 
+  const defaultSRS: SRSState = { interval: 0, ease: 2.5, step: 0, lastReviewed: null, nextReview: new Date().toISOString() };
+
   return {
     itemId: item.id || term,
     term,
@@ -131,6 +136,8 @@ export function generateReviewCard(item: any, options?: Partial<CardGenerationOp
     context,
     morphHint: morph?.partOfSpeech,
     transliteration: translit,
+    srs: item.srs ?? defaultSRS,
+    status: item.status ?? '',
   };
 }
 

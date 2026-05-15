@@ -149,7 +149,6 @@ export const LexDrawerPanel = ({
       if (aiFallbackGloss || isAiFallbackLoading) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setAiFallbackGloss(null);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsAiFallbackLoading(false);
       }
       return;
@@ -169,6 +168,9 @@ export const LexDrawerPanel = ({
       }
     };
     doAiFallback();
+  // aiFallbackGloss and isAiFallbackLoading are intentionally omitted: including them would
+  // cause an infinite loop (the effect sets them, which would retrigger it).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord?.lemma, needsAiFallback, text?.language, selectedWord?.text, selectedWord?.language]);
 
   // Reset research note fields when the selected word changes

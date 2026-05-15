@@ -76,7 +76,7 @@ export const Vocabulary = () => {
         };
       })
       .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime()); // sort due earliest
-  }, [knowledge]);
+  }, [knowledge, activeLanguageId]);
 
   const handleDelete = (id: string) => {
     setWordState(id, WordState.NEW); // Effectively deletes from learned list
