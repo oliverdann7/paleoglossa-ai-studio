@@ -3087,4 +3087,81 @@ export const CorpusDB = {
     }
     return results;
   },
+
+  searchCorpus: (
+    query: string,
+    opts: {
+      languageId?: string;
+      morphology?: Partial<Record<string, string>>;
+      limit?: number;
+    } = {},
+  ): Array<{
+    textId: string;
+    textTitle: string;
+    textLanguage: string;
+    sectionId: string;
+    sentence: any;
+    tokenIdx: number;
+  }> => {
+    const { languageId, morphology, limit = 60 } = opts;
+    const q = query.trim().toLowerCase();
+    const hasMorphFilter = morphology && Object.values(morphology).some(Boolean);
+    if (!q && !hasMorphFilter) return [];
+
+    const allSections = [
+      JOHN_1_1, GENESIS_1, AENEID_1_1, PSALM_23_1, SYRIAC_JOHN_1_1,
+      COPTIC_JOHN_1_1, ARAMAIC_GENESIS_1_1, AKKADIAN_GILGAMESH_1_1,
+      SANSKRIT_GITA_1_1, HITTITE_ANNALS_1_1, EGYPTIAN_PTAHHOTEP_1_1,
+      ANABASIS_1_1, ILIAD_1_1, ODYSSEY_1_1, AESOP_1_1,
+      ...ALL_EXPANDED_SECTIONS,
+    ];
+
+    const textMap = getTextByIdMap();
+    const hits: Array<{
+      textId: string;
+      textTitle: string;
+      textLanguage: string;
+      sectionId: string;
+      sentence: any;
+      tokenIdx: number;
+    }> = [];
+
+    for (const section of allSections) {
+      const text = textMap.get((section as any).textId);
+      if (!text) continue;
+      if (languageId && text.language !== languageId) continue;
+
+      for (const sentence of section.sentences) {
+        for (let i = 0; i < sentence.tokens.length; i++) {
+          const token = sentence.tokens[i];
+          if (q) {
+            const lq = q;
+            const matchesText =
+              token.lemma?.toLowerCase() === lq ||
+              token.surface?.toLowerCase().includes(lq) ||
+              token.normalized?.toLowerCase().includes(lq) ||
+              token.gloss?.toLowerCase().includes(lq);
+            if (!matchesText) continue;
+          }
+          if (hasMorphFilter && token.morphology) {
+            const morph = token.morphology as unknown as Record<string, string>;
+            const morphOk = Object.entries(morphology!).every(
+              ([k, v]) => !v || morph[k]?.toLowerCase() === v.toLowerCase(),
+            );
+            if (!morphOk) continue;
+          }
+          hits.push({
+            textId: (section as any).textId,
+            textTitle: text.title,
+            textLanguage: text.language,
+            sectionId: section.id,
+            sentence,
+            tokenIdx: i,
+          });
+          if (hits.length >= limit) return hits;
+        }
+      }
+    }
+    return hits;
+  },
 };
