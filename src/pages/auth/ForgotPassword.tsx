@@ -20,10 +20,21 @@ export const ForgotPassword = () => {
     setLoading(true);
     setError(null);
     try {
-      await sendPasswordResetEmail(auth, email);
+      const actionCodeSettings = {
+        url: `${window.location.origin}/auth/reset-password`,
+        handleCodeInApp: true,
+      };
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
       setSuccess(true);
     } catch (err: any) {
-      setError(err.message);
+      const code = err.code as string;
+      if (code === 'auth/user-not-found' || code === 'auth/invalid-email') {
+        setError(t("auth.resetNoAccount", "No account found with this email address."));
+      } else if (code === 'auth/network-request-failed') {
+        setError(t("auth.networkError", "Network error. Please check your connection and try again."));
+      } else {
+        setError(err.message);
+      }
     }
     setLoading(false);
   };
