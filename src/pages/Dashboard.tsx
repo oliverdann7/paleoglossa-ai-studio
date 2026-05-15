@@ -64,8 +64,10 @@ export const Dashboard = () => {
     const activeEntries: [string, any][] = [];
 
     for (const [lemma, info] of Object.entries(knowledge)) {
+      if (info == null) continue;
       const i = typeof info === "object" ? (info as any) : { state: info };
       const state: WordState = i.state;
+      if (!state) continue;
       const wordLang = i.languageId || 'unknown';
       if (wordLang !== activeLanguageId && activeLanguageId !== 'all') continue;
 
@@ -423,11 +425,11 @@ export const Dashboard = () => {
                 <div
                   className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full inline-block"
                   style={{
-                    backgroundColor: STATE_COLORS[w.state as WordState].bg,
-                    color: STATE_COLORS[w.state as WordState].text,
+                    backgroundColor: (STATE_COLORS[w.state as WordState] || STATE_COLORS[WordState.NEW]).bg,
+                    color: (STATE_COLORS[w.state as WordState] || STATE_COLORS[WordState.NEW]).text,
                   }}
                 >
-                  {t(`vocab.${STATE_LABELS[w.state as WordState].toLowerCase()}`, STATE_LABELS[w.state as WordState])}
+                  {t(`vocab.${(STATE_LABELS[w.state as WordState] || STATE_LABELS[WordState.NEW]).toLowerCase()}`, STATE_LABELS[w.state as WordState] || STATE_LABELS[WordState.NEW])}
                 </div>
               </div>
             ))}
