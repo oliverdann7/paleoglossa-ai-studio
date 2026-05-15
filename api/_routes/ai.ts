@@ -878,4 +878,85 @@ router.post('/api/ai/tutor/message', requireAuth as any, async (req: Authenticat
   }
 });
 
+router.get('/api/ai/tutor/sessions', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const userId = req.user!.uid;
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    const snap = await adminDb_
+      .collection('users').doc(userId).collection('tutorSessions')
+      .orderBy('updatedAt', 'desc')
+      .limit(30)
+      .get();
+
+    const sessions: any[] = [];
+    snap.forEach(d => {
+      const data = d.data();
+      sessions.push({
+        id: d.id,
+        languageId: data.languageId,
+        title: data.title || `${getLanguageName(data.languageId)} Tutor`,
+        textId: data.textId || null,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+        updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
+      });
+    });
+
+    res.status(200).json({ sessions });
+  } catch (err: any) {
+    console.error('[tutor/sessions] Error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch sessions', code: 'TUTOR_ERROR' });
+  }
+});
+
+router.get('/api/ai/tutor/sessions/:sessionId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const userId = req.user!.uid;
+    const sessionId = String(req.params.sessionId);
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc(sessionId);
+    const sessionSnap = await sessionRef.get();
+    if (!sessionSnap.exists) {
+      return res.status(404).json({ error: 'Session not found', code: 'NOT_FOUND' });
+    }
+
+    const sessionData = sessionSnap.data()!;
+    const messagesSnap = await sessionRef.collection('messages').orderBy('createdAt', 'asc').get();
+
+    const messages: any[] = [];
+    messagesSnap.forEach(d => {
+      const data = d.data();
+      messages.push({
+        id: d.id,
+        role: data.role,
+        content: data.content,
+        context: data.context || null,
+        warnings: data.warnings || null,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+      });
+    });
+
+    const suggestedQuestions = LANGUAGE_SUGGESTED_QUESTIONS[sessionData.languageId] ?? DEFAULT_SUGGESTED_QUESTIONS;
+
+    res.status(200).json({
+      session: {
+        id: sessionId,
+        languageId: sessionData.languageId,
+        title: sessionData.title || `${getLanguageName(sessionData.languageId)} Tutor`,
+        textId: sessionData.textId || null,
+        createdAt: sessionData.createdAt?.toDate?.()?.toISOString() || null,
+        updatedAt: sessionData.updatedAt?.toDate?.()?.toISOString() || null,
+      },
+      messages,
+      suggestedQuestions,
+    });
+  } catch (err: any) {
+    console.error('[tutor/session] Error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch session', code: 'TUTOR_ERROR' });
+  }
+});
+
 export default router;
