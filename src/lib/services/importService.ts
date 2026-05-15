@@ -249,7 +249,7 @@ export class ImportService {
         updatedAt: serverTimestamp(),
         publishedAt: null
       });
-      return json.id || null;
+      return newId || null;
     } catch {
       return null;
     }
