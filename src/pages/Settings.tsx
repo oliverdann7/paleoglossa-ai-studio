@@ -1,16 +1,32 @@
-import { useState } from "react";
-import { Download, RefreshCcw, Settings as SettingsIcon, Snowflake } from "lucide-react";
+import { useRef, useState } from "react";
+import { Camera, Check, Download, Globe, RefreshCcw, Settings as SettingsIcon, Snowflake, User } from "lucide-react";
 import { useSettings } from "../lib/hooks/useSettings";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { useTranslation } from "react-i18next";
 import { db } from "../lib/firebase";
 import { DICTIONARY_SOURCES } from "../lib/data/dictionaryDB";
+import { useAuth } from "../lib/hooks/useAuth";
+import { uploadAvatar, updateUserProfile } from "../lib/services/profileService";
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
   const { exportData, stats } = useKnowledge();
+  const { user, profile, refreshProfile } = useAuth();
 
+  // ── Profile form state ───────────────────────────────────────────────────
+  const [displayName, setDisplayName] = useState(profile?.displayName ?? user?.displayName ?? "");
+  const [nickname, setNickname] = useState(profile?.nickname ?? "");
+  const [bio, setBio] = useState(profile?.bio ?? "");
+  const [isPublic, setIsPublic] = useState(profile?.isPublic ?? false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Other state ──────────────────────────────────────────────────────────
   const freezesTotal = stats?.freezesTotal ?? 2;
   const freezesUsed = stats?.freezesUsed ?? 0;
   const freezesRemaining = freezesTotal - freezesUsed;
@@ -23,7 +39,46 @@ export const Settings = () => {
     localStorage.setItem("app_lang", newLang);
   };
 
+  // ── Avatar selection ─────────────────────────────────────────────────────
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setAvatarPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
 
+  // ── Save profile ─────────────────────────────────────────────────────────
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setProfileSaving(true);
+    setProfileError(null);
+    try {
+      let avatarUrl = profile?.avatarUrl;
+      if (avatarFile) {
+        avatarUrl = await uploadAvatar(user.uid, avatarFile);
+      }
+      const cleanNickname = nickname.replace(/^@/, "").trim();
+      await updateUserProfile(user.uid, {
+        displayName: displayName.trim() || user.displayName || "",
+        nickname: cleanNickname || undefined,
+        bio: bio.trim() || undefined,
+        avatarUrl,
+        isPublic,
+      });
+      await refreshProfile();
+      setAvatarFile(null);
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 2500);
+    } catch (err: any) {
+      setProfileError(err.message ?? "Failed to save profile.");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  // ── Export / reset ───────────────────────────────────────────────────────
   const handleExport = () => {
     const data = exportData();
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -41,18 +96,18 @@ export const Settings = () => {
     localStorage.removeItem("paleoglossa_knowledge");
     localStorage.removeItem("paleoglossa_stats");
     localStorage.removeItem("paleoglossa_reading_sessions");
-    
+
     if (db) {
       try {
         const { getAuth } = await import("firebase/auth");
         const auth = getAuth();
-        const user = auth.currentUser;
-        if (user) {
+        const u = auth.currentUser;
+        if (u) {
           const { collection, getDocs, writeBatch } = await import("firebase/firestore");
-          const collectionsToClear = ['vocabulary', 'imports', 'readingProgress', 'reviewLogs'];
-          
+          const collectionsToClear = ["vocabulary", "imports", "readingProgress", "reviewLogs"];
+
           for (const coll of collectionsToClear) {
-            const querySnapshot = await getDocs(collection(db, `users/${user.uid}/${coll}`));
+            const querySnapshot = await getDocs(collection(db, `users/${u.uid}/${coll}`));
             const batch = writeBatch(db);
             querySnapshot.forEach((doc) => {
               batch.delete(doc.ref);
@@ -64,9 +119,18 @@ export const Settings = () => {
         console.error("Failed to wipe firestore data:", err);
       }
     }
-    
+
     window.location.reload();
   };
+
+  // ── Derived avatar display ───────────────────────────────────────────────
+  const currentAvatar = avatarPreview ?? profile?.avatarUrl ?? user?.photoURL ?? null;
+  const initials = (displayName || user?.displayName || "?")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen pb-24">
@@ -80,6 +144,162 @@ export const Settings = () => {
       </header>
 
       <div className="space-y-8">
+
+        {/* ── Profile & Identity ─────────────────────────────────────────── */}
+        <section className="card p-8">
+          <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr flex items-center gap-2">
+            <User className="w-5 h-5 text-muted" />
+            {t("settings.profile", "Profile & Identity")}
+          </h3>
+
+          {/* Avatar + name row */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
+            {/* Avatar circle */}
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-20 h-20 rounded-full bg-blue/10 border-2 border-blue/20 flex items-center justify-center overflow-hidden hover:border-blue transition-all group relative"
+                title="Change profile picture"
+              >
+                {currentAvatar ? (
+                  <img src={currentAvatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-bold text-blue">{initials}</span>
+                )}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                  <Camera className="w-6 h-6 text-white" />
+                </div>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
+
+            {/* Display name */}
+            <div className="flex-1 w-full">
+              <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-2">
+                {t("settings.displayName", "Display Name")}
+              </label>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder={user?.displayName || user?.email?.split("@")[0] || "Your name"}
+                maxLength={60}
+                className="w-full p-3 bg-parch2/50 border border-bdr rounded-xl text-ink focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all text-[15px]"
+              />
+            </div>
+          </div>
+
+          {/* Nickname */}
+          <div className="mb-6">
+            <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-2">
+              {t("settings.nickname", "Nickname / Handle")}
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted font-mono text-[14px]">@</span>
+              <input
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
+                placeholder="your_handle"
+                maxLength={32}
+                className="w-full pl-7 pr-4 p-3 bg-parch2/50 border border-bdr rounded-xl text-ink focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all text-[14px] font-mono"
+              />
+            </div>
+            <p className="text-[11px] text-muted mt-1.5">
+              {t("settings.nicknameHelp", "Letters, numbers, and underscores only. Visible to other scholars.")}
+            </p>
+          </div>
+
+          {/* Bio */}
+          <div className="mb-6">
+            <label className="block text-[12px] font-bold uppercase tracking-widest text-muted mb-2">
+              {t("settings.bio", "Bio")}
+            </label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder={t("settings.bioPlaceholder", "Share your scholarly interests, languages you're studying, or what brought you to ancient texts…")}
+              maxLength={280}
+              rows={3}
+              className="w-full p-3 bg-parch2/50 border border-bdr rounded-xl text-ink focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all text-[14px] resize-none"
+            />
+            <div className="flex justify-between items-center mt-1">
+              <p className="text-[11px] text-muted">
+                {t("settings.bioHelp", "Shown on your public profile.")}
+              </p>
+              <span className={cn("text-[11px]", bio.length >= 250 ? "text-amber-500" : "text-muted")}>
+                {bio.length}/280
+              </span>
+            </div>
+          </div>
+
+          {/* Public profile toggle */}
+          <div className="mb-7 p-4 rounded-xl bg-parch2/60 border border-bdr flex items-start gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <Globe className="w-4 h-4 text-blue" />
+                <span className="text-[14px] font-bold text-ink">
+                  {t("settings.publicProfile", "Public Profile")}
+                </span>
+              </div>
+              <p className="text-[12px] text-muted leading-relaxed">
+                {isPublic
+                  ? t("settings.publicProfileOnDesc", "Your profile, nickname, and bio are visible to other scholars. Your public texts will appear on your profile page.")
+                  : t("settings.publicProfileOffDesc", "Your profile is private. Only you can see your data. Enable to participate in the scholar community.")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPublic(!isPublic)}
+              className={cn(
+                "relative w-11 h-6 rounded-full transition-colors shrink-0 mt-0.5",
+                isPublic ? "bg-blue" : "bg-parch3 border border-bdr"
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform",
+                  isPublic && "translate-x-5"
+                )}
+              />
+            </button>
+          </div>
+
+          {/* Save button */}
+          {profileError && (
+            <p className="text-[13px] text-red-500 mb-3 px-1">{profileError}</p>
+          )}
+          <button
+            onClick={handleSaveProfile}
+            disabled={profileSaving}
+            className={cn(
+              "flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-[14px] transition-all",
+              profileSaved
+                ? "bg-green-50 border border-green-200 text-green-700"
+                : "bg-blue text-white hover:bg-blue/90 disabled:opacity-60"
+            )}
+          >
+            {profileSaved ? (
+              <>
+                <Check className="w-4 h-4" />
+                {t("settings.profileSaved", "Saved!")}
+              </>
+            ) : profileSaving ? (
+              t("settings.saving", "Saving…")
+            ) : (
+              t("settings.saveProfile", "Save Profile")
+            )}
+          </button>
+        </section>
+
+        {/* ── App Language ───────────────────────────────────────────────── */}
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
             {t("settings.language", "App Language")}
@@ -102,6 +322,7 @@ export const Settings = () => {
           </div>
         </section>
 
+        {/* ── Reading Goals ──────────────────────────────────────────────── */}
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
             {t("settings.readingGoals", "Reading Goals")}
@@ -156,6 +377,7 @@ export const Settings = () => {
           </div>
         </section>
 
+        {/* ── Reader Appearance ──────────────────────────────────────────── */}
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
             {t("settings.readerAppearance", "Reader Appearance")}
@@ -312,6 +534,7 @@ export const Settings = () => {
           </div>
         </section>
 
+        {/* ── Dictionaries ───────────────────────────────────────────────── */}
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-2 pb-4 border-b border-bdr">
             {t("settings.dictionaries", "Dictionaries & Lexicons")}
@@ -349,6 +572,7 @@ export const Settings = () => {
           </div>
         </section>
 
+        {/* ── Data & Export ──────────────────────────────────────────────── */}
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
             {t("settings.dataExport", "Data & Export")}
