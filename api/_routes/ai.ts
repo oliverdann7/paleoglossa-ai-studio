@@ -244,10 +244,9 @@ router.post('/api/ai/ocr', async (req: any, res: any) => {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(200).json({
-        text: '',
-        confidence: null,
-        warnings: ['Gemini API key not configured. OCR is unavailable.'],
+      return res.status(503).json({
+        error: 'OCR is unavailable: GEMINI_API_KEY is not configured on the server.',
+        code: 'OCR_UNAVAILABLE',
       });
     }
 
@@ -265,18 +264,26 @@ Rules:
 - If you are uncertain about a reading, mark it with [?] and note it.
 - Return ONLY the transcribed text, nothing else. No markdown, no explanations.`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: prompt },
-            { inlineData: { mimeType, data: imageBase64 } },
-          ],
-        },
-      ],
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45_000);
+
+    let response: any;
+    try {
+      response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { text: prompt },
+              { inlineData: { mimeType, data: imageBase64 } },
+            ],
+          },
+        ],
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
@@ -291,18 +298,19 @@ Rules:
 
     res.status(200).json({
       text: cleaned,
-      confidence: cleaned ? null : null,
+      confidence: null,
       warnings: warnings.length > 0 ? warnings : undefined,
     });
 
   } catch (err: any) {
-    console.error('[ai/ocr] Error:', err.message);
+    const isTimeout = err?.name === 'AbortError';
+    const message = isTimeout
+      ? 'OCR timed out — try a smaller or clearer image.'
+      : (err?.message || 'Unknown error');
+    console.error('[ai/ocr] Error:', message);
     res.status(500).json({
-      text: '',
-      confidence: null,
-      warnings: ['OCR processing failed: ' + err.message],
-      error: err.message,
-      code: 'OCR_ERROR',
+      error: message,
+      code: isTimeout ? 'OCR_TIMEOUT' : 'OCR_ERROR',
     });
   }
 });
