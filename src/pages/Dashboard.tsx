@@ -64,8 +64,10 @@ export const Dashboard = () => {
     const activeEntries: [string, any][] = [];
 
     for (const [lemma, info] of Object.entries(knowledge)) {
+      if (info == null) continue;
       const i = typeof info === "object" ? (info as any) : { state: info };
       const state: WordState = i.state;
+      if (!state) continue;
       const wordLang = i.languageId || 'unknown';
       if (wordLang !== activeLanguageId && activeLanguageId !== 'all') continue;
 
