@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Search, Trash2, ExternalLink, History, TrendingUp, Brain, GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Trash2, ExternalLink, History, TrendingUp, Brain, GraduationCap, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordInfo } from "../lib/services/vocabularyService";
@@ -12,6 +12,27 @@ import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { getLanguageDisplayName } from "../lib/constants/languages";
 
 const PAGE_SIZE = 50;
+
+function exportToCSV(words: { term: string; definition: string; translit: string; language: string; status: string; encounterCount: number; nextReview: string }[], filename: string) {
+  const header = ['Term', 'Definition', 'Transliteration', 'Language', 'Status', 'Encounters', 'Next Review'];
+  const rows = words.map(w => [
+    w.term,
+    w.definition,
+    w.translit,
+    w.language,
+    w.status,
+    String(w.encounterCount),
+    w.nextReview ? new Date(w.nextReview).toLocaleDateString() : '',
+  ].map(v => `"${v.replace(/"/g, '""')}"`).join(','));
+  const csv = [header.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export const Vocabulary = () => {
   const navigate = useNavigate();
@@ -123,6 +144,15 @@ export const Vocabulary = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => exportToCSV(filteredWords, `vocabulary-${activeLanguageId}-${new Date().toISOString().slice(0, 10)}.csv`)}
+            disabled={filteredWords.length === 0}
+            className="flex items-center gap-2 px-4 py-2.5 border border-bdr rounded-xl text-[13px] font-bold text-ink3 hover:bg-parch2 disabled:opacity-40 transition-all"
+            title={t('vocab.exportCSV', 'Export as CSV')}
+          >
+            <Download className="w-4 h-4" />
+            {t('vocab.export', 'Export')}
+          </button>
           <button onClick={() => navigate("/app/review")} className="btn-primary px-6 py-2.5">
             {t('dashboard.startReview', "Start Review")}
           </button>
