@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -59,6 +59,7 @@ export const LexDrawerPanel = ({
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
   const [aiFallbackGloss, setAiFallbackGloss] = useState<string | null>(null);
   const [isAiFallbackLoading, setIsAiFallbackLoading] = useState(false);
+  const aiFallbackLemmaRef = useRef<string | null>(null);
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -140,39 +141,38 @@ export const LexDrawerPanel = ({
     return null;
   }, [selectedWord, wordInfo?.userGloss, textLanguageId]);
 
-  const needsAiFallback = useMemo(
-    () => selectedWord && !definitionLookup && !isAiFallbackLoading && !aiFallbackGloss,
-    [selectedWord, definitionLookup, isAiFallbackLoading, aiFallbackGloss],
-  );
-
+  // Reset AI gloss state whenever the selected word changes.
   useEffect(() => {
-    if (!needsAiFallback) {
-      if (aiFallbackGloss || isAiFallbackLoading) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setAiFallbackGloss(null);
-        setIsAiFallbackLoading(false);
-      }
-      return;
-    }
+    setAiFallbackGloss(null); // eslint-disable-line react-hooks/set-state-in-effect
+    setIsAiFallbackLoading(false);
+    aiFallbackLemmaRef.current = null;
+  }, [selectedWord?.lemma]);
+
+  // Automatically fetch an AI definition when no lexicon definition is available.
+  useEffect(() => {
+    if (!selectedWord || definitionLookup) return;
+    // Guard: only attempt once per lemma to avoid repeated calls.
+    if (aiFallbackLemmaRef.current === selectedWord.lemma) return;
+    const currentLemma = selectedWord.lemma;
+    aiFallbackLemmaRef.current = currentLemma;
     setIsAiFallbackLoading(true);
-    const doAiFallback = async () => {
+    (async () => {
       try {
-        const languageName = text?.language || selectedWord?.language || "ancient language";
-        const explanation = await AIClient.explainWord(languageName, selectedWord?.text || '', selectedWord?.lemma || '');
-        if (explanation) {
+        const languageName = text?.language || selectedWord.language || "ancient language";
+        const explanation = await AIClient.explainWord(languageName, selectedWord.text, selectedWord.lemma);
+        if (aiFallbackLemmaRef.current === currentLemma && explanation) {
           setAiFallbackGloss(explanation);
         }
       } catch (error) {
         console.error('AI fallback failed:', error);
       } finally {
-        setIsAiFallbackLoading(false);
+        if (aiFallbackLemmaRef.current === currentLemma) {
+          setIsAiFallbackLoading(false);
+        }
       }
-    };
-    doAiFallback();
-  // aiFallbackGloss and isAiFallbackLoading are intentionally omitted: including them would
-  // cause an infinite loop (the effect sets them, which would retrigger it).
+    })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, needsAiFallback, text?.language, selectedWord?.text, selectedWord?.language]);
+  }, [selectedWord?.lemma, !!definitionLookup, text?.language]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
