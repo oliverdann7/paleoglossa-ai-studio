@@ -3,6 +3,7 @@ import { WordState } from '../constants/wordStates';
 import { VocabularyService, KnowledgeMap, WordInfo, SRSData } from '../services/vocabularyService';
 import { STORAGE_KEYS } from '../constants/storage';
 import { useAuth } from './useAuth';
+import { normalizeLemmaKey } from '../utils/lemmaUtils';
 
 // Stable singleton returned for any lemma not yet in the vocabulary.
 // Avoids creating a new object on every getWordInfo call for unknown words,
@@ -64,8 +65,9 @@ useEffect(() => {
   }, [userId]);
 
   const setWordState = useCallback((lemma: string, state: WordState, languageId: string = "unknown", context?: string) => {
+    const normKey = normalizeLemmaKey(lemma);
     setKnowledge(prev => {
-      const current = prev[lemma] || { addedAt: new Date().toISOString() };
+      const current = prev[normKey] || { addedAt: new Date().toISOString() };
       const info: WordInfo = { ...current, state, languageId };
       if (context && (!info.contexts || !info.contexts.includes(context))) {
         info.contexts = [...(info.contexts || []), context].slice(-5);
@@ -79,16 +81,17 @@ useEffect(() => {
           step: 0
         };
       }
-      return { ...prev, [lemma]: info };
+      return { ...prev, [normKey]: info };
     });
     bumpVersion();
     VocabularyService.setWordState(userId, lemma, state, languageId);
   }, [userId, bumpVersion]);
 
   const updateWordSRS = useCallback((lemma: string, srs: SRSData, state: WordState, languageId: string = "unknown") => {
+    const normKey = normalizeLemmaKey(lemma);
     setKnowledge(prev => {
-      const current = prev[lemma] || { addedAt: new Date().toISOString() };
-      return { ...prev, [lemma]: { ...current, srs, state, languageId } };
+      const current = prev[normKey] || { addedAt: new Date().toISOString() };
+      return { ...prev, [normKey]: { ...current, srs, state, languageId } };
     });
     bumpVersion();
     VocabularyService.updateSRS(userId, lemma, srs, state, languageId);
@@ -98,13 +101,13 @@ useEffect(() => {
   // Returns the same object reference per lemma unless that word's state changed,
   // so memo(ReaderToken) skips re-renders for unchanged words.
   const getWordInfo = useCallback((lemma: string): WordInfo => {
-    return knowledgeRef.current[lemma] ?? NEW_WORD_INFO;
+    return knowledgeRef.current[normalizeLemmaKey(lemma)] ?? NEW_WORD_INFO;
   }, []);
 
   const markPageAsSeen = useCallback((tokens: any[]) => {
     const newTokens = tokens.filter(token => {
       if (!token.lemma) return false;
-      const info = knowledgeRef.current[token.lemma];
+      const info = knowledgeRef.current[normalizeLemmaKey(token.lemma)];
       const state = info ? (typeof info === "object" ? (info as any).state : info) : WordState.NEW;
       return state === WordState.NEW;
     });
@@ -113,8 +116,9 @@ useEffect(() => {
     setKnowledge(prev => {
       const next = { ...prev };
       newTokens.forEach(token => {
-        const current = next[token.lemma] || { addedAt: new Date().toISOString() };
-        next[token.lemma] = { ...current, state: WordState.KNOWN, languageId: token.languageId || "unknown" } as any;
+        const normKey = normalizeLemmaKey(token.lemma);
+        const current = next[normKey] || { addedAt: new Date().toISOString() };
+        next[normKey] = { ...current, state: WordState.KNOWN, languageId: token.languageId || "unknown" } as any;
       });
       return next;
     });
@@ -126,20 +130,22 @@ useEffect(() => {
   }, [userId, bumpVersion]);
 
   const setWordNote = useCallback((lemma: string, notes: string, languageId: string = "unknown") => {
+    const normKey = normalizeLemmaKey(lemma);
     setKnowledge(prev => {
-      const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
-      return { ...prev, [lemma]: { ...current, notes } };
+      const current = prev[normKey] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
+      return { ...prev, [normKey]: { ...current, notes } };
     });
     bumpVersion();
     VocabularyService.setWordNote(userId, lemma, notes, languageId);
   }, [userId, bumpVersion]);
 
   const setWordContext = useCallback((lemma: string, context: string, languageId: string = "unknown") => {
+    const normKey = normalizeLemmaKey(lemma);
     setKnowledge(prev => {
-      const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
+      const current = prev[normKey] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
       const contexts = current.contexts || [];
       if (contexts.includes(context)) return prev;
-      return { ...prev, [lemma]: { ...current, contexts: [...contexts, context].slice(-5) } };
+      return { ...prev, [normKey]: { ...current, contexts: [...contexts, context].slice(-5) } };
     });
     bumpVersion();
     VocabularyService.setWordContext(userId, lemma, context, languageId);
@@ -150,9 +156,10 @@ useEffect(() => {
   }, [userId]);
 
   const updateGloss = useCallback((lemma: string, gloss: string, languageId: string = "unknown") => {
+    const normKey = normalizeLemmaKey(lemma);
     setKnowledge(prev => {
-      const current = prev[lemma] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
-      return { ...prev, [lemma]: { ...current, userGloss: gloss } as any };
+      const current = prev[normKey] || { state: WordState.NEW, addedAt: new Date().toISOString(), languageId };
+      return { ...prev, [normKey]: { ...current, userGloss: gloss } as any };
     });
     bumpVersion();
     VocabularyService.updateGloss(userId, lemma, gloss, languageId);

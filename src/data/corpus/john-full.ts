@@ -16,11 +16,12 @@ function sent(id: string, words: string[], translation: string): Sentence {
     tokens: words.map((w, i) => {
       const clean = w.replace(/^[\s.,;·:!?()"«»—–]+|[\s.,;·:!?()"«»—–]+$/g, '');
       const punctAfter = w.slice(clean.length) || ' ';
+      const normalized = clean.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
       return {
         id: `${id}-t${i}`,
         surface: w,
-        normalized: clean.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(),
-        lemma: clean.toLowerCase(),
+        normalized,
+        lemma: normalized,
         gloss: '',
         morphology: { partOfSpeech: 'unknown' },
         punctBefore: i === 0 ? '' : '',
