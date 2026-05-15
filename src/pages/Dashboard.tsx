@@ -98,7 +98,7 @@ export const Dashboard = () => {
       }));
 
     return { knownCount: known, learningCount: learning, reviewCount: review, recentVocab: recent };
-  }, [knowledge]);
+  }, [knowledge, activeLanguageId]);
 
   // Derive first name for personalized greeting
   const firstName = useMemo(() => {
