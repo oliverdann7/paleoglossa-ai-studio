@@ -20,6 +20,7 @@ const Grammar = lazy(() => import('./pages/Grammar').then(module => ({ default: 
 const Tutor = lazy(() => import('./pages/Tutor').then(module => ({ default: module.Tutor })));
 const Syntax = lazy(() => import('./pages/Syntax').then(module => ({ default: module.Syntax })));
 const Notebooks = lazy(() => import('./pages/Notebooks').then(module => ({ default: module.Notebooks })));
+const NotebookDetail = lazy(() => import('./pages/NotebookDetail').then(module => ({ default: module.NotebookDetail })));
 const Manuscripts = lazy(() => import('./pages/Manuscripts').then(module => ({ default: module.Manuscripts })));
 const Courses = lazy(() => import('./pages/Courses').then(module => ({ default: module.Courses })));
 const AudioLab = lazy(() => import('./pages/AudioLab').then(module => ({ default: module.AudioLab })));
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="statistics" element={<Statistics />} />
             <Route path="notes" element={<Notes />} />
             <Route path="notebooks" element={<Notebooks />} />
+            <Route path="notebooks/:notebookId" element={<NotebookDetail />} />
             <Route path="search" element={<SearchPage />} />
             <Route path="grammar" element={<Grammar />} />
             <Route path="tutor" element={<Tutor />} />
