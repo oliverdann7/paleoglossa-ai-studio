@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, AlertCircle, UserCircle } from 'lucide-react';
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { useTranslation } from "react-i18next";
 import { PaleoIcon } from '@/components/PaleoIcon';
 
@@ -26,7 +26,27 @@ export const SignIn = () => {
       await signInWithEmailAndPassword(auth, email, password);
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.message);
+      const code = err.code as string;
+      if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
+        try {
+          const methods = await fetchSignInMethodsForEmail(auth, email);
+          if (methods.includes('google.com')) {
+            setError(t("auth.googleAccountExists", "This email is linked to a Google account. Please sign in with Google above."));
+          } else {
+            setError(t("auth.invalidCredentials", "Incorrect email or password. Please try again."));
+          }
+        } catch {
+          setError(t("auth.invalidCredentials", "Incorrect email or password. Please try again."));
+        }
+      } else if (code === 'auth/too-many-requests') {
+        setError(t("auth.tooManyRequests", "Too many failed attempts. Please wait a moment and try again, or reset your password."));
+      } else if (code === 'auth/user-disabled') {
+        setError(t("auth.userDisabled", "This account has been disabled. Please contact support."));
+      } else if (code === 'auth/network-request-failed') {
+        setError(t("auth.networkError", "Network error. Please check your connection and try again."));
+      } else {
+        setError(err.message);
+      }
       setLoading(false);
     }
   };
