@@ -29,11 +29,9 @@ service cloud.firestore {
 
     // Fields that must only be written by the server (Admin SDK / Stripe webhook).
     // Client writes to the user profile may not modify these fields.
-    // selectedLanguageIds is NOT server-controlled — users may toggle languages
-    // within their plan limits on the client side.
     function serverControlledFields() {
       return ['currentPlan', 'subscriptionStatus', 'stripeCustomerId',
-              'stripeSubscriptionId', 'trialEnd',
+              'stripeSubscriptionId', 'selectedLanguageIds', 'trialEnd',
               'subscriptionUpdatedAt'];
     }
 
@@ -65,9 +63,8 @@ service cloud.firestore {
 
       // Owner may create their profile on sign-up.
       // Subscription fields are not allowed on create (server sets them).
-      // The stats field is optional — SignUp does not include it, but AuthContext does.
       allow create: if isOwner(userId)
-        && incoming().keys().hasAll(['email', 'displayName', 'createdAt'])
+        && incoming().keys().hasAll(['email', 'displayName', 'createdAt', 'stats'])
         && !incoming().keys().hasAny(serverControlledFields());
 
       // Owner may update profile, but NOT server-controlled subscription fields.
@@ -78,7 +75,7 @@ service cloud.firestore {
       match /vocabulary/{termId} {
         function isValidVocabularyPayload() {
           return incoming().keys().hasAny(['term', 'normalizedTerm', 'status', 'languageId'])
-            && (!incoming().keys().hasAll(['status']) || incoming().status in
+            && (!incoming().keys().has('status') || incoming().status in
                ['NEW', 'SEEN', 'LEARNING', 'FAMILIAR', 'KNOWN', 'IGNORED']);
         }
 
@@ -127,6 +124,13 @@ service cloud.firestore {
         allow create: if isOwner(userId) && isValidReviewLogPayload();
         // Logs are append-only — no update or delete from client.
         allow update, delete: if false;
+      }
+
+      // ── Language Stats ─────────────────────────────────
+      match /languageStats/{languageId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId);
+        allow delete: if isOwner(userId);
       }
 
       // ── Language Stats ─────────────────────────────────
