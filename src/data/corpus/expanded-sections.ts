@@ -13,7 +13,7 @@ function sent(id: string, words: string[], translation: string, lemmaMap?: Recor
         id: `${id}-t${i}`,
         surface: w,
         normalized,
-        lemma: mapped?.lemma || clean.toLowerCase(),
+        lemma: mapped?.lemma || normalized,
         gloss: mapped?.gloss || '',
         morphology: { partOfSpeech: 'unknown' },
         punctBefore: i === 0 ? '' : ' ',

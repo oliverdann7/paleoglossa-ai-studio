@@ -25,6 +25,7 @@ import { ImportedSentence } from "../types/firestore";
 import { LANGUAGES } from "../lib/constants/languages";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { useSubscription } from "../lib/contexts/SubscriptionContext";
+import { normalizeLemmaKey } from "../lib/utils/lemmaUtils";
 
 export const Import = () => {
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ export const Import = () => {
     let newWords = 0;
     
     uniqueLemmas.forEach(lemma => {
-      const info = knowledge[lemma];
+      const info = knowledge[normalizeLemmaKey(lemma)];
       if (info) {
         const state = typeof info === 'string' ? info : (info as any).state;
         if (state === WordState.KNOWN) knownWords++;
