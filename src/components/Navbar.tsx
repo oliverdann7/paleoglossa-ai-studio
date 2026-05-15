@@ -97,7 +97,7 @@ export const Navbar = () => {
           <DesktopNavItem icon={Users} label={t("nav.courses", "Courses")} isActive={path.startsWith('/app/courses')} to="/app/courses" />
           
           <div className="nav-label px-3 mb-1 mt-6">{t("nav.manage", "Manage")}</div>
-          <DesktopNavItem icon={PlusCircle} label={t("nav.import", "Import")} isActive={path === '/admin/import'} to="/admin/import" />
+          <DesktopNavItem icon={PlusCircle} label={t("nav.import", "Import")} isActive={path === '/app/import'} to="/app/import" />
           <DesktopNavItem icon={Settings} label={t("nav.settings", "Settings")} isActive={path === '/app/settings'} to="/app/settings" />
           <DesktopNavItem icon={Crown} label={t("nav.upgrade", "Upgrade")} isActive={path === '/app/subscription'} to="/app/subscription" />
           {isAdmin && (
@@ -117,7 +117,7 @@ export const Navbar = () => {
         <MobileNavItem icon={Library} label={t("nav.library", "Library")} isActive={path.startsWith('/app/library')} to="/app/library" />
         <MobileNavItem icon={Brain} label={t("nav.review", "Review")} isActive={path.startsWith('/app/review')} to="/app/review" />
         <MobileNavItem icon={GraduationCap} label={t("nav.words", "Words")} isActive={path.startsWith('/app/vocabulary')} to="/app/vocabulary" />
-        <MobileNavItem icon={MoreHorizontal} label={t("nav.more", "More")} isActive={['/admin/import', '/app/settings', '/app/subscription'].includes(path)} to="/app/settings" />
+        <MobileNavItem icon={MoreHorizontal} label={t("nav.more", "More")} isActive={['/app/import', '/app/settings', '/app/subscription'].includes(path)} to="/app/settings" />
       </nav>
     </>
   );
