@@ -52,7 +52,7 @@ export const Reader = () => {
     if (!textId) return;
     
     const tObj = CorpusDB.getText(textId);
-    if (!tObj && textId.startsWith("import-")) {
+    if (!tObj && (textId.startsWith("import-") || textId.startsWith("imp-"))) {
       ImportService.getImports(user ? user.uid : null).then(imports => {
         const match = imports.find((item: any) => item.id === textId);
         if(match) setLocalText(match);
@@ -66,7 +66,6 @@ export const Reader = () => {
     if (!tObj) {
       const offline = OfflineService.getOfflinePayload(textId);
       if (offline) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLocalText({
           id: offline.textId,
           title: offline.title,
@@ -159,6 +158,8 @@ export const Reader = () => {
       }
     };
     loadProgress();
+  // setSentenceIndex is a stable dispatch from useReducer — safe to omit
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textId, fetchTextProgress, readingMode]);
 
   // Save progress periodically - use refs for stability
@@ -183,6 +184,9 @@ export const Reader = () => {
     return () => {
       if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
     };
+  // scrollProgress and currentSentenceIndex are read via refs inside the interval — adding them
+  // as deps would reset the 5 s interval on every scroll tick, defeating the batching purpose.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textId, saveTextProgress]);
 
   // Clear word insight when word changes
@@ -324,13 +328,16 @@ export const Reader = () => {
   // Determine what kind of content is being read so UI can be honest about it
   const sourceKind: 'import' | 'sample' | 'partial' | 'complete' = useMemo(() => {
     if (!text) return 'complete';
-    if (typeof textId === 'string' && textId.startsWith('import-') && !CorpusDB.getText(textId)) return 'import';
+    if (typeof textId === 'string' && (textId.startsWith('import-') || textId.startsWith('imp-')) && !CorpusDB.getText(textId)) return 'import';
     if (text.isSample) return 'sample';
     if (text.isComplete || text.sourceStatus === 'complete') return 'complete';
     return 'partial';
   }, [text, textId]);
 
-  const chapter = chapters[currentChapterIndex] || chapters[0] || { id: '', title: '', sentences: [] as any[], translation: '' };
+  const chapter = useMemo(
+    () => chapters[currentChapterIndex] || chapters[0] || { id: '', title: '', sentences: [] as any[], translation: '' },
+    [chapters, currentChapterIndex],
+  );
 
   const SENTENCES_PER_PAGE = 30;
 
@@ -362,13 +369,11 @@ export const Reader = () => {
   }, [selectedWord, chapter, currentSentenceIndex]);
 
 
-  // Update refs when state changes (eslint disabled intentionally - we only want to update refs, not trigger re-renders)
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // Update refs when state changes so interval callbacks read fresh values without re-subscribing
   useEffect(() => {
     scrollProgressRef.current = scrollProgress;
   }, [scrollProgress]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     currentSentenceIndexRef.current = currentSentenceIndex;
   }, [currentSentenceIndex]);
@@ -495,6 +500,8 @@ export const Reader = () => {
       if (scrollContainer)
         scrollContainer.removeEventListener("scroll", handleScroll);
     };
+  // setScrollProgress is a stable state setter — safe to omit
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter, readingMode]);
 
   // Keyboard support
@@ -660,7 +667,7 @@ export const Reader = () => {
         setSelectedWord(null);
       }
     }
-  }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, totalPages, chapters.length, currentChapterIndex, currentScrollPage, goToNextChapter, setSentenceIndex, setScrollPage, setAudioPosition]);
+  }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, t, totalPages, chapters.length, currentChapterIndex, currentScrollPage, goToNextChapter, setSentenceIndex, setScrollPage, setAudioPosition]);
 
   const handleSwipe = useCallback(() => {
     if (settings.swipePageMovesToKnown ?? true) {
@@ -773,7 +780,7 @@ export const Reader = () => {
                   })) || [],
                   translation: s.translation || null,
                 })),
-                source: textId?.startsWith('import-') ? 'import' : 'corpus',
+                source: (textId?.startsWith('import-') || textId?.startsWith('imp-')) ? 'import' : 'corpus',
               });
             }
             addToast(t("reader.availableOffline", "Available offline"), 'success');

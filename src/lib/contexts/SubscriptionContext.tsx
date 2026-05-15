@@ -154,12 +154,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const checkAccess = useCallback((languageId: string): boolean => {
     if (hasTrialAccess()) return true;
     return canAccessByPlan(subscription.currentPlan, languageId, subscription.selectedLanguageIds);
-  }, [subscription, isAdmin, hasTrialAccess]);
+  }, [subscription, hasTrialAccess]);
 
   const checkCanAdd = useCallback((): boolean => {
     if (hasTrialAccess()) return true;
     return canAddByPlan(subscription.currentPlan, subscription.selectedLanguageIds);
-  }, [subscription, isAdmin, hasTrialAccess]);
+  }, [subscription, hasTrialAccess]);
 
   const createCheckoutSession = useCallback(async (planId: PlanId, billingCycle: 'monthly' | 'yearly' = 'monthly'): Promise<string | null> => {
     try {
@@ -186,7 +186,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       console.error('Checkout error:', err);
       return null;
     }
-  }, [user, subscription.selectedLanguageIds]);
+  }, [subscription.selectedLanguageIds]);
 
   const createPortalSession = useCallback(async (): Promise<string | null> => {
     try {
@@ -199,7 +199,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       console.error('Portal error:', err);
       return null;
     }
-  }, [subscription]);
+  }, []);
 
   const remainingSlots = isAdmin || isOnTrial() ? Infinity : subscription.currentPlan === 'full_all'
     ? Infinity
@@ -224,6 +224,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSubscription(): SubscriptionContextValue {
   const ctx = useContext(SubscriptionContext);
   if (!ctx) throw new Error('useSubscription must be used within SubscriptionProvider');

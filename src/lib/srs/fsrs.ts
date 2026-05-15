@@ -52,7 +52,6 @@ export function calculateFSRS(
   } else {
     // First review - rating is not 'again'
     if (state.repetitions === 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       newStability = rating === 'easy' ? 4 : rating === 'good' ? 2 : 1;
       newDifficulty = 5;
       newRepetitions = 1;
