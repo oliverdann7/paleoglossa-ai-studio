@@ -57,21 +57,14 @@ export class ReviewService {
     const vocabRef = collection(db, `users/${userId}/vocabulary`);
     const now = new Date().toISOString();
 
-    const constraints: any[] = [
+    // Omit languageId from Firestore query — composite index (languageId + nextReview)
+    // doesn't exist; filter in-memory below instead.
+    const q = query(
+      vocabRef,
       where('nextReview', '<=', now),
       orderBy('nextReview', 'asc'),
-      limit(count * 3), // Fetch extra for in-memory language filter
-    ];
-
-    // Firestore composite index required:
-    // Collection: users/{userId}/vocabulary
-    // Fields: nextReview ASC, languageId ASC
-    // (index is created automatically if using equality filter)
-    if (languageId) {
-      constraints.unshift(where('languageId', '==', languageId));
-    }
-
-    const q = query(vocabRef, ...constraints);
+      limit(count * 3),
+    );
 
     try {
       const snap = await getDocs(q);
@@ -215,7 +208,7 @@ export class ReviewService {
       const dueItems = await this.getDueItems(userId, 100, languageId);
       const today = new Date().toISOString().split('T')[0];
       const logRef = collection(db, `users/${userId}/reviewLogs`);
-      const logSnap = await getDocs(query(logRef, where('languageId', '==', languageId), orderBy('timestamp', 'desc'), limit(200)));
+      const logSnap = await getDocs(query(logRef, orderBy('timestamp', 'desc'), limit(200)));
 
       let reviewedToday = 0;
       let correctToday = 0;
@@ -224,6 +217,7 @@ export class ReviewService {
 
       logSnap.forEach(d => {
         const data = d.data();
+        if (data.languageId !== languageId) return;
         const logDate = data.timestamp?.split('T')[0];
         if (logDate === today) {
           reviewedToday++;
@@ -249,10 +243,11 @@ export class ReviewService {
   static async getWeakLemmas(userId: string, languageId: string, maxItems: number = 5): Promise<{ lemma: string; failCount: number }[]> {
     try {
       const logRef = collection(db, `users/${userId}/reviewLogs`);
-      const logSnap = await getDocs(query(logRef, where('languageId', '==', languageId), orderBy('timestamp', 'desc'), limit(500)));
+      const logSnap = await getDocs(query(logRef, orderBy('timestamp', 'desc'), limit(500)));
       const failMap = new Map<string, number>();
       logSnap.forEach(d => {
         const data = d.data();
+        if (data.languageId !== languageId) return;
         if (!data.wasCorrect) {
           const term = data.term || data.vocabItemId;
           failMap.set(term, (failMap.get(term) || 0) + 1);
@@ -270,10 +265,11 @@ export class ReviewService {
   static async getWeakCardTypes(userId: string, languageId: string): Promise<{ cardType: string; failRate: number; count: number }[]> {
     try {
       const logRef = collection(db, `users/${userId}/reviewLogs`);
-      const logSnap = await getDocs(query(logRef, where('languageId', '==', languageId), orderBy('timestamp', 'desc'), limit(500)));
+      const logSnap = await getDocs(query(logRef, orderBy('timestamp', 'desc'), limit(500)));
       const typeMap = new Map<string, { total: number; failed: number }>();
       logSnap.forEach(d => {
         const data = d.data();
+        if (data.languageId !== languageId) return;
         const ct = data.cardType || 'FORM_TO_MEANING';
         const entry = typeMap.get(ct) || { total: 0, failed: 0 };
         entry.total++;
