@@ -78,7 +78,7 @@ service cloud.firestore {
       match /vocabulary/{termId} {
         function isValidVocabularyPayload() {
           return incoming().keys().hasAny(['term', 'normalizedTerm', 'status', 'languageId'])
-            && (!incoming().keys().has('status') || incoming().status in
+            && (!incoming().keys().hasAll(['status']) || incoming().status in
                ['NEW', 'SEEN', 'LEARNING', 'FAMILIAR', 'KNOWN', 'IGNORED']);
         }
 
