@@ -576,6 +576,25 @@ export const en = {
     "auth.fullName": "Full Name",
     "auth.creatingAcc": "Creating Account...",
     "auth.createAccBtn": "Create Account",
-    "auth.alreadyHave": "Already have an account?"
+    "auth.alreadyHave": "Already have an account?",
+
+    "nav.community": "Community",
+    "nav.discover": "Discover",
+
+    "community.title": "Community",
+    "community.subtitle": "Discover public scholars on Paleoglossa",
+    "community.search": "Search scholars by name, handle, or bio…",
+    "community.you": "You",
+    "community.joined": "Joined {{date}}",
+    "community.wordsKnown": "words",
+    "community.dayStreak": "day streak",
+    "community.viewProfile": "View Profile",
+    "community.count": "{{count}} scholar",
+    "community.emptyTitle": "No public scholars yet",
+    "community.emptyDesc": "Scholars who make their profile public will appear here.",
+    "community.noResults": "No scholars match your search",
+    "community.noResultsDesc": "Try a different name or handle.",
+    "community.errorTitle": "Something went wrong",
+    "community.errorDesc": "Could not load scholars. Please try again."
   }
 };

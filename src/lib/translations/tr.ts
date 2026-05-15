@@ -564,6 +564,25 @@ export const tr = {
     "auth.fullName": "Tam Ad",
     "auth.creatingAcc": "Hesap Oluşturuluyor...",
     "auth.createAccBtn": "Hesap Oluştur",
-    "auth.alreadyHave": "Zaten bir hesabınız var mı?"
+    "auth.alreadyHave": "Zaten bir hesabınız var mı?",
+
+    "nav.community": "Topluluk",
+    "nav.discover": "Keşfet",
+
+    "community.title": "Topluluk",
+    "community.subtitle": "Paleoglossa'daki açık akademisyenleri keşfedin",
+    "community.search": "İsim, kullanıcı adı veya biyografi ile arayın…",
+    "community.you": "Siz",
+    "community.joined": "Katılma tarihi: {{date}}",
+    "community.wordsKnown": "kelime",
+    "community.dayStreak": "günlük seri",
+    "community.viewProfile": "Profili Görüntüle",
+    "community.count": "{{count}} akademisyen",
+    "community.emptyTitle": "Henüz açık akademisyen yok",
+    "community.emptyDesc": "Profilini herkese açık yapan akademisyenler burada görünecek.",
+    "community.noResults": "Aramanızla eşleşen akademisyen bulunamadı",
+    "community.noResultsDesc": "Farklı bir isim veya kullanıcı adı deneyin.",
+    "community.errorTitle": "Bir sorun oluştu",
+    "community.errorDesc": "Akademisyenler yüklenemedi. Lütfen tekrar deneyin."
   }
 };

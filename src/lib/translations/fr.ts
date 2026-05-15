@@ -551,6 +551,25 @@ export const fr = {
     "auth.fullName": "Nom complet",
     "auth.creatingAcc": "Création du compte...",
     "auth.createAccBtn": "Créer un compte",
-    "auth.alreadyHave": "Vous avez déjà un compte ?"
+    "auth.alreadyHave": "Vous avez déjà un compte ?",
+
+    "nav.community": "Communauté",
+    "nav.discover": "Découvrir",
+
+    "community.title": "Communauté",
+    "community.subtitle": "Découvrez les chercheurs publics sur Paleoglossa",
+    "community.search": "Rechercher par nom, pseudo ou biographie…",
+    "community.you": "Vous",
+    "community.joined": "Rejoint le {{date}}",
+    "community.wordsKnown": "mots",
+    "community.dayStreak": "jours de série",
+    "community.viewProfile": "Voir le profil",
+    "community.count": "{{count}} chercheur",
+    "community.emptyTitle": "Aucun chercheur public pour l'instant",
+    "community.emptyDesc": "Les chercheurs qui rendent leur profil public apparaîtront ici.",
+    "community.noResults": "Aucun chercheur ne correspond à votre recherche",
+    "community.noResultsDesc": "Essayez un autre nom ou pseudo.",
+    "community.errorTitle": "Une erreur s'est produite",
+    "community.errorDesc": "Impossible de charger les chercheurs. Veuillez réessayer."
   }
 };
