@@ -1,6 +1,6 @@
 import { db } from '../firebase';
 import { doc, collection, getDocs, serverTimestamp, writeBatch, increment, arrayUnion } from 'firebase/firestore';
-import { WordState } from '../constants/wordStates';
+import { WordState, normalizeWordState } from '../constants/wordStates';
 import { STORAGE_KEYS } from '../constants/storage';
 import { SRSData } from '../../types/firestore';
 import { normalizeTimestamp } from '../utils';
@@ -88,7 +88,18 @@ export class VocabularyService {
   static async getVocabulary(userId: string | null): Promise<KnowledgeMap> {
     if (!userId) {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : {};
+      if (!saved) return {};
+      const raw: Record<string, any> = JSON.parse(saved);
+      // Normalize legacy state values coming from old localStorage data
+      for (const term of Object.keys(raw)) {
+        const entry = raw[term];
+        if (entry && typeof entry === 'object') {
+          entry.state = normalizeWordState(entry.state ?? entry.status);
+        } else if (typeof entry === 'string' || typeof entry === 'number') {
+          raw[term] = { state: normalizeWordState(entry), addedAt: new Date().toISOString() };
+        }
+      }
+      return raw as KnowledgeMap;
     }
 
     const cached = vocabCache.get(userId);
@@ -105,7 +116,7 @@ export class VocabularyService {
         const addedAt = normalizeTimestamp(data.createdAt);
 
         map[data.term] = {
-          state: data.status,
+          state: normalizeWordState(data.status),
           srs: nextReview ? {
             lastReviewed: data.lastReviewed || null,
             nextReview: nextReview,
@@ -212,7 +223,10 @@ export class VocabularyService {
       let count = 0;
 
       for (const [term, info] of entries) {
-        await this.setWordState(userId, term, info.state, info.languageId || "unknown", info.srs);
+        const safeState = normalizeWordState(
+          typeof info === 'object' && info !== null ? (info as any).state ?? (info as any).status : info
+        );
+        await this.setWordState(userId, term, safeState, (info as any)?.languageId || "unknown", (info as any)?.srs);
         count++;
       }
 
