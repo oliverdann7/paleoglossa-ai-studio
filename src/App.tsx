@@ -24,6 +24,7 @@ const Manuscripts = lazy(() => import('./pages/Manuscripts').then(module => ({ d
 const Courses = lazy(() => import('./pages/Courses').then(module => ({ default: module.Courses })));
 const AudioLab = lazy(() => import('./pages/AudioLab').then(module => ({ default: module.AudioLab })));
 const ProfilePage = lazy(() => import('./pages/Profile').then(module => ({ default: module.ProfilePage })));
+const CommunityPage = lazy(() => import('./pages/Community').then(module => ({ default: module.CommunityPage })));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(module => ({ default: module.AdminDashboard })));
 const SignIn = lazy(() => import('./pages/auth/SignIn').then(module => ({ default: module.SignIn })));
 const SignUp = lazy(() => import('./pages/auth/SignUp').then(module => ({ default: module.SignUp })));
@@ -80,6 +81,7 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
             <Route path="subscription" element={<Subscription />} />
             <Route path="profile/:userId" element={<ProfilePage />} />
+            <Route path="community" element={<CommunityPage />} />
           </Route>
 
           {/* Admin */}

@@ -551,6 +551,25 @@ export const ru = {
     "auth.fullName": "Полное имя",
     "auth.creatingAcc": "Создание аккаунта...",
     "auth.createAccBtn": "Создать аккаунт",
-    "auth.alreadyHave": "Уже есть аккаунт?"
+    "auth.alreadyHave": "Уже есть аккаунт?",
+
+    "nav.community": "Сообщество",
+    "nav.discover": "Открыть",
+
+    "community.title": "Сообщество",
+    "community.subtitle": "Откройте для себя публичных учёных на Paleoglossa",
+    "community.search": "Поиск по имени, нику или биографии…",
+    "community.you": "Вы",
+    "community.joined": "Присоединился {{date}}",
+    "community.wordsKnown": "слов",
+    "community.dayStreak": "дней подряд",
+    "community.viewProfile": "Просмотр профиля",
+    "community.count": "{{count}} учёный",
+    "community.emptyTitle": "Пока нет публичных учёных",
+    "community.emptyDesc": "Здесь появятся учёные, сделавшие свой профиль публичным.",
+    "community.noResults": "Учёные по вашему запросу не найдены",
+    "community.noResultsDesc": "Попробуйте другое имя или ник.",
+    "community.errorTitle": "Что-то пошло не так",
+    "community.errorDesc": "Не удалось загрузить учёных. Пожалуйста, попробуйте снова."
   }
 };
