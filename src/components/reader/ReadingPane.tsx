@@ -189,7 +189,7 @@ const ReaderToken = memo(function ReaderToken({
 
 export function ReadingPane({
   sentences, readingMode, currentSentenceIndex, fontSize, highlightIntensity,
-  getWordInfo, knowledgeVersion: _knowledgeVersion, selectedWordId, showTranslit, showParallel, maskKnown,
+  getWordInfo, selectedWordId, showTranslit, showParallel, maskKnown,
   isHebrewFont, isRtl, audioPos,
   aiTranslations, translatingId,
   sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
