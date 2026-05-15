@@ -34,19 +34,19 @@ app.post('/api/test', (_req: any, res: any) => {
 });
 
 // ─── Route modules ───────────────────────────────────────────────────────────
-import authRouter from './routes/auth';
-import lexiconRouter from './routes/lexicon';
-import aiRouter from './routes/ai';
-import audioRouter from './routes/audio';
-import coursesRouter from './routes/courses';
-import manuscriptsRouter from './routes/manuscripts';
-import notesRouter from './routes/notes';
-import syntaxRouter from './routes/syntax';
-import searchRouter from './routes/search';
-import grammarRouter from './routes/grammar';
-import publicTextsRouter from './routes/publicTexts';
-import billingRouter from './routes/billing';
-import adminRouter from './routes/admin';
+import authRouter from './_routes/auth';
+import lexiconRouter from './_routes/lexicon';
+import aiRouter from './_routes/ai';
+import audioRouter from './_routes/audio';
+import coursesRouter from './_routes/courses';
+import manuscriptsRouter from './_routes/manuscripts';
+import notesRouter from './_routes/notes';
+import syntaxRouter from './_routes/syntax';
+import searchRouter from './_routes/search';
+import grammarRouter from './_routes/grammar';
+import publicTextsRouter from './_routes/publicTexts';
+import billingRouter from './_routes/billing';
+import adminRouter from './_routes/admin';
 
 app.use('/', authRouter);
 app.use('/', lexiconRouter);
