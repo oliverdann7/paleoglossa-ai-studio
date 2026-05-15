@@ -2,7 +2,7 @@ import { memo, useRef, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WordState, STATE_COLORS } from '@/lib/constants/wordStates';
+import { WordState, STATE_COLORS, normalizeWordState } from '@/lib/constants/wordStates';
 import { GlossTooltip } from './GlossTooltip';
 
 interface TokenData {
@@ -75,9 +75,9 @@ function getWordStyle(
   highlightIntensity: 'subtle' | 'normal' | 'strong',
   isSelected: boolean,
 ) {
-  const state = wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW;
+  const state = normalizeWordState(wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW);
   const isKnown = state === WordState.KNOWN;
-  const colors = STATE_COLORS[state as WordState] || STATE_COLORS[WordState.NEW];
+  const colors = STATE_COLORS[state];
 
   const opacityMap = { strong: '50', normal: '33', subtle: '15' };
   let bgOpacity = opacityMap[highlightIntensity];
@@ -142,7 +142,7 @@ const ReaderToken = memo(function ReaderToken({
   onWordHover: (gloss: string, x: number, y: number) => void;
   onWordLeave: () => void;
 }) {
-  const state = wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW;
+  const state = normalizeWordState(wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW);
   const isKnown = state === WordState.KNOWN;
   const gloss = token.gloss;
   const showTooltip = showGlossTooltip && !!gloss && (glossTooltipForKnown || !isKnown);

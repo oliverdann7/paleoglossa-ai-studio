@@ -5,7 +5,7 @@ import { Search, Trash2, ExternalLink, History, TrendingUp, Brain, GraduationCap
 import { cn } from "@/lib/utils";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
 import { WordInfo } from "../lib/services/vocabularyService";
-import { WordState, STATE_LABELS } from "../lib/constants/wordStates";
+import { WordState, normalizeWordState, safeStateLabel } from "../lib/constants/wordStates";
 import { getTokenInfo } from "../lib/data/dictionary";
 import { useTranslation } from "react-i18next";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
@@ -48,7 +48,7 @@ export const Vocabulary = () => {
   const words = useMemo(() => {
     return Object.entries(knowledge)
       .filter(([, info]) => {
-        const state = typeof info === "object" ? (info as any).state : info;
+        const state = normalizeWordState(typeof info === "object" ? (info as any).state : info);
         return state !== WordState.NEW;
       })
       .filter(([, info]) => {
@@ -68,7 +68,7 @@ export const Vocabulary = () => {
           definition,
           translit: tokenInfo?.transliteration || "",
           language: languageDesc,
-          status: STATE_LABELS[wordInfo.state as WordState],
+          status: safeStateLabel(wordInfo.state),
           nextReview: nextReview.toISOString(),
           isDue: nextReview <= new Date(),
           encounterCount: wordInfo.encounterCount ?? 0,
