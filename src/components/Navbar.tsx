@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Library, BookOpen, GraduationCap, Settings, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked, BookText } from 'lucide-react';
+import { Library, BookOpen, GraduationCap, Settings, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked, BookText, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { PaleoIcon } from './PaleoIcon';
 import { InterfaceLanguageSwitcher } from './InterfaceLanguageSwitcher';
 import { UserProfileCard } from './UserProfileCard';
+import { useSubscription } from '../lib/contexts/SubscriptionContext';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -47,6 +48,7 @@ export const Navbar = () => {
   const location = useLocation();
   const path = location.pathname;
   const { t } = useTranslation();
+  const { isAdmin } = useSubscription();
 
   return (
     <>  
@@ -98,6 +100,9 @@ export const Navbar = () => {
           <DesktopNavItem icon={PlusCircle} label={t("nav.import", "Import")} isActive={path === '/admin/import'} to="/admin/import" />
           <DesktopNavItem icon={Settings} label={t("nav.settings", "Settings")} isActive={path === '/app/settings'} to="/app/settings" />
           <DesktopNavItem icon={Crown} label={t("nav.upgrade", "Upgrade")} isActive={path === '/app/subscription'} to="/app/subscription" />
+          {isAdmin && (
+            <DesktopNavItem icon={ShieldAlert} label={t("nav.admin", "Admin")} isActive={path.startsWith('/admin') && path !== '/admin/import'} to="/admin" />
+          )}
         </div>
 
         <div className="p-2 border-t border-bdr space-y-1">

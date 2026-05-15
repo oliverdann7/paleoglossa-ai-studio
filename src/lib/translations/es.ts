@@ -164,6 +164,7 @@ export const es = {
     "nav.home": "Inicio",
     "nav.words": "Palabras",
     "nav.more": "Más",
+    "nav.admin": "Admin",
     "notes.title": "Mis Notas",
     "notes.description": "Tus anotaciones personales en vocabulario específico.",
     "notes.search": "Buscar notas...",

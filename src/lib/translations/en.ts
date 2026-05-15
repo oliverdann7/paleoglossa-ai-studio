@@ -335,6 +335,7 @@ export const en = {
     "nav.home": "Home",
     "nav.words": "Words",
     "nav.more": "More",
+    "nav.admin": "Admin",
     "nav.slogan": "Where ancient texts come alive",
     "nav.study": "Study",
     "nav.manage": "Manage",
