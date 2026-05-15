@@ -12,8 +12,9 @@ import { useTranslation } from "react-i18next";
 import { EmptyState } from "../components/ui";
 import {
   WordState,
-  STATE_COLORS,
-  STATE_LABELS,
+  normalizeWordState,
+  safeStateColors,
+  safeStateLabel,
 } from "../lib/constants/wordStates";
 import { ProgressRing } from "../components/reader/ProgressRing";
 import { DashboardSkeleton } from "../components/Skeleton";
@@ -66,7 +67,7 @@ export const Dashboard = () => {
     for (const [lemma, info] of Object.entries(knowledge)) {
       if (info == null) continue;
       const i = typeof info === "object" ? (info as any) : { state: info };
-      const state: WordState = i.state;
+      const state: WordState = normalizeWordState(i.state);
       if (!state) continue;
       const wordLang = i.languageId || 'unknown';
       if (wordLang !== activeLanguageId && activeLanguageId !== 'all') continue;
@@ -92,7 +93,7 @@ export const Dashboard = () => {
       .slice(0, 6)
       .map(([lemma, info]) => ({
         lemma,
-        state: typeof info === "object" ? (info as any).state : info,
+        state: normalizeWordState(typeof info === "object" ? (info as any).state : info),
         lang: getLangForLemma(lemma),
       }));
 
@@ -425,11 +426,11 @@ export const Dashboard = () => {
                 <div
                   className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full inline-block"
                   style={{
-                    backgroundColor: (STATE_COLORS[w.state as WordState] || STATE_COLORS[WordState.NEW]).bg,
-                    color: (STATE_COLORS[w.state as WordState] || STATE_COLORS[WordState.NEW]).text,
+                    backgroundColor: safeStateColors(w.state).bg,
+                    color: safeStateColors(w.state).text,
                   }}
                 >
-                  {t(`vocab.${(STATE_LABELS[w.state as WordState] || STATE_LABELS[WordState.NEW]).toLowerCase()}`, STATE_LABELS[w.state as WordState] || STATE_LABELS[WordState.NEW])}
+                  {t(`vocab.${safeStateLabel(w.state).toLowerCase()}`, safeStateLabel(w.state))}
                 </div>
               </div>
             ))}
