@@ -4,6 +4,7 @@ import { WordState, normalizeWordState } from '../constants/wordStates';
 import { STORAGE_KEYS } from '../constants/storage';
 import { SRSData } from '../../types/firestore';
 import { normalizeTimestamp } from '../utils';
+import { normalizeLemmaKey } from '../utils/lemmaUtils';
 
 export type { SRSData };
 
@@ -27,7 +28,7 @@ const vocabCache = new Map<string, { data: KnowledgeMap; at: number }>();
 const VOCAB_CACHE_TTL = 5 * 60_000;
 
 function getTermId(term: string, languageId: string): string {
-  const key = `${languageId}:${term.toLowerCase().trim()}`;
+  const key = `${languageId}:${normalizeLemmaKey(term)}`;
   return btoa(encodeURIComponent(key)).replace(/[+/=]/g, '_').substring(0, 120);
 }
 
@@ -90,16 +91,18 @@ export class VocabularyService {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return {};
       const raw: Record<string, any> = JSON.parse(saved);
-      // Normalize legacy state values coming from old localStorage data
+      const normalized: KnowledgeMap = {};
       for (const term of Object.keys(raw)) {
         const entry = raw[term];
+        const normKey = normalizeLemmaKey(term);
         if (entry && typeof entry === 'object') {
           entry.state = normalizeWordState(entry.state ?? entry.status);
+          if (!normalized[normKey]) normalized[normKey] = entry;
         } else if (typeof entry === 'string' || typeof entry === 'number') {
-          raw[term] = { state: normalizeWordState(entry), addedAt: new Date().toISOString() };
+          if (!normalized[normKey]) normalized[normKey] = { state: normalizeWordState(entry), addedAt: new Date().toISOString() };
         }
       }
-      return raw as KnowledgeMap;
+      return normalized;
     }
 
     const cached = vocabCache.get(userId);
@@ -115,7 +118,7 @@ export class VocabularyService {
         const nextReview = normalizeTimestamp(data.nextReview);
         const addedAt = normalizeTimestamp(data.createdAt);
 
-        map[data.term] = {
+        map[normalizeLemmaKey(data.term)] = {
           state: normalizeWordState(data.status),
           srs: nextReview ? {
             lastReviewed: data.lastReviewed || null,
@@ -159,7 +162,7 @@ export class VocabularyService {
     const termId = getTermId(term, languageId);
     const payload: any = {
       term,
-      normalizedTerm: term.toLowerCase().trim(),
+      normalizedTerm: normalizeLemmaKey(term),
       status: state,
       languageId,
       updatedAt: serverTimestamp(),
@@ -182,7 +185,7 @@ export class VocabularyService {
     // Use merge=true so the write creates the doc if it doesn't exist yet
     enqueueVocabWrite(userId, termId, {
       term,
-      normalizedTerm: term.toLowerCase().trim(),
+      normalizedTerm: normalizeLemmaKey(term),
       languageId,
       encounterCount: increment(1),
       lastSeenAt: serverTimestamp(),

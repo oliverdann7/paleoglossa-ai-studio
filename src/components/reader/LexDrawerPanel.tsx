@@ -13,6 +13,7 @@ import { findDictionaryEntry, getDefinitionWithFallbacks, LookupResult, GLOSS_SO
 import { useSettings } from '@/lib/hooks/useSettings';
 import { getGrammarReference } from '@/lib/grammar/references';
 import { useNotebook } from '@/lib/hooks/useNotebook';
+import { normalizeLemmaKey } from '@/lib/utils/lemmaUtils';
 
 interface LexDrawerPanelProps {
   selectedWord: any;
@@ -352,7 +353,7 @@ export const LexDrawerPanel = ({
                 WordState.IGNORED,
               ].map((state) => {
                 const normalizedWordState = normalizeWordState(wordInfo?.state);
-                const isActive = normalizedWordState === state || (normalizedWordState === WordState.NEW && state === WordState.NEW && !knowledge[selectedWord.lemma]);
+                const isActive = normalizedWordState === state || (normalizedWordState === WordState.NEW && state === WordState.NEW && !knowledge[normalizeLemmaKey(selectedWord.lemma)]);
 
                 return (
                   <button
