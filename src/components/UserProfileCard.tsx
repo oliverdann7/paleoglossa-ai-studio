@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings, Crown, LogOut, ChevronDown } from 'lucide-react';
+import { Settings, Crown, LogOut, ChevronDown, User } from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth';
 import { useSubscription } from '../lib/contexts/SubscriptionContext';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage';
@@ -21,7 +21,7 @@ function getReadingLevel(knownWords: number): string {
 
 export function UserProfileCard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { subscription, isAdmin } = useSubscription();
   const { activeLanguageId, currentLanguage } = useActiveLanguage();
   const { knowledge } = useVocabulary();
@@ -47,9 +47,13 @@ export function UserProfileCard() {
   const planLabel = isAdmin ? 'Admin' : plan.name;
   const planStatus = subscription.subscriptionStatus === 'active' ? 'Active' : 'Free';
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Guest';
-  const avatarUrl = user?.photoURL;
-  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+  const displayName = profile?.nickname
+    ? `@${profile.nickname}`
+    : profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'Guest';
+
+  const avatarUrl = profile?.avatarUrl ?? user?.photoURL;
+  const rawName = profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'Guest';
+  const initials = rawName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?';
 
   return (
     <div ref={ref} className="relative">
@@ -94,6 +98,10 @@ export function UserProfileCard() {
                 </div>
               </div>
 
+              <button onClick={() => { setOpen(false); navigate(`/app/profile/${user?.uid}`); }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-ink2 hover:bg-parch2 transition-all text-left">
+                <User className="w-4 h-4 text-muted" /> {t("profile.viewProfile", "My Profile")}
+              </button>
               <button onClick={() => { setOpen(false); navigate('/app/settings'); }}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-ink2 hover:bg-parch2 transition-all text-left">
                 <Settings className="w-4 h-4 text-muted" /> {t("profile.settings", "Settings")}

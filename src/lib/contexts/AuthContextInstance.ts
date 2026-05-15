@@ -11,6 +11,14 @@ export interface UserStats {
   freezesUsed: number;
 }
 
+export interface UserProfile {
+  displayName: string;
+  nickname?: string;
+  bio?: string;
+  avatarUrl?: string;
+  isPublic?: boolean;
+}
+
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -18,6 +26,8 @@ export interface AuthContextType {
   setDemoMode: (val: boolean) => void;
   stats: UserStats | null;
   claims: Record<string, unknown>;
+  profile: UserProfile | null;
+  refreshProfile: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -27,4 +37,6 @@ export const AuthContext = createContext<AuthContextType>({
   setDemoMode: () => {},
   stats: null,
   claims: {},
+  profile: null,
+  refreshProfile: async () => {},
 });

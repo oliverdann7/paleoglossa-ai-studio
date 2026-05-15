@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 // Injected at build time by vite.config.ts — reads from firebase-applet-config.json
 // (AI Studio) or VITE_FIREBASE_* environment variables (Vercel / local dev).
@@ -35,6 +36,7 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firestoreDatabaseId || '(default)');
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+export const storage = getStorage(app);
 
 export enum OperationType {
   CREATE = 'create',

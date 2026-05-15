@@ -58,8 +58,9 @@ service cloud.firestore {
     match /users/{userId} {
 
       // ── Profile ────────────────────────────────────────
-      // Owner can read their own profile.
-      allow get: if isOwner(userId);
+      // Owner can always read their own profile.
+      // Any signed-in user can read a profile that has isPublic == true.
+      allow get: if isOwner(userId) || (isSignedIn() && resource.data.isPublic == true);
 
       // Owner may create their profile on sign-up.
       // Subscription fields are not allowed on create (server sets them).
