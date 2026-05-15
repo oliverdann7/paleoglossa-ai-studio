@@ -73,6 +73,7 @@ export default function App() {
             <Route path="manuscripts" element={<Manuscripts />} />
             <Route path="courses" element={<Courses />} />
             <Route path="audio-lab" element={<AudioLab />} />
+            <Route path="import" element={<Import />} />
             <Route path="settings" element={<Settings />} />
             <Route path="subscription" element={<Subscription />} />
           </Route>
