@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { auth, googleProvider, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithPopup, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firebase';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +39,27 @@ export const SignUp = () => {
       await createUserProfile(cred.user.uid, email, fullName);
       navigate('/onboarding');
     } catch (err: any) {
-      setError(err.message);
+      const code = err.code as string;
+      if (code === 'auth/email-already-in-use') {
+        try {
+          const methods = await fetchSignInMethodsForEmail(auth, email);
+          if (methods.includes('google.com')) {
+            setError(t("auth.emailInUseGoogle", "This email is already linked to a Google account. Please sign in with Google instead."));
+          } else {
+            setError(t("auth.emailInUse", "An account with this email already exists. Try signing in instead."));
+          }
+        } catch {
+          setError(t("auth.emailInUse", "An account with this email already exists. Try signing in instead."));
+        }
+      } else if (code === 'auth/weak-password') {
+        setError(t("auth.weakPassword", "Password should be at least 6 characters."));
+      } else if (code === 'auth/invalid-email') {
+        setError(t("auth.invalidEmail", "Please enter a valid email address."));
+      } else if (code === 'auth/network-request-failed') {
+        setError(t("auth.networkError", "Network error. Please check your connection and try again."));
+      } else {
+        setError(err.message);
+      }
       setLoading(false);
     }
   };
