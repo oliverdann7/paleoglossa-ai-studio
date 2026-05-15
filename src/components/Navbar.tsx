@@ -94,8 +94,11 @@ export const Navbar = () => {
           <DesktopNavItem icon={GitBranch} label={t("nav.syntax", "Syntax")} isActive={path.startsWith('/app/syntax')} to="/app/syntax" />
           <DesktopNavItem icon={ScanLine} label={t("nav.manuscripts", "Manuscripts")} isActive={path.startsWith('/app/manuscripts')} to="/app/manuscripts" />
           <DesktopNavItem icon={Headphones} label={t("nav.audioLab", "Audio Lab")} isActive={path.startsWith('/app/audio-lab')} to="/app/audio-lab" />
-          <DesktopNavItem icon={Users} label={t("nav.courses", "Courses")} isActive={path.startsWith('/app/courses')} to="/app/courses" />
-          
+          <DesktopNavItem icon={GraduationCap} label={t("nav.courses", "Courses")} isActive={path.startsWith('/app/courses')} to="/app/courses" />
+
+          <div className="nav-label px-3 mb-1 mt-6">{t("nav.discover", "Discover")}</div>
+          <DesktopNavItem icon={Users} label={t("nav.community", "Community")} isActive={path.startsWith('/app/community')} to="/app/community" />
+
           <div className="nav-label px-3 mb-1 mt-6">{t("nav.manage", "Manage")}</div>
           <DesktopNavItem icon={PlusCircle} label={t("nav.import", "Import")} isActive={path === '/app/import'} to="/app/import" />
           <DesktopNavItem icon={Settings} label={t("nav.settings", "Settings")} isActive={path === '/app/settings'} to="/app/settings" />

@@ -551,6 +551,25 @@ export const zh = {
     "auth.fullName": "全名",
     "auth.creatingAcc": "正在创建账户...",
     "auth.createAccBtn": "创建账户",
-    "auth.alreadyHave": "已有账户？"
+    "auth.alreadyHave": "已有账户？",
+
+    "nav.community": "社区",
+    "nav.discover": "发现",
+
+    "community.title": "社区",
+    "community.subtitle": "在 Paleoglossa 发现公开的学者",
+    "community.search": "按姓名、用户名或简介搜索…",
+    "community.you": "你",
+    "community.joined": "加入于 {{date}}",
+    "community.wordsKnown": "个词",
+    "community.dayStreak": "天连续",
+    "community.viewProfile": "查看资料",
+    "community.count": "{{count}} 位学者",
+    "community.emptyTitle": "暂无公开学者",
+    "community.emptyDesc": "将个人资料设为公开的学者将显示在这里。",
+    "community.noResults": "未找到匹配的学者",
+    "community.noResultsDesc": "请尝试其他姓名或用户名。",
+    "community.errorTitle": "出错了",
+    "community.errorDesc": "无法加载学者列表，请重试。"
   }
 };
