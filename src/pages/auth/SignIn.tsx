@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowRight, Mail, Lock, AlertCircle } from 'lucide-react';
-import { auth, googleProvider } from '@/lib/firebase';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { ArrowRight, Mail, Lock, AlertCircle, UserCircle } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useTranslation } from "react-i18next";
 import { PaleoIcon } from '@/components/PaleoIcon';
 
@@ -31,17 +31,21 @@ export const SignIn = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (promptAccountSelect = false) => {
     if (loading) return;
     setLoading(true);
     setError(null);
     try {
-      await signInWithPopup(auth, googleProvider);
+      const provider = new GoogleAuthProvider();
+      if (promptAccountSelect) {
+        provider.setCustomParameters({ prompt: 'select_account' });
+      }
+      await signInWithPopup(auth, provider);
       navigate(from, { replace: true });
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/popup-blocked') {
-        setError('Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google.');
+        setError(t("auth.popupBlocked", "Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google."));
       } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
         setError(null);
       } else {
@@ -97,7 +101,7 @@ export const SignIn = () => {
             <p className="text-ink3 mb-8">{t("auth.enterDetails", "Enter your details to access your account.")}</p>
 
             <button
-              onClick={handleGoogleSignIn}
+              onClick={() => handleGoogleSignIn(false)}
               disabled={loading}
               className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl border border-bdr hover:bg-parch3 disabled:opacity-70 transition-colors font-medium mb-6"
             >
@@ -182,6 +186,16 @@ export const SignIn = () => {
                 {t("auth.signUp", "Sign Up")}
               </button>
             </p>
+
+            <button
+              type="button"
+              onClick={() => handleGoogleSignIn(true)}
+              disabled={loading}
+              className="mt-4 w-full flex items-center justify-center gap-2 text-sm text-ink3 hover:text-ink transition-colors disabled:opacity-50"
+            >
+              <UserCircle className="w-4 h-4" />
+              {t("auth.useAnotherAccount", "Use another account")}
+            </button>
           </motion.div>
         </div>
       </div>
