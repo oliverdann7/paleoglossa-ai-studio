@@ -129,18 +129,19 @@ export const CommunityPage = () => {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    fetchCommunityScholars()
-      .then((data) => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchCommunityScholars();
         if (!cancelled) setScholars(data);
-      })
-      .catch((err) => {
+      } catch (err: any) {
         if (!cancelled) setError(err?.message || t('community.errorDesc', 'Could not load scholars. Please try again.'));
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    };
+    load();
     return () => { cancelled = true; };
   }, [t]);
 
