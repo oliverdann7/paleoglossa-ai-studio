@@ -29,6 +29,7 @@ const SignIn = lazy(() => import('./pages/auth/SignIn').then(module => ({ defaul
 const SignUp = lazy(() => import('./pages/auth/SignUp').then(module => ({ default: module.SignUp })));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword').then(module => ({ default: module.ResetPassword })));
+const AuthAction = lazy(() => import('./pages/auth/AuthAction').then(module => ({ default: module.AuthAction })));
 const AppLayout = lazy(() => import('./components/AppLayout').then(module => ({ default: module.AppLayout })));
 import { RequireAdmin } from './components/RequireAdmin';
 
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/auth/signup" element={<SignUp />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
+          <Route path="/auth/action" element={<AuthAction />} />
           <Route path="/onboarding" element={<Onboarding />} />
 
           {/* App Core (Authenticated) */}
