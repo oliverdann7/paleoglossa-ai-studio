@@ -3144,7 +3144,7 @@ export const CorpusDB = {
             if (!matchesText) continue;
           }
           if (hasMorphFilter && token.morphology) {
-            const morph = token.morphology as Record<string, string>;
+            const morph = token.morphology as unknown as Record<string, string>;
             const morphOk = Object.entries(morphology!).every(
               ([k, v]) => !v || morph[k]?.toLowerCase() === v.toLowerCase(),
             );
