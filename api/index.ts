@@ -1486,16 +1486,16 @@ const VALID_PAID_PLANS = ['basic_1', 'duo_2', 'full_all'] as const;
 
 const PRICE_IDS: Record<string, { monthly?: string; yearly?: string }> = {
   basic_1: {
-    monthly: process.env.STRIPE_BASIC_PRICE_ID,
-    yearly: process.env.STRIPE_BASIC_YEARLY_PRICE_ID,
+    monthly: process.env.STRIPE_BASIC_PRICE_ID || 'price_1TWJv3RHYZcwyrCIfEFfysbc',
+    yearly: process.env.STRIPE_BASIC_YEARLY_PRICE_ID || 'price_1TWJv3RHYZcwyrCIzBj24F1K',
   },
   duo_2: {
-    monthly: process.env.STRIPE_DUO_PRICE_ID,
-    yearly: process.env.STRIPE_DUO_YEARLY_PRICE_ID,
+    monthly: process.env.STRIPE_DUO_PRICE_ID || 'price_1TWKFQRHYZcwyrCI2YdZgTRF',
+    yearly: process.env.STRIPE_DUO_YEARLY_PRICE_ID || 'price_1TWKFtRHYZcwyrCIRlGZTeH5',
   },
   full_all: {
-    monthly: process.env.STRIPE_FULL_PRICE_ID,
-    yearly: process.env.STRIPE_FULL_YEARLY_PRICE_ID,
+    monthly: process.env.STRIPE_FULL_PRICE_ID || 'price_1TWKHfRHYZcwyrCIQRyQ2QG7',
+    yearly: process.env.STRIPE_FULL_YEARLY_PRICE_ID || 'price_1TWKHfRHYZcwyrCIVaasbWrW',
   },
 };
 
