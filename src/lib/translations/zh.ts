@@ -155,6 +155,7 @@ export const zh = {
     "nav.home": "主页",
     "nav.words": "字词数",
     "nav.more": "其他",
+    "nav.admin": "Admin",
     "notes.title": "我的笔记",
     "notes.description": "您针对特定词汇所作批注。",
     "notes.search": "搜索...",

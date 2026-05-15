@@ -335,6 +335,7 @@ export const pt = {
     "nav.home": "Início",
     "nav.words": "Palavras",
     "nav.more": "Mais",
+    "nav.admin": "Admin",
     "nav.slogan": "Onde textos antigos ganham vida",
     "nav.study": "Estudar",
     "nav.manage": "Gerenciar",

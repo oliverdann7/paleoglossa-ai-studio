@@ -29,6 +29,7 @@ const SignUp = lazy(() => import('./pages/auth/SignUp').then(module => ({ defaul
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword').then(module => ({ default: module.ResetPassword })));
 const AppLayout = lazy(() => import('./components/AppLayout').then(module => ({ default: module.AppLayout })));
+import { RequireAdmin } from './components/RequireAdmin';
 
 const PageFallback = () => (
   <div className="min-h-screen bg-parch flex items-center justify-center text-ink2 font-sans">
@@ -80,7 +81,14 @@ export default function App() {
           <Route path="/admin/import" element={<AppLayout />}>
             <Route index element={<Import />} />
           </Route>
-          <Route path="/admin" element={<AppLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <AppLayout />
+              </RequireAdmin>
+            }
+          >
             <Route index element={<AdminDashboard />} />
           </Route>
 

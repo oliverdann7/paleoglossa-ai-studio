@@ -178,6 +178,7 @@ export const tr = {
     "nav.home": "Ana Sayfa",
     "nav.words": "Kelimeler",
     "nav.more": "Daha Fazla",
+    "nav.admin": "Yönetici",
 
     "notes.title": "Notlarım",
     "notes.description": "Belirli kelimelere ait kişisel açıklamalarınız.",

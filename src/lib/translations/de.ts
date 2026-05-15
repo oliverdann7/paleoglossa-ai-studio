@@ -155,6 +155,7 @@ export const de = {
     "nav.home": "Startseite",
     "nav.words": "Wörter",
     "nav.more": "Mehr",
+    "nav.admin": "Admin",
     "notes.title": "Meine Notizen",
     "notes.description": "Deine persönlichen Anmerkungen zu bestimmten Vokabeln.",
     "notes.search": "Notizen suchen...",
