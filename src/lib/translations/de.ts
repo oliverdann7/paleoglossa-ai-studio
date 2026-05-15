@@ -525,6 +525,31 @@ export const de = {
     "import.errorUpload": "Datei-Upload fehlgeschlagen",
     "profile.settings": "Einstellungen",
     "profile.subscription": "Abo",
-    "profile.signOut": "Abmelden"
+    "profile.signOut": "Abmelden",
+
+    "auth.returnTo": "Zurück zu",
+    "auth.returnDesc": "Setze deine Reise durch die antike Welt fort. Deine Bibliothek und dein Fortschritt warten auf dich.",
+    "auth.signIn": "Anmelden",
+    "auth.enterDetails": "Gib deine Daten ein, um auf dein Konto zuzugreifen.",
+    "auth.pleaseWait": "Bitte warten...",
+    "auth.continueGoogle": "Mit Google fortfahren",
+    "auth.or": "Oder",
+    "auth.email": "E-Mail-Adresse",
+    "auth.password": "Passwort",
+    "auth.forgot": "Vergessen?",
+    "auth.signingIn": "Wird angemeldet...",
+    "auth.noAccount": "Noch kein Konto?",
+    "auth.signUp": "Registrieren",
+    "auth.useAnotherAccount": "Anderes Konto verwenden",
+    "auth.popupBlocked": "Das Popup wurde von deinem Browser blockiert. Bitte erlaube Popups oder öffne die App in einem neuen Tab/Fenster, um dich mit Google anzumelden.",
+    "auth.beginYour": "Beginne deine",
+    "auth.beginDesc": "Schließe dich Gelehrten und Studierenden weltweit an, um die Sprachen des Altertums zu meistern.",
+    "auth.createAccount": "Konto erstellen",
+    "auth.signUpDesc": "Registriere dich, um mit dem Lesen und Übersetzen zu beginnen.",
+    "auth.signUpGoogle": "Mit Google registrieren",
+    "auth.fullName": "Vollständiger Name",
+    "auth.creatingAcc": "Konto wird erstellt...",
+    "auth.createAccBtn": "Konto erstellen",
+    "auth.alreadyHave": "Bereits ein Konto?"
   }
 };

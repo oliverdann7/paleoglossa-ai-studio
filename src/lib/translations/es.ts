@@ -534,6 +534,31 @@ export const es = {
     "import.errorUpload": "Error al subir archivo",
     "profile.settings": "Ajustes",
     "profile.subscription": "Suscripción",
-    "profile.signOut": "Cerrar sesión"
+    "profile.signOut": "Cerrar sesión",
+
+    "auth.returnTo": "Volver a",
+    "auth.returnDesc": "Continúa tu viaje por el mundo antiguo. Tu biblioteca y progreso te esperan.",
+    "auth.signIn": "Iniciar sesión",
+    "auth.enterDetails": "Introduce tus datos para acceder a tu cuenta.",
+    "auth.pleaseWait": "Por favor espera...",
+    "auth.continueGoogle": "Continuar con Google",
+    "auth.or": "O",
+    "auth.email": "Dirección de correo electrónico",
+    "auth.password": "Contraseña",
+    "auth.forgot": "¿Olvidaste?",
+    "auth.signingIn": "Iniciando sesión...",
+    "auth.noAccount": "¿No tienes una cuenta?",
+    "auth.signUp": "Registrarse",
+    "auth.useAnotherAccount": "Usar otra cuenta",
+    "auth.popupBlocked": "Tu navegador bloqueó la ventana emergente. Permite las ventanas emergentes o abre la aplicación en una nueva pestaña/ventana para iniciar sesión con Google.",
+    "auth.beginYour": "Comienza tu",
+    "auth.beginDesc": "Únete a estudiosos y estudiantes de todo el mundo para dominar las lenguas de la antigüedad.",
+    "auth.createAccount": "Crear Cuenta",
+    "auth.signUpDesc": "Regístrate para empezar a leer y traducir.",
+    "auth.signUpGoogle": "Registrarse con Google",
+    "auth.fullName": "Nombre Completo",
+    "auth.creatingAcc": "Creando Cuenta...",
+    "auth.createAccBtn": "Crear Cuenta",
+    "auth.alreadyHave": "¿Ya tienes una cuenta?"
   }
 };

@@ -11,10 +11,11 @@ const INTERFACE_LANGUAGES = [
   { code: 'de', label: 'German', native: 'Deutsch' },
   { code: 'fr', label: 'French', native: 'Français' },
   { code: 'ru', label: 'Russian', native: 'Русский' },
+  { code: 'tr', label: 'Turkish', native: 'Türkçe' },
   { code: 'zh', label: 'Chinese', native: '中文' },
 ];
 
-const STORAGE_KEY = 'paleoglossa_interface_language';
+const STORAGE_KEY = 'app_lang';
 
 export function InterfaceLanguageSwitcher() {
   const { i18n } = useTranslation();
