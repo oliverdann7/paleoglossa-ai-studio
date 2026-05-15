@@ -13,7 +13,6 @@ router.get('/api/courses', optionalAuth as any, async (req: AuthenticatedRequest
   if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
   try {
-    const { FieldValue: _fv } = await import('firebase-admin/firestore');
     const results: any[] = [];
     const seenIds = new Set<string>();
 
