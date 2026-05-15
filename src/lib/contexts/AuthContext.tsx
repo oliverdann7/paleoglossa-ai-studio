@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { AuthContext, UserStats } from './AuthContextInstance';
+import { AuthContext, UserProfile, UserStats } from './AuthContextInstance';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -11,6 +11,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDemoMode, setDemoModeState] = useState(() => localStorage.getItem('paleoglossa_demo_mode') === 'true');
   const [stats, setStats] = useState<UserStats | null>(null);
   const [claims, setClaimsState] = useState<Record<string, unknown>>({});
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   const setDemoMode = (val: boolean) => {
     setDemoModeState(val);
@@ -18,13 +19,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     else localStorage.removeItem('paleoglossa_demo_mode');
   };
 
+  const loadProfile = useCallback(async (uid: string) => {
+    try {
+      const snap = await getDoc(doc(db, 'users', uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        setProfile({
+          displayName: d.displayName || '',
+          nickname: d.nickname,
+          bio: d.bio,
+          avatarUrl: d.avatarUrl,
+          isPublic: d.isPublic ?? false,
+        });
+      }
+    } catch (e) {
+      console.error('Profile load error', e);
+    }
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (auth.currentUser) await loadProfile(auth.currentUser.uid);
+  }, [loadProfile]);
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
         setDemoMode(false);
         try {
-          // Attempt to boot profile if doesn't exist
           const profileRef = doc(db, 'users', u.uid);
           const snap = await getDoc(profileRef);
           if (!snap.exists()) {
@@ -46,11 +68,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               stats: initStats
             });
             setStats(initStats);
+            setProfile({ displayName: u.displayName || '', isPublic: false });
           } else {
-            setStats(snap.data().stats as UserStats);
+            const d = snap.data();
+            setStats(d.stats as UserStats);
+            setProfile({
+              displayName: d.displayName || '',
+              nickname: d.nickname,
+              bio: d.bio,
+              avatarUrl: d.avatarUrl,
+              isPublic: d.isPublic ?? false,
+            });
           }
         } catch (e: any) {
-          // handle failure gently
           console.error("Auth profile error", e);
         }
         let serverAdmin = false;
@@ -68,7 +98,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const result = await u.getIdTokenResult(true);
           const claimsData = result.claims as Record<string, unknown>;
-          // Custom claims take ~1 token refresh to propagate; trust the API response in the meantime.
           if (serverAdmin) claimsData.admin = true;
           setClaimsState(claimsData);
         } catch {
@@ -78,10 +107,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
     return () => unsub();
-  }, []);
+  }, [loadProfile]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, isDemoMode, setDemoMode, stats, claims }}>
+    <AuthContext.Provider value={{ user, loading, isDemoMode, setDemoMode, stats, claims, profile, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
