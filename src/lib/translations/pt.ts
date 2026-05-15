@@ -551,6 +551,31 @@ export const pt = {
 
     "profile.settings": "Configurações",
     "profile.subscription": "Assinatura",
-    "profile.signOut": "Sair"
+    "profile.signOut": "Sair",
+
+    "auth.returnTo": "Voltar para",
+    "auth.returnDesc": "Continue sua jornada pelo mundo antigo. Sua biblioteca e progresso aguardam.",
+    "auth.signIn": "Entrar",
+    "auth.enterDetails": "Insira seus dados para acessar sua conta.",
+    "auth.pleaseWait": "Aguarde...",
+    "auth.continueGoogle": "Continuar com o Google",
+    "auth.or": "Ou",
+    "auth.email": "Endereço de E-mail",
+    "auth.password": "Senha",
+    "auth.forgot": "Esqueceu?",
+    "auth.signingIn": "Entrando...",
+    "auth.noAccount": "Não tem uma conta?",
+    "auth.signUp": "Cadastrar-se",
+    "auth.useAnotherAccount": "Usar outra conta",
+    "auth.popupBlocked": "O pop-up foi bloqueado pelo seu navegador. Permita pop-ups ou abra o aplicativo em uma nova aba/janela para entrar com o Google.",
+    "auth.beginYour": "Comece sua",
+    "auth.beginDesc": "Junte-se a estudiosos e estudantes em todo o mundo para dominar as línguas da antiguidade.",
+    "auth.createAccount": "Criar Conta",
+    "auth.signUpDesc": "Cadastre-se para começar a ler e traduzir.",
+    "auth.signUpGoogle": "Cadastrar com o Google",
+    "auth.fullName": "Nome Completo",
+    "auth.creatingAcc": "Criando Conta...",
+    "auth.createAccBtn": "Criar Conta",
+    "auth.alreadyHave": "Já tem uma conta?"
   }
 };

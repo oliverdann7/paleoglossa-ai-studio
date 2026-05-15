@@ -550,6 +550,31 @@ export const en = {
 
     "profile.settings": "Settings",
     "profile.subscription": "Subscription",
-    "profile.signOut": "Sign Out"
+    "profile.signOut": "Sign Out",
+
+    "auth.returnTo": "Return to",
+    "auth.returnDesc": "Continue your journey through the ancient world. Your library and progress await.",
+    "auth.signIn": "Sign In",
+    "auth.enterDetails": "Enter your details to access your account.",
+    "auth.pleaseWait": "Please Wait...",
+    "auth.continueGoogle": "Continue with Google",
+    "auth.or": "Or",
+    "auth.email": "Email Address",
+    "auth.password": "Password",
+    "auth.forgot": "Forgot?",
+    "auth.signingIn": "Signing In...",
+    "auth.noAccount": "Don't have an account?",
+    "auth.signUp": "Sign Up",
+    "auth.useAnotherAccount": "Use another account",
+    "auth.popupBlocked": "Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google.",
+    "auth.beginYour": "Begin your",
+    "auth.beginDesc": "Join scholars and students worldwide in mastering the languages of antiquity.",
+    "auth.createAccount": "Create Account",
+    "auth.signUpDesc": "Sign up to start reading and translating.",
+    "auth.signUpGoogle": "Sign up with Google",
+    "auth.fullName": "Full Name",
+    "auth.creatingAcc": "Creating Account...",
+    "auth.createAccBtn": "Create Account",
+    "auth.alreadyHave": "Already have an account?"
   }
 };
