@@ -22,14 +22,24 @@ export const ResetPassword = () => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const oobCode = urlParams.get('oobCode');
-      if (oobCode) {
-        await confirmPasswordReset(auth, oobCode, password);
-        onSuccess();
-      } else {
-        throw new Error('Invalid or missing action code (oobCode).');
+      if (!oobCode) {
+        setError(t("auth.resetLinkInvalid", "This reset link is invalid. Please request a new one from the forgot password page."));
+        setLoading(false);
+        return;
       }
+      await confirmPasswordReset(auth, oobCode, password);
+      onSuccess();
     } catch (err: any) {
-      setError(err.message);
+      const code = err.code as string;
+      if (code === 'auth/invalid-action-code' || code === 'auth/expired-action-code') {
+        setError(t("auth.resetLinkExpired", "This reset link has expired or already been used. Please request a new one."));
+      } else if (code === 'auth/weak-password') {
+        setError(t("auth.weakPassword", "Password should be at least 6 characters."));
+      } else if (code === 'auth/network-request-failed') {
+        setError(t("auth.networkError", "Network error. Please check your connection and try again."));
+      } else {
+        setError(err.message);
+      }
       setLoading(false);
     }
   };
