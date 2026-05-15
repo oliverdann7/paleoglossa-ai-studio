@@ -2078,9 +2078,10 @@ app.get('/api/social/community', requireAuth as any, async (_req: AuthenticatedR
     return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
   }
   try {
+    // No orderBy here — combining where(isPublic) + orderBy(createdAt) requires
+    // a composite index that may not exist yet. Sort in memory instead.
     const snap = await adminDb_.collection('users')
       .where('isPublic', '==', true)
-      .orderBy('createdAt', 'desc')
       .limit(100)
       .get();
 
@@ -2099,6 +2100,13 @@ app.get('/api/social/community', requireAuth as any, async (_req: AuthenticatedR
           : undefined,
         sharedTextsCount: data.sharedTextsCount ?? undefined,
       });
+    });
+
+    scholars.sort((a, b) => {
+      if (!a.createdAt && !b.createdAt) return 0;
+      if (!a.createdAt) return 1;
+      if (!b.createdAt) return -1;
+      return b.createdAt.localeCompare(a.createdAt);
     });
 
     res.status(200).json({ scholars });
