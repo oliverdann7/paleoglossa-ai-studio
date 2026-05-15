@@ -138,4 +138,110 @@ router.post('/api/stripe/create-portal-session', requireAuth as any, async (req:
   }
 });
 
+// Reverse mapping for webhook — maps Stripe price ID back to planId.
+const PLANS_BY_PRICE: Record<string, { planId: string; name: string }> = {};
+for (const [planId, prices] of Object.entries(PRICE_IDS)) {
+  for (const priceId of Object.values(prices)) {
+    if (priceId) PLANS_BY_PRICE[priceId] = { planId, name: planId };
+  }
+}
+
+router.post('/api/stripe/webhook', async (req: any, res: any) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!sig || !webhookSecret) {
+    return res.status(200).json({ received: true, devMode: true });
+  }
+
+  try {
+    const stripe = new (await import('stripe')).default(process.env.STRIPE_SECRET_KEY!);
+    const rawBody = req.rawBody || JSON.stringify(req.body);
+    const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const userId = session.client_reference_id || session.metadata?.userId;
+        const planId = session.metadata?.planId || 'basic_1';
+
+        if (userId) {
+          const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
+          const { db } = await import('../../src/lib/firebase');
+          await setDoc(doc(db, `users/${userId}`), {
+            currentPlan: planId,
+            subscriptionStatus: 'active',
+            stripeCustomerId: session.customer,
+            stripeSubscriptionId: session.subscription,
+            selectedLanguageIds: planId === 'full_all' ? ['grc', 'grc-koine', 'hbo', 'lat', 'syr', 'cop', 'arc', 'akk', 'san', 'egy', 'hit'] : ['grc'],
+            subscriptionUpdatedAt: serverTimestamp(),
+          }, { merge: true });
+        }
+        break;
+      }
+
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object;
+        const customerId = subscription.customer as string;
+        const status = subscription.status;
+        const items = subscription.items?.data || [];
+        const priceId = items[0]?.price?.id;
+
+        const planInfo = priceId ? PLANS_BY_PRICE[priceId] : null;
+        const planId = planInfo?.planId || 'basic_1';
+        const subscriptionStatus = status === 'active' ? 'active' as const : status === 'past_due' ? 'past_due' as const : status === 'canceled' || status === 'unpaid' ? 'canceled' as const : 'past_due' as const;
+
+        try {
+          const { collection, getDocs, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+          const { db } = await import('../../src/lib/firebase');
+          const usersSnap = await getDocs(collection(db, 'users'));
+          for (const userDoc of usersSnap.docs) {
+            const data = userDoc.data();
+            if (data.stripeCustomerId === customerId) {
+              await setDoc(doc(db, `users/${userDoc.id}`), {
+                currentPlan: planId,
+                subscriptionStatus,
+                subscriptionUpdatedAt: serverTimestamp(),
+              }, { merge: true });
+              break;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to update user subscription from webhook:', e);
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const deletedSub = event.data.object;
+        const deletedCustomerId = deletedSub.customer as string;
+        try {
+          const { collection, getDocs, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+          const { db } = await import('../../src/lib/firebase');
+          const usersSnap = await getDocs(collection(db, 'users'));
+          for (const userDoc of usersSnap.docs) {
+            const data = userDoc.data();
+            if (data.stripeCustomerId === deletedCustomerId) {
+              await setDoc(doc(db, `users/${userDoc.id}`), {
+                currentPlan: 'free',
+                subscriptionStatus: 'canceled',
+                subscriptionUpdatedAt: serverTimestamp(),
+              }, { merge: true });
+              break;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to cancel subscription from webhook:', e);
+        }
+        break;
+      }
+    }
+
+    res.status(200).json({ received: true });
+  } catch (err: any) {
+    console.error('Stripe webhook error:', err);
+    res.status(400).json({ error: err.message });
+  }
+});
+
 export default router;
