@@ -133,13 +133,6 @@ service cloud.firestore {
         allow delete: if isOwner(userId);
       }
 
-      // ── Language Stats ─────────────────────────────────
-      match /languageStats/{languageId} {
-        allow get, list: if isOwner(userId);
-        allow create, update: if isOwner(userId);
-        allow delete: if isOwner(userId);
-      }
-
       // ── Notes ──────────────────────────────────────────
       match /notes/{noteId} {
         allow get, list: if isOwner(userId);
