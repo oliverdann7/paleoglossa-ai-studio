@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Volume2, Bookmark, Eye, Brain, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AIClient } from '../lib/services/aiClient';
+import { MorphologyService } from '../lib/services/morphologyService';
 import { useTranslation } from 'react-i18next';
 
 interface LexDrawerProps {
@@ -156,25 +157,47 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
 
             <section className="mb-10">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">{t('reader.morphology', 'Morphology')}</h4>
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(word.morphology || {}).map(([key, value]: [string, any]) => (
-                  <div key={key} className="p-4 rounded-xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/5">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-obsidian-900/40 dark:text-vellum-100/40 mb-1">{key}</div>
-                    <div className="text-sm font-bold">{value}</div>
+              {(() => {
+                const morphDisplay = MorphologyService.formatMorphologyForDisplay(
+                  language || word.language || 'grc',
+                  word.morphology,
+                );
+                if (morphDisplay.missing) {
+                  return (
+                    <div className="p-4 rounded-xl border border-dashed border-black/10 dark:border-white/10 text-sm text-obsidian-900/50 dark:text-vellum-100/50">
+                      {t('reader.morphologyMissing', 'Morphological parsing is not available for this token yet.')}
+                    </div>
+                  );
+                }
+                const posEntry = morphDisplay.expanded.find(e => e.label === 'Part of speech');
+                return (
+                  <div>
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      {posEntry && (
+                        <span className="inline-flex items-center px-3 py-1.5 bg-obsidian-900 dark:bg-vellum-100 text-vellum-50 dark:text-obsidian-950 rounded-lg text-[11px] font-bold tracking-wider uppercase">
+                          {posEntry.value}
+                        </span>
+                      )}
+                      <span className="text-[11px] text-obsidian-900/50 dark:text-vellum-100/50 font-medium">
+                        {morphDisplay.compact}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {morphDisplay.expanded
+                        .filter(({ label }) => label !== 'Part of speech')
+                        .map(({ label, value }) => (
+                          <div key={label} className="flex justify-between gap-3 px-3 py-2 bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-lg text-sm">
+                            <span className="text-obsidian-900/40 dark:text-vellum-100/40 text-xs capitalize">{label}</span>
+                            <span className="font-bold">{value}</span>
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })()}
             </section>
 
             <section className="mb-12">
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">{t('reader.rootAnalysis', 'Root Analysis')}</h4>
-              <div className="p-6 rounded-2xl bg-gold-500/5 border border-gold-500/10 mb-4">
-                <div className="text-2xl font-serif font-bold text-gold-600 mb-2">{word.root || '—'}</div>
-                <p className="text-sm text-obsidian-900/60 dark:text-vellum-100/60 leading-relaxed">
-                  {t('reader.rootInfo', 'Shares a semantic root with')} <span className="text-gold-600 font-bold">14 {t('reader.otherWords', 'other words')}</span> {t('reader.inCorpus', 'in this corpus.')}
-                </p>
-              </div>
-
               {(aiInsights || isAiLoading) && (
                 <div className="p-6 rounded-2xl bg-blue/5 border border-blue/10 mb-4">
                   <div className="flex items-center gap-2 mb-3 text-blue font-bold text-sm">
