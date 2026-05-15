@@ -1,65 +1,493 @@
-import { useState, useEffect } from "react";
-import { Loader2, ShieldAlert, Users, FileText, Flag, Activity } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Loader2, ShieldAlert, Users, FileText, Flag, Activity,
+  Crown, UserCheck, UserX, LayoutDashboard, ChevronDown,
+  RefreshCw, Eye, EyeOff, ShieldCheck, Shield,
+} from "lucide-react";
 import { apiFetch } from "../../lib/services/apiFetch";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
-interface Overview { totalUsers: number; paidUsers: number; freeUsers: number; publicTextCount: number; openReports: number; recentAiCalls: number; }
-interface Report { id: string; textId: string; reporterId: string; reason: string; status: string; createdAt?: string; }
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-export const AdminDashboard = () => {
-  const { t } = useTranslation();
-  const [overview, setOverview] = useState<Overview | null>(null);
-  const [reports, setReports] = useState<Report[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+interface Overview {
+  totalUsers: number;
+  paidUsers: number;
+  freeUsers: number;
+  publicTextCount: number;
+  openReports: number;
+  recentAiCalls: number;
+}
 
-  useEffect(() => {
-    Promise.all([
-      apiFetch<Overview>('/api/admin/overview').catch(() => null),
-      apiFetch<Report[]>('/api/admin/reports').catch(() => []),
-    ]).then(([ov, rp]) => {
-      if (ov) setOverview(ov);
-      setReports(rp);
-    }).catch(() => setError('Failed to load admin data')).finally(() => setIsLoading(false));
-  }, []);
+interface AdminUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  currentPlan: string;
+  subscriptionStatus: string;
+  isAdmin: boolean;
+  createdAt: string | null;
+  lastSignIn: string | null;
+}
 
-  if (isLoading) return <div className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin text-blue mx-auto" /></div>;
-  if (error) return <div className="p-12 text-center text-red-500">{error}</div>;
+interface Report {
+  id: string;
+  textId: string;
+  reporterId: string;
+  reason: string;
+  status: string;
+  createdAt?: string;
+}
 
+type Tab = "overview" | "users" | "reports";
+
+const PLANS = [
+  { id: "free", label: "Free" },
+  { id: "basic_1", label: "Basic" },
+  { id: "duo_2", label: "Duo" },
+  { id: "full_all", label: "Full Access" },
+];
+
+// ─── Stat card ────────────────────────────────────────────────────────────────
+
+function StatCard({ icon: Icon, value, label, color }: {
+  icon: React.ElementType; value: number | string; label: string; color: string;
+}) {
   return (
-    <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
-      <h2 className="text-[28px] font-serif font-bold text-ink mb-2 flex items-center gap-3">
-        <ShieldAlert className="w-7 h-7 text-blue" /> {t("admin.title", "Admin Dashboard")}
-      </h2>
-      <p className="text-ink2 text-[15px] mb-8">{t("admin.description", "Site overview and moderation.")}</p>
+    <div className="card p-5 flex flex-col gap-2">
+      <Icon className={cn("w-5 h-5", color)} />
+      <div className="text-[28px] font-bold text-ink leading-none">{value}</div>
+      <div className="text-[11px] font-medium uppercase tracking-wider text-muted">{label}</div>
+    </div>
+  );
+}
 
+// ─── PlanBadge ────────────────────────────────────────────────────────────────
+
+function PlanBadge({ plan }: { plan: string }) {
+  const colors: Record<string, string> = {
+    full_all: "bg-blue/10 text-blue",
+    duo_2: "bg-emerald-50 text-emerald-700",
+    basic_1: "bg-amber-50 text-amber-700",
+    free: "bg-parch3 text-ink3",
+  };
+  const labels: Record<string, string> = {
+    full_all: "Full Access",
+    duo_2: "Duo",
+    basic_1: "Basic",
+    free: "Free",
+  };
+  return (
+    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase", colors[plan] || colors.free)}>
+      {labels[plan] || plan}
+    </span>
+  );
+}
+
+// ─── Overview tab ─────────────────────────────────────────────────────────────
+
+function OverviewTab({ overview, reports }: { overview: Overview | null; reports: Report[] }) {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-8">
       {overview && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-          <div className="card p-4"><Users className="w-5 h-5 text-blue mb-2" /><div className="text-[24px] font-bold">{overview.totalUsers}</div><div className="text-[11px] text-muted">{t("admin.statTotalUsers", "Total Users")}</div></div>
-          <div className="card p-4"><Activity className="w-5 h-5 text-emerald-500 mb-2" /><div className="text-[24px] font-bold">{overview.paidUsers}</div><div className="text-[11px] text-muted">{t("admin.statPaidUsers", "Paid Users")}</div></div>
-          <div className="card p-4"><FileText className="w-5 h-5 text-amber mb-2" /><div className="text-[24px] font-bold">{overview.publicTextCount}</div><div className="text-[11px] text-muted">{t("admin.statPublicTexts", "Public Texts")}</div></div>
-          <div className="card p-4"><Activity className="w-5 h-5 text-purple-500 mb-2" /><div className="text-[24px] font-bold">{overview.recentAiCalls}</div><div className="text-[11px] text-muted">{t("admin.statRecentAiCalls", "Recent AI Calls")}</div></div>
-          <div className="card p-4"><Flag className="w-5 h-5 text-red-400 mb-2" /><div className="text-[24px] font-bold">{overview.openReports}</div><div className="text-[11px] text-muted">{t("admin.statOpenReports", "Open Reports")}</div></div>
-          <div className="card p-4"><Users className="w-5 h-5 text-muted mb-2" /><div className="text-[24px] font-bold">{overview.freeUsers}</div><div className="text-[11px] text-muted">{t("admin.statFreeUsers", "Free Users")}</div></div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <StatCard icon={Users} value={overview.totalUsers} label={t("admin.statTotalUsers", "Total Users")} color="text-blue" />
+          <StatCard icon={Crown} value={overview.paidUsers} label={t("admin.statPaidUsers", "Paid Users")} color="text-emerald-500" />
+          <StatCard icon={Users} value={overview.freeUsers} label={t("admin.statFreeUsers", "Free Users")} color="text-muted" />
+          <StatCard icon={FileText} value={overview.publicTextCount} label={t("admin.statPublicTexts", "Public Texts")} color="text-amber-500" />
+          <StatCard icon={Activity} value={overview.recentAiCalls} label={t("admin.statRecentAiCalls", "AI Calls")} color="text-purple-500" />
+          <StatCard icon={Flag} value={overview.openReports} label={t("admin.statOpenReports", "Open Reports")} color="text-red-400" />
         </div>
       )}
 
       {reports.length > 0 && (
         <div className="card p-6">
-          <h3 className="text-[16px] font-bold text-ink mb-4">{t("admin.recentReports", "Recent Reports")}</h3>
-          <div className="space-y-3">
-            {reports.map(r => (
+          <h3 className="text-[15px] font-bold text-ink mb-4 flex items-center gap-2">
+            <Flag className="w-4 h-4 text-red-400" /> {t("admin.recentReports", "Recent Reports")}
+          </h3>
+          <div className="space-y-2">
+            {reports.slice(0, 10).map(r => (
               <div key={r.id} className="flex items-center justify-between p-3 bg-parch2 rounded-xl">
                 <div>
                   <span className="text-[13px] font-medium text-ink">{t("admin.textLabel", "Text: {{id}}", { id: r.textId })}</span>
                   <p className="text-[12px] text-ink2">{r.reason}</p>
                 </div>
-                <span className="text-[10px] uppercase font-bold text-muted">{r.status}</span>
+                <span className={cn("text-[10px] uppercase font-bold px-2 py-0.5 rounded-full",
+                  r.status === "open" ? "bg-red-50 text-red-600" : "bg-parch3 text-muted")}>
+                  {r.status}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {reports.length === 0 && overview && (
+        <div className="card p-8 text-center text-muted text-sm">No open reports.</div>
+      )}
+    </div>
+  );
+}
+
+// ─── Users tab ────────────────────────────────────────────────────────────────
+
+function UsersTab({ users, onRefresh }: { users: AdminUser[]; onRefresh: () => void }) {
+  const [search, setSearch] = useState("");
+  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q || (u.email || "").toLowerCase().includes(q) || (u.displayName || "").toLowerCase().includes(q);
+    const matchesPlan = planFilter === "all" || u.currentPlan === planFilter;
+    return matchesSearch && matchesPlan;
+  });
+
+  const setPlan = async (uid: string, plan: string) => {
+    setBusy(uid + "_plan");
+    try {
+      await apiFetch(`/api/admin/users/${uid}/set-plan`, { method: "POST", body: { plan } });
+      onRefresh();
+    } catch { /* ignore */ } finally { setBusy(null); }
+  };
+
+  const toggleAdmin = async (uid: string, grant: boolean) => {
+    setBusy(uid + "_admin");
+    try {
+      await apiFetch(`/api/admin/users/${uid}/set-admin`, { method: "POST", body: { grant } });
+      onRefresh();
+    } catch { /* ignore */ } finally { setBusy(null); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-3">
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by email or name…"
+          className="flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-bdr bg-parch2 text-sm text-ink focus:outline-none focus:border-blue"
+        />
+        <div className="relative">
+          <select
+            value={planFilter}
+            onChange={e => setPlanFilter(e.target.value)}
+            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-bdr bg-parch2 text-sm text-ink focus:outline-none focus:border-blue cursor-pointer"
+          >
+            <option value="all">All plans</option>
+            {PLANS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+          </select>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted pointer-events-none" />
+        </div>
+        <button onClick={onRefresh} className="p-2 rounded-lg border border-bdr bg-parch2 hover:bg-parch3 transition-colors">
+          <RefreshCw className="w-4 h-4 text-muted" />
+        </button>
+      </div>
+
+      <p className="text-[11px] text-muted">{filtered.length} user{filtered.length !== 1 ? "s" : ""}</p>
+
+      <div className="card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="border-b border-bdr bg-parch2">
+                <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">User</th>
+                <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Plan</th>
+                <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider hidden md:table-cell">Last Sign-in</th>
+                <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Role</th>
+                <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((u, i) => (
+                <tr key={u.uid} className={cn("border-b border-bdr/40 hover:bg-parch2/60 transition-colors", i % 2 === 0 ? "" : "bg-parch/30")}>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      {u.photoURL ? (
+                        <img src={u.photoURL} alt="" className="w-7 h-7 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-blue/10 border border-blue/20 flex items-center justify-center text-[10px] font-bold text-blue">
+                          {(u.displayName || u.email || "?")[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        {u.displayName && <div className="font-medium text-ink truncate max-w-[180px]">{u.displayName}</div>}
+                        <div className="text-ink3 truncate max-w-[180px]">{u.email || u.uid}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3"><PlanBadge plan={u.currentPlan} /></td>
+                  <td className="px-4 py-3 text-ink3 hidden md:table-cell">
+                    {u.lastSignIn ? new Date(u.lastSignIn).toLocaleDateString() : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.isAdmin ? (
+                      <span className="flex items-center gap-1 text-blue text-[11px] font-bold">
+                        <ShieldCheck className="w-3.5 h-3.5" /> Admin
+                      </span>
+                    ) : (
+                      <span className="text-muted text-[11px]">User</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {/* Plan selector */}
+                      <div className="relative">
+                        <select
+                          value={u.currentPlan}
+                          onChange={e => setPlan(u.uid, e.target.value)}
+                          disabled={busy === u.uid + "_plan"}
+                          className="appearance-none text-[11px] pl-2 pr-6 py-1 rounded-lg border border-bdr bg-white hover:bg-parch2 transition-colors cursor-pointer focus:outline-none focus:border-blue disabled:opacity-50"
+                        >
+                          {PLANS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted pointer-events-none" />
+                      </div>
+
+                      {/* Toggle admin */}
+                      <button
+                        onClick={() => toggleAdmin(u.uid, !u.isAdmin)}
+                        disabled={busy === u.uid + "_admin"}
+                        title={u.isAdmin ? "Revoke admin" : "Grant admin"}
+                        className={cn(
+                          "p-1.5 rounded-lg border transition-colors disabled:opacity-50",
+                          u.isAdmin
+                            ? "border-red-200 hover:bg-red-50 text-red-500"
+                            : "border-blue/20 hover:bg-blue/5 text-blue"
+                        )}
+                      >
+                        {busy === u.uid + "_admin" ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : u.isAdmin ? (
+                          <UserX className="w-3.5 h-3.5" />
+                        ) : (
+                          <UserCheck className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filtered.length === 0 && (
+            <div className="p-8 text-center text-muted text-sm">No users match the current filter.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Reports tab ──────────────────────────────────────────────────────────────
+
+function ReportsTab({ reports, onRefresh }: { reports: Report[]; onRefresh: () => void }) {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const moderate = async (id: string, action: "hide" | "restore") => {
+    setBusy(id);
+    try {
+      await apiFetch(`/api/admin/publicTexts/${id}/${action}`, { method: "POST" });
+      onRefresh();
+    } catch { /* ignore */ } finally { setBusy(null); }
+  };
+
+  if (reports.length === 0) {
+    return (
+      <div className="card p-12 text-center">
+        <Flag className="w-8 h-8 text-muted mx-auto mb-3" />
+        <p className="text-muted text-sm">No reports to review.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="p-4 border-b border-bdr flex items-center justify-between">
+        <h3 className="font-bold text-ink">{t("admin.recentReports", "Recent Reports")} ({reports.length})</h3>
+        <button onClick={onRefresh} className="p-1.5 rounded-lg hover:bg-parch3 transition-colors">
+          <RefreshCw className="w-4 h-4 text-muted" />
+        </button>
+      </div>
+      <div className="divide-y divide-bdr/40">
+        {reports.map(r => (
+          <div key={r.id} className="flex items-start justify-between gap-4 p-4 hover:bg-parch2/50">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[13px] font-semibold text-ink">{t("admin.textLabel", "Text: {{id}}", { id: r.textId })}</span>
+                <span className={cn("text-[10px] uppercase font-bold px-2 py-0.5 rounded-full",
+                  r.status === "open" ? "bg-red-50 text-red-600" : "bg-parch3 text-muted")}>
+                  {r.status}
+                </span>
+              </div>
+              <p className="text-[12px] text-ink2">{r.reason}</p>
+              {r.createdAt && <p className="text-[11px] text-muted mt-1">{new Date(r.createdAt).toLocaleString()}</p>}
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <button
+                onClick={() => moderate(r.textId, "hide")}
+                disabled={busy === r.id}
+                title="Hide text"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 text-[12px] font-medium transition-colors disabled:opacity-50"
+              >
+                {busy === r.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <EyeOff className="w-3.5 h-3.5" />}
+                Hide
+              </button>
+              <button
+                onClick={() => moderate(r.textId, "restore")}
+                disabled={busy === r.id}
+                title="Restore text"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue/20 text-blue hover:bg-blue/5 text-[12px] font-medium transition-colors disabled:opacity-50"
+              >
+                {busy === r.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
+                Restore
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+export const AdminDashboard = () => {
+  const { t } = useTranslation();
+  const [tab, setTab] = useState<Tab>("overview");
+  const [overview, setOverview] = useState<Overview | null>(null);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(false);
+
+  const loadOverview = useCallback(async () => {
+    const [ov, rp] = await Promise.all([
+      apiFetch<Overview>("/api/admin/overview").catch(() => null),
+      apiFetch<Report[]>("/api/admin/reports").catch(() => [] as Report[]),
+    ]);
+    if (ov) setOverview(ov);
+    setReports(rp as Report[]);
+  }, []);
+
+  const loadUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const data = await apiFetch<AdminUser[]>("/api/admin/users");
+      setUsers(data);
+    } catch {
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!cancelled) setIsLoading(true);
+      try {
+        await loadOverview();
+      } catch {
+        if (!cancelled) setError(t("admin.loadError", "Failed to load admin data"));
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loadOverview, t]);
+
+  useEffect(() => {
+    if (tab === "users" && users.length === 0) {
+      (async () => { await loadUsers(); })();
+    }
+  }, [tab, users.length, loadUsers]);
+
+  const handleRefresh = () => {
+    loadOverview();
+    if (tab === "users") loadUsers();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-12 flex justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-12 text-center">
+        <ShieldAlert className="w-10 h-10 text-red-400 mx-auto mb-3" />
+        <p className="text-red-500 font-medium">{error}</p>
+        <p className="text-muted text-sm mt-1">You may not have admin access, or the server is unavailable.</p>
+      </div>
+    );
+  }
+
+  const TABS: { id: Tab; label: string; icon: React.ElementType; badge?: number }[] = [
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "users", label: "Users", icon: Users, badge: overview?.totalUsers },
+    { id: "reports", label: "Reports", icon: Flag, badge: overview?.openReports || undefined },
+  ];
+
+  return (
+    <div className="p-6 md:p-10 max-w-6xl mx-auto font-sans min-h-screen">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h2 className="text-[26px] font-serif font-bold text-ink flex items-center gap-3">
+            <Shield className="w-6 h-6 text-blue" />
+            {t("admin.title", "Admin Dashboard")}
+          </h2>
+          <p className="text-ink2 text-[14px] mt-1">{t("admin.description", "Site overview and moderation.")}</p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-bdr hover:bg-parch3 text-[13px] font-medium text-ink3 transition-colors"
+        >
+          <RefreshCw className="w-3.5 h-3.5" /> Refresh
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 border-b border-bdr">
+        {TABS.map(({ id, label, icon: Icon, badge }) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 -mb-px transition-colors",
+              tab === id
+                ? "border-blue text-blue"
+                : "border-transparent text-ink3 hover:text-ink hover:border-bdr"
+            )}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+            {badge !== undefined && badge > 0 && (
+              <span className={cn("px-1.5 py-0.5 rounded-full text-[10px] font-bold",
+                id === "reports" ? "bg-red-100 text-red-600" : "bg-blue/10 text-blue")}>
+                {badge}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      {tab === "overview" && <OverviewTab overview={overview} reports={reports} />}
+      {tab === "users" && (
+        usersLoading
+          ? <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>
+          : <UsersTab users={users} onRefresh={loadUsers} />
+      )}
+      {tab === "reports" && <ReportsTab reports={reports} onRefresh={() => loadOverview()} />}
     </div>
   );
 };

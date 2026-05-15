@@ -155,6 +155,7 @@ export const ru = {
     "nav.home": "Домой",
     "nav.words": "Слова",
     "nav.more": "Ещё",
+    "nav.admin": "Admin",
     "notes.title": "Мои заметки",
     "notes.description": "Ваши личные аннотации.",
     "notes.search": "Искать заметки...",
