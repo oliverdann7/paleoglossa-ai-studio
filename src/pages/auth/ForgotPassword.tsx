@@ -71,7 +71,7 @@ export const ForgotPassword = () => {
     try {
       await sendReset(email);
       startCooldown();
-    } catch (err: any) {
+    } catch {
       setError(t("auth.resendFailed", "Failed to resend. Please try again."));
     }
     setLoading(false);

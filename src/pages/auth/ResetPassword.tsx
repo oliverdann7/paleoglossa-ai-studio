@@ -16,25 +16,22 @@ export const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pageState, setPageState] = useState<PageState>('verifying');
+  const initialCode = new URLSearchParams(window.location.search).get('oobCode');
+  const [pageState, setPageState] = useState<PageState>(initialCode ? 'verifying' : 'invalid');
   const [oobCode, setOobCode] = useState<string | null>(null);
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('oobCode');
-    if (!code) {
-      setPageState('invalid');
-      return;
-    }
+    if (!initialCode) return;
     // Verify the code is still valid before showing the form
-    verifyPasswordResetCode(auth, code)
+    verifyPasswordResetCode(auth, initialCode)
       .then(() => {
-        setOobCode(code);
+        setOobCode(initialCode);
         setPageState('ready');
       })
       .catch(() => {
         setPageState('invalid');
       });
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
