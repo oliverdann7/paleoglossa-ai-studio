@@ -36,12 +36,14 @@ const DEFAULT_SUBSCRIPTION: UserSubscription = {
 };
 
 const PAID_PLANS: PlanId[] = ['basic_1', 'duo_2', 'full_all'];
+// Must stay in sync with ADMIN_EMAILS in api/index.ts
+const ADMIN_EMAILS = ['ADMIN_EMAIL_REDACTED', 'admin@paleoglossa.com'];
 
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user, claims } = useAuth();
-  const isAdmin = !!claims?.admin;
+  const isAdmin = !!claims?.admin || (!!user?.email && ADMIN_EMAILS.includes(user.email));
   const [subscription, setSubscription] = useState<UserSubscription>(DEFAULT_SUBSCRIPTION);
   const [isLoaded, setIsLoaded] = useState(false);
 
