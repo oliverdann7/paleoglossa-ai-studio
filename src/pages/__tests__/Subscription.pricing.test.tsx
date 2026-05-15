@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { RootProviders } from '../../lib/contexts/RootProviders';
 import { Subscription } from '../Subscription';
+import '../../lib/i18n';
 
 vi.mock('../../lib/firebase', () => ({
   auth: { currentUser: null, onAuthStateChanged: () => () => {} },

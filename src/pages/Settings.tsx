@@ -55,18 +55,19 @@ export const Settings = () => {
     setProfileSaving(true);
     setProfileError(null);
     try {
-      let avatarUrl = profile?.avatarUrl;
+      let avatarUrl: string | undefined = profile?.avatarUrl;
       if (avatarFile) {
         avatarUrl = await uploadAvatar(user.uid, avatarFile);
       }
       const cleanNickname = nickname.replace(/^@/, "").trim();
-      await updateUserProfile(user.uid, {
+      const profileUpdate: Parameters<typeof updateUserProfile>[1] = {
         displayName: displayName.trim() || user.displayName || "",
         nickname: cleanNickname || undefined,
         bio: bio.trim() || undefined,
-        avatarUrl,
         isPublic,
-      });
+      };
+      if (avatarUrl !== undefined) profileUpdate.avatarUrl = avatarUrl;
+      await updateUserProfile(user.uid, profileUpdate);
       await refreshProfile();
       setAvatarFile(null);
       setProfileSaved(true);
