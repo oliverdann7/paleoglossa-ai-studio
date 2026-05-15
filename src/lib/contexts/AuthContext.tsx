@@ -53,18 +53,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // handle failure gently
           console.error("Auth profile error", e);
         }
+        let serverAdmin = false;
         try {
           const token = await u.getIdToken();
-          await fetch('/api/admin/refresh-claims', {
+          const resp = await fetch('/api/admin/refresh-claims', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
           });
-        } catch { /* non-fatal — claim will be picked up on next login */ }
+          if (resp.ok) {
+            const data = await resp.json();
+            serverAdmin = data.admin === true;
+          }
+        } catch { /* non-fatal */ }
         try {
           const result = await u.getIdTokenResult(true);
-          setClaimsState(result.claims as Record<string, unknown>);
+          const claimsData = result.claims as Record<string, unknown>;
+          // Custom claims take ~1 token refresh to propagate; trust the API response in the meantime.
+          if (serverAdmin) claimsData.admin = true;
+          setClaimsState(claimsData);
         } catch {
-          setClaimsState({});
+          setClaimsState(serverAdmin ? { admin: true } : {});
         }
       }
       setLoading(false);
