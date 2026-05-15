@@ -489,7 +489,10 @@ export const Courses = () => {
     setIsLoading(false);
   }, []);
 
-  useEffect(() => { loadCourses(); }, [loadCourses]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadCourses();
+  }, [loadCourses]);
 
   const userId = user?.uid ?? null;
   const ownedCourses = courses.filter(c => c.ownerId === userId);
