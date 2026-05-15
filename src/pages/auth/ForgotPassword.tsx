@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowLeft, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { sendPasswordResetEmail } from 'firebase/auth';
+import { ArrowLeft, Mail, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { sendPasswordResetEmail, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
@@ -14,18 +14,43 @@ export const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isGoogleAccount, setIsGoogleAccount] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  const startCooldown = () => {
+    setCooldown(60);
+    const interval = setInterval(() => {
+      setCooldown(prev => {
+        if (prev <= 1) { clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const sendReset = async (emailAddr: string) => {
+    const actionCodeSettings = {
+      url: `${window.location.origin}/auth/reset-password`,
+      handleCodeInApp: true,
+    };
+    await sendPasswordResetEmail(auth, emailAddr, actionCodeSettings);
+  };
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setIsGoogleAccount(false);
     try {
-      const actionCodeSettings = {
-        url: `${window.location.origin}/auth/reset-password`,
-        handleCodeInApp: true,
-      };
-      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      // Detect Google-only accounts before attempting reset
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      if (methods.length > 0 && !methods.includes('password') && methods.includes('google.com')) {
+        setIsGoogleAccount(true);
+        setLoading(false);
+        return;
+      }
+      await sendReset(email);
       setSuccess(true);
+      startCooldown();
     } catch (err: any) {
       const code = err.code as string;
       if (code === 'auth/user-not-found' || code === 'auth/invalid-email') {
@@ -35,6 +60,19 @@ export const ForgotPassword = () => {
       } else {
         setError(err.message);
       }
+    }
+    setLoading(false);
+  };
+
+  const handleResend = async () => {
+    if (cooldown > 0 || loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await sendReset(email);
+      startCooldown();
+    } catch {
+      setError(t("auth.resendFailed", "Failed to resend. Please try again."));
     }
     setLoading(false);
   };
@@ -66,19 +104,58 @@ export const ForgotPassword = () => {
             </div>
           )}
 
+          {isGoogleAccount && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-6 p-5 rounded-xl bg-parch3 border border-bdr"
+            >
+              <p className="text-sm font-semibold text-ink mb-1">
+                {t("auth.googleAccountTitle", "This account uses Google Sign-In")}
+              </p>
+              <p className="text-sm text-ink3 mb-4">
+                {t("auth.googleAccountDesc", "Your account is linked to Google. You don't need a password — just sign in with Google.")}
+              </p>
+              <button
+                onClick={() => navigate('/auth/login')}
+                className="btn-primary w-full py-2.5 text-sm"
+              >
+                {t("auth.goToSignIn", "Go to Sign In")}
+              </button>
+            </motion.div>
+          )}
+
           {success ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-8 p-6 rounded-xl bg-jadexl border border-jade/20 flex flex-col items-center text-center gap-3 text-jade"
+              className="mb-6"
             >
-              <CheckCircle2 className="w-10 h-10 mb-2" />
-              <h4 className="font-bold text-lg">{t("auth.checkEmail", "Check your email")}</h4>
-              <p className="text-sm font-medium opacity-80">
-                {t("auth.sentLink", "We've sent a password reset link to")} {email}
-              </p>
+              <div className="p-6 rounded-xl bg-jadexl border border-jade/20 flex flex-col items-center text-center gap-3 text-jade mb-4">
+                <CheckCircle2 className="w-10 h-10 mb-2" />
+                <h4 className="font-bold text-lg">{t("auth.checkEmail", "Check your email")}</h4>
+                <p className="text-sm font-medium opacity-80">
+                  {t("auth.sentLink", "We've sent a password reset link to")} <span className="font-bold">{email}</span>
+                </p>
+                <p className="text-xs opacity-60">
+                  {t("auth.checkSpam", "Don't see it? Check your spam folder.")}
+                </p>
+              </div>
+
+              <button
+                onClick={handleResend}
+                disabled={cooldown > 0 || loading}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-bdr text-sm font-medium text-ink3 hover:text-ink hover:bg-parch3 disabled:opacity-50 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                {cooldown > 0
+                  ? t("auth.resendIn", "Resend in {{s}}s", { s: cooldown })
+                  : loading
+                    ? t("auth.sendingLink", "Sending Link...")
+                    : t("auth.resendLink", "Resend reset link")}
+              </button>
             </motion.div>
-          ) : (
+          ) : !isGoogleAccount ? (
             <form onSubmit={handleReset} className="space-y-6">
               <div>
                 <label className="nav-label mb-2 block">{t("auth.email", "Email Address")}</label>
@@ -103,7 +180,7 @@ export const ForgotPassword = () => {
                 {loading ? t("auth.sendingLink", "Sending Link...") : t("auth.sendLink", "Send Reset Link")}
               </button>
             </form>
-          )}
+          ) : null}
 
           <div className="mt-8 text-center">
             <button
