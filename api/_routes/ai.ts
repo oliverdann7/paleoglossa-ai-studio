@@ -692,44 +692,71 @@ Rules:
 
 router.post('/api/ai/syntax', async (req: any, res: any) => {
   try {
-    const { languageId, sentence } = req.body;
+    const { languageId, sentence, tokens: inputTokens } = req.body;
 
     if (!languageId || typeof languageId !== 'string' || !sentence || typeof sentence !== 'string') {
-      return res.status(400).json({ error: 'languageId and sentence are required', code: 'INVALID_INPUT', explanation: '', confidence: null });
+      return res.status(400).json({ error: 'languageId and sentence are required', code: 'INVALID_INPUT' });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(200).json({ explanation: 'Syntax analysis requires GEMINI_API_KEY.', confidence: null, warnings: ['Gemini API key not configured.'] });
+      return res.status(200).json({ tokens: [], explanation: 'Syntax analysis requires GEMINI_API_KEY.', confidence: null, warnings: ['Gemini API key not configured.'] });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });
     const langName = getLanguageName(languageId);
 
-    const prompt = `Provide a syntactic explanation of the following ${langName} sentence.
+    const tokenHint = Array.isArray(inputTokens) && inputTokens.length > 0
+      ? `\nToken list (0-based indices, forms as they appear):\n${inputTokens.map((t: any, i: number) => `  ${i}: "${t.surface || t.form}" (lemma: ${t.lemma || '?'})`).join('\n')}`
+      : '';
 
-Sentence: "${sentence}"
+    const prompt = `You are a ${langName} linguist. Annotate the syntactic dependency structure of the sentence below using Universal Dependencies conventions.
 
-Explain the clause structure, word order, and dependencies. Be honest about uncertainty.
-If you are not confident about the parsing, say so explicitly.
-Do not invent a full treebank. Focus on explanation.
+Sentence: "${sentence}"${tokenHint}
 
-Return ONLY the explanation text — no markdown, no JSON.`;
+Return a JSON object with this exact shape — no markdown fences, no extra keys:
+{
+  "tokens": [
+    {"index": 0, "form": "word", "lemma": "dictionary_form", "pos": "NOUN", "head": -1, "relation": "root"},
+    ...
+  ],
+  "explanation": "1-2 sentence summary of the key clause structure",
+  "confidence": 0.0
+}
 
-    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
-    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-    const hasUncertainty = cleaned.includes('uncertain') || cleaned.includes('not confident') || cleaned.includes('unclear');
+Rules:
+- Split the sentence into individual word/punctuation tokens (one entry per token)
+- pos: one of NOUN VERB ADJ ADV ADP CONJ SCONJ PART DET PRON NUM PUNCT INTJ
+- head: 0-based index of the syntactic head token; -1 for the root
+- relation: Universal Dependencies label (root, nsubj, obj, iobj, obl, nmod, amod, advmod, aux, cop, mark, cc, conj, det, case, vocative, appos, punct, ccomp, xcomp, advcl, acl, compound, flat, dep)
+- Exactly one token must have head=-1 and relation="root"
+- confidence: 0.0–1.0 reflecting your certainty (be conservative for ancient languages)
+- explanation: plain text, no markdown`;
+
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: { responseMimeType: 'application/json' },
+    });
+    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    let parsed: any = {};
+    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
+
+    const resultTokens: any[] = Array.isArray(parsed.tokens) ? parsed.tokens : [];
+    const explanation: string = typeof parsed.explanation === 'string' ? parsed.explanation : '';
+    const confidence: number | null = typeof parsed.confidence === 'number' ? parsed.confidence : null;
+    const hasUncertainty = explanation.includes('uncertain') || explanation.includes('unclear') || (confidence !== null && confidence < 0.6);
 
     res.status(200).json({
-      explanation: cleaned || 'No syntax explanation could be generated.',
-      confidence: null,
-      warnings: hasUncertainty ? ['AI expressed uncertainty in the analysis.'] : undefined,
+      tokens: resultTokens,
+      explanation: explanation || 'No syntax explanation could be generated.',
+      confidence,
+      warnings: hasUncertainty ? ['AI expressed uncertainty in this analysis — treat as approximate.'] : undefined,
     });
   } catch (err: any) {
     console.error('[ai/syntax] Error:', err.message);
-    res.status(200).json({ explanation: 'Syntax analysis failed.', confidence: null, warnings: ['Analysis failed: ' + err.message] });
+    res.status(200).json({ tokens: [], explanation: 'Syntax analysis failed.', confidence: null, warnings: ['Analysis failed: ' + err.message] });
   }
 });
 
