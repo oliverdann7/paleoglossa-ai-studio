@@ -39,6 +39,21 @@ router.post('/api/notebooks', requireAuth as any, async (req: AuthenticatedReque
   }
 });
 
+router.get('/api/notebooks/:notebookId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const notebookId = req.params.notebookId as string;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const snap = await adminDb_.collection('users').doc(userId).collection('notebooks').doc(notebookId).get();
+    if (!snap.exists) return res.status(404).json({ error: 'Not found', code: 'NOT_FOUND' });
+    res.status(200).json({ id: snap.id, ...snap.data() });
+  } catch (e: any) {
+    console.error('[notebooks] Error fetching single:', e.message);
+    res.status(500).json({ error: 'Failed to fetch notebook', code: 'INTERNAL_ERROR' });
+  }
+});
+
 router.delete('/api/notebooks/:notebookId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
   const userId = req.user!.uid;
   const notebookId = req.params.notebookId as string;
@@ -103,6 +118,26 @@ router.post('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, 
   } catch (e: any) {
     console.error('[notes] Error creating:', e.message);
     res.status(500).json({ error: 'Failed to create note', code: 'INTERNAL_ERROR' });
+  }
+});
+
+router.patch('/api/notes/:noteId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const userId = req.user!.uid;
+  const noteId = req.params.noteId as string;
+  const { content, tags, notebookId } = req.body;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const updates: Record<string, any> = { updatedAt: FieldValue.serverTimestamp() };
+    if (content !== undefined) updates.content = content;
+    if (tags !== undefined) updates.tags = tags;
+    if (notebookId !== undefined) updates.notebookId = notebookId;
+    await adminDb_.collection('users').doc(userId).collection('notes').doc(noteId).update(updates);
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[notes] Error updating:', e.message);
+    res.status(500).json({ error: 'Failed to update note', code: 'INTERNAL_ERROR' });
   }
 });
 
