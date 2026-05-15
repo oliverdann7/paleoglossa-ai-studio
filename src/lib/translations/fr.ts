@@ -525,6 +525,31 @@ export const fr = {
     "import.errorUpload": "Échec du téléchargement du fichier",
     "profile.settings": "Paramètres",
     "profile.subscription": "Abonnement",
-    "profile.signOut": "Déconnexion"
+    "profile.signOut": "Déconnexion",
+
+    "auth.returnTo": "Retour à",
+    "auth.returnDesc": "Continuez votre voyage dans le monde antique. Votre bibliothèque et vos progrès vous attendent.",
+    "auth.signIn": "Se connecter",
+    "auth.enterDetails": "Entrez vos informations pour accéder à votre compte.",
+    "auth.pleaseWait": "Veuillez patienter...",
+    "auth.continueGoogle": "Continuer avec Google",
+    "auth.or": "Ou",
+    "auth.email": "Adresse e-mail",
+    "auth.password": "Mot de passe",
+    "auth.forgot": "Oublié ?",
+    "auth.signingIn": "Connexion en cours...",
+    "auth.noAccount": "Vous n'avez pas de compte ?",
+    "auth.signUp": "S'inscrire",
+    "auth.useAnotherAccount": "Utiliser un autre compte",
+    "auth.popupBlocked": "La fenêtre pop-up a été bloquée par votre navigateur. Veuillez autoriser les pop-ups ou ouvrir l'application dans un nouvel onglet/fenêtre pour vous connecter avec Google.",
+    "auth.beginYour": "Commencez votre",
+    "auth.beginDesc": "Rejoignez des érudits et des étudiants du monde entier pour maîtriser les langues de l'Antiquité.",
+    "auth.createAccount": "Créer un compte",
+    "auth.signUpDesc": "Inscrivez-vous pour commencer à lire et à traduire.",
+    "auth.signUpGoogle": "S'inscrire avec Google",
+    "auth.fullName": "Nom complet",
+    "auth.creatingAcc": "Création du compte...",
+    "auth.createAccBtn": "Créer un compte",
+    "auth.alreadyHave": "Vous avez déjà un compte ?"
   }
 };

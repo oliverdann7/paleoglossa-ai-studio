@@ -525,6 +525,31 @@ export const ru = {
     "import.errorUpload": "Не удалось загрузить файл",
     "profile.settings": "Настройки",
     "profile.subscription": "Подписка",
-    "profile.signOut": "Выйти"
+    "profile.signOut": "Выйти",
+
+    "auth.returnTo": "Вернуться к",
+    "auth.returnDesc": "Продолжайте своё путешествие по древнему миру. Ваша библиотека и прогресс ждут вас.",
+    "auth.signIn": "Войти",
+    "auth.enterDetails": "Введите данные для доступа к вашему аккаунту.",
+    "auth.pleaseWait": "Пожалуйста, подождите...",
+    "auth.continueGoogle": "Продолжить с Google",
+    "auth.or": "Или",
+    "auth.email": "Адрес электронной почты",
+    "auth.password": "Пароль",
+    "auth.forgot": "Забыли?",
+    "auth.signingIn": "Выполняется вход...",
+    "auth.noAccount": "Нет аккаунта?",
+    "auth.signUp": "Зарегистрироваться",
+    "auth.useAnotherAccount": "Использовать другой аккаунт",
+    "auth.popupBlocked": "Всплывающее окно было заблокировано браузером. Разрешите всплывающие окна или откройте приложение в новой вкладке/окне для входа через Google.",
+    "auth.beginYour": "Начните своё",
+    "auth.beginDesc": "Присоединяйтесь к учёным и студентам по всему миру в освоении языков древности.",
+    "auth.createAccount": "Создать аккаунт",
+    "auth.signUpDesc": "Зарегистрируйтесь, чтобы начать читать и переводить.",
+    "auth.signUpGoogle": "Зарегистрироваться через Google",
+    "auth.fullName": "Полное имя",
+    "auth.creatingAcc": "Создание аккаунта...",
+    "auth.createAccBtn": "Создать аккаунт",
+    "auth.alreadyHave": "Уже есть аккаунт?"
   }
 };

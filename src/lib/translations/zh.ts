@@ -525,6 +525,31 @@ export const zh = {
     "import.errorUpload": "文件上传失败",
     "profile.settings": "设置",
     "profile.subscription": "订阅",
-    "profile.signOut": "退出登录"
+    "profile.signOut": "退出登录",
+
+    "auth.returnTo": "返回",
+    "auth.returnDesc": "继续您在古代世界的旅程。您的图书馆和进度在等待您。",
+    "auth.signIn": "登录",
+    "auth.enterDetails": "输入您的信息以访问您的账户。",
+    "auth.pleaseWait": "请稍候...",
+    "auth.continueGoogle": "使用 Google 继续",
+    "auth.or": "或",
+    "auth.email": "电子邮件地址",
+    "auth.password": "密码",
+    "auth.forgot": "忘记了？",
+    "auth.signingIn": "登录中...",
+    "auth.noAccount": "还没有账户？",
+    "auth.signUp": "注册",
+    "auth.useAnotherAccount": "使用其他账户",
+    "auth.popupBlocked": "弹窗被您的浏览器阻止。请允许弹窗或在新标签/窗口中打开应用以使用 Google 登录。",
+    "auth.beginYour": "开始您的",
+    "auth.beginDesc": "与全球学者和学生一起掌握古代语言。",
+    "auth.createAccount": "创建账户",
+    "auth.signUpDesc": "注册以开始阅读和翻译。",
+    "auth.signUpGoogle": "使用 Google 注册",
+    "auth.fullName": "全名",
+    "auth.creatingAcc": "正在创建账户...",
+    "auth.createAccBtn": "创建账户",
+    "auth.alreadyHave": "已有账户？"
   }
 };

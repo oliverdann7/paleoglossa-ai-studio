@@ -42,6 +42,7 @@ export const Landing = () => {
             <option value="pt">PT</option>
             <option value="fr">FR</option>
             <option value="ru">RU</option>
+            <option value="tr">TR</option>
             <option value="zh">ZH</option>
           </select>
           <button
