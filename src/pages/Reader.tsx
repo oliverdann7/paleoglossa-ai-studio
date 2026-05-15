@@ -809,6 +809,7 @@ export const Reader = () => {
           fontSize={settings.fontSize}
           highlightIntensity={settings.highlightIntensity}
           getWordInfo={getWordInfo}
+          knowledgeVersion={knowledgeVersion}
           selectedWordId={selectedWord?.id}
           showTranslit={showTranslit}
           showParallel={showParallel}

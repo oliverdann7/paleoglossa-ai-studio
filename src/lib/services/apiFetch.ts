@@ -26,12 +26,9 @@ const STATUS_MESSAGES: Record<number, string> = {
   401: 'Unauthorized — check your authentication',
   403: 'Forbidden — you do not have access',
   404: 'Not found',
-  408: 'Request timed out',
   429: 'Too many requests — try again later',
   500: 'Server error — try again later',
-  502: 'Server unreachable — try again later',
   503: 'Service temporarily unavailable',
-  504: 'Server timed out — try again later',
 };
 
 export interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
@@ -39,6 +36,14 @@ export interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
   skipAuth?: boolean;
 }
 
+/**
+ * Centralized API fetch that automatically attaches the Firebase ID token
+ * as a Bearer token for authenticated requests.
+ *
+ * - Throws `AuthRequiredError` if no user is signed in and the route requires auth.
+ * - Throws `ApiError` with the HTTP status for non-ok responses.
+ * - Returns the parsed JSON body for ok responses.
+ */
 export async function apiFetch<T = any>(url: string, options: ApiFetchOptions = {}): Promise<T> {
   const { body, skipAuth, ...fetchOptions } = options;
 
@@ -58,19 +63,11 @@ export async function apiFetch<T = any>(url: string, options: ApiFetchOptions = 
     headers['Authorization'] = 'Bearer ' + token;
   }
 
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      ...fetchOptions,
-      headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-    });
-  } catch (networkErr: any) {
-    const msg = networkErr?.name === 'AbortError'
-      ? 'Request timed out'
-      : (networkErr?.message || 'Network error — check your connection');
-    throw new ApiError(msg, 0, { code: 'NETWORK_ERROR' });
-  }
+  const res = await fetch(url, {
+    ...fetchOptions,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
 
   if (!res.ok) {
     let parsed: any;
@@ -79,7 +76,7 @@ export async function apiFetch<T = any>(url: string, options: ApiFetchOptions = 
     } catch {
       parsed = null;
     }
-    const message = parsed?.error || STATUS_MESSAGES[res.status] || `Request failed (HTTP ${res.status})`;
+    const message = parsed?.error || STATUS_MESSAGES[res.status] || 'Request failed';
     throw new ApiError(message, res.status, parsed);
   }
 
