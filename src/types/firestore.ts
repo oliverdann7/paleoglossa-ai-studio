@@ -67,7 +67,6 @@ export interface ImportedText {
   /** How the text entered the system */
   sourceType: 'paste' | 'file' | 'url' | 'image' | 'pdf';
   rawContent: string;
-  processedContent?: string;
   sentences: ImportedSentence[];
   stats: {
     totalWords: number;
@@ -114,11 +113,3 @@ export interface UserSettings {
   activeDictionaries?: string[];
 }
 
-export interface ReviewLog {
-  userId: string;
-  vocabItemId: string;
-  timestamp: string | Timestamp;
-  previousInterval: number;
-  newInterval: number;
-  quality: number; // 0-5
-}

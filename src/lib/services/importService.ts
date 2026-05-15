@@ -243,8 +243,8 @@ export class ImportService {
         title: `${data.title} (forked)`,
         visibility: 'private',
         forkedFrom: publicTextId,
-        authorId: data.authorId,
-        authorName: data.authorName,
+        authorId: data.authorId ?? null,
+        authorName: data.authorName ?? null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         publishedAt: null
