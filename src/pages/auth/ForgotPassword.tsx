@@ -28,11 +28,7 @@ export const ForgotPassword = () => {
   };
 
   const sendReset = async (emailAddr: string) => {
-    const actionCodeSettings = {
-      url: `${window.location.origin}/auth/reset-password`,
-      handleCodeInApp: true,
-    };
-    await sendPasswordResetEmail(auth, emailAddr, actionCodeSettings);
+    await sendPasswordResetEmail(auth, emailAddr);
   };
 
   const handleReset = async (e: React.FormEvent) => {
@@ -41,7 +37,6 @@ export const ForgotPassword = () => {
     setError(null);
     setIsGoogleAccount(false);
     try {
-      // Detect Google-only accounts before attempting reset
       const methods = await fetchSignInMethodsForEmail(auth, email);
       if (methods.length > 0 && !methods.includes('password') && methods.includes('google.com')) {
         setIsGoogleAccount(true);
