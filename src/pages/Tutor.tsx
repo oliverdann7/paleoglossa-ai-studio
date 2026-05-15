@@ -1,18 +1,28 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Send, Loader2, ChevronLeft, BookOpen, AlertTriangle } from "lucide-react";
+import { MessageCircle, Send, Loader2, ChevronLeft, BookOpen, AlertTriangle, Plus, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../lib/hooks/useAuth";
 import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
 import { apiFetch } from "../lib/services/apiFetch";
+import { formatDistanceToNow } from "date-fns";
 
 interface Message {
   id?: string;
   role: string;
   content: string;
   context?: any;
-  warnings?: string[];
+  warnings?: string[] | null;
   createdAt?: string;
+}
+
+interface Session {
+  id: string;
+  languageId: string;
+  title: string;
+  textId: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export const Tutor = () => {
@@ -24,23 +34,55 @@ export const Tutor = () => {
   const textIdParam = searchParams.get('textId');
 
   const [activeSessionId, setActiveSessionId] = useState<string | null>(sessionIdParam);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
   const [showSessionsList, setShowSessionsList] = useState(!sessionIdParam);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  // Load messages when session changes
+  // Load sessions list
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (!activeSessionId) return;
+    if (!user || !showSessionsList) return;
+    const load = async () => {
+      setIsLoadingSessions(true);
+      try {
+        const data = await apiFetch<{ sessions: Session[] }>('/api/ai/tutor/sessions');
+        setSessions(data.sessions);
+      } catch {
+        setSessions([]);
+      } finally {
+        setIsLoadingSessions(false);
+      }
     };
+    load();
+  }, [user, showSessionsList]);
+
+  // Load messages when a session is active
+  useEffect(() => {
     if (!activeSessionId || !user) return;
-    fetchMessages();
+    const load = async () => {
+      setIsLoadingMessages(true);
+      try {
+        const data = await apiFetch<{ session: Session; messages: Message[]; suggestedQuestions: string[] }>(
+          `/api/ai/tutor/sessions/${activeSessionId}`
+        );
+        setMessages(data.messages);
+        setSuggestedQuestions(data.suggestedQuestions || []);
+      } catch {
+        setMessages([]);
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+    load();
   }, [activeSessionId, user]);
 
   const handleStartSession = async () => {
@@ -53,19 +95,26 @@ export const Tutor = () => {
       });
       setActiveSessionId(data.sessionId);
       setShowSessionsList(false);
-      setMessages([{ role: 'assistant', content: data.greeting, warnings: undefined }]);
+      setMessages([{ role: 'assistant', content: data.greeting }]);
+      setSuggestedQuestions(data.suggestedQuestions || []);
     } catch (err: any) {
-      console.error('Failed to start session:', err);
       setStartError(err.message || 'Could not start a tutor session. Please try again.');
     } finally {
       setIsStarting(false);
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || !activeSessionId) return;
-    const userMsg = input.trim();
+  const handleOpenSession = (sessionId: string) => {
+    setActiveSessionId(sessionId);
+    setShowSessionsList(false);
+    setMessages([]);
+  };
+
+  const handleSend = async (text?: string) => {
+    const userMsg = (text ?? input).trim();
+    if (!userMsg || !activeSessionId) return;
     setInput("");
+    setSuggestedQuestions([]);
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsSending(true);
     try {
@@ -76,7 +125,7 @@ export const Tutor = () => {
       });
       setMessages(prev => [...prev, { role: 'assistant', content: data.text, warnings: data.warnings }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Failed to get response.', warnings: ['Error'] }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Failed to get response. Please try again.', warnings: ['Error'] }]);
     } finally {
       setIsSending(false);
     }
@@ -84,86 +133,165 @@ export const Tutor = () => {
 
   if (!user) return <div className="p-12 text-center text-ink2">Sign in to use the tutor.</div>;
 
+  // ── Session list ────────────────────────────────────────────────────
   if (showSessionsList) {
     return (
       <div className="p-6 md:p-12 max-w-2xl mx-auto font-sans min-h-screen">
-        <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Tutor</h2>
-        <p className="text-ink2 text-[15px] mb-6">Get guided help reading ancient texts.</p>
-        <button onClick={handleStartSession} disabled={isStarting}
-          className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg mb-4 disabled:opacity-60 flex items-center justify-center gap-2">
-          {isStarting && <Loader2 className="w-4 h-4 animate-spin" />}
-          {isStarting ? 'Starting…' : 'Start New Session'}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-[28px] font-serif font-bold text-ink">Tutor</h2>
+            <p className="text-ink2 text-[14px]">Get guided help reading ancient texts.</p>
+          </div>
+          <button onClick={() => navigate('/app/library')} className="text-muted hover:text-ink transition-colors">
+            <BookOpen className="w-5 h-5" />
+          </button>
+        </div>
+
+        <button
+          onClick={handleStartSession}
+          disabled={isStarting}
+          className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg mb-6 disabled:opacity-60 flex items-center justify-center gap-2"
+        >
+          {isStarting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-5 h-5" />}
+          {isStarting ? 'Starting…' : 'New Session'}
         </button>
+
         {startError && (
           <div className="mb-6 p-3 rounded-xl bg-ruby/10 border border-ruby/20 flex items-center gap-2 text-[13px] text-ruby">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             {startError}
           </div>
         )}
+
         {textIdParam && (
           <div className="card p-4 mb-6 bg-blue/5 border-blue/20">
-            <p className="text-[13px] text-ink2">Session will be linked to the current reader text.</p>
+            <p className="text-[13px] text-ink2">New session will be linked to the text you are reading.</p>
           </div>
         )}
-        <div className="text-center py-12 text-muted text-[14px]">
-          <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-40" />
-          <p>Your tutor sessions will appear here.</p>
-        </div>
+
+        {isLoadingSessions ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>
+        ) : sessions.length === 0 ? (
+          <div className="text-center py-12 text-muted text-[14px]">
+            <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-40" />
+            <p>No sessions yet. Start one above!</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-widest font-bold text-muted mb-3">Recent Sessions</p>
+            {sessions.map(s => (
+              <button
+                key={s.id}
+                onClick={() => handleOpenSession(s.id)}
+                className="w-full card p-4 text-left hover:border-blue/30 hover:shadow-sm transition-all flex items-start gap-3"
+              >
+                <MessageCircle className="w-4 h-4 text-blue mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-semibold text-ink truncate">{s.title}</p>
+                  {s.updatedAt && (
+                    <p className="text-[11px] text-muted mt-0.5 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {formatDistanceToNow(new Date(s.updatedAt), { addSuffix: true })}
+                    </p>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
 
+  // ── Chat view ────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-screen bg-parch font-sans max-w-3xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-bdr bg-white">
-        <button onClick={() => setShowSessionsList(true)} className="text-muted hover:text-ink"><ChevronLeft className="w-5 h-5" /></button>
-        <span className="font-bold text-ink text-[15px]">Tutor</span>
-        <button onClick={() => navigate('/app/library')} className="ml-auto text-muted hover:text-ink"><BookOpen className="w-4 h-4" /></button>
+      <div className="flex items-center gap-3 p-4 border-b border-bdr bg-parch2">
+        <button
+          onClick={() => { setShowSessionsList(true); setActiveSessionId(null); setMessages([]); }}
+          className="text-muted hover:text-ink transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <span className="font-bold text-ink text-[15px] flex-1">Tutor</span>
+        {textIdParam && (
+          <button onClick={() => navigate(`/app/reader/${textIdParam}`)} className="text-muted hover:text-ink transition-colors">
+            <BookOpen className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && (
-          <div className="text-center py-12 text-muted">
-            <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-40" />
-            <p className="text-[14px]">Ask a question about the text you're reading.</p>
-          </div>
-        )}
-        {messages.map((msg, i) => (
-          <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-            <div className={cn("max-w-[80%] p-4 rounded-2xl", msg.role === 'user'
-              ? 'bg-blue text-white'
-              : 'bg-white border border-bdr')}>
-              <p className="text-[14px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-              {msg.warnings && msg.warnings.length > 0 && (
-                <div className="flex items-center gap-1.5 mt-2 text-[11px] text-amber">
-                  <AlertTriangle className="w-3 h-3" />
-                  {msg.warnings.map((w, j) => <span key={j}>{w}</span>)}
+        {isLoadingMessages ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>
+        ) : (
+          <>
+            {messages.length === 0 && (
+              <div className="text-center py-12 text-muted">
+                <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                <p className="text-[14px]">Ask a question about the text you're reading.</p>
+              </div>
+            )}
+            {messages.map((msg, i) => (
+              <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
+                <div className={cn("max-w-[80%] p-4 rounded-2xl", msg.role === 'user'
+                  ? 'bg-blue text-white'
+                  : 'bg-white border border-bdr shadow-sm')}>
+                  <p className="text-[14px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  {msg.warnings && msg.warnings.length > 0 && (
+                    <div className="flex items-center gap-1.5 mt-2 text-[11px] text-amber">
+                      <AlertTriangle className="w-3 h-3" />
+                      {msg.warnings.map((w, j) => <span key={j}>{w}</span>)}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        ))}
-        {isSending && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-bdr p-4 rounded-2xl">
-              <Loader2 className="w-5 h-5 animate-spin text-blue" />
-            </div>
-          </div>
+              </div>
+            ))}
+            {isSending && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-bdr shadow-sm p-4 rounded-2xl">
+                  <Loader2 className="w-5 h-5 animate-spin text-blue" />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
+      {/* Suggested questions */}
+      {suggestedQuestions.length > 0 && !isSending && messages.length <= 2 && (
+        <div className="px-4 pb-2 flex flex-wrap gap-2">
+          {suggestedQuestions.slice(0, 3).map((q, i) => (
+            <button
+              key={i}
+              onClick={() => handleSend(q)}
+              className="text-[12px] px-3 py-1.5 bg-blue/10 text-blue rounded-full border border-blue/20 hover:bg-blue/20 transition-colors text-left"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Input */}
-      <div className="p-4 border-t border-bdr bg-white">
+      <div className="p-4 border-t border-bdr bg-parch2">
         <form onSubmit={e => { e.preventDefault(); handleSend(); }} className="flex gap-2">
-          <input type="text" value={input} onChange={e => setInput(e.target.value)}
-            placeholder="Ask about this text…"
-            className="flex-1 px-4 py-3 bg-parch border border-bdr rounded-xl text-[14px] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue"
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="Ask about vocabulary, grammar, or translation…"
+            className="flex-1 px-4 py-3 bg-parch border border-bdr rounded-xl text-[14px] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all"
+            disabled={isSending || isLoadingMessages}
           />
-          <button type="submit" disabled={!input.trim() || isSending}
-            className="px-4 py-3 bg-blue text-white rounded-xl hover:bg-blue/90 disabled:opacity-50 transition-all">
+          <button
+            type="submit"
+            disabled={!input.trim() || isSending || isLoadingMessages}
+            className="px-4 py-3 bg-blue text-white rounded-xl hover:bg-blue/90 disabled:opacity-50 transition-all"
+          >
             <Send className="w-5 h-5" />
           </button>
         </form>
