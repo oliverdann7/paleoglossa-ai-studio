@@ -35,6 +35,46 @@ interface LexDrawerPanelProps {
 const getDictionaryPath = (lemma: string, langId: string) =>
   `/app/dictionary/${encodeURIComponent(langId)}/${encodeURIComponent(lemma)}`;
 
+const LABEL_TO_CATEGORY: Record<string, string> = {
+  'Case': 'case',
+  'Number': 'number',
+  'Gender': 'gender',
+  'Person': 'person',
+  'Tense': 'tense',
+  'Voice': 'voice',
+  'Mood': 'mood',
+  'Degree': 'degree',
+  'State': 'state',
+  'Stem': 'stem',
+  'Binyan': 'stem',
+  'Root': 'root',
+  'Aspect': 'tense',
+  'Conjugation': 'stem',
+  'Pattern': 'stem',
+  'Construct': 'state',
+  'Emphatic': 'state',
+  'Status': 'state',
+  'Determinative': 'other',
+  'Sign type': 'other',
+  'Logogram': 'other',
+  'Raw parsing': 'other',
+};
+
+const CATEGORY_DOT_COLORS: Record<string, string> = {
+  case: '#3B82F6',
+  number: '#60A5FA',
+  gender: '#60A5FA',
+  tense: '#D97706',
+  voice: '#B45309',
+  mood: '#B45309',
+  person: '#F59E0B',
+  stem: '#059669',
+  root: '#059669',
+  state: '#10B981',
+  degree: '#9CA3AF',
+  other: '#9CA3AF',
+};
+
 export const LexDrawerPanel = ({
   selectedWord,
   setSelectedWord,
@@ -461,34 +501,20 @@ export const LexDrawerPanel = ({
 
           {morphologyDisplay && (
             <div className="mb-10">
-              <div className="eyebrow mb-3 flex items-center justify-between text-ink">
+              <div className="eyebrow mb-4 flex items-center justify-between text-ink">
                 <span>{t('reader.morphology', 'Morphology')}</span>
-                {morphologyDisplay.confidence !== undefined && (
-                  <span className="text-tiny text-muted normal-case tracking-normal">
-                    {Math.round(morphologyDisplay.confidence * 100)}% confidence
-                  </span>
-                )}
-              </div>
-
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                {!morphologyDisplay.missing && (
-                  <span
-                    className="inline-block px-4 py-1.5 bg-parch3/60 text-ink border border-bdr/60 rounded-full text-[13px] font-bold tracking-wide uppercase"
-                    title={morphologyDisplay.expanded
-                      .map(({ value }) => {
-                        const ref = getGrammarReference(value);
-                        return ref ? `${value}: ${ref.short}` : value;
-                      })
-                      .join(' · ')}
-                  >
-                    {morphologyDisplay.compact}
-                  </span>
-                )}
-                {morphologyDisplay.source && (
-                  <span className="text-[11px] text-muted bg-white border border-bdr/40 rounded-full px-3 py-1">
-                    Source: {morphologyDisplay.source}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {exampleSentences.length > 0 && (
+                    <span className="text-tiny text-muted normal-case tracking-normal font-normal">
+                      {exampleSentences.length}× in corpus
+                    </span>
+                  )}
+                  {morphologyDisplay.confidence !== undefined && (
+                    <span className="text-tiny text-muted normal-case tracking-normal">
+                      {Math.round(morphologyDisplay.confidence * 100)}% conf.
+                    </span>
+                  )}
+                </div>
               </div>
 
               {morphologyDisplay.missing ? (
@@ -496,31 +522,72 @@ export const LexDrawerPanel = ({
                   {t('reader.morphologyMissing', 'Morphological parsing is not available for this token yet.')}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-2">
-                  {morphologyDisplay.expanded.map(({ label, value }) => {
-                    const ref = getGrammarReference(value);
-                    return (
-                      <div
-                        key={label}
-                        className="flex justify-between gap-3 px-3 py-2 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px] relative"
-                        onMouseEnter={(e) => {
-                          if (ref) {
-                            setHoveredTag(value);
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            setTagPopoverPos({ x: rect.left + rect.width / 2, y: rect.top });
-                          }
-                        }}
-                        onMouseLeave={() => {
-                          setHoveredTag(null);
-                          setTagPopoverPos(null);
-                        }}
-                      >
-                        <span className="opacity-60 lowercase">{label}</span>
-                        <span className="font-bold text-right">{value}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+                <>
+                  {/* POS badge + compact summary + source */}
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    {(() => {
+                      const posEntry = morphologyDisplay.expanded.find(e => e.label === 'Part of speech');
+                      return posEntry ? (
+                        <span className="inline-flex items-center px-3 py-1.5 bg-ink/90 text-parch2 rounded-lg text-[11px] font-bold tracking-wider uppercase">
+                          {posEntry.value}
+                        </span>
+                      ) : null;
+                    })()}
+                    <span
+                      className="inline-block px-3 py-1.5 bg-parch3/60 text-ink border border-bdr/60 rounded-full text-[12px] font-medium"
+                      title={morphologyDisplay.expanded
+                        .map(({ value }) => {
+                          const ref = getGrammarReference(value);
+                          return ref ? `${value}: ${ref.short}` : value;
+                        })
+                        .join(' · ')}
+                    >
+                      {morphologyDisplay.compact}
+                    </span>
+                    {morphologyDisplay.source && (
+                      <span className="text-[11px] text-muted bg-white border border-bdr/40 rounded-full px-2.5 py-0.5">
+                        {morphologyDisplay.source}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Feature rows with category color dots */}
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {morphologyDisplay.expanded
+                      .filter(({ label }) => label !== 'Part of speech')
+                      .map(({ label, value }) => {
+                        const ref = getGrammarReference(value);
+                        const category = ref?.category ?? (LABEL_TO_CATEGORY[label] ?? 'other');
+                        const dotColor = CATEGORY_DOT_COLORS[category] ?? '#9CA3AF';
+                        return (
+                          <div
+                            key={label}
+                            className="flex items-center justify-between gap-3 px-3 py-2 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px] relative cursor-default"
+                            onMouseEnter={(e) => {
+                              if (ref) {
+                                setHoveredTag(value);
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setTagPopoverPos({ x: rect.left + rect.width / 2, y: rect.top });
+                              }
+                            }}
+                            onMouseLeave={() => {
+                              setHoveredTag(null);
+                              setTagPopoverPos(null);
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-1.5 h-1.5 rounded-full shrink-0"
+                                style={{ backgroundColor: dotColor }}
+                              />
+                              <span className="opacity-60 lowercase">{label}</span>
+                            </div>
+                            <span className="font-bold text-right">{value}</span>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </>
               )}
               {hoveredTag && tagPopoverPos && (() => {
                 const ref = getGrammarReference(hoveredTag);
@@ -537,6 +604,9 @@ export const LexDrawerPanel = ({
                     <div className="bg-ink text-parch2 text-[11px] font-sans px-2.5 py-1.5 rounded-lg shadow-xl max-w-[220px] leading-relaxed">
                       <span className="font-bold">{hoveredTag}</span>
                       <span className="opacity-80"> — {ref.short}</span>
+                      {ref.long && (
+                        <div className="mt-1 opacity-70 leading-snug">{ref.long}</div>
+                      )}
                     </div>
                     <div className="w-2 h-2 bg-ink rotate-45 mx-auto -mt-1" />
                   </motion.div>
