@@ -25,10 +25,10 @@ export const ProfilePage = () => {
 
   useEffect(() => {
     if (!userId) return;
-    setLoading(true);
-    setIsPrivate(false);
 
     const load = async () => {
+      setLoading(true);
+      setIsPrivate(false);
       try {
         let data: UserProfileData | null = null;
         if (isOwnProfile) {
