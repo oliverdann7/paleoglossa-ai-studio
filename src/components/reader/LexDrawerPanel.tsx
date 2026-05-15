@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, BookMarked, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, ShieldAlert, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WordState, STATE_COLORS, STATE_LABELS } from '@/lib/constants/wordStates';
+import { WordState, normalizeWordState, safeStateColors, safeStateLabel } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
 import { ParadigmModal } from './ParadigmModal';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
@@ -349,7 +349,8 @@ export const LexDrawerPanel = ({
                 WordState.KNOWN,
                 WordState.IGNORED,
               ].map((state) => {
-                const isActive = wordInfo?.state === state || (wordInfo?.state === WordState.NEW && state === WordState.NEW && !knowledge[selectedWord.lemma]);
+                const normalizedWordState = normalizeWordState(wordInfo?.state);
+                const isActive = normalizedWordState === state || (normalizedWordState === WordState.NEW && state === WordState.NEW && !knowledge[selectedWord.lemma]);
 
                 return (
                   <button
@@ -364,8 +365,8 @@ export const LexDrawerPanel = ({
                     style={
                       isActive
                         ? {
-                            backgroundColor: STATE_COLORS[state].bg,
-                            borderColor: STATE_COLORS[state].border,
+                            backgroundColor: safeStateColors(state).bg,
+                            borderColor: safeStateColors(state).border,
                           }
                         : {}
                     }
@@ -374,13 +375,13 @@ export const LexDrawerPanel = ({
                       className="w-2.5 h-2.5 rounded-full mb-0.5 border border-black/10"
                       style={{
                         backgroundColor:
-                          STATE_COLORS[state].border === "transparent"
+                          safeStateColors(state).border === "transparent"
                             ? "#EAE5D9"
-                            : STATE_COLORS[state].border,
+                            : safeStateColors(state).border,
                       }}
                     />
                     <span className="text-[8px] font-bold tracking-widest uppercase text-ink">
-                      {t(`vocab.${STATE_LABELS[state].toLowerCase()}`, STATE_LABELS[state])}
+                      {t(`vocab.${safeStateLabel(state).toLowerCase()}`, safeStateLabel(state))}
                     </span>
                   </button>
                 );
