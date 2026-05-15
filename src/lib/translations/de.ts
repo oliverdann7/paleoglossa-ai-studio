@@ -551,6 +551,25 @@ export const de = {
     "auth.fullName": "Vollständiger Name",
     "auth.creatingAcc": "Konto wird erstellt...",
     "auth.createAccBtn": "Konto erstellen",
-    "auth.alreadyHave": "Bereits ein Konto?"
+    "auth.alreadyHave": "Bereits ein Konto?",
+
+    "nav.community": "Gemeinschaft",
+    "nav.discover": "Entdecken",
+
+    "community.title": "Gemeinschaft",
+    "community.subtitle": "Entdecke öffentliche Gelehrte auf Paleoglossa",
+    "community.search": "Nach Name, Benutzername oder Bio suchen…",
+    "community.you": "Du",
+    "community.joined": "Beigetreten am {{date}}",
+    "community.wordsKnown": "Wörter",
+    "community.dayStreak": "Tage-Serie",
+    "community.viewProfile": "Profil ansehen",
+    "community.count": "{{count}} Gelehrte",
+    "community.emptyTitle": "Noch keine öffentlichen Gelehrten",
+    "community.emptyDesc": "Gelehrte, die ihr Profil öffentlich machen, erscheinen hier.",
+    "community.noResults": "Keine Gelehrten gefunden",
+    "community.noResultsDesc": "Versuche einen anderen Namen oder Benutzernamen.",
+    "community.errorTitle": "Etwas ist schiefgelaufen",
+    "community.errorDesc": "Gelehrte konnten nicht geladen werden. Bitte versuche es erneut."
   }
 };

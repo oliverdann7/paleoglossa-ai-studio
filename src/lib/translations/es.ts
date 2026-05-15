@@ -560,6 +560,25 @@ export const es = {
     "auth.fullName": "Nombre Completo",
     "auth.creatingAcc": "Creando Cuenta...",
     "auth.createAccBtn": "Crear Cuenta",
-    "auth.alreadyHave": "¿Ya tienes una cuenta?"
+    "auth.alreadyHave": "¿Ya tienes una cuenta?",
+
+    "nav.community": "Comunidad",
+    "nav.discover": "Descubrir",
+
+    "community.title": "Comunidad",
+    "community.subtitle": "Descubre académicos públicos en Paleoglossa",
+    "community.search": "Buscar por nombre, usuario o biografía…",
+    "community.you": "Tú",
+    "community.joined": "Unido el {{date}}",
+    "community.wordsKnown": "palabras",
+    "community.dayStreak": "días de racha",
+    "community.viewProfile": "Ver perfil",
+    "community.count": "{{count}} académico",
+    "community.emptyTitle": "Aún no hay académicos públicos",
+    "community.emptyDesc": "Los académicos que hagan su perfil público aparecerán aquí.",
+    "community.noResults": "Sin resultados para tu búsqueda",
+    "community.noResultsDesc": "Prueba con otro nombre o usuario.",
+    "community.errorTitle": "Algo salió mal",
+    "community.errorDesc": "No se pudieron cargar los académicos. Por favor, inténtalo de nuevo."
   }
 };

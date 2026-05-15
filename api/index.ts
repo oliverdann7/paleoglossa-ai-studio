@@ -2070,6 +2070,44 @@ app.post('/api/stripe/webhook', async (req: any, res: any) => {
   }
 });
 
+// ─── Community / Social ───────────────────────────────────────────────────────
+
+app.get('/api/social/community', requireAuth as any, async (_req: AuthenticatedRequest, res: any) => {
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) {
+    return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  }
+  try {
+    const snap = await adminDb_.collection('users')
+      .where('isPublic', '==', true)
+      .orderBy('createdAt', 'desc')
+      .limit(100)
+      .get();
+
+    const scholars: any[] = [];
+    snap.forEach((d) => {
+      const data = d.data();
+      scholars.push({
+        uid: d.id,
+        displayName: data.displayName || '',
+        nickname: data.nickname ?? undefined,
+        bio: data.bio ?? undefined,
+        avatarUrl: data.avatarUrl ?? undefined,
+        createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? null,
+        stats: data.stats
+          ? { totalKnown: data.stats.totalKnown ?? 0, streak: data.stats.streak ?? 0 }
+          : undefined,
+        sharedTextsCount: data.sharedTextsCount ?? undefined,
+      });
+    });
+
+    res.status(200).json({ scholars });
+  } catch (e: any) {
+    console.error('[community] Error fetching scholars:', e.message);
+    res.status(500).json({ error: 'Failed to fetch community', code: 'INTERNAL_ERROR' });
+  }
+});
+
 // Vercel handler
 export const expressApp = app;
 export default function handler(req: any, res: any) {
