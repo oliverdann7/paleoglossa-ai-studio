@@ -193,7 +193,6 @@ export const LexDrawerPanel = ({
     setNoteSaved(true);
     setTimeout(() => setNoteSaved(false), 2500);
   };
-
   if (!selectedWord) return <AnimatePresence />;
 
   return (
