@@ -36,39 +36,40 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | Reading progress, streak, daily goals | ✅ |
 | Parallel text display | ✅ |
 | Transliteration toggles | ✅ |
-| i18n (7 languages) | ✅ |
+| i18n (8 languages) | ✅ |
 | Google / Email auth + guest mode | ✅ |
 | Morphology tags per token | ✅ |
 | External dictionary links | ✅ |
-| Corpus search | 🚧 |
-| Lemma browser with paradigm tables | 🚧 |
-| Grammar pathways | 🚧 |
+| Corpus search | ✅ |
+| Lemma browser with paradigm tables | ✅ |
+| Grammar pathways & reference | ✅ |
+| AI philology tutor | ✅ |
+| Research notebook | ✅ |
 | Syntax / treebank viewer | 🚧 |
-| AI philology tutor | 🚧 |
-| Research notebook | 🚧 |
 | Manuscript / epigraphy lab | 🚧 |
 | Pronunciation lab | 🚧 |
 | Classroom / course builder | 🚧 |
 
-## API Routes (Stubs)
+## API Routes
 
-The following API endpoints are registered but return empty/stub responses. Full implementations require a Gemini API key and Firebase backend:
+Routes are modularized under `api/_routes/`. Some require a Gemini API key and Firebase backend:
 
-| Route | Method | Description |
-|-------|--------|-------------|
-| `/api/test` | POST | Health check |
-| `/api/lemmas/:lemma` | GET | Lemma lookup |
-| `/api/lemmas` | GET | Lemma search |
-| `/api/lemmas/:lemma/paradigm` | GET | Paradigm inflection |
-| `/api/ai/...` | POST | AI (analyze, translate, explain, OCR, pronunciation, etc.) |
-| `/api/audio/tts` | POST | Text-to-speech generation |
-| `/api/audio/recordings` | POST | User recording upload |
-| `/api/search` | POST | Corpus search |
-| `/api/grammar/...` | GET | Grammar pathways & concepts |
-| `/api/syntax/...` | GET | Syntax treebank |
-| `/api/manuscripts` | GET | Manuscript metadata |
-| `/api/courses` | GET/POST | Classroom management |
-| `/api/notebooks`, `/api/notes` | GET/POST/DELETE | Research notebooks |
+| Route | Method | Status | Description |
+|-------|--------|--------|-------------|
+| `/api/test` | POST | ✅ | Health check |
+| `/api/ai/...` | POST | ✅ | AI: analyze, translate, explain, OCR, tutor chat |
+| `/api/lemmas/:language/:lemma` | GET | ✅ | Lemma lookup |
+| `/api/lemmas` | GET | ✅ | Lemma search |
+| `/api/lemmas/:lemma/paradigm` | GET | 🚧 | Paradigm inflection (stub) |
+| `/api/dictionary` / `/api/dictionary/search` | GET | ✅ | Dictionary search |
+| `/api/grammar/concepts` | GET | ✅ | Grammar concepts & pathways |
+| `/api/search` | POST | ✅ | Multi-source corpus search |
+| `/api/notebooks`, `/api/notes` | GET/POST/DELETE | ✅ | Research notebook CRUD |
+| `/api/syntax/...` | GET | 🚧 | Syntax treebank (partial) |
+| `/api/audio/tts` | POST | 🚧 | TTS metadata (no audio stream yet) |
+| `/api/audio/recordings` | POST | 🚧 | User recording upload (stub) |
+| `/api/manuscripts` | GET | 🚧 | Manuscript metadata (stub) |
+| `/api/courses` | GET/POST | 🚧 | Classroom management (stub) |
 
 ## Corpus Status
 
@@ -106,14 +107,14 @@ For texts with full morphology, add tokens directly to the `src/data/corpus.ts` 
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | React 18, TypeScript (strict), Vite 6 |
+| **Frontend** | React 19, TypeScript (strict), Vite 6 |
 | **CSS** | Tailwind CSS v4, custom parchment/sepia/dark themes |
 | **Routing** | React Router DOM v7 |
 | **Server** | Express 5 + tsx (`npm run dev`) |
 | **AI** | Gemini 2.5 Flash via `@google/genai` |
 | **Database** | Firebase Firestore |
 | **Auth** | Firebase Auth (Google + Email/Password) |
-| **i18n** | i18next + react-i18next (en, es, de, pt, fr, ru, zh) |
+| **i18n** | i18next + react-i18next (en, es, de, pt, fr, ru, zh, tr) |
 | **SRS** | SM-2 algorithm |
 | **Charts** | Recharts |
 | **Validation** | Zod |
@@ -122,6 +123,29 @@ For texts with full morphology, add tokens directly to the `src/data/corpus.ts` 
 ## Project Structure
 
 ```
+api/
+├── index.ts                # Express entry — mounts all route modules
+├── ping.ts                 # Health check endpoint
+├── _lib/                   # Server-side helpers
+│   ├── firebaseAdmin.ts    # Firebase Admin SDK init
+│   ├── aiPrompts.ts        # Gemini prompt templates
+│   ├── aiUsage.ts          # AI usage tracking
+│   ├── grammarData.ts      # Grammar concept data
+│   └── basicAnalyze.ts     # Fallback morphology analysis
+├── _routes/                # Modular route handlers
+│   ├── ai.ts               # AI analyze, translate, explain, OCR, tutor
+│   ├── lexicon.ts          # Lemma / token / dictionary lookup
+│   ├── grammar.ts          # Grammar concepts & pathways
+│   ├── search.ts           # Multi-source corpus search
+│   ├── notes.ts            # Notebooks & notes CRUD
+│   ├── audio.ts            # TTS + recording endpoints
+│   ├── syntax.ts           # Treebank annotations
+│   ├── manuscripts.ts      # Manuscript metadata (stub)
+│   ├── courses.ts          # Classroom management (stub)
+│   ├── auth.ts             # Auth helpers
+│   ├── billing.ts          # Stripe billing
+│   ├── admin.ts            # Admin operations
+│   └── publicTexts.ts      # Public text listing
 src/
 ├── App.tsx                  # Router: landing, auth, app pages
 ├── main.tsx                 # Entry point
@@ -131,6 +155,10 @@ src/
 │   ├── Navbar.tsx           # Sidebar (desktop) / tab bar (mobile)
 │   ├── ErrorBoundary.tsx
 │   ├── Skeleton.tsx
+│   ├── ui/                  # Shared UI primitives
+│   │   ├── EmptyState.tsx
+│   │   ├── LoadingState.tsx
+│   │   └── ErrorState.tsx
 │   └── reader/              # Reader sub-components
 │       ├── LexDrawerPanel.tsx    # Word analysis side panel
 │       ├── ReadingPane.tsx       # Token-rendered text area
@@ -148,15 +176,17 @@ src/
 │   ├── Statistics.tsx       # Charts + progress
 │   ├── Subscription.tsx     # Plan / pricing
 │   ├── Landing.tsx          # Public marketing page
-│   ├── Search.tsx           # Corpus search (placeholder)
-│   ├── Grammar.tsx          # Grammar pathways (placeholder)
-│   ├── Tutor.tsx            # AI tutor (placeholder)
-│   ├── Syntax.tsx           # Treebank viewer (placeholder)
-│   ├── Notebooks.tsx        # Research notebooks (placeholder)
+│   ├── Search.tsx           # Multi-source corpus search
+│   ├── Grammar.tsx          # Grammar pathways & reference
+│   ├── Tutor.tsx            # AI philology tutor
+│   ├── Notebooks.tsx        # Research notebooks
+│   ├── Syntax.tsx           # Treebank viewer (in progress)
 │   ├── Manuscripts.tsx      # Manuscript lab (placeholder)
 │   ├── Courses.tsx          # Classroom (placeholder)
 │   ├── AudioLab.tsx         # Pronunciation lab (placeholder)
 │   └── auth/                # SignIn, SignUp, ForgotPassword, ResetPassword
+├── store/
+│   └── useStudyStore.ts     # Persistent study state (localStorage)
 ├── lib/
 │   ├── firebase.ts          # Firebase init
 │   ├── i18n.ts              # i18next config
@@ -165,11 +195,13 @@ src/
 │   ├── contexts/            # AuthContext, ToastContext
 │   ├── hooks/               # useKnowledge, useVocabulary, useSettings, …
 │   ├── services/            # Vocabulary, Review, Settings, AI, Search, …
+│   ├── grammar/             # Grammar reference data & tests
 │   ├── importers/           # SBLGNT, OSHB, StepBible, OGL, Latin adapters
 │   ├── srs/                 # SM-2 algorithm + tests
-│   └── translations/        # en, es, de, pt, fr, ru, zh
+│   └── translations/        # en, es, de, pt, fr, ru, zh + Turkish
 ├── types/
 │   ├── corpus.ts            # Token, Sentence, Text, Corpus, Morphology
+│   ├── linguistics.ts       # LinguisticToken, GlossEntry, GrammarReference
 │   ├── firestore.ts         # VocabularyItem, ImportedText, UserSettings, …
 │   ├── library.ts           # (legacy, duplicates corpus.ts)
 │   └── modules.ts           # Grammar, Syntax, Search, Notebook, …
@@ -231,6 +263,7 @@ npm run clean
 - **`docs/PALEOGLOSSA_ROADMAP.md`** — Full implementation roadmap, 8 phases, data model changes, API routes, component plans, risks, licensing considerations.
 - **`ROADMAP.md`** — Original 8-phase product roadmap.
 - **`firestore.rules`** — Firestore security rules.
+- **`firebase.json`** — Firebase project configuration (emulators, deploy targets).
 - **`firestore.indexes.json`** — Composite indexes for vocabulary, review, reading progress queries.
 - **`firebase-blueprint.json`** — Firestore collection and entity schema summary.
 - **`security_spec.md`** — Security threat model and mitigations.
