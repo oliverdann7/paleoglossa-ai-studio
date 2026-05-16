@@ -27,6 +27,7 @@
     "express": "^5.2.1",
     "firebase": "^11.1.0",
     "firebase-admin": "^13.9.0",
+    "fuse.js": "^7.3.0",
     "i18next": "^26.0.10",
     "lucide-react": "^0.469.0",
     "mammoth": "^1.12.0",
