@@ -1,9 +1,17 @@
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
 import { apiFetch } from './apiFetch';
 import { ImportedText as FSImportedText } from '../../types/firestore';
 import { normalizeTimestamp } from '../utils';
 import { STORAGE_KEYS } from '../constants/storage';
+
+export async function computeContentHash(text: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text.trim());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 export type ImportedText = FSImportedText;
 
@@ -147,6 +155,34 @@ export class ImportService {
       const message = e instanceof Error ? e.message : String(e);
       console.error("Import Save Error:", e);
       throw new Error(`Failed to save import to Firestore: ${message}`, e instanceof Error ? { cause: e } : undefined);
+    }
+  }
+
+  static async updateImport(userId: string, importId: string, patch: Partial<ImportedText>): Promise<void> {
+    importsCache.delete(userId);
+    const cleanedPatch = this.stripUndefined(patch);
+    await updateDoc(doc(db, `users/${userId}/imports`, importId), {
+      ...cleanedPatch,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  static async getImportByHash(userId: string, contentHash: string): Promise<ImportedText | null> {
+    try {
+      const snap = await getDocs(
+        query(collection(db, `users/${userId}/imports`), where('contentHash', '==', contentHash))
+      );
+      if (snap.empty) return null;
+      const docSnap = snap.docs[0];
+      const data = docSnap.data();
+      return {
+        ...data,
+        id: docSnap.id,
+        createdAt: normalizeTimestamp(data.createdAt),
+        updatedAt: normalizeTimestamp(data.updatedAt),
+      } as ImportedText;
+    } catch {
+      return null;
     }
   }
 
