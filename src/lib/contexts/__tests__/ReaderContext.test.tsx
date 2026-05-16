@@ -271,7 +271,7 @@ describe('ReaderStateProvider', () => {
     act(() => result.current.togglePlay());
     act(() => result.current.resetAll());
     expect(result.current.state).toEqual({
-      display: { mode: 'scroll', showTranslit: false, showParallel: false, maskKnown: false, interlinearMode: false, fontSize: 18, highlightIntensity: 'normal', swipeMovesToNext: true },
+      display: { mode: 'scroll', displayMode: 'scholar', showTranslit: false, showParallel: false, maskKnown: false, interlinearMode: false, fontSize: 18, highlightIntensity: 'normal', swipeMovesToNext: true },
       navigation: { textId: null, currentChapterIndex: 0, currentSentenceIndex: 0, currentScrollPage: 0, scrollProgress: 0 },
       audio: { isPlaying: false, speed: 1.0, loopSentence: false, loopWord: false, position: { sentenceIdx: 0, wordIdx: 0 } },
     });

@@ -4,6 +4,8 @@ import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, normalizeWordState } from '@/lib/constants/wordStates';
 import { GlossTooltip } from './GlossTooltip';
+import { MorphologyTooltip } from './MorphologyTooltip';
+import type { DisplayMode } from '@/types/reader';
 
 interface TokenData {
   id: string;
@@ -11,9 +13,39 @@ interface TokenData {
   lemma: string;
   gloss?: string;
   translit?: string;
+  morphology?: string;
+  pos?: string;
   punctBefore?: string;
   punctAfter?: string;
   type?: string;
+}
+
+/** POS-based token color for Morphology mode. Returns undefined for unknowns. */
+function getPosStyle(token: TokenData): React.CSSProperties | undefined {
+  const raw = ((token.morphology || '') + ' ' + (token.pos || '')).toLowerCase();
+  if (!raw.trim()) return undefined;
+
+  // Verb
+  if (/^v-|verb|\bv\b.*-ai|-vai|V-[PAIF]/.test(raw) || raw.startsWith('v-')) {
+    return { color: '#B45309', borderBottomColor: '#F59E0B', backgroundColor: '#FEF3C715' };
+  }
+  // Proper noun
+  if (/proper|N-P|NP-/.test(raw)) {
+    return { color: '#7C3AED', borderBottomColor: '#A855F7', backgroundColor: '#F5F3FF15' };
+  }
+  // Noun
+  if (/^n-|noun|\bN\b.*-[NGDAV]/.test(raw) || raw.startsWith('n-')) {
+    return { color: '#1D4ED8', borderBottomColor: '#3B82F6', backgroundColor: '#EFF6FF15' };
+  }
+  // Adjective
+  if (/^a-|adj|A-[NGDAV]/.test(raw)) {
+    return { color: '#065F46', borderBottomColor: '#10B981', backgroundColor: '#ECFDF515' };
+  }
+  // Particle / Conjunction / Preposition
+  if (/partic|conjunc|prep|^c-|^d-|^p-/.test(raw)) {
+    return { color: '#6B7280', borderBottomColor: '#9CA3AF', backgroundColor: 'transparent' };
+  }
+  return undefined;
 }
 
 interface SentenceData {
@@ -53,6 +85,7 @@ interface Props {
   showGlossTooltip?: boolean;
   glossTooltipForKnown?: boolean;
   interlinearMode?: boolean;
+  displayMode?: DisplayMode;
   onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
   onAITranslate: (sentenceId: string, tokens: TokenData[]) => void;
   onSavePhrase: (sentence: SentenceData) => void;
@@ -119,6 +152,7 @@ const ReaderToken = memo(function ReaderToken({
   isSelected,
   showTranslit,
   interlinearMode,
+  displayMode,
   showGlossTooltip,
   glossTooltipForKnown,
   onWordClick,
@@ -137,35 +171,49 @@ const ReaderToken = memo(function ReaderToken({
   isSelected: boolean;
   showTranslit: boolean;
   interlinearMode?: boolean;
+  displayMode?: DisplayMode;
   showGlossTooltip?: boolean;
   glossTooltipForKnown?: boolean;
   onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
-  onWordHover: (gloss: string, x: number, y: number) => void;
+  onWordHover: (token: TokenData, x: number, y: number) => void;
   onWordLeave: () => void;
 }) {
+  const isMorphologyMode = displayMode === 'morphology';
   const state = normalizeWordState(wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW);
   const isKnown = state === WordState.KNOWN;
   const gloss = token.gloss;
-  const showTooltip = showGlossTooltip && !!gloss && (glossTooltipForKnown || !isKnown);
+  const showGloss = showGlossTooltip && !!gloss && (glossTooltipForKnown || !isKnown);
+
+  const baseStyle: React.CSSProperties = {
+    fontSize: readingMode === 'page' ? `${fontSize * 1.2}px` : `${fontSize}px`,
+    borderBottom: '2px solid transparent',
+    transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+  };
+
+  const tokenStyle: React.CSSProperties = isMorphologyMode
+    ? { ...baseStyle, ...(getPosStyle(token) ?? {}) }
+    : { ...baseStyle, ...getWordStyle(wordInfo, isAudioActive, maskKnown, highlightIntensity, isSelected) };
 
   const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
-    if (!showTooltip) return;
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    onWordHover(gloss!, rect.left + rect.width / 2, rect.top);
-  }, [showTooltip, gloss, onWordHover]);
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top;
+    if (isMorphologyMode) {
+      onWordHover(token, cx, cy);
+    } else if (showGloss && gloss) {
+      onWordHover({ ...token, gloss }, cx, cy);
+    }
+  }, [isMorphologyMode, showGloss, gloss, token, onWordHover]);
 
   return (
-    <span key={token.id} className="inline">
+    <span className="inline">
       {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
       <span
         onClick={() => onWordClick(token, sentenceText, sentenceIndex)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={onWordLeave}
-        className="cursor-pointer transition-all px-1 rounded-sm inline-flex flex-col items-center align-top leading-none"
-        style={{
-          fontSize: readingMode === 'page' ? `${fontSize * 1.2}px` : `${fontSize}px`,
-          ...getWordStyle(wordInfo, isAudioActive, maskKnown, highlightIntensity, isSelected),
-        }}
+        className="cursor-pointer px-1 rounded-sm inline-flex flex-col items-center align-top leading-none"
+        style={tokenStyle}
       >
         <bdi className="leading-tight mb-1">{token.text}</bdi>
         {showTranslit && token.translit && (
@@ -173,7 +221,7 @@ const ReaderToken = memo(function ReaderToken({
             {token.translit}
           </span>
         )}
-        {interlinearMode && gloss && (
+        {(interlinearMode || displayMode === 'interlinear') && gloss && (
           <span dir="ltr" className="text-[0.42em] text-blue/70 font-sans tracking-wide leading-tight">
             {gloss}
           </span>
@@ -194,7 +242,7 @@ export function ReadingPane({
   isHebrewFont, isRtl, audioPos,
   aiTranslations, translatingId,
   sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
-  showGlossTooltip, glossTooltipForKnown, interlinearMode,
+  showGlossTooltip, glossTooltipForKnown, interlinearMode, displayMode,
   onWordClick, onAITranslate, onSavePhrase, onAnalyzeSentence,
   onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
@@ -204,11 +252,31 @@ export function ReadingPane({
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
-  const [hoverGloss, setHoverGloss] = useState<{ text: string; x: number; y: number } | null>(null);
-  const handleWordHover = useCallback((gloss: string, x: number, y: number) => {
-    setHoverGloss({ text: gloss, x, y });
+  const isMorphologyMode = displayMode === 'morphology';
+  const isFocusMode = displayMode === 'focus';
+
+  type HoverToken = { token: TokenData; x: number; y: number };
+  const [hoverToken, setHoverToken] = useState<HoverToken | null>(null);
+  const handleWordHover = useCallback((token: TokenData, x: number, y: number) => {
+    setHoverToken({ token, x, y });
   }, []);
-  const handleWordLeave = useCallback(() => { setHoverGloss(null); }, []);
+  const handleWordLeave = useCallback(() => { setHoverToken(null); }, []);
+
+  // Per-paragraph unknown-word density for difficulty heatmap.
+  // Group sentences into paragraphs of ~5 sentences and compute the ratio of
+  // unknown/new tokens to total content tokens.
+  const sentenceDifficulty = useMemo(() => {
+    return sentences.map(s => {
+      const content = s.tokens.filter(t => t.type !== 'whitespace' && t.type !== 'punctuation');
+      if (content.length === 0) return 0;
+      const unknown = content.filter(t => {
+        const info = getWordInfo(t.lemma || t.text);
+        const state = normalizeWordState(info ? (typeof info === 'object' ? (info as any).state : info) : WordState.NEW);
+        return state === WordState.NEW || state === WordState.SEEN;
+      }).length;
+      return unknown / content.length;
+    });
+  }, [sentences, getWordInfo]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -307,13 +375,22 @@ export function ReadingPane({
             )}
           >
             {visibleSentences.map((sentence, idx) => {
-              const sIdx = sentenceSliceStart + (readingMode === 'page' 
-                ? (currentSentenceIndex + (sentence._displayOffset || 0)) 
+              const sIdx = sentenceSliceStart + (readingMode === 'page'
+                ? (currentSentenceIndex + (sentence._displayOffset || 0))
                 : idx);
-              const isActivePageMode = readingMode === 'page' 
-                ? (sentence._displayOffset === 0) 
+              const isActivePageMode = readingMode === 'page'
+                ? (sentence._displayOffset === 0)
                 : true;
               const sentenceText = sentence._cachedText;
+              const difficulty = sentenceDifficulty[sIdx] ?? 0;
+
+              // Difficulty heatmap: left border color when not in focus mode
+              const difficultyBorderColor = !isFocusMode && difficulty > 0
+                ? difficulty >= 0.6 ? 'border-l-red-400'
+                  : difficulty >= 0.35 ? 'border-l-amber-400'
+                  : difficulty >= 0.1 ? 'border-l-blue-300'
+                  : 'border-l-green-300'
+                : '';
 
               return (
                 <span
@@ -323,6 +400,7 @@ export function ReadingPane({
                     "inline transition-opacity duration-500",
                     isRtl ? "ml-2 md:ml-3" : "mr-2 md:mr-3",
                     !isActivePageMode && readingMode === 'page' ? "opacity-30" : "opacity-100",
+                    !isFocusMode && difficultyBorderColor ? `border-l-2 pl-1 ${difficultyBorderColor}` : "",
                   )}
                 >
                   {sentence.tokens.map((token, tIdx) => {
@@ -341,11 +419,12 @@ export function ReadingPane({
                         fontSize={fontSize}
                         wordInfo={getWordInfo(token.lemma)}
                         isAudioActive={isAudioActive}
-                        maskKnown={maskKnown}
+                        maskKnown={isFocusMode ? false : maskKnown}
                         highlightIntensity={highlightIntensity}
                         isSelected={selectedWordId === token.id}
-                        showTranslit={showTranslit}
+                        showTranslit={isFocusMode ? false : showTranslit}
                         interlinearMode={interlinearMode}
+                        displayMode={displayMode}
                         showGlossTooltip={showGlossTooltip}
                         glossTooltipForKnown={glossTooltipForKnown}
                         onWordClick={onWordClick}
@@ -505,12 +584,25 @@ export function ReadingPane({
           </div>
         )}
       </div>
-      <GlossTooltip
-        text={hoverGloss?.text ?? null}
-        x={hoverGloss?.x ?? 0}
-        y={hoverGloss?.y ?? 0}
-        visible={hoverGloss !== null}
-      />
+      {isMorphologyMode ? (
+        <MorphologyTooltip
+          word={hoverToken?.token.text ?? ''}
+          lemma={hoverToken?.token.lemma ?? ''}
+          gloss={hoverToken?.token.gloss}
+          morphology={hoverToken?.token.morphology}
+          pos={hoverToken?.token.pos}
+          x={hoverToken?.x ?? 0}
+          y={hoverToken?.y ?? 0}
+          visible={hoverToken !== null}
+        />
+      ) : (
+        <GlossTooltip
+          text={hoverToken?.token.gloss ?? null}
+          x={hoverToken?.x ?? 0}
+          y={hoverToken?.y ?? 0}
+          visible={hoverToken !== null && !isMorphologyMode}
+        />
+      )}
     </div>
   );
 }
