@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireAuth } from '../_lib/auth';
 import { getAdminDb, getAdminAuth } from '../_lib/firebaseAdmin';
 import type { AuthenticatedRequest } from '../_lib/auth';
+import type { Timestamp } from 'firebase-admin/firestore';
 
 const router = Router();
 
@@ -184,6 +185,107 @@ router.post('/api/admin/users/:uid/set-admin', requireAuth as any, async (req: A
   } catch (e: any) {
     console.error('[admin/set-admin] Error:', e.message);
     res.status(500).json({ error: 'Failed to update admin claim' });
+  }
+});
+
+function extractTS(val: unknown): string | null {
+  if (!val) return null;
+  if (typeof val === 'string') return val;
+  if (typeof (val as Timestamp).toMillis === 'function') return new Date((val as Timestamp).toMillis()).toISOString();
+  return null;
+}
+
+router.get('/api/admin/activities', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  if (!requireAdmin(req, res)) return;
+  const adminDb_ = getAdminDb();
+  const auth_ = getAdminAuth();
+  if (!adminDb_ || !auth_) return res.status(503).json({ error: 'Service unavailable' });
+  try {
+    const [aiSnap, textsSnap, usersSnap, reportsSnap] = await Promise.all([
+      adminDb_.collection('aiUsage').orderBy('updatedAt', 'desc').limit(30).get(),
+      adminDb_.collection('publicTexts').orderBy('createdAt', 'desc').limit(30).get(),
+      adminDb_.collection('users').orderBy('createdAt', 'desc').limit(30).get(),
+      adminDb_.collection('publicTextReports').orderBy('createdAt', 'desc').limit(30).get(),
+    ]);
+
+    const activities: any[] = [];
+
+    aiSnap.forEach(d => {
+      const data = d.data();
+      const ts = extractTS(data.updatedAt) || extractTS(data.createdAt);
+      if (ts) {
+        activities.push({
+          id: 'ai_' + d.id, uid: d.id, action: 'ai_call',
+          details: `${data.count || 0} AI calls used`,
+          timestamp: ts,
+        });
+      }
+    });
+
+    textsSnap.forEach(d => {
+      const data = d.data();
+      const ts = extractTS(data.createdAt);
+      if (ts) {
+        activities.push({
+          id: 'text_' + d.id, uid: data.authorId || data.userId || '',
+          action: 'create_text',
+          details: data.title || data.name || 'Untitled text',
+          timestamp: ts,
+        });
+      }
+    });
+
+    usersSnap.forEach(d => {
+      const data = d.data();
+      const ts = extractTS(data.createdAt);
+      if (ts) {
+        activities.push({
+          id: 'user_' + d.id, uid: d.id,
+          email: data.email, displayName: data.displayName,
+          action: 'sign_up',
+          timestamp: ts,
+        });
+      }
+    });
+
+    reportsSnap.forEach(d => {
+      const data = d.data();
+      const ts = extractTS(data.createdAt);
+      if (ts) {
+        activities.push({
+          id: 'report_' + d.id, uid: data.reporterId || '',
+          action: 'report',
+          details: `Reported text: ${data.textId || 'unknown'}`,
+          timestamp: ts,
+        });
+      }
+    });
+
+    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    const uids = [...new Set(activities.map(a => a.uid).filter(Boolean))] as string[];
+    const userMap: Record<string, { email?: string; displayName?: string; photoURL?: string }> = {};
+    for (let i = 0; i < uids.length; i += 100) {
+      const batch = uids.slice(i, i + 100);
+      const result = await auth_.getUsers(batch.map(uid => ({ uid })));
+      result.users.forEach(u => {
+        userMap[u.uid] = { email: u.email || undefined, displayName: u.displayName || undefined, photoURL: u.photoURL || undefined };
+      });
+    }
+
+    activities.forEach(a => {
+      const u = userMap[a.uid];
+      if (u) {
+        if (!a.email) a.email = u.email;
+        if (!a.displayName) a.displayName = u.displayName;
+        if (!a.photoURL) a.photoURL = u.photoURL;
+      }
+    });
+
+    res.status(200).json(activities.slice(0, 50));
+  } catch (e: any) {
+    console.error('[admin/activities] Error:', e.message);
+    res.status(500).json({ error: 'Failed to get activities' });
   }
 });
 
