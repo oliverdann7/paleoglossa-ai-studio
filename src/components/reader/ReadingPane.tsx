@@ -89,6 +89,7 @@ interface Props {
   onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
   onAITranslate: (sentenceId: string, tokens: TokenData[]) => void;
   onSavePhrase: (sentence: SentenceData) => void;
+  onAnalyzeSentence?: (sentence: { text: string; id: string }) => void;
   onMarkPageKnown: () => void;
   onNextPage: () => void;
   onNextChapter: () => void;
@@ -242,7 +243,7 @@ export function ReadingPane({
   aiTranslations, translatingId,
   sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
   showGlossTooltip, glossTooltipForKnown, interlinearMode, displayMode,
-  onWordClick, onAITranslate, onSavePhrase,
+  onWordClick, onAITranslate, onSavePhrase, onAnalyzeSentence,
   onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
   currentScrollPage, totalPages, currentChapterIndex, totalChapters,
   sentenceSliceStart,
@@ -275,7 +276,6 @@ export function ReadingPane({
       }).length;
       return unknown / content.length;
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sentences, getWordInfo]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -564,6 +564,18 @@ export function ReadingPane({
                         <Repeat className="w-3.5 h-3.5" />
                         Save as Phrase
                       </button>
+                      {onAnalyzeSentence && (
+                        <button
+                          onClick={() => onAnalyzeSentence({
+                            id: sentence.id,
+                            text: sentence.tokens.filter(tk => tk.type === 'word').map(tk => tk.text).join(' '),
+                          })}
+                          className="text-sm font-sans flex items-center justify-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 font-medium rounded-lg hover:bg-green-100 transition-colors mt-1"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          Analyze Sentence
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

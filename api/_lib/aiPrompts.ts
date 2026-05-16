@@ -169,6 +169,81 @@ export const LANGUAGE_SUGGESTED_QUESTIONS: Record<string, string[]> = {
   ],
 };
 
+export interface SentenceAnalysisResult {
+  parsing: Array<{
+    text: string;
+    lemma: string;
+    gloss: string;
+    pos: string;
+    morphology: string;
+    notes: string;
+  }>;
+  syntax: {
+    mainVerb: string;
+    subject: string;
+    object: string;
+    description: string;
+  };
+  semantics: {
+    keywords: string[];
+    idioms: string[];
+    notes: string;
+  };
+  context: string;
+  translations: string[];
+}
+
+export function buildSentenceAnalysisPrompt(
+  sentence: string,
+  languageId: string,
+  mode: 'beginner' | 'scholar',
+): string {
+  const langName = getLanguageName(languageId);
+  const langInstructions = LANGUAGE_INSTRUCTIONS[languageId] ?? '';
+
+  const modeInstructions = mode === 'beginner'
+    ? 'Use simple, accessible language. Avoid jargon. Explain technical terms when used.'
+    : 'Use philological terminology. Be precise and comprehensive. Assume advanced linguistic knowledge.';
+
+  return `You are an expert philologist specializing in ${langName}. Analyze the following sentence for a ${mode === 'beginner' ? 'student' : 'scholar'}.
+
+${langInstructions}
+
+${modeInstructions}
+
+Sentence: "${sentence}"
+
+Return ONLY valid JSON with this exact structure — no markdown, no explanation:
+
+{
+  "parsing": [
+    {
+      "text": "original word form",
+      "lemma": "dictionary form",
+      "gloss": "brief English meaning",
+      "pos": "part of speech",
+      "morphology": "case/tense/mood/voice/number/person/gender as applicable",
+      "notes": "any notable features or irregularities (empty string if none)"
+    }
+  ],
+  "syntax": {
+    "mainVerb": "the main verb lemma",
+    "subject": "subject of the sentence",
+    "object": "direct object if present, else empty string",
+    "description": "2-3 sentence description of the syntactic structure"
+  },
+  "semantics": {
+    "keywords": ["2-4 key lemmas that carry the main meaning"],
+    "idioms": ["any idiomatic expressions, or empty array"],
+    "notes": "semantic notes: word sense, connotation, theological/literary significance"
+  },
+  "context": "2-3 sentences on historical, literary, or textual context. Cite parallels in other texts if known.",
+  "translations": ["a literal translation", "a natural English rendering"]
+}
+
+Include every word token in parsing (skip punctuation). Be precise with morphology.`;
+}
+
 export const DEFAULT_SUGGESTED_QUESTIONS = [
   'What does this word mean in context?',
   'Parse this form for me.',
