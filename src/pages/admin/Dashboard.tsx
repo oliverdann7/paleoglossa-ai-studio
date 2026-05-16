@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Loader2, ShieldAlert, Users, FileText, Flag, Activity,
   Crown, UserCheck, UserX, LayoutDashboard, ChevronDown,
-  RefreshCw, Eye, EyeOff, ShieldCheck, Shield,
+  RefreshCw, Eye, EyeOff, ShieldCheck, Shield, Clock,
 } from "lucide-react";
 import { apiFetch } from "../../lib/services/apiFetch";
 import { useTranslation } from "react-i18next";
@@ -40,7 +40,18 @@ interface Report {
   createdAt?: string;
 }
 
-type Tab = "overview" | "users" | "reports";
+interface ActivityEntry {
+  id: string;
+  uid: string;
+  email?: string;
+  displayName?: string;
+  photoURL?: string;
+  action: string;
+  details?: string;
+  timestamp: string;
+}
+
+type Tab = "overview" | "users" | "reports" | "activity";
 
 const PLANS = [
   { id: "free", label: "Free" },
@@ -353,6 +364,65 @@ function ReportsTab({ reports, onRefresh }: { reports: Report[]; onRefresh: () =
   );
 }
 
+// ─── Action config ────────────────────────────────────────────────────────────
+
+const ACTION_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  sign_up: { label: "Signed up", icon: Users, color: "text-blue" },
+  ai_call: { label: "AI call", icon: Activity, color: "text-purple-500" },
+  create_text: { label: "Created text", icon: FileText, color: "text-amber-500" },
+  report: { label: "Reported", icon: Flag, color: "text-red-400" },
+};
+
+// ─── Activities tab ───────────────────────────────────────────────────────────
+
+function ActivitiesTab({ activities, loading }: { activities: ActivityEntry[]; loading: boolean }) {
+  if (loading) {
+    return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>;
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="card p-12 text-center">
+        <Activity className="w-8 h-8 text-muted mx-auto mb-3" />
+        <p className="text-muted text-sm">No recent activity.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      {activities.map((a) => {
+        const meta = ACTION_META[a.action] || { label: a.action, icon: Clock, color: "text-muted" };
+        const Icon = meta.icon;
+        return (
+          <div key={a.id} className="flex items-start gap-4 p-4 rounded-xl hover:bg-parch2/50 transition-colors">
+            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-parch2 border border-bdr", meta.color)}>
+              <Icon className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                {a.photoURL ? (
+                  <img src={a.photoURL} alt="" className="w-5 h-5 rounded-full" />
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-blue/10 flex items-center justify-center text-[8px] font-bold text-blue shrink-0">
+                    {(a.displayName || a.email || "?")[0].toUpperCase()}
+                  </div>
+                )}
+                <span className="text-[13px] font-medium text-ink truncate">
+                  {a.displayName || a.email || a.uid}
+                </span>
+                <span className="text-[12px] text-muted">{meta.label}</span>
+              </div>
+              {a.details && <p className="text-[12px] text-ink2 mt-0.5 truncate">{a.details}</p>}
+              <p className="text-[11px] text-muted mt-0.5">{new Date(a.timestamp).toLocaleString()}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export const AdminDashboard = () => {
@@ -361,9 +431,11 @@ export const AdminDashboard = () => {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
 
   const loadOverview = useCallback(async () => {
     const [ov, rp] = await Promise.all([
@@ -401,15 +473,34 @@ export const AdminDashboard = () => {
     return () => { cancelled = true; };
   }, [loadOverview, t]);
 
+  const loadActivities = useCallback(async () => {
+    setActivitiesLoading(true);
+    try {
+      const data = await apiFetch<ActivityEntry[]>("/api/admin/activities");
+      setActivities(data);
+    } catch {
+      setActivities([]);
+    } finally {
+      setActivitiesLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (tab === "users" && users.length === 0) {
       (async () => { await loadUsers(); })();
     }
   }, [tab, users.length, loadUsers]);
 
+  useEffect(() => {
+    if (tab === "activity" && activities.length === 0) {
+      (async () => { await loadActivities(); })();
+    }
+  }, [tab, activities.length, loadActivities]);
+
   const handleRefresh = () => {
     loadOverview();
     if (tab === "users") loadUsers();
+    if (tab === "activity") loadActivities();
   };
 
   if (isLoading) {
@@ -433,6 +524,7 @@ export const AdminDashboard = () => {
   const TABS: { id: Tab; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "users", label: "Users", icon: Users, badge: overview?.totalUsers },
+    { id: "activity", label: "Activity", icon: Activity },
     { id: "reports", label: "Reports", icon: Flag, badge: overview?.openReports || undefined },
   ];
 
@@ -487,6 +579,7 @@ export const AdminDashboard = () => {
           ? <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>
           : <UsersTab users={users} onRefresh={loadUsers} />
       )}
+      {tab === "activity" && <ActivitiesTab activities={activities} loading={activitiesLoading} />}
       {tab === "reports" && <ReportsTab reports={reports} onRefresh={() => loadOverview()} />}
     </div>
   );
