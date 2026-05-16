@@ -36,23 +36,22 @@ useEffect(() => {
       setIsLoading(true);
       setError(null);
       try {
-        const dbVocab = await VocabularyService.getVocabulary(userId);
-        if (!active) return;
-        setKnowledge(dbVocab);
-
         if (userId) {
+          // Run lemma-key migration once per user (guarded by Firestore flag inside).
+          await VocabularyService.migrateToLemmaKeys(userId);
+
           const localKnowledge = localStorage.getItem(STORAGE_KEYS.KNOWLEDGE);
           if (localKnowledge) {
             const hasData = Object.keys(JSON.parse(localKnowledge)).length > 0;
             if (hasData) {
-              const count = await VocabularyService.migrateLocalStorage(userId);
-              if (count > 0) {
-                const updatedVocab = await VocabularyService.getVocabulary(userId);
-                setKnowledge(updatedVocab);
-              }
+              await VocabularyService.migrateLocalStorage(userId);
             }
           }
         }
+
+        const dbVocab = await VocabularyService.getVocabulary(userId);
+        if (!active) return;
+        setKnowledge(dbVocab);
       } catch (e: any) {
         console.error("useVocabulary init error:", e);
         setError(e.message || "Failed to load vocabulary");
