@@ -8,6 +8,7 @@ import { useReaderState } from "../lib/contexts/ReaderContext";
 import { WordState } from "../lib/constants/wordStates";
 import { ReaderTutorial } from "../components/reader/ReaderTutorial";
 import { LexDrawerPanel } from "../components/reader/LexDrawerPanel";
+import { SentenceAnalysisPanel } from "../components/reader/SentenceAnalysisPanel";
 import { ReaderProgressHeader } from "../components/reader/ReaderProgressHeader";
 import { ReaderToolbar } from "../components/reader/ReaderToolbar";
 import { ReaderAudioBar } from "../components/reader/ReaderAudioBar";
@@ -100,6 +101,7 @@ export const Reader = () => {
   const { settings } = useSettings();
 
   const [selectedWord, setSelectedWord] = useState<any>(null);
+  const [selectedSentence, setSelectedSentence] = useState<{ text: string; id: string } | null>(null);
   const [tutorialStep, setTutorialStep] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED) ? 0 : 1;
   });
@@ -715,11 +717,17 @@ export const Reader = () => {
   }, [currentChapterIndex, chapters.length, setChapterIndex]);
 
   const handleWordClick = useCallback((token: any, sentenceText: string, sentenceIndex: number) => {
+    setSelectedSentence(null);
     setSelectedWord({ ...token, sentenceText });
     incrementEncounter(token.lemma, currentLanguageId);
     setWordContext(token.lemma, sentenceText, currentLanguageId);
     if (readingMode === "page") setSentenceIndex(sentenceIndex);
   }, [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex]);
+
+  const handleAnalyzeSentence = useCallback((sentence: { text: string; id: string }) => {
+    setSelectedWord(null);
+    setSelectedSentence(sentence);
+  }, []);
 
   const handleSavePhrase = useCallback((sentence: any) => {
     const phrase = sentence.tokens.map((tk: any) => tk.text).join(" ");
@@ -852,6 +860,7 @@ export const Reader = () => {
           onWordClick={handleWordClick}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}
+          onAnalyzeSentence={handleAnalyzeSentence}
           onMarkPageKnown={handleMarkPageKnown}
           onSwipe={handleSwipe}
           onNextPage={handleNextPage}
@@ -919,30 +928,40 @@ export const Reader = () => {
         />
       </div>
 
-      {/* 380px Reading Panel - Absolute on mobile, relative on desktop */}
-      <LexDrawerPanel
-        selectedWord={selectedWord}
-        setSelectedWord={setSelectedWord}
-        knowledge={knowledge}
-        setWordState={setWordState}
-        setWordNote={setWordNote}
-        updateGloss={updateGloss}
-        getWordInfo={getWordInfo}
-        showTranslit={showTranslit}
-        isHebrewFont={isHebrewFont}
-        isRtl={isRtl}
-        textLanguageId={currentLanguageId}
-        exampleSentences={exampleSentences}
-        playTTS={(textStr, lang) => {
-          if (!window.speechSynthesis) return;
-          window.speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance(textStr);
-          u.lang = TTS_LANG_MAP[lang] || "en-US";
-          u.rate = 0.9;
-          window.speechSynthesis.speak(u);
-        }}
-        text={text}
-      />
+      {/* 380px Reading Panel - word analysis or sentence analysis */}
+      {selectedSentence ? (
+        <SentenceAnalysisPanel
+          sentence={selectedSentence}
+          language={currentLanguageId}
+          mode="scholar"
+          onClose={() => setSelectedSentence(null)}
+          isRtl={isRtl}
+        />
+      ) : (
+        <LexDrawerPanel
+          selectedWord={selectedWord}
+          setSelectedWord={setSelectedWord}
+          knowledge={knowledge}
+          setWordState={setWordState}
+          setWordNote={setWordNote}
+          updateGloss={updateGloss}
+          getWordInfo={getWordInfo}
+          showTranslit={showTranslit}
+          isHebrewFont={isHebrewFont}
+          isRtl={isRtl}
+          textLanguageId={currentLanguageId}
+          exampleSentences={exampleSentences}
+          playTTS={(textStr, lang) => {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(textStr);
+            u.lang = TTS_LANG_MAP[lang] || "en-US";
+            u.rate = 0.9;
+            window.speechSynthesis.speak(u);
+          }}
+          text={text}
+        />
+      )}
 
       <ReaderTutorial currentStep={tutorialStep} onDismiss={dismissTutorial} />
     </div>

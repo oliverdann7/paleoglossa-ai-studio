@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { basicAnalyze } from '../_lib/basicAnalyze';
 import { parseAndValidateAIResponse } from '../_lib/aiValidation';
-import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA, buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS } from '../_lib/aiPrompts';
+import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA, buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS, buildSentenceAnalysisPrompt, type SentenceAnalysisResult } from '../_lib/aiPrompts';
 import { requireAuth, optionalAuth } from '../_lib/auth';
 import { checkAndIncrementUsage } from '../_lib/aiUsage';
 import { getAdminDb } from '../_lib/firebaseAdmin';
@@ -983,6 +983,86 @@ router.get('/api/ai/tutor/sessions/:sessionId', requireAuth as any, async (req: 
   } catch (err: any) {
     console.error('[tutor/session] Error:', err.message);
     res.status(500).json({ error: 'Failed to fetch session', code: 'TUTOR_ERROR' });
+  }
+});
+
+router.post('/api/ai/sentence-analysis', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { text: sentenceText, language, mode = 'scholar' } = req.body;
+
+    if (!sentenceText || typeof sentenceText !== 'string' || sentenceText.trim().length === 0) {
+      return res.status(400).json({ error: 'text is required', code: 'INVALID_INPUT', field: 'text' });
+    }
+    if (!language || typeof language !== 'string') {
+      return res.status(400).json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
+    }
+    if (!['beginner', 'scholar'].includes(mode)) {
+      return res.status(400).json({ error: 'mode must be beginner or scholar', code: 'INVALID_INPUT', field: 'mode' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({
+        parsing: [],
+        syntax: { mainVerb: '', subject: '', object: '', description: 'AI analysis not available — Gemini API key not configured.' },
+        semantics: { keywords: [], idioms: [], notes: '' },
+        context: '',
+        translations: [],
+      } satisfies SentenceAnalysisResult);
+    }
+
+    // Check Firestore cache
+    const adminDb_ = getAdminDb();
+    const cacheKey = Buffer.from(`${language}:${mode}:${sentenceText}`).toString('base64').replace(/[/+=]/g, '_').slice(0, 128);
+    const cacheRef = adminDb_?.collection('sentenceAnalysisCache').doc(cacheKey);
+
+    if (cacheRef) {
+      const cached = await cacheRef.get();
+      if (cached.exists) {
+        const data = cached.data()!;
+        const expiry = data.expiresAt?.toDate?.();
+        if (!expiry || expiry > new Date()) {
+          return res.status(200).json({ ...data.result, cached: true });
+        }
+      }
+    }
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+
+    const prompt = buildSentenceAnalysisPrompt(sentenceText.slice(0, 2000), language, mode as 'beginner' | 'scholar');
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+    });
+
+    const rawText = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    let result: SentenceAnalysisResult;
+    try {
+      const cleaned = rawText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+      result = JSON.parse(cleaned);
+    } catch {
+      return res.status(200).json({
+        parsing: [],
+        syntax: { mainVerb: '', subject: '', object: '', description: 'AI returned an unreadable response. Please try again.' },
+        semantics: { keywords: [], idioms: [], notes: '' },
+        context: '',
+        translations: [],
+      } satisfies SentenceAnalysisResult);
+    }
+
+    // Cache result for 30 days
+    if (cacheRef) {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+      await cacheRef.set({ result, expiresAt, createdAt: new Date() }).catch(() => {});
+    }
+
+    return res.status(200).json(result);
+  } catch (err: any) {
+    console.error('[sentence-analysis] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to analyze sentence', code: 'ANALYSIS_ERROR' });
   }
 });
 
