@@ -24,6 +24,7 @@ import { useSubscription } from "../lib/contexts/SubscriptionContext";
 import { useToast } from "../lib/hooks/useToast";
 import { STORAGE_KEYS } from "../lib/constants/storage";
 import { OfflineService } from "../lib/services/offlineService";
+import { useOnlineStatus } from "../lib/hooks/useOnlineStatus";
 
 // Module-level constant — avoids object recreation on every render
 const TTS_LANG_MAP: Record<string, string> = {
@@ -100,6 +101,7 @@ export const Reader = () => {
   } = useKnowledge();
   const { settings } = useSettings();
 
+  const isOnline = useOnlineStatus();
   const [selectedWord, setSelectedWord] = useState<any>(null);
   const [selectedSentence, setSelectedSentence] = useState<{ text: string; id: string } | null>(null);
   const [tutorialStep, setTutorialStep] = useState(() => {
@@ -767,7 +769,14 @@ export const Reader = () => {
 
   return (
     <div className="flex h-screen bg-[#FDFBF7] text-ink font-sans overflow-hidden">
-      <div className="flex-1 flex flex-col relative z-20 overflow-hidden">
+      {/* Offline banner */}
+      {!isOnline && (
+        <div className="fixed top-0 inset-x-0 z-[100] bg-amber-500 text-white text-[12px] font-bold text-center py-1 px-4">
+          You're offline — reading from cached data. Word state changes will sync when reconnected.
+        </div>
+      )}
+
+      <div className="flex-1 flex flex-col relative z-20 overflow-hidden" style={!isOnline ? { paddingTop: 28 } : undefined}>
         <ReaderProgressHeader
           readToday={stats?.readToday || 0}
           dailyGoalWords={settings.dailyGoalWords}
@@ -831,7 +840,8 @@ export const Reader = () => {
           }
         }}
           className="fixed bottom-40 right-6 z-30 w-12 h-12 bg-parch3 text-ink rounded-full shadow-lg flex items-center justify-center hover:bg-blue hover:text-white transition-all active:scale-95 border border-bdr"
-          title={OfflineService.isOfflineText(textId || '') ? t("reader.removeOffline", "Remove offline") : t("reader.saveOffline", "Save offline")}>
+          title={OfflineService.isOfflineText(textId || '') ? t("reader.removeOffline", "Remove offline") : t("reader.saveOffline", "Save offline")}
+          disabled={!isOnline && !OfflineService.isOfflineText(textId || '')}>
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 2v10m0 0l-3-3m3 3l3-3M4 19h16" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>

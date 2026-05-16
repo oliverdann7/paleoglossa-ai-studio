@@ -93,6 +93,21 @@ export default defineConfig(({mode}) => {
                   statuses: [0, 200]
                 }
               }
+            },
+            {
+              // Cache read-only API routes (corpus texts, dictionary lookups) for offline use
+              urlPattern: /\/api\/(corpus|texts|dictionary)\//i,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'api-read-cache',
+                expiration: {
+                  maxEntries: 200,
+                  maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
             }
           ]
         }

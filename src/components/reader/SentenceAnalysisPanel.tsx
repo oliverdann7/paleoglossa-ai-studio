@@ -115,11 +115,11 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ x: 380 }}
-        animate={{ x: 0 }}
-        exit={{ x: 380 }}
+        initial={{ x: 380, y: 0 }}
+        animate={{ x: 0, y: 0 }}
+        exit={{ x: 380, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="w-[380px] shrink-0 flex flex-col border-l border-bdr/40 bg-parch/60 backdrop-blur-sm overflow-hidden"
+        className="md:!translate-y-0 fixed md:relative bottom-0 left-0 w-full md:w-[380px] h-[65vh] md:h-full shrink-0 flex flex-col border-t md:border-t-0 md:border-l border-bdr/40 bg-parch/60 backdrop-blur-sm overflow-hidden z-50 md:z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-[-10px_0_40px_rgba(35,20,10,0.04)] rounded-t-3xl md:rounded-none"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-bdr/40 bg-parch/80">
