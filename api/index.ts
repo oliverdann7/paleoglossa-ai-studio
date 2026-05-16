@@ -13,6 +13,7 @@ import searchRouter from './_routes/search';
 import syntaxRouter from './_routes/syntax';
 import adminRouter from './_routes/admin';
 import socialRouter from './_routes/social';
+import parseRouter from './_routes/parse';
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use(syntaxRouter);
 app.use(billingRouter);
 app.use(adminRouter);
 app.use(socialRouter);
+app.use(parseRouter);
 
 export const expressApp = app;
 export default function handler(req: any, res: any) {
