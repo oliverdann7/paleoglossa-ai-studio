@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import pdfParse from 'pdf-parse';
+import { PDFParse, PasswordException } from 'pdf-parse';
 import mammoth from 'mammoth';
 
 const router = Router();
@@ -38,13 +38,18 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
     const warnings: string[] = [];
 
     if (mimetype === 'application/pdf') {
-      const result = await pdfParse(buffer);
-      text = result.text.trim();
-      if (!text) {
-        warnings.push('PDF contained no extractable text. It may be a scanned image — try the Image OCR tab instead.');
-      }
-      if (result.numpages > 200) {
-        warnings.push(`Large document (${result.numpages} pages). Only the first 100,000 characters will be analyzed.`);
+      const parser = new PDFParse({ data: buffer });
+      try {
+        const result = await parser.getText();
+        text = result.text.trim();
+        if (!text) {
+          warnings.push('PDF contained no extractable text. It may be a scanned image — try the Image OCR tab instead.');
+        }
+        if (result.total > 200) {
+          warnings.push(`Large document (${result.total} pages). Only the first 100,000 characters will be analyzed.`);
+        }
+      } finally {
+        await parser.destroy();
       }
     } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       const result = await mammoth.extractRawText({ buffer });
@@ -72,14 +77,14 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
       truncated,
       warnings: warnings.length > 0 ? warnings : undefined,
     });
-  } catch (err: any) {
-    const msg = err?.message?.toLowerCase() ?? '';
-    if (msg.includes('encrypted') || msg.includes('password')) {
+  } catch (err: unknown) {
+    if (err instanceof PasswordException) {
       return res.status(422).json({
         error: 'This PDF is password-protected. Remove the password and try again.',
         code: 'PDF_ENCRYPTED',
       });
     }
+    const msg = err instanceof Error ? err.message.toLowerCase() : '';
     if (msg.includes('central directory') || msg.includes('zip')) {
       return res.status(422).json({
         error: 'The DOCX file appears to be corrupt or is not a valid Word document.',
@@ -92,11 +97,11 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
 });
 
 // Multer error handler (file too large, unsupported type from fileFilter)
-router.use((err: any, _req: any, res: any, next: any) => {
-  if (err?.code === 'LIMIT_FILE_SIZE') {
+router.use((err: unknown, _req: unknown, res: any, next: (e: unknown) => void) => {
+  if (err && typeof err === 'object' && 'code' in err && (err as NodeJS.ErrnoException).code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ error: 'File exceeds the 10 MB size limit.', code: 'FILE_TOO_LARGE' });
   }
-  if (err?.message?.startsWith('Unsupported file type')) {
+  if (err instanceof Error && err.message.startsWith('Unsupported file type')) {
     return res.status(415).json({ error: err.message, code: 'UNSUPPORTED_TYPE' });
   }
   next(err);
