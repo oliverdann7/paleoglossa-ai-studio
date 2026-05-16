@@ -275,7 +275,6 @@ export function ReadingPane({
       }).length;
       return unknown / content.length;
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sentences, getWordInfo]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
