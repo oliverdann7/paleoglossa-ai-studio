@@ -15,7 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ImportService, ImportedText } from "../lib/services/importService";
+import { ImportService, ImportedText, computeContentHash } from "../lib/services/importService";
 import { AIClient } from "../lib/services/aiClient";
 import { useAuth } from "../lib/hooks/useAuth";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
@@ -49,6 +49,10 @@ export const Import = () => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langSelectRef = useRef<HTMLDivElement>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [duplicateImport, setDuplicateImport] = useState<ImportedText | null>(null);
+  const [importHistory, setImportHistory] = useState<ImportedText[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -239,38 +243,75 @@ export const Import = () => {
     return sentences;
   }
 
-  const handleProcess = async () => {
-    if (!text.trim()) return;
-    setIsProcessing(true);
-    setProcessingStep(t("import.linguisticAnalysis", "Linguistic analysis..."));
-    setAnalysisError(null);
-
+  const runAIAnalysis = async (rawText: string, importId: string, userId: string | null) => {
     let sentences: ImportedSentence[];
     let analysisStatus: 'analyzed' | 'raw' = 'analyzed';
-    let stats: ReturnType<typeof calculateStats>;
+    const errorLog: string[] = [];
+    let retryCount = 0;
+
+    const MAX_RETRIES = 3;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const result = await AIClient.analyzeText(languageId, rawText);
+        sentences = result.sentences;
+        analysisStatus = result.analysisStatus === 'analyzed' ? 'analyzed' : 'raw';
+        break;
+      } catch (error: any) {
+        errorLog.push(`Attempt ${attempt + 1}: ${error.message || 'Unknown error'}`);
+        retryCount = attempt + 1;
+        if (attempt < MAX_RETRIES - 1) {
+          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        } else {
+          sentences = basicTokenize(rawText);
+          analysisStatus = 'raw';
+        }
+      }
+    }
+
+    const stats = calculateStats(sentences!);
+    const finalStatus = analysisStatus === 'analyzed' ? 'complete' as const : 'partial' as const;
+
+    if (userId) {
+      await ImportService.updateImport(userId, importId, {
+        sentences: sentences!,
+        stats,
+        status: finalStatus,
+        analysisStatus,
+        errorLog: errorLog.length > 0 ? errorLog : undefined,
+        retryCount: retryCount > 0 ? retryCount : undefined,
+      });
+    }
+
+    return { sentences: sentences!, stats, status: finalStatus, analysisStatus, errorLog };
+  };
+
+  const handleProcess = async (forceImport = false) => {
+    if (!text.trim()) return;
 
     if (!canAccessLanguage(languageId)) {
       alert(t("import.errorLanguageLocked", "This language is locked. Upgrade your plan to access it."));
-      setIsProcessing(false);
-      setProcessingStep("");
       return;
     }
 
-    try {
-      const result = await AIClient.analyzeText(languageId, text);
-      sentences = result.sentences;
-      if (result.analysisStatus === 'analyzed') {
-        analysisStatus = 'analyzed';
+    setIsProcessing(true);
+    setProcessingStep(t("import.checkingDuplicate", "Checking for duplicates..."));
+    setAnalysisError(null);
+    setDuplicateImport(null);
+
+    // Duplicate detection
+    if (user && !forceImport) {
+      try {
+        const hash = await computeContentHash(text);
+        const existing = await ImportService.getImportByHash(user.uid, hash);
+        if (existing) {
+          setDuplicateImport(existing);
+          setIsProcessing(false);
+          setProcessingStep("");
+          return;
+        }
+      } catch {
+        // Hash check failed — proceed anyway
       }
-      setProcessingStep(t("import.mappingKnowledge", "Mapping to your knowledge..."));
-      stats = calculateStats(sentences);
-    } catch (error: any) {
-      console.warn("AI analysis failed, using basic tokenization:", error);
-      sentences = basicTokenize(text);
-      analysisStatus = 'raw';
-      stats = calculateStats(sentences);
-      setAnalysisError(error.message || "AI analysis unavailable");
-      setProcessingStep(t("import.savingRaw", "Saving without AI analysis..."));
     }
 
     const sourceTypeMap: Record<string, ImportedText['sourceType']> = {
@@ -280,36 +321,104 @@ export const Import = () => {
       ocr: 'image',
     };
 
-    const imported: ImportedText = {
-      id: `imp-${Date.now()}`,
+    const importId = `imp_${Date.now()}`;
+    let contentHash: string | undefined;
+    try {
+      contentHash = await computeContentHash(text);
+    } catch {
+      // Hash computation failed — proceed without it
+    }
+
+    // Save raw record first (resilience: user can navigate away, record is preserved)
+    const rawRecord: ImportedText = {
+      id: importId,
       userId: user?.uid || 'anonymous',
       title: buildTitleFromText(text),
       rawContent: text,
-      sentences,
+      sentences: [],
       languageId,
       sourceType: sourceTypeMap[activeTab] || 'paste',
-      status: 'complete',
-      analysisStatus,
+      status: 'processing',
+      analysisStatus: 'needs_ai',
       visibility: 'private',
-      stats,
+      stats: { totalWords: 0, uniqueWords: 0, knownWords: 0, newWords: 0, learningWords: 0 },
+      contentHash,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     try {
-      await ImportService.saveImport(user ? user.uid : null, imported);
+      await ImportService.saveImport(user ? user.uid : null, rawRecord);
     } catch (saveError: any) {
       console.error("Import save failed:", saveError);
-      alert(t("import.errorSaveFailed", "Text analysis succeeded, but saving failed") + ": " + saveError.message);
+      alert(t("import.errorSaveFailed", "Failed to save import") + ": " + saveError.message);
       setIsProcessing(false);
       setProcessingStep("");
       return;
     }
 
-    refreshImports();
-    setResult(imported);
+    setProcessingStep(t("import.linguisticAnalysis", "Linguistic analysis..."));
+
+    try {
+      const { sentences, stats, status, analysisStatus, errorLog } = await runAIAnalysis(text, importId, user?.uid || null);
+
+      if (errorLog.length > 0) setAnalysisError(errorLog[errorLog.length - 1]);
+
+      const finalImport: ImportedText = {
+        ...rawRecord,
+        sentences,
+        stats,
+        status,
+        analysisStatus,
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (!user) {
+        // For unauthenticated users, update localStorage
+        await ImportService.saveImport(null, finalImport);
+      }
+
+      refreshImports();
+      setResult(finalImport);
+    } catch (err: any) {
+      console.error("Import processing failed:", err);
+      setAnalysisError(err.message || "Unexpected error during import");
+    }
+
     setIsProcessing(false);
     setProcessingStep("");
+  };
+
+  const handleRetry = async (importItem: ImportedText) => {
+    if (!user || !importItem.id) return;
+    setRetryingId(importItem.id);
+    try {
+      await ImportService.updateImport(user.uid, importItem.id, {
+        status: 'processing',
+        errorLog: [],
+      });
+      const { sentences, stats, status, analysisStatus, errorLog } = await runAIAnalysis(
+        importItem.rawContent,
+        importItem.id,
+        user.uid,
+      );
+      setImportHistory(prev => prev.map(i =>
+        i.id === importItem.id ? { ...i, sentences, stats, status, analysisStatus, errorLog } : i
+      ));
+    } catch (err: any) {
+      console.error("Retry failed:", err);
+    } finally {
+      setRetryingId(null);
+    }
+  };
+
+  const loadHistory = async () => {
+    if (!user) return;
+    const imports = await ImportService.getImports(user.uid);
+    setImportHistory(imports.sort((a, b) =>
+      new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime()
+    ));
+    setShowHistory(true);
   };
 
   const handleSample = (sample: string, langId: string) => {
@@ -593,8 +702,34 @@ export const Import = () => {
               )}
             </AnimatePresence>
 
+            {duplicateImport && (
+              <div className="mt-6 p-4 bg-amber/10 border border-amber/30 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="font-bold text-amber text-[13px] mb-1">Duplicate Detected</div>
+                    <p className="text-[12px] text-ink3">You already imported "<strong>{duplicateImport.title}</strong>". Import again anyway?</p>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => navigate(`/app/reader/${duplicateImport.id}`)}
+                        className="text-[11px] font-bold px-3 py-1.5 bg-blue text-white rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        Open Existing
+                      </button>
+                      <button
+                        onClick={() => { setDuplicateImport(null); handleProcess(true); }}
+                        className="text-[11px] font-bold px-3 py-1.5 bg-parch3 text-ink border border-bdr rounded-lg hover:bg-parch2 transition-colors"
+                      >
+                        Import Anyway
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button
-              onClick={activeTab === 'ocr' ? handleExtractText : activeTab === 'url' ? handleScrapeUrl : handleProcess}
+              onClick={activeTab === 'ocr' ? handleExtractText : activeTab === 'url' ? handleScrapeUrl : () => handleProcess()}
               disabled={isProcessing || (activeTab === 'ocr' ? !imageBase64 : activeTab === 'url' ? !url.trim() : activeTab === 'file' ? false : !text.trim())}
               className="w-full mt-8 bg-blue text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:shadow-xl transition-all shadow-lg shadow-blue/20 disabled:opacity-50"
             >
@@ -610,6 +745,56 @@ export const Import = () => {
                 activeTab === 'ocr' ? t("import.extractText", "Extract Text from Image") :  t("import.process", "Analyze & Import Text")
               )}
             </button>
+
+            {user && (
+              <button
+                onClick={showHistory ? () => setShowHistory(false) : loadHistory}
+                className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-muted hover:text-ink transition-colors"
+              >
+                {showHistory ? "Hide Import History" : "View Import History"}
+              </button>
+            )}
+
+            {showHistory && importHistory.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {importHistory.map(item => (
+                  <div key={item.id} className="flex items-center gap-3 p-3 bg-parch3/60 rounded-xl border border-bdr/30">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full shrink-0",
+                      item.status === 'complete' ? 'bg-green-500' :
+                      item.status === 'partial' ? 'bg-amber-500' :
+                      item.status === 'failed' ? 'bg-red-500' :
+                      item.status === 'processing' ? 'bg-blue animate-pulse' : 'bg-gray-400',
+                    )} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-medium text-ink truncate">{item.title}</div>
+                      <div className="text-[10px] text-muted">
+                        {item.status} · {item.analysisStatus} · {new Date(item.createdAt as string).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5 shrink-0">
+                      {(item.status === 'partial' || item.status === 'failed' || item.analysisStatus === 'raw') && (
+                        <button
+                          onClick={() => handleRetry(item)}
+                          disabled={retryingId === item.id}
+                          className="text-[10px] font-bold px-2 py-1 bg-amber/10 text-amber rounded hover:bg-amber/20 transition-colors disabled:opacity-50"
+                        >
+                          {retryingId === item.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Retry'}
+                        </button>
+                      )}
+                      {item.status === 'complete' && (
+                        <button
+                          onClick={() => navigate(`/app/reader/${item.id}`)}
+                          className="text-[10px] font-bold px-2 py-1 bg-blue/10 text-blue rounded hover:bg-blue/20 transition-colors"
+                        >
+                          Open
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       ) : (
