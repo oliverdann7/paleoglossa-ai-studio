@@ -80,7 +80,7 @@ export interface ImportedText {
   };
   aiAnalysis?: any;
   /** Lifecycle status of the import record */
-  status: 'pending' | 'processing' | 'complete' | 'failed';
+  status: 'pending' | 'processing' | 'complete' | 'partial' | 'failed';
   /** Quality of linguistic analysis */
   analysisStatus: 'analyzed' | 'raw' | 'needs_ai';
   visibility: 'private' | 'shared' | 'public';
@@ -95,6 +95,14 @@ export interface ImportedText {
   originalAuthorId?: string;
   originalAuthorName?: string;
   originalPublicTextId?: string;
+  /** SHA-256 hex of rawContent for duplicate detection */
+  contentHash?: string;
+  /** Errors encountered during processing */
+  errorLog?: string[];
+  /** Number of AI analysis retry attempts */
+  retryCount?: number;
+  /** Original filename if imported via file upload */
+  originalFilename?: string;
 }
 
 export interface UserSettings {
