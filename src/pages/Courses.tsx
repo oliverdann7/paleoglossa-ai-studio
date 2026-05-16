@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Users, Plus, BookOpen, Globe, Lock, Loader2, ChevronRight,
-  Trash2, Edit2, X, Check, Play, UserCheck, LogOut,
+  Trash2, Edit2, X, Check, Play, UserCheck, LogOut, Brain, Flame,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth';
@@ -14,6 +14,11 @@ import { LANGUAGES, getLanguageById, getLanguageDisplayName } from '../lib/const
 import { useKnowledge } from '../lib/hooks/useKnowledge';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
+import { ImportService } from '../lib/services/importService';
+import { WordState } from '../lib/constants/wordStates';
+import { KnowledgeMap } from '../lib/services/vocabularyService';
+import { CourseQuizModal } from '../components/courses/CourseQuizModal';
+import { PreDrillModal, DrillLemma } from '../components/courses/PreDrillModal';
 
 type View = 'list' | 'detail' | 'create' | 'edit';
 
@@ -312,10 +317,31 @@ function CourseForm({
 
 // ─── Course Detail ────────────────────────────────────────────────────────────
 
+// ─── Difficulty badge ─────────────────────────────────────────────────────────
+function DifficultyBadge({ unknownPct }: { unknownPct: number | null }) {
+  if (unknownPct === null) return null;
+  if (unknownPct <= 15) return (
+    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Easy</span>
+  );
+  if (unknownPct <= 30) return (
+    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue/10 text-blue">Accessible</span>
+  );
+  if (unknownPct <= 50) return (
+    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700">Challenging</span>
+  );
+  return (
+    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 flex items-center gap-0.5">
+      <Flame className="w-2.5 h-2.5" /> Hard
+    </span>
+  );
+}
+
 function CourseDetail({
   course,
   isOwner,
   readingProgress,
+  knowledge,
+  userId,
   onJoin,
   onLeave,
   onEdit,
@@ -324,6 +350,8 @@ function CourseDetail({
   course: CourseWithMeta;
   isOwner: boolean;
   readingProgress: Record<string, number>;
+  knowledge: KnowledgeMap;
+  userId: string | null;
   onJoin: () => Promise<void>;
   onLeave: () => Promise<void>;
   onEdit: () => void;
@@ -334,6 +362,97 @@ function CourseDetail({
   const [isJoining, setIsJoining] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(Boolean(course.isEnrolled));
+
+  // Import data for difficulty calculation
+  const [importData, setImportData] = useState<Record<string, { stats: { totalWords: number; knownWords: number }; sentences?: { tokens: { lemma?: string; type: string }[] }[]; rawContent?: string }>>({});
+
+  useEffect(() => {
+    if (!userId) return;
+    const textIds = course.texts.map(t => t.textId);
+    Promise.all(
+      textIds.map(id => ImportService.getImport(userId, id).then(imp => imp ? [id, imp] as const : null))
+    ).then(results => {
+      const map: typeof importData = {};
+      for (const r of results) {
+        if (r) map[r[0]] = r[1] as typeof importData[string];
+      }
+      setImportData(map);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course.id, userId]);
+
+  // Compute per-text unknown-word density from live knowledge map
+  const unknownDensity = useMemo<Record<string, number | null>>(() => {
+    const result: Record<string, number | null> = {};
+    for (const assignment of course.texts) {
+      const imp = importData[assignment.textId];
+      if (!imp?.sentences) { result[assignment.textId] = null; continue; }
+      const tokens = imp.sentences.flatMap(s => s.tokens).filter(t => t.type === 'word');
+      if (tokens.length === 0) { result[assignment.textId] = null; continue; }
+      const unknown = tokens.filter(t => {
+        if (!t.lemma) return true;
+        const info = knowledge[t.lemma.toLowerCase()];
+        const state = info?.state ?? WordState.NEW;
+        return state === WordState.NEW || state === WordState.SEEN;
+      });
+      result[assignment.textId] = Math.round((unknown.length / tokens.length) * 100);
+    }
+    return result;
+  }, [course.texts, importData, knowledge]);
+
+  // Find the recommended next text: first incomplete with density <= 30% (or just first incomplete)
+  const sortedTexts = course.texts.slice().sort((a, b) => a.order - b.order);
+  const recommendedTextId = useMemo(() => {
+    const incomplete = sortedTexts.filter(t => (readingProgress[t.textId] ?? 0) < 100);
+    const accessible = incomplete.find(t => {
+      const d = unknownDensity[t.textId];
+      return d === null || d <= 30;
+    });
+    return (accessible ?? incomplete[0])?.textId ?? null;
+  }, [sortedTexts, readingProgress, unknownDensity]);
+
+  // Adaptive tip: if all texts ≥ 80% done, show suggestion
+  const allProgress = sortedTexts.map(t => readingProgress[t.textId] ?? 0);
+  const avgProgress = allProgress.length > 0 ? allProgress.reduce((a, b) => a + b, 0) / allProgress.length : 0;
+  const allComplete = allProgress.length > 0 && allProgress.every(p => p >= 80);
+  const avgDensity = Object.values(unknownDensity).filter((v): v is number => v !== null);
+  const meanDensity = avgDensity.length > 0 ? avgDensity.reduce((a, b) => a + b, 0) / avgDensity.length : null;
+
+  // Pre-drill modal state
+  const [preDrill, setPreDrill] = useState<{ assignment: CourseTextAssignment; lemmas: DrillLemma[] } | null>(null);
+  // Quiz modal state
+  const [quiz, setQuiz] = useState<{ textId: string; title: string; snippet: string } | null>(null);
+
+  const handleReadClick = (assignment: CourseTextAssignment) => {
+    const imp = importData[assignment.textId];
+    if (imp?.sentences) {
+      // Gather top lemmas for pre-drill
+      const lemmaMap = new Map<string, DrillLemma>();
+      for (const s of imp.sentences) {
+        for (const t of s.tokens) {
+          if (t.type !== 'word' || !t.lemma || lemmaMap.has(t.lemma)) continue;
+          const info = knowledge[t.lemma.toLowerCase()];
+          const state = (info?.state as WordState | undefined) ?? WordState.NEW;
+          if (state !== WordState.KNOWN && state !== WordState.IGNORED) {
+            lemmaMap.set(t.lemma, { lemma: t.lemma, gloss: (t as any).gloss || '', state });
+          }
+        }
+        if (lemmaMap.size >= 10) break;
+      }
+      const lemmas = Array.from(lemmaMap.values()).slice(0, 10);
+      if (lemmas.length > 0) {
+        setPreDrill({ assignment, lemmas });
+        return;
+      }
+    }
+    navigate(`/app/reader/${assignment.textId}`);
+  };
+
+  const handleOpenQuiz = (assignment: CourseTextAssignment) => {
+    const imp = importData[assignment.textId];
+    const snippet = imp?.rawContent?.slice(0, 2000) ?? '';
+    setQuiz({ textId: assignment.textId, title: assignment.learningObjectives || assignment.textId, snippet });
+  };
 
   const handleJoin = async () => {
     setIsJoining(true);
@@ -351,6 +470,26 @@ function CourseDetail({
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      {/* Pre-drill modal */}
+      {preDrill && (
+        <PreDrillModal
+          textTitle={preDrill.assignment.learningObjectives || preDrill.assignment.textId}
+          lemmas={preDrill.lemmas}
+          onStartReading={() => { setPreDrill(null); navigate(`/app/reader/${preDrill.assignment.textId}`); }}
+          onClose={() => setPreDrill(null)}
+        />
+      )}
+
+      {/* Quiz modal */}
+      {quiz && (
+        <CourseQuizModal
+          textTitle={quiz.title}
+          textSnippet={quiz.snippet}
+          languageId={course.languageId}
+          onClose={() => setQuiz(null)}
+        />
+      )}
+
       <button onClick={onBack} className="flex items-center gap-1.5 text-[13px] text-muted hover:text-blue mb-6 transition-colors">
         <ChevronRight className="w-4 h-4 rotate-180" /> Back to courses
       </button>
@@ -410,6 +549,19 @@ function CourseDetail({
         <p className="font-body text-[15px] italic text-ink2 mb-6 leading-relaxed">{course.description}</p>
       )}
 
+      {/* Overall progress bar */}
+      {sortedTexts.length > 0 && (isOwner || isEnrolled) && avgProgress > 0 && (
+        <div className="mb-6 card p-4">
+          <div className="flex items-center justify-between text-[12px] text-muted mb-2">
+            <span className="font-bold text-ink">Course Progress</span>
+            <span>{Math.round(avgProgress)}% complete</span>
+          </div>
+          <div className="h-2 bg-parch3 rounded-full overflow-hidden">
+            <div className="h-full bg-blue rounded-full transition-all" style={{ width: `${avgProgress}%` }} />
+          </div>
+        </div>
+      )}
+
       {course.texts.length === 0 ? (
         <div className="card p-8 text-center border-dashed border-2 border-bdr/40">
           <BookOpen className="w-10 h-10 text-muted/50 mx-auto mb-3" />
@@ -421,21 +573,33 @@ function CourseDetail({
           )}
         </div>
       ) : (
-        <div className="space-y-2">
-          {course.texts
-            .slice()
-            .sort((a, b) => a.order - b.order)
-            .map((assignment, i) => {
+        <>
+          <div className="space-y-2">
+            {sortedTexts.map((assignment, i) => {
               const pct = readingProgress[assignment.textId] ?? 0;
               const canRead = isOwner || isEnrolled;
+              const density = unknownDensity[assignment.textId] ?? null;
+              const isRecommended = canRead && assignment.textId === recommendedTextId;
               return (
-                <div key={assignment.textId} className="card p-4 flex items-center gap-4">
+                <div
+                  key={assignment.textId}
+                  className={cn(
+                    "card p-4 flex items-center gap-4 transition-all",
+                    isRecommended && "border-blue/40 ring-1 ring-blue/20",
+                  )}
+                >
                   <div className="w-8 h-8 rounded-full bg-parch2 flex items-center justify-center text-[13px] font-bold text-muted shrink-0">
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[14px] font-medium text-ink truncate mb-1">
-                      {assignment.learningObjectives || assignment.textId}
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span className="text-[14px] font-medium text-ink truncate">
+                        {assignment.learningObjectives || assignment.textId}
+                      </span>
+                      {isRecommended && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue text-white shrink-0">Next</span>
+                      )}
+                      <DifficultyBadge unknownPct={density} />
                     </div>
                     {canRead && (
                       <div className="flex items-center gap-2">
@@ -447,13 +611,24 @@ function CourseDetail({
                     )}
                   </div>
                   {canRead && (
-                    <button
-                      onClick={() => navigate(`/app/reader/${assignment.textId}`)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue text-white text-[12px] font-semibold rounded-lg hover:bg-blue/90 transition-colors shrink-0"
-                    >
-                      <Play className="w-3 h-3" fill="currentColor" />
-                      Read
-                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {pct > 0 && (
+                        <button
+                          onClick={() => handleOpenQuiz(assignment)}
+                          title="Comprehension quiz"
+                          className="p-1.5 rounded-lg border border-bdr text-muted hover:text-blue hover:border-blue/40 transition-colors"
+                        >
+                          <Brain className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleReadClick(assignment)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue text-white text-[12px] font-semibold rounded-lg hover:bg-blue/90 transition-colors"
+                      >
+                        <Play className="w-3 h-3" fill="currentColor" />
+                        {pct === 0 ? 'Start' : 'Continue'}
+                      </button>
+                    </div>
                   )}
                   {!canRead && (
                     <Lock className="w-4 h-4 text-muted shrink-0" />
@@ -461,7 +636,30 @@ function CourseDetail({
                 </div>
               );
             })}
-        </div>
+          </div>
+
+          {/* Adaptive difficulty tip */}
+          {allComplete && meanDensity !== null && (
+            <div className="mt-6 card p-4 bg-parch2/60 border-dashed">
+              {meanDensity <= 10 ? (
+                <p className="text-[13px] text-emerald-700 flex items-start gap-2">
+                  <span className="text-[16px]">🎓</span>
+                  <span>You handled this course with ease (avg. {Math.round(meanDensity)}% unknown). Consider a more challenging course or longer texts next.</span>
+                </p>
+              ) : meanDensity <= 30 ? (
+                <p className="text-[13px] text-blue flex items-start gap-2">
+                  <span className="text-[16px]">✅</span>
+                  <span>Course complete! Your comprehension is solid. Keep reading to consolidate.</span>
+                </p>
+              ) : (
+                <p className="text-[13px] text-amber-700 flex items-start gap-2">
+                  <span className="text-[16px]">📖</span>
+                  <span>These texts were challenging (avg. {Math.round(meanDensity)}% unknown). Review vocabulary in the SRS before moving on.</span>
+                </p>
+              )}
+            </div>
+          )}
+        </>
       )}
     </motion.div>
   );
@@ -474,7 +672,7 @@ export const Courses = () => {
   const { t } = useTranslation();
   const { user, isDemoMode } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
-  const { userImports } = useKnowledge(activeLanguageId);
+  const { userImports, knowledge } = useKnowledge(activeLanguageId);
 
   const [view, setView] = useState<View>('list');
   const [courses, setCourses] = useState<CourseWithMeta[]>([]);
@@ -707,6 +905,8 @@ export const Courses = () => {
               course={selectedCourse}
               isOwner={selectedCourse.ownerId === userId}
               readingProgress={readingProgress}
+              knowledge={knowledge}
+              userId={userId}
               onJoin={handleJoin}
               onLeave={handleLeave}
               onEdit={() => setView('edit')}
