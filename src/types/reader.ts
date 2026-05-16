@@ -1,6 +1,8 @@
 export type ReadingMode = 'scroll' | 'page';
 export type SourceKind = 'import' | 'sample' | 'partial' | 'complete';
 export type HighlightIntensity = 'subtle' | 'normal' | 'strong';
+/** High-level reading environment. Orthogonal to scroll vs. page layout mode. */
+export type DisplayMode = 'scholar' | 'focus' | 'morphology' | 'interlinear' | 'parallel';
 
 export interface ReaderAudioState {
   isPlaying: boolean;
@@ -12,6 +14,7 @@ export interface ReaderAudioState {
 
 export interface ReaderDisplaySettings {
   mode: ReadingMode;
+  displayMode: DisplayMode;
   showTranslit: boolean;
   showParallel: boolean;
   maskKnown: boolean;
@@ -37,6 +40,7 @@ export interface ReaderState {
 
 export const DEFAULT_READER_DISPLAY: ReaderDisplaySettings = {
   mode: 'scroll',
+  displayMode: 'scholar',
   showTranslit: false,
   showParallel: false,
   maskKnown: false,
