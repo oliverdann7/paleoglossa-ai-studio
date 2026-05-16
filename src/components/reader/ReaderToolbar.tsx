@@ -16,6 +16,7 @@ interface Props {
   onChangeReadingMode: (mode: 'scroll' | 'page') => void;
   interlinearMode: boolean;
   onToggleInterlinear: () => void;
+  knownPercent?: number | null;
 }
 
 export function ReaderToolbar({
@@ -25,12 +26,13 @@ export function ReaderToolbar({
   maskKnown, onToggleMaskKnown,
   readingMode, onChangeReadingMode,
   interlinearMode, onToggleInterlinear,
+  knownPercent,
 }: Props) {
   const { t } = useTranslation();
 
   return (
     <div className="h-12 border-b border-bdr/40 flex items-center justify-between px-4 md:px-6 bg-parch/30 backdrop-blur-sm shrink-0">
-      <div className="flex items-center gap-2 text-[11px] font-medium text-ink2 overflow-hidden">
+      <div className="flex items-center gap-3 text-[11px] font-medium text-ink2 overflow-hidden">
         <select
           value={currentChapterIndex}
           onChange={(e) => onChangeChapter(parseInt(e.target.value, 10))}
@@ -40,6 +42,21 @@ export function ReaderToolbar({
             <option key={c.id} value={i}>{c.title}</option>
           ))}
         </select>
+        {knownPercent != null && (
+          <span
+            className={cn(
+              "hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border",
+              knownPercent >= 80
+                ? "bg-green-50 text-green-700 border-green-200"
+                : knownPercent >= 50
+                ? "bg-amber-50 text-amber-700 border-amber-200"
+                : "bg-blue-50 text-blue border-blue/20",
+            )}
+            title={t("reader.knownPercentTitle", "Percentage of words marked Known or Familiar in this text")}
+          >
+            {knownPercent}% {t("reader.known", "known")}
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-3 overflow-x-auto no-scrollbar">
         <button
