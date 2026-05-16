@@ -341,6 +341,19 @@ export const Reader = () => {
 
   const SENTENCES_PER_PAGE = 30;
 
+  const knownPercent = useMemo(() => {
+    const allTokens = (chapter?.sentences ?? []).flatMap((s: any) => s.tokens ?? []);
+    const contentTokens = allTokens.filter((t: any) => t.type !== 'punctuation' && t.type !== 'whitespace');
+    if (contentTokens.length === 0) return null;
+    const knownCount = contentTokens.filter((t: any) => {
+      const info = getWordInfo(t.lemma || t.text);
+      return info.state === WordState.KNOWN || info.state === WordState.FAMILIAR;
+    }).length;
+    return Math.round((knownCount / contentTokens.length) * 100);
+  // knowledgeVersion triggers re-evaluation when any word state changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapter, knowledgeVersion, getWordInfo]);
+
   const totalPages = Math.ceil((chapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
   const sentenceSliceStart = readingMode === "page" ? 0 : currentScrollPage * SENTENCES_PER_PAGE;
   const sentenceSliceEnd = readingMode === "page" ? chapter?.sentences?.length : (currentScrollPage + 1) * SENTENCES_PER_PAGE;
@@ -749,6 +762,7 @@ export const Reader = () => {
           onChangeReadingMode={setMode}
           interlinearMode={interlinearMode}
           onToggleInterlinear={() => setInterlinearMode(!interlinearMode)}
+          knownPercent={knownPercent}
         />
         <button onClick={onAskTutor}
           className="fixed bottom-24 right-6 z-30 w-12 h-12 bg-ink text-parch rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95"

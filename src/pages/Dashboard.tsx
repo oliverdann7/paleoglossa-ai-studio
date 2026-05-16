@@ -2,9 +2,11 @@ import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ChevronRight, Brain, Library, Sparkles, BookMarked } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { CorpusDB } from "../data/corpus";
 import { getLangForLemma } from "../lib/data/dictionary";
 import { useKnowledge } from "../lib/hooks/useKnowledge";
+import { useLanguageStats } from "../lib/hooks/useLanguageStats";
 import { useAuth } from "../lib/hooks/useAuth";
 import { useSettings } from "../lib/hooks/useSettings";
 import { cn } from "../lib/utils";
@@ -45,6 +47,7 @@ export const Dashboard = () => {
   const { settings } = useSettings();
   const { activeLanguageId } = useActiveLanguage();
   const { knowledge, stats, getAllProgress, userImports, isLoading } = useKnowledge(activeLanguageId);
+  const langStats = useLanguageStats(knowledge);
   const { t } = useTranslation();
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const [progressLoaded, setProgressLoaded] = useState(false);
@@ -351,6 +354,111 @@ export const Dashboard = () => {
           </div>
         </>
       )}
+
+      {/* Language Mastery — show when user has words in ≥ 1 language */}
+      {hasAnyActivity && (() => {
+        const activeLangs = Object.entries(langStats).filter(
+          ([langId, s]) => langId !== 'unknown' && s.total >= 5
+        );
+        if (activeLangs.length === 0) return null;
+        return (
+          <div className="mb-14">
+            <h3 className="eyebrow mb-6 font-bold text-ink3">
+              {t("dashboard.languageMastery", "Language Mastery")}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeLangs.map(([langId, s]) => (
+                <div key={langId} className="card p-5 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-ink text-[15px]">
+                      {getLanguageDisplayName(langId)}
+                    </span>
+                    <span className="text-[12px] font-bold text-muted">
+                      {s.known.toLocaleString()} / {s.total.toLocaleString()} {t("vocab.known", "known")}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full bg-parch3 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${s.masteryPercent}%` }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      className={cn(
+                        "h-full rounded-full",
+                        s.masteryPercent >= 70 ? "bg-green-500"
+                          : s.masteryPercent >= 40 ? "bg-amber"
+                          : "bg-blue",
+                      )}
+                    />
+                  </div>
+                  <div className="flex gap-4 text-[11px] text-muted font-bold uppercase tracking-wider">
+                    <span className="text-amber">{s.learning} {t("vocab.learning", "learning")}</span>
+                    <span className="text-blue">{s.seen} {t("vocab.seen", "seen")}</span>
+                    <span className="ml-auto">{s.masteryPercent}% {t("dashboard.mastered", "mastered")}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Vocabulary Growth — last 30 days from stats history */}
+      {hasAnyActivity && stats.history && stats.history.length > 1 && (() => {
+        const chartData = [...stats.history]
+          .slice(-30)
+          .map(h => ({
+            date: h.date.slice(5), // MM-DD
+            known: h.knownWords ?? 0,
+          }));
+        return (
+          <div className="mb-14">
+            <h3 className="eyebrow mb-6 font-bold text-ink3">
+              {t("dashboard.vocabGrowth", "Vocabulary Growth")}
+            </h3>
+            <div className="card p-6">
+              <ResponsiveContainer width="100%" height={160}>
+                <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="knownGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10, fill: "var(--color-ink3, #6b7280)" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: "var(--color-ink3, #6b7280)" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: 11,
+                      borderRadius: 8,
+                      border: "1px solid var(--color-bdr, #e5e7eb)",
+                      background: "var(--color-parch, #faf9f6)",
+                    }}
+                    labelStyle={{ fontWeight: 700 }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="known"
+                    name={t("vocab.known", "Known")}
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    fill="url(#knownGrad)"
+                    dot={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* New-user onboarding grid — show when no activity at all */}
       {!hasAnyActivity && progressLoaded && (
