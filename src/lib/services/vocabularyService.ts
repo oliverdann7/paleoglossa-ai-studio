@@ -118,7 +118,11 @@ export class VocabularyService {
         const nextReview = normalizeTimestamp(data.nextReview);
         const addedAt = normalizeTimestamp(data.createdAt);
 
-        map[normalizeLemmaKey(data.term)] = {
+        // Key by lemma when available — ensures different inflected forms of the same
+        // lemma resolve to a single knowledge entry.
+        const mapKey = normalizeLemmaKey(data.lemma || data.term);
+
+        const incoming: WordInfo = {
           state: normalizeWordState(data.status),
           srs: nextReview ? {
             lastReviewed: data.lastReviewed || null,
@@ -135,6 +139,21 @@ export class VocabularyService {
           encounterCount: data.encounterCount ?? 0,
           lastSeenAt: normalizeTimestamp(data.lastSeenAt) || undefined
         };
+
+        const existing = map[mapKey];
+        if (!existing) {
+          map[mapKey] = incoming;
+        } else {
+          // Merge duplicate entries: take the more advanced state and sum encounter counts.
+          const stateOrder = [WordState.NEW, WordState.SEEN, WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN, WordState.IGNORED];
+          const incomingRank = stateOrder.indexOf(incoming.state);
+          const existingRank = stateOrder.indexOf(existing.state);
+          map[mapKey] = {
+            ...existing,
+            state: incomingRank > existingRank ? incoming.state : existing.state,
+            encounterCount: (existing.encounterCount ?? 0) + (incoming.encounterCount ?? 0),
+          };
+        }
       });
       vocabCache.set(userId, { data: map, at: Date.now() });
       return map;
@@ -162,6 +181,7 @@ export class VocabularyService {
     const termId = getTermId(term, languageId);
     const payload: any = {
       term,
+      lemma: term,
       normalizedTerm: normalizeLemmaKey(term),
       status: state,
       languageId,
@@ -185,6 +205,7 @@ export class VocabularyService {
     // Use merge=true so the write creates the doc if it doesn't exist yet
     enqueueVocabWrite(userId, termId, {
       term,
+      lemma: term,
       normalizedTerm: normalizeLemmaKey(term),
       languageId,
       encounterCount: increment(1),
@@ -243,6 +264,77 @@ export class VocabularyService {
     } catch (e) {
       console.error("Migration failed", e);
       return 0;
+    }
+  }
+
+  /**
+   * One-time migration: re-key any Firestore vocabulary docs that used an
+   * inflected form as the key to use the stored lemma field instead.
+   * Merges duplicate entries (different forms, same lemma) by taking the max
+   * state and summing encounter counts.
+   * Guarded by a Firestore flag — safe to call on every app load.
+   */
+  static async migrateToLemmaKeys(userId: string): Promise<void> {
+    const { doc: firestoreDoc, getDoc, setDoc } = await import('firebase/firestore');
+
+    const metaRef = firestoreDoc(db, `users/${userId}/meta/migrationVersion`);
+    const metaSnap = await getDoc(metaRef);
+    if (metaSnap.exists() && (metaSnap.data()?.lemmaKeysMigrated ?? 0) >= 1) return;
+
+    try {
+      const vocabSnap = await getDocs(collection(db, `users/${userId}/vocabulary`));
+      const stateOrder = [WordState.NEW, WordState.SEEN, WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN, WordState.IGNORED];
+      const byLemmaKey = new Map<string, { docId: string; data: any; encounterCount: number; stateRank: number }[]>();
+
+      vocabSnap.forEach(d => {
+        const data = d.data();
+        const lemmaKey = getTermId(data.lemma || data.term, data.languageId || 'unknown');
+        const arr = byLemmaKey.get(lemmaKey) ?? [];
+        arr.push({
+          docId: d.id,
+          data,
+          encounterCount: data.encounterCount ?? 0,
+          stateRank: stateOrder.indexOf(normalizeWordState(data.status)),
+        });
+        byLemmaKey.set(lemmaKey, arr);
+      });
+
+      const batch = writeBatch(db);
+      let ops = 0;
+
+      for (const [lemmaKey, entries] of byLemmaKey.entries()) {
+        if (entries.length <= 1 && entries[0]?.docId === lemmaKey) continue;
+
+        const best = entries.reduce((a, b) => a.stateRank >= b.stateRank ? a : b);
+        const totalEncounters = entries.reduce((sum, e) => sum + e.encounterCount, 0);
+
+        const mergedData = {
+          ...best.data,
+          lemma: best.data.lemma || best.data.term,
+          encounterCount: totalEncounters,
+          updatedAt: serverTimestamp(),
+        };
+
+        const targetRef = firestoreDoc(db, `users/${userId}/vocabulary`, lemmaKey);
+        batch.set(targetRef, mergedData, { merge: true });
+        ops++;
+
+        for (const entry of entries) {
+          if (entry.docId !== lemmaKey) {
+            batch.delete(firestoreDoc(db, `users/${userId}/vocabulary`, entry.docId));
+            ops++;
+          }
+        }
+
+        if (ops >= 490) break; // stay safely under the 500-op limit
+      }
+
+      if (ops > 0) await batch.commit();
+
+      await setDoc(metaRef, { lemmaKeysMigrated: 1, migratedAt: serverTimestamp() }, { merge: true });
+      vocabCache.delete(userId);
+    } catch (e) {
+      console.error('migrateToLemmaKeys failed', e);
     }
   }
 
