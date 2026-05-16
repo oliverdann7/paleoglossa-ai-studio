@@ -151,23 +151,60 @@ export const Import = () => {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
+    // Reset so the same file can be re-selected after an error
+    e.target.value = '';
+
+    const isTxt = file.type === 'text/plain' || file.name.endsWith('.txt');
+
     setIsProcessing(true);
     setProcessingStep(t("import.readingFile", "Reading file..."));
-    
+
     try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const content = event.target?.result as string;
-        setText(content);
+      if (isTxt) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result as string;
+          setText(content);
+          setActiveTab("paste");
+          setIsProcessing(false);
+          setProcessingStep("");
+        };
+        reader.onerror = () => {
+          throw new Error("Failed to read file");
+        };
+        reader.readAsText(file);
+      } else {
+        setProcessingStep(t("import.extractingFile", "Extracting text from file..."));
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch('/api/import/parse', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || `Server error ${res.status}`);
+        }
+
+        if (!data.text) {
+          throw new Error(data.warnings?.[0] || "No text could be extracted from the file.");
+        }
+
+        setText(data.text);
         setActiveTab("paste");
+
+        if (data.warnings?.length) {
+          setAnalysisError(data.warnings.join(' '));
+        }
+
         setIsProcessing(false);
         setProcessingStep("");
-      };
-      reader.onerror = () => {
-        throw new Error("Failed to read file");
-      };
-      reader.readAsText(file);
+      }
     } catch (error: any) {
       console.error("File upload failed:", error);
       alert(t("import.errorUpload", "Failed to upload file") + ": " + error.message);
@@ -482,7 +519,7 @@ export const Import = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="h-96 border-2 border-dashed border-bdr/40 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-blue/5 hover:border-blue/30 transition-all"
                 >
-                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".txt,.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" className="hidden" />
                   <div className="w-16 h-16 bg-parch2 text-muted rounded-full flex items-center justify-center mb-6">
                     <Upload className="w-8 h-8" />
                   </div>
@@ -490,7 +527,7 @@ export const Import = () => {
                     {t("import.clickUpload", "Click to Upload")}
                   </h3>
                   <p className="text-[13px] text-muted">
-                    {t("import.supports", "Supports .txt files (PDF/DOCX Coming Soon)")}
+                    {t("import.supports", "Supports .txt, .pdf, and .docx files")}
                   </p>
                 </motion.div>
               )}
