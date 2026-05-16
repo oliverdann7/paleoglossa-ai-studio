@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import type { ReaderState, ReaderDisplaySettings, ReaderNavigationState, ReaderAudioState, ReadingMode, HighlightIntensity } from '../../types/reader';
+import type { ReaderState, ReaderDisplaySettings, ReaderNavigationState, ReaderAudioState, ReadingMode, DisplayMode, HighlightIntensity } from '../../types/reader';
 import { DEFAULT_READER_STATE, STORAGE_KEY_READER } from '../../types/reader';
 
 const STORAGE_KEY = STORAGE_KEY_READER;
@@ -9,6 +9,7 @@ interface ReaderContextValue {
 
   // Display settings
   setMode: (mode: ReadingMode) => void;
+  setDisplayMode: (mode: DisplayMode) => void;
   setShowTranslit: (v: boolean) => void;
   setShowParallel: (v: boolean) => void;
   setMaskKnown: (v: boolean) => void;
@@ -95,6 +96,7 @@ export function ReaderStateProvider({ children }: { children: ReactNode }) {
 
   // ── Display actions ──
   const setMode = useCallback((mode: ReadingMode) => updateDisplay({ mode }), [updateDisplay]);
+  const setDisplayMode = useCallback((displayMode: DisplayMode) => updateDisplay({ displayMode }), [updateDisplay]);
   const setShowTranslit = useCallback((v: boolean) => updateDisplay({ showTranslit: v }), [updateDisplay]);
   const setShowParallel = useCallback((v: boolean) => updateDisplay({ showParallel: v }), [updateDisplay]);
   const setMaskKnown = useCallback((v: boolean) => updateDisplay({ maskKnown: v }), [updateDisplay]);
@@ -188,7 +190,7 @@ export function ReaderStateProvider({ children }: { children: ReactNode }) {
   return (
     <ReaderContext.Provider value={{
       state,
-      setMode, setShowTranslit, setShowParallel, setMaskKnown, setInterlinearMode,
+      setMode, setDisplayMode, setShowTranslit, setShowParallel, setMaskKnown, setInterlinearMode,
       setFontSize, setHighlightIntensity, setSwipeMovesToNext, resetDisplay,
       setTextId, setChapterIndex, setSentenceIndex, setScrollPage, setScrollProgress,
       goToNextSentence, goToPrevSentence, goToNextChapter, goToPrevChapter, resetNavigation,
