@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { basicAnalyze } from '../_lib/basicAnalyze';
 import { parseAndValidateAIResponse } from '../_lib/aiValidation';
-import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA, buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS, buildSentenceAnalysisPrompt, type SentenceAnalysisResult } from '../_lib/aiPrompts';
+import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA, buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS, buildSentenceAnalysisPrompt, buildCourseQuizPrompt, type SentenceAnalysisResult, type CourseQuizResult } from '../_lib/aiPrompts';
 import { requireAuth, optionalAuth } from '../_lib/auth';
 import { checkAndIncrementUsage } from '../_lib/aiUsage';
 import { getAdminDb } from '../_lib/firebaseAdmin';
@@ -1063,6 +1063,47 @@ router.post('/api/ai/sentence-analysis', optionalAuth as any, async (req: Authen
   } catch (err: any) {
     console.error('[sentence-analysis] Error:', err.message);
     return res.status(500).json({ error: 'Failed to analyze sentence', code: 'ANALYSIS_ERROR' });
+  }
+});
+
+// ─── Course Comprehension Quiz ────────────────────────────────────────────────
+router.post('/api/ai/course-quiz', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { text: textSnippet, languageId, questionCount } = req.body;
+
+    if (!textSnippet || typeof textSnippet !== 'string' || textSnippet.trim().length < 20) {
+      return res.status(400).json({ error: 'text is required (min 20 chars)', code: 'INVALID_INPUT' });
+    }
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+    }
+
+    const count = Math.min(Math.max(Number(questionCount) || 5, 2), 10);
+
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'AI service not configured', code: 'CONFIG_ERROR' });
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+
+    const prompt = buildCourseQuizPrompt(textSnippet, languageId, count);
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+    });
+
+    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const parsed = JSON.parse(cleaned) as CourseQuizResult;
+
+    if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+      return res.status(500).json({ error: 'Quiz generation failed', code: 'PARSE_ERROR' });
+    }
+
+    return res.status(200).json(parsed);
+  } catch (err: any) {
+    console.error('[course-quiz] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to generate quiz', code: 'QUIZ_ERROR' });
   }
 });
 

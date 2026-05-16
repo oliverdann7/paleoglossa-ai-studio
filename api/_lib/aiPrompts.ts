@@ -244,6 +244,50 @@ Return ONLY valid JSON with this exact structure — no markdown, no explanation
 Include every word token in parsing (skip punctuation). Be precise with morphology.`;
 }
 
+export interface CourseQuizQuestion {
+  question: string;
+  options: [string, string, string, string];
+  correctIndex: number;
+  explanation: string;
+}
+
+export interface CourseQuizResult {
+  questions: CourseQuizQuestion[];
+}
+
+export function buildCourseQuizPrompt(
+  textSnippet: string,
+  languageId: string,
+  questionCount: number = 5,
+): string {
+  const langName = getLanguageName(languageId);
+  return `You are a ${langName} language instructor. Generate ${questionCount} multiple-choice comprehension questions based on the following text passage.
+
+Text: """
+${textSnippet.slice(0, 2000)}
+"""
+
+Return ONLY valid JSON with this exact structure — no markdown, no explanation:
+
+{
+  "questions": [
+    {
+      "question": "question text in English",
+      "options": ["option A", "option B", "option C", "option D"],
+      "correctIndex": 0,
+      "explanation": "1-2 sentences explaining why this answer is correct"
+    }
+  ]
+}
+
+Rules:
+- Questions should test reading comprehension, vocabulary, or grammar patterns from the passage
+- Each question has exactly 4 options
+- correctIndex is 0-based (0=A, 1=B, 2=C, 3=D)
+- Mix question types: some about meaning, some about grammar, some about content
+- Keep options plausible but clearly distinguishable`;
+}
+
 export const DEFAULT_SUGGESTED_QUESTIONS = [
   'What does this word mean in context?',
   'Parse this form for me.',
