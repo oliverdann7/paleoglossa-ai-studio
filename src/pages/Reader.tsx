@@ -108,11 +108,11 @@ export const Reader = () => {
 
   const {
     state: {
-      display: { mode: readingMode, showTranslit, showParallel, maskKnown, interlinearMode },
+      display: { mode: readingMode, displayMode, showTranslit, showParallel, maskKnown, interlinearMode },
       navigation: { currentChapterIndex, currentSentenceIndex, currentScrollPage, scrollProgress },
       audio: { isPlaying, position: audioPos, speed: audioSpeed, loopSentence, loopWord },
     },
-    setMode, setShowTranslit, setShowParallel, setMaskKnown, setInterlinearMode,
+    setMode, setDisplayMode, setShowTranslit, setShowParallel, setMaskKnown, setInterlinearMode,
     setChapterIndex, setSentenceIndex, setScrollPage, setScrollProgress,
     goToNextSentence, goToPrevSentence, goToNextChapter,
     togglePlay, setPlayState, setAudioSpeed, toggleLoopSentence, toggleLoopWord,
@@ -353,6 +353,25 @@ export const Reader = () => {
   // knowledgeVersion triggers re-evaluation when any word state changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter, knowledgeVersion, getWordInfo]);
+
+  // Estimated reading time: unknown words take ~8s, known words ~1.5s
+  const readingTimeMinutes = useMemo(() => {
+    const allTokens = (chapter?.sentences ?? []).flatMap((s: any) => s.tokens ?? []);
+    const content = allTokens.filter((t: any) => t.type !== 'punctuation' && t.type !== 'whitespace');
+    if (content.length === 0) return null;
+    const unknown = content.filter((t: any) => {
+      const info = getWordInfo(t.lemma || t.text);
+      return info.state === WordState.NEW || info.state === WordState.SEEN;
+    }).length;
+    const known = content.length - unknown;
+    const seconds = unknown * 8 + known * 1.5;
+    return Math.max(1, Math.round(seconds / 60));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapter, knowledgeVersion, getWordInfo]);
+
+  // Derive effective display flags from the active displayMode
+  const effectiveShowParallel = displayMode === 'parallel' ? true : showParallel;
+  const effectiveInterlinear  = displayMode === 'interlinear' ? true : interlinearMode;
 
   const totalPages = Math.ceil((chapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
   const sentenceSliceStart = readingMode === "page" ? 0 : currentScrollPage * SENTENCES_PER_PAGE;
@@ -754,15 +773,18 @@ export const Reader = () => {
           onChangeChapter={setChapterIndex}
           showTranslit={showTranslit}
           onToggleTranslit={() => setShowTranslit(!showTranslit)}
-          showParallel={showParallel}
+          showParallel={effectiveShowParallel}
           onToggleParallel={() => setShowParallel(!showParallel)}
           maskKnown={maskKnown}
           onToggleMaskKnown={() => setMaskKnown(!maskKnown)}
           readingMode={readingMode}
           onChangeReadingMode={setMode}
-          interlinearMode={interlinearMode}
+          interlinearMode={effectiveInterlinear}
           onToggleInterlinear={() => setInterlinearMode(!interlinearMode)}
           knownPercent={knownPercent}
+          displayMode={displayMode ?? 'scholar'}
+          onChangeDisplayMode={setDisplayMode}
+          readingTimeMinutes={readingTimeMinutes}
         />
         <button onClick={onAskTutor}
           className="fixed bottom-24 right-6 z-30 w-12 h-12 bg-ink text-parch rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95"
@@ -833,7 +855,7 @@ export const Reader = () => {
           knowledgeVersion={knowledgeVersion}
           selectedWordId={selectedWord?.id}
           showTranslit={showTranslit}
-          showParallel={showParallel}
+          showParallel={effectiveShowParallel}
           maskKnown={maskKnown}
           isHebrewFont={isHebrewFont}
           isRtl={isRtl}
@@ -848,7 +870,8 @@ export const Reader = () => {
           analysisStatus={text?.analysisStatus}
           showGlossTooltip={settings.showGlossTooltip}
           glossTooltipForKnown={settings.glossTooltipForKnown}
-          interlinearMode={interlinearMode}
+          interlinearMode={effectiveInterlinear}
+          displayMode={displayMode ?? 'scholar'}
           onWordClick={handleWordClick}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}
