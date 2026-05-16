@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BookOpen, ExternalLink, Library, Search } from 'lucide-react';
+import { BookOpen, ExternalLink, Library, Search, AlignLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DictionaryEntry,
@@ -8,18 +8,25 @@ import {
   getDictionaryLanguages,
   searchDictionaryEntries,
 } from '@/lib/data/dictionary';
+import { KWICPanel } from '../components/corpus/KWICPanel';
+import { frequencyTier } from '../lib/utils/frequencyTier';
 
 const isRtlLanguage = (languageId: string) => ['hbo', 'arc', 'syr', 'egy'].includes(languageId);
 
 const entryPath = (entry: DictionaryEntry) =>
   `/app/dictionary/${encodeURIComponent(entry.languageId)}/${encodeURIComponent(entry.lemma)}`;
 
+type EntryTab = 'definition' | 'concordance';
+
 function EntryCard({ entry }: { entry: DictionaryEntry }) {
   const isRtl = isRtlLanguage(entry.languageId);
+  const [activeTab, setActiveTab] = useState<EntryTab>('definition');
+  const tier = frequencyTier(entry.frequency);
 
   return (
     <section className="card p-6 md:p-8 bg-[#FEFAF4] border-bdr/60">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-6">
         <div>
           <div className="eyebrow text-blue mb-3">Dictionary Entry</div>
           <h2
@@ -40,85 +47,122 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
               {entry.partOfSpeech}
             </span>
           )}
+          <span className={cn("px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider", tier.color)}>
+            {tier.label}
+          </span>
           <span className="px-3 py-1 rounded-full border border-bdr/60 bg-white text-[11px] font-bold uppercase tracking-wider text-muted">
             {entry.frequency} tokens
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 mb-8">
-        <div className="p-5 rounded-[20px] bg-parch/40 border border-bdr/30">
-          <div className="eyebrow mb-3 text-ink">Definition</div>
-          <p className="font-body text-[22px] text-ink leading-snug mb-4">{entry.shortGloss}</p>
-          <p className="font-body text-[15px] text-ink2 leading-relaxed">{entry.fullDefinition}</p>
-        </div>
-
-        <div className="p-5 rounded-[20px] bg-parch2/30 border border-bdr/30">
-          <div className="eyebrow mb-3 text-ink">Lexical Data</div>
-          <dl className="space-y-3 text-[13px]">
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted">Semantic domain</dt>
-              <dd className="font-bold text-ink text-right">{entry.semanticDomain.join(', ') || 'Unclassified'}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted">Related forms</dt>
-              <dd className="font-bold text-ink text-right">{entry.relatedForms.slice(0, 6).join(', ') || 'No forms yet'}</dd>
-            </div>
-          </dl>
-        </div>
+      {/* Tabs */}
+      <div className="flex border-b border-bdr/40 mb-6">
+        {([['definition', 'Definition', BookOpen], ['concordance', 'Concordance', AlignLeft]] as const).map(([id, label, Icon]) => (
+          <button
+            key={id}
+            onClick={() => setActiveTab(id)}
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-bold uppercase tracking-widest border-b-2 transition-colors",
+              activeTab === id ? "border-blue text-blue" : "border-transparent text-muted hover:text-ink",
+            )}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {label}
+          </button>
+        ))}
       </div>
 
-      <div className="mb-8">
-        <div className="eyebrow mb-4 flex items-center justify-between text-ink">
-          <span>Corpus Examples</span>
-          <span className="text-blue">{entry.corpusExamples.length} shown</span>
-        </div>
-        {entry.corpusExamples.length > 0 ? (
-          <div className="space-y-3">
-            {entry.corpusExamples.map(example => (
-              <Link
-                key={example.id}
-                to={`/app/reader/${encodeURIComponent(example.textId)}?lemma=${encodeURIComponent(entry.lemma)}&sentence=${encodeURIComponent(example.sentenceId)}`}
-                className="block p-4 rounded-2xl border border-bdr/30 bg-white hover:border-blue/30 hover:shadow-sm transition-all"
-              >
-                <div className="flex items-center justify-between gap-4 mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-blue">{example.textTitle}</span>
-                  <span className="text-[11px] text-muted">Open in reader</span>
+      {activeTab === 'definition' && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 mb-8">
+            <div className="p-5 rounded-[20px] bg-parch/40 border border-bdr/30">
+              <div className="eyebrow mb-3 text-ink">Definition</div>
+              <p className="font-body text-[22px] text-ink leading-snug mb-4">{entry.shortGloss}</p>
+              <p className="font-body text-[15px] text-ink2 leading-relaxed">{entry.fullDefinition}</p>
+            </div>
+
+            <div className="p-5 rounded-[20px] bg-parch2/30 border border-bdr/30">
+              <div className="eyebrow mb-3 text-ink">Lexical Data</div>
+              <dl className="space-y-3 text-[13px]">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted">Semantic domain</dt>
+                  <dd className="font-bold text-ink text-right">{entry.semanticDomain.join(', ') || 'Unclassified'}</dd>
                 </div>
-                <p className={cn('font-serif text-[17px] text-ink2 mb-2', isRtl ? 'font-hebrew' : '')} dir={isRtl ? 'rtl' : 'ltr'}>
-                  {example.sentenceText}
-                </p>
-                {example.translation && (
-                  <p className="font-body text-[12px] italic text-muted">{example.translation}</p>
-                )}
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="p-5 rounded-2xl border border-dashed border-bdr/50 bg-parch/30 text-muted text-[14px]">
-            No corpus examples are available for this lemma yet.
-          </div>
-        )}
-      </div>
-
-      <div className="p-4 rounded-2xl bg-parch/40 border border-bdr/30">
-        <div className="eyebrow mb-2 text-ink">Source / License</div>
-        <div className="space-y-2">
-          {entry.dictionaries.map(source => (
-            <div key={source.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-[12px] text-ink2">
-              <span>
-                <span className="font-bold">{source.name}</span>
-                <span className="text-muted"> · {source.licenseName}</span>
-              </span>
-              {source.url && (
-                <a href={source.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue font-bold hover:text-ink">
-                  Source <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted">Related forms</dt>
+                  <dd className="font-bold text-ink text-right">{entry.relatedForms.slice(0, 6).join(', ') || 'No forms yet'}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted">Corpus rank</dt>
+                  <dd className="font-bold text-ink text-right">{entry.frequency} occurrences</dd>
+                </div>
+              </dl>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+
+          <div className="mb-8">
+            <div className="eyebrow mb-4 flex items-center justify-between text-ink">
+              <span>Corpus Examples</span>
+              <button
+                onClick={() => setActiveTab('concordance')}
+                className="text-[11px] text-blue font-bold hover:underline"
+              >
+                Full concordance →
+              </button>
+            </div>
+            {entry.corpusExamples.length > 0 ? (
+              <div className="space-y-3">
+                {entry.corpusExamples.slice(0, 3).map(example => (
+                  <Link
+                    key={example.id}
+                    to={`/app/reader/${encodeURIComponent(example.textId)}?lemma=${encodeURIComponent(entry.lemma)}&sentence=${encodeURIComponent(example.sentenceId)}`}
+                    className="block p-4 rounded-2xl border border-bdr/30 bg-white hover:border-blue/30 hover:shadow-sm transition-all"
+                  >
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-blue">{example.textTitle}</span>
+                      <span className="text-[11px] text-muted">Open in reader</span>
+                    </div>
+                    <p className={cn('font-serif text-[17px] text-ink2 mb-2', isRtl ? 'font-hebrew' : '')} dir={isRtl ? 'rtl' : 'ltr'}>
+                      {example.sentenceText}
+                    </p>
+                    {example.translation && (
+                      <p className="font-body text-[12px] italic text-muted">{example.translation}</p>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="p-5 rounded-2xl border border-dashed border-bdr/50 bg-parch/30 text-muted text-[14px]">
+                No corpus examples are available for this lemma yet.
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 rounded-2xl bg-parch/40 border border-bdr/30">
+            <div className="eyebrow mb-2 text-ink">Source / License</div>
+            <div className="space-y-2">
+              {entry.dictionaries.map(source => (
+                <div key={source.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-[12px] text-ink2">
+                  <span>
+                    <span className="font-bold">{source.name}</span>
+                    <span className="text-muted"> · {source.licenseName}</span>
+                  </span>
+                  {source.url && (
+                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue font-bold hover:text-ink">
+                      Source <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'concordance' && (
+        <KWICPanel lemma={entry.lemma} languageId={entry.languageId} maxResults={200} />
+      )}
     </section>
   );
 }
