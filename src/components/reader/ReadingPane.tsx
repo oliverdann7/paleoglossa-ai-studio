@@ -396,6 +396,7 @@ export function ReadingPane({
                 <span
                   id={`sentence-${sIdx}`}
                   key={sentence.id}
+                  style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 48px' }}
                   className={cn(
                     "inline transition-opacity duration-500",
                     isRtl ? "ml-2 md:ml-3" : "mr-2 md:mr-3",
