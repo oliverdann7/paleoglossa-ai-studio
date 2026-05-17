@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { db } from '../firebase';
+import { useAuth } from '../hooks/useAuth.js';
+import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { apiFetch } from '../services/apiFetch';
-import { PlanId, SubscriptionStatus, getPlanById, canAddLanguage as canAddByPlan, canAccessLanguage as canAccessByPlan, TRIAL_DAYS } from '../constants/plans';
+import { apiFetch } from '../services/apiFetch.js';
+import { PlanId, SubscriptionStatus, getPlanById, canAddLanguage as canAddByPlan, canAccessLanguage as canAccessByPlan, TRIAL_DAYS } from '../constants/plans.js';
 
 const SUBSCRIPTION_STORAGE_KEY = 'paleoglossa_subscription';
 

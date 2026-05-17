@@ -1,9 +1,9 @@
-import { db } from '../firebase';
+import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
-import { apiFetch } from './apiFetch';
-import { ImportedText as FSImportedText } from '../../types/firestore';
-import { normalizeTimestamp } from '../utils';
-import { STORAGE_KEYS } from '../constants/storage';
+import { apiFetch } from './apiFetch.js';
+import { ImportedText as FSImportedText } from '../../types/firestore.js';
+import { normalizeTimestamp } from '../utils.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
 
 export async function computeContentHash(text: string): Promise<string> {
   const encoder = new TextEncoder();

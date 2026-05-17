@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { ProgressRing } from './ProgressRing';
+import { ProgressRing } from './ProgressRing.js';
 
 interface Props {
   readToday: number;

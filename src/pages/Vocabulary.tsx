@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { Search, Trash2, ExternalLink, History, TrendingUp, Brain, GraduationCap, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useKnowledge } from "../lib/hooks/useKnowledge";
-import { WordInfo } from "../lib/services/vocabularyService";
-import { WordState, normalizeWordState, safeStateLabel } from "../lib/constants/wordStates";
-import { getTokenInfo } from "../lib/data/dictionary";
+import { useKnowledge } from "../lib/hooks/useKnowledge.js";
+import { WordInfo } from "../lib/services/vocabularyService.js";
+import { WordState, normalizeWordState, safeStateLabel } from "../lib/constants/wordStates.js";
+import { getTokenInfo } from "../lib/data/dictionary.js";
 import { useTranslation } from "react-i18next";
-import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
-import { getLanguageDisplayName } from "../lib/constants/languages";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
+import { getLanguageDisplayName } from "../lib/constants/languages.js";
 
 const PAGE_SIZE = 50;
 

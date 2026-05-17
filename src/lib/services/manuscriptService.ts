@@ -1,4 +1,4 @@
-import { Manuscript } from '../../types/modules';
+import { Manuscript } from '../../types/modules.js';
 
 export class ManuscriptService {
   static async getManuscripts(textId?: string): Promise<Manuscript[]> {

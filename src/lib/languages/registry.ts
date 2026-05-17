@@ -9,9 +9,9 @@ import {
   isRtlLanguage,
   getLanguageIcon,
   isSupportedLanguage,
-} from '../data/languages';
+} from '../data/languages.js';
 
-export type { Language, TokenizationHints, DictionaryHints, KnownLanguageId } from '../data/languages';
+export type { Language, TokenizationHints, DictionaryHints, KnownLanguageId } from '../data/languages.js';
 
 export const LANGUAGE_REGISTRY = Object.fromEntries(
   LANGUAGES.map(lang => [lang.id, lang]),

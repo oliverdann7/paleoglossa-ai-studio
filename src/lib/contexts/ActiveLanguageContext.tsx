@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
-import { getLanguageById, getAvailableLanguages } from '../constants/languages';
-import type { Language } from '../constants/languages';
+import { db } from '../firebase.js';
+import { getLanguageById, getAvailableLanguages } from '../constants/languages.js';
+import type { Language } from '../constants/languages.js';
 
 const STORAGE_KEY = 'paleoglossa_active_language';
 

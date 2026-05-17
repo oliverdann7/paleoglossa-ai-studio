@@ -1,5 +1,5 @@
-import { apiFetch } from './apiFetch';
-import { Course, CourseMembership } from '../../types/modules';
+import { apiFetch } from './apiFetch.js';
+import { Course, CourseMembership } from '../../types/modules.js';
 
 export interface CourseWithMeta extends Course {
   memberCount?: number;

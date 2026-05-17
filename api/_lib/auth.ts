@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { getAdminAuth, isAdminAvailable } from './firebaseAdmin';
+import { getAdminAuth, isAdminAvailable } from './firebaseAdmin.js';
 
 export interface AuthUser {
   uid: string;

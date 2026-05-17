@@ -7,7 +7,7 @@ import {
   getGlossForLemma,
   normalizeSearch,
   stripHebrewVowels,
-} from './dictionary';
+} from './dictionary.js';
 
 describe('Dictionary data', () => {
 

@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useSubscription } from '../lib/contexts/SubscriptionContext';
+import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { Loader2 } from 'lucide-react';
 
 interface Props {

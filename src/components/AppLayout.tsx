@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom';
-import { Navbar } from './Navbar';
-import { AuthGuard } from './AuthGuard';
-import { useSettings } from '../lib/hooks/useSettings';
-import { AuthProvider } from '../lib/contexts/AuthContext';
-import { ActiveLanguageProvider } from '../lib/contexts/ActiveLanguageContext';
-import { SubscriptionProvider } from '../lib/contexts/SubscriptionContext';
+import { Navbar } from './Navbar.js';
+import { AuthGuard } from './AuthGuard.js';
+import { useSettings } from '../lib/hooks/useSettings.js';
+import { AuthProvider } from '../lib/contexts/AuthContext.js';
+import { ActiveLanguageProvider } from '../lib/contexts/ActiveLanguageContext.js';
+import { SubscriptionProvider } from '../lib/contexts/SubscriptionContext.js';
 
 function AppLayoutContent() {
   useSettings();

@@ -1,4 +1,4 @@
-import { NormalizedText, NormalizedSection, ImportValidationResult } from './types';
+import { NormalizedText, NormalizedSection, ImportValidationResult } from './types.js';
 
 export function validateImport(
   normalized: { text: NormalizedText; sections: NormalizedSection[] }

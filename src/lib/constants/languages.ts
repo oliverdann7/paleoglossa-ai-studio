@@ -10,5 +10,5 @@ export {
   isRtlLanguage,
   getLanguageIcon,
   isSupportedLanguage,
-} from '../languages/registry';
-export type { Language, TokenizationHints, DictionaryHints, KnownLanguageId } from '../languages/registry';
+} from '../languages/registry.js';
+export type { Language, TokenizationHints, DictionaryHints, KnownLanguageId } from '../languages/registry.js';

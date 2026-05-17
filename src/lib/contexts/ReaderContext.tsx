@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import type { ReaderState, ReaderDisplaySettings, ReaderNavigationState, ReaderAudioState, ReadingMode, DisplayMode, HighlightIntensity } from '../../types/reader';
-import { DEFAULT_READER_STATE, STORAGE_KEY_READER } from '../../types/reader';
+import type { ReaderState, ReaderDisplaySettings, ReaderNavigationState, ReaderAudioState, ReadingMode, DisplayMode, HighlightIntensity } from '../../types/reader.js';
+import { DEFAULT_READER_STATE, STORAGE_KEY_READER } from '../../types/reader.js';
 
 const STORAGE_KEY = STORAGE_KEY_READER;
 

@@ -3,26 +3,26 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ChevronRight, Brain, Library, Sparkles, BookMarked } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { CorpusDB } from "../data/corpus";
-import { getLangForLemma } from "../lib/data/dictionary";
-import { useKnowledge } from "../lib/hooks/useKnowledge";
-import { useLanguageStats } from "../lib/hooks/useLanguageStats";
-import { useAuth } from "../lib/hooks/useAuth";
-import { useSettings } from "../lib/hooks/useSettings";
-import { cn } from "../lib/utils";
+import { CorpusDB } from "../data/corpus.js";
+import { getLangForLemma } from "../lib/data/dictionary.js";
+import { useKnowledge } from "../lib/hooks/useKnowledge.js";
+import { useLanguageStats } from "../lib/hooks/useLanguageStats.js";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { useSettings } from "../lib/hooks/useSettings.js";
+import { cn } from "../lib/utils.js";
 import { useTranslation } from "react-i18next";
-import { EmptyState } from "../components/ui";
+import { EmptyState } from "../components/ui/index.js";
 import {
   WordState,
   normalizeWordState,
   safeStateColors,
   safeStateLabel,
-} from "../lib/constants/wordStates";
-import { ProgressRing } from "../components/reader/ProgressRing";
-import { DashboardSkeleton } from "../components/Skeleton";
+} from "../lib/constants/wordStates.js";
+import { ProgressRing } from "../components/reader/ProgressRing.js";
+import { DashboardSkeleton } from "../components/Skeleton.js";
 
-import { getLanguageDisplayName } from "../lib/constants/languages";
-import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
+import { getLanguageDisplayName } from "../lib/constants/languages.js";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
 
 const RTL_LANGS = new Set(["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "Hebrew", "egy"]);
 

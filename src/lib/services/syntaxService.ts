@@ -1,4 +1,4 @@
-import { SyntaxTree } from '../../types/modules';
+import { SyntaxTree } from '../../types/modules.js';
 
 export class SyntaxService {
   static async getTree(textId: string, sentenceIndex: number): Promise<SyntaxTree | null> {

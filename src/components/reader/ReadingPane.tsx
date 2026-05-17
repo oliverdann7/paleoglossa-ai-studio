@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, normalizeWordState } from '@/lib/constants/wordStates';
-import { GlossTooltip } from './GlossTooltip';
-import { MorphologyTooltip } from './MorphologyTooltip';
+import { GlossTooltip } from './GlossTooltip.js';
+import { MorphologyTooltip } from './MorphologyTooltip.js';
 import type { DisplayMode } from '@/types/reader';
 
 interface TokenData {

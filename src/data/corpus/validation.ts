@@ -1,4 +1,4 @@
-import { CorpusDB } from '../corpus';
+import { CorpusDB } from '../corpus.js';
 
 const errors: string[] = [];
 

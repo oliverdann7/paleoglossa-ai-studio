@@ -7,18 +7,18 @@ import {
   Volume2, Globe, Share2, Lock, GitFork,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useKnowledge } from "../lib/hooks/useKnowledge";
-import { computeRecommendations } from "../lib/services/recommendationService";
-import { RecommendationRail } from "../components/library/RecommendationRail";
+import { useKnowledge } from "../lib/hooks/useKnowledge.js";
+import { computeRecommendations } from "../lib/services/recommendationService.js";
+import { RecommendationRail } from "../components/library/RecommendationRail.js";
 import { useTranslation } from "react-i18next";
-import { LANGUAGES, getLanguageDisplayName } from "../lib/constants/languages";
-import { LibraryService, LibraryText } from "../lib/services/libraryService";
-import { useAuth } from "../lib/hooks/useAuth";
-import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
-import { EmptyState } from '../components/ui';
-import { useSubscription } from "../lib/contexts/SubscriptionContext";
-import { ImportService } from "../lib/services/importService";
-import { CorpusDB } from "../data/corpus";
+import { LANGUAGES, getLanguageDisplayName } from "../lib/constants/languages.js";
+import { LibraryService, LibraryText } from "../lib/services/libraryService.js";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
+import { EmptyState } from '../components/ui/index.js';
+import { useSubscription } from "../lib/contexts/SubscriptionContext.js";
+import { ImportService } from "../lib/services/importService.js";
+import { CorpusDB } from "../data/corpus.js";
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
 

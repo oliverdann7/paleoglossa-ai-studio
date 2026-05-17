@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateSM2, SRSState, SM2_BASE_EASE, SM2_MIN_EASE, SM2_MAX_EASE, SM2_MAX_INTERVAL } from './sm2';
+import { calculateSM2, SRSState, SM2_BASE_EASE, SM2_MIN_EASE, SM2_MAX_EASE, SM2_MAX_INTERVAL } from './sm2.js';
 
 function makeState(overrides: Partial<SRSState> = {}): SRSState {
   return {

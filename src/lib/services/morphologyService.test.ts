@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MorphologyService } from './morphologyService';
+import { MorphologyService } from './morphologyService.js';
 
 describe('MorphologyService', () => {
 

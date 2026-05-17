@@ -1,4 +1,4 @@
-import { db } from '../firebase';
+import { db } from '../firebase.js';
 import {
   collection,
   query,
@@ -10,9 +10,9 @@ import {
   limit,
   writeBatch
 } from 'firebase/firestore';
-import { calculateSM2, SRSState, Rating } from '../srs/sm2';
-import { calculateFSRS, FSRSState, FSRRating } from '../srs/fsrs';
-import { WordState } from '../constants/wordStates';
+import { calculateSM2, SRSState, Rating } from '../srs/sm2.js';
+import { calculateFSRS, FSRSState, FSRRating } from '../srs/fsrs.js';
+import { WordState } from '../constants/wordStates.js';
 
 // Toggle to use FSRS algorithm
 const USE_FSRS = true;
