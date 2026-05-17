@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { GRAMMAR_CONCEPTS, PATHWAY } from '../_lib/grammarData';
+import { GRAMMAR_CONCEPTS, PATHWAY } from '../_lib/grammarData.js';
 
 const router = Router();
 

@@ -1,13 +1,13 @@
 import { useRef, useState } from "react";
 import { Camera, Check, Download, Globe, RefreshCcw, Settings as SettingsIcon, Snowflake, User } from "lucide-react";
-import { useSettings } from "../lib/hooks/useSettings";
+import { useSettings } from "../lib/hooks/useSettings.js";
 import { cn } from "@/lib/utils";
-import { useKnowledge } from "../lib/hooks/useKnowledge";
+import { useKnowledge } from "../lib/hooks/useKnowledge.js";
 import { useTranslation } from "react-i18next";
-import { db } from "../lib/firebase";
-import { DICTIONARY_SOURCES } from "../lib/data/dictionaryDB";
-import { useAuth } from "../lib/hooks/useAuth";
-import { uploadAvatar, updateUserProfile } from "../lib/services/profileService";
+import { db } from "../lib/firebase.js";
+import { DICTIONARY_SOURCES } from "../lib/data/dictionaryDB.js";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { uploadAvatar, updateUserProfile } from "../lib/services/profileService.js";
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();

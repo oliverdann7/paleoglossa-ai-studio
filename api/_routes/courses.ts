@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { requireAuth, optionalAuth } from '../_lib/auth';
-import { getAdminDb } from '../_lib/firebaseAdmin';
-import type { AuthenticatedRequest } from '../_lib/auth';
+import { requireAuth, optionalAuth } from '../_lib/auth.js';
+import { getAdminDb } from '../_lib/firebaseAdmin.js';
+import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 

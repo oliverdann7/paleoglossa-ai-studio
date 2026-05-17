@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ResearchNote } from '../../types/modules';
-import { NotebookService, CreateNoteInput } from '../services/notebookService';
-import { useAuth } from './useAuth';
+import { ResearchNote } from '../../types/modules.js';
+import { NotebookService, CreateNoteInput } from '../services/notebookService.js';
+import { useAuth } from './useAuth.js';
 
 interface UseNotebookOptions {
   notebookId?: string;

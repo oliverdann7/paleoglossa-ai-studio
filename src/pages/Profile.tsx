@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft } from "lucide-react";
-import { useAuth } from "../lib/hooks/useAuth";
-import { fetchOwnProfile, fetchPublicProfile, fetchPublicTextsByAuthor, UserProfileData, PublicText } from "../lib/services/profileService";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { fetchOwnProfile, fetchPublicProfile, fetchPublicTextsByAuthor, UserProfileData, PublicText } from "../lib/services/profileService.js";
 import { cn } from "@/lib/utils";
 
 function formatDate(val: any): string {

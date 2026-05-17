@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { requireAuth } from '../_lib/auth';
-import { getAdminDb, getAdminAuth } from '../_lib/firebaseAdmin';
-import type { AuthenticatedRequest } from '../_lib/auth';
+import { requireAuth } from '../_lib/auth.js';
+import { getAdminDb, getAdminAuth } from '../_lib/firebaseAdmin.js';
+import type { AuthenticatedRequest } from '../_lib/auth.js';
 import type { Timestamp } from 'firebase-admin/firestore';
 
 const router = Router();

@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useKnowledge } from '../lib/hooks/useKnowledge';
+import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { Search, Pencil, Trash2, Check, X } from 'lucide-react';
-import { getTokenInfo } from '../lib/data/dictionary';
+import { getTokenInfo } from '../lib/data/dictionary.js';
 
 export const Notes = () => {
   const { t } = useTranslation();

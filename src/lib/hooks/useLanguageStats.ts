@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { WordState, normalizeWordState } from '../constants/wordStates';
-import { KnowledgeMap } from '../services/vocabularyService';
+import { WordState, normalizeWordState } from '../constants/wordStates.js';
+import { KnowledgeMap } from '../services/vocabularyService.js';
 
 export interface LanguageStats {
   known: number;

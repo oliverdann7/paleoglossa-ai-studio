@@ -4,7 +4,7 @@ import {
   Crown, UserCheck, UserX, LayoutDashboard, ChevronDown,
   RefreshCw, Eye, EyeOff, ShieldCheck, Shield, Clock,
 } from "lucide-react";
-import { apiFetch } from "../../lib/services/apiFetch";
+import { apiFetch } from "../../lib/services/apiFetch.js";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 

@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { basicAnalyze } from '../_lib/basicAnalyze';
-import { parseAndValidateAIResponse } from '../_lib/aiValidation';
-import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA, buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS, buildSentenceAnalysisPrompt, buildCourseQuizPrompt, type SentenceAnalysisResult, type CourseQuizResult } from '../_lib/aiPrompts';
-import { requireAuth, optionalAuth } from '../_lib/auth';
-import { checkAndIncrementUsage } from '../_lib/aiUsage';
-import { getAdminDb } from '../_lib/firebaseAdmin';
-import type { AuthenticatedRequest } from '../_lib/auth';
+import { basicAnalyze } from '../_lib/basicAnalyze.js';
+import { parseAndValidateAIResponse } from '../_lib/aiValidation.js';
+import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA, buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS, buildSentenceAnalysisPrompt, buildCourseQuizPrompt, type SentenceAnalysisResult, type CourseQuizResult } from '../_lib/aiPrompts.js';
+import { requireAuth, optionalAuth } from '../_lib/auth.js';
+import { checkAndIncrementUsage } from '../_lib/aiUsage.js';
+import { getAdminDb } from '../_lib/firebaseAdmin.js';
+import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 

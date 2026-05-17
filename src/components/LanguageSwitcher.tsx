@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useActiveLanguage } from '../lib/hooks/useActiveLanguage';
-import { getLanguageIcon } from '../lib/constants/languages';
-import { useSubscription } from '../lib/contexts/SubscriptionContext';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
+import { getLanguageIcon } from '../lib/constants/languages.js';
+import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 
 export function LanguageSwitcher() {
   const { activeLanguageId, setActiveLanguageId, currentLanguage, availableLanguages } = useActiveLanguage();

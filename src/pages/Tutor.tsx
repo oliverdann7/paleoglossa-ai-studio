@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { MessageCircle, Send, Loader2, ChevronLeft, BookOpen, AlertTriangle, Plus, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "../lib/hooks/useAuth";
-import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
-import { apiFetch } from "../lib/services/apiFetch";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
+import { apiFetch } from "../lib/services/apiFetch.js";
 import { formatDistanceToNow } from "date-fns";
 
 interface Message {

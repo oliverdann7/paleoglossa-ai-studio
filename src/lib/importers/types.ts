@@ -1,5 +1,5 @@
-import { SourceAttribution } from '../../types/corpus';
-import type { ScriptDirection } from '../../types/linguistics';
+import { SourceAttribution } from '../../types/corpus.js';
+import type { ScriptDirection } from '../../types/linguistics.js';
 
 export interface NormalizedMorphology {
   partOfSpeech: string;

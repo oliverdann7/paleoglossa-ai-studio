@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { StatsService, ReadingStats } from '../services/statsService';
-import { useAuth } from './useAuth';
-import { STORAGE_KEYS } from '../constants/storage';
+import { StatsService, ReadingStats } from '../services/statsService.js';
+import { useAuth } from './useAuth.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
 
 export const useStats = (languageId?: string) => {
   const { user } = useAuth();

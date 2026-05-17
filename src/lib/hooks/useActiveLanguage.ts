@@ -1,1 +1,1 @@
-export { useActiveLanguage } from '../contexts/ActiveLanguageContext';
+export { useActiveLanguage } from '../contexts/ActiveLanguageContext.js';

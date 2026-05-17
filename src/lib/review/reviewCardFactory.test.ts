@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateReviewCard, generateReviewCards, CardType } from './reviewCardFactory';
+import { generateReviewCard, generateReviewCards, CardType } from './reviewCardFactory.js';
 
 const baseItem = {
   id: 'λύω',

@@ -1,7 +1,7 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
-import { initSentry } from './lib/sentry';
-import { RootProviders } from './lib/contexts/RootProviders';
+import { initSentry } from './lib/sentry.js';
+import { RootProviders } from './lib/contexts/RootProviders.js';
 import App from './App.tsx';
 import './index.css';
 import './lib/i18n';

@@ -15,17 +15,17 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ImportService, ImportedText, computeContentHash } from "../lib/services/importService";
-import { AIClient } from "../lib/services/aiClient";
-import { useAuth } from "../lib/hooks/useAuth";
-import { useKnowledge } from "../lib/hooks/useKnowledge";
-import { WordState } from "../lib/constants/wordStates";
-import { ImportedSentence } from "../types/firestore";
+import { ImportService, ImportedText, computeContentHash } from "../lib/services/importService.js";
+import { AIClient } from "../lib/services/aiClient.js";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { useKnowledge } from "../lib/hooks/useKnowledge.js";
+import { WordState } from "../lib/constants/wordStates.js";
+import { ImportedSentence } from "../types/firestore.js";
 
-import { LANGUAGES } from "../lib/constants/languages";
-import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
-import { useSubscription } from "../lib/contexts/SubscriptionContext";
-import { normalizeLemmaKey } from "../lib/utils/lemmaUtils";
+import { LANGUAGES } from "../lib/constants/languages.js";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
+import { useSubscription } from "../lib/contexts/SubscriptionContext.js";
+import { normalizeLemmaKey } from "../lib/utils/lemmaUtils.js";
 
 export const Import = () => {
   const navigate = useNavigate();

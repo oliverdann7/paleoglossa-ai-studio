@@ -1,5 +1,5 @@
-import { Chapter } from '../types/library';
-import * as tokens from './tokens';
+import { Chapter } from '../types/library.js';
+import * as tokens from './tokens.js';
 
 export const getChapters = (textId: number): Chapter[] => {
   const languageMap: Record<number, { title: string, translation: string, tokens: any[] }[]> = {

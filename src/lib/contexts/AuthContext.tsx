@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { auth, db } from '../firebase';
+import { auth, db } from '../firebase.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { AuthContext, UserProfile, UserStats } from './AuthContextInstance';
+import { AuthContext, UserProfile, UserStats } from './AuthContextInstance.js';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);

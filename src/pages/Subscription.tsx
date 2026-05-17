@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Check, Sparkles, Crown, ArrowRight, Lock, ExternalLink, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSubscription } from "../lib/contexts/SubscriptionContext";
-import { PLANS, getPlanById } from "../lib/constants/plans";
-import { LANGUAGES, getLanguageIcon } from "../lib/constants/languages";
+import { useSubscription } from "../lib/contexts/SubscriptionContext.js";
+import { PLANS, getPlanById } from "../lib/constants/plans.js";
+import { LANGUAGES, getLanguageIcon } from "../lib/constants/languages.js";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 

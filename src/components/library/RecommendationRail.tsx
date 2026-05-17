@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { LibraryText } from '@/lib/services/libraryService';
-import { CoverageBadge } from './CoverageBadge';
+import { CoverageBadge } from './CoverageBadge.js';
 
 interface Props {
   texts: LibraryText[];

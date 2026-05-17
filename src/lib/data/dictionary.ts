@@ -1,7 +1,7 @@
-import { ATTRIBUTIONS, CorpusDB } from '../../data/corpus';
-import * as tokenArrays from '../../data/tokens';
-import { SourceAttribution, Token } from '../../types/corpus';
-import { DICTIONARY as STATIC_DICT } from './dictionaryDB';
+import { ATTRIBUTIONS, CorpusDB } from '../../data/corpus.js';
+import * as tokenArrays from '../../data/tokens.js';
+import { SourceAttribution, Token } from '../../types/corpus.js';
+import { DICTIONARY as STATIC_DICT } from './dictionaryDB.js';
 
 export interface DictionarySource {
   id: string;

@@ -6,7 +6,7 @@ import { BookOpen, BookMarked, Volume2, Sparkles, Loader2, Repeat, ShieldCheck, 
 import { cn } from '@/lib/utils';
 import { WordState, normalizeWordState, safeStateColors, safeStateLabel } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
-import { ParadigmModal } from './ParadigmModal';
+import { ParadigmModal } from './ParadigmModal.js';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
 import { findDictionaryEntry, getDefinitionWithFallbacks, LookupResult, GLOSS_SOURCES } from '@/lib/data/dictionary';

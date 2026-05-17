@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
 import { GitBranch, Loader2, AlertTriangle, ChevronRight, Info, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CorpusDB } from '../data/corpus';
-import { isRtlLanguage } from '../lib/constants/languages';
-import { apiFetch } from '../lib/services/apiFetch';
-import type { Sentence } from '../types/corpus';
-import { DependencyTree, type DepToken } from '../components/reader/DependencyTree';
+import { CorpusDB } from '../data/corpus.js';
+import { isRtlLanguage } from '../lib/constants/languages.js';
+import { apiFetch } from '../lib/services/apiFetch.js';
+import type { Sentence } from '../types/corpus.js';
+import { DependencyTree, type DepToken } from '../components/reader/DependencyTree.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

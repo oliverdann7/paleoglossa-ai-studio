@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { requireAuth } from '../_lib/auth';
-import { getAdminDb } from '../_lib/firebaseAdmin';
-import type { AuthenticatedRequest } from '../_lib/auth';
+import { requireAuth } from '../_lib/auth.js';
+import { getAdminDb } from '../_lib/firebaseAdmin.js';
+import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 
@@ -167,7 +167,7 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
 
         if (userId) {
           const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
-          const { db } = await import('../../src/lib/firebase');
+          const { db } = await import('../../src/lib/firebase.js');
           await setDoc(doc(db, `users/${userId}`), {
             currentPlan: planId,
             subscriptionStatus: 'active',
@@ -193,7 +193,7 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
 
         try {
           const { collection, getDocs, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-          const { db } = await import('../../src/lib/firebase');
+          const { db } = await import('../../src/lib/firebase.js');
           const usersSnap = await getDocs(collection(db, 'users'));
           for (const userDoc of usersSnap.docs) {
             const data = userDoc.data();
@@ -217,7 +217,7 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
         const deletedCustomerId = deletedSub.customer as string;
         try {
           const { collection, getDocs, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-          const { db } = await import('../../src/lib/firebase');
+          const { db } = await import('../../src/lib/firebase.js');
           const usersSnap = await getDocs(collection(db, 'users'));
           for (const userDoc of usersSnap.docs) {
             const data = userDoc.data();

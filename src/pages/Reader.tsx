@@ -1,30 +1,30 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CorpusDB } from "../data/corpus";
-import { useKnowledge } from "../lib/hooks/useKnowledge";
-import { useSettings } from "../lib/hooks/useSettings";
-import { useReaderState } from "../lib/contexts/ReaderContext";
-import { WordState } from "../lib/constants/wordStates";
-import { ReaderTutorial } from "../components/reader/ReaderTutorial";
-import { LexDrawerPanel } from "../components/reader/LexDrawerPanel";
-import { SentenceAnalysisPanel } from "../components/reader/SentenceAnalysisPanel";
-import { ReaderProgressHeader } from "../components/reader/ReaderProgressHeader";
-import { ReaderToolbar } from "../components/reader/ReaderToolbar";
-import { ReaderAudioBar } from "../components/reader/ReaderAudioBar";
-import { ReaderBottomNav } from "../components/reader/ReaderBottomNav";
-import { ReadingPane } from "../components/reader/ReadingPane";
-import { ReaderSkeleton } from "../components/Skeleton";
-import { getTransliteration } from "../lib/transliterate";
+import { CorpusDB } from "../data/corpus.js";
+import { useKnowledge } from "../lib/hooks/useKnowledge.js";
+import { useSettings } from "../lib/hooks/useSettings.js";
+import { useReaderState } from "../lib/contexts/ReaderContext.js";
+import { WordState } from "../lib/constants/wordStates.js";
+import { ReaderTutorial } from "../components/reader/ReaderTutorial.js";
+import { LexDrawerPanel } from "../components/reader/LexDrawerPanel.js";
+import { SentenceAnalysisPanel } from "../components/reader/SentenceAnalysisPanel.js";
+import { ReaderProgressHeader } from "../components/reader/ReaderProgressHeader.js";
+import { ReaderToolbar } from "../components/reader/ReaderToolbar.js";
+import { ReaderAudioBar } from "../components/reader/ReaderAudioBar.js";
+import { ReaderBottomNav } from "../components/reader/ReaderBottomNav.js";
+import { ReadingPane } from "../components/reader/ReadingPane.js";
+import { ReaderSkeleton } from "../components/Skeleton.js";
+import { getTransliteration } from "../lib/transliterate.js";
 
-import { AIClient } from "../lib/services/aiClient";
-import { ImportService } from "../lib/services/importService";
-import { useAuth } from "../lib/hooks/useAuth";
-import { useSubscription } from "../lib/contexts/SubscriptionContext";
-import { useToast } from "../lib/hooks/useToast";
-import { STORAGE_KEYS } from "../lib/constants/storage";
-import { OfflineService } from "../lib/services/offlineService";
-import { useOnlineStatus } from "../lib/hooks/useOnlineStatus";
+import { AIClient } from "../lib/services/aiClient.js";
+import { ImportService } from "../lib/services/importService.js";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { useSubscription } from "../lib/contexts/SubscriptionContext.js";
+import { useToast } from "../lib/hooks/useToast.js";
+import { STORAGE_KEYS } from "../lib/constants/storage.js";
+import { OfflineService } from "../lib/services/offlineService.js";
+import { useOnlineStatus } from "../lib/hooks/useOnlineStatus.js";
 
 // Module-level constant — avoids object recreation on every render
 const TTS_LANG_MAP: Record<string, string> = {

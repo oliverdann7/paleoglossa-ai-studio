@@ -1,4 +1,4 @@
-import { Text, TextSection, Corpus, SourceAttribution } from "../types/corpus";
+import { Text, TextSection, Corpus, SourceAttribution } from "../types/corpus.js";
 
 export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
   "sblgnt-text": {
@@ -3041,12 +3041,12 @@ const enhanceText = (text: Text): Text => ({
   sectionsPreview: SECTION_PREVIEW_OVERRIDES[text.id] || text.sectionsPreview,
 });
 
-import { getMockTexts, getMockSections } from "./mockTexts";
-import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections";
-import { CICERO_CATILINA_1, CICERO_CATILINA_2, CICERO_CATILINA_3, CICERO_CATILINA_4 } from "./corpus/cicero-catilina";
-import { OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_METAMORPHOSES_4 } from "./corpus/ovid-metamorphoses";
-import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4 } from "./corpus/caesar-bellum-gallicum";
-import { PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLATO_APOLOGY_5 } from "./corpus/plato-apology";
+import { getMockTexts, getMockSections } from "./mockTexts.js";
+import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections.js";
+import { CICERO_CATILINA_1, CICERO_CATILINA_2, CICERO_CATILINA_3, CICERO_CATILINA_4 } from "./corpus/cicero-catilina.js";
+import { OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_METAMORPHOSES_4 } from "./corpus/ovid-metamorphoses.js";
+import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4 } from "./corpus/caesar-bellum-gallicum.js";
+import { PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLATO_APOLOGY_5 } from "./corpus/plato-apology.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;

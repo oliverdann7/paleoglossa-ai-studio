@@ -1,5 +1,5 @@
-import { TextSection, Sentence } from '../../types/corpus';
-import { ALL_JOHN_CHAPTERS } from './john-full';
+import { TextSection, Sentence } from '../../types/corpus.js';
+import { ALL_JOHN_CHAPTERS } from './john-full.js';
 
 function sent(id: string, words: string[], translation: string, lemmaMap?: Record<string, { lemma: string; gloss: string }>): Sentence {
   return {

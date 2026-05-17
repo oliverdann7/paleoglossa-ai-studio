@@ -7,7 +7,7 @@
  * reproduction, or distribution.
  */
 
-import { TextSection, Sentence } from '../../types/corpus';
+import { TextSection, Sentence } from '../../types/corpus.js';
 
 function sent(id: string, words: string[], translation: string): Sentence {
   return {
