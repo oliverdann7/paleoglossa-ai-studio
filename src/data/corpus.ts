@@ -580,6 +580,90 @@ export const TEXT_AESOP: Text = {
   ],
 };
 
+export const TEXT_CICERO_CATILINA: Text = {
+  id: "Cic-Catilina-1",
+  corpusId: "LATIN_CLASSIC",
+  title: "In Catilinam",
+  canonicalRef: "Oration 1",
+  author: "Marcus Tullius Cicero",
+  language: "lat",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 7,
+  sectionsPreview: [
+    { id: "Cic-Cat-1", label: "In Catilinam 1" },
+  ],
+};
+
+export const TEXT_OVID_METAMORPHOSES: Text = {
+  id: "Ovid-Metamorphoses-1",
+  corpusId: "LATIN_CLASSIC",
+  title: "Metamorphoses",
+  canonicalRef: "Book 1",
+  author: "Publius Ovidius Naso",
+  language: "lat",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Ovid-Met-1", label: "Metamorphoses Book 1" },
+  ],
+};
+
+export const TEXT_CAESAR_BG: Text = {
+  id: "Caesar-BG-1",
+  corpusId: "LATIN_CLASSIC",
+  title: "De Bello Gallico",
+  canonicalRef: "Book 1",
+  author: "Gaius Julius Caesar",
+  language: "lat",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Caes-BG-1", label: "De Bello Gallico Book 1" },
+  ],
+};
+
+export const TEXT_PLATO_APOLOGY: Text = {
+  id: "Plato-Apology-1",
+  corpusId: "ANCIENT_GREEK",
+  title: "Ἀπολογία",
+  canonicalRef: "Apology",
+  author: "Plato",
+  language: "grc",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Plato-Apol-1", label: "Apology" },
+  ],
+};
+
 export const JOHN_1_1: TextSection = {
   id: "Jn-1-1",
   textId: "Jn-1",
@@ -2959,6 +3043,10 @@ const enhanceText = (text: Text): Text => ({
 
 import { getMockTexts, getMockSections } from "./mockTexts";
 import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections";
+import { CICERO_CATILINA_1 } from "./corpus/cicero-catilina";
+import { OVID_METAMORPHOSES_1 } from "./corpus/ovid-metamorphoses";
+import { CAESAR_BELLUM_GALLICUM_1 } from "./corpus/caesar-bellum-gallicum";
+import { PLATO_APOLOGY_1 } from "./corpus/plato-apology";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3005,6 +3093,7 @@ function getLemmaIndex() {
     COPTIC_JOHN_1_1, ARAMAIC_GENESIS_1_1, AKKADIAN_GILGAMESH_1_1,
     SANSKRIT_GITA_1_1, HITTITE_ANNALS_1_1, EGYPTIAN_PTAHHOTEP_1_1,
     ANABASIS_1_1, ILIAD_1_1, ODYSSEY_1_1, AESOP_1_1,
+    CICERO_CATILINA_1, OVID_METAMORPHOSES_1, CAESAR_BELLUM_GALLICUM_1, PLATO_APOLOGY_1,
     ...ALL_EXPANDED_SECTIONS,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
@@ -3045,7 +3134,11 @@ export const CorpusDB = {
     if (sectionId === "Iliad-1-1") return ILIAD_1_1;
     if (sectionId === "Odyssey-1-1") return ODYSSEY_1_1;
     if (sectionId === "Aesop-1-1") return AESOP_1_1;
-    
+    if (sectionId === "Cic-Cat-1") return CICERO_CATILINA_1;
+    if (sectionId === "Ovid-Met-1") return OVID_METAMORPHOSES_1;
+    if (sectionId === "Caes-BG-1") return CAESAR_BELLUM_GALLICUM_1;
+    if (sectionId === "Plato-Apol-1") return PLATO_APOLOGY_1;
+
     // Expanded sections
     const expandedMatch = ALL_EXPANDED_SECTIONS.find(s => s.id === sectionId);
     if (expandedMatch) return expandedMatch;
