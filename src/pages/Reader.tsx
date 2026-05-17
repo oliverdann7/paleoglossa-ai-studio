@@ -540,122 +540,6 @@ export const Reader = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter, readingMode]);
 
-  // Keyboard support
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Shortcuts for selected word
-      if (selectedWord) {
-        if (e.key === "1") {
-          setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
-          return;
-        }
-        if (e.key === "2") {
-          setWordState(selectedWord.lemma, WordState.FAMILIAR, currentLanguageId);
-          return;
-        }
-        if (e.key === "3") {
-          setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
-          return;
-        }
-        if (e.key === "4") {
-          setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
-          return;
-        }
-        if (e.key === "k" || e.key === "K") {
-          setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
-          return;
-        }
-        if (e.key === "l" || e.key === "L") {
-          setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
-          return;
-        }
-        if (e.key === "i" || e.key === "I") {
-          setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
-          return;
-        }
-        if (e.key === "Escape") {
-          setSelectedWord(null);
-          return;
-        }
-      }
-
-      if (e.key === " ") {
-        e.preventDefault();
-        togglePlay();
-        return;
-      }
-      if (e.key === "l" || e.key === "L") {
-        toggleLoopSentence();
-        return;
-      }
-      if (["!", "@", "#", "$", "%"].includes(e.key)) {
-        const speeds = [0.7, 0.85, 1.0, 1.15, 1.3];
-        setAudioSpeed(speeds[["!", "@", "#", "$", "%"].indexOf(e.key)]);
-        return;
-      }
-
-      if (!selectedWord) {
-        if (e.key === "ArrowRight") {
-          if (readingMode === "page") {
-            if (currentSentenceIndex < chapter.sentences.length - 1) {
-              goToNextSentence(chapter.sentences.length);
-              setAudioPosition(currentSentenceIndex + 1, 0);
-            } else if (currentChapterIndex < chapters.length - 1) {
-              goToNextChapter(chapters.length);
-              setAudioPosition(0, 0);
-            }
-          } else {
-            if (currentScrollPage < totalPages - 1) {
-              setScrollPage(currentScrollPage + 1);
-              document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
-            } else if (currentChapterIndex < chapters.length - 1) {
-              goToNextChapter(chapters.length);
-            }
-          }
-        } else if (e.key === "ArrowLeft") {
-          if (readingMode === "page") {
-            if (currentSentenceIndex > 0) {
-              goToPrevSentence();
-              setAudioPosition(currentSentenceIndex - 1, 0);
-            } else if (currentChapterIndex > 0) {
-              const prevChapter = chapters[currentChapterIndex - 1];
-              setChapterIndex(currentChapterIndex - 1);
-              setSentenceIndex(prevChapter.sentences.length - 1);
-              setAudioPosition(prevChapter.sentences.length - 1, 0);
-            }
-          } else {
-            if (currentScrollPage > 0) {
-              setScrollPage(currentScrollPage - 1);
-              document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
-            } else if (currentChapterIndex > 0) {
-              const prevChapter = chapters[currentChapterIndex - 1];
-              const prevTotalPages = Math.ceil((prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
-              setChapterIndex(currentChapterIndex - 1);
-              setScrollPage(prevTotalPages - 1);
-            }
-          }
-        }
-        return;
-      }
-
-      if (e.key === "Escape") setSelectedWord(null);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    selectedWord, 
-    chapter, 
-    readingMode, 
-    currentSentenceIndex, 
-    chapters, 
-    currentChapterIndex, 
-    setWordState, 
-    currentLanguageId,
-    currentScrollPage,
-    totalPages
-  ]);
-  
   const handleMarkPageKnown = useCallback((andAdvance: boolean = true) => {
     let tokensToMark: any[];
     if (readingMode === "page") {
@@ -737,6 +621,126 @@ export const Reader = () => {
     }
   }, [currentChapterIndex, chapters.length, setChapterIndex]);
 
+  // Keyboard support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Shortcuts for selected word
+      if (selectedWord) {
+        if (e.key === "1") {
+          setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
+          return;
+        }
+        if (e.key === "2") {
+          setWordState(selectedWord.lemma, WordState.FAMILIAR, currentLanguageId);
+          return;
+        }
+        if (e.key === "3") {
+          setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
+          return;
+        }
+        if (e.key === "4") {
+          setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
+          return;
+        }
+        if (e.key === "k" || e.key === "K") {
+          setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
+          return;
+        }
+        if (e.key === "l" || e.key === "L") {
+          setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
+          return;
+        }
+        if (e.key === "i" || e.key === "I") {
+          setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
+          return;
+        }
+        if (e.key === "Escape") {
+          setSelectedWord(null);
+          return;
+        }
+      }
+
+      if (e.key === " ") {
+        e.preventDefault();
+        togglePlay();
+        return;
+      }
+      if (e.key === "l" || e.key === "L") {
+        toggleLoopSentence();
+        return;
+      }
+      if (["!", "@", "#", "$", "%"].includes(e.key)) {
+        const speeds = [0.7, 0.85, 1.0, 1.15, 1.3];
+        setAudioSpeed(speeds[["!", "@", "#", "$", "%"].indexOf(e.key)]);
+        return;
+      }
+
+      if (!selectedWord) {
+        if (e.key === "ArrowRight") {
+          if (settings.swipePageMovesToKnown ?? true) {
+            handleMarkPageKnown(true);
+          } else if (readingMode === "page") {
+            if (currentSentenceIndex < chapter.sentences.length - 1) {
+              goToNextSentence(chapter.sentences.length);
+              setAudioPosition(currentSentenceIndex + 1, 0);
+            } else if (currentChapterIndex < chapters.length - 1) {
+              goToNextChapter(chapters.length);
+              setAudioPosition(0, 0);
+            }
+          } else {
+            if (currentScrollPage < totalPages - 1) {
+              setScrollPage(currentScrollPage + 1);
+              document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+            } else if (currentChapterIndex < chapters.length - 1) {
+              goToNextChapter(chapters.length);
+            }
+          }
+        } else if (e.key === "ArrowLeft") {
+          if (readingMode === "page") {
+            if (currentSentenceIndex > 0) {
+              goToPrevSentence();
+              setAudioPosition(currentSentenceIndex - 1, 0);
+            } else if (currentChapterIndex > 0) {
+              const prevChapter = chapters[currentChapterIndex - 1];
+              setChapterIndex(currentChapterIndex - 1);
+              setSentenceIndex(prevChapter.sentences.length - 1);
+              setAudioPosition(prevChapter.sentences.length - 1, 0);
+            }
+          } else {
+            if (currentScrollPage > 0) {
+              setScrollPage(currentScrollPage - 1);
+              document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+            } else if (currentChapterIndex > 0) {
+              const prevChapter = chapters[currentChapterIndex - 1];
+              const prevTotalPages = Math.ceil((prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
+              setChapterIndex(currentChapterIndex - 1);
+              setScrollPage(prevTotalPages - 1);
+            }
+          }
+        }
+        return;
+      }
+
+      if (e.key === "Escape") setSelectedWord(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    selectedWord, 
+    chapter, 
+    readingMode, 
+    currentSentenceIndex, 
+    chapters, 
+    currentChapterIndex, 
+    setWordState, 
+    currentLanguageId,
+    currentScrollPage,
+    totalPages,
+    handleMarkPageKnown,
+    settings,
+  ]);
+  
   const handleWordClick = useCallback((token: any, sentenceText: string, sentenceIndex: number) => {
     setSelectedSentence(null);
     setSelectedWord({ ...token, sentenceText });
@@ -943,7 +947,9 @@ export const Reader = () => {
             }
           }}
           onNext={() => {
-            if (readingMode === "page") {
+            if (settings.swipePageMovesToKnown ?? true) {
+              handleMarkPageKnown(true);
+            } else if (readingMode === "page") {
               if (currentSentenceIndex < chapter.sentences.length - 1) {
                 goToNextSentence(chapter.sentences.length);
               } else if (currentChapterIndex < chapters.length - 1) {
