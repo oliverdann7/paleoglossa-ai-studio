@@ -2,7 +2,7 @@
 
 > **Audit date:** 2026-05-11
 > **Target:** A serious platform for studying ancient languages through real texts.
-> **Current state:** React 18 + Vite 6 + Firebase/Firestore + Express 5 + Gemini AI.
+> **Current state:** React 19 + Vite 6 + Firebase/Firestore + Express 5 + Gemini AI.
 > **Guiding principle:** Extend what exists; build new modules only where gaps cannot be filled.
 
 ---
@@ -13,15 +13,15 @@
 
 | Layer | Technology | Notes |
 |-------|-----------|-------|
-| **Frontend** | React 18.3, TypeScript (strict), Vite 6 | SPA with client-side routing |
+| **Frontend** | React 19, TypeScript (strict), Vite 6 | SPA with client-side routing |
 | **CSS** | Tailwind CSS v4 (via `@tailwindcss/vite`), custom parchment/sepia/dark themes | No PostCSS config; pure Vite plugin |
 | **Routing** | React Router DOM v7 | `/app/*` for authenticated pages, `/auth/*` for auth, `/` public landing |
 | **State** | React hooks + context (`useKnowledge`, `useSettings`, `useAuth`) | No external state library |
 | **Server** | Express 5 + `tsx` runtime | Serves Vite dev/prod, exposes `/api/ai/*` routes |
-| **AI** | Gemini 2.5 Flash via `@google/genai` | Word explain, translate, analyze, OCR, scrape |
+| **AI** | Gemini 2.0 Flash via `@google/genai` | Word explain, translate, analyze, OCR, scrape |
 | **Database** | Firestore (9 collections) | Indexes defined in `firestore.indexes.json` |
 | **Auth** | Firebase Auth (Google + Email/Password) | Guest/demo mode supported |
-| **i18n** | i18next + react-i18next | 7 languages (en, es, de, pt, fr, ru, zh) |
+| **i18n** | i18next + react-i18next | 8 languages (en, es, de, pt, fr, ru, zh, tr) |
 | **SRS** | SM-2 algorithm | Custom implementation in `src/lib/srs/sm2.ts` |
 | **Validation** | Zod | AI responses, import validation |
 | **Charts** | Recharts | Dashboard statistics |
@@ -63,7 +63,7 @@
 | Research notebook | ❌ Missing | No persistent user notes on texts |
 | Manuscript/epigraphy lab | ❌ Missing | No image overlay or diplomatic edition support |
 | Audio/pronunciation lab | ❌ Missing | Only basic play/pause audio bar |
-| Classroom/course builder | ❌ Missing | No course/assignment/group model |
+| Classroom/course builder | ✅ Complete | CRUD, enrollment, quizzes, progress tracking |
 | Morphology browser | ⚠️ Partial | Token-level tags, no browse/search |
 | Parallel text alignment | ⚠️ Partial | Sentence-level parallel, not word-aligned |
 

@@ -414,9 +414,7 @@ export const ru = {
     "notebooks.experimental": "Research notebooks with verse-anchored notes — this feature lets you create and organize notes connected to specific passages in your library.",
     "manuscripts.comingSoon": "Image + transcription alignment, variant apparatus, and TEI XML import — coming soon.",
     "manuscripts.experimental": "Manuscript & Epigraphy Lab — this feature lets you upload and analyze manuscript images alongside your texts.",
-    "courses.comingSoon": "Course builder with text assignments, student progress tracking, and teacher dashboard — coming soon.",
     "courses.experimental": "Classroom & Courses — this feature lets you create study groups, assign texts, and track progress with peers.",
-    "audioLab.comingSoon": "Word-by-word TTS, user recording with waveform, IPA transcription, and pronunciation mode toggles — coming soon.",
     "audioLab.experimental": "Pronunciation Lab — this feature lets you listen to and practice pronunciation of words in your current texts.",
 
     "vocab.all": "Все",
