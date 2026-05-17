@@ -3,6 +3,7 @@ import {
   Loader2, ShieldAlert, Users, FileText, Flag, Activity,
   Crown, UserCheck, UserX, LayoutDashboard, ChevronDown,
   RefreshCw, Eye, EyeOff, ShieldCheck, Shield, Clock,
+  BookOpen, Trash2, Globe, Lock,
 } from "lucide-react";
 import { apiFetch } from "../../lib/services/apiFetch.js";
 import { useTranslation } from "react-i18next";
@@ -51,7 +52,20 @@ interface ActivityEntry {
   timestamp: string;
 }
 
-type Tab = "overview" | "users" | "reports" | "activity";
+interface AdminCourse {
+  id: string;
+  ownerId: string;
+  title: string;
+  description: string;
+  languageId: string;
+  texts: any[];
+  isPublic: boolean;
+  memberCount: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+type Tab = "overview" | "users" | "reports" | "activity" | "courses";
 
 const PLANS = [
   { id: "free", label: "Free" },
@@ -423,6 +437,96 @@ function ActivitiesTab({ activities, loading }: { activities: ActivityEntry[]; l
   );
 }
 
+// ─── Courses tab ──────────────────────────────────────────────────────────────
+
+function CoursesTab({ courses, loading, onRefresh }: {
+  courses: AdminCourse[]; loading: boolean; onRefresh: () => void;
+}) {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const deleteCourse = async (courseId: string) => {
+    if (!window.confirm("Delete this course? This action cannot be undone.")) return;
+    setBusy(courseId);
+    try {
+      await apiFetch(`/api/admin/courses/${courseId}`, { method: "DELETE" });
+      onRefresh();
+    } catch { /* ignore */ } finally { setBusy(null); }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>;
+  }
+
+  if (courses.length === 0) {
+    return (
+      <div className="card p-12 text-center">
+        <BookOpen className="w-8 h-8 text-muted mx-auto mb-3" />
+        <p className="text-muted text-sm">No courses created yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="p-4 border-b border-bdr flex items-center justify-between">
+        <h3 className="font-bold text-ink">{t("admin.courses", "Courses")} ({courses.length})</h3>
+        <button onClick={onRefresh} className="p-1.5 rounded-lg hover:bg-parch3 transition-colors">
+          <RefreshCw className="w-4 h-4 text-muted" />
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-[13px]">
+          <thead>
+            <tr className="border-b border-bdr bg-parch2">
+              <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Title</th>
+              <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider hidden md:table-cell">Owner</th>
+              <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Language</th>
+              <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Texts</th>
+              <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Members</th>
+              <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Status</th>
+              <th className="text-right px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {courses.map((c, i) => (
+              <tr key={c.id} className={cn("border-b border-bdr/40 hover:bg-parch2/60 transition-colors", i % 2 === 0 ? "" : "bg-parch/30")}>
+                <td className="px-4 py-3">
+                  <div className="font-medium text-ink truncate max-w-[200px]">{c.title}</div>
+                  {c.description && <div className="text-ink3 text-[12px] truncate max-w-[200px]">{c.description}</div>}
+                </td>
+                <td className="px-4 py-3 text-ink3 text-[12px] hidden md:table-cell truncate max-w-[140px]">{c.ownerId}</td>
+                <td className="px-4 py-3">
+                  <span className="px-2 py-0.5 rounded-full bg-parch3 text-ink3 text-[10px] font-bold uppercase">{c.languageId}</span>
+                </td>
+                <td className="px-4 py-3 text-ink3">{c.texts?.length ?? 0}</td>
+                <td className="px-4 py-3 text-ink3">{c.memberCount}</td>
+                <td className="px-4 py-3">
+                  {c.isPublic ? (
+                    <span className="flex items-center gap-1 text-emerald-600 text-[11px] font-bold"><Globe className="w-3 h-3" /> Public</span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-muted text-[11px]"><Lock className="w-3 h-3" /> Private</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    onClick={() => deleteCourse(c.id)}
+                    disabled={busy === c.id}
+                    className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                    title="Delete course"
+                  >
+                    {busy === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export const AdminDashboard = () => {
@@ -432,10 +536,12 @@ export const AdminDashboard = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
+  const [courses, setCourses] = useState<AdminCourse[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [usersLoading, setUsersLoading] = useState(false);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
+  const [coursesLoading, setCoursesLoading] = useState(false);
 
   const loadOverview = useCallback(async () => {
     const [ov, rp] = await Promise.all([
@@ -455,6 +561,18 @@ export const AdminDashboard = () => {
       setUsers([]);
     } finally {
       setUsersLoading(false);
+    }
+  }, []);
+
+  const loadCourses = useCallback(async () => {
+    setCoursesLoading(true);
+    try {
+      const data = await apiFetch<AdminCourse[]>("/api/admin/courses");
+      setCourses(data);
+    } catch {
+      setCourses([]);
+    } finally {
+      setCoursesLoading(false);
     }
   }, []);
 
@@ -497,10 +615,17 @@ export const AdminDashboard = () => {
     }
   }, [tab, activities.length, loadActivities]);
 
+  useEffect(() => {
+    if (tab === "courses" && courses.length === 0) {
+      (async () => { await loadCourses(); })();
+    }
+  }, [tab, courses.length, loadCourses]);
+
   const handleRefresh = () => {
     loadOverview();
     if (tab === "users") loadUsers();
     if (tab === "activity") loadActivities();
+    if (tab === "courses") loadCourses();
   };
 
   if (isLoading) {
@@ -524,6 +649,7 @@ export const AdminDashboard = () => {
   const TABS: { id: Tab; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "users", label: "Users", icon: Users, badge: overview?.totalUsers },
+    { id: "courses", label: "Courses", icon: BookOpen },
     { id: "activity", label: "Activity", icon: Activity },
     { id: "reports", label: "Reports", icon: Flag, badge: overview?.openReports || undefined },
   ];
@@ -581,6 +707,7 @@ export const AdminDashboard = () => {
       )}
       {tab === "activity" && <ActivitiesTab activities={activities} loading={activitiesLoading} />}
       {tab === "reports" && <ReportsTab reports={reports} onRefresh={() => loadOverview()} />}
+      {tab === "courses" && <CoursesTab courses={courses} loading={coursesLoading} onRefresh={loadCourses} />}
     </div>
   );
 };
