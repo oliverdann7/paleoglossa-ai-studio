@@ -6,19 +6,19 @@ import {
   Trash2, Edit2, X, Check, Play, UserCheck, LogOut, Brain, Flame,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '../lib/hooks/useAuth';
-import { useActiveLanguage } from '../lib/hooks/useActiveLanguage';
-import { CourseService, CourseWithMeta } from '../lib/services/courseService';
-import { CourseTextAssignment } from '../types/modules';
-import { LANGUAGES, getLanguageById, getLanguageDisplayName } from '../lib/constants/languages';
-import { useKnowledge } from '../lib/hooks/useKnowledge';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
+import { CourseService, CourseWithMeta } from '../lib/services/courseService.js';
+import { CourseTextAssignment } from '../types/modules.js';
+import { LANGUAGES, getLanguageById, getLanguageDisplayName } from '../lib/constants/languages.js';
+import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
-import { ImportService } from '../lib/services/importService';
-import { WordState } from '../lib/constants/wordStates';
-import { KnowledgeMap } from '../lib/services/vocabularyService';
-import { CourseQuizModal } from '../components/courses/CourseQuizModal';
-import { PreDrillModal, DrillLemma } from '../components/courses/PreDrillModal';
+import { ImportService } from '../lib/services/importService.js';
+import { WordState } from '../lib/constants/wordStates.js';
+import { KnowledgeMap } from '../lib/services/vocabularyService.js';
+import { CourseQuizModal } from '../components/courses/CourseQuizModal.js';
+import { PreDrillModal, DrillLemma } from '../components/courses/PreDrillModal.js';
 
 type View = 'list' | 'detail' | 'create' | 'edit';
 

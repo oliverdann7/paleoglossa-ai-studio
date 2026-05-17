@@ -1,4 +1,4 @@
-import { auth } from '../firebase';
+import { auth } from '../firebase.js';
 
 export class ApiError extends Error {
   status: number;

@@ -1,4 +1,4 @@
-import { DictionaryEntry, DictionarySource } from './dictionary';
+import { DictionaryEntry, DictionarySource } from './dictionary.js';
 export type { DictionaryEntry };
 
 // Define dictionary sources

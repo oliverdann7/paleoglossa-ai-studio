@@ -1,5 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
-import { WordState } from '../lib/constants/wordStates';
+import { WordState } from '../lib/constants/wordStates.js';
 
 export interface SRSData {
   nextReview: string | Timestamp;

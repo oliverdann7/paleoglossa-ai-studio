@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { StatsService } from '../services/statsService';
-import { useAuth } from './useAuth';
+import { StatsService } from '../services/statsService.js';
+import { useAuth } from './useAuth.js';
 
 export const useReadingProgress = (languageId?: string) => {
   const { user } = useAuth();

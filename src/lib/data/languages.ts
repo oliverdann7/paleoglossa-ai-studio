@@ -1,4 +1,4 @@
-import type { LanguageId, ScriptDirection } from '../../types/linguistics';
+import type { LanguageId, ScriptDirection } from '../../types/linguistics.js';
 
 export interface TokenizationHints {
   wordBoundaries: 'whitespace' | 'none' | 'script-specific';

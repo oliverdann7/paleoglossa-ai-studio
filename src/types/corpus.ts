@@ -71,7 +71,7 @@ export interface TextSection {
   previousSectionId?: string;
 }
 
-import type { ScriptDirection } from './linguistics';
+import type { ScriptDirection } from './linguistics.js';
 
 export interface Text {
   id: string;

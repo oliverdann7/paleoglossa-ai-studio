@@ -1,4 +1,4 @@
-import { getLangForLemma } from "../lib/data/dictionary";
+import { getLangForLemma } from "../lib/data/dictionary.js";
 import { format, subDays, parseISO } from "date-fns";
 import { lazy, Suspense, useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,15 +16,15 @@ import {
   Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useKnowledge } from "../lib/hooks/useKnowledge";
-import { useReadingProgress } from "../lib/hooks/useReadingProgress";
-import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
-import { getLanguageDisplayName } from "../lib/constants/languages";
-import { TextProgress } from "../lib/services/statsService";
-import { WordState } from "../lib/constants/wordStates";
+import { useKnowledge } from "../lib/hooks/useKnowledge.js";
+import { useReadingProgress } from "../lib/hooks/useReadingProgress.js";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
+import { getLanguageDisplayName } from "../lib/constants/languages.js";
+import { TextProgress } from "../lib/services/statsService.js";
+import { WordState } from "../lib/constants/wordStates.js";
 import { useTranslation } from "react-i18next";
 
-const ChartsSection = lazy(() => import("../components/reader/ChartsSection"));
+const ChartsSection = lazy(() => import("../components/reader/ChartsSection.js"));
 
 const StatCard = ({
   label,

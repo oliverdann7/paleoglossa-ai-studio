@@ -1,4 +1,4 @@
-import { TextMetadata } from '../types/library';
+import { TextMetadata } from '../types/library.js';
 
 export const texts: TextMetadata[] = [
   // Real Open Corpora

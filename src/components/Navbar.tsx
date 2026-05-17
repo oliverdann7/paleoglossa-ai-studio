@@ -3,11 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { Library, BookOpen, GraduationCap, Settings, Brain, Search, PlusCircle, MoreHorizontal, Crown, BarChart3, FileText, MessageCircle, GitBranch, ScanLine, Users, Headphones, BookMarked, BookText, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from './LanguageSwitcher';
-import { PaleoIcon } from './PaleoIcon';
-import { InterfaceLanguageSwitcher } from './InterfaceLanguageSwitcher';
-import { UserProfileCard } from './UserProfileCard';
-import { useSubscription } from '../lib/contexts/SubscriptionContext';
+import { LanguageSwitcher } from './LanguageSwitcher.js';
+import { PaleoIcon } from './PaleoIcon.js';
+import { InterfaceLanguageSwitcher } from './InterfaceLanguageSwitcher.js';
+import { UserProfileCard } from './UserProfileCard.js';
+import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 
 interface NavItemProps {
   icon: React.ElementType;

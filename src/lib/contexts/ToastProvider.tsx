@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ToastContext, Toast } from './ToastContext';
+import { ToastContext, Toast } from './ToastContext.js';
 
 let toastId = 0;
 

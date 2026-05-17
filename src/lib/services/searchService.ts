@@ -1,4 +1,4 @@
-import { SearchQuery, SearchResult } from '../../types/modules';
+import { SearchQuery, SearchResult } from '../../types/modules.js';
 
 export class SearchService {
   static async search(query: SearchQuery): Promise<SearchResult[]> {

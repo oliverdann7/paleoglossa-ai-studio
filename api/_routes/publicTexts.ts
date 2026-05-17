@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { requireAuth } from '../_lib/auth';
-import { getAdminDb } from '../_lib/firebaseAdmin';
-import type { AuthenticatedRequest } from '../_lib/auth';
+import { requireAuth } from '../_lib/auth.js';
+import { getAdminDb } from '../_lib/firebaseAdmin.js';
+import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 
 router.get('/api/public/texts', async (req: any, res: any) => {
   const adminDb_ = getAdminDb();
   if (!adminDb_) {
-    const { ImportService } = await import('../../src/lib/services/importService');
+    const { ImportService } = await import('../../src/lib/services/importService.js');
     const texts = await ImportService.getPublicTexts(50);
     return res.status(200).json(texts);
   }
@@ -35,7 +35,7 @@ router.get('/api/public/texts', async (req: any, res: any) => {
     res.status(200).json(results.slice(0, 50));
   } catch (err: any) {
     console.error('Error fetching public texts:', err);
-    const { ImportService } = await import('../../src/lib/services/importService');
+    const { ImportService } = await import('../../src/lib/services/importService.js');
     const texts = await ImportService.getPublicTexts(50);
     res.status(200).json(texts);
   }

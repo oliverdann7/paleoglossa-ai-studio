@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Volume2, Bookmark, Eye, Brain, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AIClient } from '../lib/services/aiClient';
-import { MorphologyService } from '../lib/services/morphologyService';
+import { AIClient } from '../lib/services/aiClient.js';
+import { MorphologyService } from '../lib/services/morphologyService.js';
 import { useTranslation } from 'react-i18next';
 
 interface LexDrawerProps {

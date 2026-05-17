@@ -1,10 +1,10 @@
-import { db } from '../firebase';
+import { db } from '../firebase.js';
 import { doc, collection, getDocs, serverTimestamp, writeBatch, increment, arrayUnion } from 'firebase/firestore';
-import { WordState, normalizeWordState } from '../constants/wordStates';
-import { STORAGE_KEYS } from '../constants/storage';
-import { SRSData } from '../../types/firestore';
-import { normalizeTimestamp } from '../utils';
-import { normalizeLemmaKey } from '../utils/lemmaUtils';
+import { WordState, normalizeWordState } from '../constants/wordStates.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
+import { SRSData } from '../../types/firestore.js';
+import { normalizeTimestamp } from '../utils.js';
+import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
 
 export type { SRSData };
 

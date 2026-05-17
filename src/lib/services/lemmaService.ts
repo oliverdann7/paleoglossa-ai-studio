@@ -1,4 +1,4 @@
-import { LemmaEntry, InflectedForm } from '../../types/modules';
+import { LemmaEntry, InflectedForm } from '../../types/modules.js';
 
 export class LemmaService {
   static async getLemma(lemma: string, languageId: string): Promise<LemmaEntry | null> {

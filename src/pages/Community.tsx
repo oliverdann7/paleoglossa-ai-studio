@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Search, BookOpen, Flame, ExternalLink, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../lib/hooks/useAuth';
-import { fetchCommunityScholars } from '../lib/services/communityService';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import { fetchCommunityScholars } from '../lib/services/communityService.js';
 import { cn } from '@/lib/utils';
-import type { PublicScholar } from '../types/social';
+import type { PublicScholar } from '../types/social.js';
 
 function ScholarAvatar({ scholar }: { scholar: PublicScholar }) {
   const initials = (scholar.displayName || '?')

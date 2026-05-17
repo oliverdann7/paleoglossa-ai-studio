@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ImportedSentence } from '../../types/firestore';
-import { apiFetch } from './apiFetch';
+import { ImportedSentence } from '../../types/firestore.js';
+import { apiFetch } from './apiFetch.js';
 
 export class AIError extends Error {
   constructor(message: string, public code: string) {

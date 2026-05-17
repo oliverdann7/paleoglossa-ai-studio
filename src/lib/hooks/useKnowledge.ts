@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { WordState } from '../constants/wordStates';
-import { ImportService } from '../services/importService';
-import { STORAGE_KEYS } from '../constants/storage';
-import { useVocabulary } from './useVocabulary';
-import { useStats } from './useStats';
-import { useReadingProgress } from './useReadingProgress';
-import { useAuth } from './useAuth';
+import { WordState } from '../constants/wordStates.js';
+import { ImportService } from '../services/importService.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
+import { useVocabulary } from './useVocabulary.js';
+import { useStats } from './useStats.js';
+import { useReadingProgress } from './useReadingProgress.js';
+import { useAuth } from './useAuth.js';
 
 export const useKnowledge = (languageId?: string) => {
   const vocab = useVocabulary();

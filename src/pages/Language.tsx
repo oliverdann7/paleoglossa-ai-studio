@@ -2,11 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, BookOpen, Play, AlertCircle } from "lucide-react";
-import { CorpusDB } from "../data/corpus";
-import { cn } from "../lib/utils";
+import { CorpusDB } from "../data/corpus.js";
+import { cn } from "../lib/utils.js";
 import { useTranslation } from "react-i18next";
-import { getLanguageById, getLanguageDirection, isRtlLanguage } from "../lib/constants/languages";
-import { LanguageGuard } from "../components/LanguageGuard";
+import { getLanguageById, getLanguageDirection, isRtlLanguage } from "../lib/constants/languages.js";
+import { LanguageGuard } from "../components/LanguageGuard.js";
 
 export const Language = () => {
   const { langId } = useParams();

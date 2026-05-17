@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { requireAuth } from '../_lib/auth';
-import type { AuthenticatedRequest } from '../_lib/auth';
+import { requireAuth } from '../_lib/auth.js';
+import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 

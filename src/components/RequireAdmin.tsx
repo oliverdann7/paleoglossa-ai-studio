@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
-import { useSubscription } from '../lib/contexts/SubscriptionContext';
-import { useAuth } from '../lib/hooks/useAuth';
+import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
+import { useAuth } from '../lib/hooks/useAuth.js';
 import { Loader2 } from 'lucide-react';
 
 export function RequireAdmin({ children }: { children: React.ReactNode }) {

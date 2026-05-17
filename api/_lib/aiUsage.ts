@@ -1,4 +1,4 @@
-import { getAdminDb } from './firebaseAdmin';
+import { getAdminDb } from './firebaseAdmin.js';
 
 const PLAN_AI_LIMITS: Record<string, number | 'all'> = {
   free: 20,

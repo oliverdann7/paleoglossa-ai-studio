@@ -2,13 +2,13 @@ import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, Award, Loader2, Brain, History, Target, Settings2 } from "lucide-react";
-import { useAuth } from "../lib/hooks/useAuth";
-import { useKnowledge } from "../lib/hooks/useKnowledge";
-import { useActiveLanguage } from "../lib/hooks/useActiveLanguage";
-import { WordState } from "../lib/constants/wordStates";
-import { ReviewService, ReviewItem } from "../lib/services/reviewService";
-import { Rating } from "../lib/srs/sm2";
-import { CardType, ReviewCard, generateReviewCards } from "../lib/review/reviewCardFactory";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { useKnowledge } from "../lib/hooks/useKnowledge.js";
+import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
+import { WordState } from "../lib/constants/wordStates.js";
+import { ReviewService, ReviewItem } from "../lib/services/reviewService.js";
+import { Rating } from "../lib/srs/sm2.js";
+import { CardType, ReviewCard, generateReviewCards } from "../lib/review/reviewCardFactory.js";
 import { useTranslation } from "react-i18next";
 
 interface ReviewSettings {

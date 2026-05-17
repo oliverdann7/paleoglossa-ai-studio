@@ -1,6 +1,6 @@
-import { ImportService, ImportedText } from './importService';
-import { ATTRIBUTIONS, CorpusDB } from '../../data/corpus';
-import { LANGUAGES } from '../constants/languages';
+import { ImportService, ImportedText } from './importService.js';
+import { ATTRIBUTIONS, CorpusDB } from '../../data/corpus.js';
+import { LANGUAGES } from '../constants/languages.js';
 
 const corpusTokensCache = new Map<string, any[]>();
 

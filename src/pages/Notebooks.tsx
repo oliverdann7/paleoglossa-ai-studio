@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Loader2, Plus, Trash2, ChevronRight } from "lucide-react";
-import { useAuth } from "../lib/hooks/useAuth";
-import { apiFetch } from "../lib/services/apiFetch";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { apiFetch } from "../lib/services/apiFetch.js";
 
 interface Notebook { id: string; title: string; description?: string; languageId?: string; createdAt?: string; }
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Headphones, Volume2, AlertTriangle, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LANGUAGES, getLanguageById } from "../lib/constants/languages";
+import { LANGUAGES, getLanguageById } from "../lib/constants/languages.js";
 
 interface TTSStatus {
   audioUrl: string | null;
