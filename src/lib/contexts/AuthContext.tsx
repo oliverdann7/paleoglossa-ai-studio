@@ -4,6 +4,7 @@ import type { User } from 'firebase/auth';
 import { auth, db } from '../firebase.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { AuthContext, UserProfile, UserStats } from './AuthContextInstance.js';
+import { identifyAnalytics, resetAnalytics } from '../analytics.js';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -46,6 +47,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(u);
       if (u) {
         setDemoMode(false);
+        identifyAnalytics(u.uid, {
+          email: u.email || undefined,
+          displayName: u.displayName || undefined,
+        });
         try {
           const profileRef = doc(db, 'users', u.uid);
           const snap = await getDoc(profileRef);
@@ -104,6 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setClaimsState(serverAdmin ? { admin: true } : {});
         }
       }
+      if (!u) resetAnalytics();
       setLoading(false);
     });
     return () => unsub();
