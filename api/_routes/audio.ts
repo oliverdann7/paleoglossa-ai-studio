@@ -2,10 +2,12 @@ import { Router } from 'express';
 
 const router = Router();
 
-const TTS_SUPPORTED_LANGUAGES: Record<string, string> = {
-  'grc': 'Google Standard (Ancient Greek accent reconstruction)',
-  'lat': 'Google Standard (Restored Classical pronunciation)',
-  'grc-koine': 'Google Standard (Koine pronunciation approximation)',
+const TTS_SUPPORTED_LANGUAGES: Record<string, { code: string; voice: string; note: string }> = {
+  'grc': { code: 'el-GR', voice: 'el-GR-Standard-A', note: 'Ancient Greek accent reconstruction' },
+  'lat': { code: 'it-IT', voice: 'it-IT-Standard-A', note: 'Restored Classical pronunciation' },
+  'grc-koine': { code: 'el-GR', voice: 'el-GR-Standard-B', note: 'Koine pronunciation approximation' },
+  'hbo': { code: 'he-IL', voice: 'he-IL-Standard-A', note: 'Biblical Hebrew (Tiberian tradition)' },
+  'syr': { code: 'ar-XA', voice: 'ar-XA-Standard-A', note: 'Syriac (Western tradition)' },
 };
 
 const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
@@ -22,38 +24,92 @@ const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
   'hit': 'Hittite pronunciation is partially reconstructed from cuneiform spelling. Significant gaps remain.',
 };
 
-router.post('/api/audio/tts', (req: any, res: any) => {
-  const { languageId } = req.body;
+router.post('/api/audio/tts', async (req: any, res: any) => {
+  try {
+    const { languageId, text } = req.body;
 
-  if (!languageId) {
-    return res.status(400).json({ audioUrl: null, supported: false, reason: 'languageId is required', code: 'INVALID_INPUT' });
-  }
+    if (!languageId) {
+      return res.status(400).json({ audioUrl: null, supported: false, reason: 'languageId is required', code: 'INVALID_INPUT' });
+    }
 
-  const providerInfo = TTS_SUPPORTED_LANGUAGES[languageId];
-  if (!providerInfo) {
+    if (!text) {
+      return res.status(400).json({ audioUrl: null, supported: false, reason: 'text is required', code: 'INVALID_INPUT' });
+    }
+
+    const langConfig = TTS_SUPPORTED_LANGUAGES[languageId];
+    if (!langConfig) {
+      return res.status(200).json({
+        audioUrl: null,
+        supported: false,
+        reason: `TTS is not available for ${languageId}. ${LANGUAGE_RECONSTRUCTION_NOTES[languageId] || ''}`,
+      });
+    }
+
+    const apiKey = process.env.GOOGLE_TTS_API_KEY;
+    if (!apiKey) {
+      return res.status(200).json({
+        audioUrl: null,
+        supported: true,
+        reason: `Google Cloud TTS is configured but API key (GOOGLE_TTS_API_KEY) is not set.`,
+        provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
+      });
+    }
+
+    const requestBody = {
+      input: { text: text.substring(0, 5000) },
+      voice: {
+        languageCode: langConfig.code,
+        name: langConfig.voice,
+      },
+      audioConfig: {
+        audioEncoding: 'MP3',
+        pitch: 0,
+        speakingRate: 0.9,
+      },
+    };
+
+    const response = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=' + apiKey, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      console.error('[TTS] API error:', response.status, await response.text());
+      return res.status(200).json({
+        audioUrl: null,
+        supported: true,
+        reason: 'TTS service temporarily unavailable',
+        provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
+      });
+    }
+
+    const data = await response.json() as any;
+    const audioContent = data.audioContent;
+
+    if (!audioContent) {
+      return res.status(200).json({
+        audioUrl: null,
+        supported: true,
+        reason: 'No audio content generated',
+        provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
+      });
+    }
+
+    const audioBase64 = `data:audio/mpeg;base64,${audioContent}`;
     return res.status(200).json({
+      audioUrl: audioBase64,
+      supported: true,
+      provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
+    });
+  } catch (err) {
+    console.error('[TTS] Error:', err);
+    return res.status(500).json({
       audioUrl: null,
       supported: false,
-      reason: `TTS is not available for ${languageId}. ${LANGUAGE_RECONSTRUCTION_NOTES[languageId] || ''}`,
+      reason: 'Internal server error generating audio',
     });
   }
-
-  const ttsApiKey = process.env.GOOGLE_TTS_API_KEY;
-  if (!ttsApiKey) {
-    return res.status(200).json({
-      audioUrl: null,
-      supported: true,
-      reason: `TTS engine (${providerInfo}) is not configured. Set GOOGLE_TTS_API_KEY for audio.`,
-      provider: providerInfo,
-    });
-  }
-
-  return res.status(200).json({
-    audioUrl: null,
-    supported: true,
-    reason: `TTS engine (${providerInfo}) is available but not yet connected to a streaming endpoint.`,
-    provider: providerInfo,
-  });
 });
 
 router.post('/api/audio/recordings', (_req: any, res: any) => {
