@@ -103,10 +103,31 @@ export const AudioLab = () => {
         </div>
 
         {ttsResult && (
-          <div className={cn("p-4 rounded-xl text-[13px]", ttsResult.supported ? "bg-emerald-50 text-emerald-800" : "bg-amber/5 text-amber")}>
-            <strong>{ttsResult.supported ? 'Supported' : 'Not supported'}</strong>
-            {ttsResult.reason && <p className="mt-1">{ttsResult.reason}</p>}
-            {ttsResult.provider && <p className="mt-1 text-muted">Provider: {ttsResult.provider}</p>}
+          <div className={cn("p-4 rounded-xl text-[13px]", ttsResult.audioUrl ? "bg-emerald-50" : ttsResult.supported ? "bg-blue-50" : "bg-amber/5")}>
+            {ttsResult.audioUrl ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-emerald-800">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <strong>Audio Generated Successfully</strong>
+                </div>
+                {ttsResult.provider && <p className="text-muted">Provider: {ttsResult.provider}</p>}
+                <div className="flex items-center gap-2">
+                  <audio
+                    controls
+                    className="flex-1 h-8"
+                    src={ttsResult.audioUrl}
+                  >
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              </div>
+            ) : (
+              <div className={ttsResult.supported ? "text-blue-800" : "text-amber"}>
+                <strong>{ttsResult.supported ? 'Not Available' : 'Not supported'}</strong>
+                {ttsResult.reason && <p className="mt-1">{ttsResult.reason}</p>}
+                {ttsResult.provider && <p className="mt-1 text-muted">Provider: {ttsResult.provider}</p>}
+              </div>
+            )}
           </div>
         )}
 
