@@ -35,7 +35,7 @@ export const CICERO_CATILINA_1: TextSection = {
   id: "Cic-Cat-1",
   textId: "Cic-Catilina-1",
   sequence: 1,
-  label: "In Catilinam 1",
+  label: "In Catilinam 1 — Complete Oration",
   sentences: [
     sent('Cic-Cat-1-1', ['O', 'tempora,', 'o', 'mores!', 'Senatui', 'est', 'nota', 'haec', 'maleficorum', 'audacia,'], 'O the times! O the customs! This shamelessness of evildoers is known to the Senate,'),
     sent('Cic-Cat-1-2', ['Catilinam', 'autem', 'sic', 'acerbis', 'odiis', 'omnes', 'mortales', 'insequuntur', 'ut', 'nulla', 'umquam', 'lucebat', 'huic', 'rei', 'publicae', 'pestis', 'maior'], 'but all mortals pursue Catiline with such bitter hatred that no greater plague has ever shone upon this republic,'),
@@ -44,5 +44,10 @@ export const CICERO_CATILINA_1: TextSection = {
     sent('Cic-Cat-1-5', ['Quo', 'usque', 'tandem', 'abutere,', 'Catilina,', 'patientia', 'nostra?', 'quam', 'diu', 'etiam', 'te', 'furor', 'iste', 'tuus', 'eludet?'], 'How long, then, Catiline, will you abuse our patience? How long will this madness of yours elude us?'),
     sent('Cic-Cat-1-6', ['quem', 'ad', 'finem', 'sese', 'effrenata', 'iactabit', 'audacia?'], 'To what end will your reckless audacity flaunt itself?'),
     sent('Cic-Cat-1-7', ['Nihilne', 'te', 'nocturna', 'praesidia', 'palatii,', 'nihil', 'urbis', 'vigiliae,', 'nihil', 'timor', 'populi,', 'nihil', 'consensus', 'bonorum', 'omnium', 'mover', 'nihil', 'hic', 'munissimus', 'locus', 'senatus,', 'nihil', 'eorum', 'ora', 'et', 'vultus', 'deterret?'], 'Does nothing move you—neither the night watch at the palace, nor the vigils of the city, nor the fear of the people, nor the consensus of all the good, nor this well-fortified place of the Senate, nor the expressions and faces of these senators?'),
+    sent('Cic-Cat-1-8', ['an', 'te', 'horum', 'mentes', 'prudentum', 'hominum', 'non', 'perturbant,', 'non', 'tuum', 'malum', 'consilium', 'comprenssum', 'esse', 'sentis?'], 'Are you not troubled by the minds of these prudent men? Do you not feel that your wicked plan is exposed?'),
+    sent('Cic-Cat-1-9', ['quid', 'proxima,', 'quid', 'antecedente', 'nocte', 'egeris,', 'ubi', 'fugeris,', 'quos', 'convocaveris,', 'quid', 'consilii', 'ceperis?'], 'What did you do the last night, or the night before? Where were you? Whom did you call together? What plan did you make?'),
+    sent('Cic-Cat-1-10', ['O', 'praeclaram', 'vigintiam', 'facta', 'coniuratiorum,', 'meam', 'vigilantiam!'], 'O the remarkable vigilance of the conspirators, and my own watchfulness!'),
+    sent('Cic-Cat-1-11', ['nemo', 'est', 'tam', 'acutus,', 'nemo', 'tam', 'perspicax,', 'nemo', 'tam', 'promptus', 'ad', 'videndum,', 'nemo', 'tam', 'clarus', 'ad', 'intelligendum,', 'cui', 'non'], 'There is no one so sharp, so clear-sighted, so ready to see, so quick to understand, to whom'),
+    sent('Cic-Cat-1-12', ['omnia', 'haec', 'quae', 'geruntur', 'delata', 'sint,', 'dum', 'non', 'solum', 'quod', 'fit,', 'sed', 'etiam', 'quod', 'est', 'factum', 'et', 'quod', 'cogitatur'], 'all these things being done are not reported—not only what is happening, but also what has been done and what is being planned.'),
   ],
 };
