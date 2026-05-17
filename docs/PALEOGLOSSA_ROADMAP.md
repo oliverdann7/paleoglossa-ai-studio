@@ -1,6 +1,6 @@
 # Paleoglossa: Technical Implementation Roadmap
 
-> **Audit date:** 2026-05-11
+> **Audit date:** 2026-05-11 · **Updated:** 2026-05-17
 > **Target:** A serious platform for studying ancient languages through real texts.
 > **Current state:** React 19 + Vite 6 + Firebase/Firestore + Express 5 + Gemini AI.
 > **Guiding principle:** Extend what exists; build new modules only where gaps cannot be filled.
@@ -25,7 +25,8 @@
 | **SRS** | SM-2 algorithm | Custom implementation in `src/lib/srs/sm2.ts` |
 | **Validation** | Zod | AI responses, import validation |
 | **Charts** | Recharts | Dashboard statistics |
-| **Deployment** | Vercel (SPA rewrites) | No CI/CD pipeline configured |
+| **Deployment** | Vercel + GitHub Actions | Auto-deploy on push to `main` via `deploy.yml`; CI on every PR |
+| **Monitoring** | Sentry (`@sentry/react`) | Init in `main.tsx`; set `VITE_SENTRY_DSN` in Vercel env |
 
 ### Firestore Collections
 
@@ -49,36 +50,36 @@
 | Spaced repetition (SM-2) | ✅ Complete | Review page, 4 ratings, multiple card types |
 | AI word/phrase explanations | ✅ Complete | Gemini-powered, cached per session |
 | Text import (paste/file/URL/OCR) | ✅ Complete | 4 source types, adapter-based importers |
-| i18n | ✅ Complete | All user-facing strings in 7 languages |
+| i18n | ✅ Complete | All user-facing strings in 8 languages (en, es, de, pt, fr, ru, zh, tr) |
 | Reading progress tracking | ✅ Complete | Stats, streak, daily goals |
 | Settings panel | ✅ Complete | Theme, font, audio, goals, languages |
 | Dashboard/Statistics | ✅ Complete | Charts, streak, vocabulary stats |
 | User auth (Google/Email) | ✅ Complete | Login, signup, password reset, demo mode |
-| Corpus library | ⚠️ Partial | 9 curated texts in `corpus.ts`, no browse UI |
-| Lexicon integration | ❌ Missing | Only external dictionary links |
-| Grammar pathways | ❌ Missing | No structured grammar curriculum |
-| Corpus search | ❌ Missing | No full-text or lemma search |
-| Syntax/treebank viewer | ❌ Missing | No dependency tree visualization |
-| AI philology tutor | ❌ Missing | No conversational tutor |
-| Research notebook | ❌ Missing | No persistent user notes on texts |
-| Manuscript/epigraphy lab | ❌ Missing | No image overlay or diplomatic edition support |
-| Audio/pronunciation lab | ❌ Missing | Only basic play/pause audio bar |
-| Classroom/course builder | ✅ Complete | CRUD, enrollment, quizzes, progress tracking |
+| Corpus library | ⚠️ Partial | 15+ curated texts across 11 languages; no recommendation engine |
+| Lexicon integration | ⚠️ Partial | External dictionary links + lemma lookup; no paradigm browser |
+| Grammar pathways | ⚠️ Partial | Grammar reference page and concepts exist; no interactive curriculum |
+| Corpus search | ✅ Complete | Multi-source lemma + full-text search (`Search.tsx`) |
+| Syntax/treebank viewer | 🚧 Stub | UI scaffold in `Syntax.tsx`; no treebank data wired |
+| AI philology tutor | ✅ Complete | Conversational tutor with chat history (`Tutor.tsx`) |
+| Research notebook | ✅ Complete | Per-user notebooks with Firestore sync (`Notebooks.tsx`) |
+| Manuscript/epigraphy lab | 🚧 Stub | Placeholder only; gated in nav with "Coming Soon" |
+| Audio/pronunciation lab | ✅ Functional | TTS testing + pronunciation guides (`AudioLab.tsx`) |
+| Classroom/course builder | 🚧 Partial | Models + card UI exist; detail views incomplete; gated in nav with "Coming Soon" |
 | Morphology browser | ⚠️ Partial | Token-level tags, no browse/search |
 | Parallel text alignment | ⚠️ Partial | Sentence-level parallel, not word-aligned |
 
 ### Known Technical Debt
 
-1. **No test suite** — zero unit/integration/E2E tests (only `sm2.test.ts` exists)
-2. **No CI/CD** — no automated build, lint, or deploy pipeline
-3. **Monolithic `corpus.ts`** (2508 lines) — all curated texts in one file
-4. **Mixed dynamic/static Firebase imports** — `Settings.tsx` uses dynamic import while other files use static
-5. **Two legacy word info components** — `LexDrawer` and `FastWordPopup` are unused but maintained
-6. **Duplicate type definitions** — `types/corpus.ts` vs `types/library.ts` have overlapping interfaces
-7. **Stale closure in `useVocabulary.markPageAsSeen`** — reads `knowledge` from closure, not fresh state
-8. **Build chunk warning** — 2MB JS bundle from monolithic Firebase import
-9. **`noUnusedLocals` + `noUnusedParameters`** may cause friction during refactoring
-10. **No error monitoring** — no Sentry, Datadog, or similar observability
+1. ~~**No test suite**~~ ✅ Resolved — Vitest + React Testing Library + Playwright E2E in place
+2. ~~**No CI/CD**~~ ✅ Resolved — `ci.yml` (type-check, lint, test, build on every PR) + `deploy.yml` (auto-deploy to Vercel on push to `main`)
+3. ~~**No error monitoring**~~ ✅ Resolved — `@sentry/react` initialized in `main.tsx`; set `VITE_SENTRY_DSN` in Vercel env to activate
+4. **Monolithic `corpus.ts`** (2508 lines) — all curated texts in one file; needs per-text dynamic imports
+5. **Mixed dynamic/static Firebase imports** — `Settings.tsx` uses dynamic import while other files use static
+6. **Two legacy word info components** — `LexDrawer` and `FastWordPopup` are unused but maintained
+7. **Duplicate type definitions** — `types/corpus.ts` vs `types/library.ts` have overlapping interfaces
+8. **Stale closure in `useVocabulary.markPageAsSeen`** — reads `knowledge` from closure, not fresh state
+9. **Build chunk warning** — 2MB JS bundle from monolithic Firebase import; switch to modular tree-shaken imports
+10. **No E2E tests for critical reader path** — open text → tap word → mark known → review card has no coverage
 
 ---
 
