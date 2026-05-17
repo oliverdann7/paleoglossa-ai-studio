@@ -167,7 +167,8 @@ service cloud.firestore {
 
     // ── Syntax Annotations (top-level, server-managed) ──
     match /syntaxAnnotations/{annotationId} {
-      allow read: if true;   // eslint-disable-line @firebase/security-rules/no-open-reads — public annotations intentional
+      // eslint-disable-next-line @firebase/security-rules/no-open-reads -- public read intentional, writes are Admin-SDK-only
+      allow read: if true;
       allow write: if false; // Admin SDK only
     }
   }

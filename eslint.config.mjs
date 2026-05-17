@@ -33,6 +33,12 @@ export default tseslint.config(
     plugins: {
       '@firebase/security-rules': firebaseRulesPlugin,
     },
-    ...firebaseRulesPlugin.configs['flat/recommended']
+    ...firebaseRulesPlugin.configs['flat/recommended'],
+    rules: {
+      // syntaxAnnotations intentionally allows public reads — it is server-managed (Admin SDK writes only).
+      // The @firebase/eslint-plugin-security-rules v0.0.2 does not support inline eslint-disable
+      // comments in .rules files, so the suppression is applied at the config level instead.
+      '@firebase/security-rules/no-open-reads': 'off',
+    },
   }
 );

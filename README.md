@@ -47,8 +47,8 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | Research notebook | ✅ |
 | Syntax / treebank viewer | 🚧 |
 | Manuscript / epigraphy lab | 🚧 |
-| Pronunciation lab | 🚧 |
-| Classroom / course builder | 🚧 |
+| Pronunciation lab | ✅ |
+| Classroom / course builder | ✅ |
 
 ## API Routes
 
@@ -111,7 +111,7 @@ For texts with full morphology, add tokens directly to the `src/data/corpus.ts` 
 | **CSS** | Tailwind CSS v4, custom parchment/sepia/dark themes |
 | **Routing** | React Router DOM v7 |
 | **Server** | Express 5 + tsx (`npm run dev`) |
-| **AI** | Gemini 2.5 Flash via `@google/genai` |
+| **AI** | Gemini 2.0 Flash via `@google/genai` |
 | **Database** | Firebase Firestore |
 | **Auth** | Firebase Auth (Google + Email/Password) |
 | **i18n** | i18next + react-i18next (en, es, de, pt, fr, ru, zh, tr) |
