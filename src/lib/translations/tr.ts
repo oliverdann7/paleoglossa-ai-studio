@@ -234,9 +234,7 @@ export const tr = {
     "notebooks.experimental": "Ayet bağlantılı notlarla araştırma defterleri — bu özellik kütüphanenizdeki belirli pasajlarla bağlantılı notlar oluşturmanıza olanak tanır.",
     "manuscripts.comingSoon": "Görüntü + transkripsiyon hizalaması, varyant aparatı ve TEI XML içe aktarma — yakında.",
     "manuscripts.experimental": "El Yazması ve Epigraf Laboratuvarı — bu özellik el yazması görüntülerini metinlerinizle birlikte yüklemenize ve analiz etmenize olanak tanır.",
-    "courses.comingSoon": "Metin ödevleri, öğrenci ilerleme takibi ve öğretmen panosuyla kurs oluşturucu — yakında.",
     "courses.experimental": "Sınıf ve Kurslar — bu özellik çalışma grupları oluşturmanıza, metin atamanıza ve akranlarınızla ilerlemeyi takip etmenize olanak tanır.",
-    "audioLab.comingSoon": "Kelime kelime TTS, dalga formu ile kullanıcı kaydı, IPA transkripsiyonu ve telaffuz modu geçişleri — yakında.",
     "audioLab.experimental": "Telaffuz Laboratuvarı — bu özellik mevcut metinlerinizdeki kelimelerin telaffuzunu dinlemenize ve pratik yapmanıza olanak tanır.",
 
     "landing.enterLibrary": "Kütüphaneye Gir",
