@@ -188,6 +188,58 @@ router.post('/api/admin/users/:uid/set-admin', requireAuth as any, async (req: A
   }
 });
 
+// ─── Admin courses: list all ───────────────────────────────────────────────────
+
+router.get('/api/admin/courses', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  if (!requireAdmin(req, res)) return;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+  try {
+    const snap = await adminDb_.collection('courses').orderBy('createdAt', 'desc').limit(100).get();
+    const courses: any[] = [];
+    snap.forEach(doc => {
+      const data = doc.data();
+      courses.push({
+        id: doc.id,
+        ownerId: data.ownerId,
+        title: data.title,
+        description: data.description || '',
+        languageId: data.languageId || 'grc',
+        texts: data.texts || [],
+        isPublic: Boolean(data.isPublic),
+        memberCount: data.memberCount ?? 1,
+        createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? data.createdAt ?? null,
+        updatedAt: data.updatedAt?.toDate?.()?.toISOString?.() ?? data.updatedAt ?? null,
+      });
+    });
+    res.status(200).json(courses);
+  } catch (e: any) {
+    console.error('[admin/courses] Error listing:', e.message);
+    res.status(500).json({ error: 'Failed to list courses', code: 'INTERNAL_ERROR' });
+  }
+});
+
+// ─── Admin courses: delete any ─────────────────────────────────────────────────
+
+router.delete('/api/admin/courses/:courseId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  if (!requireAdmin(req, res)) return;
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+  try {
+    const { courseId } = req.params;
+    const doc = await adminDb_.doc(`courses/${courseId}`).get();
+    if (!doc.exists) return res.status(404).json({ error: 'Course not found', code: 'NOT_FOUND' });
+
+    await adminDb_.doc(`courses/${courseId}`).delete();
+    res.status(200).json({ ok: true });
+  } catch (e: any) {
+    console.error('[admin/courses] Error deleting:', e.message);
+    res.status(500).json({ error: 'Failed to delete course', code: 'INTERNAL_ERROR' });
+  }
+});
+
 function extractTS(val: unknown): string | null {
   if (!val) return null;
   if (typeof val === 'string') return val;
