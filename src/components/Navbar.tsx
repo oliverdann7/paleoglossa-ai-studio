@@ -102,7 +102,7 @@ export const Navbar = () => {
           <DesktopNavItem icon={GitBranch} label={t("nav.syntax", "Syntax")} isActive={path.startsWith('/app/syntax')} to="/app/syntax" />
           <DesktopNavItemComingSoon icon={ScanLine} label={t("nav.manuscripts", "Manuscripts")} />
           <DesktopNavItem icon={Headphones} label={t("nav.audioLab", "Audio Lab")} isActive={path.startsWith('/app/audio-lab')} to="/app/audio-lab" />
-          <DesktopNavItemComingSoon icon={GraduationCap} label={t("nav.courses", "Courses")} />
+           <DesktopNavItem icon={GraduationCap} label={t("nav.courses", "Courses")} isActive={path.startsWith('/app/courses')} to="/app/courses" />
 
           <div className="nav-label px-3 mb-1 mt-6">{t("nav.discover", "Discover")}</div>
           <DesktopNavItem icon={Users} label={t("nav.community", "Community")} isActive={path.startsWith('/app/community')} to="/app/community" />
