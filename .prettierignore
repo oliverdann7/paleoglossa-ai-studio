@@ -1,0 +1,4 @@
+dist/
+node_modules/
+# Monolithic corpus file — too large to reformat in one pass
+src/data/corpus.ts

@@ -407,9 +407,7 @@ export const pt = {
     "notebooks.experimental": "Cadernos de pesquisa com notas ancoradas em versículos — este recurso permite criar e organizar notas conectadas a passagens específicas em sua biblioteca.",
     "manuscripts.comingSoon": "Alinhamento de imagem + transcrição, aparato de variantes e importação TEI XML — em breve.",
     "manuscripts.experimental": "Laboratório de Manuscritos & Epigrafia — este recurso permite enviar e analisar imagens de manuscritos junto com seus textos.",
-    "courses.comingSoon": "Construtor de cursos com tarefas de texto, acompanhamento de progresso do aluno e painel do professor — em breve.",
     "courses.experimental": "Sala de Aula & Cursos — este recurso permite criar grupos de estudo, atribuir textos e acompanhar o progresso com colegas.",
-    "audioLab.comingSoon": "TTS palavra por palavra, gravação do usuário com forma de onda, transcrição IPA e alternância de modo de pronúncia — em breve.",
     "audioLab.experimental": "Laboratório de Pronúncia — este recurso permite ouvir e praticar a pronúncia de palavras em seus textos atuais.",
 
     "landing.enterLibrary": "Entrar na Biblioteca",
