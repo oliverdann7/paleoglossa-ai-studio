@@ -19,6 +19,7 @@ import { WordState } from '../lib/constants/wordStates.js';
 import { KnowledgeMap } from '../lib/services/vocabularyService.js';
 import { CourseQuizModal } from '../components/courses/CourseQuizModal.js';
 import { PreDrillModal, DrillLemma } from '../components/courses/PreDrillModal.js';
+import { StatsService } from '../lib/services/statsService.js';
 
 type View = 'list' | 'detail' | 'create' | 'edit';
 
@@ -678,7 +679,7 @@ export const Courses = () => {
   const [courses, setCourses] = useState<CourseWithMeta[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<CourseWithMeta | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [readingProgress] = useState<Record<string, number>>({});
+  const [readingProgress, setReadingProgress] = useState<Record<string, number>>({});
 
   const loadCourses = useCallback(async () => {
     setIsLoading(true);
@@ -693,6 +694,15 @@ export const Courses = () => {
   }, [loadCourses]);
 
   const userId = user?.uid ?? null;
+
+  useEffect(() => {
+    StatsService.getAllProgress(userId).then(all => {
+      const map: Record<string, number> = {};
+      for (const p of all) map[p.textId] = Math.round(p.lastPosition ?? 0);
+      setReadingProgress(map);
+    });
+  }, [userId]);
+
   const ownedCourses = courses.filter(c => c.ownerId === userId);
   const enrolledCourses = courses.filter(c => c.ownerId !== userId && (c.isEnrolled || c._enrolled));
   const discoverCourses = courses.filter(c => c.ownerId !== userId && !c.isEnrolled && !c._enrolled && c.isPublic);
