@@ -593,6 +593,11 @@ export const en = {
     "community.noResults": "No scholars match your search",
     "community.noResultsDesc": "Try a different name or handle.",
     "community.errorTitle": "Something went wrong",
-    "community.errorDesc": "Could not load scholars. Please try again."
+    "community.errorDesc": "Could not load scholars. Please try again.",
+
+    "demo.banner": "You're exploring as a guest. Your progress is saved only on this device.",
+    "demo.signIn": "Sign In",
+    "demo.createAccount": "Create Account",
+    "demo.dismiss": "Dismiss"
   }
 };
