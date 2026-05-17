@@ -1,5 +1,5 @@
-import { getTokenInfo } from '../data/dictionary';
-import { SRSState } from '../srs/sm2';
+import { getTokenInfo } from '../data/dictionary.js';
+import { SRSState } from '../srs/sm2.js';
 
 export enum CardType {
   FORM_TO_MEANING = 'FORM_TO_MEANING',

@@ -13,11 +13,11 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { apiFetch } from "../lib/services/apiFetch";
+import { apiFetch } from "../lib/services/apiFetch.js";
 import { useTranslation } from "react-i18next";
-import { LoadingState, EmptyState } from "../components/ui";
-import { CorpusDB } from "../data/corpus";
-import { LANGUAGES } from "../lib/constants/languages";
+import { LoadingState, EmptyState } from "../components/ui/index.js";
+import { CorpusDB } from "../data/corpus.js";
+import { LANGUAGES } from "../lib/constants/languages.js";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

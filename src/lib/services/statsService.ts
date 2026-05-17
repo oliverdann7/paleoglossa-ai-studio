@@ -1,7 +1,7 @@
-import { db } from '../firebase';
+import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
-import { normalizeTimestamp } from '../utils';
-import { STORAGE_KEYS } from '../constants/storage';
+import { normalizeTimestamp } from '../utils.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
 
 const progressCache = new Map<string, { data: TextProgress[]; at: number }>();
 const PROGRESS_CACHE_TTL = 30_000;

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { CorpusDB, ILIAD_1_1 } from '../../data/corpus';
-import { WordState, STATE_COLORS } from '../../lib/constants/wordStates';
-import { getTransliteration } from '../../lib/transliterate';
+import { CorpusDB, ILIAD_1_1 } from '../../data/corpus.js';
+import { WordState, STATE_COLORS } from '../../lib/constants/wordStates.js';
+import { getTransliteration } from '../../lib/transliterate.js';
 
 describe('Reader smoke tests', () => {
 

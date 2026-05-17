@@ -8,8 +8,8 @@ import {
   getDictionaryLanguages,
   searchDictionaryEntries,
 } from '@/lib/data/dictionary';
-import { KWICPanel } from '../components/corpus/KWICPanel';
-import { frequencyTier } from '../lib/utils/frequencyTier';
+import { KWICPanel } from '../components/corpus/KWICPanel.js';
+import { frequencyTier } from '../lib/utils/frequencyTier.js';
 
 const isRtlLanguage = (languageId: string) => ['hbo', 'arc', 'syr', 'egy'].includes(languageId);
 

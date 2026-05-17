@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { WordState } from '../constants/wordStates';
-import { VocabularyService, KnowledgeMap, WordInfo, SRSData } from '../services/vocabularyService';
-import { STORAGE_KEYS } from '../constants/storage';
-import { useAuth } from './useAuth';
-import { normalizeLemmaKey } from '../utils/lemmaUtils';
+import { WordState } from '../constants/wordStates.js';
+import { VocabularyService, KnowledgeMap, WordInfo, SRSData } from '../services/vocabularyService.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
+import { useAuth } from './useAuth.js';
+import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
 
 // Stable singleton returned for any lemma not yet in the vocabulary.
 // Avoids creating a new object on every getWordInfo call for unknown words,

@@ -3,8 +3,8 @@ import { X, Sparkles, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { AIClient } from "../../lib/services/aiClient";
-import { useAuth } from "../../lib/hooks/useAuth";
+import { AIClient } from "../../lib/services/aiClient.js";
+import { useAuth } from "../../lib/hooks/useAuth.js";
 
 interface ParadigmModalProps {
   isOpen: boolean;

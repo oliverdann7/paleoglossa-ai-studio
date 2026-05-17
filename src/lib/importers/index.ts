@@ -1,9 +1,9 @@
-import { SblgntAdapter } from './adapters/sblgnt';
-import { OshbAdapter } from './adapters/oshb';
-import { StepBibleAdapter } from './adapters/stepbible';
-import { OglAdapter } from './adapters/ogl';
-import { LatinCorpusAdapter } from './adapters/latin';
-import { ContentSourceAdapter } from './types';
+import { SblgntAdapter } from './adapters/sblgnt.js';
+import { OshbAdapter } from './adapters/oshb.js';
+import { StepBibleAdapter } from './adapters/stepbible.js';
+import { OglAdapter } from './adapters/ogl.js';
+import { LatinCorpusAdapter } from './adapters/latin.js';
+import { ContentSourceAdapter } from './types.js';
 
 export const adapters: Record<string, ContentSourceAdapter> = {
   [SblgntAdapter.id]: SblgntAdapter,

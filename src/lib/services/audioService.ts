@@ -1,4 +1,4 @@
-import { apiFetch } from './apiFetch';
+import { apiFetch } from './apiFetch.js';
 
 export interface PronunciationGuide {
   word: string;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth';
-import { SettingsService } from '../services/settingsService';
+import { useAuth } from './useAuth.js';
+import { SettingsService } from '../services/settingsService.js';
 export interface Settings {
   dailyGoalWords: number;
   dailyGoalMinutes: number;

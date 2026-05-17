@@ -1,5 +1,5 @@
-import { ContentSourceAdapter, NormalizedText, NormalizedSection, ImportValidationResult } from '../types';
-import { validateImport } from '../validate';
+import { ContentSourceAdapter, NormalizedText, NormalizedSection, ImportValidationResult } from '../types.js';
+import { validateImport } from '../validate.js';
 
 export const LatinCorpusAdapter: ContentSourceAdapter = {
   id: 'latin-corpus',

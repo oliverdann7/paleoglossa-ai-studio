@@ -2,12 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Settings, Crown, LogOut, ChevronDown, User } from 'lucide-react';
-import { useAuth } from '../lib/hooks/useAuth';
-import { useSubscription } from '../lib/contexts/SubscriptionContext';
-import { useActiveLanguage } from '../lib/hooks/useActiveLanguage';
-import { useVocabulary } from '../lib/hooks/useVocabulary';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
+import { useVocabulary } from '../lib/hooks/useVocabulary.js';
 
-import { getPlanById } from '../lib/constants/plans';
+import { getPlanById } from '../lib/constants/plans.js';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 

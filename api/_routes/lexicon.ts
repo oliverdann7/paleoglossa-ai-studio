@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { findDictionaryEntry, searchDictionaryEntries as searchCorpusEntries, normalizeSearch, getGlobalDictionary } from '../../src/lib/data/dictionary';
-import { getDictionaryEntry as getStaticDictEntry } from '../../src/lib/data/dictionaryDB';
-import { getDictionaryEntry, getDictionaryLanguages, searchDictionaryEntries } from '../../src/lib/data/dictionaryDB';
+import { findDictionaryEntry, searchDictionaryEntries as searchCorpusEntries, normalizeSearch, getGlobalDictionary } from '../../src/lib/data/dictionary.js';
+import { getDictionaryEntry as getStaticDictEntry } from '../../src/lib/data/dictionaryDB.js';
+import { getDictionaryEntry, getDictionaryLanguages, searchDictionaryEntries } from '../../src/lib/data/dictionaryDB.js';
 
 const router = Router();
 

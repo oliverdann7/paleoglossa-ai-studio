@@ -1,5 +1,5 @@
-import { LibraryText } from './libraryService';
-import { KnowledgeMap } from './vocabularyService';
+import { LibraryText } from './libraryService.js';
+import { KnowledgeMap } from './vocabularyService.js';
 
 export function computeRecommendations(
   texts: LibraryText[],

@@ -1,8 +1,8 @@
-import { CorpusDB, ATTRIBUTIONS } from '../../data/corpus';
-import { Token } from '../../types/corpus';
-import { InflectedForm, LemmaEntry } from '../../types/modules';
-import { getGlobalDictionary } from '../data/dictionary';
-import { LemmaService } from './lemmaService';
+import { CorpusDB, ATTRIBUTIONS } from '../../data/corpus.js';
+import { Token } from '../../types/corpus.js';
+import { InflectedForm, LemmaEntry } from '../../types/modules.js';
+import { getGlobalDictionary } from '../data/dictionary.js';
+import { LemmaService } from './lemmaService.js';
 
 export type NormalizedMorphology = Record<string, string> & {
   partOfSpeech?: string;

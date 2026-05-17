@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, GraduationCap, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { PaleoIcon } from "../components/PaleoIcon";
+import { PaleoIcon } from "../components/PaleoIcon.js";
 
 const BOOKS = [
   {

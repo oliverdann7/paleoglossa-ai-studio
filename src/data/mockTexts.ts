@@ -1,4 +1,4 @@
-import { Text, TextSection } from "../types/corpus";
+import { Text, TextSection } from "../types/corpus.js";
 import { 
   TEXT_JOHN_1, GENESIS_1, TEXT_GENESIS, AENEID_1_1, TEXT_AENEID_1, 
   JOHN_1_1, SYRIAC_JOHN_1_1, TEXT_SYRIAC_JOHN,
@@ -6,7 +6,7 @@ import {
   AKKADIAN_GILGAMESH_1_1, TEXT_AKKADIAN_GILGAMESH, SANSKRIT_GITA_1_1, TEXT_SANSKRIT_GITA,
   HITTITE_ANNALS_1_1, TEXT_HITTITE_ANNALS, EGYPTIAN_PTAHHOTEP_1_1, TEXT_EGYPTIAN_PTAHHOTEP,
   TEXT_ILIAD, ILIAD_1_1, TEXT_ANABASIS, ANABASIS_1_1, TEXT_ODYSSEY, ODYSSEY_1_1, TEXT_AESOP, AESOP_1_1
-} from "./corpus";
+} from "./corpus.js";
 
 const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 

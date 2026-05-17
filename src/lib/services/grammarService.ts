@@ -1,4 +1,4 @@
-import { GrammarConcept } from '../../types/modules';
+import { GrammarConcept } from '../../types/modules.js';
 
 export class GrammarService {
   static async getConcepts(languageId: string): Promise<GrammarConcept[]> {

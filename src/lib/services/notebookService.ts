@@ -1,5 +1,5 @@
-import { ResearchNotebook, ResearchNote } from '../../types/modules';
-import { apiFetch } from './apiFetch';
+import { ResearchNotebook, ResearchNote } from '../../types/modules.js';
+import { apiFetch } from './apiFetch.js';
 
 export type CreateNoteInput = Pick<ResearchNote, 'content'> & Partial<Pick<ResearchNote,
   | 'notebookId' | 'languageId' | 'textId' | 'chunkId'

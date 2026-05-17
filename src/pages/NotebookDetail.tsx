@@ -8,8 +8,8 @@ import {
   Eye, Code2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "../lib/hooks/useAuth";
-import { apiFetch } from "../lib/services/apiFetch";
+import { useAuth } from "../lib/hooks/useAuth.js";
+import { apiFetch } from "../lib/services/apiFetch.js";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notebook {

@@ -1,7 +1,7 @@
-import { db } from '../firebase';
+import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { UserSettings } from '../../types/firestore';
-import { STORAGE_KEYS } from '../constants/storage';
+import { UserSettings } from '../../types/firestore.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
 
 const STORAGE_KEY = STORAGE_KEYS.SETTINGS;
 
