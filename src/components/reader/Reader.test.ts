@@ -4,7 +4,6 @@ import { WordState, STATE_COLORS } from '../../lib/constants/wordStates.js';
 import { getTransliteration } from '../../lib/transliterate.js';
 
 describe('Reader smoke tests', () => {
-
   it('ancient texts load from CorpusDB', () => {
     const texts = CorpusDB.getTexts();
     expect(texts.length).toBeGreaterThan(0);

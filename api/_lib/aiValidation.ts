@@ -20,7 +20,16 @@ const AnalysisSchema = z.object({
   sentences: z.array(SentenceSchema).min(1),
 });
 
-export type ValidatedToken = { text: string; lemma: string | null; normalized: string | null; type: 'word' | 'punctuation' | 'number' | 'whitespace'; transliteration: string | null; gloss: string | null; pos: string | null; confidence: number | null };
+export type ValidatedToken = {
+  text: string;
+  lemma: string | null;
+  normalized: string | null;
+  type: 'word' | 'punctuation' | 'number' | 'whitespace';
+  transliteration: string | null;
+  gloss: string | null;
+  pos: string | null;
+  confidence: number | null;
+};
 export type ValidatedSentence = { tokens: ValidatedToken[]; translation: string | null };
 export type ValidatedAnalysis = { sentences: ValidatedSentence[] };
 
@@ -71,11 +80,13 @@ export function parseAndValidateAIResponse(jsonString: string): {
     warnings.push('AI response failed schema validation');
     // Try partial recovery: accept whatever sentences pass validation
     if (Array.isArray(parsed.sentences)) {
-      const validSentences = parsed.sentences.filter((s: any) =>
-        SentenceSchema.safeParse(s).success
+      const validSentences = parsed.sentences.filter(
+        (s: any) => SentenceSchema.safeParse(s).success
       );
       if (validSentences.length > 0) {
-        warnings.push(`Only ${validSentences.length}/${parsed.sentences.length} sentences passed validation`);
+        warnings.push(
+          `Only ${validSentences.length}/${parsed.sentences.length} sentences passed validation`
+        );
         return { data: { sentences: validSentences }, warnings };
       }
     }
@@ -89,10 +100,13 @@ function repairJSON(text: string): string | null {
   let repaired = text;
 
   // Escape unescaped control characters (common issue with AI output)
-  repaired = repaired.split('').filter(c => {
-    const code = c.charCodeAt(0);
-    return code >= 0x20 || code === 0x09 || code === 0x0a || code === 0x0d;
-  }).join('');
+  repaired = repaired
+    .split('')
+    .filter((c) => {
+      const code = c.charCodeAt(0);
+      return code >= 0x20 || code === 0x09 || code === 0x0a || code === 0x0d;
+    })
+    .join('');
 
   // Replace single quotes with double quotes (only outside of string values)
   // This is tricky — let's just try a simple approach: replace ' with " in keys

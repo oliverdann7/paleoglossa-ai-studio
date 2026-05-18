@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { calculateSM2, SRSState, SM2_BASE_EASE, SM2_MIN_EASE, SM2_MAX_EASE, SM2_MAX_INTERVAL } from './sm2.js';
+import {
+  calculateSM2,
+  SRSState,
+  SM2_BASE_EASE,
+  SM2_MIN_EASE,
+  SM2_MAX_EASE,
+  SM2_MAX_INTERVAL,
+} from './sm2.js';
 
 function makeState(overrides: Partial<SRSState> = {}): SRSState {
   return {
@@ -13,7 +20,6 @@ function makeState(overrides: Partial<SRSState> = {}): SRSState {
 }
 
 describe('SM-2 scheduling algorithm', () => {
-
   it('new card with EASY rating has 1-day interval, step 1, ease 2.6', () => {
     const state = calculateSM2('EASY', null, new Date());
     expect(state.interval).toBe(1);
@@ -34,7 +40,11 @@ describe('SM-2 scheduling algorithm', () => {
   });
 
   it('existing card with AGAIN rating resets interval and reduces ease', () => {
-    const state = calculateSM2('AGAIN', makeState({ interval: 10, ease: 2.5, step: 3 }), new Date());
+    const state = calculateSM2(
+      'AGAIN',
+      makeState({ interval: 10, ease: 2.5, step: 3 }),
+      new Date()
+    );
     expect(state.interval).toBe(1);
     expect(state.step).toBe(0);
     expect(state.ease).toBeLessThan(2.5);
@@ -87,7 +97,11 @@ describe('SM-2 scheduling algorithm', () => {
   });
 
   it('interval is capped at SM2_MAX_INTERVAL', () => {
-    const state = calculateSM2('GOOD', makeState({ interval: 360, ease: 2.5, step: 10 }), new Date());
+    const state = calculateSM2(
+      'GOOD',
+      makeState({ interval: 360, ease: 2.5, step: 10 }),
+      new Date()
+    );
     expect(state.interval).toBeLessThanOrEqual(SM2_MAX_INTERVAL);
   });
 

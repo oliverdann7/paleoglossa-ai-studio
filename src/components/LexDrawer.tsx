@@ -15,7 +15,6 @@ interface LexDrawerProps {
 }
 
 export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: LexDrawerProps) => {
-  
   const { t } = useTranslation();
   const [aiInsights, setAiInsights] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -23,15 +22,15 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
   const handleAiExplain = async () => {
     if (isAiLoading) return;
     setIsAiLoading(true);
-    setAiInsights("");
-    
+    setAiInsights('');
+
     try {
-      const languageName = language || word.language || "ancient language";
+      const languageName = language || word.language || 'ancient language';
       const explanation = await AIClient.explainWord(languageName, word.text, word.lemma);
       setAiInsights(explanation);
     } catch (error) {
       console.error(error);
-      setAiInsights(t("reader.failedInsights", "Failed to fetch insights."));
+      setAiInsights(t('reader.failedInsights', 'Failed to fetch insights.'));
     } finally {
       setIsAiLoading(false);
     }
@@ -40,11 +39,41 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
   if (!word) return null;
 
   const proficiencyLevels = [
-    { id: 'New', label: t('vocab.new', 'New'), icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { id: 'Seen Once', label: t('vocab.seenonce', 'Seen Once'), icon: Eye, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    { id: 'Learning', label: t('vocab.learning', 'Learning'), icon: Eye, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { id: 'Familiar', label: t('vocab.familiar', 'Familiar'), icon: Brain, color: 'text-gold-500', bg: 'bg-gold-500/10' },
-    { id: 'Known', label: t('vocab.known', 'Known'), icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' }
+    {
+      id: 'New',
+      label: t('vocab.new', 'New'),
+      icon: Eye,
+      color: 'text-blue-500',
+      bg: 'bg-blue-500/10',
+    },
+    {
+      id: 'Seen Once',
+      label: t('vocab.seenonce', 'Seen Once'),
+      icon: Eye,
+      color: 'text-blue-400',
+      bg: 'bg-blue-400/10',
+    },
+    {
+      id: 'Learning',
+      label: t('vocab.learning', 'Learning'),
+      icon: Eye,
+      color: 'text-amber-500',
+      bg: 'bg-amber-500/10',
+    },
+    {
+      id: 'Familiar',
+      label: t('vocab.familiar', 'Familiar'),
+      icon: Brain,
+      color: 'text-gold-500',
+      bg: 'bg-gold-500/10',
+    },
+    {
+      id: 'Known',
+      label: t('vocab.known', 'Known'),
+      icon: CheckCircle2,
+      color: 'text-green-500',
+      bg: 'bg-green-500/10',
+    },
   ] as const;
 
   return (
@@ -65,7 +94,7 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className="fixed top-0 right-0 h-full w-96 bg-vellum-50 dark:bg-obsidian-900 border-l border-black/5 dark:border-white/5 shadow-2xl z-[70] p-8 overflow-y-auto"
           >
-            <button 
+            <button
               onClick={onClose}
               className="absolute top-6 right-6 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             >
@@ -74,29 +103,41 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
 
             <header className="mb-12 mt-4">
               <div className="flex items-center gap-4 mb-6">
-                <h3 className={cn(
-                  "text-5xl font-serif font-bold tracking-tight",
-                  ['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'Hebrew'].includes(word.language) ? "font-hebrew" : "font-greek"
-                )}>
+                <h3
+                  className={cn(
+                    'text-5xl font-serif font-bold tracking-tight',
+                    [
+                      'hbo',
+                      'Biblical Hebrew',
+                      'arc',
+                      'Aramaic',
+                      'syr',
+                      'Syriac',
+                      'Hebrew',
+                    ].includes(word.language)
+                      ? 'font-hebrew'
+                      : 'font-greek'
+                  )}
+                >
                   {word.text}
                 </h3>
-                <button 
+                <button
                   onClick={() => {
                     if (!window.speechSynthesis) return;
                     window.speechSynthesis.cancel();
                     const u = new SpeechSynthesisUtterance(word.text);
                     const langCodeMap: Record<string, string> = {
-                      grc: "el-GR",
-                      "grc-koine": "el-GR",
-                      hbo: "he-IL",
-                      lat: "it-IT",
-                      syr: "ar-SA",
-                      arc: "ar-SA",
-                      cop: "el-GR",
-                      akk: "ar-SA",
-                      san: "hi-IN",
+                      grc: 'el-GR',
+                      'grc-koine': 'el-GR',
+                      hbo: 'he-IL',
+                      lat: 'it-IT',
+                      syr: 'ar-SA',
+                      arc: 'ar-SA',
+                      cop: 'el-GR',
+                      akk: 'ar-SA',
+                      san: 'hi-IN',
                     };
-                    u.lang = langCodeMap[language || word.language] || "en-US";
+                    u.lang = langCodeMap[language || word.language] || 'en-US';
                     u.rate = 0.8;
                     window.speechSynthesis.speak(u);
                   }}
@@ -105,7 +146,7 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
                   <Volume2 className="w-5 h-5" />
                 </button>
               </div>
-              
+
               <div className="flex flex-wrap gap-2 mb-8">
                 <span className="px-3 py-1 bg-obsidian-900 text-vellum-50 dark:bg-vellum-100 dark:text-obsidian-950 rounded-full text-[10px] font-bold uppercase tracking-widest">
                   {word.lemma}
@@ -121,7 +162,9 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
             </header>
 
             <section className="mb-10">
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-4">{t('reader.masteryLevel', 'Mastery Level')}</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-4">
+                {t('reader.masteryLevel', 'Mastery Level')}
+              </h4>
               <div className="flex flex-col gap-2">
                 {proficiencyLevels.map((level) => {
                   const isSelected = (word.status || 'New') === level.id;
@@ -131,23 +174,37 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
                       key={level.id}
                       onClick={() => onStatusChange?.(word.id, level.id)}
                       className={cn(
-                        "w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-300",
-                        isSelected 
-                          ? cn("border-transparent", level.bg)
-                          : "border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10 bg-white/50 dark:bg-white/5"
+                        'w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-300',
+                        isSelected
+                          ? cn('border-transparent', level.bg)
+                          : 'border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10 bg-white/50 dark:bg-white/5'
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className={cn("w-5 h-5", isSelected ? level.color : "text-obsidian-900/40 dark:text-vellum-100/40")} />
-                        <span className={cn(
-                          "text-sm font-bold",
-                          isSelected ? level.color : "text-obsidian-900/60 dark:text-vellum-100/60"
-                        )}>
+                        <Icon
+                          className={cn(
+                            'w-5 h-5',
+                            isSelected
+                              ? level.color
+                              : 'text-obsidian-900/40 dark:text-vellum-100/40'
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            'text-sm font-bold',
+                            isSelected
+                              ? level.color
+                              : 'text-obsidian-900/60 dark:text-vellum-100/60'
+                          )}
+                        >
                           {level.label}
                         </span>
                       </div>
                       {isSelected && (
-                        <motion.div layoutId="activeProficiency" className={cn("w-2 h-2 rounded-full", level.bg.replace('/10', ''))} />
+                        <motion.div
+                          layoutId="activeProficiency"
+                          className={cn('w-2 h-2 rounded-full', level.bg.replace('/10', ''))}
+                        />
                       )}
                     </button>
                   );
@@ -156,20 +213,25 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
             </section>
 
             <section className="mb-10">
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">{t('reader.morphology', 'Morphology')}</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-obsidian-900/40 dark:text-vellum-100/40 mb-6">
+                {t('reader.morphology', 'Morphology')}
+              </h4>
               {(() => {
                 const morphDisplay = MorphologyService.formatMorphologyForDisplay(
                   language || word.language || 'grc',
-                  word.morphology,
+                  word.morphology
                 );
                 if (morphDisplay.missing) {
                   return (
                     <div className="p-4 rounded-xl border border-dashed border-black/10 dark:border-white/10 text-sm text-obsidian-900/50 dark:text-vellum-100/50">
-                      {t('reader.morphologyMissing', 'Morphological parsing is not available for this token yet.')}
+                      {t(
+                        'reader.morphologyMissing',
+                        'Morphological parsing is not available for this token yet.'
+                      )}
                     </div>
                   );
                 }
-                const posEntry = morphDisplay.expanded.find(e => e.label === 'Part of speech');
+                const posEntry = morphDisplay.expanded.find((e) => e.label === 'Part of speech');
                 return (
                   <div>
                     <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -186,8 +248,13 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
                       {morphDisplay.expanded
                         .filter(({ label }) => label !== 'Part of speech')
                         .map(({ label, value }) => (
-                          <div key={label} className="flex justify-between gap-3 px-3 py-2 bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-lg text-sm">
-                            <span className="text-obsidian-900/40 dark:text-vellum-100/40 text-xs capitalize">{label}</span>
+                          <div
+                            key={label}
+                            className="flex justify-between gap-3 px-3 py-2 bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-lg text-sm"
+                          >
+                            <span className="text-obsidian-900/40 dark:text-vellum-100/40 text-xs capitalize">
+                              {label}
+                            </span>
                             <span className="font-bold">{value}</span>
                           </div>
                         ))}
@@ -201,7 +268,11 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
               {(aiInsights || isAiLoading) && (
                 <div className="p-6 rounded-2xl bg-blue/5 border border-blue/10 mb-4">
                   <div className="flex items-center gap-2 mb-3 text-blue font-bold text-sm">
-                    {isAiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    {isAiLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
                     {t('reader.aiInsights', 'AI Insights')}
                   </div>
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{aiInsights}</p>
@@ -210,7 +281,7 @@ export const LexDrawer = ({ word, language, isOpen, onClose, onStatusChange }: L
             </section>
 
             <div className="grid grid-cols-2 gap-3">
-              <button 
+              <button
                 onClick={handleAiExplain}
                 disabled={isAiLoading}
                 className="py-3 border border-black/10 dark:border-white/10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"

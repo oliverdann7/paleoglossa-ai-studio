@@ -9,8 +9,7 @@ import { PaleoIcon } from '@/components/PaleoIcon';
 
 type Status = 'loading' | 'success' | 'error';
 
-const isAsyncMode = (mode: string | null) =>
-  mode === 'verifyEmail' || mode === 'recoverEmail';
+const isAsyncMode = (mode: string | null) => mode === 'verifyEmail' || mode === 'recoverEmail';
 
 export const AuthAction = () => {
   const [searchParams] = useSearchParams();
@@ -20,9 +19,8 @@ export const AuthAction = () => {
   const mode = searchParams.get('mode');
   const oobCode = searchParams.get('oobCode');
 
-  const initialStatus: Status = !oobCode || (!isAsyncMode(mode) && mode !== 'resetPassword')
-    ? 'error'
-    : 'loading';
+  const initialStatus: Status =
+    !oobCode || (!isAsyncMode(mode) && mode !== 'resetPassword') ? 'error' : 'loading';
 
   const initialMessage = !oobCode
     ? t('auth.invalidLink', 'This link is invalid or has expired. Please try again.')
@@ -45,11 +43,15 @@ export const AuthAction = () => {
       applyActionCode(auth, oobCode)
         .then(() => {
           setStatus('success');
-          setMessage(t('auth.emailVerified', 'Your email address has been verified. You can now sign in.'));
+          setMessage(
+            t('auth.emailVerified', 'Your email address has been verified. You can now sign in.')
+          );
         })
         .catch(() => {
           setStatus('error');
-          setMessage(t('auth.verifyFailed', 'This verification link is invalid or has already been used.'));
+          setMessage(
+            t('auth.verifyFailed', 'This verification link is invalid or has already been used.')
+          );
         });
       return;
     }
@@ -59,11 +61,18 @@ export const AuthAction = () => {
         .then(() => applyActionCode(auth, oobCode))
         .then(() => {
           setStatus('success');
-          setMessage(t('auth.emailRecovered', 'Your sign-in email has been restored. You may want to reset your password.'));
+          setMessage(
+            t(
+              'auth.emailRecovered',
+              'Your sign-in email has been restored. You may want to reset your password.'
+            )
+          );
         })
         .catch(() => {
           setStatus('error');
-          setMessage(t('auth.recoverFailed', 'This recovery link is invalid or has already been used.'));
+          setMessage(
+            t('auth.recoverFailed', 'This recovery link is invalid or has already been used.')
+          );
         });
       return;
     }
@@ -85,7 +94,9 @@ export const AuthAction = () => {
           {status === 'loading' && (
             <>
               <Loader2 className="w-10 h-10 animate-spin text-jade mx-auto mb-4" />
-              <p className="text-ink3 font-medium">{t('auth.processing', 'Processing your request...')}</p>
+              <p className="text-ink3 font-medium">
+                {t('auth.processing', 'Processing your request...')}
+              </p>
             </>
           )}
 
@@ -96,10 +107,7 @@ export const AuthAction = () => {
                 {t('auth.success', 'Done!')}
               </h3>
               <p className="text-ink3 mb-8">{message}</p>
-              <button
-                onClick={() => navigate('/auth/login')}
-                className="btn-primary w-full py-3"
-              >
+              <button onClick={() => navigate('/auth/login')} className="btn-primary w-full py-3">
                 {t('auth.signIn', 'Sign In')}
               </button>
             </>

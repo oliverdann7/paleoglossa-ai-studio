@@ -21,7 +21,7 @@ export function buildBasicToken(
   surface: string,
   lemma?: string,
   gloss?: string,
-  transliteration?: string,
+  transliteration?: string
 ): RawToken {
   const normalized = surface
     .normalize('NFD')
@@ -42,11 +42,14 @@ export function buildBasicToken(
 export function tokenizeSentence(
   baseId: string,
   rawText: string,
-  tokenMap?: Record<string, { lemma: string; gloss: string; transliteration?: string }>,
+  tokenMap?: Record<string, { lemma: string; gloss: string; transliteration?: string }>
 ): RawToken[] {
   const words = rawText.split(/\s+/).filter(Boolean);
   return words.map((word, idx) => {
-    const clean = word.replace(/^[\s!@#$%^&*()\-_=+[\]{}|;:',.<>?/~`"«»‹›]+|[\s!@#$%^&*()\-_=+[\]{}|;:',.<>?/~`"«»‹›]+$/g, '');
+    const clean = word.replace(
+      /^[\s!@#$%^&*()\-_=+[\]{}|;:',.<>?/~`"«»‹›]+|[\s!@#$%^&*()\-_=+[\]{}|;:',.<>?/~`"«»‹›]+$/g,
+      ''
+    );
     const punctEnd = word.replace(clean, '');
     const mapped = tokenMap?.[clean];
     const normalized = clean
@@ -66,7 +69,11 @@ export function tokenizeSentence(
   });
 }
 
-export function sentenceFromTokens(id: string, tokens: RawToken[], translation?: string): RawSentence {
+export function sentenceFromTokens(
+  id: string,
+  tokens: RawToken[],
+  translation?: string
+): RawSentence {
   return { id, tokens, translation };
 }
 
@@ -76,7 +83,7 @@ export function makeSection(
   label: string,
   sentences: RawSentence[],
   nextSectionId?: string,
-  previousSectionId?: string,
+  previousSectionId?: string
 ) {
   return {
     id: `${textId}-sec${sequence}`,

@@ -93,7 +93,7 @@ export const PLANS: Plan[] = [
 ];
 
 export function getPlanById(planId: PlanId): Plan {
-  return PLANS.find(p => p.id === planId) || PLANS[0];
+  return PLANS.find((p) => p.id === planId) || PLANS[0];
 }
 
 export function getLanguageLimit(planId: PlanId): number | 'all' {
@@ -106,7 +106,11 @@ export function canAddLanguage(planId: PlanId, selectedLanguageIds: string[]): b
   return selectedLanguageIds.length < limit;
 }
 
-export function canAccessLanguage(planId: PlanId, languageId: string, selectedLanguageIds: string[]): boolean {
+export function canAccessLanguage(
+  planId: PlanId,
+  languageId: string,
+  selectedLanguageIds: string[]
+): boolean {
   const limit = getLanguageLimit(planId);
   if (limit === 'all') return true;
   return selectedLanguageIds.includes(languageId);

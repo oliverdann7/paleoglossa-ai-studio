@@ -111,13 +111,17 @@ export class StatsService {
     }
 
     try {
-      await setDoc(getStatsDocRef(userId, lang), {
-        ...newStats,
-        languageId: lang,
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
+      await setDoc(
+        getStatsDocRef(userId, lang),
+        {
+          ...newStats,
+          languageId: lang,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
     } catch (e) {
-      console.error("Error updating stats:", e);
+      console.error('Error updating stats:', e);
     }
   }
 
@@ -131,14 +135,17 @@ export class StatsService {
       localStorage.removeItem(STATS_STORAGE_KEY);
       return stats;
     } catch (e) {
-      console.error("Stats migration failed:", e);
+      console.error('Stats migration failed:', e);
       return null;
     }
   }
 
   // ── Text Progress ────────────────────────────────────────────────────
 
-  static async getTextProgress(userId: string | null, textId: string): Promise<TextProgress | null> {
+  static async getTextProgress(
+    userId: string | null,
+    textId: string
+  ): Promise<TextProgress | null> {
     if (!userId) {
       const saved = localStorage.getItem(`${STORAGE_KEYS.READING_PROGRESS_PREFIX}${textId}`);
       return saved ? JSON.parse(saved) : null;
@@ -146,16 +153,19 @@ export class StatsService {
 
     try {
       const snap = await getDoc(doc(db, `users/${userId}/readingProgress`, textId));
-      return snap.exists() ? snap.data() as TextProgress : null;
+      return snap.exists() ? (snap.data() as TextProgress) : null;
     } catch (e) {
-      console.error("Error fetching text progress:", e);
+      console.error('Error fetching text progress:', e);
       return null;
     }
   }
 
   static async setTextProgress(userId: string | null, progress: TextProgress) {
     if (!userId) {
-      localStorage.setItem(`${STORAGE_KEYS.READING_PROGRESS_PREFIX}${progress.textId}`, JSON.stringify(progress));
+      localStorage.setItem(
+        `${STORAGE_KEYS.READING_PROGRESS_PREFIX}${progress.textId}`,
+        JSON.stringify(progress)
+      );
       const recent = JSON.parse(localStorage.getItem(STORAGE_KEYS.RECENT_PROGRESS) || '[]');
       const filtered = recent.filter((r: any) => r.textId !== progress.textId);
       filtered.unshift({ ...progress, lastReadAt: new Date().toISOString() });
@@ -165,12 +175,16 @@ export class StatsService {
 
     progressCache.delete(userId);
     try {
-      await setDoc(doc(db, `users/${userId}/readingProgress`, progress.textId), {
-        ...progress,
-        lastReadAt: serverTimestamp(),
-      }, { merge: true });
+      await setDoc(
+        doc(db, `users/${userId}/readingProgress`, progress.textId),
+        {
+          ...progress,
+          lastReadAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
     } catch (e) {
-      console.error("Error saving text progress:", e);
+      console.error('Error saving text progress:', e);
     }
   }
 
@@ -182,24 +196,29 @@ export class StatsService {
     const cached = progressCache.get(userId);
     if (cached && Date.now() - cached.at < PROGRESS_CACHE_TTL) {
       const all = cached.data;
-      return languageId ? all.filter(p => !p.languageId || p.languageId === languageId) : all;
+      return languageId ? all.filter((p) => !p.languageId || p.languageId === languageId) : all;
     }
 
     try {
       const snap = await getDocs(collection(db, `users/${userId}/readingProgress`));
       const results: TextProgress[] = [];
-      snap.forEach(doc => {
+      snap.forEach((doc) => {
         const data = doc.data();
-        const progress = { ...data, lastReadAt: normalizeTimestamp(data.lastReadAt) } as TextProgress;
+        const progress = {
+          ...data,
+          lastReadAt: normalizeTimestamp(data.lastReadAt),
+        } as TextProgress;
         // Filter by language if specified
         if (languageId && progress.languageId && progress.languageId !== languageId) return;
         results.push(progress);
       });
       results.sort((a, b) => new Date(b.lastReadAt).getTime() - new Date(a.lastReadAt).getTime());
       progressCache.set(userId, { data: results, at: Date.now() });
-      return languageId ? results.filter(p => !p.languageId || p.languageId === languageId) : results;
+      return languageId
+        ? results.filter((p) => !p.languageId || p.languageId === languageId)
+        : results;
     } catch (e) {
-      console.error("Error fetching all progress:", e);
+      console.error('Error fetching all progress:', e);
       return [];
     }
   }

@@ -12,7 +12,11 @@ interface Props {
 
 const PAGE_SIZE = 20;
 
-function buildKWIC(sentence: { tokens: { surface?: string; text?: string; lemma?: string; type?: string }[] }, tokenIdx: number, windowSize = 5) {
+function buildKWIC(
+  sentence: { tokens: { surface?: string; text?: string; lemma?: string; type?: string }[] },
+  tokenIdx: number,
+  windowSize = 5
+) {
   const tokens = sentence.tokens;
   const target = tokens[tokenIdx];
   const targetText = target?.surface ?? target?.text ?? '';
@@ -25,7 +29,10 @@ function buildKWIC(sentence: { tokens: { surface?: string; text?: string; lemma?
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (t.type === 'punctuation' || t.type === 'whitespace') continue;
-    if (i === tokenIdx) { passedTarget = true; continue; }
+    if (i === tokenIdx) {
+      passedTarget = true;
+      continue;
+    }
     if (!passedTarget) {
       leftTokens.push(t.surface ?? t.text ?? '');
     } else {
@@ -90,9 +97,13 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
   const pagedHits = allHits.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const toggleText = (textId: string) => {
-    setExpandedTexts(prev => {
+    setExpandedTexts((prev) => {
       const next = new Set(prev);
-      if (next.has(textId)) { next.delete(textId); } else { next.add(textId); }
+      if (next.has(textId)) {
+        next.delete(textId);
+      } else {
+        next.add(textId);
+      }
       return next;
     });
   };
@@ -103,7 +114,7 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
       const kwic = buildKWIC(hit.sentence as any, hit.tokenIdx);
       rows.push([kwic.left, kwic.target, kwic.right, hit.textTitle, hit.sectionId]);
     }
-    const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -117,7 +128,10 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
     return (
       <div className="text-center py-10 text-muted">
         <BookOpen className="w-8 h-8 mx-auto mb-2 text-muted/40" />
-        <p className="text-[13px]">No corpus occurrences found for <span className="font-serif font-bold text-ink">{lemma}</span>.</p>
+        <p className="text-[13px]">
+          No corpus occurrences found for{' '}
+          <span className="font-serif font-bold text-ink">{lemma}</span>.
+        </p>
       </div>
     );
   }
@@ -127,15 +141,21 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
       {/* Stats header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[13px] font-bold text-ink">{totalHits} occurrence{totalHits !== 1 ? 's' : ''}</span>
-          <span className="text-[12px] text-muted">across {grouped.length} text{grouped.length !== 1 ? 's' : ''}</span>
+          <span className="text-[13px] font-bold text-ink">
+            {totalHits} occurrence{totalHits !== 1 ? 's' : ''}
+          </span>
+          <span className="text-[12px] text-muted">
+            across {grouped.length} text{grouped.length !== 1 ? 's' : ''}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setGroupByText(!groupByText)}
             className={cn(
-              "text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-colors",
-              groupByText ? "bg-blue text-white border-blue" : "border-bdr text-muted hover:border-blue/40",
+              'text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-colors',
+              groupByText
+                ? 'bg-blue text-white border-blue'
+                : 'border-bdr text-muted hover:border-blue/40'
             )}
           >
             Group by text
@@ -152,7 +172,7 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
       {groupByText ? (
         /* Grouped view */
         <div className="space-y-3">
-          {grouped.map(group => {
+          {grouped.map((group) => {
             const expanded = expandedTexts.has(group.textId);
             return (
               <div key={group.textId} className="border border-bdr/50 rounded-xl overflow-hidden">
@@ -161,21 +181,39 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
                   className="w-full flex items-center justify-between px-4 py-3 bg-parch2/50 hover:bg-parch2 transition-colors text-left"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    {expanded ? <ChevronDown className="w-3.5 h-3.5 text-muted shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-muted shrink-0" />}
-                    <span className="font-medium text-[13px] text-ink truncate">{group.textTitle}</span>
+                    {expanded ? (
+                      <ChevronDown className="w-3.5 h-3.5 text-muted shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 text-muted shrink-0" />
+                    )}
+                    <span className="font-medium text-[13px] text-ink truncate">
+                      {group.textTitle}
+                    </span>
                     <span className="text-[10px] text-muted shrink-0">{group.textLanguage}</span>
                   </div>
-                  <span className="text-[11px] font-bold text-blue shrink-0 ml-2">{group.hits.length}×</span>
+                  <span className="text-[11px] font-bold text-blue shrink-0 ml-2">
+                    {group.hits.length}×
+                  </span>
                 </button>
                 {expanded && (
                   <div className="divide-y divide-bdr/20">
                     {group.hits.map((hit, i) => {
                       const kwic = buildKWIC(hit.sentence as any, hit.tokenIdx);
                       return (
-                        <div key={i} className="px-4 py-2 font-mono text-[12px] flex items-baseline gap-1 hover:bg-parch2/30 group">
-                          <span className="text-muted text-right min-w-[140px] truncate shrink-0" dir="ltr">{kwic.left}</span>
+                        <div
+                          key={i}
+                          className="px-4 py-2 font-mono text-[12px] flex items-baseline gap-1 hover:bg-parch2/30 group"
+                        >
+                          <span
+                            className="text-muted text-right min-w-[140px] truncate shrink-0"
+                            dir="ltr"
+                          >
+                            {kwic.left}
+                          </span>
                           <span className="font-bold text-blue shrink-0 px-0.5">{kwic.target}</span>
-                          <span className="text-ink2 flex-1 truncate" dir="ltr">{kwic.right}</span>
+                          <span className="text-ink2 flex-1 truncate" dir="ltr">
+                            {kwic.right}
+                          </span>
                           <button
                             onClick={() => navigate(`/app/reader/${hit.textId}`)}
                             className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded text-muted hover:text-blue transition-all"
@@ -199,11 +237,20 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
             {pagedHits.map((hit, i) => {
               const kwic = buildKWIC(hit.sentence as any, hit.tokenIdx);
               return (
-                <div key={i} className="px-4 py-2 font-mono text-[12px] flex items-baseline gap-1 hover:bg-parch2/30 group">
-                  <span className="text-muted text-right min-w-[140px] truncate shrink-0" dir="ltr">{kwic.left}</span>
+                <div
+                  key={i}
+                  className="px-4 py-2 font-mono text-[12px] flex items-baseline gap-1 hover:bg-parch2/30 group"
+                >
+                  <span className="text-muted text-right min-w-[140px] truncate shrink-0" dir="ltr">
+                    {kwic.left}
+                  </span>
                   <span className="font-bold text-blue shrink-0 px-0.5">{kwic.target}</span>
-                  <span className="text-ink2 flex-1 truncate" dir="ltr">{kwic.right}</span>
-                  <span className="text-[10px] text-muted/60 shrink-0 hidden sm:block truncate max-w-[100px]">{hit.textTitle}</span>
+                  <span className="text-ink2 flex-1 truncate" dir="ltr">
+                    {kwic.right}
+                  </span>
+                  <span className="text-[10px] text-muted/60 shrink-0 hidden sm:block truncate max-w-[100px]">
+                    {hit.textTitle}
+                  </span>
                   <button
                     onClick={() => navigate(`/app/reader/${hit.textId}`)}
                     className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded text-muted hover:text-blue transition-all"
@@ -222,15 +269,17 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
       {!groupByText && totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-4">
           <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             className="px-3 py-1.5 text-[12px] font-bold border border-bdr rounded-lg disabled:opacity-40 hover:border-blue/40 transition-colors"
           >
             Previous
           </button>
-          <span className="text-[12px] text-muted">{page} / {totalPages}</span>
+          <span className="text-[12px] text-muted">
+            {page} / {totalPages}
+          </span>
           <button
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             className="px-3 py-1.5 text-[12px] font-bold border border-bdr rounded-lg disabled:opacity-40 hover:border-blue/40 transition-colors"
           >
@@ -247,4 +296,3 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
     </div>
   );
 }
-

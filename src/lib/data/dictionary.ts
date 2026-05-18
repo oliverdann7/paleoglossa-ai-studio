@@ -107,7 +107,11 @@ function languageName(languageId: string) {
 }
 
 export function normalizeSearch(value: string) {
-  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
 }
 
 export function stripHebrewVowels(value: string): string {
@@ -138,7 +142,7 @@ function addTokenToEntry(
   entries: Map<string, EntryAccumulator>,
   token: any,
   languageId: string,
-  options?: { source?: DictionarySource; example?: CorpusExample },
+  options?: { source?: DictionarySource; example?: CorpusExample }
 ) {
   if (!token?.lemma) return;
 
@@ -180,7 +184,9 @@ function addTokenToEntry(
 }
 
 function sentenceToText(tokens: Token[]) {
-  return tokens.map(token => `${token.punctBefore || ''}${token.surface}${token.punctAfter || ''}`).join(' ');
+  return tokens
+    .map((token) => `${token.punctBefore || ''}${token.surface}${token.punctAfter || ''}`)
+    .join(' ');
 }
 
 export const getGlobalDictionary = () => {
@@ -292,7 +298,10 @@ export const getGlossWithFallbacks = (lemma: string, languageId: string): string
   return null;
 };
 
-export const getDefinitionWithFallbacks = (lemma: string, languageId: string): LookupResult | null => {
+export const getDefinitionWithFallbacks = (
+  lemma: string,
+  languageId: string
+): LookupResult | null => {
   const lower = lemma.toLowerCase();
   const normalized = normalizeSearch(lemma);
   const isHebrew = languageId === 'hbo';
@@ -333,10 +342,18 @@ export const getDefinitionWithFallbacks = (lemma: string, languageId: string): L
   const tryStatic = (key: string): LookupResult | null => {
     const staticEntry = STATIC_DICT[key];
     if (staticEntry?.fullDefinition) {
-      return { definition: staticEntry.fullDefinition, source: GLOSS_SOURCES.STATIC_DICT, sourceLabel: staticEntry.source?.name };
+      return {
+        definition: staticEntry.fullDefinition,
+        source: GLOSS_SOURCES.STATIC_DICT,
+        sourceLabel: staticEntry.source?.name,
+      };
     }
     if (staticEntry?.shortGloss) {
-      return { definition: staticEntry.shortGloss, source: GLOSS_SOURCES.STATIC_DICT, sourceLabel: staticEntry.source?.name };
+      return {
+        definition: staticEntry.shortGloss,
+        source: GLOSS_SOURCES.STATIC_DICT,
+        sourceLabel: staticEntry.source?.name,
+      };
     }
     return null;
   };
@@ -375,7 +392,7 @@ export const getDefinitionWithFallbacks = (lemma: string, languageId: string): L
 
 export const getLangForLemma = (lemma: string) => {
   const dict = getGlobalDictionary();
-  return dict[lemma]?.language || "Unknown";
+  return dict[lemma]?.language || 'Unknown';
 };
 
 export const getTokenInfo = (lemma: string) => {
@@ -399,7 +416,10 @@ export const getDictionaryEntries = (): DictionaryEntry[] => {
 
   for (const text of CorpusDB.getTexts()) {
     const corpus = CorpusDB.getCorpusOverview(text.corpusId);
-    const corpusSource = sourceFromAttribution(corpus?.sourceAttributionId ? ATTRIBUTIONS[corpus.sourceAttributionId] : undefined) || DEFAULT_SOURCE;
+    const corpusSource =
+      sourceFromAttribution(
+        corpus?.sourceAttributionId ? ATTRIBUTIONS[corpus.sourceAttributionId] : undefined
+      ) || DEFAULT_SOURCE;
 
     for (const preview of text.sectionsPreview || []) {
       const section = CorpusDB.getSection(preview.id);
@@ -435,7 +455,7 @@ export const getDictionaryEntries = (): DictionaryEntry[] => {
       const partOfSpeech = Array.from(entry.partsOfSpeech)[0];
       const dictionaries = Array.from(entry.sources.values());
       const relatedForms = Array.from(entry.forms)
-        .filter(form => form && form !== entry.lemma)
+        .filter((form) => form && form !== entry.lemma)
         .slice(0, 12);
 
       return {
@@ -462,10 +482,12 @@ export const getDictionaryEntries = (): DictionaryEntry[] => {
 
 export const findDictionaryEntry = (lemma: string, languageId?: string) => {
   const normalizedLanguageId = languageId ? normalizeLanguageId(languageId) : undefined;
-  return getDictionaryEntries().find(entry => {
-    if (normalizedLanguageId && entry.languageId !== normalizedLanguageId) return false;
-    return entry.lemma === lemma;
-  }) || null;
+  return (
+    getDictionaryEntries().find((entry) => {
+      if (normalizedLanguageId && entry.languageId !== normalizedLanguageId) return false;
+      return entry.lemma === lemma;
+    }) || null
+  );
 };
 
 export const searchDictionaryEntries = (query: string, languageId?: string, limit: number = 50) => {
@@ -473,7 +495,7 @@ export const searchDictionaryEntries = (query: string, languageId?: string, limi
   const normalizedLanguageId = languageId ? normalizeLanguageId(languageId) : undefined;
 
   return getDictionaryEntries()
-    .filter(entry => {
+    .filter((entry) => {
       if (normalizedLanguageId && entry.languageId !== normalizedLanguageId) return false;
       if (!normalizedQuery) return true;
 
@@ -485,14 +507,14 @@ export const searchDictionaryEntries = (query: string, languageId?: string, limi
         ...entry.relatedForms,
       ].map(normalizeSearch);
 
-      return haystack.some(value => value.includes(normalizedQuery));
+      return haystack.some((value) => value.includes(normalizedQuery));
     })
     .slice(0, limit);
 };
 
 export const getDictionaryLanguages = () => {
   const seen = new Map<string, string>();
-  getDictionaryEntries().forEach(entry => seen.set(entry.languageId, entry.language));
+  getDictionaryEntries().forEach((entry) => seen.set(entry.languageId, entry.language));
   return Array.from(seen.entries())
     .map(([id, name]) => ({ id, name }))
     .sort((a, b) => a.name.localeCompare(b.name));

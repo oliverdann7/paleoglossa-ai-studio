@@ -1,25 +1,37 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 // Injected at build time by vite.config.ts — reads from firebase-applet-config.json
 // (AI Studio) or VITE_FIREBASE_* environment variables (Vercel / local dev).
 declare const __FIREBASE_CONFIG__: {
-  projectId: string; appId: string; apiKey: string; authDomain: string;
-  storageBucket: string; messagingSenderId: string; measurementId: string;
+  projectId: string;
+  appId: string;
+  apiKey: string;
+  authDomain: string;
+  storageBucket: string;
+  messagingSenderId: string;
+  measurementId: string;
   firestoreDatabaseId: string;
 };
 const { firestoreDatabaseId, ...firebaseConfig } = __FIREBASE_CONFIG__;
 
 const REQUIRED_KEYS = ['projectId', 'apiKey', 'authDomain', 'appId'] as const;
-const missing = REQUIRED_KEYS.filter(k => !firebaseConfig[k as keyof typeof firebaseConfig]);
+const missing = REQUIRED_KEYS.filter((k) => !firebaseConfig[k as keyof typeof firebaseConfig]);
 
 if (missing.length > 0) {
-  const isDev = typeof window !== 'undefined' &&
+  const isDev =
+    typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
   const msg =
-    'Firebase client SDK is missing required configuration fields: ' + missing.join(', ') + '.\n\n' +
+    'Firebase client SDK is missing required configuration fields: ' +
+    missing.join(', ') +
+    '.\n\n' +
     (isDev
       ? 'To fix this:\n' +
         '  1. Copy .env.example to firebase-applet-config.json and fill in the values, OR\n' +
@@ -33,9 +45,13 @@ if (missing.length > 0) {
 
 const app = initializeApp(firebaseConfig);
 
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-}, firestoreDatabaseId || '(default)');
+export const db = initializeFirestore(
+  app,
+  {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  },
+  firestoreDatabaseId || '(default)'
+);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const appleProvider = new OAuthProvider('apple.com');
@@ -64,10 +80,14 @@ export interface FirestoreErrorInfo {
       providerId?: string | null;
       email?: string | null;
     }[];
-  }
+  };
 }
 
-export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+export function handleFirestoreError(
+  error: unknown,
+  operationType: OperationType,
+  path: string | null
+) {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -76,14 +96,15 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
       emailVerified: auth.currentUser?.emailVerified,
       isAnonymous: auth.currentUser?.isAnonymous,
       tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
+      providerInfo:
+        auth.currentUser?.providerData?.map((provider) => ({
+          providerId: provider.providerId,
+          email: provider.email,
+        })) || [],
     },
     operationType,
-    path
-  }
+    path,
+  };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }

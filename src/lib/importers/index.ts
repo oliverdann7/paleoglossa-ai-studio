@@ -10,7 +10,7 @@ export const adapters: Record<string, ContentSourceAdapter> = {
   [OshbAdapter.id]: OshbAdapter,
   [StepBibleAdapter.id]: StepBibleAdapter,
   [OglAdapter.id]: OglAdapter,
-  [LatinCorpusAdapter.id]: LatinCorpusAdapter
+  [LatinCorpusAdapter.id]: LatinCorpusAdapter,
 };
 
 export function getAdapter(id: string): ContentSourceAdapter | undefined {

@@ -21,7 +21,9 @@ const app = express();
 app.use((req: any, _res: any, next: any) => {
   if (req.url === '/api/stripe/webhook') {
     let data = '';
-    req.on('data', (chunk: string) => { data += chunk; });
+    req.on('data', (chunk: string) => {
+      data += chunk;
+    });
     req.on('end', () => {
       req.rawBody = data;
       next();

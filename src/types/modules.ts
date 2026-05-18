@@ -23,7 +23,17 @@ export interface GrammarConcept {
   id: string;
   languageId: string;
   name: string;
-  category: 'verb' | 'noun' | 'pronoun' | 'adjective' | 'adverb' | 'preposition' | 'conjunction' | 'particle' | 'syntax' | 'phonology';
+  category:
+    | 'verb'
+    | 'noun'
+    | 'pronoun'
+    | 'adjective'
+    | 'adverb'
+    | 'preposition'
+    | 'conjunction'
+    | 'particle'
+    | 'syntax'
+    | 'phonology';
   difficulty: number;
   prerequisites: string[];
   description: string;

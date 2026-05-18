@@ -1,7 +1,18 @@
 import { Router } from 'express';
 import { basicAnalyze } from '../_lib/basicAnalyze.js';
 import { parseAndValidateAIResponse } from '../_lib/aiValidation.js';
-import { LANGUAGE_INSTRUCTIONS, getLanguageName, BASE_JSON_SCHEMA, buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS, buildSentenceAnalysisPrompt, buildCourseQuizPrompt, type SentenceAnalysisResult, type CourseQuizResult } from '../_lib/aiPrompts.js';
+import {
+  LANGUAGE_INSTRUCTIONS,
+  getLanguageName,
+  BASE_JSON_SCHEMA,
+  buildTutorPrompt,
+  LANGUAGE_SUGGESTED_QUESTIONS,
+  DEFAULT_SUGGESTED_QUESTIONS,
+  buildSentenceAnalysisPrompt,
+  buildCourseQuizPrompt,
+  type SentenceAnalysisResult,
+  type CourseQuizResult,
+} from '../_lib/aiPrompts.js';
 import { requireAuth, optionalAuth } from '../_lib/auth.js';
 import { checkAndIncrementUsage } from '../_lib/aiUsage.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
@@ -12,7 +23,9 @@ const router = Router();
 const MAX_TEXT_LENGTH = 100000;
 const MAX_TEXT_LENGTH_HUMAN = '100,000';
 
-function computeOverallConfidence(sentences: { tokens: { confidence: number | null }[] }[]): number | null {
+function computeOverallConfidence(
+  sentences: { tokens: { confidence: number | null }[] }[]
+): number | null {
   const allConfidences: number[] = [];
   for (const s of sentences) {
     for (const t of s.tokens) {
@@ -29,12 +42,16 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp
 const MAX_IMAGE_BASE64_LENGTH = 14 * 1024 * 1024; // ~10MB raw image
 
 function isPrivateIP(hostname: string): boolean {
-  return /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.0\.0\.0$|localhost$|.*\.local$)/.test(hostname);
+  return /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.0\.0\.0$|localhost$|.*\.local$)/.test(
+    hostname
+  );
 }
 
 function isValidScrapeUrl(urlString: string): { valid: boolean; reason?: string } {
   let parsed: URL;
-  try { parsed = new URL(urlString); } catch {
+  try {
+    parsed = new URL(urlString);
+  } catch {
     return { valid: false, reason: 'Invalid URL format' };
   }
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
@@ -50,17 +67,18 @@ function isValidScrapeUrl(urlString: string): { valid: boolean; reason?: string 
 }
 
 const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
-  'grc': 'Ancient Greek pronunciation is reconstructed. The exact phonetics of the classical period (5th–4th c. BCE) are scholarly approximations based on meter, spelling errors, and comparative linguistics.',
-  'grc-koine': 'Koine Greek pronunciation shifted from classical. This synthesis uses the reconstructed Erasmian-influenced system common in academic contexts.',
-  'lat': 'Restored Classical pronunciation (1st c. BCE–1st c. CE) based on consensus of historical linguists. Medieval/Ecclesiastical pronunciation differs.',
-  'hbo': 'Biblical Hebrew pronunciation follows the Tiberian tradition. Vowel quality and some consonants are reconstructed.',
-  'syr': 'Syriac pronunciation follows the Western (Serto) tradition. Eastern and Western traditions differ significantly.',
-  'cop': 'Coptic pronunciation follows the Bohairic tradition used in liturgical contexts. Ancient phonetics are partially reconstructed.',
-  'arc': 'Aramaic pronunciation is reconstructed from vocalized manuscripts and comparative Semitic data.',
-  'akk': 'Akkadian pronunciation is reconstructed from cuneiform writing, which does not record vowels fully. Significant uncertainty remains.',
-  'san': 'Sanskrit pronunciation follows the Paninian tradition preserved in oral recitation. Ancient phonetics are well understood.',
-  'egy': 'Egyptian pronunciation is highly uncertain. The conventional Egyptological pronunciation used in the field bears unknown resemblance to ancient speech.',
-  'hit': 'Hittite pronunciation is partially reconstructed from cuneiform spelling. Significant gaps remain.',
+  grc: 'Ancient Greek pronunciation is reconstructed. The exact phonetics of the classical period (5th–4th c. BCE) are scholarly approximations based on meter, spelling errors, and comparative linguistics.',
+  'grc-koine':
+    'Koine Greek pronunciation shifted from classical. This synthesis uses the reconstructed Erasmian-influenced system common in academic contexts.',
+  lat: 'Restored Classical pronunciation (1st c. BCE–1st c. CE) based on consensus of historical linguists. Medieval/Ecclesiastical pronunciation differs.',
+  hbo: 'Biblical Hebrew pronunciation follows the Tiberian tradition. Vowel quality and some consonants are reconstructed.',
+  syr: 'Syriac pronunciation follows the Western (Serto) tradition. Eastern and Western traditions differ significantly.',
+  cop: 'Coptic pronunciation follows the Bohairic tradition used in liturgical contexts. Ancient phonetics are partially reconstructed.',
+  arc: 'Aramaic pronunciation is reconstructed from vocalized manuscripts and comparative Semitic data.',
+  akk: 'Akkadian pronunciation is reconstructed from cuneiform writing, which does not record vowels fully. Significant uncertainty remains.',
+  san: 'Sanskrit pronunciation follows the Paninian tradition preserved in oral recitation. Ancient phonetics are well understood.',
+  egy: 'Egyptian pronunciation is highly uncertain. The conventional Egyptological pronunciation used in the field bears unknown resemblance to ancient speech.',
+  hit: 'Hittite pronunciation is partially reconstructed from cuneiform spelling. Significant gaps remain.',
 };
 
 async function lookupUserPlan(uid: string): Promise<string> {
@@ -184,8 +202,8 @@ ${rawText.slice(0, 20000)}`;
     }
 
     const result = basicAnalyze(rawText);
-    const fallbackSentences = result.sentences.map(s => ({
-      tokens: s.tokens.map(t => ({
+    const fallbackSentences = result.sentences.map((s) => ({
+      tokens: s.tokens.map((t) => ({
         text: t.text,
         lemma: t.lemma,
         normalized: t.normalized,
@@ -204,10 +222,11 @@ ${rawText.slice(0, 20000)}`;
       analysisStatus: 'raw',
       confidence: null,
       warnings: geminiAttempted
-        ? (aiWarnings.length > 0 ? aiWarnings : undefined)
+        ? aiWarnings.length > 0
+          ? aiWarnings
+          : undefined
         : ['Gemini API key not configured. Using basic tokenization.'],
     });
-
   } catch (err: any) {
     console.error('[ai/analyze] Unexpected error:', err);
     return res.status(500).json({
@@ -222,10 +241,14 @@ router.post('/api/ai/ocr', async (req: any, res: any) => {
     const { languageId, imageBase64, mimeType } = req.body;
 
     if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
+      return res
+        .status(400)
+        .json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
     }
     if (!imageBase64 || typeof imageBase64 !== 'string') {
-      return res.status(400).json({ error: 'imageBase64 is required', code: 'INVALID_INPUT', field: 'imageBase64' });
+      return res
+        .status(400)
+        .json({ error: 'imageBase64 is required', code: 'INVALID_INPUT', field: 'imageBase64' });
     }
     if (!mimeType || !ALLOWED_IMAGE_TYPES.includes(mimeType)) {
       return res.status(400).json({
@@ -274,10 +297,7 @@ Rules:
         contents: [
           {
             role: 'user',
-            parts: [
-              { text: prompt },
-              { inlineData: { mimeType, data: imageBase64 } },
-            ],
+            parts: [{ text: prompt }, { inlineData: { mimeType, data: imageBase64 } }],
           },
         ],
       });
@@ -286,7 +306,10 @@ Rules:
     }
 
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const cleaned = text
+      .replace(/^```(?:text)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
     const hasUncertainty = cleaned.includes('[illegible]') || cleaned.includes('[?]');
     const warnings: string[] = [];
     if (!cleaned) {
@@ -301,12 +324,11 @@ Rules:
       confidence: null,
       warnings: warnings.length > 0 ? warnings : undefined,
     });
-
   } catch (err: any) {
     const isTimeout = err?.name === 'AbortError';
     const message = isTimeout
       ? 'OCR timed out — try a smaller or clearer image.'
-      : (err?.message || 'Unknown error');
+      : err?.message || 'Unknown error';
     console.error('[ai/ocr] Error:', message);
     res.status(500).json({
       error: message,
@@ -320,20 +342,40 @@ router.post('/api/ai/translate', async (req: any, res: any) => {
     const { languageId, tokens } = req.body;
 
     if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
+      return res
+        .status(400)
+        .json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
     }
     if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
-      return res.status(400).json({ error: 'tokens must be a non-empty array of strings', code: 'INVALID_INPUT', field: 'tokens' });
+      return res
+        .status(400)
+        .json({
+          error: 'tokens must be a non-empty array of strings',
+          code: 'INVALID_INPUT',
+          field: 'tokens',
+        });
     }
 
     const sentence = tokens.join(' ').trim();
     if (!sentence) {
-      return res.status(400).json({ error: 'Sentence text is empty after joining tokens', code: 'INVALID_INPUT', field: 'tokens' });
+      return res
+        .status(400)
+        .json({
+          error: 'Sentence text is empty after joining tokens',
+          code: 'INVALID_INPUT',
+          field: 'tokens',
+        });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(200).json({ text: sentence, confidence: null, notes: 'Gemini API key not configured. Returning original text.' });
+      return res
+        .status(200)
+        .json({
+          text: sentence,
+          confidence: null,
+          notes: 'Gemini API key not configured. Returning original text.',
+        });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
@@ -354,18 +396,24 @@ Sentence: ${sentence}`;
     });
 
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-    const notes = cleaned.includes('[') ? 'Translation contains uncertain portions marked with brackets' : undefined;
+    const cleaned = text
+      .replace(/^```(?:text)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
+    const notes = cleaned.includes('[')
+      ? 'Translation contains uncertain portions marked with brackets'
+      : undefined;
 
     res.status(200).json({
       text: cleaned || sentence,
       confidence: cleaned ? null : null,
       notes,
     });
-
   } catch (err: any) {
     console.error('[ai/translate] Error:', err.message);
-    res.status(500).json({ error: 'Translation failed', code: 'TRANSLATE_ERROR', text: '', confidence: null });
+    res
+      .status(500)
+      .json({ error: 'Translation failed', code: 'TRANSLATE_ERROR', text: '', confidence: null });
   }
 });
 
@@ -374,24 +422,49 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
     const { languageId, word, lemma, phrase, type } = req.body;
 
     if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
+      return res
+        .status(400)
+        .json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
     }
 
     if (!type || !['word', 'phrase', 'paradigm'].includes(type)) {
-      return res.status(400).json({ error: 'type must be one of: word, phrase, paradigm', code: 'INVALID_INPUT', field: 'type' });
+      return res
+        .status(400)
+        .json({
+          error: 'type must be one of: word, phrase, paradigm',
+          code: 'INVALID_INPUT',
+          field: 'type',
+        });
     }
 
     if (type === 'phrase' && (!phrase || typeof phrase !== 'string')) {
-      return res.status(400).json({ error: 'phrase is required for type=phrase', code: 'INVALID_INPUT', field: 'phrase' });
+      return res
+        .status(400)
+        .json({
+          error: 'phrase is required for type=phrase',
+          code: 'INVALID_INPUT',
+          field: 'phrase',
+        });
     }
 
-    if (type !== 'phrase' && (!word || typeof word !== 'string' || !lemma || typeof lemma !== 'string')) {
-      return res.status(400).json({ error: 'word and lemma are required for type=word or type=paradigm', code: 'INVALID_INPUT', field: 'word' });
+    if (
+      type !== 'phrase' &&
+      (!word || typeof word !== 'string' || !lemma || typeof lemma !== 'string')
+    ) {
+      return res
+        .status(400)
+        .json({
+          error: 'word and lemma are required for type=word or type=paradigm',
+          code: 'INVALID_INPUT',
+          field: 'word',
+        });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(200).json({ explanation: 'AI explanation not available — Gemini API key not configured.' });
+      return res
+        .status(200)
+        .json({ explanation: 'AI explanation not available — Gemini API key not configured.' });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
@@ -446,13 +519,21 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
     });
 
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const cleaned = text
+      .replace(/^```(?:text)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
 
     res.status(200).json({ explanation: cleaned || 'No explanation could be generated.' });
-
   } catch (err: any) {
     console.error('[ai/explain] Error:', err.message);
-    res.status(500).json({ explanation: 'Failed to generate explanation.', error: err.message, code: 'EXPLAIN_ERROR' });
+    res
+      .status(500)
+      .json({
+        explanation: 'Failed to generate explanation.',
+        error: err.message,
+        code: 'EXPLAIN_ERROR',
+      });
   }
 });
 
@@ -461,10 +542,24 @@ router.post('/api/ai/pronunciation', async (req: any, res: any) => {
     const { languageId, text, transliteration } = req.body;
 
     if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ guide: null, reconstructionSystem: null, warnings: ['languageId is required'], code: 'INVALID_INPUT' });
+      return res
+        .status(400)
+        .json({
+          guide: null,
+          reconstructionSystem: null,
+          warnings: ['languageId is required'],
+          code: 'INVALID_INPUT',
+        });
     }
     if (!text || typeof text !== 'string') {
-      return res.status(400).json({ guide: null, reconstructionSystem: null, warnings: ['text is required'], code: 'INVALID_INPUT' });
+      return res
+        .status(400)
+        .json({
+          guide: null,
+          reconstructionSystem: null,
+          warnings: ['text is required'],
+          code: 'INVALID_INPUT',
+        });
     }
 
     const note = LANGUAGE_RECONSTRUCTION_NOTES[languageId] || null;
@@ -475,7 +570,9 @@ router.post('/api/ai/pronunciation', async (req: any, res: any) => {
       return res.status(200).json({
         guide: null,
         reconstructionSystem: null,
-        warnings: ['Gemini API key not configured. Pronunciation guide unavailable.'].concat(note ? [note] : []),
+        warnings: ['Gemini API key not configured. Pronunciation guide unavailable.'].concat(
+          note ? [note] : []
+        ),
       });
     }
 
@@ -500,12 +597,22 @@ Rules:
 - For languages with reconstructed pronunciation (Akkadian, Egyptian, Hittite), add prominent uncertainty notes.
 - If you cannot provide a guide, set guide to null and explain why in notes.`;
 
-    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+    });
     const textResponse = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = textResponse.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const cleaned = textResponse
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
 
     let parsed: any;
-    try { parsed = JSON.parse(cleaned); } catch { parsed = null; }
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      parsed = null;
+    }
 
     const warnings: string[] = [];
     if (!parsed?.guide) warnings.push('Could not generate pronunciation guide.');
@@ -522,7 +629,8 @@ Rules:
   } catch (err: any) {
     console.error('[ai/pronunciation] Error:', err.message);
     res.status(200).json({
-      guide: null, reconstructionSystem: null,
+      guide: null,
+      reconstructionSystem: null,
       warnings: ['Pronunciation guide unavailable.'],
     });
   }
@@ -547,7 +655,13 @@ router.post('/api/ai/scrape', async (req: any, res: any) => {
     });
 
     if (!response.ok) {
-      return res.status(502).json({ error: `Remote server returned ${response.status}`, code: 'FETCH_ERROR', text: '' });
+      return res
+        .status(502)
+        .json({
+          error: `Remote server returned ${response.status}`,
+          code: 'FETCH_ERROR',
+          text: '',
+        });
     }
 
     const html = await response.text();
@@ -563,12 +677,17 @@ router.post('/api/ai/scrape', async (req: any, res: any) => {
 
     const warnings: string[] = [];
     if (!text) warnings.push('No readable text could be extracted from the URL.');
-    if (response.headers.get('content-type')?.includes('pdf')) warnings.push('PDF content may not extract cleanly.');
+    if (response.headers.get('content-type')?.includes('pdf'))
+      warnings.push('PDF content may not extract cleanly.');
 
-    res.status(200).json({ text, confidence: null, warnings: warnings.length > 0 ? warnings : undefined });
+    res
+      .status(200)
+      .json({ text, confidence: null, warnings: warnings.length > 0 ? warnings : undefined });
   } catch (err: any) {
     console.error('[ai/scrape] Error:', err.message);
-    res.status(500).json({ text: '', confidence: null, warnings: ['Failed to fetch URL: ' + err.message] });
+    res
+      .status(500)
+      .json({ text: '', confidence: null, warnings: ['Failed to fetch URL: ' + err.message] });
   }
 });
 
@@ -577,12 +696,30 @@ router.post('/api/ai/metadata', async (req: any, res: any) => {
     const { languageId, rawText } = req.body;
 
     if (!languageId || typeof languageId !== 'string' || !rawText || typeof rawText !== 'string') {
-      return res.status(400).json({ error: 'languageId and rawText are required', code: 'INVALID_INPUT', difficulty: '', tags: [], summary: '', warnings: ['Invalid input'] });
+      return res
+        .status(400)
+        .json({
+          error: 'languageId and rawText are required',
+          code: 'INVALID_INPUT',
+          difficulty: '',
+          tags: [],
+          summary: '',
+          warnings: ['Invalid input'],
+        });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', period: '', genre: '', warnings: ['Gemini API key not configured. Metadata unavailable.'] });
+      return res
+        .status(200)
+        .json({
+          difficulty: 'unknown',
+          tags: [],
+          summary: '',
+          period: '',
+          genre: '',
+          warnings: ['Gemini API key not configured. Metadata unavailable.'],
+        });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
@@ -608,9 +745,15 @@ Rules:
 
 Text: ${rawText.slice(0, 5000)}`;
 
-    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+    });
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const cleaned = text
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
 
     try {
       const parsed = JSON.parse(cleaned);
@@ -623,11 +766,25 @@ Text: ${rawText.slice(0, 5000)}`;
         warnings: undefined,
       });
     } catch {
-      res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', warnings: ['AI returned unparseable metadata.'] });
+      res
+        .status(200)
+        .json({
+          difficulty: 'unknown',
+          tags: [],
+          summary: '',
+          warnings: ['AI returned unparseable metadata.'],
+        });
     }
   } catch (err: any) {
     console.error('[ai/metadata] Error:', err.message);
-    res.status(200).json({ difficulty: 'unknown', tags: [], summary: '', warnings: ['Metadata generation failed.'] });
+    res
+      .status(200)
+      .json({
+        difficulty: 'unknown',
+        tags: [],
+        summary: '',
+        warnings: ['Metadata generation failed.'],
+      });
   }
 });
 
@@ -636,12 +793,22 @@ router.post('/api/ai/quiz', async (req: any, res: any) => {
     const { languageId, lemma, form, type } = req.body;
 
     if (!languageId || !lemma) {
-      return res.status(400).json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
+      return res
+        .status(400)
+        .json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Quiz requires GEMINI_API_KEY.', confidence: null });
+      return res
+        .status(200)
+        .json({
+          question: '',
+          choices: [],
+          answer: '',
+          explanation: 'Quiz requires GEMINI_API_KEY.',
+          confidence: null,
+        });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
@@ -668,9 +835,15 @@ Rules:
 - Explanation should be 1-2 sentences
 - Do not include markdown. Return ONLY the JSON.`;
 
-    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: prompt,
+    });
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const cleaned = text
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
 
     try {
       const parsed = JSON.parse(cleaned);
@@ -682,11 +855,27 @@ Rules:
         confidence: null,
       });
     } catch {
-      res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Failed to parse quiz response.', confidence: null });
+      res
+        .status(200)
+        .json({
+          question: '',
+          choices: [],
+          answer: '',
+          explanation: 'Failed to parse quiz response.',
+          confidence: null,
+        });
     }
   } catch (err: any) {
     console.error('[ai/quiz] Error:', err.message);
-    res.status(200).json({ question: '', choices: [], answer: '', explanation: 'Quiz generation failed.', confidence: null });
+    res
+      .status(200)
+      .json({
+        question: '',
+        choices: [],
+        answer: '',
+        explanation: 'Quiz generation failed.',
+        confidence: null,
+      });
   }
 });
 
@@ -694,22 +883,37 @@ router.post('/api/ai/syntax', async (req: any, res: any) => {
   try {
     const { languageId, sentence, tokens: inputTokens } = req.body;
 
-    if (!languageId || typeof languageId !== 'string' || !sentence || typeof sentence !== 'string') {
-      return res.status(400).json({ error: 'languageId and sentence are required', code: 'INVALID_INPUT' });
+    if (
+      !languageId ||
+      typeof languageId !== 'string' ||
+      !sentence ||
+      typeof sentence !== 'string'
+    ) {
+      return res
+        .status(400)
+        .json({ error: 'languageId and sentence are required', code: 'INVALID_INPUT' });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(200).json({ tokens: [], explanation: 'Syntax analysis requires GEMINI_API_KEY.', confidence: null, warnings: ['Gemini API key not configured.'] });
+      return res
+        .status(200)
+        .json({
+          tokens: [],
+          explanation: 'Syntax analysis requires GEMINI_API_KEY.',
+          confidence: null,
+          warnings: ['Gemini API key not configured.'],
+        });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });
     const langName = getLanguageName(languageId);
 
-    const tokenHint = Array.isArray(inputTokens) && inputTokens.length > 0
-      ? `\nToken list (0-based indices, forms as they appear):\n${inputTokens.map((t: any, i: number) => `  ${i}: "${t.surface || t.form}" (lemma: ${t.lemma || '?'})`).join('\n')}`
-      : '';
+    const tokenHint =
+      Array.isArray(inputTokens) && inputTokens.length > 0
+        ? `\nToken list (0-based indices, forms as they appear):\n${inputTokens.map((t: any, i: number) => `  ${i}: "${t.surface || t.form}" (lemma: ${t.lemma || '?'})`).join('\n')}`
+        : '';
 
     const prompt = `You are a ${langName} linguist. Annotate the syntactic dependency structure of the sentence below using Universal Dependencies conventions.
 
@@ -741,370 +945,495 @@ Rules:
     });
     const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
     let parsed: any = {};
-    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = {};
+    }
 
     const resultTokens: any[] = Array.isArray(parsed.tokens) ? parsed.tokens : [];
     const explanation: string = typeof parsed.explanation === 'string' ? parsed.explanation : '';
-    const confidence: number | null = typeof parsed.confidence === 'number' ? parsed.confidence : null;
-    const hasUncertainty = explanation.includes('uncertain') || explanation.includes('unclear') || (confidence !== null && confidence < 0.6);
+    const confidence: number | null =
+      typeof parsed.confidence === 'number' ? parsed.confidence : null;
+    const hasUncertainty =
+      explanation.includes('uncertain') ||
+      explanation.includes('unclear') ||
+      (confidence !== null && confidence < 0.6);
 
     res.status(200).json({
       tokens: resultTokens,
       explanation: explanation || 'No syntax explanation could be generated.',
       confidence,
-      warnings: hasUncertainty ? ['AI expressed uncertainty in this analysis — treat as approximate.'] : undefined,
+      warnings: hasUncertainty
+        ? ['AI expressed uncertainty in this analysis — treat as approximate.']
+        : undefined,
     });
   } catch (err: any) {
     console.error('[ai/syntax] Error:', err.message);
-    res.status(200).json({ tokens: [], explanation: 'Syntax analysis failed.', confidence: null, warnings: ['Analysis failed: ' + err.message] });
+    res
+      .status(200)
+      .json({
+        tokens: [],
+        explanation: 'Syntax analysis failed.',
+        confidence: null,
+        warnings: ['Analysis failed: ' + err.message],
+      });
   }
 });
 
-router.post('/api/ai/tutor/start', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { languageId, textId, sentenceIndex } = req.body;
-    const userId = req.user!.uid;
+router.post(
+  '/api/ai/tutor/start',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { languageId, textId, sentenceIndex } = req.body;
+      const userId = req.user!.uid;
 
-    if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
-    }
-
-    const adminDb_ = getAdminDb();
-    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
-
-    const { FieldValue } = await import('firebase-admin/firestore');
-
-    const uid = userId;
-    const planId = await lookupUserPlan(uid);
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (apiKey && uid) {
-      const quota = await checkAndIncrementUsage(uid, planId, 'tutor', languageId.length);
-      if (!quota.allowed) {
-        return res.status(429).json({
-          error: 'Daily AI analysis limit reached. Upgrade your plan for more.',
-          code: 'QUOTA_EXCEEDED', remaining: quota.remaining, resetDate: quota.resetDate,
-        });
+      if (!languageId || typeof languageId !== 'string') {
+        return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
       }
+
+      const adminDb_ = getAdminDb();
+      if (!adminDb_)
+        return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+      const { FieldValue } = await import('firebase-admin/firestore');
+
+      const uid = userId;
+      const planId = await lookupUserPlan(uid);
+      const apiKey = process.env.GEMINI_API_KEY;
+
+      if (apiKey && uid) {
+        const quota = await checkAndIncrementUsage(uid, planId, 'tutor', languageId.length);
+        if (!quota.allowed) {
+          return res.status(429).json({
+            error: 'Daily AI analysis limit reached. Upgrade your plan for more.',
+            code: 'QUOTA_EXCEEDED',
+            remaining: quota.remaining,
+            resetDate: quota.resetDate,
+          });
+        }
+      }
+
+      const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc();
+      const sessionId = sessionRef.id;
+
+      const sessionData: Record<string, any> = {
+        languageId,
+        textId: textId || null,
+        sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
+        title: `${getLanguageName(languageId)} Tutor`,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+      await sessionRef.set(sessionData);
+
+      const greeting = apiKey
+        ? `I'm your ${getLanguageName(languageId)} tutor. I can help you understand this text — ask about specific words, grammar, or sentence structure.`
+        : 'Tutor session created. AI assistance requires GEMINI_API_KEY.';
+
+      await sessionRef.collection('messages').add({
+        role: 'assistant',
+        content: greeting,
+        context: null,
+        warnings: apiKey ? null : ['Gemini API key not configured.'],
+        createdAt: FieldValue.serverTimestamp(),
+      });
+
+      const suggestedQuestions =
+        LANGUAGE_SUGGESTED_QUESTIONS[languageId] ?? DEFAULT_SUGGESTED_QUESTIONS;
+      res.status(200).json({
+        sessionId,
+        greeting,
+        suggestedQuestions,
+      });
+    } catch (err: any) {
+      console.error('[tutor/start] Error:', err.message);
+      res.status(500).json({ error: 'Failed to start tutor session', code: 'TUTOR_ERROR' });
     }
-
-    const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc();
-    const sessionId = sessionRef.id;
-
-    const sessionData: Record<string, any> = {
-      languageId, textId: textId || null, sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
-      title: `${getLanguageName(languageId)} Tutor`,
-      createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
-    };
-    await sessionRef.set(sessionData);
-
-    const greeting = apiKey
-      ? `I'm your ${getLanguageName(languageId)} tutor. I can help you understand this text — ask about specific words, grammar, or sentence structure.`
-      : 'Tutor session created. AI assistance requires GEMINI_API_KEY.';
-
-    await sessionRef.collection('messages').add({
-      role: 'assistant', content: greeting, context: null, warnings: apiKey ? null : ['Gemini API key not configured.'],
-      createdAt: FieldValue.serverTimestamp(),
-    });
-
-    const suggestedQuestions = LANGUAGE_SUGGESTED_QUESTIONS[languageId] ?? DEFAULT_SUGGESTED_QUESTIONS;
-    res.status(200).json({
-      sessionId, greeting, suggestedQuestions,
-    });
-  } catch (err: any) {
-    console.error('[tutor/start] Error:', err.message);
-    res.status(500).json({ error: 'Failed to start tutor session', code: 'TUTOR_ERROR' });
   }
-});
+);
 
-router.post('/api/ai/tutor/message', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { sessionId, message, context } = req.body;
-    const userId = req.user!.uid;
+router.post(
+  '/api/ai/tutor/message',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { sessionId, message, context } = req.body;
+      const userId = req.user!.uid;
 
-    if (!sessionId || !message) {
-      return res.status(400).json({ error: 'sessionId and message are required', code: 'INVALID_INPUT' });
-    }
+      if (!sessionId || !message) {
+        return res
+          .status(400)
+          .json({ error: 'sessionId and message are required', code: 'INVALID_INPUT' });
+      }
 
-    const adminDb_ = getAdminDb();
-    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+      const adminDb_ = getAdminDb();
+      if (!adminDb_)
+        return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
-    const { FieldValue } = await import('firebase-admin/firestore');
+      const { FieldValue } = await import('firebase-admin/firestore');
 
-    const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc(sessionId);
-    const sessionSnap = await sessionRef.get();
-    if (!sessionSnap.exists) {
-      return res.status(404).json({ error: 'Session not found', code: 'NOT_FOUND' });
-    }
+      const sessionRef = adminDb_
+        .collection('users')
+        .doc(userId)
+        .collection('tutorSessions')
+        .doc(sessionId);
+      const sessionSnap = await sessionRef.get();
+      if (!sessionSnap.exists) {
+        return res.status(404).json({ error: 'Session not found', code: 'NOT_FOUND' });
+      }
 
-    const sessionData = sessionSnap.data()!;
+      const sessionData = sessionSnap.data()!;
 
-    const messagesRef = sessionRef.collection('messages');
-    await messagesRef.add({
-      role: 'user', content: message, context: context || null,
-      createdAt: FieldValue.serverTimestamp(),
-    });
+      const messagesRef = sessionRef.collection('messages');
+      await messagesRef.add({
+        role: 'user',
+        content: message,
+        context: context || null,
+        createdAt: FieldValue.serverTimestamp(),
+      });
 
-    const planId = await lookupUserPlan(userId);
-    const apiKey = process.env.GEMINI_API_KEY;
+      const planId = await lookupUserPlan(userId);
+      const apiKey = process.env.GEMINI_API_KEY;
 
-    if (apiKey && userId) {
-      const quota = await checkAndIncrementUsage(userId, planId, 'tutor', message.length);
-      if (!quota.allowed) {
+      if (apiKey && userId) {
+        const quota = await checkAndIncrementUsage(userId, planId, 'tutor', message.length);
+        if (!quota.allowed) {
+          await messagesRef.add({
+            role: 'assistant',
+            content:
+              'You have reached your daily AI analysis limit. Upgrade your plan or try again tomorrow.',
+            context: null,
+            warnings: ['Daily quota exceeded.'],
+            createdAt: FieldValue.serverTimestamp(),
+          });
+          await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
+          return res.status(200).json({
+            text: 'You have reached your daily AI analysis limit. Upgrade your plan or try again tomorrow.',
+            warnings: ['Daily quota exceeded.'],
+          });
+        }
+      }
+
+      if (!apiKey) {
         await messagesRef.add({
           role: 'assistant',
-          content: 'You have reached your daily AI analysis limit. Upgrade your plan or try again tomorrow.',
-          context: null, warnings: ['Daily quota exceeded.'],
+          content:
+            'AI tutor requires a Gemini API key to be configured. You can still use the app without it.',
+          context: null,
+          warnings: ['Gemini API key not configured.'],
           createdAt: FieldValue.serverTimestamp(),
         });
         await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
         return res.status(200).json({
-          text: 'You have reached your daily AI analysis limit. Upgrade your plan or try again tomorrow.',
-          warnings: ['Daily quota exceeded.'],
+          text: 'AI tutor requires a Gemini API key to be configured.',
+          warnings: ['Gemini API key not configured.'],
         });
       }
-    }
 
-    if (!apiKey) {
+      const prompt = buildTutorPrompt(sessionData.languageId || 'grc', message, context);
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+      const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleaned = text
+        .replace(/^```(?:text)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
+      const hasUncertainty =
+        cleaned.includes('not certain') ||
+        cleaned.includes('uncertain') ||
+        cleaned.includes('I think');
+
       await messagesRef.add({
         role: 'assistant',
-        content: 'AI tutor requires a Gemini API key to be configured. You can still use the app without it.',
-        context: null, warnings: ['Gemini API key not configured.'],
+        content: cleaned,
+        context: null,
+        warnings: hasUncertainty ? ['Tutor expressed uncertainty.'] : null,
         createdAt: FieldValue.serverTimestamp(),
       });
       await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
-      return res.status(200).json({
-        text: 'AI tutor requires a Gemini API key to be configured.',
-        warnings: ['Gemini API key not configured.'],
+
+      res.status(200).json({
+        text: cleaned || 'I could not generate a response.',
+        warnings: hasUncertainty ? ['Tutor expressed uncertainty.'] : undefined,
       });
+    } catch (err: any) {
+      console.error('[tutor/message] Error:', err.message);
+      res.status(500).json({ error: 'Failed to process message', code: 'TUTOR_ERROR' });
     }
-
-    const prompt = buildTutorPrompt(sessionData.languageId || 'grc', message, context);
-
-    const { GoogleGenAI } = await import('@google/genai');
-    const genAI = new GoogleGenAI({ apiKey });
-    const response = await genAI.models.generateContent({ model: 'gemini-2.0-flash', contents: prompt });
-    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text.replace(/^```(?:text)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-    const hasUncertainty = cleaned.includes('not certain') || cleaned.includes('uncertain') || cleaned.includes('I think');
-
-    await messagesRef.add({
-      role: 'assistant', content: cleaned, context: null,
-      warnings: hasUncertainty ? ['Tutor expressed uncertainty.'] : null,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    await sessionRef.update({ updatedAt: FieldValue.serverTimestamp() });
-
-    res.status(200).json({
-      text: cleaned || 'I could not generate a response.',
-      warnings: hasUncertainty ? ['Tutor expressed uncertainty.'] : undefined,
-    });
-  } catch (err: any) {
-    console.error('[tutor/message] Error:', err.message);
-    res.status(500).json({ error: 'Failed to process message', code: 'TUTOR_ERROR' });
   }
-});
+);
 
-router.get('/api/ai/tutor/sessions', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const userId = req.user!.uid;
-    const adminDb_ = getAdminDb();
-    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+router.get(
+  '/api/ai/tutor/sessions',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const userId = req.user!.uid;
+      const adminDb_ = getAdminDb();
+      if (!adminDb_)
+        return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
-    const snap = await adminDb_
-      .collection('users').doc(userId).collection('tutorSessions')
-      .orderBy('updatedAt', 'desc')
-      .limit(30)
-      .get();
+      const snap = await adminDb_
+        .collection('users')
+        .doc(userId)
+        .collection('tutorSessions')
+        .orderBy('updatedAt', 'desc')
+        .limit(30)
+        .get();
 
-    const sessions: any[] = [];
-    snap.forEach(d => {
-      const data = d.data();
-      sessions.push({
-        id: d.id,
-        languageId: data.languageId,
-        title: data.title || `${getLanguageName(data.languageId)} Tutor`,
-        textId: data.textId || null,
-        createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
-        updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
+      const sessions: any[] = [];
+      snap.forEach((d) => {
+        const data = d.data();
+        sessions.push({
+          id: d.id,
+          languageId: data.languageId,
+          title: data.title || `${getLanguageName(data.languageId)} Tutor`,
+          textId: data.textId || null,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+          updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
+        });
       });
-    });
 
-    res.status(200).json({ sessions });
-  } catch (err: any) {
-    console.error('[tutor/sessions] Error:', err.message);
-    res.status(500).json({ error: 'Failed to fetch sessions', code: 'TUTOR_ERROR' });
-  }
-});
-
-router.get('/api/ai/tutor/sessions/:sessionId', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const userId = req.user!.uid;
-    const sessionId = String(req.params.sessionId);
-    const adminDb_ = getAdminDb();
-    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
-
-    const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc(sessionId);
-    const sessionSnap = await sessionRef.get();
-    if (!sessionSnap.exists) {
-      return res.status(404).json({ error: 'Session not found', code: 'NOT_FOUND' });
+      res.status(200).json({ sessions });
+    } catch (err: any) {
+      console.error('[tutor/sessions] Error:', err.message);
+      res.status(500).json({ error: 'Failed to fetch sessions', code: 'TUTOR_ERROR' });
     }
+  }
+);
 
-    const sessionData = sessionSnap.data()!;
-    const messagesSnap = await sessionRef.collection('messages').orderBy('createdAt', 'asc').get();
+router.get(
+  '/api/ai/tutor/sessions/:sessionId',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const userId = req.user!.uid;
+      const sessionId = String(req.params.sessionId);
+      const adminDb_ = getAdminDb();
+      if (!adminDb_)
+        return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
-    const messages: any[] = [];
-    messagesSnap.forEach(d => {
-      const data = d.data();
-      messages.push({
-        id: d.id,
-        role: data.role,
-        content: data.content,
-        context: data.context || null,
-        warnings: data.warnings || null,
-        createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+      const sessionRef = adminDb_
+        .collection('users')
+        .doc(userId)
+        .collection('tutorSessions')
+        .doc(sessionId);
+      const sessionSnap = await sessionRef.get();
+      if (!sessionSnap.exists) {
+        return res.status(404).json({ error: 'Session not found', code: 'NOT_FOUND' });
+      }
+
+      const sessionData = sessionSnap.data()!;
+      const messagesSnap = await sessionRef
+        .collection('messages')
+        .orderBy('createdAt', 'asc')
+        .get();
+
+      const messages: any[] = [];
+      messagesSnap.forEach((d) => {
+        const data = d.data();
+        messages.push({
+          id: d.id,
+          role: data.role,
+          content: data.content,
+          context: data.context || null,
+          warnings: data.warnings || null,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+        });
       });
-    });
 
-    const suggestedQuestions = LANGUAGE_SUGGESTED_QUESTIONS[sessionData.languageId] ?? DEFAULT_SUGGESTED_QUESTIONS;
+      const suggestedQuestions =
+        LANGUAGE_SUGGESTED_QUESTIONS[sessionData.languageId] ?? DEFAULT_SUGGESTED_QUESTIONS;
 
-    res.status(200).json({
-      session: {
-        id: sessionId,
-        languageId: sessionData.languageId,
-        title: sessionData.title || `${getLanguageName(sessionData.languageId)} Tutor`,
-        textId: sessionData.textId || null,
-        createdAt: sessionData.createdAt?.toDate?.()?.toISOString() || null,
-        updatedAt: sessionData.updatedAt?.toDate?.()?.toISOString() || null,
-      },
-      messages,
-      suggestedQuestions,
-    });
-  } catch (err: any) {
-    console.error('[tutor/session] Error:', err.message);
-    res.status(500).json({ error: 'Failed to fetch session', code: 'TUTOR_ERROR' });
+      res.status(200).json({
+        session: {
+          id: sessionId,
+          languageId: sessionData.languageId,
+          title: sessionData.title || `${getLanguageName(sessionData.languageId)} Tutor`,
+          textId: sessionData.textId || null,
+          createdAt: sessionData.createdAt?.toDate?.()?.toISOString() || null,
+          updatedAt: sessionData.updatedAt?.toDate?.()?.toISOString() || null,
+        },
+        messages,
+        suggestedQuestions,
+      });
+    } catch (err: any) {
+      console.error('[tutor/session] Error:', err.message);
+      res.status(500).json({ error: 'Failed to fetch session', code: 'TUTOR_ERROR' });
+    }
   }
-});
+);
 
-router.post('/api/ai/sentence-analysis', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { text: sentenceText, language, mode = 'scholar' } = req.body;
+router.post(
+  '/api/ai/sentence-analysis',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { text: sentenceText, language, mode = 'scholar' } = req.body;
 
-    if (!sentenceText || typeof sentenceText !== 'string' || sentenceText.trim().length === 0) {
-      return res.status(400).json({ error: 'text is required', code: 'INVALID_INPUT', field: 'text' });
-    }
-    if (!language || typeof language !== 'string') {
-      return res.status(400).json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
-    }
-    if (!['beginner', 'scholar'].includes(mode)) {
-      return res.status(400).json({ error: 'mode must be beginner or scholar', code: 'INVALID_INPUT', field: 'mode' });
-    }
+      if (!sentenceText || typeof sentenceText !== 'string' || sentenceText.trim().length === 0) {
+        return res
+          .status(400)
+          .json({ error: 'text is required', code: 'INVALID_INPUT', field: 'text' });
+      }
+      if (!language || typeof language !== 'string') {
+        return res
+          .status(400)
+          .json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
+      }
+      if (!['beginner', 'scholar'].includes(mode)) {
+        return res
+          .status(400)
+          .json({
+            error: 'mode must be beginner or scholar',
+            code: 'INVALID_INPUT',
+            field: 'mode',
+          });
+      }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(200).json({
-        parsing: [],
-        syntax: { mainVerb: '', subject: '', object: '', description: 'AI analysis not available — Gemini API key not configured.' },
-        semantics: { keywords: [], idioms: [], notes: '' },
-        context: '',
-        translations: [],
-      } satisfies SentenceAnalysisResult);
-    }
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return res.status(200).json({
+          parsing: [],
+          syntax: {
+            mainVerb: '',
+            subject: '',
+            object: '',
+            description: 'AI analysis not available — Gemini API key not configured.',
+          },
+          semantics: { keywords: [], idioms: [], notes: '' },
+          context: '',
+          translations: [],
+        } satisfies SentenceAnalysisResult);
+      }
 
-    // Check Firestore cache
-    const adminDb_ = getAdminDb();
-    const cacheKey = Buffer.from(`${language}:${mode}:${sentenceText}`).toString('base64').replace(/[/+=]/g, '_').slice(0, 128);
-    const cacheRef = adminDb_?.collection('sentenceAnalysisCache').doc(cacheKey);
+      // Check Firestore cache
+      const adminDb_ = getAdminDb();
+      const cacheKey = Buffer.from(`${language}:${mode}:${sentenceText}`)
+        .toString('base64')
+        .replace(/[/+=]/g, '_')
+        .slice(0, 128);
+      const cacheRef = adminDb_?.collection('sentenceAnalysisCache').doc(cacheKey);
 
-    if (cacheRef) {
-      const cached = await cacheRef.get();
-      if (cached.exists) {
-        const data = cached.data()!;
-        const expiry = data.expiresAt?.toDate?.();
-        if (!expiry || expiry > new Date()) {
-          return res.status(200).json({ ...data.result, cached: true });
+      if (cacheRef) {
+        const cached = await cacheRef.get();
+        if (cached.exists) {
+          const data = cached.data()!;
+          const expiry = data.expiresAt?.toDate?.();
+          if (!expiry || expiry > new Date()) {
+            return res.status(200).json({ ...data.result, cached: true });
+          }
         }
       }
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+
+      const prompt = buildSentenceAnalysisPrompt(
+        sentenceText.slice(0, 2000),
+        language,
+        mode as 'beginner' | 'scholar'
+      );
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+
+      const rawText = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+      let result: SentenceAnalysisResult;
+      try {
+        const cleaned = rawText
+          .replace(/^```json\s*/i, '')
+          .replace(/```\s*$/, '')
+          .trim();
+        result = JSON.parse(cleaned);
+      } catch {
+        return res.status(200).json({
+          parsing: [],
+          syntax: {
+            mainVerb: '',
+            subject: '',
+            object: '',
+            description: 'AI returned an unreadable response. Please try again.',
+          },
+          semantics: { keywords: [], idioms: [], notes: '' },
+          context: '',
+          translations: [],
+        } satisfies SentenceAnalysisResult);
+      }
+
+      // Cache result for 30 days
+      if (cacheRef) {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
+        await cacheRef.set({ result, expiresAt, createdAt: new Date() }).catch(() => {});
+      }
+
+      return res.status(200).json(result);
+    } catch (err: any) {
+      console.error('[sentence-analysis] Error:', err.message);
+      return res.status(500).json({ error: 'Failed to analyze sentence', code: 'ANALYSIS_ERROR' });
     }
-
-    const { GoogleGenAI } = await import('@google/genai');
-    const genAI = new GoogleGenAI({ apiKey });
-
-    const prompt = buildSentenceAnalysisPrompt(sentenceText.slice(0, 2000), language, mode as 'beginner' | 'scholar');
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-    });
-
-    const rawText = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-    let result: SentenceAnalysisResult;
-    try {
-      const cleaned = rawText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
-      result = JSON.parse(cleaned);
-    } catch {
-      return res.status(200).json({
-        parsing: [],
-        syntax: { mainVerb: '', subject: '', object: '', description: 'AI returned an unreadable response. Please try again.' },
-        semantics: { keywords: [], idioms: [], notes: '' },
-        context: '',
-        translations: [],
-      } satisfies SentenceAnalysisResult);
-    }
-
-    // Cache result for 30 days
-    if (cacheRef) {
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30);
-      await cacheRef.set({ result, expiresAt, createdAt: new Date() }).catch(() => {});
-    }
-
-    return res.status(200).json(result);
-  } catch (err: any) {
-    console.error('[sentence-analysis] Error:', err.message);
-    return res.status(500).json({ error: 'Failed to analyze sentence', code: 'ANALYSIS_ERROR' });
   }
-});
+);
 
 // ─── Course Comprehension Quiz ────────────────────────────────────────────────
-router.post('/api/ai/course-quiz', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { text: textSnippet, languageId, questionCount } = req.body;
+router.post(
+  '/api/ai/course-quiz',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { text: textSnippet, languageId, questionCount } = req.body;
 
-    if (!textSnippet || typeof textSnippet !== 'string' || textSnippet.trim().length < 20) {
-      return res.status(400).json({ error: 'text is required (min 20 chars)', code: 'INVALID_INPUT' });
+      if (!textSnippet || typeof textSnippet !== 'string' || textSnippet.trim().length < 20) {
+        return res
+          .status(400)
+          .json({ error: 'text is required (min 20 chars)', code: 'INVALID_INPUT' });
+      }
+      if (!languageId || typeof languageId !== 'string') {
+        return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+      }
+
+      const count = Math.min(Math.max(Number(questionCount) || 5, 2), 10);
+
+      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+      if (!apiKey)
+        return res.status(500).json({ error: 'AI service not configured', code: 'CONFIG_ERROR' });
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+
+      const prompt = buildCourseQuizPrompt(textSnippet, languageId, count);
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+
+      const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleaned = raw
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
+      const parsed = JSON.parse(cleaned) as CourseQuizResult;
+
+      if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+        return res.status(500).json({ error: 'Quiz generation failed', code: 'PARSE_ERROR' });
+      }
+
+      return res.status(200).json(parsed);
+    } catch (err: any) {
+      console.error('[course-quiz] Error:', err.message);
+      return res.status(500).json({ error: 'Failed to generate quiz', code: 'QUIZ_ERROR' });
     }
-    if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
-    }
-
-    const count = Math.min(Math.max(Number(questionCount) || 5, 2), 10);
-
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'AI service not configured', code: 'CONFIG_ERROR' });
-
-    const { GoogleGenAI } = await import('@google/genai');
-    const genAI = new GoogleGenAI({ apiKey });
-
-    const prompt = buildCourseQuizPrompt(textSnippet, languageId, count);
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-    });
-
-    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-    const parsed = JSON.parse(cleaned) as CourseQuizResult;
-
-    if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
-      return res.status(500).json({ error: 'Quiz generation failed', code: 'PARSE_ERROR' });
-    }
-
-    return res.status(200).json(parsed);
-  } catch (err: any) {
-    console.error('[course-quiz] Error:', err.message);
-    return res.status(500).json({ error: 'Failed to generate quiz', code: 'QUIZ_ERROR' });
   }
-});
+);
 
 export default router;

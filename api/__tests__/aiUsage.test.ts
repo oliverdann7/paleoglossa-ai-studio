@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 describe('getPlanAILimit', () => {
-
   // Replicate the logic from aiUsage.ts
   function getPlanAILimit(planId: string): number | 'all' {
     const limits: Record<string, number | 'all'> = {
@@ -35,11 +34,10 @@ describe('getPlanAILimit', () => {
 });
 
 describe('Quota check logic', () => {
-
   // Simulate the quota check logic without Firestore
   function checkQuota(
     currentCount: number | undefined,
-    limit: number | 'all',
+    limit: number | 'all'
   ): { allowed: boolean; remaining: number | 'unlimited' } {
     if (limit === 'all') {
       return { allowed: true, remaining: 'unlimited' };

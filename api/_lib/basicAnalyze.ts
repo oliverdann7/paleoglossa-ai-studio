@@ -57,10 +57,10 @@ export function basicAnalyze(rawText: string): BasicAnalysis {
   }
 
   const sentences: BasicSentence[] = rawSentences
-    .filter(s => s.length > 0)
-    .map(sentenceText => {
-      const tokenTexts = sentenceText.split(/([\s]+)/).filter(t => t.length > 0);
-      const tokens: BasicToken[] = tokenTexts.map(tokenText => {
+    .filter((s) => s.length > 0)
+    .map((sentenceText) => {
+      const tokenTexts = sentenceText.split(/([\s]+)/).filter((t) => t.length > 0);
+      const tokens: BasicToken[] = tokenTexts.map((tokenText) => {
         const type = classifyToken(tokenText);
         const cleaned = cleanTokenText(tokenText);
         const lower = cleaned.toLowerCase();

@@ -13,9 +13,7 @@ export function RootProviders({ children }: { children: ReactNode }) {
         <AuthProvider>
           <ActiveLanguageProvider>
             <SubscriptionProvider>
-              <ReaderStateProvider>
-                {children}
-              </ReaderStateProvider>
+              <ReaderStateProvider>{children}</ReaderStateProvider>
             </SubscriptionProvider>
           </ActiveLanguageProvider>
         </AuthProvider>

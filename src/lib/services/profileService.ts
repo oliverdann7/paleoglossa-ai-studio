@@ -1,5 +1,15 @@
 import { db, auth, storage } from '../firebase.js';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  limit,
+  orderBy,
+} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile as updateFirebaseProfile } from 'firebase/auth';
 
@@ -39,10 +49,14 @@ async function resizeImageToJpeg(file: File, maxSize = 400): Promise<Blob> {
       canvas.height = Math.round(img.height * ratio);
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob((blob) => {
-        if (blob) resolve(blob);
-        else reject(new Error('Canvas toBlob failed'));
-      }, 'image/jpeg', 0.88);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('Canvas toBlob failed'));
+        },
+        'image/jpeg',
+        0.88
+      );
     };
     img.onerror = reject;
     img.src = url;
@@ -56,7 +70,10 @@ export async function uploadAvatar(uid: string, file: File): Promise<string> {
   return getDownloadURL(snapshot.ref);
 }
 
-export async function updateUserProfile(uid: string, data: Partial<Omit<UserProfileData, 'uid' | 'stats' | 'createdAt'>>) {
+export async function updateUserProfile(
+  uid: string,
+  data: Partial<Omit<UserProfileData, 'uid' | 'stats' | 'createdAt'>>
+) {
   const profileRef = doc(db, 'users', uid);
   const sanitized = Object.fromEntries(
     Object.entries(data).filter(([, v]) => v !== undefined)
@@ -113,7 +130,7 @@ export async function fetchPublicTextsByAuthor(authorId: string): Promise<Public
     where('authorId', '==', authorId),
     where('visibility', '==', 'public'),
     orderBy('createdAt', 'desc'),
-    limit(20),
+    limit(20)
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<PublicText, 'id'>) }));

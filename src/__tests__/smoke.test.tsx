@@ -14,12 +14,47 @@ vi.mock('react-i18next', () => ({
 vi.mock('lucide-react', () => {
   const Icn = () => null;
   const all: any = { default: Icn };
-  ['BookOpen','Library','Search','Settings','MessageCircle','Send','Loader2',
-   'GraduationCap','Brain','ArrowRight','Sparkles','ChevronLeft','ChevronRight',
-   'Globe','User','Crown','BookMarked','BookText','PlusCircle','MoreHorizontal',
-   'BarChart3','FileText','GitBranch','ScanLine','Users','Headphones',
-   'AlertTriangle','CheckCircle2','XCircle','Volume2','ExternalLink',
-   'Pencil','Trash2','Check','X','Type','Layout','EyeOff','AlignJustify'].forEach(n => all[n] = Icn);
+  [
+    'BookOpen',
+    'Library',
+    'Search',
+    'Settings',
+    'MessageCircle',
+    'Send',
+    'Loader2',
+    'GraduationCap',
+    'Brain',
+    'ArrowRight',
+    'Sparkles',
+    'ChevronLeft',
+    'ChevronRight',
+    'Globe',
+    'User',
+    'Crown',
+    'BookMarked',
+    'BookText',
+    'PlusCircle',
+    'MoreHorizontal',
+    'BarChart3',
+    'FileText',
+    'GitBranch',
+    'ScanLine',
+    'Users',
+    'Headphones',
+    'AlertTriangle',
+    'CheckCircle2',
+    'XCircle',
+    'Volume2',
+    'ExternalLink',
+    'Pencil',
+    'Trash2',
+    'Check',
+    'X',
+    'Type',
+    'Layout',
+    'EyeOff',
+    'AlignJustify',
+  ].forEach((n) => (all[n] = Icn));
   return all;
 });
 
@@ -28,7 +63,6 @@ vi.mock('motion/react', () => ({
 }));
 
 describe('E2E-style smoke tests', () => {
-
   it('landing page renders at /', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -99,7 +133,10 @@ describe('E2E-style smoke tests', () => {
     render(
       <MemoryRouter initialEntries={['/app/dictionary/grc/%CE%BB%CE%BF%CE%B3%CE%BF%CF%82']}>
         <Routes>
-          <Route path="/app/dictionary/:lang/:lemma" element={<div data-testid="page-dictionary">D</div>} />
+          <Route
+            path="/app/dictionary/:lang/:lemma"
+            element={<div data-testid="page-dictionary">D</div>}
+          />
         </Routes>
       </MemoryRouter>
     );

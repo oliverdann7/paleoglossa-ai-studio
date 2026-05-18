@@ -12,7 +12,10 @@ vi.mock('../../lib/firebase', () => ({
 }));
 
 vi.mock('firebase/auth', () => ({
-  onAuthStateChanged: (_auth: any, cb: any) => { cb(null); return () => {}; },
+  onAuthStateChanged: (_auth: any, cb: any) => {
+    cb(null);
+    return () => {};
+  },
   getAuth: () => ({ currentUser: null }),
   GoogleAuthProvider: class {},
 }));

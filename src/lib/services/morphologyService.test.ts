@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { MorphologyService } from './morphologyService.js';
 
 describe('MorphologyService', () => {
-
   it('resolves Greek token analysis', () => {
     const greek = MorphologyService.getTokenAnalysis('jn2');
     expect(greek).toBeTruthy();

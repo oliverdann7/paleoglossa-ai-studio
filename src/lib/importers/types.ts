@@ -11,8 +11,8 @@ export interface NormalizedMorphology {
   number?: string;
   gender?: string;
   degree?: string;
-  state?: string;      // Aramaic/Hebrew
-  stem?: string;       // Hebrew binyan
+  state?: string; // Aramaic/Hebrew
+  stem?: string; // Hebrew binyan
 }
 
 export interface NormalizedLemma {
@@ -24,11 +24,11 @@ export interface NormalizedLemma {
 
 export interface NormalizedToken {
   id: string; // e.g. "Mt-1-1-1"
-  surface: string;   // the exact form appearing in text
-  normalized: string;// lowercased, stripped of punctuation for matching
-  lemma: string;     // foreign text lemma
-  root?: string;     // foreign root
-  gloss: string;     // english meaning
+  surface: string; // the exact form appearing in text
+  normalized: string; // lowercased, stripped of punctuation for matching
+  lemma: string; // foreign text lemma
+  root?: string; // foreign root
+  gloss: string; // english meaning
   morphology: NormalizedMorphology;
   transliteration?: string;
   punctBefore: string;
@@ -101,19 +101,25 @@ export interface ContentSourceAdapter {
   license: string;
   canFetch: boolean;
   canImportFile: boolean;
-  
+
   /** Retrieve list of texts/books available in this source */
   fetchIndex(): Promise<{ id: string; title: string; ref: string }[]>;
-  
+
   /** Fetch a specific text or section */
   fetchText(ref: string): Promise<any>;
-  
+
   /** Normalize the raw data returned by fetchText into Paleoglossa types */
-  normalize(raw: any, metadata?: any): Promise<{
+  normalize(
+    raw: any,
+    metadata?: any
+  ): Promise<{
     text: NormalizedText;
     sections: NormalizedSection[];
   }>;
-  
+
   /** Validate the normalized output before saving */
-  validate(normalized: { text: NormalizedText; sections: NormalizedSection[] }): ImportValidationResult;
+  validate(normalized: {
+    text: NormalizedText;
+    sections: NormalizedSection[];
+  }): ImportValidationResult;
 }

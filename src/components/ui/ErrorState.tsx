@@ -17,18 +17,12 @@ export function ErrorState({ message, detail, onRetry, retryLabel, className, co
         'card p-12 text-center flex flex-col items-center gap-4',
         compact ? 'p-8' : 'p-12',
         'border border-ruby/20 bg-rubyxl/30',
-        className,
+        className
       )}
     >
       <AlertTriangle className="text-ruby/60 w-8 h-8" />
-      <h3 className="text-[16px] font-bold text-ink font-sans">
-        {message}
-      </h3>
-      {detail && (
-        <p className="text-[13px] text-ink3 max-w-sm leading-relaxed">
-          {detail}
-        </p>
-      )}
+      <h3 className="text-[16px] font-bold text-ink font-sans">{message}</h3>
+      {detail && <p className="text-[13px] text-ink3 max-w-sm leading-relaxed">{detail}</p>}
       {onRetry && (
         <button
           onClick={onRetry}

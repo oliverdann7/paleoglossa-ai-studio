@@ -35,7 +35,7 @@ const LEGEND = [
 
 function sentenceSurface(sentence: Sentence): string {
   return sentence.tokens
-    .map(t => t.punctBefore + t.surface + t.punctAfter)
+    .map((t) => t.punctBefore + t.surface + t.punctAfter)
     .join(' ')
     .replace(/\s+([.,;:!?·])/g, '$1')
     .trim();
@@ -53,7 +53,10 @@ export const Syntax = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const selectedText = useMemo(() => texts.find(t => t.id === selectedTextId), [texts, selectedTextId]);
+  const selectedText = useMemo(
+    () => texts.find((t) => t.id === selectedTextId),
+    [texts, selectedTextId]
+  );
   const isRTL = selectedText ? isRtlLanguage(selectedText.language) : false;
 
   // Load sentences from the first section of the selected text
@@ -93,11 +96,11 @@ export const Syntax = () => {
         body: JSON.stringify({
           languageId: selectedText.language,
           sentence: surface,
-          tokens: selectedSentence.tokens.map(t => ({ surface: t.surface, lemma: t.lemma })),
+          tokens: selectedSentence.tokens.map((t) => ({ surface: t.surface, lemma: t.lemma })),
         }),
       });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const data = await res.json() as SyntaxResult;
+      const data = (await res.json()) as SyntaxResult;
       setSyntaxResult(data);
     } catch (e: any) {
       setError(e.message ?? 'Analysis failed');
@@ -108,17 +111,17 @@ export const Syntax = () => {
 
   const selectedTokenInfo = useMemo(() => {
     if (selectedTokenIdx === null || !syntaxResult?.tokens.length) return null;
-    return syntaxResult.tokens.find(t => t.index === selectedTokenIdx) ?? null;
+    return syntaxResult.tokens.find((t) => t.index === selectedTokenIdx) ?? null;
   }, [selectedTokenIdx, syntaxResult]);
 
   const headToken = useMemo(() => {
     if (!selectedTokenInfo || selectedTokenInfo.head === -1 || !syntaxResult) return null;
-    return syntaxResult.tokens.find(t => t.index === selectedTokenInfo.head) ?? null;
+    return syntaxResult.tokens.find((t) => t.index === selectedTokenInfo.head) ?? null;
   }, [selectedTokenInfo, syntaxResult]);
 
   const dependents = useMemo(() => {
     if (selectedTokenIdx === null || !syntaxResult) return [];
-    return syntaxResult.tokens.filter(t => t.head === selectedTokenIdx);
+    return syntaxResult.tokens.filter((t) => t.head === selectedTokenIdx);
   }, [selectedTokenIdx, syntaxResult]);
 
   return (
@@ -133,12 +136,14 @@ export const Syntax = () => {
             <h2 className="text-[26px] font-serif font-light text-ink tracking-tight">
               Syntax &amp; Treebank Viewer
             </h2>
-            <p className="text-[10px] font-bold text-blue tracking-wider uppercase">AI-Generated · Experimental</p>
+            <p className="text-[10px] font-bold text-blue tracking-wider uppercase">
+              AI-Generated · Experimental
+            </p>
           </div>
         </div>
         <p className="text-[14px] text-ink2 max-w-2xl">
-          Visualize the syntactic structure of ancient sentences as dependency arc diagrams.
-          Select a text and sentence, then click <strong>Analyze</strong> to generate the tree.
+          Visualize the syntactic structure of ancient sentences as dependency arc diagrams. Select
+          a text and sentence, then click <strong>Analyze</strong> to generate the tree.
         </p>
       </header>
 
@@ -153,10 +158,12 @@ export const Syntax = () => {
             <select
               className="w-full text-[13px] bg-transparent text-ink border border-bdr rounded-lg px-3 py-2 focus:outline-none focus:border-blue"
               value={selectedTextId}
-              onChange={e => handleTextChange(e.target.value)}
+              onChange={(e) => handleTextChange(e.target.value)}
             >
-              {texts.map(t => (
-                <option key={t.id} value={t.id}>{t.title}</option>
+              {texts.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
               ))}
             </select>
             {selectedText && (
@@ -184,10 +191,15 @@ export const Syntax = () => {
                         isRTL && 'direction-rtl text-right',
                         idx === selectedSentenceIdx
                           ? 'bg-blue/10 text-blue font-medium'
-                          : 'hover:bg-parch2 text-ink2',
+                          : 'hover:bg-parch2 text-ink2'
                       )}
                     >
-                      <ChevronRight className={cn('w-3 h-3 mt-0.5 shrink-0 text-muted', idx === selectedSentenceIdx && 'text-blue')} />
+                      <ChevronRight
+                        className={cn(
+                          'w-3 h-3 mt-0.5 shrink-0 text-muted',
+                          idx === selectedSentenceIdx && 'text-blue'
+                        )}
+                      />
                       <span className={cn('line-clamp-2 font-serif', isRTL && 'direction-rtl')}>
                         {sentenceSurface(s)}
                       </span>
@@ -200,15 +212,20 @@ export const Syntax = () => {
 
           {/* Relation legend */}
           <div className="card p-4">
-            <p className="text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Relation Types</p>
+            <p className="text-[11px] font-bold text-muted uppercase tracking-wider mb-2">
+              Relation Types
+            </p>
             <ul className="space-y-1">
-              {LEGEND.map(l => (
+              {LEGEND.map((l) => (
                 <li key={l.label} className="flex items-center gap-2">
                   <span
                     className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: l.color }}
                   />
-                  <span className="text-[11px] font-mono font-bold text-ink" style={{ color: l.color }}>
+                  <span
+                    className="text-[11px] font-mono font-bold text-ink"
+                    style={{ color: l.color }}
+                  >
                     {l.label}
                   </span>
                   <span className="text-[11px] text-muted">{l.desc}</span>
@@ -227,7 +244,7 @@ export const Syntax = () => {
                 <p
                   className={cn(
                     'font-serif text-[16px] text-ink leading-relaxed flex-1',
-                    isRTL && 'direction-rtl text-right',
+                    isRTL && 'direction-rtl text-right'
                   )}
                   lang={selectedText?.language}
                 >
@@ -238,12 +255,19 @@ export const Syntax = () => {
                   disabled={isAnalyzing}
                   className="flex items-center gap-2 px-4 py-2 bg-blue text-white font-bold rounded-xl text-[12px] hover:bg-blue/90 disabled:opacity-50 transition-all shrink-0"
                 >
-                  {isAnalyzing
-                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Analyzing…</>
-                    : syntaxResult
-                    ? <><RefreshCw className="w-3.5 h-3.5" /> Re-analyze</>
-                    : <><GitBranch className="w-3.5 h-3.5" /> Analyze</>
-                  }
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Analyzing…
+                    </>
+                  ) : syntaxResult ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5" /> Re-analyze
+                    </>
+                  ) : (
+                    <>
+                      <GitBranch className="w-3.5 h-3.5" /> Analyze
+                    </>
+                  )}
                 </button>
               </div>
               {selectedSentence.translation && (
@@ -281,7 +305,10 @@ export const Syntax = () => {
             <>
               {/* Warnings */}
               {syntaxResult.warnings?.map((w, i) => (
-                <div key={i} className="flex items-start gap-2 p-3 bg-amber/5 border border-amber/20 rounded-xl text-[12px] text-amber">
+                <div
+                  key={i}
+                  className="flex items-start gap-2 p-3 bg-amber/5 border border-amber/20 rounded-xl text-[12px] text-amber"
+                >
                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                   <span>{w}</span>
                 </div>
@@ -294,14 +321,16 @@ export const Syntax = () => {
                     Dependency Tree
                   </p>
                   {syntaxResult.confidence !== null && (
-                    <span className={cn(
-                      'text-[10px] font-bold px-2 py-0.5 rounded-full',
-                      syntaxResult.confidence >= 0.75
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : syntaxResult.confidence >= 0.5
-                        ? 'bg-amber/10 text-amber-700'
-                        : 'bg-red-50 text-red-600',
-                    )}>
+                    <span
+                      className={cn(
+                        'text-[10px] font-bold px-2 py-0.5 rounded-full',
+                        syntaxResult.confidence >= 0.75
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : syntaxResult.confidence >= 0.5
+                            ? 'bg-amber/10 text-amber-700'
+                            : 'bg-red-50 text-red-600'
+                      )}
+                    >
                       {Math.round(syntaxResult.confidence * 100)}% confidence
                     </span>
                   )}
@@ -310,7 +339,7 @@ export const Syntax = () => {
                   tokens={syntaxResult.tokens}
                   isRTL={isRTL}
                   selectedIndex={selectedTokenIdx}
-                  onTokenClick={idx => setSelectedTokenIdx(prev => prev === idx ? null : idx)}
+                  onTokenClick={(idx) => setSelectedTokenIdx((prev) => (prev === idx ? null : idx))}
                 />
                 <p className="text-[10px] text-muted mt-2 text-center">
                   Click a token to inspect its dependencies
@@ -332,15 +361,18 @@ export const Syntax = () => {
                       { label: 'Relation', value: selectedTokenInfo.relation },
                     ].map(({ label, value }) => (
                       <div key={label} className="bg-parch2 rounded-lg px-3 py-2">
-                        <p className="text-[10px] font-bold text-muted uppercase tracking-wider">{label}</p>
+                        <p className="text-[10px] font-bold text-muted uppercase tracking-wider">
+                          {label}
+                        </p>
                         <p className="text-[13px] font-medium text-ink font-serif">{value}</p>
                       </div>
                     ))}
                   </div>
                   {headToken && (
                     <p className="text-[12px] text-ink2">
-                      Head: <span className="font-serif font-medium text-ink">{headToken.form}</span>
-                      {' '}({headToken.relation} · {headToken.pos})
+                      Head:{' '}
+                      <span className="font-serif font-medium text-ink">{headToken.form}</span> (
+                      {headToken.relation} · {headToken.pos})
                     </p>
                   )}
                   {dependents.length > 0 && (
@@ -356,7 +388,9 @@ export const Syntax = () => {
                     </p>
                   )}
                   {selectedTokenInfo.head === -1 && (
-                    <p className="text-[12px] font-bold text-amber">Root — main predicate of the clause</p>
+                    <p className="text-[12px] font-bold text-amber">
+                      Root — main predicate of the clause
+                    </p>
                   )}
                 </div>
               )}
@@ -367,31 +401,39 @@ export const Syntax = () => {
                   <p className="text-[11px] font-bold text-blue uppercase tracking-wider mb-1.5">
                     Syntactic Analysis
                   </p>
-                  <p className="text-[14px] text-ink2 leading-relaxed">{syntaxResult.explanation}</p>
+                  <p className="text-[14px] text-ink2 leading-relaxed">
+                    {syntaxResult.explanation}
+                  </p>
                 </div>
               )}
 
               {/* Token table */}
               <div className="card p-4 overflow-x-auto">
-                <p className="text-[11px] font-bold text-muted uppercase tracking-wider mb-3">Token Annotations</p>
+                <p className="text-[11px] font-bold text-muted uppercase tracking-wider mb-3">
+                  Token Annotations
+                </p>
                 <table className="w-full text-[12px]">
                   <thead>
                     <tr className="border-b border-bdr/40">
-                      {['#', 'Form', 'Lemma', 'POS', 'Head', 'Relation'].map(h => (
-                        <th key={h} className="text-left text-muted font-bold py-1 pr-4">{h}</th>
+                      {['#', 'Form', 'Lemma', 'POS', 'Head', 'Relation'].map((h) => (
+                        <th key={h} className="text-left text-muted font-bold py-1 pr-4">
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {syntaxResult.tokens.map(t => {
+                    {syntaxResult.tokens.map((t) => {
                       const isSelected = t.index === selectedTokenIdx;
                       return (
                         <tr
                           key={t.index}
-                          onClick={() => setSelectedTokenIdx(prev => prev === t.index ? null : t.index)}
+                          onClick={() =>
+                            setSelectedTokenIdx((prev) => (prev === t.index ? null : t.index))
+                          }
                           className={cn(
                             'border-b border-bdr/20 cursor-pointer hover:bg-parch2 transition-colors',
-                            isSelected && 'bg-blue/5',
+                            isSelected && 'bg-blue/5'
                           )}
                         >
                           <td className="py-1.5 pr-4 text-muted font-mono">{t.index}</td>
@@ -402,7 +444,10 @@ export const Syntax = () => {
                             {t.head === -1 ? '—' : t.head}
                           </td>
                           <td className="py-1.5 pr-4">
-                            <span className="font-mono font-bold text-[10px]" style={{ color: t.head === -1 ? '#e0a800' : '#64748b' }}>
+                            <span
+                              className="font-mono font-bold text-[10px]"
+                              style={{ color: t.head === -1 ? '#e0a800' : '#64748b' }}
+                            >
                               {t.relation}
                             </span>
                           </td>
@@ -419,7 +464,9 @@ export const Syntax = () => {
           {!isAnalyzing && syntaxResult && syntaxResult.tokens.length === 0 && (
             <div className="card p-6 text-center">
               <AlertTriangle className="w-8 h-8 text-amber mx-auto mb-2" />
-              <p className="text-[13px] text-ink2">{syntaxResult.explanation || 'No dependency tree could be generated.'}</p>
+              <p className="text-[13px] text-ink2">
+                {syntaxResult.explanation || 'No dependency tree could be generated.'}
+              </p>
             </div>
           )}
         </main>

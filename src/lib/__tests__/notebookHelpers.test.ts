@@ -28,12 +28,12 @@ function isValidSource(s: string): s is ResearchNoteSource {
 
 /** Filters notes by lemma. */
 function notesByLemma(notes: ResearchNote[], lemma: string): ResearchNote[] {
-  return notes.filter(n => n.lemma === lemma);
+  return notes.filter((n) => n.lemma === lemma);
 }
 
 /** Filters notes by language. */
 function notesByLanguage(notes: ResearchNote[], languageId: string): ResearchNote[] {
-  return notes.filter(n => n.languageId === languageId);
+  return notes.filter((n) => n.languageId === languageId);
 }
 
 /** Sorts notes newest-first by createdAt ISO string. */
@@ -102,7 +102,7 @@ describe('buildNotePayload', () => {
 describe('isValidSource', () => {
   it('accepts all defined sources', () => {
     const sources: ResearchNoteSource[] = ['reader', 'word-analysis', 'tutor', 'manual'];
-    sources.forEach(s => expect(isValidSource(s)).toBe(true));
+    sources.forEach((s) => expect(isValidSource(s)).toBe(true));
   });
 
   it('rejects unknown sources', () => {
@@ -114,15 +114,42 @@ describe('isValidSource', () => {
 
 describe('notesByLemma', () => {
   const notes = [
-    { id: '1', lemma: 'λύω', content: 'a', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-01-01', updatedAt: '2025-01-01' },
-    { id: '2', lemma: 'λόγος', content: 'b', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-01-02', updatedAt: '2025-01-02' },
-    { id: '3', lemma: 'λύω', content: 'c', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-01-03', updatedAt: '2025-01-03' },
+    {
+      id: '1',
+      lemma: 'λύω',
+      content: 'a',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-01-01',
+      updatedAt: '2025-01-01',
+    },
+    {
+      id: '2',
+      lemma: 'λόγος',
+      content: 'b',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-01-02',
+      updatedAt: '2025-01-02',
+    },
+    {
+      id: '3',
+      lemma: 'λύω',
+      content: 'c',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-01-03',
+      updatedAt: '2025-01-03',
+    },
   ] as ResearchNote[];
 
   it('returns only notes matching lemma', () => {
     const result = notesByLemma(notes, 'λύω');
     expect(result).toHaveLength(2);
-    expect(result.every(n => n.lemma === 'λύω')).toBe(true);
+    expect(result.every((n) => n.lemma === 'λύω')).toBe(true);
   });
 
   it('returns empty array when lemma not found', () => {
@@ -132,9 +159,36 @@ describe('notesByLemma', () => {
 
 describe('notesByLanguage', () => {
   const notes = [
-    { id: '1', languageId: 'grc', content: 'a', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-01-01', updatedAt: '2025-01-01' },
-    { id: '2', languageId: 'lat', content: 'b', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-01-02', updatedAt: '2025-01-02' },
-    { id: '3', languageId: 'grc', content: 'c', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-01-03', updatedAt: '2025-01-03' },
+    {
+      id: '1',
+      languageId: 'grc',
+      content: 'a',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-01-01',
+      updatedAt: '2025-01-01',
+    },
+    {
+      id: '2',
+      languageId: 'lat',
+      content: 'b',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-01-02',
+      updatedAt: '2025-01-02',
+    },
+    {
+      id: '3',
+      languageId: 'grc',
+      content: 'c',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-01-03',
+      updatedAt: '2025-01-03',
+    },
   ] as ResearchNote[];
 
   it('filters by languageId', () => {
@@ -149,9 +203,33 @@ describe('notesByLanguage', () => {
 
 describe('sortNotesNewestFirst', () => {
   const notes = [
-    { id: '1', content: 'oldest', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-01-01', updatedAt: '2025-01-01' },
-    { id: '2', content: 'newest', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-03-01', updatedAt: '2025-03-01' },
-    { id: '3', content: 'middle', userId: 'u', tags: [], visibility: 'private', createdAt: '2025-02-01', updatedAt: '2025-02-01' },
+    {
+      id: '1',
+      content: 'oldest',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-01-01',
+      updatedAt: '2025-01-01',
+    },
+    {
+      id: '2',
+      content: 'newest',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-03-01',
+      updatedAt: '2025-03-01',
+    },
+    {
+      id: '3',
+      content: 'middle',
+      userId: 'u',
+      tags: [],
+      visibility: 'private',
+      createdAt: '2025-02-01',
+      updatedAt: '2025-02-01',
+    },
   ] as ResearchNote[];
 
   it('sorts newest first', () => {

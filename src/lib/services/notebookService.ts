@@ -1,11 +1,24 @@
 import { ResearchNotebook, ResearchNote } from '../../types/modules.js';
 import { apiFetch } from './apiFetch.js';
 
-export type CreateNoteInput = Pick<ResearchNote, 'content'> & Partial<Pick<ResearchNote,
-  | 'notebookId' | 'languageId' | 'textId' | 'chunkId'
-  | 'token' | 'lemma' | 'grammarTag' | 'source'
-  | 'sentenceRange' | 'tokenRange' | 'tags' | 'visibility'
->>;
+export type CreateNoteInput = Pick<ResearchNote, 'content'> &
+  Partial<
+    Pick<
+      ResearchNote,
+      | 'notebookId'
+      | 'languageId'
+      | 'textId'
+      | 'chunkId'
+      | 'token'
+      | 'lemma'
+      | 'grammarTag'
+      | 'source'
+      | 'sentenceRange'
+      | 'tokenRange'
+      | 'tags'
+      | 'visibility'
+    >
+  >;
 
 export class NotebookService {
   static async getNotebooks(): Promise<ResearchNotebook[]> {
@@ -16,7 +29,11 @@ export class NotebookService {
     }
   }
 
-  static async createNotebook(title: string, description?: string, languageId?: string): Promise<ResearchNotebook | null> {
+  static async createNotebook(
+    title: string,
+    description?: string,
+    languageId?: string
+  ): Promise<ResearchNotebook | null> {
     try {
       return await apiFetch<ResearchNotebook>('/api/notebooks', {
         method: 'POST',
@@ -36,7 +53,11 @@ export class NotebookService {
     }
   }
 
-  static async getNotes(filters?: { notebookId?: string; languageId?: string; targetType?: string }): Promise<ResearchNote[]> {
+  static async getNotes(filters?: {
+    notebookId?: string;
+    languageId?: string;
+    targetType?: string;
+  }): Promise<ResearchNote[]> {
     try {
       const params = new URLSearchParams();
       if (filters?.notebookId) params.set('notebookId', filters.notebookId);

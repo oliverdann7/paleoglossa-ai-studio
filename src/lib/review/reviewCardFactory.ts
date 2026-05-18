@@ -30,14 +30,20 @@ export interface CardGenerationOptions {
 }
 
 const DEFAULT_OPTIONS: CardGenerationOptions = {
-  enabledTypes: [CardType.FORM_TO_MEANING, CardType.MEANING_TO_FORM, CardType.CLOZE, CardType.PARSE],
+  enabledTypes: [
+    CardType.FORM_TO_MEANING,
+    CardType.MEANING_TO_FORM,
+    CardType.CLOZE,
+    CardType.PARSE,
+  ],
   includeMorphology: true,
 };
 
 function findGloss(term: string, _languageId: string, item: any): string | null {
   if (item.userGloss && item.userGloss !== 'Definition missing') return item.userGloss;
   const tokenInfo = getTokenInfo(term);
-  if (tokenInfo?.shortGloss && tokenInfo.shortGloss !== 'Definition unavailable') return tokenInfo.shortGloss;
+  if (tokenInfo?.shortGloss && tokenInfo.shortGloss !== 'Definition unavailable')
+    return tokenInfo.shortGloss;
   return null;
 }
 
@@ -57,7 +63,10 @@ function getMorphology(term: string): Record<string, string> | undefined {
   return Object.keys(morph).length > 0 ? morph : undefined;
 }
 
-export function generateReviewCard(item: any, options?: Partial<CardGenerationOptions>): ReviewCard | null {
+export function generateReviewCard(
+  item: any,
+  options?: Partial<CardGenerationOptions>
+): ReviewCard | null {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const term = item.term || item.id || '';
   const languageId = item.languageId || 'unknown';
@@ -76,14 +85,14 @@ export function generateReviewCard(item: any, options?: Partial<CardGenerationOp
   if (gloss) candidates.push(CardType.MEANING_TO_FORM);
 
   // CLOZE: require context containing the term
-  const validContexts = contexts.filter(ctx => ctx.toLowerCase().includes(term.toLowerCase()));
+  const validContexts = contexts.filter((ctx) => ctx.toLowerCase().includes(term.toLowerCase()));
   if (validContexts.length > 0) candidates.push(CardType.CLOZE);
 
   // PARSE: require morphology
   if (morph) candidates.push(CardType.PARSE);
 
   // Filter to enabled types
-  const available = candidates.filter(t => opts.enabledTypes.includes(t));
+  const available = candidates.filter((t) => opts.enabledTypes.includes(t));
   if (available.length === 0) return null;
 
   const type = available[Math.floor(Math.random() * available.length)];
@@ -124,7 +133,13 @@ export function generateReviewCard(item: any, options?: Partial<CardGenerationOp
     }
   }
 
-  const defaultSRS: SRSState = { interval: 0, ease: 2.5, step: 0, lastReviewed: null, nextReview: new Date().toISOString() };
+  const defaultSRS: SRSState = {
+    interval: 0,
+    ease: 2.5,
+    step: 0,
+    lastReviewed: null,
+    nextReview: new Date().toISOString(),
+  };
 
   return {
     itemId: item.id || term,
@@ -141,8 +156,11 @@ export function generateReviewCard(item: any, options?: Partial<CardGenerationOp
   };
 }
 
-export function generateReviewCards(items: any[], options?: Partial<CardGenerationOptions>): ReviewCard[] {
+export function generateReviewCards(
+  items: any[],
+  options?: Partial<CardGenerationOptions>
+): ReviewCard[] {
   return items
-    .map(item => generateReviewCard(item, options))
+    .map((item) => generateReviewCard(item, options))
     .filter((card): card is ReviewCard => card !== null);
 }

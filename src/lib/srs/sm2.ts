@@ -31,7 +31,7 @@ export function calculateSM2(
   };
 
   let { interval, ease, step } = currentState;
-  
+
   // Mapping rating to quality (0-5 scale in original SM-2)
   // 5: EASY
   // 4: GOOD
@@ -39,10 +39,18 @@ export function calculateSM2(
   // 0-2: AGAIN (failed)
   let quality = 0;
   switch (rating) {
-    case 'EASY': quality = 5; break;
-    case 'GOOD': quality = 4; break;
-    case 'HARD': quality = 3; break;
-    case 'AGAIN': quality = 0; break;
+    case 'EASY':
+      quality = 5;
+      break;
+    case 'GOOD':
+      quality = 4;
+      break;
+    case 'HARD':
+      quality = 3;
+      break;
+    case 'AGAIN':
+      quality = 0;
+      break;
   }
 
   // Calculate new Ease Factor
@@ -52,7 +60,7 @@ export function calculateSM2(
   } else {
     ease = Math.max(SM2_MIN_EASE, ease - 0.2);
   }
-  
+
   if (ease < SM2_MIN_EASE) ease = SM2_MIN_EASE;
   if (ease > SM2_MAX_EASE) ease = SM2_MAX_EASE;
 
@@ -82,11 +90,7 @@ export function calculateSM2(
 
   // Use UTC-based date math to avoid timezone edge cases
   const nextReviewDate = new Date(
-    Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() + interval,
-    )
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + interval)
   );
 
   return {

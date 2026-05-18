@@ -7,7 +7,6 @@ import {
 } from '../references';
 
 describe('Grammar reference service', () => {
-
   describe('getGrammarReference', () => {
     it('returns explanation for a known part of speech tag', () => {
       const ref = getGrammarReference('noun');
@@ -60,7 +59,7 @@ describe('Grammar reference service', () => {
     it('filters by category', () => {
       const cases = listGrammarReferences('case');
       expect(cases.length).toBeGreaterThanOrEqual(5);
-      cases.forEach(c => expect(c.category).toBe('case'));
+      cases.forEach((c) => expect(c.category).toBe('case'));
     });
 
     it('returns empty array for non-existent category', () => {
@@ -72,7 +71,7 @@ describe('Grammar reference service', () => {
   describe('getGrammarReferencesForLanguage', () => {
     it('returns case, gender, tense, voice, mood references for Ancient Greek', () => {
       const refs = getGrammarReferencesForLanguage('grc');
-      const categories = new Set(refs.map(r => r.category));
+      const categories = new Set(refs.map((r) => r.category));
       expect(categories.has('case')).toBe(true);
       expect(categories.has('tense')).toBe(true);
       expect(categories.has('voice')).toBe(true);
@@ -81,14 +80,14 @@ describe('Grammar reference service', () => {
 
     it('returns stem and state references for Hebrew', () => {
       const refs = getGrammarReferencesForLanguage('hbo');
-      const categories = new Set(refs.map(r => r.category));
+      const categories = new Set(refs.map((r) => r.category));
       expect(categories.has('state')).toBe(true);
       expect(categories.has('stem')).toBe(true);
     });
 
     it('always returns partOfSpeech and person references', () => {
       const refs = getGrammarReferencesForLanguage('akk');
-      const categories = new Set(refs.map(r => r.category));
+      const categories = new Set(refs.map((r) => r.category));
       expect(categories.has('partOfSpeech')).toBe(true);
       expect(categories.has('person')).toBe(true);
     });

@@ -35,7 +35,9 @@ const STATE_COLOR: Record<WordState, string> = {
 };
 
 export function PreDrillModal({ textTitle, lemmas, onStartReading, onClose }: Props) {
-  const unknownCount = lemmas.filter(l => l.state === WordState.NEW || l.state === WordState.SEEN).length;
+  const unknownCount = lemmas.filter(
+    (l) => l.state === WordState.NEW || l.state === WordState.SEEN
+  ).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -50,11 +52,16 @@ export function PreDrillModal({ textTitle, lemmas, onStartReading, onClose }: Pr
           <div className="flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-blue" />
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Pre-reading Vocabulary</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                Pre-reading Vocabulary
+              </p>
               <p className="text-[13px] font-serif font-bold text-ink line-clamp-1">{textTitle}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-parch3 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-parch3 transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -63,7 +70,11 @@ export function PreDrillModal({ textTitle, lemmas, onStartReading, onClose }: Pr
         <div className="p-5">
           {unknownCount > 0 && (
             <p className="text-[13px] text-ink2 mb-4">
-              This text contains <span className="font-bold text-ink">{unknownCount} unfamiliar {unknownCount === 1 ? 'lemma' : 'lemmas'}</span>. Review them before reading.
+              This text contains{' '}
+              <span className="font-bold text-ink">
+                {unknownCount} unfamiliar {unknownCount === 1 ? 'lemma' : 'lemmas'}
+              </span>
+              . Review them before reading.
             </p>
           )}
           {unknownCount === 0 && (
@@ -74,11 +85,19 @@ export function PreDrillModal({ textTitle, lemmas, onStartReading, onClose }: Pr
 
           <div className="space-y-1.5 max-h-60 overflow-y-auto mb-5">
             {lemmas.map((l) => (
-              <div key={l.lemma} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-parch2/60">
+              <div
+                key={l.lemma}
+                className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-parch2/60"
+              >
                 <span className="font-serif text-[15px] text-ink font-medium">{l.lemma}</span>
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-[12px] text-ink2 truncate">{l.gloss}</span>
-                  <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0", STATE_COLOR[l.state])}>
+                  <span
+                    className={cn(
+                      'text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0',
+                      STATE_COLOR[l.state]
+                    )}
+                  >
                     {STATE_LABEL[l.state]}
                   </span>
                 </div>
