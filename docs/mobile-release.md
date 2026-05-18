@@ -3,6 +3,37 @@
 Capacitor-based native iOS/Android build and release guide for
 Paleoglossa.
 
+## iOS Release Readiness Improvements
+
+- Updated `UIRequiredDeviceCapabilities` to `arm64` (dropping `armv7` as it is deprecated).
+- Restricted iPhone orientation to `Portrait` for a more consistent UX, while maintaining broader support for iPad.
+- Implemented `safe-area` CSS adjustments (see below).
+
+## Safe-Area Handling
+
+To properly handle the top notch and bottom home indicator on modern iOS devices, we leverage CSS environment variables.
+
+Ensure the following CSS is applied globally (or at least to the container of your main layout):
+
+```css
+/* Avoid content overlap with the notch and home indicator */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* For elements pinned to the bottom (e.g., navigation bars) */
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+```
+
+This ensures that the main content does not get hidden behind the notch or cut off by the home indicator on iPhone X and newer.
+
+---
+
 | Property | Value |
 |----------|-------|
 | appId | `com.paleoglossa.app` |
