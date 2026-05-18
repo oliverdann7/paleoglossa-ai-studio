@@ -150,7 +150,13 @@ Before uploading:
 
 ---
 
-## Android build steps
+## Android Release Readiness Improvements
+
+- **Minification (R8/Proguard)**: Currently `minifyEnabled` is `false` in `android/app/build.gradle`. Enabling it requires thorough testing of native plugins and web-bundle interaction. It is safer to remain disabled for the initial release unless issues arise.
+- **Versioning**: Update `versionCode` and `versionName` in `android/app/build.gradle` before every Play Store release.
+- **Signing**: Ensure `android/key.properties` exists but is NEVER committed to the repository.
+
+---
 
 ### 1. Development (debug APK)
 
