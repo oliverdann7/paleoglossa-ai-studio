@@ -22,6 +22,7 @@ const Syntax = lazy(() => import('./pages/Syntax.js').then(module => ({ default:
 const Notebooks = lazy(() => import('./pages/Notebooks.js').then(module => ({ default: module.Notebooks })));
 const NotebookDetail = lazy(() => import('./pages/NotebookDetail.js').then(module => ({ default: module.NotebookDetail })));
 const Manuscripts = lazy(() => import('./pages/Manuscripts.js').then(module => ({ default: module.Manuscripts })));
+const More = lazy(() => import('./pages/More.js').then(module => ({ default: module.More })));
 const Courses = lazy(() => import('./pages/Courses.js').then(module => ({ default: module.Courses })));
 const AudioLab = lazy(() => import('./pages/AudioLab.js').then(module => ({ default: module.AudioLab })));
 const ProfilePage = lazy(() => import('./pages/Profile.js').then(module => ({ default: module.ProfilePage })));
@@ -79,6 +80,7 @@ export default function App() {
             <Route path="manuscripts" element={<Manuscripts />} />
             <Route path="courses" element={<Courses />} />
             <Route path="audio-lab" element={<AudioLab />} />
+            <Route path="more" element={<More />} />
             <Route path="import" element={<Import />} />
             <Route path="settings" element={<Settings />} />
             <Route path="subscription" element={<Subscription />} />

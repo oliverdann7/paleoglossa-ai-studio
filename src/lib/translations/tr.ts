@@ -416,6 +416,15 @@ export const tr = {
     "nav.readingLevel": "Reading Level",
     "nav.wordsToLevel": "2.4k words to B2",
     "nav.freePlan": "Free Plan →",
+
+    "more.title": "Daha Fazla",
+    "more.study": "Çalışma",
+    "more.personal": "Kişisel",
+    "more.tools": "Araçlar",
+    "more.community": "Topluluk",
+    "more.account": "Hesap",
+    "more.admin": "Yönetici",
+
     "settings.freezesNone": "No streak freezes remaining this month.",
     "landing.tryDemo": "Try Demo",
     "admin.title": "Admin Dashboard",

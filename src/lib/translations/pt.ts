@@ -343,6 +343,14 @@ export const pt = {
     "nav.wordsToLevel": "2.4k palavras para B2",
     "nav.freePlan": "Plano Gratuito →",
 
+    "more.title": "Mais",
+    "more.study": "Estudar",
+    "more.personal": "Pessoal",
+    "more.tools": "Ferramentas",
+    "more.community": "Comunidade",
+    "more.account": "Conta",
+    "more.admin": "Admin",
+
     "notes.title": "Minhas Notas",
     "notes.description": "Suas anotações pessoais em vocabulário específico.",
     "notes.search": "Buscar notas...",
