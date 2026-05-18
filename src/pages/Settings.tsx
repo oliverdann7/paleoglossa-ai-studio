@@ -275,11 +275,11 @@ export const Settings = () => {
                 {isPublic
                   ? t(
                       'settings.publicProfileOnDesc',
-                      'Your profile, nickname, and bio are visible to other scholars. Your public texts will appear on your profile page.'
+                      'Your profile, nickname, and bio are visible to other scholars in the Community section. Your public texts will appear on your profile page. You can turn this off at any time.'
                     )
                   : t(
                       'settings.publicProfileOffDesc',
-                      'Your profile is private. Only you can see your data. Enable to participate in the scholar community.'
+                      'Your profile is private — only you can see your data. Enable this to opt in to the Community and let other scholars discover your profile.'
                     )}
               </p>
             </div>

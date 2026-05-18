@@ -1,12 +1,137 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Search, BookOpen, Flame, ExternalLink, AlertCircle } from 'lucide-react';
+import {
+  Users,
+  Search,
+  BookOpen,
+  Flame,
+  ExternalLink,
+  AlertCircle,
+  MoreVertical,
+  Flag,
+  UserX,
+  Mail,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/hooks/useAuth.js';
-import { fetchCommunityScholars } from '../lib/services/communityService.js';
+import {
+  fetchCommunityScholars,
+  reportUser,
+  blockUser,
+} from '../lib/services/communityService.js';
 import { cn } from '@/lib/utils';
-import type { PublicScholar } from '../types/social.js';
+import type { PublicScholar, ReportReason } from '../types/social.js';
 
+const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: 'spam', label: 'Spam' },
+  { value: 'harassment', label: 'Harassment or bullying' },
+  { value: 'inappropriate_content', label: 'Inappropriate content' },
+  { value: 'fake_account', label: 'Fake or impersonation account' },
+  { value: 'other', label: 'Other' },
+];
+
+// ── Report modal ─────────────────────────────────────────────────────────────
+function ReportModal({
+  targetUid,
+  displayName,
+  onClose,
+}: {
+  targetUid: string;
+  displayName: string;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const [reason, setReason] = useState<ReportReason>('spam');
+  const [details, setDetails] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await reportUser({ type: 'profile', targetUid, reason, details: details.trim() || undefined });
+      setDone(true);
+    } catch {
+      setError(t('community.reportError', 'Could not submit report. Please try again.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="card p-6 w-full max-w-sm flex flex-col gap-4">
+        {done ? (
+          <>
+            <h3 className="text-[16px] font-serif text-ink font-semibold">
+              {t('community.reportSent', 'Report submitted')}
+            </h3>
+            <p className="text-[13px] text-muted">
+              {t(
+                'community.reportSentDesc',
+                'Thank you. Our team will review this report. If you need immediate help, contact us at support@paleoglossa.com.'
+              )}
+            </p>
+            <button onClick={onClose} className="btn-secondary text-[13px]">
+              {t('common.close', 'Close')}
+            </button>
+          </>
+        ) : (
+          <>
+            <h3 className="text-[16px] font-serif text-ink font-semibold">
+              {t('community.reportTitle', 'Report {{name}}', { name: displayName })}
+            </h3>
+            <div className="flex flex-col gap-2">
+              {REPORT_REASONS.map((r) => (
+                <label key={r.value} className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="reason"
+                    value={r.value}
+                    checked={reason === r.value}
+                    onChange={() => setReason(r.value)}
+                    className="accent-blue"
+                  />
+                  <span className="text-[13px] text-ink">{r.label}</span>
+                </label>
+              ))}
+            </div>
+            <textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              placeholder={t('community.reportDetails', 'Additional details (optional)')}
+              maxLength={500}
+              rows={3}
+              className="w-full bg-parch border border-bdr rounded-lg p-2.5 text-[12px] font-sans text-ink placeholder:text-muted resize-none focus:outline-none focus:ring-2 focus:ring-blue/30"
+            />
+            {error && <p className="text-[12px] text-ruby">{error}</p>}
+            <div className="flex gap-2 justify-end">
+              <button onClick={onClose} className="btn-secondary text-[12px] px-4 py-2">
+                {t('common.cancel', 'Cancel')}
+              </button>
+              <button
+                onClick={submit}
+                disabled={submitting}
+                className="btn-primary text-[12px] px-4 py-2"
+              >
+                {submitting
+                  ? t('community.reportSubmitting', 'Submitting…')
+                  : t('community.reportSubmit', 'Submit report')}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Scholar avatar ────────────────────────────────────────────────────────────
 function ScholarAvatar({ scholar }: { scholar: PublicScholar }) {
   const initials = (scholar.displayName || '?')
     .split(' ')
@@ -32,14 +157,20 @@ function ScholarAvatar({ scholar }: { scholar: PublicScholar }) {
   );
 }
 
+// ── Scholar card ──────────────────────────────────────────────────────────────
 function ScholarCard({
   scholar,
   isCurrentUser,
+  onBlocked,
 }: {
   scholar: PublicScholar;
   isCurrentUser: boolean;
+  onBlocked: (uid: string) => void;
 }) {
   const { t } = useTranslation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<PublicScholar | null>(null);
+  const [blocking, setBlocking] = useState(false);
 
   const joinedDate = useMemo(() => {
     if (!scholar.createdAt) return null;
@@ -53,82 +184,144 @@ function ScholarCard({
     }
   }, [scholar.createdAt]);
 
+  const handleBlock = async () => {
+    setMenuOpen(false);
+    setBlocking(true);
+    try {
+      await blockUser(scholar.uid);
+      onBlocked(scholar.uid);
+    } catch {
+      setBlocking(false);
+    }
+  };
+
+  if (blocking) return null;
+
   return (
-    <div
-      className={cn(
-        'card p-5 flex flex-col gap-4 hover:shadow-md transition-all',
-        isCurrentUser && 'ring-1 ring-blue/30'
+    <>
+      {reportTarget && (
+        <ReportModal
+          targetUid={reportTarget.uid}
+          displayName={reportTarget.displayName}
+          onClose={() => setReportTarget(null)}
+        />
       )}
-    >
-      <div className="flex items-start gap-3">
-        <ScholarAvatar scholar={scholar} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[15px] font-serif font-semibold text-ink truncate">
-              {scholar.displayName}
-            </span>
-            {isCurrentUser && (
-              <span className="text-[10px] font-sans font-bold uppercase tracking-wide text-blue bg-bluexl px-2 py-0.5 rounded-full">
-                {t('community.you', 'You')}
+      <div
+        className={cn(
+          'card p-5 flex flex-col gap-4 hover:shadow-md transition-all relative',
+          isCurrentUser && 'ring-1 ring-blue/30'
+        )}
+      >
+        <div className="flex items-start gap-3">
+          <ScholarAvatar scholar={scholar} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[15px] font-serif font-semibold text-ink truncate">
+                {scholar.displayName}
               </span>
+              {isCurrentUser && (
+                <span className="text-[10px] font-sans font-bold uppercase tracking-wide text-blue bg-bluexl px-2 py-0.5 rounded-full">
+                  {t('community.you', 'You')}
+                </span>
+              )}
+            </div>
+            {scholar.nickname && (
+              <p className="text-[12px] text-muted font-sans mt-0.5">@{scholar.nickname}</p>
+            )}
+            {joinedDate && (
+              <p className="text-[11px] text-muted font-sans mt-0.5">
+                {t('community.joined', 'Joined {{date}}', { date: joinedDate })}
+              </p>
             )}
           </div>
-          {scholar.nickname && (
-            <p className="text-[12px] text-muted font-sans mt-0.5">@{scholar.nickname}</p>
-          )}
-          {joinedDate && (
-            <p className="text-[11px] text-muted font-sans mt-0.5">
-              {t('community.joined', 'Joined {{date}}', { date: joinedDate })}
-            </p>
-          )}
-        </div>
-      </div>
 
-      {scholar.bio && (
-        <p className="text-[13px] text-ink2 font-sans leading-relaxed line-clamp-2">
-          {scholar.bio}
-        </p>
-      )}
-
-      {scholar.stats && (
-        <div className="flex gap-4">
-          <div className="flex items-center gap-1.5 text-[12px] text-ink3 font-sans">
-            <BookOpen className="w-3.5 h-3.5 text-muted" strokeWidth={1.5} />
-            <span>{scholar.stats.totalKnown.toLocaleString()}</span>
-            <span className="text-muted">{t('community.wordsKnown', 'words')}</span>
-          </div>
-          {scholar.stats.streak > 0 && (
-            <div className="flex items-center gap-1.5 text-[12px] text-ink3 font-sans">
-              <Flame className="w-3.5 h-3.5 text-amber" strokeWidth={1.5} />
-              <span>{scholar.stats.streak}</span>
-              <span className="text-muted">{t('community.dayStreak', 'day streak')}</span>
+          {/* Context menu for other users */}
+          {!isCurrentUser && (
+            <div className="relative">
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                className="p-1.5 rounded-md text-muted hover:text-ink hover:bg-parch3 transition-colors"
+                aria-label={t('community.moreOptions', 'More options')}
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+              {menuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-7 z-20 bg-parch2 border border-bdr rounded-xl shadow-lg py-1 min-w-[160px]">
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setReportTarget(scholar);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-ink hover:bg-parch3 transition-colors"
+                    >
+                      <Flag className="w-3.5 h-3.5 text-amber" />
+                      {t('community.reportProfile', 'Report profile')}
+                    </button>
+                    <button
+                      onClick={handleBlock}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-[12px] text-ruby hover:bg-ruby/5 transition-colors"
+                    >
+                      <UserX className="w-3.5 h-3.5" />
+                      {t('community.blockUser', 'Block user')}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
-      )}
 
-      <div className="flex items-center justify-between pt-1">
-        <div />
-        {!isCurrentUser && (
-          <Link
-            to={`/app/profile/${scholar.uid}`}
-            className="btn-secondary flex items-center gap-1.5 text-[12px] px-3 py-1.5"
-          >
-            {t('community.viewProfile', 'View Profile')}
-            <ExternalLink className="w-3 h-3" />
-          </Link>
+        {scholar.bio && (
+          <p className="text-[13px] text-ink2 font-sans leading-relaxed line-clamp-2">
+            {scholar.bio}
+          </p>
         )}
-        {isCurrentUser && (
-          <Link
-            to={`/app/profile/${scholar.uid}`}
-            className="text-[12px] text-blue hover:underline font-sans flex items-center gap-1"
-          >
-            {t('community.viewProfile', 'View Profile')}
-            <ExternalLink className="w-3 h-3" />
-          </Link>
+
+        {scholar.stats && (
+          <div className="flex gap-4">
+            <div className="flex items-center gap-1.5 text-[12px] text-ink3 font-sans">
+              <BookOpen className="w-3.5 h-3.5 text-muted" strokeWidth={1.5} />
+              <span>{scholar.stats.totalKnown.toLocaleString()}</span>
+              <span className="text-muted">{t('community.wordsKnown', 'words')}</span>
+            </div>
+            {scholar.stats.streak > 0 && (
+              <div className="flex items-center gap-1.5 text-[12px] text-ink3 font-sans">
+                <Flame className="w-3.5 h-3.5 text-amber" strokeWidth={1.5} />
+                <span>{scholar.stats.streak}</span>
+                <span className="text-muted">{t('community.dayStreak', 'day streak')}</span>
+              </div>
+            )}
+          </div>
         )}
+
+        <div className="flex items-center justify-between pt-1">
+          <div />
+          {!isCurrentUser && (
+            <Link
+              to={`/app/profile/${scholar.uid}`}
+              className="btn-secondary flex items-center gap-1.5 text-[12px] px-3 py-1.5"
+            >
+              {t('community.viewProfile', 'View Profile')}
+              <ExternalLink className="w-3 h-3" />
+            </Link>
+          )}
+          {isCurrentUser && (
+            <Link
+              to={`/app/profile/${scholar.uid}`}
+              className="text-[12px] text-blue hover:underline font-sans flex items-center gap-1"
+            >
+              {t('community.viewProfile', 'View Profile')}
+              <ExternalLink className="w-3 h-3" />
+            </Link>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -164,6 +357,10 @@ export const CommunityPage = () => {
       cancelled = true;
     };
   }, [t]);
+
+  const handleBlocked = (uid: string) => {
+    setScholars((prev) => prev.filter((s) => s.uid !== uid));
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -278,11 +475,24 @@ export const CommunityPage = () => {
                 key={scholar.uid}
                 scholar={scholar}
                 isCurrentUser={user?.uid === scholar.uid}
+                onBlocked={handleBlocked}
               />
             ))}
           </div>
         </>
       )}
+
+      {/* Support / abuse link */}
+      <div className="mt-10 pt-6 border-t border-bdr flex items-center justify-center gap-1.5 text-[12px] text-muted">
+        <Mail className="w-3.5 h-3.5" />
+        <span>{t('community.supportNote', 'Need help or want to report abuse?')}</span>
+        <a
+          href="mailto:support@paleoglossa.com"
+          className="text-blue hover:underline"
+        >
+          support@paleoglossa.com
+        </a>
+      </div>
     </div>
   );
 };

@@ -18,6 +18,8 @@ import {
   GitBranch,
 } from 'lucide-react';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
+import { COMMUNITY_ENABLED, COMMUNITY_MOBILE_ENABLED } from '@/lib/featureFlags';
+import { isCapacitor } from '@/lib/platform';
 
 interface MoreCardProps {
   icon: React.ElementType;
@@ -56,6 +58,7 @@ const Section = ({ title, children }: SectionProps) => (
 export const More = () => {
   const { t } = useTranslation();
   const { isAdmin } = useSubscription();
+  const communityVisible = COMMUNITY_ENABLED && (!isCapacitor() || COMMUNITY_MOBILE_ENABLED);
 
   return (
     <div className="min-h-screen bg-parch pb-safe">
@@ -94,9 +97,11 @@ export const More = () => {
           <MoreCard icon={Headphones} label={t('nav.audioLab', 'Audio Lab')} to="/app/audio-lab" />
         </Section>
 
-        <Section title={t('more.community', 'Community')}>
-          <MoreCard icon={Users} label={t('nav.community', 'Community')} to="/app/community" />
-        </Section>
+        {communityVisible && (
+          <Section title={t('more.community', 'Community')}>
+            <MoreCard icon={Users} label={t('nav.community', 'Community')} to="/app/community" />
+          </Section>
+        )}
 
         <Section title={t('more.account', 'Account')}>
           <MoreCard icon={Settings} label={t('nav.settings', 'Settings')} to="/app/settings" />

@@ -445,4 +445,96 @@ router.get(
   }
 );
 
+// ── GET /api/admin/userReports ───────────────────────────────────────────────
+// Returns profile reports (submitted via POST /api/social/report with type='profile').
+router.get(
+  '/api/admin/userReports',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    try {
+      const snap = await adminDb_
+        .collection('userReports')
+        .orderBy('createdAt', 'desc')
+        .limit(100)
+        .get();
+      const reports: any[] = [];
+      snap.forEach((d) => reports.push({ id: d.id, ...d.data() }));
+      res.status(200).json(reports);
+    } catch (e: any) {
+      console.error('[admin/userReports] Error:', e.message);
+      res.status(500).json({ error: 'Failed to get user reports', code: 'INTERNAL_ERROR' });
+    }
+  }
+);
+
+// ── POST /api/admin/userReports/:id/resolve ──────────────────────────────────
+// Marks a profile report as resolved.
+router.post(
+  '/api/admin/userReports/:id/resolve',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    try {
+      await adminDb_
+        .collection('userReports')
+        .doc(String(req.params.id))
+        .update({ status: 'resolved', resolvedAt: new Date() });
+      res.status(200).json({ ok: true });
+    } catch (e: any) {
+      console.error('[admin/userReports/resolve] Error:', e.message);
+      res.status(500).json({ error: 'Failed to resolve report', code: 'INTERNAL_ERROR' });
+    }
+  }
+);
+
+// ── POST /api/admin/users/:uid/hide ─────────────────────────────────────────
+// Sets moderationStatus=hidden on a user profile, removing them from community.
+router.post(
+  '/api/admin/users/:uid/hide',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    try {
+      await adminDb_.collection('users').doc(String(req.params.uid)).update({ moderationStatus: 'hidden' });
+      res.status(200).json({ ok: true });
+    } catch (e: any) {
+      console.error('[admin/users/hide] Error:', e.message);
+      res.status(500).json({ error: 'Failed to hide user', code: 'INTERNAL_ERROR' });
+    }
+  }
+);
+
+// ── POST /api/admin/users/:uid/restore ──────────────────────────────────────
+// Restores a hidden user profile to visible.
+router.post(
+  '/api/admin/users/:uid/restore',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    try {
+      await adminDb_
+        .collection('users')
+        .doc(String(req.params.uid))
+        .update({ moderationStatus: 'visible' });
+      res.status(200).json({ ok: true });
+    } catch (e: any) {
+      console.error('[admin/users/restore] Error:', e.message);
+      res.status(500).json({ error: 'Failed to restore user', code: 'INTERNAL_ERROR' });
+    }
+  }
+);
+
 export default router;

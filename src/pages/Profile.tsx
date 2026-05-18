@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft } from 'lucide-react';
+import {
+  BookOpen,
+  Flame,
+  GraduationCap,
+  Globe,
+  Lock,
+  Settings,
+  ArrowLeft,
+  Flag,
+  UserX,
+  Mail,
+} from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import {
   fetchOwnProfile,
@@ -9,12 +20,119 @@ import {
   UserProfileData,
   PublicText,
 } from '../lib/services/profileService.js';
+import { reportUser, blockUser } from '../lib/services/communityService.js';
 import { cn } from '@/lib/utils';
+import type { ReportReason } from '../types/social.js';
+
+const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: 'spam', label: 'Spam' },
+  { value: 'harassment', label: 'Harassment or bullying' },
+  { value: 'inappropriate_content', label: 'Inappropriate content' },
+  { value: 'fake_account', label: 'Fake or impersonation account' },
+  { value: 'other', label: 'Other' },
+];
 
 function formatDate(val: any): string {
   if (!val) return '';
   const d = val?.toDate ? val.toDate() : new Date(val);
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+}
+
+// ── Report modal ──────────────────────────────────────────────────────────────
+function ReportModal({
+  targetUid,
+  displayName,
+  onClose,
+}: {
+  targetUid: string;
+  displayName: string;
+  onClose: () => void;
+}) {
+  const [reason, setReason] = useState<ReportReason>('spam');
+  const [details, setDetails] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await reportUser({ type: 'profile', targetUid, reason, details: details.trim() || undefined });
+      setDone(true);
+    } catch {
+      setError('Could not submit report. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="card p-6 w-full max-w-sm flex flex-col gap-4">
+        {done ? (
+          <>
+            <h3 className="text-[16px] font-serif text-ink font-semibold">Report submitted</h3>
+            <p className="text-[13px] text-muted">
+              Thank you. Our team will review this report. If you need immediate help, contact us at{' '}
+              <a href="mailto:support@paleoglossa.com" className="text-blue hover:underline">
+                support@paleoglossa.com
+              </a>
+              .
+            </p>
+            <button onClick={onClose} className="btn-secondary text-[13px]">
+              Close
+            </button>
+          </>
+        ) : (
+          <>
+            <h3 className="text-[16px] font-serif text-ink font-semibold">
+              Report {displayName}
+            </h3>
+            <div className="flex flex-col gap-2">
+              {REPORT_REASONS.map((r) => (
+                <label key={r.value} className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="reason"
+                    value={r.value}
+                    checked={reason === r.value}
+                    onChange={() => setReason(r.value)}
+                    className="accent-blue"
+                  />
+                  <span className="text-[13px] text-ink">{r.label}</span>
+                </label>
+              ))}
+            </div>
+            <textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              placeholder="Additional details (optional)"
+              maxLength={500}
+              rows={3}
+              className="w-full bg-parch border border-bdr rounded-lg p-2.5 text-[12px] font-sans text-ink placeholder:text-muted resize-none focus:outline-none focus:ring-2 focus:ring-blue/30"
+            />
+            {error && <p className="text-[12px] text-ruby">{error}</p>}
+            <div className="flex gap-2 justify-end">
+              <button onClick={onClose} className="btn-secondary text-[12px] px-4 py-2">
+                Cancel
+              </button>
+              <button
+                onClick={submit}
+                disabled={submitting}
+                className="btn-primary text-[12px] px-4 py-2"
+              >
+                {submitting ? 'Submitting…' : 'Submit report'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export const ProfilePage = () => {
@@ -28,6 +146,9 @@ export const ProfilePage = () => {
   const [texts, setTexts] = useState<PublicText[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [blocking, setBlocking] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -69,6 +190,17 @@ export const ProfilePage = () => {
     load();
   }, [userId, isOwnProfile]);
 
+  const handleBlock = async () => {
+    if (!userId) return;
+    setBlocking(true);
+    try {
+      await blockUser(userId);
+      setBlocked(true);
+    } catch {
+      setBlocking(false);
+    }
+  };
+
   const initials = (profile?.displayName || '?')
     .split(' ')
     .map((n) => n[0])
@@ -84,16 +216,20 @@ export const ProfilePage = () => {
     );
   }
 
-  if (isPrivate) {
+  if (isPrivate || blocked) {
     return (
       <div className="p-6 md:p-12 max-w-2xl mx-auto font-sans min-h-screen flex flex-col items-center justify-center gap-6 text-center">
         <div className="w-16 h-16 rounded-full bg-parch2 border border-bdr flex items-center justify-center">
           <Lock className="w-7 h-7 text-muted" />
         </div>
         <div>
-          <h2 className="text-[22px] font-serif text-ink mb-2">Profile is private</h2>
+          <h2 className="text-[22px] font-serif text-ink mb-2">
+            {blocked ? 'User blocked' : 'Profile is private'}
+          </h2>
           <p className="text-[14px] text-muted">
-            This scholar has not made their profile public yet.
+            {blocked
+              ? 'You have blocked this user. They will no longer appear in Community.'
+              : 'This scholar has not made their profile public yet.'}
           </p>
         </div>
         <button
@@ -108,6 +244,14 @@ export const ProfilePage = () => {
 
   return (
     <div className="p-6 md:p-12 max-w-3xl mx-auto font-sans min-h-screen pb-24">
+      {showReport && userId && profile && (
+        <ReportModal
+          targetUid={userId}
+          displayName={profile.displayName}
+          onClose={() => setShowReport(false)}
+        />
+      )}
+
       {/* Back link */}
       <button
         onClick={() => navigate(-1)}
@@ -161,14 +305,30 @@ export const ProfilePage = () => {
             )}
           </div>
 
-          {/* Own profile: edit button */}
-          {isOwnProfile && (
+          {/* Own profile: edit button. Other profiles: report/block. */}
+          {isOwnProfile ? (
             <button
               onClick={() => navigate('/app/settings')}
               className="btn-secondary flex items-center gap-2 px-4 py-2 text-[13px] shrink-0"
             >
               <Settings className="w-3.5 h-3.5" /> Edit Profile
             </button>
+          ) : (
+            <div className="flex flex-col gap-2 shrink-0">
+              <button
+                onClick={() => setShowReport(true)}
+                className="btn-secondary flex items-center gap-2 px-4 py-2 text-[12px]"
+              >
+                <Flag className="w-3.5 h-3.5 text-amber" /> Report
+              </button>
+              <button
+                onClick={handleBlock}
+                disabled={blocking}
+                className="flex items-center gap-2 px-4 py-2 text-[12px] font-medium text-ruby border border-ruby/20 rounded-lg hover:bg-ruby/5 transition-colors"
+              >
+                <UserX className="w-3.5 h-3.5" /> {blocking ? 'Blocking…' : 'Block'}
+              </button>
+            </div>
           )}
         </div>
 
@@ -266,6 +426,17 @@ export const ProfilePage = () => {
               Import a text
             </button>
           )}
+        </div>
+      )}
+
+      {/* Support / abuse link */}
+      {!isOwnProfile && (
+        <div className="mt-8 pt-6 border-t border-bdr flex items-center justify-center gap-1.5 text-[12px] text-muted">
+          <Mail className="w-3.5 h-3.5" />
+          <span>Need help or want to report abuse?</span>
+          <a href="mailto:support@paleoglossa.com" className="text-blue hover:underline">
+            support@paleoglossa.com
+          </a>
         </div>
       )}
     </div>
