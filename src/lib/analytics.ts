@@ -1,4 +1,5 @@
 import posthog from 'posthog-js';
+import { privacyService } from './services/privacyService.js';
 
 export function initAnalytics() {
   const key = import.meta.env.VITE_POSTHOG_API_KEY;
@@ -10,13 +11,26 @@ export function initAnalytics() {
     capture_pageview: true,
     capture_pageleave: true,
     persistence: 'localStorage',
-    loaded: (ph) => {
-      if (import.meta.env.DEV) ph.opt_out_capturing();
-    },
   });
+
+  if (!privacyService.isAnalyticsEnabled()) {
+    posthog.opt_out_capturing();
+  }
+}
+
+export function optInAnalytics() {
+  posthog.opt_in_capturing();
+  privacyService.setAnalyticsEnabled(true);
+}
+
+export function optOutAnalytics() {
+  posthog.opt_out_capturing();
+  posthog.reset();
+  privacyService.setAnalyticsEnabled(false);
 }
 
 export function track(event: string, properties?: Record<string, unknown>) {
+  if (!privacyService.isAnalyticsEnabled()) return;
   try {
     posthog.capture(event, properties);
   } catch {
@@ -25,6 +39,7 @@ export function track(event: string, properties?: Record<string, unknown>) {
 }
 
 export function identifyAnalytics(userId: string, traits?: Record<string, unknown>) {
+  if (!privacyService.isAnalyticsEnabled()) return;
   try {
     posthog.identify(userId, traits);
   } catch {
