@@ -301,8 +301,7 @@ These features are either stubs or not functional in the current build:
   limited; the app requires network for most features.
 - **Apple Sign-In on iOS** — Requires Apple Developer membership and
   native Sign In with Apple capability in Xcode.
-- **In-app purchases** — Not implemented; subscriptions are handled via
-  Stripe checkout (web-based).
+- **In-app purchases** — Disabled by default for native builds to ensure App Store compliance. See [Mobile Subscription Compliance](#mobile-subscription-compliance).
 
 ---
 
@@ -422,3 +421,21 @@ OAuth client ID is required from the Google Cloud Console.
 - Native builds set `VITE_API_BASE_URL` to the production origin.
 - All raw `fetch('/api/…')` calls and the `apiFetch` wrapper use this
   helper, so a single env var controls the base for the whole app.
+
+## Mobile Subscription Compliance
+
+To comply with App Store and Play Store guidelines regarding in-app purchases:
+
+- By default, Stripe checkout is disabled for native iOS/Android builds.
+- To enable it, set `VITE_ENABLE_MOBILE_PURCHASES=true` in your production environment variables.
+- When disabled (default):
+  - Paid plan buttons are disabled.
+  - The Stripe Billing Portal button is hidden.
+  - A neutral message is shown, directing users to the web for subscription management.
+  - Existing paid users retain their entitlement access after logging in.
+
+### Configuration
+
+```bash
+VITE_ENABLE_MOBILE_PURCHASES=false
+```
