@@ -4,6 +4,18 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 const Landing = lazy(() =>
   import('./pages/Landing.js').then((module) => ({ default: module.Landing }))
 );
+const Privacy = lazy(() =>
+  import('./pages/legal/Privacy.js').then((module) => ({ default: module.Privacy }))
+);
+const Terms = lazy(() =>
+  import('./pages/legal/Terms.js').then((module) => ({ default: module.Terms }))
+);
+const Support = lazy(() =>
+  import('./pages/legal/Support.js').then((module) => ({ default: module.Support }))
+);
+const DeleteAccount = lazy(() =>
+  import('./pages/DeleteAccount.js').then((module) => ({ default: module.DeleteAccount }))
+);
 const Dashboard = lazy(() =>
   import('./pages/Dashboard.js').then((module) => ({ default: module.Dashboard }))
 );
@@ -110,6 +122,10 @@ export default function App() {
           {/* Marketing (Public) */}
           <Route path="/" element={<Landing />} />
           <Route path="/pricing" element={<Subscription />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/delete-account" element={<DeleteAccount />} />
 
           {/* Auth */}
           <Route path="/auth/login" element={<SignIn />} />

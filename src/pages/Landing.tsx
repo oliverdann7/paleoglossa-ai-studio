@@ -291,8 +291,13 @@ export const Landing = () => {
         </section>
       </main>
 
-      <footer className="py-8 border-t border-bdr flex justify-center items-center text-[10px] font-mono uppercase tracking-widest text-muted">
+      <footer className="py-8 border-t border-bdr flex flex-col md:flex-row justify-center items-center text-[10px] font-mono uppercase tracking-widest text-muted gap-4">
         <span>© 2026 Paleoglossa Philology</span>
+        <div className="flex gap-4">
+          <a href="/privacy" className="hover:text-ink transition-colors">Privacy</a>
+          <a href="/terms" className="hover:text-ink transition-colors">Terms</a>
+          <a href="/support" className="hover:text-ink transition-colors">Support</a>
+        </div>
       </footer>
     </div>
   );
