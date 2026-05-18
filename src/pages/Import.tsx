@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { ImportService, ImportedText, computeContentHash } from "../lib/services/importService.js";
 import { AIClient } from "../lib/services/aiClient.js";
 import { useAuth } from "../lib/hooks/useAuth.js";
+import { getApiUrl } from "../lib/services/apiBaseUrl.js";
 import { useKnowledge } from "../lib/hooks/useKnowledge.js";
 import { WordState } from "../lib/constants/wordStates.js";
 import { ImportedSentence } from "../types/firestore.js";
@@ -184,7 +185,7 @@ export const Import = () => {
         const formData = new FormData();
         formData.append('file', file);
 
-        const res = await fetch('/api/import/parse', {
+        const res = await fetch(getApiUrl('/api/import/parse'), {
           method: 'POST',
           body: formData,
         });

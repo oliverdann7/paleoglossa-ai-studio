@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Headphones, Volume2, AlertTriangle, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LANGUAGES, getLanguageById } from "../lib/constants/languages.js";
+import { getApiUrl } from "../lib/services/apiBaseUrl.js";
 
 interface TTSStatus {
   audioUrl: string | null;
@@ -33,7 +34,7 @@ export const AudioLab = () => {
     setIsLoadingTTS(true);
     setTtsResult(null);
     try {
-      const res = await fetch('/api/audio/tts', {
+      const res = await fetch(getApiUrl('/api/audio/tts'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ languageId: selectedLang, text: testText || lang?.sampleText || '' }),
       });
@@ -46,7 +47,7 @@ export const AudioLab = () => {
     setIsLoadingGuide(true);
     setGuideResult(null);
     try {
-      const res = await fetch('/api/ai/pronunciation', {
+      const res = await fetch(getApiUrl('/api/ai/pronunciation'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ languageId: selectedLang, text: testText || lang?.sampleText || '' }),
       });

@@ -1,9 +1,10 @@
 import { SearchQuery, SearchResult } from '../../types/modules.js';
+import { getApiUrl } from './apiBaseUrl.js';
 
 export class SearchService {
   static async search(query: SearchQuery): Promise<SearchResult[]> {
     try {
-      const response = await fetch('/api/search', {
+      const response = await fetch(getApiUrl('/api/search'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(query),

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, GraduationCap, Loader2, Search, Tag, BookOpen, Layers, MessageSquare, AlignLeft, Hash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { getApiUrl } from "../lib/services/apiBaseUrl.js";
 
 interface Paradigm {
   caption: string;
@@ -269,7 +270,7 @@ export const Grammar = () => {
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
   useEffect(() => {
-    fetch('/api/grammar/concepts')
+    fetch(getApiUrl('/api/grammar/concepts'))
       .then(r => r.json())
       .then(data => { setConcepts(data); setIsLoading(false); })
       .catch(() => setIsLoading(false));
