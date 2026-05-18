@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Check, Sparkles, Crown, ArrowRight, Lock, ExternalLink, Loader2 } from 'lucide-react';
+import { Check, Sparkles, Crown, ArrowRight, Lock, ExternalLink, Loader2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { PLANS, getPlanById } from '../lib/constants/plans.js';
 import { LANGUAGES, getLanguageIcon } from '../lib/constants/languages.js';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { isCapacitor } from '../lib/platform.js';
 
 export const Subscription = () => {
   const { t } = useTranslation();
@@ -23,6 +24,7 @@ export const Subscription = () => {
   const [portalLoading, setPortalLoading] = useState(false);
   const [searchParams] = useSearchParams();
 
+  const isNative = isCapacitor() && import.meta.env.VITE_ENABLE_MOBILE_PURCHASES !== 'true';
   const currentPlan = getPlanById(subscription.currentPlan);
   const success = searchParams.get('success');
   const canceled = searchParams.get('canceled');
@@ -66,6 +68,13 @@ export const Subscription = () => {
       {canceled === 'true' && (
         <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[14px] font-medium text-center">
           {t('sub.paymentCanceled')}
+        </div>
+      )}
+
+      {isNative && (
+        <div className="mb-8 p-4 bg-parch2 border border-bdr rounded-xl text-ink2 text-[14px] flex items-center justify-center gap-3">
+          <Info className="w-5 h-5 text-ink3" />
+          {t('sub.mobileSubscriptionNotice', { defaultValue: "Subscription management is currently available on the web." })}
         </div>
       )}
 
@@ -120,6 +129,7 @@ export const Subscription = () => {
               : plan.monthlyPriceUsd;
           const label = billingCycle === 'yearly' ? '/year' : '/month';
           const isLoading = loadingPlan === plan.id;
+          const isDisabled = isNative || isLoading || isCurrent;
 
           return (
             <div
@@ -160,14 +170,16 @@ export const Subscription = () => {
 
               <button
                 onClick={() => handleChoosePlan(plan.id)}
-                disabled={isLoading || isCurrent}
+                disabled={isDisabled}
                 className={cn(
                   'w-full py-3 text-[14px] font-bold rounded-xl transition-all flex items-center justify-center gap-2',
                   isCurrent
                     ? 'bg-parch2 text-ink3 border border-bdr cursor-default'
-                    : isLoading
-                      ? 'bg-blue/70 text-white cursor-wait'
-                      : 'bg-blue text-white hover:bg-blue/90 shadow-md active:scale-[0.98]'
+                    : isDisabled
+                      ? 'bg-parch2 text-ink3 border border-bdr cursor-not-allowed'
+                      : isLoading
+                        ? 'bg-blue/70 text-white cursor-wait'
+                        : 'bg-blue text-white hover:bg-blue/90 shadow-md active:scale-[0.98]'
                 )}
               >
                 {isLoading ? (
@@ -179,7 +191,7 @@ export const Subscription = () => {
                 ) : (
                   t('sub.choose', { name: plan.name })
                 )}
-                {!isCurrent && !isLoading && <ArrowRight className="w-4 h-4" />}
+                {!isDisabled && !isLoading && <ArrowRight className="w-4 h-4" />}
               </button>
             </div>
           );
@@ -187,7 +199,7 @@ export const Subscription = () => {
       </div>
 
       {/* Manage Billing */}
-      {subscription.subscriptionStatus === 'active' && subscription.stripeCustomerId && (
+      {subscription.subscriptionStatus === 'active' && subscription.stripeCustomerId && !isNative && (
         <div className="text-center mb-12">
           <button
             onClick={handleManageBilling}
