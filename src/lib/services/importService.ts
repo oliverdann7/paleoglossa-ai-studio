@@ -1,5 +1,15 @@
 import { db } from '../firebase.js';
-import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { apiFetch } from './apiFetch.js';
 import { ImportedText as FSImportedText } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
@@ -10,7 +20,7 @@ export async function computeContentHash(text: string): Promise<string> {
   const data = encoder.encode(text.trim());
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export type ImportedText = FSImportedText;
@@ -35,19 +45,19 @@ export class ImportService {
     try {
       const snap = await getDocs(collection(db, `users/${userId}/imports`));
       const imports: ImportedText[] = [];
-      snap.forEach(doc => {
+      snap.forEach((doc) => {
         const data = doc.data();
         imports.push({
           ...data,
           id: doc.id,
           createdAt: normalizeTimestamp(data.createdAt),
-          updatedAt: normalizeTimestamp(data.updatedAt)
+          updatedAt: normalizeTimestamp(data.updatedAt),
         } as ImportedText);
       });
       importsCache.set(userId, { data: imports, at: Date.now() });
       return imports;
     } catch (e) {
-      console.error("Import Fetch Error:", e);
+      console.error('Import Fetch Error:', e);
       return [];
     }
   }
@@ -55,7 +65,7 @@ export class ImportService {
   static async migrateLocalStorage(userId: string): Promise<number> {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return 0;
-    
+
     try {
       const imports = JSON.parse(saved) as ImportedText[];
       let count = 0;
@@ -66,7 +76,7 @@ export class ImportService {
       localStorage.removeItem(STORAGE_KEY);
       return count;
     } catch (e) {
-      console.error("Import migration failed:", e);
+      console.error('Import migration failed:', e);
       return 0;
     }
   }
@@ -82,23 +92,23 @@ export class ImportService {
       const snap = await getDoc(doc(db, `users/${userId}/imports`, importId));
       if (snap.exists()) {
         const data = snap.data();
-        return { 
-          ...data, 
+        return {
+          ...data,
           id: snap.id,
           createdAt: normalizeTimestamp(data.createdAt),
-          updatedAt: normalizeTimestamp(data.updatedAt)
+          updatedAt: normalizeTimestamp(data.updatedAt),
         } as ImportedText;
       }
       return null;
     } catch (e) {
-      console.error("Import Fetch Error:", e);
+      console.error('Import Fetch Error:', e);
       return null;
     }
   }
 
   static stripUndefined(obj: any): any {
     if (obj === null || obj === undefined) return obj;
-    if (Array.isArray(obj)) return obj.map(v => this.stripUndefined(v));
+    if (Array.isArray(obj)) return obj.map((v) => this.stripUndefined(v));
     if (typeof obj === 'object') {
       const cleaned: Record<string, any> = {};
       for (const [key, value] of Object.entries(obj)) {
@@ -130,8 +140,8 @@ export class ImportService {
         uniqueWords: 0,
         knownWords: 0,
         newWords: 0,
-        learningWords: 0
-      }
+        learningWords: 0,
+      },
     };
 
     if (!userId) {
@@ -149,16 +159,23 @@ export class ImportService {
       await setDoc(doc(db, `users/${userId}/imports`, importId), {
         ...cleanedPayload,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
-      console.error("Import Save Error:", e);
-      throw new Error(`Failed to save import to Firestore: ${message}`, e instanceof Error ? { cause: e } : undefined);
+      console.error('Import Save Error:', e);
+      throw new Error(
+        `Failed to save import to Firestore: ${message}`,
+        e instanceof Error ? { cause: e } : undefined
+      );
     }
   }
 
-  static async updateImport(userId: string, importId: string, patch: Partial<ImportedText>): Promise<void> {
+  static async updateImport(
+    userId: string,
+    importId: string,
+    patch: Partial<ImportedText>
+  ): Promise<void> {
     importsCache.delete(userId);
     const cleanedPatch = this.stripUndefined(patch);
     await updateDoc(doc(db, `users/${userId}/imports`, importId), {
@@ -187,7 +204,7 @@ export class ImportService {
   }
 
   // ==================== Public Library ====================
-  
+
   static async sharePublic(userId: string, importId: string): Promise<boolean> {
     if (!userId) return false;
 
@@ -214,25 +231,26 @@ export class ImportService {
     try {
       const snap = await getDocs(collection(db, 'publicTexts'));
       const texts: ImportedText[] = [];
-      snap.forEach(d => {
+      snap.forEach((d) => {
         const rawData = d.data() as Record<string, unknown>;
         const content = (rawData.rawContent as string) || (rawData.content as string) || '';
-        const sentences = rawData.sentences as any[] || [];
+        const sentences = (rawData.sentences as any[]) || [];
         const wordCount = content.split(/\s+/).filter(Boolean).length;
 
         texts.push({
           id: d.id,
-          userId: rawData.userId as string || '',
-          title: rawData.title as string || '',
-          languageId: rawData.languageId as string || 'grc',
-          sourceType: rawData.sourceType as 'paste' | 'file' | 'url' | 'image' | 'pdf' || 'file',
+          userId: (rawData.userId as string) || '',
+          title: (rawData.title as string) || '',
+          languageId: (rawData.languageId as string) || 'grc',
+          sourceType: (rawData.sourceType as 'paste' | 'file' | 'url' | 'image' | 'pdf') || 'file',
           rawContent: content,
-          status: rawData.status as 'pending' | 'processing' | 'complete' | 'failed' || 'complete',
-          analysisStatus: rawData.analysisStatus as 'analyzed' | 'raw' | 'needs_ai' || 'analyzed',
-          visibility: rawData.visibility as 'private' | 'shared' | 'public' || 'public',
+          status:
+            (rawData.status as 'pending' | 'processing' | 'complete' | 'failed') || 'complete',
+          analysisStatus: (rawData.analysisStatus as 'analyzed' | 'raw' | 'needs_ai') || 'analyzed',
+          visibility: (rawData.visibility as 'private' | 'shared' | 'public') || 'public',
           moderationStatus: rawData.moderationStatus as string | undefined,
           sentences: Array.isArray(sentences)
-            ? sentences.map((s: any) => typeof s === 'string' ? { text: s, tokens: [] } : s)
+            ? sentences.map((s: any) => (typeof s === 'string' ? { text: s, tokens: [] } : s))
             : [],
           stats: {
             totalWords: (rawData.stats as any)?.totalWords ?? wordCount,
@@ -253,7 +271,7 @@ export class ImportService {
 
       return texts.slice(0, maxItems);
     } catch (e) {
-      console.error("Error fetching public texts:", e);
+      console.error('Error fetching public texts:', e);
       return [];
     }
   }
@@ -265,11 +283,11 @@ export class ImportService {
       // Get the public text
       const publicRef = doc(db, 'publicTexts', publicTextId);
       const snap = await getDoc(publicRef);
-      
+
       if (!snap.exists()) return null;
-      
+
       const data = snap.data();
-      
+
       // Create a copy in user's imports
       const newId = `fork_${publicTextId}_${Date.now()}`;
       importsCache.delete(userId);
@@ -283,7 +301,7 @@ export class ImportService {
         authorName: data.authorName,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        publishedAt: null
+        publishedAt: null,
       });
       return newId || null;
     } catch {

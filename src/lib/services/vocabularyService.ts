@@ -1,5 +1,13 @@
 import { db } from '../firebase.js';
-import { doc, collection, getDocs, serverTimestamp, writeBatch, increment, arrayUnion } from 'firebase/firestore';
+import {
+  doc,
+  collection,
+  getDocs,
+  serverTimestamp,
+  writeBatch,
+  increment,
+  arrayUnion,
+} from 'firebase/firestore';
 import { WordState, normalizeWordState } from '../constants/wordStates.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
 import { SRSData } from '../../types/firestore.js';
@@ -33,49 +41,54 @@ function getTermId(term: string, languageId: string): string {
 }
 
 // Global queue for batching vocabulary writes to reduce Firestore costs
-const vocabWriteQueue = new Map<string, { docRef: any, payload: any, isNew: boolean }>();
+const vocabWriteQueue = new Map<string, { docRef: any; payload: any; isNew: boolean }>();
 let vocabWriteTimer: NodeJS.Timeout | null = null;
 
 const flushVocabWrites = async () => {
   if (vocabWriteQueue.size === 0) return;
-  
+
   const entries = Array.from(vocabWriteQueue.entries());
   vocabWriteQueue.clear();
-  
+
   // Firestore batches support up to 500 operations
   const chunkSize = 500;
   for (let i = 0; i < entries.length; i += chunkSize) {
     const chunk = entries.slice(i, i + chunkSize);
     const batch = writeBatch(db);
-    
-    for (const data of chunk.map(c => c[1])) {
+
+    for (const data of chunk.map((c) => c[1])) {
       if (data.isNew) {
         batch.set(data.docRef, data.payload, { merge: true });
       } else {
         batch.update(data.docRef, data.payload);
       }
     }
-    
+
     try {
       await batch.commit();
     } catch (e) {
-      console.error("Failed to commit vocabulary batch", e);
+      console.error('Failed to commit vocabulary batch', e);
       // Depending on strictness, we might want to put them back in the queue
     }
   }
 };
 
-const enqueueVocabWrite = (userId: string, termId: string, payload: any, isNew: boolean = false) => {
+const enqueueVocabWrite = (
+  userId: string,
+  termId: string,
+  payload: any,
+  isNew: boolean = false
+) => {
   const docRef = doc(db, `users/${userId}/vocabulary`, termId);
   const queueKey = `${userId}_${termId}`;
-  
+
   const existing = vocabWriteQueue.get(queueKey);
   if (existing) {
     // Merge payloads
     vocabWriteQueue.set(queueKey, {
       docRef,
       payload: { ...existing.payload, ...payload },
-      isNew: existing.isNew || isNew
+      isNew: existing.isNew || isNew,
     });
   } else {
     vocabWriteQueue.set(queueKey, { docRef, payload, isNew });
@@ -99,7 +112,11 @@ export class VocabularyService {
           entry.state = normalizeWordState(entry.state ?? entry.status);
           if (!normalized[normKey]) normalized[normKey] = entry;
         } else if (typeof entry === 'string' || typeof entry === 'number') {
-          if (!normalized[normKey]) normalized[normKey] = { state: normalizeWordState(entry), addedAt: new Date().toISOString() };
+          if (!normalized[normKey])
+            normalized[normKey] = {
+              state: normalizeWordState(entry),
+              addedAt: new Date().toISOString(),
+            };
         }
       }
       return normalized;
@@ -113,7 +130,7 @@ export class VocabularyService {
     try {
       const vocabSnap = await getDocs(collection(db, `users/${userId}/vocabulary`));
       const map: KnowledgeMap = {};
-      vocabSnap.forEach(doc => {
+      vocabSnap.forEach((doc) => {
         const data = doc.data();
         const nextReview = normalizeTimestamp(data.nextReview);
         const addedAt = normalizeTimestamp(data.createdAt);
@@ -124,20 +141,22 @@ export class VocabularyService {
 
         const incoming: WordInfo = {
           state: normalizeWordState(data.status),
-          srs: nextReview ? {
-            lastReviewed: data.lastReviewed || null,
-            nextReview: nextReview,
-            interval: data.interval || 0,
-            ease: data.ease || 2.5,
-            step: data.step || 0
-          } : undefined,
+          srs: nextReview
+            ? {
+                lastReviewed: data.lastReviewed || null,
+                nextReview: nextReview,
+                interval: data.interval || 0,
+                ease: data.ease || 2.5,
+                step: data.step || 0,
+              }
+            : undefined,
           notes: data.notes,
           userGloss: data.userGloss,
           contexts: data.contexts || [],
           addedAt: addedAt || new Date().toISOString(),
           languageId: data.languageId,
           encounterCount: data.encounterCount ?? 0,
-          lastSeenAt: normalizeTimestamp(data.lastSeenAt) || undefined
+          lastSeenAt: normalizeTimestamp(data.lastSeenAt) || undefined,
         };
 
         const existing = map[mapKey];
@@ -145,7 +164,14 @@ export class VocabularyService {
           map[mapKey] = incoming;
         } else {
           // Merge duplicate entries: take the more advanced state and sum encounter counts.
-          const stateOrder = [WordState.NEW, WordState.SEEN, WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN, WordState.IGNORED];
+          const stateOrder = [
+            WordState.NEW,
+            WordState.SEEN,
+            WordState.LEARNING,
+            WordState.FAMILIAR,
+            WordState.KNOWN,
+            WordState.IGNORED,
+          ];
           const incomingRank = stateOrder.indexOf(incoming.state);
           const existingRank = stateOrder.indexOf(existing.state);
           map[mapKey] = {
@@ -158,21 +184,27 @@ export class VocabularyService {
       vocabCache.set(userId, { data: map, at: Date.now() });
       return map;
     } catch (e) {
-      console.error("Error fetching vocabulary", e);
+      console.error('Error fetching vocabulary', e);
       return {};
     }
   }
 
-  static async setWordState(userId: string | null, term: string, state: WordState, languageId: string = "unknown", srs?: SRSData) {
+  static async setWordState(
+    userId: string | null,
+    term: string,
+    state: WordState,
+    languageId: string = 'unknown',
+    srs?: SRSData
+  ) {
     if (!userId) {
       // Local fallback
       const ls = localStorage.getItem(STORAGE_KEY);
       const map = ls ? JSON.parse(ls) : {};
-      map[term] = { 
-        state, 
+      map[term] = {
+        state,
         addedAt: map[term]?.addedAt || new Date().toISOString(),
         srs: srs || map[term]?.srs,
-        languageId
+        languageId,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
       return;
@@ -199,42 +231,73 @@ export class VocabularyService {
     enqueueVocabWrite(userId, termId, payload, true);
   }
 
-  static incrementEncounter(userId: string | null, term: string, languageId: string = "unknown") {
+  static incrementEncounter(userId: string | null, term: string, languageId: string = 'unknown') {
     if (!userId) return;
     const termId = getTermId(term, languageId);
     // Use merge=true so the write creates the doc if it doesn't exist yet
-    enqueueVocabWrite(userId, termId, {
-      term,
-      lemma: term,
-      normalizedTerm: normalizeLemmaKey(term),
-      languageId,
-      encounterCount: increment(1),
-      lastSeenAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    }, true);
+    enqueueVocabWrite(
+      userId,
+      termId,
+      {
+        term,
+        lemma: term,
+        normalizedTerm: normalizeLemmaKey(term),
+        languageId,
+        encounterCount: increment(1),
+        lastSeenAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      true
+    );
   }
 
-  static async updateGloss(userId: string | null, term: string, gloss: string, languageId: string = "unknown") {
+  static async updateGloss(
+    userId: string | null,
+    term: string,
+    gloss: string,
+    languageId: string = 'unknown'
+  ) {
     if (!userId) return;
     const termId = getTermId(term, languageId);
-    enqueueVocabWrite(userId, termId, {
-      userGloss: gloss,
-      updatedAt: serverTimestamp()
-    }, false);
+    enqueueVocabWrite(
+      userId,
+      termId,
+      {
+        userGloss: gloss,
+        updatedAt: serverTimestamp(),
+      },
+      false
+    );
   }
 
-  static async updateSRS(userId: string | null, term: string, srs: SRSData, state: WordState, languageId: string = "unknown") {
+  static async updateSRS(
+    userId: string | null,
+    term: string,
+    srs: SRSData,
+    state: WordState,
+    languageId: string = 'unknown'
+  ) {
     return this.setWordState(userId, term, state, languageId, srs);
   }
 
-  static setWordContext(userId: string | null, term: string, context: string, languageId: string = "unknown") {
+  static setWordContext(
+    userId: string | null,
+    term: string,
+    context: string,
+    languageId: string = 'unknown'
+  ) {
     if (!userId) return;
     const termId = getTermId(term, languageId);
     // arrayUnion is idempotent and avoids a read round-trip; the 5-item limit is enforced locally
-    enqueueVocabWrite(userId, termId, {
-      contexts: arrayUnion(context),
-      updatedAt: serverTimestamp(),
-    }, true);
+    enqueueVocabWrite(
+      userId,
+      termId,
+      {
+        contexts: arrayUnion(context),
+        updatedAt: serverTimestamp(),
+      },
+      true
+    );
   }
 
   static async migrateLocalStorage(userId: string): Promise<number> {
@@ -248,9 +311,17 @@ export class VocabularyService {
 
       for (const [term, info] of entries) {
         const safeState = normalizeWordState(
-          typeof info === 'object' && info !== null ? (info as any).state ?? (info as any).status : info
+          typeof info === 'object' && info !== null
+            ? ((info as any).state ?? (info as any).status)
+            : info
         );
-        await this.setWordState(userId, term, safeState, (info as any)?.languageId || "unknown", (info as any)?.srs);
+        await this.setWordState(
+          userId,
+          term,
+          safeState,
+          (info as any)?.languageId || 'unknown',
+          (info as any)?.srs
+        );
         count++;
       }
 
@@ -262,7 +333,7 @@ export class VocabularyService {
       localStorage.removeItem(STORAGE_KEY);
       return count;
     } catch (e) {
-      console.error("Migration failed", e);
+      console.error('Migration failed', e);
       return 0;
     }
   }
@@ -283,10 +354,20 @@ export class VocabularyService {
 
     try {
       const vocabSnap = await getDocs(collection(db, `users/${userId}/vocabulary`));
-      const stateOrder = [WordState.NEW, WordState.SEEN, WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN, WordState.IGNORED];
-      const byLemmaKey = new Map<string, { docId: string; data: any; encounterCount: number; stateRank: number }[]>();
+      const stateOrder = [
+        WordState.NEW,
+        WordState.SEEN,
+        WordState.LEARNING,
+        WordState.FAMILIAR,
+        WordState.KNOWN,
+        WordState.IGNORED,
+      ];
+      const byLemmaKey = new Map<
+        string,
+        { docId: string; data: any; encounterCount: number; stateRank: number }[]
+      >();
 
-      vocabSnap.forEach(d => {
+      vocabSnap.forEach((d) => {
         const data = d.data();
         const lemmaKey = getTermId(data.lemma || data.term, data.languageId || 'unknown');
         const arr = byLemmaKey.get(lemmaKey) ?? [];
@@ -305,7 +386,7 @@ export class VocabularyService {
       for (const [lemmaKey, entries] of byLemmaKey.entries()) {
         if (entries.length <= 1 && entries[0]?.docId === lemmaKey) continue;
 
-        const best = entries.reduce((a, b) => a.stateRank >= b.stateRank ? a : b);
+        const best = entries.reduce((a, b) => (a.stateRank >= b.stateRank ? a : b));
         const totalEncounters = entries.reduce((sum, e) => sum + e.encounterCount, 0);
 
         const mergedData = {
@@ -331,18 +412,27 @@ export class VocabularyService {
 
       if (ops > 0) await batch.commit();
 
-      await setDoc(metaRef, { lemmaKeysMigrated: 1, migratedAt: serverTimestamp() }, { merge: true });
+      await setDoc(
+        metaRef,
+        { lemmaKeysMigrated: 1, migratedAt: serverTimestamp() },
+        { merge: true }
+      );
       vocabCache.delete(userId);
     } catch (e) {
       console.error('migrateToLemmaKeys failed', e);
     }
   }
 
-  static async setWordNote(userId: string | null, term: string, notes: string, languageId: string = "unknown") {
+  static async setWordNote(
+    userId: string | null,
+    term: string,
+    notes: string,
+    languageId: string = 'unknown'
+  ) {
     if (!userId) {
       const ls = localStorage.getItem(STORAGE_KEY);
       const map = ls ? JSON.parse(ls) : {};
-      if(map[term]) {
+      if (map[term]) {
         map[term].notes = notes;
       } else {
         map[term] = { state: WordState.NEW, addedAt: new Date().toISOString(), notes, languageId };
@@ -352,10 +442,14 @@ export class VocabularyService {
     }
 
     const termId = getTermId(term, languageId);
-    enqueueVocabWrite(userId, termId, {
-      notes,
-      updatedAt: serverTimestamp()
-    }, true);
+    enqueueVocabWrite(
+      userId,
+      termId,
+      {
+        notes,
+        updatedAt: serverTimestamp(),
+      },
+      true
+    );
   }
 }
-

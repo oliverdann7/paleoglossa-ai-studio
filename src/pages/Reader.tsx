@@ -1,43 +1,43 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { CorpusDB } from "../data/corpus.js";
-import { useKnowledge } from "../lib/hooks/useKnowledge.js";
-import { useSettings } from "../lib/hooks/useSettings.js";
-import { useReaderState } from "../lib/contexts/ReaderContext.js";
-import { WordState } from "../lib/constants/wordStates.js";
-import type { ReaderToken, ReaderSentence, ReaderChapter } from "../types/reader.js";
-import { ReaderTutorial } from "../components/reader/ReaderTutorial.js";
-import { LexDrawerPanel } from "../components/reader/LexDrawerPanel.js";
-import { SentenceAnalysisPanel } from "../components/reader/SentenceAnalysisPanel.js";
-import { ReaderProgressHeader } from "../components/reader/ReaderProgressHeader.js";
-import { ReaderToolbar } from "../components/reader/ReaderToolbar.js";
-import { ReaderAudioBar } from "../components/reader/ReaderAudioBar.js";
-import { ReaderBottomNav } from "../components/reader/ReaderBottomNav.js";
-import { ReadingPane } from "../components/reader/ReadingPane.js";
-import { ReaderSkeleton } from "../components/Skeleton.js";
-import { getTransliteration } from "../lib/transliterate.js";
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { CorpusDB } from '../data/corpus.js';
+import { useKnowledge } from '../lib/hooks/useKnowledge.js';
+import { useSettings } from '../lib/hooks/useSettings.js';
+import { useReaderState } from '../lib/contexts/ReaderContext.js';
+import { WordState } from '../lib/constants/wordStates.js';
+import type { ReaderToken, ReaderSentence, ReaderChapter } from '../types/reader.js';
+import { ReaderTutorial } from '../components/reader/ReaderTutorial.js';
+import { LexDrawerPanel } from '../components/reader/LexDrawerPanel.js';
+import { SentenceAnalysisPanel } from '../components/reader/SentenceAnalysisPanel.js';
+import { ReaderProgressHeader } from '../components/reader/ReaderProgressHeader.js';
+import { ReaderToolbar } from '../components/reader/ReaderToolbar.js';
+import { ReaderAudioBar } from '../components/reader/ReaderAudioBar.js';
+import { ReaderBottomNav } from '../components/reader/ReaderBottomNav.js';
+import { ReadingPane } from '../components/reader/ReadingPane.js';
+import { ReaderSkeleton } from '../components/Skeleton.js';
+import { getTransliteration } from '../lib/transliterate.js';
 
-import { AIClient } from "../lib/services/aiClient.js";
-import { ImportService } from "../lib/services/importService.js";
-import { useAuth } from "../lib/hooks/useAuth.js";
-import { useSubscription } from "../lib/contexts/SubscriptionContext.js";
-import { useToast } from "../lib/hooks/useToast.js";
-import { STORAGE_KEYS } from "../lib/constants/storage.js";
-import { OfflineService } from "../lib/services/offlineService.js";
-import { useOnlineStatus } from "../lib/hooks/useOnlineStatus.js";
+import { AIClient } from '../lib/services/aiClient.js';
+import { ImportService } from '../lib/services/importService.js';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
+import { useToast } from '../lib/hooks/useToast.js';
+import { STORAGE_KEYS } from '../lib/constants/storage.js';
+import { OfflineService } from '../lib/services/offlineService.js';
+import { useOnlineStatus } from '../lib/hooks/useOnlineStatus.js';
 
 // Module-level constant — avoids object recreation on every render
 const TTS_LANG_MAP: Record<string, string> = {
-  grc: "el-GR",
-  "grc-koine": "el-GR",
-  hbo: "he-IL",
-  lat: "it-IT",
-  syr: "ar-SA",
-  arc: "ar-SA",
-  cop: "el-GR",
-  akk: "ar-SA",
-  san: "hi-IN",
+  grc: 'el-GR',
+  'grc-koine': 'el-GR',
+  hbo: 'he-IL',
+  lat: 'it-IT',
+  syr: 'ar-SA',
+  arc: 'ar-SA',
+  cop: 'el-GR',
+  akk: 'ar-SA',
+  san: 'hi-IN',
 };
 
 export const Reader = () => {
@@ -47,18 +47,18 @@ export const Reader = () => {
   const { canAccessLanguage } = useSubscription();
   const { addToast } = useToast();
   const { t } = useTranslation();
-  const onBack = useCallback(() => navigate("/app/library"), [navigate]);
+  const onBack = useCallback(() => navigate('/app/library'), [navigate]);
 
   const [localText, setLocalText] = useState<any>(null);
-  
+
   useEffect(() => {
     if (!textId) return;
-    
+
     const tObj = CorpusDB.getText(textId);
-    if (!tObj && (textId.startsWith("import-") || textId.startsWith("imp-"))) {
-      ImportService.getImports(user ? user.uid : null).then(imports => {
+    if (!tObj && (textId.startsWith('import-') || textId.startsWith('imp-'))) {
+      ImportService.getImports(user ? user.uid : null).then((imports) => {
         const match = imports.find((item: any) => item.id === textId);
-        if(match) setLocalText(match);
+        if (match) setLocalText(match);
       });
     } else if (tObj) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -82,9 +82,9 @@ export const Reader = () => {
       }
     }
   }, [textId, user]);
-  
+
   const text = localText;
-  
+
   const {
     knowledge,
     knowledgeVersion,
@@ -98,13 +98,17 @@ export const Reader = () => {
     getWordInfo,
     fetchTextProgress,
     saveTextProgress,
-    setWordContext
+    setWordContext,
   } = useKnowledge();
   const { settings } = useSettings();
 
   const isOnline = useOnlineStatus();
-  const [selectedWord, setSelectedWord] = useState<(ReaderToken & { sentenceText?: string }) | null>(null);
-  const [selectedSentence, setSelectedSentence] = useState<{ text: string; id: string } | null>(null);
+  const [selectedWord, setSelectedWord] = useState<
+    (ReaderToken & { sentenceText?: string }) | null
+  >(null);
+  const [selectedSentence, setSelectedSentence] = useState<{ text: string; id: string } | null>(
+    null
+  );
   const [tutorialStep, setTutorialStep] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED) ? 0 : 1;
   });
@@ -113,14 +117,35 @@ export const Reader = () => {
 
   const {
     state: {
-      display: { mode: readingMode, displayMode, showTranslit, showParallel, maskKnown, interlinearMode },
+      display: {
+        mode: readingMode,
+        displayMode,
+        showTranslit,
+        showParallel,
+        maskKnown,
+        interlinearMode,
+      },
       navigation: { currentChapterIndex, currentSentenceIndex, currentScrollPage, scrollProgress },
       audio: { isPlaying, position: audioPos, speed: audioSpeed, loopSentence, loopWord },
     },
-    setMode, setDisplayMode, setShowTranslit, setShowParallel, setMaskKnown, setInterlinearMode,
-    setChapterIndex, setSentenceIndex, setScrollPage, setScrollProgress,
-    goToNextSentence, goToPrevSentence, goToNextChapter,
-    togglePlay, setPlayState, setAudioSpeed, toggleLoopSentence, toggleLoopWord,
+    setMode,
+    setDisplayMode,
+    setShowTranslit,
+    setShowParallel,
+    setMaskKnown,
+    setInterlinearMode,
+    setChapterIndex,
+    setSentenceIndex,
+    setScrollPage,
+    setScrollProgress,
+    goToNextSentence,
+    goToPrevSentence,
+    goToNextChapter,
+    togglePlay,
+    setPlayState,
+    setAudioSpeed,
+    toggleLoopSentence,
+    toggleLoopWord,
     setAudioPosition,
     setTextId,
   } = useReaderState();
@@ -137,10 +162,11 @@ export const Reader = () => {
       setInterlinearMode(settings.interlinearMode ?? false);
       setAudioSpeed(settings.audioSpeedDefault ?? 1.0);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textId]);
 
-  const onAskTutor = () => navigate(`/app/tutor?textId=${textId || ''}&sentenceIndex=${currentSentenceIndex || 0}`);
+  const onAskTutor = () =>
+    navigate(`/app/tutor?textId=${textId || ''}&sentenceIndex=${currentSentenceIndex || 0}`);
 
   // Refs for progress saving to avoid re-renders
   const scrollProgressRef = useRef(0);
@@ -152,29 +178,31 @@ export const Reader = () => {
     const loadProgress = async () => {
       const prog = await fetchTextProgress(textId);
       if (prog) {
-        if (readingMode === "scroll" && prog.lastPosition) {
-          const scrollContainer = document.getElementById("reading-area-scroll");
+        if (readingMode === 'scroll' && prog.lastPosition) {
+          const scrollContainer = document.getElementById('reading-area-scroll');
           if (scrollContainer) {
-            scrollContainer.scrollTop = (prog.lastPosition / 100) * (scrollContainer.scrollHeight - scrollContainer.clientHeight);
+            scrollContainer.scrollTop =
+              (prog.lastPosition / 100) *
+              (scrollContainer.scrollHeight - scrollContainer.clientHeight);
           }
-        } else if (readingMode === "page" && prog.sentenceIndex !== undefined) {
+        } else if (readingMode === 'page' && prog.sentenceIndex !== undefined) {
           setSentenceIndex(prog.sentenceIndex);
         }
       }
     };
     loadProgress();
-  // setSentenceIndex is a stable dispatch from useReducer — safe to omit
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // setSentenceIndex is a stable dispatch from useReducer — safe to omit
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textId, fetchTextProgress, readingMode]);
 
   // Save progress periodically - use refs for stability
   useEffect(() => {
     if (!textId) return;
-    
+
     // Initialize refs from state
     scrollProgressRef.current = scrollProgress;
     currentSentenceIndexRef.current = currentSentenceIndex;
-    
+
     // Stable interval that reads from refs
     saveIntervalRef.current = setInterval(() => {
       saveTextProgress({
@@ -182,40 +210,46 @@ export const Reader = () => {
         lastPosition: scrollProgressRef.current,
         sentenceIndex: currentSentenceIndexRef.current,
         completed: scrollProgressRef.current > 95,
-        lastReadAt: new Date().toISOString()
+        lastReadAt: new Date().toISOString(),
       });
     }, 5000);
-    
+
     return () => {
       if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
     };
-  // scrollProgress and currentSentenceIndex are read via refs inside the interval — adding them
-  // as deps would reset the 5 s interval on every scroll tick, defeating the batching purpose.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // scrollProgress and currentSentenceIndex are read via refs inside the interval — adding them
+    // as deps would reset the 5 s interval on every scroll tick, defeating the batching purpose.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textId, saveTextProgress]);
 
   // Clear word insight when word changes
-  const handleAITranslate = useCallback(async (sentenceId: string, sentenceTokens: any[]) => {
-    if (isTranslatingId === sentenceId || aiTranslations[sentenceId]) return;
-    setIsTranslatingId(sentenceId);
-    
-    try {
-      const languageName = text?.language || "ancient language";
-      const result = await AIClient.translateSentence(languageName, sentenceTokens.map(t => t.text).join(" "));
-      setAiTranslations(prev => ({ ...prev, [sentenceId]: result }));
-    } catch (error) {
-      console.error(error);
-      setAiTranslations(prev => ({ ...prev, [sentenceId]: t("reader.errorTranslating") }));
-    } finally {
-      setIsTranslatingId(null);
-    }
-  }, [text, t, setIsTranslatingId, setAiTranslations, isTranslatingId, aiTranslations]);
+  const handleAITranslate = useCallback(
+    async (sentenceId: string, sentenceTokens: any[]) => {
+      if (isTranslatingId === sentenceId || aiTranslations[sentenceId]) return;
+      setIsTranslatingId(sentenceId);
+
+      try {
+        const languageName = text?.language || 'ancient language';
+        const result = await AIClient.translateSentence(
+          languageName,
+          sentenceTokens.map((t) => t.text).join(' ')
+        );
+        setAiTranslations((prev) => ({ ...prev, [sentenceId]: result }));
+      } catch (error) {
+        console.error(error);
+        setAiTranslations((prev) => ({ ...prev, [sentenceId]: t('reader.errorTranslating') }));
+      } finally {
+        setIsTranslatingId(null);
+      }
+    },
+    [text, t, setIsTranslatingId, setAiTranslations, isTranslatingId, aiTranslations]
+  );
 
   useEffect(() => {
-    if (readingMode === "page") {
+    if (readingMode === 'page') {
       const el = document.getElementById(`sentence-${currentSentenceIndex}`);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
   }, [currentSentenceIndex, readingMode]);
@@ -223,7 +257,7 @@ export const Reader = () => {
   const chapters: ReaderChapter[] = useMemo(() => {
     const textId = text?.id;
 
-    if (typeof textId === "string" && CorpusDB.getText(textId)) {
+    if (typeof textId === 'string' && CorpusDB.getText(textId)) {
       const realText = CorpusDB.getText(textId);
       if (!realText?.sectionsPreview) return [];
 
@@ -234,7 +268,7 @@ export const Reader = () => {
             id: preview.id,
             title: preview.label,
             sentences: [],
-            translation: "",
+            translation: '',
           };
 
         const sentences: ReaderSentence[] = section.sentences.map((s: any) => ({
@@ -249,13 +283,9 @@ export const Reader = () => {
             morphology: t.morphology,
             translit:
               t.transliteration ||
-              getTransliteration(
-                t.surface,
-                realText?.language || "",
-                t.normalized,
-              ),
-            punctBefore: t.punctBefore || "",
-            punctAfter: t.punctAfter !== undefined ? t.punctAfter : " ",
+              getTransliteration(t.surface, realText?.language || '', t.normalized),
+            punctBefore: t.punctBefore || '',
+            punctAfter: t.punctAfter !== undefined ? t.punctAfter : ' ',
           })),
         }));
 
@@ -266,7 +296,7 @@ export const Reader = () => {
           translation: section.sentences
             .map((s: any) => s.translation)
             .filter(Boolean)
-            .join(" "),
+            .join(' '),
         };
       });
     }
@@ -275,25 +305,37 @@ export const Reader = () => {
     if (textSentences) {
       return [
         {
-          id: "imported-section-1",
-          title: t("reader.fullText"),
+          id: 'imported-section-1',
+          title: t('reader.fullText'),
           sentences: textSentences.map((s: any, i: number) => ({
             id: `import-sent-${i}`,
-            translation: s.translation || t("reader.noTranslation"),
-            parallel: s.translation || t("reader.noParallelText"),
+            translation: s.translation || t('reader.noTranslation'),
+            parallel: s.translation || t('reader.noParallelText'),
             tokens: s.tokens.map((tok: any, j: number) => ({
               id: `import-token-${i}-${j}`,
               text: tok.text,
               lemma: tok.lemma || tok.text,
               normalized: tok.normalized || tok.text,
-              translit: tok.transliteration || getTransliteration(tok.text, text.languageId || "", tok.normalized),
-              gloss: tok.gloss || t("reader.ancientWord"),
-              morphology: tok.pos || "",
-              punctBefore: "",
-              punctAfter: tok.type === 'whitespace' ? " " : tok.type === 'punctuation' ? "" : (s.tokens[j+1]?.type === 'whitespace' ? "" : ""),
+              translit:
+                tok.transliteration ||
+                getTransliteration(tok.text, text.languageId || '', tok.normalized),
+              gloss: tok.gloss || t('reader.ancientWord'),
+              morphology: tok.pos || '',
+              punctBefore: '',
+              punctAfter:
+                tok.type === 'whitespace'
+                  ? ' '
+                  : tok.type === 'punctuation'
+                    ? ''
+                    : s.tokens[j + 1]?.type === 'whitespace'
+                      ? ''
+                      : '',
             })),
           })),
-          translation: textSentences.map((s: any) => s.translation).filter(Boolean).join(" "),
+          translation: textSentences
+            .map((s: any) => s.translation)
+            .filter(Boolean)
+            .join(' '),
         },
       ];
     }
@@ -305,29 +347,27 @@ export const Reader = () => {
         const rawTokens = sRaw.split(/\s+/).filter(Boolean);
         return {
           id: `import-sent-${i}`,
-          translation: t("reader.noTranslation"),
-          parallel: t("reader.noParallelText"),
+          translation: t('reader.noTranslation'),
+          parallel: t('reader.noParallelText'),
           tokens: rawTokens.map((token: string, j: number) => ({
             id: `import-token-${i}-${j}`,
-            text: token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
-            lemma: token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").toLowerCase(),
+            text: token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ''),
+            lemma: token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, '').toLowerCase(),
             translit: getTransliteration(
-              token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""),
-              text.languageId || text.language || "",
+              token.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ''),
+              text.languageId || text.language || ''
             ),
-            gloss: t("reader.userImportedWord"),
-            punctAfter: token.match(/[.,/#!$%^&*;:{}=\-_`~()]/)
-              ? token.slice(-1) + " "
-              : " ",
+            gloss: t('reader.userImportedWord'),
+            punctAfter: token.match(/[.,/#!$%^&*;:{}=\-_`~()]/) ? token.slice(-1) + ' ' : ' ',
           })),
         };
       });
       return [
         {
-          id: "imported-section-1",
-          title: t("reader.fullText"),
+          id: 'imported-section-1',
+          title: t('reader.fullText'),
           sentences,
-          translation: t("reader.noTranslation"),
+          translation: t('reader.noTranslation'),
         },
       ];
     }
@@ -337,36 +377,47 @@ export const Reader = () => {
   // Determine what kind of content is being read so UI can be honest about it
   const sourceKind: 'import' | 'sample' | 'partial' | 'complete' = useMemo(() => {
     if (!text) return 'complete';
-    if (typeof textId === 'string' && (textId.startsWith('import-') || textId.startsWith('imp-')) && !CorpusDB.getText(textId)) return 'import';
+    if (
+      typeof textId === 'string' &&
+      (textId.startsWith('import-') || textId.startsWith('imp-')) &&
+      !CorpusDB.getText(textId)
+    )
+      return 'import';
     if (text.isSample) return 'sample';
     if (text.isComplete || text.sourceStatus === 'complete') return 'complete';
     return 'partial';
   }, [text, textId]);
 
   const chapter = useMemo(
-    () => chapters[currentChapterIndex] || chapters[0] || { id: '', title: '', sentences: [] as ReaderSentence[], translation: '' },
-    [chapters, currentChapterIndex],
+    () =>
+      chapters[currentChapterIndex] ||
+      chapters[0] || { id: '', title: '', sentences: [] as ReaderSentence[], translation: '' },
+    [chapters, currentChapterIndex]
   );
 
   const SENTENCES_PER_PAGE = 30;
 
   const knownPercent = useMemo(() => {
     const allTokens = (chapter?.sentences ?? []).flatMap((s: ReaderSentence) => s.tokens ?? []);
-    const contentTokens = allTokens.filter((t: ReaderToken) => t.type !== 'punctuation' && t.type !== 'whitespace');
+    const contentTokens = allTokens.filter(
+      (t: ReaderToken) => t.type !== 'punctuation' && t.type !== 'whitespace'
+    );
     if (contentTokens.length === 0) return null;
     const knownCount = contentTokens.filter((t: ReaderToken) => {
       const info = getWordInfo(t.lemma || t.text);
       return info.state === WordState.KNOWN || info.state === WordState.FAMILIAR;
     }).length;
     return Math.round((knownCount / contentTokens.length) * 100);
-  // knowledgeVersion triggers re-evaluation when any word state changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // knowledgeVersion triggers re-evaluation when any word state changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter, knowledgeVersion, getWordInfo]);
 
   // Estimated reading time: unknown words take ~8s, known words ~1.5s
   const readingTimeMinutes = useMemo(() => {
     const allTokens = (chapter?.sentences ?? []).flatMap((s: ReaderSentence) => s.tokens ?? []);
-    const content = allTokens.filter((t: ReaderToken) => t.type !== 'punctuation' && t.type !== 'whitespace');
+    const content = allTokens.filter(
+      (t: ReaderToken) => t.type !== 'punctuation' && t.type !== 'whitespace'
+    );
     if (content.length === 0) return null;
     const unknown = content.filter((t: ReaderToken) => {
       const info = getWordInfo(t.lemma || t.text);
@@ -375,40 +426,58 @@ export const Reader = () => {
     const known = content.length - unknown;
     const seconds = unknown * 8 + known * 1.5;
     return Math.max(1, Math.round(seconds / 60));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter, knowledgeVersion, getWordInfo]);
 
   // Derive effective display flags from the active displayMode
   const effectiveShowParallel = displayMode === 'parallel' ? true : showParallel;
-  const effectiveInterlinear  = displayMode === 'interlinear' ? true : interlinearMode;
+  const effectiveInterlinear = displayMode === 'interlinear' ? true : interlinearMode;
 
   const totalPages = Math.ceil((chapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
-  const sentenceSliceStart = readingMode === "page" ? 0 : currentScrollPage * SENTENCES_PER_PAGE;
-  const sentenceSliceEnd = readingMode === "page" ? chapter?.sentences?.length : (currentScrollPage + 1) * SENTENCES_PER_PAGE;
-  
-  const displayedSentences = readingMode === "page" 
-    ? chapter?.sentences 
-    : chapter?.sentences?.slice(sentenceSliceStart, sentenceSliceEnd);
+  const sentenceSliceStart = readingMode === 'page' ? 0 : currentScrollPage * SENTENCES_PER_PAGE;
+  const sentenceSliceEnd =
+    readingMode === 'page'
+      ? chapter?.sentences?.length
+      : (currentScrollPage + 1) * SENTENCES_PER_PAGE;
+
+  const displayedSentences =
+    readingMode === 'page'
+      ? chapter?.sentences
+      : chapter?.sentences?.slice(sentenceSliceStart, sentenceSliceEnd);
 
   useEffect(() => {
     setScrollPage(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChapterIndex]);
 
-  const isHebrewFont = ["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "Hebrew"].includes(text?.language || "");
-  const isRtl = text?.direction === "rtl" || ["hbo", "Biblical Hebrew", "arc", "Aramaic", "syr", "Syriac", "egy", "Egyptian Hieroglyphs"].includes(text?.language || "");
-  const currentLanguageId = text?.language || text?.languageId || "unknown";
+  const isHebrewFont = [
+    'hbo',
+    'Biblical Hebrew',
+    'arc',
+    'Aramaic',
+    'syr',
+    'Syriac',
+    'Hebrew',
+  ].includes(text?.language || '');
+  const isRtl =
+    text?.direction === 'rtl' ||
+    [
+      'hbo',
+      'Biblical Hebrew',
+      'arc',
+      'Aramaic',
+      'syr',
+      'Syriac',
+      'egy',
+      'Egyptian Hieroglyphs',
+    ].includes(text?.language || '');
+  const currentLanguageId = text?.language || text?.languageId || 'unknown';
 
   const exampleSentences = useMemo(() => {
     if (!selectedWord) return [];
     const currentSentenceId = chapter?.sentences?.[currentSentenceIndex]?.id;
-    return CorpusDB.findSentencesWithLemma(
-      selectedWord.lemma,
-      currentSentenceId,
-      3,
-    );
+    return CorpusDB.findSentencesWithLemma(selectedWord.lemma, currentSentenceId, 3);
   }, [selectedWord, chapter, currentSentenceIndex]);
-
 
   // Update refs when state changes so interval callbacks read fresh values without re-subscribing
   useEffect(() => {
@@ -432,7 +501,7 @@ export const Reader = () => {
     u.lang = TTS_LANG_MAP[currentLanguageId] || 'el-GR';
     u.rate = Math.min(audioSpeed, 1.1);
     window.speechSynthesis.speak(u);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioPos.sentenceIdx, audioPos.wordIdx]);
 
   // Cancel TTS when paused
@@ -462,8 +531,7 @@ export const Reader = () => {
           setAudioPosition(audioPos.sentenceIdx, 0);
         } else if (audioPos.sentenceIdx < chapter.sentences.length - 1) {
           setAudioPosition(audioPos.sentenceIdx + 1, 0);
-          if (readingMode === "page")
-            setSentenceIndex(audioPos.sentenceIdx + 1);
+          if (readingMode === 'page') setSentenceIndex(audioPos.sentenceIdx + 1);
         } else {
           setPlayState(false);
           setAudioPosition(0, 0);
@@ -472,17 +540,8 @@ export const Reader = () => {
     }, delay);
 
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isPlaying,
-    audioPos,
-    audioSpeed,
-    chapter,
-    loopWord,
-    loopSentence,
-    isHebrewFont,
-    readingMode,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, audioPos, audioSpeed, chapter, loopWord, loopSentence, isHebrewFont, readingMode]);
 
   // Tutorial logic
   useEffect(() => {
@@ -505,16 +564,16 @@ export const Reader = () => {
 
   const dismissTutorial = () => {
     setTutorialStep(0);
-    localStorage.setItem(STORAGE_KEYS.TUTORIAL_COMPLETED, "true");
+    localStorage.setItem(STORAGE_KEYS.TUTORIAL_COMPLETED, 'true');
   };
 
   useEffect(() => {
-    if (readingMode === "page") return;
-    
+    if (readingMode === 'page') return;
+
     let rafId: number | null = null;
     let lastUpdate = 0;
     const THROTTLE_MS = 100;
-    
+
     const handleScroll = (e: any) => {
       const now = Date.now();
       if (now - lastUpdate < THROTTLE_MS) {
@@ -532,67 +591,87 @@ export const Reader = () => {
         setScrollProgress(progress || 0);
       }
     };
-    
-    const scrollContainer = document.getElementById("reading-area-scroll");
+
+    const scrollContainer = document.getElementById('reading-area-scroll');
     if (scrollContainer)
-      scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
-      if (scrollContainer)
-        scrollContainer.removeEventListener("scroll", handleScroll);
+      if (scrollContainer) scrollContainer.removeEventListener('scroll', handleScroll);
     };
-  // setScrollProgress is a stable state setter — safe to omit
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // setScrollProgress is a stable state setter — safe to omit
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter, readingMode]);
 
-  const handleMarkPageKnown = useCallback((andAdvance: boolean = true) => {
-    let tokensToMark: ReaderToken[];
-    if (readingMode === "page") {
-      tokensToMark = chapter.sentences[currentSentenceIndex]?.tokens || [];
-    } else {
-      tokensToMark = displayedSentences?.flatMap((s: ReaderSentence) => s.tokens) || [];
-    }
-
-    const validTokens = tokensToMark.filter(t => t.lemma && t.lemma.length > 0);
-    
-    if (validTokens.length > 0) {
-      const tokensWithLang = validTokens.map(t => ({
-        ...t,
-        languageId: currentLanguageId
-      }));
-      if (typeof (setWordState as any).markPageAsSeen === 'function') {
-        (setWordState as any).markPageAsSeen(tokensWithLang);
+  const handleMarkPageKnown = useCallback(
+    (andAdvance: boolean = true) => {
+      let tokensToMark: ReaderToken[];
+      if (readingMode === 'page') {
+        tokensToMark = chapter.sentences[currentSentenceIndex]?.tokens || [];
       } else {
-        validTokens.forEach(t => setWordState(t.lemma, WordState.KNOWN, currentLanguageId));
+        tokensToMark = displayedSentences?.flatMap((s: ReaderSentence) => s.tokens) || [];
       }
-    }
-    
-    addReadWords(validTokens.length);
-    addToast(t("reader.wordsMarkedKnown", { count: validTokens.length }), "success");
 
-    if (!andAdvance) return;
+      const validTokens = tokensToMark.filter((t) => t.lemma && t.lemma.length > 0);
 
-    if (readingMode === "page") {
-      if (currentSentenceIndex < chapter.sentences.length - 1) {
-        setSentenceIndex(currentSentenceIndex + 1);
-        setAudioPosition(currentSentenceIndex + 1, 0);
-        setSelectedWord(null);
-      } else if (currentChapterIndex < chapters.length - 1) {
-        goToNextChapter(chapters.length);
-        setAudioPosition(0, 0);
-        setSelectedWord(null);
+      if (validTokens.length > 0) {
+        const tokensWithLang = validTokens.map((t) => ({
+          ...t,
+          languageId: currentLanguageId,
+        }));
+        if (typeof (setWordState as any).markPageAsSeen === 'function') {
+          (setWordState as any).markPageAsSeen(tokensWithLang);
+        } else {
+          validTokens.forEach((t) => setWordState(t.lemma, WordState.KNOWN, currentLanguageId));
+        }
       }
-    } else {
-      if (currentScrollPage < totalPages - 1) {
-        setScrollPage(currentScrollPage + 1);
-        document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
-        setSelectedWord(null);
-      } else if (currentChapterIndex < chapters.length - 1) {
-        goToNextChapter(chapters.length);
-        setSelectedWord(null);
+
+      addReadWords(validTokens.length);
+      addToast(t('reader.wordsMarkedKnown', { count: validTokens.length }), 'success');
+
+      if (!andAdvance) return;
+
+      if (readingMode === 'page') {
+        if (currentSentenceIndex < chapter.sentences.length - 1) {
+          setSentenceIndex(currentSentenceIndex + 1);
+          setAudioPosition(currentSentenceIndex + 1, 0);
+          setSelectedWord(null);
+        } else if (currentChapterIndex < chapters.length - 1) {
+          goToNextChapter(chapters.length);
+          setAudioPosition(0, 0);
+          setSelectedWord(null);
+        }
+      } else {
+        if (currentScrollPage < totalPages - 1) {
+          setScrollPage(currentScrollPage + 1);
+          document.getElementById('reading-area-scroll')?.scrollTo(0, 0);
+          setSelectedWord(null);
+        } else if (currentChapterIndex < chapters.length - 1) {
+          goToNextChapter(chapters.length);
+          setSelectedWord(null);
+        }
       }
-    }
-  }, [readingMode, chapter, currentSentenceIndex, displayedSentences, currentLanguageId, setWordState, addReadWords, addToast, t, totalPages, chapters.length, currentChapterIndex, currentScrollPage, goToNextChapter, setSentenceIndex, setScrollPage, setAudioPosition]);
+    },
+    [
+      readingMode,
+      chapter,
+      currentSentenceIndex,
+      displayedSentences,
+      currentLanguageId,
+      setWordState,
+      addReadWords,
+      addToast,
+      t,
+      totalPages,
+      chapters.length,
+      currentChapterIndex,
+      currentScrollPage,
+      goToNextChapter,
+      setSentenceIndex,
+      setScrollPage,
+      setAudioPosition,
+    ]
+  );
 
   const handleSwipe = useCallback(() => {
     if (settings.swipePageMovesToKnown ?? true) {
@@ -607,17 +686,30 @@ export const Reader = () => {
       } else {
         if (currentScrollPage < totalPages - 1) {
           setScrollPage(currentScrollPage + 1);
-          document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+          document.getElementById('reading-area-scroll')?.scrollTo(0, 0);
         } else if (currentChapterIndex < chapters.length - 1) {
           goToNextChapter(chapters.length);
         }
       }
     }
-  }, [settings.swipePageMovesToKnown, handleMarkPageKnown, readingMode, currentSentenceIndex, chapter.sentences.length, currentChapterIndex, chapters.length, currentScrollPage, totalPages, goToNextSentence, goToNextChapter, setScrollPage]);
+  }, [
+    settings.swipePageMovesToKnown,
+    handleMarkPageKnown,
+    readingMode,
+    currentSentenceIndex,
+    chapter.sentences.length,
+    currentChapterIndex,
+    chapters.length,
+    currentScrollPage,
+    totalPages,
+    goToNextSentence,
+    goToNextChapter,
+    setScrollPage,
+  ]);
 
   const handleNextPage = useCallback(() => {
     setScrollPage(Math.min(currentScrollPage + 1, totalPages - 1));
-    document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+    document.getElementById('reading-area-scroll')?.scrollTo(0, 0);
   }, [currentScrollPage, totalPages, setScrollPage]);
 
   const handleNextChapter = useCallback(() => {
@@ -631,60 +723,60 @@ export const Reader = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Shortcuts for selected word
       if (selectedWord) {
-        if (e.key === "1") {
+        if (e.key === '1') {
           setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
           return;
         }
-        if (e.key === "2") {
+        if (e.key === '2') {
           setWordState(selectedWord.lemma, WordState.FAMILIAR, currentLanguageId);
           return;
         }
-        if (e.key === "3") {
+        if (e.key === '3') {
           setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
           return;
         }
-        if (e.key === "4") {
+        if (e.key === '4') {
           setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
           return;
         }
-        if (e.key === "k" || e.key === "K") {
+        if (e.key === 'k' || e.key === 'K') {
           setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
           return;
         }
-        if (e.key === "l" || e.key === "L") {
+        if (e.key === 'l' || e.key === 'L') {
           setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
           return;
         }
-        if (e.key === "i" || e.key === "I") {
+        if (e.key === 'i' || e.key === 'I') {
           setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
           return;
         }
-        if (e.key === "Escape") {
+        if (e.key === 'Escape') {
           setSelectedWord(null);
           return;
         }
       }
 
-      if (e.key === " ") {
+      if (e.key === ' ') {
         e.preventDefault();
         togglePlay();
         return;
       }
-      if (e.key === "l" || e.key === "L") {
+      if (e.key === 'l' || e.key === 'L') {
         toggleLoopSentence();
         return;
       }
-      if (["!", "@", "#", "$", "%"].includes(e.key)) {
+      if (['!', '@', '#', '$', '%'].includes(e.key)) {
         const speeds = [0.7, 0.85, 1.0, 1.15, 1.3];
-        setAudioSpeed(speeds[["!", "@", "#", "$", "%"].indexOf(e.key)]);
+        setAudioSpeed(speeds[['!', '@', '#', '$', '%'].indexOf(e.key)]);
         return;
       }
 
       if (!selectedWord) {
-        if (e.key === "ArrowRight") {
+        if (e.key === 'ArrowRight') {
           if (settings.swipePageMovesToKnown ?? true) {
             handleMarkPageKnown(true);
-          } else if (readingMode === "page") {
+          } else if (readingMode === 'page') {
             if (currentSentenceIndex < chapter.sentences.length - 1) {
               goToNextSentence(chapter.sentences.length);
               setAudioPosition(currentSentenceIndex + 1, 0);
@@ -695,13 +787,13 @@ export const Reader = () => {
           } else {
             if (currentScrollPage < totalPages - 1) {
               setScrollPage(currentScrollPage + 1);
-              document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+              document.getElementById('reading-area-scroll')?.scrollTo(0, 0);
             } else if (currentChapterIndex < chapters.length - 1) {
               goToNextChapter(chapters.length);
             }
           }
-        } else if (e.key === "ArrowLeft") {
-          if (readingMode === "page") {
+        } else if (e.key === 'ArrowLeft') {
+          if (readingMode === 'page') {
             if (currentSentenceIndex > 0) {
               goToPrevSentence();
               setAudioPosition(currentSentenceIndex - 1, 0);
@@ -714,10 +806,12 @@ export const Reader = () => {
           } else {
             if (currentScrollPage > 0) {
               setScrollPage(currentScrollPage - 1);
-              document.getElementById("reading-area-scroll")?.scrollTo(0, 0);
+              document.getElementById('reading-area-scroll')?.scrollTo(0, 0);
             } else if (currentChapterIndex > 0) {
               const prevChapter = chapters[currentChapterIndex - 1];
-              const prevTotalPages = Math.ceil((prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
+              const prevTotalPages = Math.ceil(
+                (prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE
+              );
               setChapterIndex(currentChapterIndex - 1);
               setScrollPage(prevTotalPages - 1);
             }
@@ -726,47 +820,57 @@ export const Reader = () => {
         return;
       }
 
-      if (e.key === "Escape") setSelectedWord(null);
+      if (e.key === 'Escape') setSelectedWord(null);
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    selectedWord, 
-    chapter, 
-    readingMode, 
-    currentSentenceIndex, 
-    chapters, 
-    currentChapterIndex, 
-    setWordState, 
+    selectedWord,
+    chapter,
+    readingMode,
+    currentSentenceIndex,
+    chapters,
+    currentChapterIndex,
+    setWordState,
     currentLanguageId,
     currentScrollPage,
     totalPages,
     handleMarkPageKnown,
     settings,
   ]);
-  
-  const handleWordClick = useCallback((token: ReaderToken, sentenceText: string, sentenceIndex: number) => {
-    setSelectedSentence(null);
-    setSelectedWord({ ...token, sentenceText });
-    incrementEncounter(token.lemma, currentLanguageId);
-    setWordContext(token.lemma, sentenceText, currentLanguageId);
-    if (readingMode === "page") setSentenceIndex(sentenceIndex);
-  }, [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex]);
+
+  const handleWordClick = useCallback(
+    (token: ReaderToken, sentenceText: string, sentenceIndex: number) => {
+      setSelectedSentence(null);
+      setSelectedWord({ ...token, sentenceText });
+      incrementEncounter(token.lemma, currentLanguageId);
+      setWordContext(token.lemma, sentenceText, currentLanguageId);
+      if (readingMode === 'page') setSentenceIndex(sentenceIndex);
+    },
+    [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex]
+  );
 
   const handleAnalyzeSentence = useCallback((sentence: { text: string; id: string }) => {
     setSelectedWord(null);
     setSelectedSentence(sentence);
   }, []);
 
-  const handleSavePhrase = useCallback((sentence: ReaderSentence) => {
-    const phrase = sentence.tokens.map((tk: ReaderToken) => tk.text).join(" ");
-    setWordState(phrase, WordState.LEARNING, currentLanguageId);
-    if (sentence.translation || aiTranslations[sentence.id]) {
-      updateGloss(phrase, aiTranslations[sentence.id] || sentence.translation || "", currentLanguageId);
-    }
-    addToast(t("reader.sentenceSaved"), "success");
-  }, [setWordState, updateGloss, currentLanguageId, aiTranslations, addToast, t]);
+  const handleSavePhrase = useCallback(
+    (sentence: ReaderSentence) => {
+      const phrase = sentence.tokens.map((tk: ReaderToken) => tk.text).join(' ');
+      setWordState(phrase, WordState.LEARNING, currentLanguageId);
+      if (sentence.translation || aiTranslations[sentence.id]) {
+        updateGloss(
+          phrase,
+          aiTranslations[sentence.id] || sentence.translation || '',
+          currentLanguageId
+        );
+      }
+      addToast(t('reader.sentenceSaved'), 'success');
+    },
+    [setWordState, updateGloss, currentLanguageId, aiTranslations, addToast, t]
+  );
 
   if (!text || chapters.length === 0 || !chapter) {
     return <ReaderSkeleton />;
@@ -785,7 +889,10 @@ export const Reader = () => {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col relative z-20 overflow-hidden" style={!isOnline ? { paddingTop: 28 } : undefined}>
+      <div
+        className="flex-1 flex flex-col relative z-20 overflow-hidden"
+        style={!isOnline ? { paddingTop: 28 } : undefined}
+      >
         <ReaderProgressHeader
           readToday={stats?.readToday || 0}
           dailyGoalWords={settings.dailyGoalWords}
@@ -812,54 +919,78 @@ export const Reader = () => {
           onChangeDisplayMode={setDisplayMode}
           readingTimeMinutes={readingTimeMinutes}
         />
-        <button onClick={onAskTutor}
+        <button
+          onClick={onAskTutor}
           className="fixed bottom-24 right-6 z-30 w-12 h-12 bg-ink text-parch rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95"
-          title={t("reader.askTutor", "Ask Tutor")}>
+          title={t('reader.askTutor', 'Ask Tutor')}
+        >
           <span className="text-[18px] font-serif font-bold">T</span>
         </button>
-        <button onClick={() => {
-          const id = textId || '';
-          if (OfflineService.isOfflineText(id)) {
-            OfflineService.removeOfflineText(id);
-            addToast(t("reader.removedOffline", "Removed from offline"), 'success');
-          } else {
-            OfflineService.setOfflineText(id, text?.title || 'Text', currentLanguageId);
-            const chapterSentences = chapter?.sentences || [];
-            if (chapterSentences.length > 0) {
-              OfflineService.saveOfflinePayload(id, {
-                textId: id,
-                title: text?.title || 'Text',
-                languageId: currentLanguageId,
-                sentences: chapterSentences.map((s: any) => ({
-                  tokens: s.tokens?.map((t: any) => ({
-                    text: t.text || t.surface || '',
-                    lemma: t.lemma || '',
-                    gloss: t.gloss,
-                    type: t.type || 'word',
-                    transliteration: t.transliteration,
-                    pos: t.pos,
-                    confidence: t.confidence,
-                  })) || [],
-                  translation: s.translation || null,
-                })),
-                source: (textId?.startsWith('import-') || textId?.startsWith('imp-')) ? 'import' : 'corpus',
-              });
+        <button
+          onClick={() => {
+            const id = textId || '';
+            if (OfflineService.isOfflineText(id)) {
+              OfflineService.removeOfflineText(id);
+              addToast(t('reader.removedOffline', 'Removed from offline'), 'success');
+            } else {
+              OfflineService.setOfflineText(id, text?.title || 'Text', currentLanguageId);
+              const chapterSentences = chapter?.sentences || [];
+              if (chapterSentences.length > 0) {
+                OfflineService.saveOfflinePayload(id, {
+                  textId: id,
+                  title: text?.title || 'Text',
+                  languageId: currentLanguageId,
+                  sentences: chapterSentences.map((s: any) => ({
+                    tokens:
+                      s.tokens?.map((t: any) => ({
+                        text: t.text || t.surface || '',
+                        lemma: t.lemma || '',
+                        gloss: t.gloss,
+                        type: t.type || 'word',
+                        transliteration: t.transliteration,
+                        pos: t.pos,
+                        confidence: t.confidence,
+                      })) || [],
+                    translation: s.translation || null,
+                  })),
+                  source:
+                    textId?.startsWith('import-') || textId?.startsWith('imp-')
+                      ? 'import'
+                      : 'corpus',
+                });
+              }
+              addToast(t('reader.availableOffline', 'Available offline'), 'success');
             }
-            addToast(t("reader.availableOffline", "Available offline"), 'success');
-          }
-        }}
+          }}
           className="fixed bottom-40 right-6 z-30 w-12 h-12 bg-parch3 text-ink rounded-full shadow-lg flex items-center justify-center hover:bg-blue hover:text-white transition-all active:scale-95 border border-bdr"
-          title={OfflineService.isOfflineText(textId || '') ? t("reader.removeOffline", "Remove offline") : t("reader.saveOffline", "Save offline")}
-          disabled={!isOnline && !OfflineService.isOfflineText(textId || '')}>
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2v10m0 0l-3-3m3 3l3-3M4 19h16" strokeLinecap="round" strokeLinejoin="round"/>
+          title={
+            OfflineService.isOfflineText(textId || '')
+              ? t('reader.removeOffline', 'Remove offline')
+              : t('reader.saveOffline', 'Save offline')
+          }
+          disabled={!isOnline && !OfflineService.isOfflineText(textId || '')}
+        >
+          <svg
+            className="w-5 h-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              d="M12 2v10m0 0l-3-3m3 3l3-3M4 19h16"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
 
         <ReaderAudioBar
           isPlaying={isPlaying}
           onTogglePlay={togglePlay}
-          audioProgress={chapter.sentences.length > 0 ? audioPos.sentenceIdx / chapter.sentences.length : 0}
+          audioProgress={
+            chapter.sentences.length > 0 ? audioPos.sentenceIdx / chapter.sentences.length : 0
+          }
           audioSpeed={audioSpeed}
           onChangeSpeed={() => {
             const speeds = [0.7, 0.85, 1.0, 1.15, 1.3];
@@ -922,17 +1053,23 @@ export const Reader = () => {
           currentSentenceIndex={currentSentenceIndex}
           totalSentences={chapter.sentences.length}
           canGoPrev={
-            readingMode === "page"
+            readingMode === 'page'
               ? !(currentChapterIndex === 0 && currentSentenceIndex === 0)
               : !(currentChapterIndex === 0 && currentScrollPage === 0)
           }
           canGoNext={
-            readingMode === "page"
-              ? !(currentChapterIndex === chapters.length - 1 && currentSentenceIndex === chapter.sentences.length - 1)
-              : !(currentChapterIndex === chapters.length - 1 && currentScrollPage === totalPages - 1)
+            readingMode === 'page'
+              ? !(
+                  currentChapterIndex === chapters.length - 1 &&
+                  currentSentenceIndex === chapter.sentences.length - 1
+                )
+              : !(
+                  currentChapterIndex === chapters.length - 1 &&
+                  currentScrollPage === totalPages - 1
+                )
           }
           onPrev={() => {
-            if (readingMode === "page") {
+            if (readingMode === 'page') {
               if (currentSentenceIndex > 0) {
                 goToPrevSentence();
               } else if (currentChapterIndex > 0) {
@@ -945,7 +1082,9 @@ export const Reader = () => {
                 setScrollPage(currentScrollPage - 1);
               } else if (currentChapterIndex > 0) {
                 const prevChapter = chapters[currentChapterIndex - 1];
-                const prevTotalPages = Math.ceil((prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
+                const prevTotalPages = Math.ceil(
+                  (prevChapter?.sentences?.length || 0) / SENTENCES_PER_PAGE
+                );
                 setChapterIndex(currentChapterIndex - 1);
                 setScrollPage(prevTotalPages - 1);
               }
@@ -954,7 +1093,7 @@ export const Reader = () => {
           onNext={() => {
             if (settings.swipePageMovesToKnown ?? true) {
               handleMarkPageKnown(true);
-            } else if (readingMode === "page") {
+            } else if (readingMode === 'page') {
               if (currentSentenceIndex < chapter.sentences.length - 1) {
                 goToNextSentence(chapter.sentences.length);
               } else if (currentChapterIndex < chapters.length - 1) {
@@ -999,7 +1138,7 @@ export const Reader = () => {
             if (!window.speechSynthesis) return;
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(textStr);
-            u.lang = TTS_LANG_MAP[lang] || "en-US";
+            u.lang = TTS_LANG_MAP[lang] || 'en-US';
             u.rate = 0.9;
             window.speechSynthesis.speak(u);
           }}

@@ -11,12 +11,17 @@ export const PaleoIcon = ({ className }: PaleoIconProps) => (
     aria-hidden="true"
   >
     <rect
-      x="0.5" y="0.5" width="35" height="35" rx="5.5"
+      x="0.5"
+      y="0.5"
+      width="35"
+      height="35"
+      rx="5.5"
       style={{ fill: 'var(--parch)', stroke: 'var(--bdr)' }}
       strokeWidth="1"
     />
     <text
-      x="18" y="25.5"
+      x="18"
+      y="25.5"
       fontFamily="'Cormorant Garamond', 'Cormorant', Georgia, 'Times New Roman', serif"
       fontSize="22"
       fontWeight="600"

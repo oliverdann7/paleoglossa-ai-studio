@@ -108,7 +108,7 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveTab('parsing');
     fetchAnalysis();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sentence?.id]);
 
   if (!sentence) return null;
@@ -126,39 +126,48 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
         <div className="flex items-center justify-between px-4 py-3 border-b border-bdr/40 bg-parch/80">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-blue" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-ink2">Sentence Analysis</span>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-ink2">
+              Sentence Analysis
+            </span>
             {mode === 'scholar' && (
-              <span className="text-[9px] font-bold uppercase tracking-widest bg-blue/10 text-blue px-1.5 py-0.5 rounded">Scholar</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest bg-blue/10 text-blue px-1.5 py-0.5 rounded">
+                Scholar
+              </span>
             )}
           </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-parch3 text-muted hover:text-ink transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-parch3 text-muted hover:text-ink transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Sentence preview */}
-        <div className={cn(
-          "px-4 py-2.5 border-b border-bdr/20 bg-parch3/40",
-          isRtl && "text-right",
-        )}>
-          <p className="font-serif text-[15px] leading-relaxed text-ink line-clamp-3" dir={isRtl ? 'rtl' : 'ltr'}>
+        <div
+          className={cn('px-4 py-2.5 border-b border-bdr/20 bg-parch3/40', isRtl && 'text-right')}
+        >
+          <p
+            className="font-serif text-[15px] leading-relaxed text-ink line-clamp-3"
+            dir={isRtl ? 'rtl' : 'ltr'}
+          >
             {sentence.text}
           </p>
         </div>
 
         {/* Tabs */}
         <div className="flex border-b border-bdr/40 bg-parch/50 overflow-x-auto no-scrollbar">
-          {TABS.map(tab => {
+          {TABS.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-1 px-3 py-2 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2",
+                  'flex items-center gap-1 px-3 py-2 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2',
                   activeTab === tab.id
-                    ? "border-blue text-blue bg-blue/5"
-                    : "border-transparent text-muted hover:text-ink",
+                    ? 'border-blue text-blue bg-blue/5'
+                    : 'border-transparent text-muted hover:text-ink'
                 )}
               >
                 <Icon className="w-3 h-3" />
@@ -207,8 +216,18 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
                       className="border border-bdr/40 rounded-lg p-3 bg-white/60"
                     >
                       <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <span className="font-serif text-[17px] text-ink" dir={isRtl ? 'rtl' : 'ltr'}>{word.text}</span>
-                        <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0", posColor(word.pos))}>
+                        <span
+                          className="font-serif text-[17px] text-ink"
+                          dir={isRtl ? 'rtl' : 'ltr'}
+                        >
+                          {word.text}
+                        </span>
+                        <span
+                          className={cn(
+                            'text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
+                            posColor(word.pos)
+                          )}
+                        >
                           {word.pos}
                         </span>
                       </div>
@@ -231,24 +250,36 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
 
               {activeTab === 'syntax' && (
                 <div className="space-y-3">
-                  <p className="text-[13px] text-ink leading-relaxed">{analysis.syntax.description || 'No syntax analysis available.'}</p>
-                  {(analysis.syntax.mainVerb || analysis.syntax.subject || analysis.syntax.object) && (
+                  <p className="text-[13px] text-ink leading-relaxed">
+                    {analysis.syntax.description || 'No syntax analysis available.'}
+                  </p>
+                  {(analysis.syntax.mainVerb ||
+                    analysis.syntax.subject ||
+                    analysis.syntax.object) && (
                     <div className="border border-bdr/40 rounded-lg divide-y divide-bdr/20 overflow-hidden">
                       {analysis.syntax.mainVerb && (
                         <div className="flex items-center gap-2 px-3 py-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted w-16">Verb</span>
-                          <span className="text-[12px] font-mono text-amber-700">{analysis.syntax.mainVerb}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted w-16">
+                            Verb
+                          </span>
+                          <span className="text-[12px] font-mono text-amber-700">
+                            {analysis.syntax.mainVerb}
+                          </span>
                         </div>
                       )}
                       {analysis.syntax.subject && (
                         <div className="flex items-center gap-2 px-3 py-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted w-16">Subject</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted w-16">
+                            Subject
+                          </span>
                           <span className="text-[12px] text-blue">{analysis.syntax.subject}</span>
                         </div>
                       )}
                       {analysis.syntax.object && (
                         <div className="flex items-center gap-2 px-3 py-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted w-16">Object</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted w-16">
+                            Object
+                          </span>
                           <span className="text-[12px] text-ink">{analysis.syntax.object}</span>
                         </div>
                       )}
@@ -261,10 +292,15 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
                 <div className="space-y-3">
                   {analysis.semantics.keywords.length > 0 && (
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Key Words</h4>
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">
+                        Key Words
+                      </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {analysis.semantics.keywords.map((kw, i) => (
-                          <span key={i} className="font-mono text-[11px] bg-amber/10 text-amber-800 px-2 py-0.5 rounded">
+                          <span
+                            key={i}
+                            className="font-mono text-[11px] bg-amber/10 text-amber-800 px-2 py-0.5 rounded"
+                          >
                             {kw}
                           </span>
                         ))}
@@ -273,23 +309,33 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
                   )}
                   {analysis.semantics.idioms.length > 0 && (
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Idioms & Expressions</h4>
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">
+                        Idioms & Expressions
+                      </h4>
                       <ul className="space-y-1">
                         {analysis.semantics.idioms.map((idiom, i) => (
-                          <li key={i} className="text-[12px] text-ink italic">"{idiom}"</li>
+                          <li key={i} className="text-[12px] text-ink italic">
+                            "{idiom}"
+                          </li>
                         ))}
                       </ul>
                     </div>
                   )}
                   {analysis.semantics.notes && (
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Semantic Notes</h4>
-                      <p className="text-[13px] text-ink leading-relaxed">{analysis.semantics.notes}</p>
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">
+                        Semantic Notes
+                      </h4>
+                      <p className="text-[13px] text-ink leading-relaxed">
+                        {analysis.semantics.notes}
+                      </p>
                     </div>
                   )}
-                  {!analysis.semantics.keywords.length && !analysis.semantics.idioms.length && !analysis.semantics.notes && (
-                    <p className="text-sm text-muted italic">No semantic analysis available.</p>
-                  )}
+                  {!analysis.semantics.keywords.length &&
+                    !analysis.semantics.idioms.length &&
+                    !analysis.semantics.notes && (
+                      <p className="text-sm text-muted italic">No semantic analysis available.</p>
+                    )}
                 </div>
               )}
 

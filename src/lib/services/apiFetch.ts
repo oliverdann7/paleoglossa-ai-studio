@@ -85,7 +85,7 @@ export async function apiFetch<T = any>(url: string, options: ApiFetchOptions = 
   if (res.status === 204) return undefined as T;
 
   try {
-    return await res.json() as T;
+    return (await res.json()) as T;
   } catch {
     return undefined as T;
   }

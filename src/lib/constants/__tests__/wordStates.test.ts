@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { WordState, STATE_COLORS, normalizeWordState, safeStateColors, safeStateLabel } from '../wordStates';
+import {
+  WordState,
+  STATE_COLORS,
+  normalizeWordState,
+  safeStateColors,
+  safeStateLabel,
+} from '../wordStates';
 
 describe('normalizeWordState', () => {
   it('passes through valid enum values unchanged', () => {

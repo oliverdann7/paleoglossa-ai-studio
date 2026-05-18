@@ -43,7 +43,7 @@ export const useSettings = () => {
   useEffect(() => {
     const load = async () => {
       const dbSettings = await SettingsService.getSettings(userId);
-      setSettings(prev => ({ ...prev, ...dbSettings }));
+      setSettings((prev) => ({ ...prev, ...dbSettings }));
     };
     load();
   }, [userId]);
@@ -52,11 +52,14 @@ export const useSettings = () => {
     document.documentElement.className = `theme-${settings.theme}`;
   }, [settings.theme]);
 
-  const updateSettings = useCallback(async (updates: Partial<Settings>) => {
-    const newSettings = { ...settings, ...updates };
-    setSettings(newSettings);
-    await SettingsService.saveSettings(userId, newSettings);
-  }, [userId, settings]);
+  const updateSettings = useCallback(
+    async (updates: Partial<Settings>) => {
+      const newSettings = { ...settings, ...updates };
+      setSettings(newSettings);
+      await SettingsService.saveSettings(userId, newSettings);
+    },
+    [userId, settings]
+  );
 
   return { settings, updateSettings };
 };

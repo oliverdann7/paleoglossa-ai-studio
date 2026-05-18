@@ -24,7 +24,7 @@ export const SignUp = () => {
       await setDoc(doc(db, 'users', uid), {
         email: emailStr,
         displayName: name,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'users');
@@ -45,19 +45,36 @@ export const SignUp = () => {
         try {
           const methods = await fetchSignInMethods(email);
           if (methods.includes('google.com')) {
-            setError(t("auth.emailInUseGoogle", "This email is already linked to a Google account. Please sign in with Google instead."));
+            setError(
+              t(
+                'auth.emailInUseGoogle',
+                'This email is already linked to a Google account. Please sign in with Google instead.'
+              )
+            );
           } else {
-            setError(t("auth.emailInUse", "An account with this email already exists. Try signing in instead."));
+            setError(
+              t(
+                'auth.emailInUse',
+                'An account with this email already exists. Try signing in instead.'
+              )
+            );
           }
         } catch {
-          setError(t("auth.emailInUse", "An account with this email already exists. Try signing in instead."));
+          setError(
+            t(
+              'auth.emailInUse',
+              'An account with this email already exists. Try signing in instead.'
+            )
+          );
         }
       } else if (code === 'auth/weak-password') {
-        setError(t("auth.weakPassword", "Password should be at least 6 characters."));
+        setError(t('auth.weakPassword', 'Password should be at least 6 characters.'));
       } else if (code === 'auth/invalid-email') {
-        setError(t("auth.invalidEmail", "Please enter a valid email address."));
+        setError(t('auth.invalidEmail', 'Please enter a valid email address.'));
       } else if (code === 'auth/network-request-failed') {
-        setError(t("auth.networkError", "Network error. Please check your connection and try again."));
+        setError(
+          t('auth.networkError', 'Network error. Please check your connection and try again.')
+        );
       } else {
         setError(err.message);
       }
@@ -76,7 +93,9 @@ export const SignUp = () => {
         return;
       }
       if (result.errorCode === 'auth/popup-blocked') {
-        setError('Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google.');
+        setError(
+          'Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google.'
+        );
       } else if (result.error) {
         setError(result.error);
       }
@@ -99,15 +118,20 @@ export const SignUp = () => {
         <div className="relative z-10 p-16 flex flex-col justify-between h-full">
           <div className="flex items-center gap-3">
             <PaleoIcon className="w-10 h-10 flex-shrink-0" />
-            <h1 className="text-2xl font-serif font-semibold tracking-tight text-[#F8F3E8]">Paleoglossa</h1>
+            <h1 className="text-2xl font-serif font-semibold tracking-tight text-[#F8F3E8]">
+              Paleoglossa
+            </h1>
           </div>
           <div>
             <h2 className="text-5xl font-serif font-bold text-[#F8F3E8] leading-tight mb-6">
-              {t("auth.beginYour", "Begin your")} <br />
+              {t('auth.beginYour', 'Begin your')} <br />
               <span className="text-gold italic">Journey.</span>
             </h2>
             <p className="text-[#F8F3E8]/60 text-lg max-w-md">
-              {t("auth.beginDesc", "Join scholars and students worldwide in mastering the languages of antiquity.")}
+              {t(
+                'auth.beginDesc',
+                'Join scholars and students worldwide in mastering the languages of antiquity.'
+              )}
             </p>
           </div>
         </div>
@@ -123,11 +147,17 @@ export const SignUp = () => {
           >
             <div className="lg:hidden flex items-center gap-3 mb-12">
               <PaleoIcon className="w-8 h-8 flex-shrink-0" />
-              <h1 className="text-xl font-serif font-semibold tracking-tight text-ink">Paleoglossa</h1>
+              <h1 className="text-xl font-serif font-semibold tracking-tight text-ink">
+                Paleoglossa
+              </h1>
             </div>
 
-            <h3 className="text-3xl font-serif font-bold mb-2 text-ink">{t("auth.createAccount", "Create Account")}</h3>
-            <p className="text-ink3 mb-8">{t("auth.signUpDesc", "Sign up to start reading and translating.")}</p>
+            <h3 className="text-3xl font-serif font-bold mb-2 text-ink">
+              {t('auth.createAccount', 'Create Account')}
+            </h3>
+            <p className="text-ink3 mb-8">
+              {t('auth.signUpDesc', 'Sign up to start reading and translating.')}
+            </p>
 
             <button
               onClick={handleGoogleSignUp}
@@ -135,17 +165,31 @@ export const SignUp = () => {
               className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl border border-bdr hover:bg-parch3 disabled:opacity-70 transition-colors font-medium mb-6"
             >
               <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853"
+                />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  fill="#EA4335"
+                />
               </svg>
-              {loading ? t("auth.pleaseWait", "Please Wait...") : t("auth.signUpGoogle", "Sign up with Google")}
+              {loading
+                ? t('auth.pleaseWait', 'Please Wait...')
+                : t('auth.signUpGoogle', 'Sign up with Google')}
             </button>
 
             <div className="flex items-center gap-4 mb-6">
               <div className="h-px bg-bdr flex-1" />
-              <span className="eyebrow">{t("auth.or", "Or")}</span>
+              <span className="eyebrow">{t('auth.or', 'Or')}</span>
               <div className="h-px bg-bdr flex-1" />
             </div>
 
@@ -158,7 +202,7 @@ export const SignUp = () => {
 
             <form onSubmit={handleEmailSignUp} className="space-y-5">
               <div>
-                <label className="nav-label mb-2 block">{t("auth.fullName", "Full Name")}</label>
+                <label className="nav-label mb-2 block">{t('auth.fullName', 'Full Name')}</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                   <input
@@ -173,7 +217,7 @@ export const SignUp = () => {
               </div>
 
               <div>
-                <label className="nav-label mb-2 block">{t("auth.email", "Email Address")}</label>
+                <label className="nav-label mb-2 block">{t('auth.email', 'Email Address')}</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                   <input
@@ -188,7 +232,7 @@ export const SignUp = () => {
               </div>
 
               <div>
-                <label className="nav-label mb-2 block">{t("auth.password", "Password")}</label>
+                <label className="nav-label mb-2 block">{t('auth.password', 'Password')}</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                   <input
@@ -207,18 +251,20 @@ export const SignUp = () => {
                 disabled={loading}
                 className="btn-primary w-full py-3 flex items-center justify-center gap-2 mt-4 disabled:opacity-70"
               >
-                {loading ? t("auth.creatingAcc", "Creating Account...") : t("auth.createAccBtn", "Create Account")}
+                {loading
+                  ? t('auth.creatingAcc', 'Creating Account...')
+                  : t('auth.createAccBtn', 'Create Account')}
                 {!loading && <ArrowRight className="w-4 h-4" />}
               </button>
             </form>
 
             <p className="mt-8 text-center text-sm text-ink3">
-              {t("auth.alreadyHave", "Already have an account?")}{' '}
+              {t('auth.alreadyHave', 'Already have an account?')}{' '}
               <button
                 onClick={() => navigate('/auth/login')}
                 className="font-bold text-blue hover:text-ink transition-colors"
               >
-                {t("auth.signIn", "Sign In")}
+                {t('auth.signIn', 'Sign In')}
               </button>
             </p>
           </motion.div>

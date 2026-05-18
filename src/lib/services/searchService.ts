@@ -25,7 +25,10 @@ export class SearchService {
     });
   }
 
-  static async searchByMorphology(filters: Record<string, string>, languageId?: string): Promise<SearchResult[]> {
+  static async searchByMorphology(
+    filters: Record<string, string>,
+    languageId?: string
+  ): Promise<SearchResult[]> {
     const morphQuery: SearchQuery = {
       query: '',
       languageId,

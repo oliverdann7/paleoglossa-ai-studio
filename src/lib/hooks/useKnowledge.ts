@@ -17,10 +17,12 @@ export const useKnowledge = (languageId?: string) => {
 
   useEffect(() => {
     let active = true;
-    ImportService.getImports(userId).then(imports => {
+    ImportService.getImports(userId).then((imports) => {
       if (active) setUserImports(imports);
     });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [userId]);
 
   const refreshImports = useCallback(async () => {
@@ -38,15 +40,18 @@ export const useKnowledge = (languageId?: string) => {
     };
   }, [vocab.knowledge, statsHook.stats, userId]);
 
-  const setWordStateWithStats = useCallback((lemma: string, state: WordState, langId: string = "unknown", context?: string) => {
-    const previousState = vocab.getWordInfo(lemma).state;
-    vocab.setWordState(lemma, state, langId, context);
-    if (state === WordState.KNOWN && previousState !== WordState.KNOWN) {
-      statsHook.updateStatsState(s => ({ ...s, totalKnown: s.totalKnown + 1 }));
-    } else if (state !== WordState.KNOWN && previousState === WordState.KNOWN) {
-      statsHook.updateStatsState(s => ({ ...s, totalKnown: Math.max(0, s.totalKnown - 1) }));
-    }
-  }, [vocab, statsHook]);
+  const setWordStateWithStats = useCallback(
+    (lemma: string, state: WordState, langId: string = 'unknown', context?: string) => {
+      const previousState = vocab.getWordInfo(lemma).state;
+      vocab.setWordState(lemma, state, langId, context);
+      if (state === WordState.KNOWN && previousState !== WordState.KNOWN) {
+        statsHook.updateStatsState((s) => ({ ...s, totalKnown: s.totalKnown + 1 }));
+      } else if (state !== WordState.KNOWN && previousState === WordState.KNOWN) {
+        statsHook.updateStatsState((s) => ({ ...s, totalKnown: Math.max(0, s.totalKnown - 1) }));
+      }
+    },
+    [vocab, statsHook]
+  );
 
   return {
     knowledge: vocab.knowledge,

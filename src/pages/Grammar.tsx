@@ -1,8 +1,19 @@
-import { useState, useEffect, useMemo } from "react";
-import { ChevronLeft, GraduationCap, Loader2, Search, Tag, BookOpen, Layers, MessageSquare, AlignLeft, Hash } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useTranslation } from "react-i18next";
-import { getApiUrl } from "../lib/services/apiBaseUrl.js";
+import { useState, useEffect, useMemo } from 'react';
+import {
+  ChevronLeft,
+  GraduationCap,
+  Loader2,
+  Search,
+  Tag,
+  BookOpen,
+  Layers,
+  MessageSquare,
+  AlignLeft,
+  Hash,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { getApiUrl } from '../lib/services/apiBaseUrl.js';
 
 interface Paradigm {
   caption: string;
@@ -67,7 +78,9 @@ const DIFFICULTY_STYLES: Record<string, string> = {
 function ParadigmTable({ paradigm, rtl }: { paradigm: Paradigm; rtl: boolean }) {
   return (
     <div className="overflow-x-auto mt-6">
-      <p className="text-[11px] text-muted uppercase tracking-widest font-bold mb-2">{paradigm.caption}</p>
+      <p className="text-[11px] text-muted uppercase tracking-widest font-bold mb-2">
+        {paradigm.caption}
+      </p>
       <table className="w-full text-[13px] border-collapse">
         <thead>
           <tr>
@@ -75,8 +88,8 @@ function ParadigmTable({ paradigm, rtl }: { paradigm: Paradigm; rtl: boolean }) 
               <th
                 key={i}
                 className={cn(
-                  "px-3 py-2 text-left border border-bdr bg-parch2 font-bold text-ink2 text-[11px] uppercase tracking-wider",
-                  i > 0 && rtl ? "text-right" : "",
+                  'px-3 py-2 text-left border border-bdr bg-parch2 font-bold text-ink2 text-[11px] uppercase tracking-wider',
+                  i > 0 && rtl ? 'text-right' : ''
                 )}
               >
                 {h}
@@ -86,15 +99,18 @@ function ParadigmTable({ paradigm, rtl }: { paradigm: Paradigm; rtl: boolean }) 
         </thead>
         <tbody>
           {paradigm.rows.map((row, ri) => (
-            <tr key={ri} className={ri % 2 === 0 ? "bg-white" : "bg-parch2/40"}>
+            <tr key={ri} className={ri % 2 === 0 ? 'bg-white' : 'bg-parch2/40'}>
               <td className="px-3 py-2 border border-bdr font-bold text-muted text-[11px] uppercase tracking-wider whitespace-nowrap">
                 {row.label}
               </td>
               {row.cells.map((cell, ci) => (
                 <td
                   key={ci}
-                  className={cn("px-3 py-2 border border-bdr font-serif text-[15px] text-ink", rtl ? "text-right" : "")}
-                  dir={rtl ? "rtl" : "ltr"}
+                  className={cn(
+                    'px-3 py-2 border border-bdr font-serif text-[15px] text-ink',
+                    rtl ? 'text-right' : ''
+                  )}
+                  dir={rtl ? 'rtl' : 'ltr'}
                 >
                   {cell}
                 </td>
@@ -126,16 +142,30 @@ function ConceptDetail({ concept, onBack }: { concept: Concept; onBack: () => vo
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-[24px] font-serif font-bold text-ink leading-tight">{concept.title}</h2>
+          <h2 className="text-[24px] font-serif font-bold text-ink leading-tight">
+            {concept.title}
+          </h2>
           <div className="flex flex-wrap items-center gap-2 mt-1.5">
-            <span className="text-[12px] text-muted">{LANG_LABELS[concept.languageId] || concept.languageId}</span>
+            <span className="text-[12px] text-muted">
+              {LANG_LABELS[concept.languageId] || concept.languageId}
+            </span>
             <span className="text-muted">·</span>
-            <span className={cn("text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full", DIFFICULTY_STYLES[concept.difficulty] ?? 'bg-parch2 text-ink3')}>
+            <span
+              className={cn(
+                'text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full',
+                DIFFICULTY_STYLES[concept.difficulty] ?? 'bg-parch2 text-ink3'
+              )}
+            >
               {concept.difficulty}
             </span>
-            <span className={cn("text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full",
-              concept.status === 'complete' ? "bg-emerald-50 text-emerald-700" : "bg-amber/10 text-amber"
-            )}>
+            <span
+              className={cn(
+                'text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full',
+                concept.status === 'complete'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'bg-amber/10 text-amber'
+              )}
+            >
               {concept.status}
             </span>
           </div>
@@ -143,20 +173,27 @@ function ConceptDetail({ concept, onBack }: { concept: Concept; onBack: () => vo
       </div>
 
       <div className="card p-6 mb-6">
-        <p className="text-[15px] text-ink2 leading-[1.9] whitespace-pre-wrap">{concept.explanation}</p>
+        <p className="text-[15px] text-ink2 leading-[1.9] whitespace-pre-wrap">
+          {concept.explanation}
+        </p>
       </div>
 
       {concept.paradigm && (
         <div className="card p-5 mb-6">
-          <h3 className="text-[11px] font-bold text-ink uppercase tracking-widest mb-1">Paradigm Table</h3>
+          <h3 className="text-[11px] font-bold text-ink uppercase tracking-widest mb-1">
+            Paradigm Table
+          </h3>
           <ParadigmTable paradigm={concept.paradigm} rtl={rtl} />
         </div>
       )}
 
       {concept.relatedMorphKeys.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
-          {concept.relatedMorphKeys.map(k => (
-            <span key={k} className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 bg-blue/10 text-blue rounded-full">
+          {concept.relatedMorphKeys.map((k) => (
+            <span
+              key={k}
+              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 bg-blue/10 text-blue rounded-full"
+            >
               <Tag className="w-3 h-3" /> {k}
             </span>
           ))}
@@ -182,7 +219,9 @@ function ConceptDetail({ concept, onBack }: { concept: Concept; onBack: () => vo
                     {ex.surface}
                   </div>
                   <div className="text-[13px] text-blue italic">{ex.gloss}</div>
-                  {ex.translation && <div className="text-[12px] text-muted mt-0.5">{ex.translation}</div>}
+                  {ex.translation && (
+                    <div className="text-[12px] text-muted mt-0.5">{ex.translation}</div>
+                  )}
                 </div>
               </div>
             ))}
@@ -210,10 +249,12 @@ function FilterPill({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all",
+        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all',
         active
-          ? variant === 'primary' ? "bg-blue text-white" : "bg-ink text-white"
-          : "bg-parch2 text-ink3 hover:bg-parch3",
+          ? variant === 'primary'
+            ? 'bg-blue text-white'
+            : 'bg-ink text-white'
+          : 'bg-parch2 text-ink3 hover:bg-parch3'
       )}
     >
       {children}
@@ -236,20 +277,31 @@ function ConceptCard({ concept, onClick }: { concept: Concept; onClick: () => vo
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-[14px] font-bold text-ink mb-0.5 line-clamp-1">{concept.title}</h3>
-          <p className="text-[11px] text-muted mb-2">{LANG_LABELS[concept.languageId] || concept.languageId}</p>
+          <p className="text-[11px] text-muted mb-2">
+            {LANG_LABELS[concept.languageId] || concept.languageId}
+          </p>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className={cn(
-              "text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full",
-              DIFFICULTY_STYLES[concept.difficulty] ?? 'bg-parch2 text-ink3'
-            )}>
+            <span
+              className={cn(
+                'text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full',
+                DIFFICULTY_STYLES[concept.difficulty] ?? 'bg-parch2 text-ink3'
+              )}
+            >
               {concept.difficulty}
             </span>
             {hasParadigm && (
-              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-parch3 text-muted rounded-md">table</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-parch3 text-muted rounded-md">
+                table
+              </span>
             )}
             <span className="text-[10px] text-muted">{concept.examples.length} ex.</span>
-            {concept.relatedMorphKeys.slice(0, 2).map(k => (
-              <span key={k} className="text-[10px] font-bold px-1.5 py-0.5 bg-blue/10 text-blue rounded-md">{k}</span>
+            {concept.relatedMorphKeys.slice(0, 2).map((k) => (
+              <span
+                key={k}
+                className="text-[10px] font-bold px-1.5 py-0.5 bg-blue/10 text-blue rounded-md"
+              >
+                {k}
+              </span>
             ))}
           </div>
         </div>
@@ -265,44 +317,50 @@ export const Grammar = () => {
   const [concepts, setConcepts] = useState<Concept[]>([]);
   const [selected, setSelected] = useState<Concept | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeLang, setActiveLang] = useState<string>("all");
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeLang, setActiveLang] = useState<string>('all');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
 
   useEffect(() => {
     fetch(getApiUrl('/api/grammar/concepts'))
-      .then(r => r.json())
-      .then(data => { setConcepts(data); setIsLoading(false); })
+      .then((r) => r.json())
+      .then((data) => {
+        setConcepts(data);
+        setIsLoading(false);
+      })
       .catch(() => setIsLoading(false));
   }, []);
 
   const languages = useMemo(() => {
     const seen = new Set<string>();
-    concepts.forEach(c => seen.add(c.languageId));
+    concepts.forEach((c) => seen.add(c.languageId));
     return Array.from(seen);
   }, [concepts]);
 
   const categories = useMemo(() => {
     const seen = new Set<string>();
-    concepts.forEach(c => { if (c.category) seen.add(c.category); });
+    concepts.forEach((c) => {
+      if (c.category) seen.add(c.category);
+    });
     return Array.from(seen);
   }, [concepts]);
 
   const filtered = useMemo(() => {
-    return concepts.filter(c => {
-      const matchesLang = activeLang === "all" || c.languageId === activeLang;
-      const matchesCategory = activeCategory === "all" || c.category === activeCategory;
+    return concepts.filter((c) => {
+      const matchesLang = activeLang === 'all' || c.languageId === activeLang;
+      const matchesCategory = activeCategory === 'all' || c.category === activeCategory;
       const q = searchQuery.toLowerCase();
-      const matchesSearch = !q
-        || c.title.toLowerCase().includes(q)
-        || c.explanation.toLowerCase().includes(q)
-        || c.relatedMorphKeys.some(k => k.toLowerCase().includes(q));
+      const matchesSearch =
+        !q ||
+        c.title.toLowerCase().includes(q) ||
+        c.explanation.toLowerCase().includes(q) ||
+        c.relatedMorphKeys.some((k) => k.toLowerCase().includes(q));
       return matchesLang && matchesCategory && matchesSearch;
     });
   }, [concepts, activeLang, activeCategory, searchQuery]);
 
   const grouped = useMemo(() => {
-    if (activeCategory !== "all" || searchQuery) return null;
+    if (activeCategory !== 'all' || searchQuery) return null;
     const map = new Map<string, Concept[]>();
     for (const c of filtered) {
       const key = c.category ?? 'other';
@@ -313,11 +371,12 @@ export const Grammar = () => {
     return map;
   }, [filtered, activeCategory, searchQuery]);
 
-  if (isLoading) return (
-    <div className="p-12 text-center">
-      <Loader2 className="w-6 h-6 animate-spin text-blue mx-auto" />
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="p-12 text-center">
+        <Loader2 className="w-6 h-6 animate-spin text-blue mx-auto" />
+      </div>
+    );
 
   if (selected) return <ConceptDetail concept={selected} onBack={() => setSelected(null)} />;
 
@@ -343,7 +402,7 @@ export const Grammar = () => {
         <input
           type="text"
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t('grammar.search', 'Search concepts…')}
           className="w-full pl-10 pr-4 py-2.5 bg-white border border-bdr rounded-xl text-[14px] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all"
         />
@@ -351,8 +410,10 @@ export const Grammar = () => {
 
       {/* Language tabs */}
       <div className="flex flex-wrap gap-2 mb-3">
-        <FilterPill active={activeLang === "all"} onClick={() => setActiveLang("all")}>All Languages</FilterPill>
-        {languages.map(lang => (
+        <FilterPill active={activeLang === 'all'} onClick={() => setActiveLang('all')}>
+          All Languages
+        </FilterPill>
+        {languages.map((lang) => (
           <FilterPill key={lang} active={activeLang === lang} onClick={() => setActiveLang(lang)}>
             {LANG_LABELS[lang] || lang}
           </FilterPill>
@@ -361,13 +422,22 @@ export const Grammar = () => {
 
       {/* Category tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
-        <FilterPill active={activeCategory === "all"} onClick={() => setActiveCategory("all")} variant="secondary">
+        <FilterPill
+          active={activeCategory === 'all'}
+          onClick={() => setActiveCategory('all')}
+          variant="secondary"
+        >
           All Categories
         </FilterPill>
-        {categories.map(cat => {
+        {categories.map((cat) => {
           const Icon = CATEGORY_ICONS[cat] ?? GraduationCap;
           return (
-            <FilterPill key={cat} active={activeCategory === cat} onClick={() => setActiveCategory(cat)} variant="secondary">
+            <FilterPill
+              key={cat}
+              active={activeCategory === cat}
+              onClick={() => setActiveCategory(cat)}
+              variant="secondary"
+            >
               <Icon className="w-3 h-3" /> {CATEGORY_LABELS[cat] || cat}
             </FilterPill>
           );
@@ -394,7 +464,9 @@ export const Grammar = () => {
                   <span className="text-[10px] text-muted/60 font-bold">({items.length})</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {items.map(c => <ConceptCard key={c.id} concept={c} onClick={() => setSelected(c)} />)}
+                  {items.map((c) => (
+                    <ConceptCard key={c.id} concept={c} onClick={() => setSelected(c)} />
+                  ))}
                 </div>
               </section>
             );
@@ -403,7 +475,9 @@ export const Grammar = () => {
       ) : (
         // Flat filtered view
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filtered.map(c => <ConceptCard key={c.id} concept={c} onClick={() => setSelected(c)} />)}
+          {filtered.map((c) => (
+            <ConceptCard key={c.id} concept={c} onClick={() => setSelected(c)} />
+          ))}
         </div>
       )}
 

@@ -59,12 +59,12 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
   const handleNext = () => {
     if (selectedIndex === null || !q) return;
     const correct = selectedIndex === q.correctIndex;
-    setAnswers(prev => [...prev, correct]);
+    setAnswers((prev) => [...prev, correct]);
 
     if (currentQ + 1 >= questions.length) {
       setPhase('result');
     } else {
-      setCurrentQ(prev => prev + 1);
+      setCurrentQ((prev) => prev + 1);
       setSelectedIndex(null);
     }
   };
@@ -80,10 +80,15 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-bdr/40">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-0.5">Comprehension Quiz</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-0.5">
+              Comprehension Quiz
+            </p>
             <p className="text-[14px] font-serif font-bold text-ink line-clamp-1">{textTitle}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-parch3 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-parch3 transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -101,7 +106,12 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
             <div className="flex-1 flex flex-col items-center justify-center gap-3 text-red-600">
               <XCircle className="w-8 h-8" />
               <p className="text-[13px] text-center">{error}</p>
-              <button onClick={onClose} className="text-[12px] underline hover:no-underline text-muted">Close</button>
+              <button
+                onClick={onClose}
+                className="text-[12px] underline hover:no-underline text-muted"
+              >
+                Close
+              </button>
             </div>
           )}
 
@@ -120,15 +130,19 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
                     <div
                       key={i}
                       className={cn(
-                        "flex-1 h-1 rounded-full transition-colors",
-                        i < currentQ ? "bg-blue" : i === currentQ ? "bg-blue/40" : "bg-parch3",
+                        'flex-1 h-1 rounded-full transition-colors',
+                        i < currentQ ? 'bg-blue' : i === currentQ ? 'bg-blue/40' : 'bg-parch3'
                       )}
                     />
                   ))}
-                  <span className="text-[11px] text-muted shrink-0 ml-1">{currentQ + 1}/{questions.length}</span>
+                  <span className="text-[11px] text-muted shrink-0 ml-1">
+                    {currentQ + 1}/{questions.length}
+                  </span>
                 </div>
 
-                <p className="text-[15px] font-medium text-ink mb-4 leading-relaxed">{q.question}</p>
+                <p className="text-[15px] font-medium text-ink mb-4 leading-relaxed">
+                  {q.question}
+                </p>
 
                 <div className="space-y-2 flex-1">
                   {q.options.map((opt, idx) => {
@@ -142,15 +156,22 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
                         onClick={() => handleAnswer(idx)}
                         disabled={revealed}
                         className={cn(
-                          "w-full text-left px-4 py-3 rounded-xl border text-[13px] transition-all",
-                          !revealed && "hover:border-blue/50 hover:bg-blue/5 border-bdr",
-                          revealed && isCorrect && "border-emerald-400 bg-emerald-50 text-emerald-800",
-                          revealed && isSelected && !isCorrect && "border-red-400 bg-red-50 text-red-800",
-                          revealed && !isSelected && !isCorrect && "border-bdr/40 text-muted",
-                          !revealed && "border-bdr",
+                          'w-full text-left px-4 py-3 rounded-xl border text-[13px] transition-all',
+                          !revealed && 'hover:border-blue/50 hover:bg-blue/5 border-bdr',
+                          revealed &&
+                            isCorrect &&
+                            'border-emerald-400 bg-emerald-50 text-emerald-800',
+                          revealed &&
+                            isSelected &&
+                            !isCorrect &&
+                            'border-red-400 bg-red-50 text-red-800',
+                          revealed && !isSelected && !isCorrect && 'border-bdr/40 text-muted',
+                          !revealed && 'border-bdr'
                         )}
                       >
-                        <span className="font-bold mr-2 text-[11px]">{String.fromCharCode(65 + idx)}.</span>
+                        <span className="font-bold mr-2 text-[11px]">
+                          {String.fromCharCode(65 + idx)}.
+                        </span>
                         {opt}
                       </button>
                     );
@@ -158,11 +179,17 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
                 </div>
 
                 {selectedIndex !== null && (
-                  <div className={cn(
-                    "mt-4 p-3 rounded-lg text-[12px] leading-relaxed",
-                    selectedIndex === q.correctIndex ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800",
-                  )}>
-                    <span className="font-bold mr-1">{selectedIndex === q.correctIndex ? '✓ Correct.' : '✗ Incorrect.'}</span>
+                  <div
+                    className={cn(
+                      'mt-4 p-3 rounded-lg text-[12px] leading-relaxed',
+                      selectedIndex === q.correctIndex
+                        ? 'bg-emerald-50 text-emerald-800'
+                        : 'bg-red-50 text-red-800'
+                    )}
+                  >
+                    <span className="font-bold mr-1">
+                      {selectedIndex === q.correctIndex ? '✓ Correct.' : '✗ Incorrect.'}
+                    </span>
                     {q.explanation}
                   </div>
                 )}
@@ -173,7 +200,9 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
                   className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue text-white font-bold rounded-xl text-[13px] hover:bg-blue/90 disabled:opacity-40 transition-all"
                 >
                   {currentQ + 1 < questions.length ? (
-                    <><ChevronRight className="w-4 h-4" /> Next Question</>
+                    <>
+                      <ChevronRight className="w-4 h-4" /> Next Question
+                    </>
                   ) : (
                     <>See Results</>
                   )}
@@ -184,17 +213,25 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
 
           {phase === 'result' && (
             <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
-              <div className={cn(
-                "w-16 h-16 rounded-full flex items-center justify-center text-[28px] font-bold",
-                score === questions.length ? "bg-emerald-100 text-emerald-700" :
-                score >= questions.length * 0.6 ? "bg-blue/10 text-blue" : "bg-amber-100 text-amber-700",
-              )}>
+              <div
+                className={cn(
+                  'w-16 h-16 rounded-full flex items-center justify-center text-[28px] font-bold',
+                  score === questions.length
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : score >= questions.length * 0.6
+                      ? 'bg-blue/10 text-blue'
+                      : 'bg-amber-100 text-amber-700'
+                )}
+              >
                 {score}/{questions.length}
               </div>
               <div>
                 <p className="font-serif text-[18px] font-bold text-ink mb-1">
-                  {score === questions.length ? 'Perfect score!' :
-                   score >= questions.length * 0.6 ? 'Good work!' : 'Keep reading!'}
+                  {score === questions.length
+                    ? 'Perfect score!'
+                    : score >= questions.length * 0.6
+                      ? 'Good work!'
+                      : 'Keep reading!'}
                 </p>
                 <p className="text-[13px] text-muted">
                   You answered {score} of {questions.length} questions correctly.
@@ -207,7 +244,8 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
               )}
               {score === questions.length && (
                 <p className="text-[12px] text-emerald-700 bg-emerald-50 px-4 py-2 rounded-lg flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Excellent comprehension — try a more challenging text next!
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Excellent comprehension — try a more
+                  challenging text next!
                 </p>
               )}
               <button

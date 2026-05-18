@@ -11,7 +11,9 @@ import { handleRedirectResult } from '../services/authService.js';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDemoMode, setDemoModeState] = useState(() => localStorage.getItem('paleoglossa_demo_mode') === 'true');
+  const [isDemoMode, setDemoModeState] = useState(
+    () => localStorage.getItem('paleoglossa_demo_mode') === 'true'
+  );
   const [stats, setStats] = useState<UserStats | null>(null);
   const [claims, setClaimsState] = useState<Record<string, unknown>>({});
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -69,13 +71,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               lastActive: now.toISOString(),
               streak: 0,
               freezesTotal: 2,
-              freezesUsed: 0
+              freezesUsed: 0,
             };
             await setDoc(profileRef, {
               email: u.email || '',
               displayName: u.displayName || '',
               createdAt: serverTimestamp(),
-              stats: initStats
+              stats: initStats,
             });
             setStats(initStats);
             setProfile({ displayName: u.displayName || '', isPublic: false });
@@ -91,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
           }
         } catch (e: any) {
-          console.error("Auth profile error", e);
+          console.error('Auth profile error', e);
         }
         let serverAdmin = false;
         try {
@@ -104,7 +106,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const data = await resp.json();
             serverAdmin = data.admin === true;
           }
-        } catch { /* non-fatal */ }
+        } catch {
+          /* non-fatal */
+        }
         try {
           const result = await u.getIdTokenResult(true);
           const claimsData = result.claims as Record<string, unknown>;
@@ -121,7 +125,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [loadProfile]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, isDemoMode, setDemoMode, stats, claims, profile, refreshProfile }}>
+    <AuthContext.Provider
+      value={{ user, loading, isDemoMode, setDemoMode, stats, claims, profile, refreshProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );

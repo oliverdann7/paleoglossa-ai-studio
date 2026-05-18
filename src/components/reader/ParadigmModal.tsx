@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { X, Sparkles, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { AIClient } from "../../lib/services/aiClient.js";
-import { useAuth } from "../../lib/hooks/useAuth.js";
+import React, { useState, useEffect } from 'react';
+import { X, Sparkles, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { AIClient } from '../../lib/services/aiClient.js';
+import { useAuth } from '../../lib/hooks/useAuth.js';
 
 interface ParadigmModalProps {
   isOpen: boolean;
@@ -34,7 +34,7 @@ export const ParadigmModal: React.FC<ParadigmModalProps> = ({
           setParadigm(result);
         } catch (error: any) {
           console.error(error);
-          setParadigm(error.message || "Failed to load paradigm data.");
+          setParadigm(error.message || 'Failed to load paradigm data.');
         } finally {
           setIsLoading(false);
         }
@@ -92,7 +92,7 @@ export const ParadigmModal: React.FC<ParadigmModalProps> = ({
                 </div>
               ) : (
                 <div className="markdown-body">
-                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{paradigm || ""}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{paradigm || ''}</ReactMarkdown>
                 </div>
               )}
             </div>

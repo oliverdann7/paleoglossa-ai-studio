@@ -68,7 +68,11 @@ export const More = () => {
       <div className="px-4 pt-5 pb-8 max-w-lg mx-auto">
         <Section title={t('more.study', 'Study')}>
           <MoreCard icon={Search} label={t('nav.search', 'Search')} to="/app/search" />
-          <MoreCard icon={BookText} label={t('nav.dictionary', 'Dictionary')} to="/app/dictionary" />
+          <MoreCard
+            icon={BookText}
+            label={t('nav.dictionary', 'Dictionary')}
+            to="/app/dictionary"
+          />
           <MoreCard icon={MessageCircle} label={t('nav.tutor', 'Tutor')} to="/app/tutor" />
           <MoreCard icon={GraduationCap} label={t('nav.grammar', 'Grammar')} to="/app/grammar" />
           <MoreCard icon={GitBranch} label={t('nav.syntax', 'Syntax')} to="/app/syntax" />
@@ -78,7 +82,11 @@ export const More = () => {
         <Section title={t('more.personal', 'Personal')}>
           <MoreCard icon={FileText} label={t('nav.notes', 'Notes')} to="/app/notes" />
           <MoreCard icon={BookMarked} label={t('nav.notebooks', 'Notebooks')} to="/app/notebooks" />
-          <MoreCard icon={BarChart3} label={t('nav.statistics', 'Statistics')} to="/app/statistics" />
+          <MoreCard
+            icon={BarChart3}
+            label={t('nav.statistics', 'Statistics')}
+            to="/app/statistics"
+          />
         </Section>
 
         <Section title={t('more.tools', 'Tools')}>

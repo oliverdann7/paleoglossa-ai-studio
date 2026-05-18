@@ -23,9 +23,9 @@ export interface Morphology {
   number?: string;
   gender?: string;
   degree?: string;
-  state?: string;      // Aramaic/Hebrew
-  stem?: string;       // Hebrew binyan
-  root?: string;       // foreign root
+  state?: string; // Aramaic/Hebrew
+  stem?: string; // Hebrew binyan
+  root?: string; // foreign root
 }
 
 export interface Lemma {
@@ -42,11 +42,11 @@ export interface Root {
 
 export interface Token {
   id: string; // e.g. "Mt-1-1-1"
-  surface: string;   // the exact form appearing in text
-  normalized: string;// lowercased, stripped of punctuation for matching
-  lemma: string;     // foreign text lemma
-  root?: string;     // foreign root
-  gloss: string;     // english meaning
+  surface: string; // the exact form appearing in text
+  normalized: string; // lowercased, stripped of punctuation for matching
+  lemma: string; // foreign text lemma
+  root?: string; // foreign root
+  gloss: string; // english meaning
   morphology: Morphology;
   transliteration?: string;
   punctBefore: string;
@@ -85,7 +85,14 @@ export interface Text {
   date?: string;
   period?: string;
   genre?: string;
-  corpusType?: 'biblical' | 'classical' | 'patristic' | 'inscription' | 'manuscript' | 'islamicate' | 'other';
+  corpusType?:
+    | 'biblical'
+    | 'classical'
+    | 'patristic'
+    | 'inscription'
+    | 'manuscript'
+    | 'islamicate'
+    | 'other';
   sourceAttributionId?: string;
   hasMorphology?: boolean;
   hasTranslation?: boolean;

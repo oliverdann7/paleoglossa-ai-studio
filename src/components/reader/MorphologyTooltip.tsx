@@ -18,9 +18,17 @@ function parseMorphFields(morphology: string): string[] {
 
   // POS prefixes (Greek/Hebrew/Latin patterns)
   const posMap: Record<string, string> = {
-    'V-': 'Verb', 'N-': 'Noun', 'A-': 'Adjective', 'P-': 'Pronoun',
-    'D-': 'Adverb', 'C-': 'Conjunction', 'CONJ': 'Conj.', 'PREP': 'Prep.',
-    'ADJ': 'Adj.', 'ADV': 'Adv.', 'PRON': 'Pron.',
+    'V-': 'Verb',
+    'N-': 'Noun',
+    'A-': 'Adjective',
+    'P-': 'Pronoun',
+    'D-': 'Adverb',
+    'C-': 'Conjunction',
+    CONJ: 'Conj.',
+    PREP: 'Prep.',
+    ADJ: 'Adj.',
+    ADV: 'Adv.',
+    PRON: 'Pron.',
   };
   for (const [prefix, label] of Object.entries(posMap)) {
     if (morphology.startsWith(prefix) || morphology.includes(prefix)) {
@@ -88,12 +96,10 @@ export function MorphologyTooltip({ word, lemma, gloss, morphology, x, y, visibl
                 ← {lemma}
               </div>
             )}
-            {gloss && (
-              <div className="text-[12px] italic text-parch/80 mb-1.5">{gloss}</div>
-            )}
+            {gloss && <div className="text-[12px] italic text-parch/80 mb-1.5">{gloss}</div>}
             {fields.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {fields.map(f => (
+                {fields.map((f) => (
                   <span
                     key={f}
                     className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-parch/70"

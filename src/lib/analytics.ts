@@ -1,15 +1,15 @@
-import posthog from "posthog-js";
+import posthog from 'posthog-js';
 
 export function initAnalytics() {
   const key = import.meta.env.VITE_POSTHOG_API_KEY;
-  const host = import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com";
+  const host = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com';
   if (!key) return;
 
   posthog.init(key, {
     api_host: host,
     capture_pageview: true,
     capture_pageleave: true,
-    persistence: "localStorage",
+    persistence: 'localStorage',
     loaded: (ph) => {
       if (import.meta.env.DEV) ph.opt_out_capturing();
     },

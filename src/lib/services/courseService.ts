@@ -20,7 +20,9 @@ export class CourseService {
 
   static async getCourse(courseId: string): Promise<CourseWithMeta | null> {
     try {
-      return await apiFetch<CourseWithMeta>(`/api/courses/${encodeURIComponent(courseId)}`, { skipAuth: true });
+      return await apiFetch<CourseWithMeta>(`/api/courses/${encodeURIComponent(courseId)}`, {
+        skipAuth: true,
+      });
     } catch {
       return null;
     }
@@ -40,9 +42,15 @@ export class CourseService {
     }
   }
 
-  static async updateCourse(courseId: string, updates: Partial<Pick<Course, 'title' | 'description' | 'languageId' | 'isPublic' | 'texts'>>): Promise<boolean> {
+  static async updateCourse(
+    courseId: string,
+    updates: Partial<Pick<Course, 'title' | 'description' | 'languageId' | 'isPublic' | 'texts'>>
+  ): Promise<boolean> {
     try {
-      await apiFetch(`/api/courses/${encodeURIComponent(courseId)}`, { method: 'PUT', body: updates });
+      await apiFetch(`/api/courses/${encodeURIComponent(courseId)}`, {
+        method: 'PUT',
+        body: updates,
+      });
       return true;
     } catch {
       return false;
@@ -78,7 +86,9 @@ export class CourseService {
 
   static async getMembers(courseId: string): Promise<CourseMembership[]> {
     try {
-      return await apiFetch<CourseMembership[]>(`/api/courses/${encodeURIComponent(courseId)}/members`);
+      return await apiFetch<CourseMembership[]>(
+        `/api/courses/${encodeURIComponent(courseId)}/members`
+      );
     } catch {
       return [];
     }

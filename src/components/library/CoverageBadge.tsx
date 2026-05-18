@@ -19,7 +19,7 @@ export function CoverageBadge({ percent, size = 'sm' }: Props) {
       className={cn(
         'inline-block font-bold rounded-full uppercase tracking-widest',
         size === 'sm' ? 'text-[9px] px-2 py-0.5' : 'text-[11px] px-3 py-1',
-        cls,
+        cls
       )}
     >
       {percent}% · {label}

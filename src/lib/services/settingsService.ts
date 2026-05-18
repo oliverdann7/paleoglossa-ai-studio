@@ -31,9 +31,9 @@ export class SettingsService {
 
     try {
       const snap = await getDoc(doc(db, `users/${userId}/settings`, 'main'));
-      return snap.exists() ? snap.data() as UserSettings : DEFAULT_SETTINGS;
+      return snap.exists() ? (snap.data() as UserSettings) : DEFAULT_SETTINGS;
     } catch (e) {
-      console.error("Settings Fetch Error:", e);
+      console.error('Settings Fetch Error:', e);
       return DEFAULT_SETTINGS;
     }
   }
@@ -41,7 +41,9 @@ export class SettingsService {
   static async saveSettings(userId: string | null, settings: Partial<UserSettings>) {
     if (!userId) {
       const existing = localStorage.getItem(STORAGE_KEY);
-      const merged = existing ? { ...JSON.parse(existing), ...settings } : { ...DEFAULT_SETTINGS, ...settings };
+      const merged = existing
+        ? { ...JSON.parse(existing), ...settings }
+        : { ...DEFAULT_SETTINGS, ...settings };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
       return;
     }
@@ -53,10 +55,10 @@ export class SettingsService {
         ...DEFAULT_SETTINGS,
         ...existing,
         ...settings,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
     } catch (e) {
-      console.error("Settings Save Error:", e);
+      console.error('Settings Save Error:', e);
     }
   }
 }

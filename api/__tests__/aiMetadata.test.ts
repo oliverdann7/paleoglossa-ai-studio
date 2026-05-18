@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 describe('Metadata endpoint validation', () => {
-
   it('rejects missing languageId', () => {
     const result = validate({ rawText: 'some text' });
     expect(result.status).toBe(400);
@@ -31,7 +30,10 @@ function validate(body: any): { status: number; body: any } {
   const { languageId, rawText } = body || {};
 
   if (!languageId || typeof languageId !== 'string' || !rawText || typeof rawText !== 'string') {
-    return { status: 400, body: { difficulty: '', tags: [], summary: '', warnings: ['Invalid input'] } };
+    return {
+      status: 400,
+      body: { difficulty: '', tags: [], summary: '', warnings: ['Invalid input'] },
+    };
   }
 
   // No API key: return fallback
