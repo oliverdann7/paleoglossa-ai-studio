@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Loader2, BookOpen, Network, Sparkles, Globe, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getApiUrl } from '../../lib/services/apiBaseUrl.js';
 
 interface WordParsing {
   text: string;
@@ -81,7 +82,7 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
     setAnalysis(null);
 
     try {
-      const res = await fetch('/api/ai/sentence-analysis', {
+      const res = await fetch(getApiUrl('/api/ai/sentence-analysis'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: sentence.text, language, mode }),

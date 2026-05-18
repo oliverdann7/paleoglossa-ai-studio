@@ -5,6 +5,7 @@ import { auth, db } from '../firebase.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { AuthContext, UserProfile, UserStats } from './AuthContextInstance.js';
 import { identifyAnalytics, resetAnalytics } from '../analytics.js';
+import { getApiUrl } from '../services/apiBaseUrl.js';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -91,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let serverAdmin = false;
         try {
           const token = await u.getIdToken();
-          const resp = await fetch('/api/admin/refresh-claims', {
+          const resp = await fetch(getApiUrl('/api/admin/refresh-claims'), {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
           });
