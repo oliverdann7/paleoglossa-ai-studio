@@ -34,7 +34,7 @@ export const Import = () => {
   const { activeLanguageId } = useActiveLanguage();
   const { canAccessLanguage } = useSubscription();
   const { refreshImports, knowledge } = useKnowledge(activeLanguageId);
-  const onComplete = (text: any) => navigate(`/app/reader/${text.id}`);
+  const onComplete = (text: ImportedText) => navigate(`/app/reader/${text.id}`);
   const [url, setUrl] = useState("");
   const [activeTab, setActiveTab] = useState<"paste" | "file" | "url" | "ocr">("paste");
   const [text, setText] = useState("");
@@ -95,7 +95,7 @@ export const Import = () => {
     uniqueLemmas.forEach(lemma => {
       const info = knowledge[normalizeLemmaKey(lemma)];
       if (info) {
-        const state = typeof info === 'string' ? info : (info as any).state;
+        const state = typeof info === 'string' ? info : info.state;
         if (state === WordState.KNOWN) knownWords++;
         else if (state !== WordState.NEW && state !== WordState.IGNORED) learningWords++;
         else newWords++;

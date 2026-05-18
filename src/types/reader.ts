@@ -4,6 +4,37 @@ export type HighlightIntensity = 'subtle' | 'normal' | 'strong';
 /** High-level reading environment. Orthogonal to scroll vs. page layout mode. */
 export type DisplayMode = 'scholar' | 'focus' | 'morphology' | 'interlinear' | 'parallel';
 
+export interface ReaderToken {
+  id: string;
+  text: string;
+  lemma: string;
+  gloss?: string;
+  morphology?: string;
+  translit?: string;
+  punctBefore?: string;
+  punctAfter?: string;
+  type?: 'word' | 'punctuation' | 'whitespace';
+  normalized?: string;
+  pos?: string;
+  confidence?: number;
+}
+
+export interface ReaderSentence {
+  id: string;
+  tokens: ReaderToken[];
+  translation?: string;
+  parallel?: string;
+  _displayOffset?: number;
+  _cachedText?: string;
+}
+
+export interface ReaderChapter {
+  id: string;
+  title: string;
+  sentences: ReaderSentence[];
+  translation: string;
+}
+
 export interface ReaderAudioState {
   isPlaying: boolean;
   speed: number;
