@@ -24,7 +24,9 @@ const upload = multer({
 
 router.post('/api/import/parse', upload.single('file'), async (req: any, res: any) => {
   if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded or file type not supported.', code: 'NO_FILE' });
+    return res
+      .status(400)
+      .json({ error: 'No file uploaded or file type not supported.', code: 'NO_FILE' });
   }
 
   const { mimetype, buffer, originalname, size } = req.file;
@@ -43,15 +45,21 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
         const result = await parser.getText();
         text = result.text.trim();
         if (!text) {
-          warnings.push('PDF contained no extractable text. It may be a scanned image — try the Image OCR tab instead.');
+          warnings.push(
+            'PDF contained no extractable text. It may be a scanned image — try the Image OCR tab instead.'
+          );
         }
         if (result.total > 200) {
-          warnings.push(`Large document (${result.total} pages). Only the first 100,000 characters will be analyzed.`);
+          warnings.push(
+            `Large document (${result.total} pages). Only the first 100,000 characters will be analyzed.`
+          );
         }
       } finally {
         await parser.destroy();
       }
-    } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    } else if (
+      mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
       const result = await mammoth.extractRawText({ buffer });
       text = result.value.trim();
       if (result.messages.length > 0) {
@@ -66,7 +74,9 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
 
     const truncated = text.length > 100000;
     if (truncated) {
-      warnings.push(`Text was truncated to 100,000 characters (document contained ${text.length.toLocaleString()}).`);
+      warnings.push(
+        `Text was truncated to 100,000 characters (document contained ${text.length.toLocaleString()}).`
+      );
     }
 
     return res.status(200).json({
@@ -92,14 +102,23 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
       });
     }
     console.error('[import/parse] Unexpected error:', err);
-    return res.status(500).json({ error: 'Failed to extract text from file.', code: 'PARSE_ERROR' });
+    return res
+      .status(500)
+      .json({ error: 'Failed to extract text from file.', code: 'PARSE_ERROR' });
   }
 });
 
 // Multer error handler (file too large, unsupported type from fileFilter)
 router.use((err: unknown, _req: unknown, res: any, next: (e: unknown) => void) => {
-  if (err && typeof err === 'object' && 'code' in err && (err as NodeJS.ErrnoException).code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ error: 'File exceeds the 10 MB size limit.', code: 'FILE_TOO_LARGE' });
+  if (
+    err &&
+    typeof err === 'object' &&
+    'code' in err &&
+    (err as NodeJS.ErrnoException).code === 'LIMIT_FILE_SIZE'
+  ) {
+    return res
+      .status(413)
+      .json({ error: 'File exceeds the 10 MB size limit.', code: 'FILE_TOO_LARGE' });
   }
   if (err instanceof Error && err.message.startsWith('Unsupported file type')) {
     return res.status(415).json({ error: err.message, code: 'UNSUPPORTED_TYPE' });

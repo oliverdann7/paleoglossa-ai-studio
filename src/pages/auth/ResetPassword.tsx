@@ -46,9 +46,11 @@ export const ResetPassword = () => {
       if (code === 'auth/invalid-action-code' || code === 'auth/expired-action-code') {
         setPageState('invalid');
       } else if (code === 'auth/weak-password') {
-        setError(t("auth.weakPassword", "Password should be at least 6 characters."));
+        setError(t('auth.weakPassword', 'Password should be at least 6 characters.'));
       } else if (code === 'auth/network-request-failed') {
-        setError(t("auth.networkError", "Network error. Please check your connection and try again."));
+        setError(
+          t('auth.networkError', 'Network error. Please check your connection and try again.')
+        );
       } else {
         setError(err.message);
       }
@@ -72,7 +74,7 @@ export const ResetPassword = () => {
           {pageState === 'verifying' && (
             <div className="text-center text-ink3 py-8">
               <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-sm">{t("auth.verifyingLink", "Verifying your reset link...")}</p>
+              <p className="text-sm">{t('auth.verifyingLink', 'Verifying your reset link...')}</p>
             </div>
           )}
 
@@ -83,24 +85,27 @@ export const ResetPassword = () => {
                   <AlertCircle className="w-7 h-7 text-ruby" />
                 </div>
                 <h3 className="text-2xl font-serif font-bold mb-2 text-ink">
-                  {t("auth.linkExpiredTitle", "Link expired")}
+                  {t('auth.linkExpiredTitle', 'Link expired')}
                 </h3>
                 <p className="text-ink3 text-sm">
-                  {t("auth.resetLinkExpired", "This reset link has expired or already been used. Please request a new one.")}
+                  {t(
+                    'auth.resetLinkExpired',
+                    'This reset link has expired or already been used. Please request a new one.'
+                  )}
                 </p>
               </div>
               <button
                 onClick={() => navigate('/auth/forgot-password')}
                 className="btn-primary w-full py-3"
               >
-                {t("auth.requestNewLink", "Request a new link")}
+                {t('auth.requestNewLink', 'Request a new link')}
               </button>
               <div className="mt-4 text-center">
                 <button
                   onClick={() => navigate('/auth/login')}
                   className="text-sm font-bold text-ink3 hover:text-ink transition-colors"
                 >
-                  {t("auth.backToSignIn", "Back to Sign In")}
+                  {t('auth.backToSignIn', 'Back to Sign In')}
                 </button>
               </div>
             </motion.div>
@@ -109,10 +114,13 @@ export const ResetPassword = () => {
           {pageState === 'ready' && (
             <>
               <h3 className="text-3xl font-serif font-bold mb-2 text-center text-ink">
-                {t("auth.newPassword", "New Password")}
+                {t('auth.newPassword', 'New Password')}
               </h3>
               <p className="text-ink3 mb-8 text-center">
-                {t("auth.newPasswordDesc", "Enter your new password below to regain access to your account.")}
+                {t(
+                  'auth.newPasswordDesc',
+                  'Enter your new password below to regain access to your account.'
+                )}
               </p>
 
               {error && (
@@ -124,7 +132,9 @@ export const ResetPassword = () => {
 
               <form onSubmit={handleUpdate} className="space-y-6">
                 <div>
-                  <label className="nav-label mb-2 block">{t("auth.newPassword", "New Password")}</label>
+                  <label className="nav-label mb-2 block">
+                    {t('auth.newPassword', 'New Password')}
+                  </label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                     <input
@@ -138,14 +148,14 @@ export const ResetPassword = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(p => !p)}
+                      onClick={() => setShowPassword((p) => !p)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                   <p className="text-xs text-ink3 mt-1.5">
-                    {t("auth.passwordMinLength", "Minimum 6 characters")}
+                    {t('auth.passwordMinLength', 'Minimum 6 characters')}
                   </p>
                 </div>
 
@@ -154,7 +164,9 @@ export const ResetPassword = () => {
                   disabled={loading || password.length < 6}
                   className="btn-primary w-full py-3 disabled:opacity-70"
                 >
-                  {loading ? t("auth.updating", "Updating...") : t("auth.updatePassword", "Update Password")}
+                  {loading
+                    ? t('auth.updating', 'Updating...')
+                    : t('auth.updatePassword', 'Update Password')}
                 </button>
               </form>
             </>
@@ -170,16 +182,16 @@ export const ResetPassword = () => {
                 <CheckCircle2 className="w-7 h-7 text-jade" />
               </div>
               <h3 className="text-2xl font-serif font-bold mb-2 text-ink">
-                {t("auth.passwordUpdated", "Password updated")}
+                {t('auth.passwordUpdated', 'Password updated')}
               </h3>
               <p className="text-ink3 text-sm mb-8">
-                {t("auth.passwordUpdatedDesc", "Your password has been changed successfully. You can now sign in with your new password.")}
+                {t(
+                  'auth.passwordUpdatedDesc',
+                  'Your password has been changed successfully. You can now sign in with your new password.'
+                )}
               </p>
-              <button
-                onClick={() => navigate('/auth/login')}
-                className="btn-primary w-full py-3"
-              >
-                {t("auth.signIn", "Sign In")}
+              <button onClick={() => navigate('/auth/login')} className="btn-primary w-full py-3">
+                {t('auth.signIn', 'Sign In')}
               </button>
             </motion.div>
           )}

@@ -2,8 +2,22 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Users, Plus, BookOpen, Globe, Lock, Loader2, ChevronRight,
-  Trash2, Edit2, X, Check, Play, UserCheck, LogOut, Brain, Flame,
+  Users,
+  Plus,
+  BookOpen,
+  Globe,
+  Lock,
+  Loader2,
+  ChevronRight,
+  Trash2,
+  Edit2,
+  X,
+  Check,
+  Play,
+  UserCheck,
+  LogOut,
+  Brain,
+  Flame,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -45,9 +59,12 @@ function CourseCard({
   const lang = getLanguageById(course.languageId);
   const textCount = course.texts?.length ?? 0;
 
-  const overallProgress = textCount > 0
-    ? Math.round(course.texts.reduce((sum, t) => sum + (readingProgress[t.textId] ?? 0), 0) / textCount)
-    : 0;
+  const overallProgress =
+    textCount > 0
+      ? Math.round(
+          course.texts.reduce((sum, t) => sum + (readingProgress[t.textId] ?? 0), 0) / textCount
+        )
+      : 0;
 
   return (
     <motion.div
@@ -63,7 +80,9 @@ function CourseCard({
             <h3 className="font-serif font-bold text-[16px] text-ink truncate">{course.title}</h3>
           </div>
           {course.description && (
-            <p className="text-[13px] text-ink2 line-clamp-2 leading-relaxed">{course.description}</p>
+            <p className="text-[13px] text-ink2 line-clamp-2 leading-relaxed">
+              {course.description}
+            </p>
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -74,7 +93,10 @@ function CourseCard({
           )}
           {isOwner && onDelete && (
             <button
-              onClick={e => { e.stopPropagation(); onDelete(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
               className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 hover:text-red-500 text-muted transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -82,7 +104,10 @@ function CourseCard({
           )}
           {!isOwner && isEnrolled && onLeave && (
             <button
-              onClick={e => { e.stopPropagation(); onLeave(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onLeave();
+              }}
               className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-amber-50 hover:text-amber-600 text-muted transition-all"
               title="Leave course"
             >
@@ -149,7 +174,13 @@ function CourseForm({
   userImports,
 }: {
   initial?: Partial<CourseWithMeta>;
-  onSave: (data: { title: string; description: string; languageId: string; isPublic: boolean; texts: CourseTextAssignment[] }) => Promise<void>;
+  onSave: (data: {
+    title: string;
+    description: string;
+    languageId: string;
+    isPublic: boolean;
+    texts: CourseTextAssignment[];
+  }) => Promise<void>;
   onCancel: () => void;
   userImports: any[];
 }) {
@@ -163,27 +194,43 @@ function CourseForm({
   const [error, setError] = useState<string | null>(null);
 
   const addText = (textId: string, textTitle: string) => {
-    if (texts.some(t => t.textId === textId)) return;
-    setTexts(prev => [...prev, { textId, order: prev.length + 1, learningObjectives: textTitle }]);
+    if (texts.some((t) => t.textId === textId)) return;
+    setTexts((prev) => [
+      ...prev,
+      { textId, order: prev.length + 1, learningObjectives: textTitle },
+    ]);
   };
 
   const removeText = (textId: string) => {
-    setTexts(prev => prev.filter(t => t.textId !== textId).map((t, i) => ({ ...t, order: i + 1 })));
+    setTexts((prev) =>
+      prev.filter((t) => t.textId !== textId).map((t, i) => ({ ...t, order: i + 1 }))
+    );
   };
 
   const handleSubmit = async () => {
-    if (!title.trim()) { setError('Title is required'); return; }
+    if (!title.trim()) {
+      setError('Title is required');
+      return;
+    }
     setIsSaving(true);
     setError(null);
     try {
-      await onSave({ title: title.trim(), description: description.trim(), languageId, isPublic, texts });
+      await onSave({
+        title: title.trim(),
+        description: description.trim(),
+        languageId,
+        isPublic,
+        texts,
+      });
     } catch {
       setError('Failed to save. Please try again.');
       setIsSaving(false);
     }
   };
 
-  const availableTexts = userImports.filter(imp => imp.languageId === languageId || !imp.languageId);
+  const availableTexts = userImports.filter(
+    (imp) => imp.languageId === languageId || !imp.languageId
+  );
 
   return (
     <motion.div
@@ -197,21 +244,25 @@ function CourseForm({
 
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-[12px] font-bold text-muted uppercase tracking-wider mb-1.5">Title *</label>
+          <label className="block text-[12px] font-bold text-muted uppercase tracking-wider mb-1.5">
+            Title *
+          </label>
           <input
             type="text"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. The Iliad – Books 1–6"
             className="w-full px-4 py-2.5 border border-bdr rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue/50"
           />
         </div>
 
         <div>
-          <label className="block text-[12px] font-bold text-muted uppercase tracking-wider mb-1.5">Description</label>
+          <label className="block text-[12px] font-bold text-muted uppercase tracking-wider mb-1.5">
+            Description
+          </label>
           <textarea
             value={description}
-            onChange={e => setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="What will students read and learn?"
             rows={3}
             className="w-full px-4 py-2.5 border border-bdr rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue/50 resize-none"
@@ -219,13 +270,15 @@ function CourseForm({
         </div>
 
         <div>
-          <label className="block text-[12px] font-bold text-muted uppercase tracking-wider mb-1.5">Language</label>
+          <label className="block text-[12px] font-bold text-muted uppercase tracking-wider mb-1.5">
+            Language
+          </label>
           <select
             value={languageId}
-            onChange={e => setLanguageId(e.target.value)}
+            onChange={(e) => setLanguageId(e.target.value)}
             className="w-full px-4 py-2.5 border border-bdr rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue/50 bg-white"
           >
-            {LANGUAGES.map(lang => (
+            {LANGUAGES.map((lang) => (
               <option key={lang.id} value={lang.id}>
                 {lang.icon} {getLanguageDisplayName(lang.id)}
               </option>
@@ -237,18 +290,22 @@ function CourseForm({
           <div
             onClick={() => setIsPublic(!isPublic)}
             className={cn(
-              "w-10 h-6 rounded-full transition-colors relative",
-              isPublic ? "bg-blue" : "bg-parch3"
+              'w-10 h-6 rounded-full transition-colors relative',
+              isPublic ? 'bg-blue' : 'bg-parch3'
             )}
           >
-            <div className={cn(
-              "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform",
-              isPublic ? "translate-x-4" : "translate-x-0.5"
-            )} />
+            <div
+              className={cn(
+                'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
+                isPublic ? 'translate-x-4' : 'translate-x-0.5'
+              )}
+            />
           </div>
           <div>
             <div className="text-[14px] font-medium text-ink">Make public</div>
-            <div className="text-[12px] text-muted">Other scholars can find and join this reading list</div>
+            <div className="text-[12px] text-muted">
+              Other scholars can find and join this reading list
+            </div>
           </div>
         </label>
       </div>
@@ -263,10 +320,18 @@ function CourseForm({
         {texts.length > 0 && (
           <div className="space-y-1.5 mb-3">
             {texts.map((t, i) => (
-              <div key={t.textId} className="flex items-center gap-2 px-3 py-2 bg-parch2 rounded-lg text-[13px]">
-                <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue/10 text-blue text-[10px] font-bold shrink-0">{i + 1}</span>
+              <div
+                key={t.textId}
+                className="flex items-center gap-2 px-3 py-2 bg-parch2 rounded-lg text-[13px]"
+              >
+                <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue/10 text-blue text-[10px] font-bold shrink-0">
+                  {i + 1}
+                </span>
                 <span className="flex-1 text-ink truncate">{t.learningObjectives || t.textId}</span>
-                <button onClick={() => removeText(t.textId)} className="text-muted hover:text-red-500 transition-colors shrink-0">
+                <button
+                  onClick={() => removeText(t.textId)}
+                  className="text-muted hover:text-red-500 transition-colors shrink-0"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -276,16 +341,18 @@ function CourseForm({
 
         {availableTexts.length > 0 ? (
           <div className="border border-bdr rounded-lg max-h-40 overflow-y-auto">
-            {availableTexts.filter(imp => !texts.some(t => t.textId === imp.id)).map(imp => (
-              <button
-                key={imp.id}
-                onClick={() => addText(imp.id, imp.title)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-parch2 transition-colors text-[13px] text-ink border-b border-bdr/50 last:border-0"
-              >
-                <Plus className="w-3.5 h-3.5 text-blue shrink-0" />
-                <span className="truncate">{imp.title}</span>
-              </button>
-            ))}
+            {availableTexts
+              .filter((imp) => !texts.some((t) => t.textId === imp.id))
+              .map((imp) => (
+                <button
+                  key={imp.id}
+                  onClick={() => addText(imp.id, imp.title)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-parch2 transition-colors text-[13px] text-ink border-b border-bdr/50 last:border-0"
+                >
+                  <Plus className="w-3.5 h-3.5 text-blue shrink-0" />
+                  <span className="truncate">{imp.title}</span>
+                </button>
+              ))}
           </div>
         ) : (
           <p className="text-[13px] text-muted italic">
@@ -321,15 +388,24 @@ function CourseForm({
 // ─── Difficulty badge ─────────────────────────────────────────────────────────
 function DifficultyBadge({ unknownPct }: { unknownPct: number | null }) {
   if (unknownPct === null) return null;
-  if (unknownPct <= 15) return (
-    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Easy</span>
-  );
-  if (unknownPct <= 30) return (
-    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue/10 text-blue">Accessible</span>
-  );
-  if (unknownPct <= 50) return (
-    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700">Challenging</span>
-  );
+  if (unknownPct <= 15)
+    return (
+      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+        Easy
+      </span>
+    );
+  if (unknownPct <= 30)
+    return (
+      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue/10 text-blue">
+        Accessible
+      </span>
+    );
+  if (unknownPct <= 50)
+    return (
+      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700">
+        Challenging
+      </span>
+    );
   return (
     <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 flex items-center gap-0.5">
       <Flame className="w-2.5 h-2.5" /> Hard
@@ -365,21 +441,32 @@ function CourseDetail({
   const [isEnrolled, setIsEnrolled] = useState(Boolean(course.isEnrolled));
 
   // Import data for difficulty calculation
-  const [importData, setImportData] = useState<Record<string, { stats: { totalWords: number; knownWords: number }; sentences?: { tokens: { lemma?: string; type: string }[] }[]; rawContent?: string }>>({});
+  const [importData, setImportData] = useState<
+    Record<
+      string,
+      {
+        stats: { totalWords: number; knownWords: number };
+        sentences?: { tokens: { lemma?: string; type: string }[] }[];
+        rawContent?: string;
+      }
+    >
+  >({});
 
   useEffect(() => {
     if (!userId) return;
-    const textIds = course.texts.map(t => t.textId);
+    const textIds = course.texts.map((t) => t.textId);
     Promise.all(
-      textIds.map(id => ImportService.getImport(userId, id).then(imp => imp ? [id, imp] as const : null))
-    ).then(results => {
+      textIds.map((id) =>
+        ImportService.getImport(userId, id).then((imp) => (imp ? ([id, imp] as const) : null))
+      )
+    ).then((results) => {
       const map: typeof importData = {};
       for (const r of results) {
-        if (r) map[r[0]] = r[1] as typeof importData[string];
+        if (r) map[r[0]] = r[1] as (typeof importData)[string];
       }
       setImportData(map);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [course.id, userId]);
 
   // Compute per-text unknown-word density from live knowledge map
@@ -387,10 +474,16 @@ function CourseDetail({
     const result: Record<string, number | null> = {};
     for (const assignment of course.texts) {
       const imp = importData[assignment.textId];
-      if (!imp?.sentences) { result[assignment.textId] = null; continue; }
-      const tokens = imp.sentences.flatMap(s => s.tokens).filter(t => t.type === 'word');
-      if (tokens.length === 0) { result[assignment.textId] = null; continue; }
-      const unknown = tokens.filter(t => {
+      if (!imp?.sentences) {
+        result[assignment.textId] = null;
+        continue;
+      }
+      const tokens = imp.sentences.flatMap((s) => s.tokens).filter((t) => t.type === 'word');
+      if (tokens.length === 0) {
+        result[assignment.textId] = null;
+        continue;
+      }
+      const unknown = tokens.filter((t) => {
         if (!t.lemma) return true;
         const info = knowledge[t.lemma.toLowerCase()];
         const state = info?.state ?? WordState.NEW;
@@ -404,8 +497,8 @@ function CourseDetail({
   // Find the recommended next text: first incomplete with density <= 30% (or just first incomplete)
   const sortedTexts = course.texts.slice().sort((a, b) => a.order - b.order);
   const recommendedTextId = useMemo(() => {
-    const incomplete = sortedTexts.filter(t => (readingProgress[t.textId] ?? 0) < 100);
-    const accessible = incomplete.find(t => {
+    const incomplete = sortedTexts.filter((t) => (readingProgress[t.textId] ?? 0) < 100);
+    const accessible = incomplete.find((t) => {
       const d = unknownDensity[t.textId];
       return d === null || d <= 30;
     });
@@ -413,14 +506,19 @@ function CourseDetail({
   }, [sortedTexts, readingProgress, unknownDensity]);
 
   // Adaptive tip: if all texts ≥ 80% done, show suggestion
-  const allProgress = sortedTexts.map(t => readingProgress[t.textId] ?? 0);
-  const avgProgress = allProgress.length > 0 ? allProgress.reduce((a, b) => a + b, 0) / allProgress.length : 0;
-  const allComplete = allProgress.length > 0 && allProgress.every(p => p >= 80);
+  const allProgress = sortedTexts.map((t) => readingProgress[t.textId] ?? 0);
+  const avgProgress =
+    allProgress.length > 0 ? allProgress.reduce((a, b) => a + b, 0) / allProgress.length : 0;
+  const allComplete = allProgress.length > 0 && allProgress.every((p) => p >= 80);
   const avgDensity = Object.values(unknownDensity).filter((v): v is number => v !== null);
-  const meanDensity = avgDensity.length > 0 ? avgDensity.reduce((a, b) => a + b, 0) / avgDensity.length : null;
+  const meanDensity =
+    avgDensity.length > 0 ? avgDensity.reduce((a, b) => a + b, 0) / avgDensity.length : null;
 
   // Pre-drill modal state
-  const [preDrill, setPreDrill] = useState<{ assignment: CourseTextAssignment; lemmas: DrillLemma[] } | null>(null);
+  const [preDrill, setPreDrill] = useState<{
+    assignment: CourseTextAssignment;
+    lemmas: DrillLemma[];
+  } | null>(null);
   // Quiz modal state
   const [quiz, setQuiz] = useState<{ textId: string; title: string; snippet: string } | null>(null);
 
@@ -452,7 +550,11 @@ function CourseDetail({
   const handleOpenQuiz = (assignment: CourseTextAssignment) => {
     const imp = importData[assignment.textId];
     const snippet = imp?.rawContent?.slice(0, 2000) ?? '';
-    setQuiz({ textId: assignment.textId, title: assignment.learningObjectives || assignment.textId, snippet });
+    setQuiz({
+      textId: assignment.textId,
+      title: assignment.learningObjectives || assignment.textId,
+      snippet,
+    });
   };
 
   const handleJoin = async () => {
@@ -476,7 +578,10 @@ function CourseDetail({
         <PreDrillModal
           textTitle={preDrill.assignment.learningObjectives || preDrill.assignment.textId}
           lemmas={preDrill.lemmas}
-          onStartReading={() => { setPreDrill(null); navigate(`/app/reader/${preDrill.assignment.textId}`); }}
+          onStartReading={() => {
+            setPreDrill(null);
+            navigate(`/app/reader/${preDrill.assignment.textId}`);
+          }}
           onClose={() => setPreDrill(null)}
         />
       )}
@@ -491,7 +596,10 @@ function CourseDetail({
         />
       )}
 
-      <button onClick={onBack} className="flex items-center gap-1.5 text-[13px] text-muted hover:text-blue mb-6 transition-colors">
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1.5 text-[13px] text-muted hover:text-blue mb-6 transition-colors"
+      >
         <ChevronRight className="w-4 h-4 rotate-180" /> Back to courses
       </button>
 
@@ -503,7 +611,11 @@ function CourseDetail({
           </div>
           <div className="flex items-center gap-3 text-[13px] text-muted mt-1">
             <span className="flex items-center gap-1">
-              {course.isPublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+              {course.isPublic ? (
+                <Globe className="w-3.5 h-3.5" />
+              ) : (
+                <Lock className="w-3.5 h-3.5" />
+              )}
               {course.isPublic ? 'Public' : 'Private'}
             </span>
             <span className="flex items-center gap-1">
@@ -529,7 +641,11 @@ function CourseDetail({
               disabled={isJoining}
               className="flex items-center gap-1.5 px-4 py-2 bg-blue text-white text-[13px] font-semibold rounded-lg hover:bg-blue/90 disabled:opacity-50 transition-colors"
             >
-              {isJoining ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+              {isJoining ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Plus className="w-3.5 h-3.5" />
+              )}
               Join
             </button>
           )}
@@ -539,7 +655,11 @@ function CourseDetail({
               disabled={isLeaving}
               className="flex items-center gap-1.5 px-4 py-2 border border-bdr text-[13px] font-semibold hover:bg-parch transition-colors rounded-lg disabled:opacity-50"
             >
-              {isLeaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
+              {isLeaving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <LogOut className="w-3.5 h-3.5" />
+              )}
               Leave
             </button>
           )}
@@ -547,7 +667,9 @@ function CourseDetail({
       </div>
 
       {course.description && (
-        <p className="font-body text-[15px] italic text-ink2 mb-6 leading-relaxed">{course.description}</p>
+        <p className="font-body text-[15px] italic text-ink2 mb-6 leading-relaxed">
+          {course.description}
+        </p>
       )}
 
       {/* Overall progress bar */}
@@ -558,7 +680,10 @@ function CourseDetail({
             <span>{Math.round(avgProgress)}% complete</span>
           </div>
           <div className="h-2 bg-parch3 rounded-full overflow-hidden">
-            <div className="h-full bg-blue rounded-full transition-all" style={{ width: `${avgProgress}%` }} />
+            <div
+              className="h-full bg-blue rounded-full transition-all"
+              style={{ width: `${avgProgress}%` }}
+            />
           </div>
         </div>
       )}
@@ -585,8 +710,8 @@ function CourseDetail({
                 <div
                   key={assignment.textId}
                   className={cn(
-                    "card p-4 flex items-center gap-4 transition-all",
-                    isRecommended && "border-blue/40 ring-1 ring-blue/20",
+                    'card p-4 flex items-center gap-4 transition-all',
+                    isRecommended && 'border-blue/40 ring-1 ring-blue/20'
                   )}
                 >
                   <div className="w-8 h-8 rounded-full bg-parch2 flex items-center justify-center text-[13px] font-bold text-muted shrink-0">
@@ -598,14 +723,19 @@ function CourseDetail({
                         {assignment.learningObjectives || assignment.textId}
                       </span>
                       {isRecommended && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue text-white shrink-0">Next</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue text-white shrink-0">
+                          Next
+                        </span>
                       )}
                       <DifficultyBadge unknownPct={density} />
                     </div>
                     {canRead && (
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-1 bg-parch3 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue rounded-full transition-all" style={{ width: `${pct}%` }} />
+                          <div
+                            className="h-full bg-blue rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
                         </div>
                         <span className="text-[11px] text-muted shrink-0">{pct}%</span>
                       </div>
@@ -631,9 +761,7 @@ function CourseDetail({
                       </button>
                     </div>
                   )}
-                  {!canRead && (
-                    <Lock className="w-4 h-4 text-muted shrink-0" />
-                  )}
+                  {!canRead && <Lock className="w-4 h-4 text-muted shrink-0" />}
                 </div>
               );
             })}
@@ -645,17 +773,25 @@ function CourseDetail({
               {meanDensity <= 10 ? (
                 <p className="text-[13px] text-emerald-700 flex items-start gap-2">
                   <span className="text-[16px]">🎓</span>
-                  <span>You handled this course with ease (avg. {Math.round(meanDensity)}% unknown). Consider a more challenging course or longer texts next.</span>
+                  <span>
+                    You handled this course with ease (avg. {Math.round(meanDensity)}% unknown).
+                    Consider a more challenging course or longer texts next.
+                  </span>
                 </p>
               ) : meanDensity <= 30 ? (
                 <p className="text-[13px] text-blue flex items-start gap-2">
                   <span className="text-[16px]">✅</span>
-                  <span>Course complete! Your comprehension is solid. Keep reading to consolidate.</span>
+                  <span>
+                    Course complete! Your comprehension is solid. Keep reading to consolidate.
+                  </span>
                 </p>
               ) : (
                 <p className="text-[13px] text-amber-700 flex items-start gap-2">
                   <span className="text-[16px]">📖</span>
-                  <span>These texts were challenging (avg. {Math.round(meanDensity)}% unknown). Review vocabulary in the SRS before moving on.</span>
+                  <span>
+                    These texts were challenging (avg. {Math.round(meanDensity)}% unknown). Review
+                    vocabulary in the SRS before moving on.
+                  </span>
                 </p>
               )}
             </div>
@@ -696,16 +832,20 @@ export const Courses = () => {
   const userId = user?.uid ?? null;
 
   useEffect(() => {
-    StatsService.getAllProgress(userId).then(all => {
+    StatsService.getAllProgress(userId).then((all) => {
       const map: Record<string, number> = {};
       for (const p of all) map[p.textId] = Math.round(p.lastPosition ?? 0);
       setReadingProgress(map);
     });
   }, [userId]);
 
-  const ownedCourses = courses.filter(c => c.ownerId === userId);
-  const enrolledCourses = courses.filter(c => c.ownerId !== userId && (c.isEnrolled || c._enrolled));
-  const discoverCourses = courses.filter(c => c.ownerId !== userId && !c.isEnrolled && !c._enrolled && c.isPublic);
+  const ownedCourses = courses.filter((c) => c.ownerId === userId);
+  const enrolledCourses = courses.filter(
+    (c) => c.ownerId !== userId && (c.isEnrolled || c._enrolled)
+  );
+  const discoverCourses = courses.filter(
+    (c) => c.ownerId !== userId && !c.isEnrolled && !c._enrolled && c.isPublic
+  );
 
   const handleOpenDetail = async (course: CourseWithMeta) => {
     if (userId) {
@@ -738,7 +878,7 @@ export const Courses = () => {
   const handleDelete = async (courseId: string) => {
     if (!confirm('Delete this reading list?')) return;
     await CourseService.deleteCourse(courseId);
-    setCourses(prev => prev.filter(c => c.id !== courseId));
+    setCourses((prev) => prev.filter((c) => c.id !== courseId));
     if (selectedCourse?.id === courseId) setView('list');
   };
 
@@ -770,7 +910,9 @@ export const Courses = () => {
             <h2 className="text-[28px] font-serif font-light text-ink tracking-tight">
               {t('courses.title', 'Reading Lists')}
             </h2>
-            <p className="text-[12px] text-muted">Organize texts into structured reading sequences</p>
+            <p className="text-[12px] text-muted">
+              Organize texts into structured reading sequences
+            </p>
           </div>
         </div>
         {view === 'list' && user && !isDemoMode && (
@@ -786,7 +928,12 @@ export const Courses = () => {
       <AnimatePresence mode="wait">
         {/* List view */}
         {view === 'list' && (
-          <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="list"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
             {isLoading ? (
               <div className="flex justify-center py-16">
                 <Loader2 className="w-6 h-6 animate-spin text-blue" />
@@ -796,9 +943,11 @@ export const Courses = () => {
                 {/* My lists */}
                 {ownedCourses.length > 0 && (
                   <section>
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">My Reading Lists</h3>
+                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">
+                      My Reading Lists
+                    </h3>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      {ownedCourses.map(c => (
+                      {ownedCourses.map((c) => (
                         <CourseCard
                           key={c.id}
                           course={c}
@@ -816,9 +965,11 @@ export const Courses = () => {
                 {/* Enrolled */}
                 {enrolledCourses.length > 0 && (
                   <section>
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">Enrolled</h3>
+                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">
+                      Enrolled
+                    </h3>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      {enrolledCourses.map(c => (
+                      {enrolledCourses.map((c) => (
                         <CourseCard
                           key={c.id}
                           course={c}
@@ -839,9 +990,11 @@ export const Courses = () => {
                 {/* Discover */}
                 {discoverCourses.length > 0 && (
                   <section>
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">Discover</h3>
+                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">
+                      Discover
+                    </h3>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      {discoverCourses.map(c => (
+                      {discoverCourses.map((c) => (
                         <CourseCard
                           key={c.id}
                           course={c}
@@ -887,7 +1040,12 @@ export const Courses = () => {
 
         {/* Create */}
         {view === 'create' && (
-          <motion.div key="create" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="create"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
             <CourseForm
               onSave={handleCreate}
               onCancel={() => setView('list')}
@@ -898,7 +1056,12 @@ export const Courses = () => {
 
         {/* Edit */}
         {view === 'edit' && selectedCourse && (
-          <motion.div key="edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="edit"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
             <CourseForm
               initial={selectedCourse}
               onSave={handleUpdate}
@@ -910,7 +1073,12 @@ export const Courses = () => {
 
         {/* Detail */}
         {view === 'detail' && selectedCourse && (
-          <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="detail"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
             <CourseDetail
               course={selectedCourse}
               isOwner={selectedCourse.ownerId === userId}

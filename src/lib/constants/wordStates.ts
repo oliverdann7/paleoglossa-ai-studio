@@ -4,16 +4,16 @@ export enum WordState {
   LEARNING = 'LEARNING',
   FAMILIAR = 'FAMILIAR',
   KNOWN = 'KNOWN',
-  IGNORED = 'IGNORED'
+  IGNORED = 'IGNORED',
 }
 
-export const STATE_COLORS: Record<WordState, { bg: string, border: string, text: string }> = {
+export const STATE_COLORS: Record<WordState, { bg: string; border: string; text: string }> = {
   [WordState.NEW]: { bg: '#DCE7F5', border: '#BDD0EC', text: '#1E3D6E' },
   [WordState.SEEN]: { bg: '#F5F3EF', border: '#E7E2D8', text: '#1E3D6E' },
   [WordState.LEARNING]: { bg: '#FEF0D8', border: '#EED080', text: '#78350F' },
   [WordState.FAMILIAR]: { bg: '#FAE8C8', border: '#F1DAB0', text: '#78350F' },
   [WordState.KNOWN]: { bg: 'transparent', border: 'transparent', text: 'inherit' },
-  [WordState.IGNORED]: { bg: '#E0DAC8', border: '#C0B7A0', text: '#71717a' }
+  [WordState.IGNORED]: { bg: '#E0DAC8', border: '#C0B7A0', text: '#71717a' },
 };
 
 export const STATE_LABELS: Record<WordState, string> = {
@@ -22,7 +22,7 @@ export const STATE_LABELS: Record<WordState, string> = {
   [WordState.LEARNING]: 'Learning',
   [WordState.FAMILIAR]: 'Familiar',
   [WordState.KNOWN]: 'Known',
-  [WordState.IGNORED]: 'Ignored'
+  [WordState.IGNORED]: 'Ignored',
 };
 
 const VALID_STATES = new Set<string>(Object.values(WordState));
@@ -31,14 +31,14 @@ const VALID_STATES = new Set<string>(Object.values(WordState));
 // Covers old display names, old enum variants, and old numeric values.
 const LEGACY_STATE_MAP: Record<string, WordState> = {
   // Old display labels (capitalized names)
-  'new': WordState.NEW,
-  'seen': WordState.SEEN,
+  new: WordState.NEW,
+  seen: WordState.SEEN,
   'seen once': WordState.SEEN,
-  'seenonce': WordState.SEEN,
-  'learning': WordState.LEARNING,
-  'familiar': WordState.FAMILIAR,
-  'known': WordState.KNOWN,
-  'ignored': WordState.IGNORED,
+  seenonce: WordState.SEEN,
+  learning: WordState.LEARNING,
+  familiar: WordState.FAMILIAR,
+  known: WordState.KNOWN,
+  ignored: WordState.IGNORED,
   // Old numeric values (stored as numbers or numeric strings)
   '0': WordState.NEW,
   '1': WordState.SEEN,

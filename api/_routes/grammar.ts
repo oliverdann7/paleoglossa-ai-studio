@@ -8,7 +8,7 @@ router.get('/api/grammar/concepts', (_req: any, res: any) => {
 });
 
 router.get('/api/grammar/concepts/:conceptId', (req: any, res: any) => {
-  const concept = GRAMMAR_CONCEPTS.find(c => c.id === req.params.conceptId);
+  const concept = GRAMMAR_CONCEPTS.find((c) => c.id === req.params.conceptId);
   res.status(200).json(concept || null);
 });
 

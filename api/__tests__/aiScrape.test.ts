@@ -2,12 +2,16 @@ import { describe, it, expect } from 'vitest';
 
 // Replicate the validation from the route
 function isPrivateIP(hostname: string): boolean {
-  return /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.0\.0\.0$|localhost$|.*\.local$)/.test(hostname);
+  return /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.0\.0\.0$|localhost$|.*\.local$)/.test(
+    hostname
+  );
 }
 
 function isValidScrapeUrl(urlString: string): { valid: boolean; reason?: string } {
   let parsed: URL;
-  try { parsed = new URL(urlString); } catch {
+  try {
+    parsed = new URL(urlString);
+  } catch {
     return { valid: false, reason: 'Invalid URL format' };
   }
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
@@ -23,7 +27,6 @@ function isValidScrapeUrl(urlString: string): { valid: boolean; reason?: string 
 }
 
 describe('Scrape URL validation', () => {
-
   it('rejects empty URL', () => {
     const result = isValidScrapeUrl('');
     expect(result.valid).toBe(false);

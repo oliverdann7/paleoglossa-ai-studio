@@ -1,4 +1,9 @@
-import { ContentSourceAdapter, NormalizedText, NormalizedSection, ImportValidationResult } from '../types.js';
+import {
+  ContentSourceAdapter,
+  NormalizedText,
+  NormalizedSection,
+  ImportValidationResult,
+} from '../types.js';
 import { validateImport } from '../validate.js';
 
 export const SblgntAdapter: ContentSourceAdapter = {
@@ -9,22 +14,22 @@ export const SblgntAdapter: ContentSourceAdapter = {
   license: 'CC BY-SA 3.0',
   canFetch: true,
   canImportFile: true,
-  
+
   async fetchIndex() {
     // Stub: Would fetch https://raw.githubusercontent.com/morphgnt/sblgnt/master/ (if it had an index)
     // For MVP, returning a stub index:
     return [
       { id: 'Mt', title: 'Matthew', ref: '61-Mt' },
-      { id: '1Jn', title: '1 John', ref: '62-1Jn' }
+      { id: '1Jn', title: '1 John', ref: '62-1Jn' },
     ];
   },
-  
+
   async fetchText(ref: string) {
     // Stub: Would fetch https://raw.githubusercontent.com/morphgnt/sblgnt/master/${ref}-morphgrp.txt
     console.log(`Fetching SBLGNT book via MorphGNT: ${ref}`);
     return `stub raw data for ${ref}`;
   },
-  
+
   async normalize(_raw: any, metadata: any) {
     // Stub: Parse the 7-column MorphGNT TSV/space-separated data
     // Return NormalizedText and NormalizedSection[]
@@ -35,13 +40,16 @@ export const SblgntAdapter: ContentSourceAdapter = {
         title: metadata?.title || 'Stub Title',
         language: 'grc',
         direction: 'ltr',
-        hasMorphology: true
+        hasMorphology: true,
       },
-      sections: []
+      sections: [],
     };
   },
-  
-  validate(normalized: { text: NormalizedText; sections: NormalizedSection[] }): ImportValidationResult {
+
+  validate(normalized: {
+    text: NormalizedText;
+    sections: NormalizedSection[];
+  }): ImportValidationResult {
     return validateImport(normalized);
-  }
+  },
 };

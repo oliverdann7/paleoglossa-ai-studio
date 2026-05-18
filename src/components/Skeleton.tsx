@@ -1,14 +1,7 @@
 import { cn } from '@/lib/utils';
 
 export function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={cn(
-        'animate-pulse rounded-md bg-parch3/60',
-        className
-      )}
-    />
-  );
+  return <div className={cn('animate-pulse rounded-md bg-parch3/60', className)} />;
 }
 
 export function ReaderSkeleton() {

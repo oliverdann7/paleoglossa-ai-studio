@@ -17,27 +17,15 @@ export function EmptyState({ icon, heading, description, action, className, comp
         'card p-12 text-center flex flex-col items-center gap-4',
         compact ? 'p-8' : 'p-12',
         'border-dashed border-2 border-bdr/40 bg-parch2/50',
-        className,
+        className
       )}
     >
-      {icon && (
-        <div className="text-gold/60 mb-1">
-          {icon}
-        </div>
-      )}
-      <h3 className="text-[18px] font-bold text-ink font-sans">
-        {heading}
-      </h3>
+      {icon && <div className="text-gold/60 mb-1">{icon}</div>}
+      <h3 className="text-[18px] font-bold text-ink font-sans">{heading}</h3>
       {description && (
-        <p className="text-[14px] text-ink3 max-w-sm leading-relaxed">
-          {description}
-        </p>
+        <p className="text-[14px] text-ink3 max-w-sm leading-relaxed">{description}</p>
       )}
-      {action && (
-        <div className="mt-2">
-          {action}
-        </div>
-      )}
+      {action && <div className="mt-2">{action}</div>}
     </div>
   );
 }

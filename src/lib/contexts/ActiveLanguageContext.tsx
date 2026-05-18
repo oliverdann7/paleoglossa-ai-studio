@@ -50,29 +50,34 @@ export function ActiveLanguageProvider({ children }: { children: ReactNode }) {
     load();
   }, [user]);
 
-  const setActiveLanguageId = useCallback((id: string) => {
-    if (!getLanguageById(id)) return;
-    setActiveLanguageIdState(id);
-    localStorage.setItem(STORAGE_KEY, id);
-    if (user) {
-      setDoc(doc(db, `users/${user.uid}/settings`, 'activeLanguage'), {
-        languageId: id,
-        updatedAt: serverTimestamp(),
-      }).catch(() => {});
-    }
-  }, [user]);
+  const setActiveLanguageId = useCallback(
+    (id: string) => {
+      if (!getLanguageById(id)) return;
+      setActiveLanguageIdState(id);
+      localStorage.setItem(STORAGE_KEY, id);
+      if (user) {
+        setDoc(doc(db, `users/${user.uid}/settings`, 'activeLanguage'), {
+          languageId: id,
+          updatedAt: serverTimestamp(),
+        }).catch(() => {});
+      }
+    },
+    [user]
+  );
 
   const currentLanguage = getLanguageById(activeLanguageId);
   const availableLanguages = getAvailableLanguages();
 
   return (
-    <ActiveLanguageContext.Provider value={{
-      activeLanguageId,
-      setActiveLanguageId,
-      currentLanguage,
-      availableLanguages,
-      isLoaded,
-    }}>
+    <ActiveLanguageContext.Provider
+      value={{
+        activeLanguageId,
+        setActiveLanguageId,
+        currentLanguage,
+        availableLanguages,
+        isLoaded,
+      }}
+    >
       {children}
     </ActiveLanguageContext.Provider>
   );

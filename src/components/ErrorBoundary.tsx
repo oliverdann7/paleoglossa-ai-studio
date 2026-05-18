@@ -13,11 +13,11 @@ interface State {
 }
 
 const CHUNK_ERROR_PATTERNS = [
-  "text/html",
-  "Failed to fetch dynamically imported module",
-  "error loading dynamically imported module",
-  "Unable to preload CSS",
-  "Importing a module script failed",
+  'text/html',
+  'Failed to fetch dynamically imported module',
+  'error loading dynamically imported module',
+  'Unable to preload CSS',
+  'Importing a module script failed',
 ];
 
 function isChunkLoadError(message: string) {
@@ -62,7 +62,9 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center bg-parch p-8">
           <div className="card p-8 max-w-md text-center">
-            <h2 className="text-xl font-bold text-ink mb-2">{this.state.isChunkError ? 'App Updated' : 'Something went wrong'}</h2>
+            <h2 className="text-xl font-bold text-ink mb-2">
+              {this.state.isChunkError ? 'App Updated' : 'Something went wrong'}
+            </h2>
             <p className="text-ink3 text-sm mb-6">{this.state.error?.message}</p>
             {this.state.isChunkError ? (
               <>
@@ -78,10 +80,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </button>
               </>
             ) : (
-              <button
-                onClick={this.handleRetry}
-                className="btn-primary px-6 py-2"
-              >
+              <button onClick={this.handleRetry} className="btn-primary px-6 py-2">
                 Try again
               </button>
             )}

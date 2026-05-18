@@ -23,7 +23,9 @@ export class GrammarService {
 
   static async getPathway(languageId: string, conceptId: string): Promise<GrammarConcept[]> {
     try {
-      const response = await fetch(`/api/grammar/pathway?lang=${encodeURIComponent(languageId)}&concept=${encodeURIComponent(conceptId)}`);
+      const response = await fetch(
+        `/api/grammar/pathway?lang=${encodeURIComponent(languageId)}&concept=${encodeURIComponent(conceptId)}`
+      );
       if (!response.ok) return [];
       return response.json();
     } catch {

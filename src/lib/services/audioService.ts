@@ -28,7 +28,10 @@ export class AudioService {
     }
   }
 
-  static async getPronunciationGuide(text: string, languageId: string): Promise<PronunciationGuide | null> {
+  static async getPronunciationGuide(
+    text: string,
+    languageId: string
+  ): Promise<PronunciationGuide | null> {
     try {
       const response = await fetch(getApiUrl('/api/ai/pronunciation'), {
         method: 'POST',

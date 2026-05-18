@@ -14,8 +14,15 @@ interface Props {
 }
 
 export function ReaderAudioBar({
-  isPlaying, onTogglePlay, audioProgress, audioSpeed, onChangeSpeed,
-  loopSentence, onToggleLoopSentence, loopWord, onToggleLoopWord,
+  isPlaying,
+  onTogglePlay,
+  audioProgress,
+  audioSpeed,
+  onChangeSpeed,
+  loopSentence,
+  onToggleLoopSentence,
+  loopWord,
+  onToggleLoopWord,
 }: Props) {
   return (
     <div className="h-14 bg-parch text-ink border-b border-bdr flex items-center gap-4 px-4 shadow-sm z-30">
@@ -49,8 +56,8 @@ export function ReaderAudioBar({
         <button
           onClick={onToggleLoopSentence}
           className={cn(
-            "p-1.5 rounded-md transition-colors",
-            loopSentence ? "text-gold bg-gold/10" : "text-muted hover:bg-parch3",
+            'p-1.5 rounded-md transition-colors',
+            loopSentence ? 'text-gold bg-gold/10' : 'text-muted hover:bg-parch3'
           )}
           title="Loop Sentence"
         >
@@ -59,8 +66,8 @@ export function ReaderAudioBar({
         <button
           onClick={onToggleLoopWord}
           className={cn(
-            "p-1.5 rounded-md transition-colors",
-            loopWord ? "text-gold bg-gold/10" : "text-muted hover:bg-parch3",
+            'p-1.5 rounded-md transition-colors',
+            loopWord ? 'text-gold bg-gold/10' : 'text-muted hover:bg-parch3'
           )}
           title="Loop Word"
         >

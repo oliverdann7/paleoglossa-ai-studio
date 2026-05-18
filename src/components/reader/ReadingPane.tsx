@@ -86,9 +86,11 @@ function getWordStyle(
   isAudioActive: boolean,
   maskKnown: boolean,
   highlightIntensity: 'subtle' | 'normal' | 'strong',
-  isSelected: boolean,
+  isSelected: boolean
 ) {
-  const state = normalizeWordState(wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW);
+  const state = normalizeWordState(
+    wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW
+  );
   const isKnown = state === WordState.KNOWN;
   const colors = STATE_COLORS[state];
 
@@ -108,7 +110,11 @@ function getWordStyle(
   }
 
   return {
-    backgroundColor: isSelected ? '#1E3D6E33' : colors.bg === 'transparent' ? 'transparent' : `${colors.bg}${bgOpacity}`,
+    backgroundColor: isSelected
+      ? '#1E3D6E33'
+      : colors.bg === 'transparent'
+        ? 'transparent'
+        : `${colors.bg}${bgOpacity}`,
     borderBottom: `2px solid ${isSelected ? '#1E3D6E' : isAudioActive ? '#D4AF37' : colors.border}`,
     color: colors.text,
     fontStyle: state === WordState.IGNORED ? 'italic' : 'normal',
@@ -148,7 +154,7 @@ const ReaderToken = memo(function ReaderToken({
   maskKnown: boolean;
   interlinearMode?: boolean;
   displayMode?: DisplayMode;
-  wordInfo: WordInfo | WordState | null,
+  wordInfo: WordInfo | WordState | null;
   isAudioActive: boolean;
   isSelected: boolean;
   showGlossTooltip?: boolean;
@@ -158,7 +164,9 @@ const ReaderToken = memo(function ReaderToken({
   onWordLeave: () => void;
 }) {
   const isMorphologyMode = displayMode === 'morphology';
-  const state = normalizeWordState(wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW);
+  const state = normalizeWordState(
+    wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW
+  );
   const isKnown = state === WordState.KNOWN;
   const gloss = token.gloss;
   const showGloss = showGlossTooltip && !!gloss && (glossTooltipForKnown || !isKnown);
@@ -171,18 +179,24 @@ const ReaderToken = memo(function ReaderToken({
 
   const tokenStyle: React.CSSProperties = isMorphologyMode
     ? { ...baseStyle, ...(getPosStyle(token) ?? {}) }
-    : { ...baseStyle, ...getWordStyle(wordInfo, isAudioActive, maskKnown, highlightIntensity, isSelected) };
+    : {
+        ...baseStyle,
+        ...getWordStyle(wordInfo, isAudioActive, maskKnown, highlightIntensity, isSelected),
+      };
 
-  const handleMouseEnter = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top;
-    if (isMorphologyMode) {
-      onWordHover(token, cx, cy);
-    } else if (showGloss && gloss) {
-      onWordHover({ ...token, gloss }, cx, cy);
-    }
-  }, [isMorphologyMode, showGloss, gloss, token, onWordHover]);
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent<HTMLSpanElement>) => {
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top;
+      if (isMorphologyMode) {
+        onWordHover(token, cx, cy);
+      } else if (showGloss && gloss) {
+        onWordHover({ ...token, gloss }, cx, cy);
+      }
+    },
+    [isMorphologyMode, showGloss, gloss, token, onWordHover]
+  );
 
   return (
     <span className="inline">
@@ -201,7 +215,10 @@ const ReaderToken = memo(function ReaderToken({
           </span>
         )}
         {(interlinearMode || displayMode === 'interlinear') && gloss && (
-          <span dir="ltr" className="text-[0.42em] text-blue/70 font-sans tracking-wide leading-tight">
+          <span
+            dir="ltr"
+            className="text-[0.42em] text-blue/70 font-sans tracking-wide leading-tight"
+          >
             {gloss}
           </span>
         )}
@@ -216,15 +233,44 @@ const ReaderToken = memo(function ReaderToken({
 });
 
 export function ReadingPane({
-  sentences, readingMode, currentSentenceIndex, fontSize, highlightIntensity,
-  getWordInfo, selectedWordId, showTranslit, showParallel, maskKnown,
-  isHebrewFont, isRtl, audioPos,
-  aiTranslations, translatingId,
-  sourceKind, textTitle, sectionLabel, hasMorphology, sentenceCount, analysisStatus,
-  showGlossTooltip, glossTooltipForKnown, interlinearMode, displayMode,
-  onWordClick, onAITranslate, onSavePhrase, onAnalyzeSentence,
-  onMarkPageKnown, onNextPage, onNextChapter, onBackToLibrary, onSwipe,
-  currentScrollPage, totalPages, currentChapterIndex, totalChapters,
+  sentences,
+  readingMode,
+  currentSentenceIndex,
+  fontSize,
+  highlightIntensity,
+  getWordInfo,
+  selectedWordId,
+  showTranslit,
+  showParallel,
+  maskKnown,
+  isHebrewFont,
+  isRtl,
+  audioPos,
+  aiTranslations,
+  translatingId,
+  sourceKind,
+  textTitle,
+  sectionLabel,
+  hasMorphology,
+  sentenceCount,
+  analysisStatus,
+  showGlossTooltip,
+  glossTooltipForKnown,
+  interlinearMode,
+  displayMode,
+  onWordClick,
+  onAITranslate,
+  onSavePhrase,
+  onAnalyzeSentence,
+  onMarkPageKnown,
+  onNextPage,
+  onNextChapter,
+  onBackToLibrary,
+  onSwipe,
+  currentScrollPage,
+  totalPages,
+  currentChapterIndex,
+  totalChapters,
   sentenceSliceStart,
 }: Props) {
   const { t } = useTranslation();
@@ -234,23 +280,29 @@ export function ReadingPane({
   const isMorphologyMode = displayMode === 'morphology';
   const isFocusMode = displayMode === 'focus';
 
-  const [hoverToken, setHoverToken] = useState<{ token: ReaderToken; x: number; y: number } | null>(null);
+  const [hoverToken, setHoverToken] = useState<{ token: ReaderToken; x: number; y: number } | null>(
+    null
+  );
 
   const handleWordHover = useCallback((token: ReaderToken, x: number, y: number) => {
     setHoverToken({ token, x, y });
   }, []);
-  const handleWordLeave = useCallback(() => { setHoverToken(null); }, []);
+  const handleWordLeave = useCallback(() => {
+    setHoverToken(null);
+  }, []);
 
   // Per-paragraph unknown-word density for difficulty heatmap.
   // Group sentences into paragraphs of ~5 sentences and compute the ratio of
   // unknown/new tokens to total content tokens.
   const sentenceDifficulty = useMemo(() => {
-    return sentences.map(s => {
-      const content = s.tokens.filter(t => t.type !== 'whitespace' && t.type !== 'punctuation');
+    return sentences.map((s) => {
+      const content = s.tokens.filter((t) => t.type !== 'whitespace' && t.type !== 'punctuation');
       if (content.length === 0) return 0;
-      const unknown = content.filter(t => {
+      const unknown = content.filter((t) => {
         const info = getWordInfo(t.lemma || t.text);
-        const state = normalizeWordState(info ? (typeof info === 'object' ? (info as any).state : info) : WordState.NEW);
+        const state = normalizeWordState(
+          info ? (typeof info === 'object' ? (info as any).state : info) : WordState.NEW
+        );
         return state === WordState.NEW || state === WordState.SEEN;
       }).length;
       return unknown / content.length;
@@ -262,33 +314,36 @@ export function ReadingPane({
     touchStartY.current = e.touches[0].clientY;
   }, []);
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    const dy = e.changedTouches[0].clientY - touchStartY.current;
-    const SWIPE_THRESHOLD = 60;
-    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      onSwipe(dx > 0 ? 'right' : 'left');
-    }
-  }, [onSwipe]);
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      const dy = e.changedTouches[0].clientY - touchStartY.current;
+      const SWIPE_THRESHOLD = 60;
+      if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        onSwipe(dx > 0 ? 'right' : 'left');
+      }
+    },
+    [onSwipe]
+  );
 
   // Precompute sentence texts once per sentence to avoid recomputation
   const processedSentences = useMemo(() => {
-    return sentences.map(sentence => ({
+    return sentences.map((sentence) => ({
       ...sentence,
-      _cachedText: sentence._cachedText || sentence.tokens.map(t => t.text).join(' ')
+      _cachedText: sentence._cachedText || sentence.tokens.map((t) => t.text).join(' '),
     }));
   }, [sentences]);
 
   // Windowing for page mode - only render nearby sentences
   const visibleSentences = useMemo(() => {
     if (readingMode !== 'page') return processedSentences;
-    
+
     const WINDOW_SIZE = 5; // Show 5 sentences around current
     const start = Math.max(0, currentSentenceIndex - WINDOW_SIZE);
     const end = Math.min(processedSentences.length, currentSentenceIndex + WINDOW_SIZE + 1);
     return processedSentences.slice(start, end).map((s, i) => ({
       ...s,
-      _displayOffset: start + i - currentSentenceIndex // Track position relative to current
+      _displayOffset: start + i - currentSentenceIndex, // Track position relative to current
     }));
   }, [processedSentences, readingMode, currentSentenceIndex]);
 
@@ -301,8 +356,8 @@ export function ReadingPane({
     >
       <div
         className={cn(
-          "mx-auto transition-all w-full",
-          showParallel ? "max-w-screen-xl lg:grid grid-cols-2 gap-8 items-center" : "max-w-3xl",
+          'mx-auto transition-all w-full',
+          showParallel ? 'max-w-screen-xl lg:grid grid-cols-2 gap-8 items-center' : 'max-w-3xl'
         )}
       >
         {/* Metadata strip — always visible so the user knows exactly what they're reading */}
@@ -332,7 +387,9 @@ export function ReadingPane({
                 Your Import
               </span>
             )}
-            <span className="text-tiny text-muted">{sentenceCount} {sentenceCount === 1 ? 'sentence' : 'sentences'}</span>
+            <span className="text-tiny text-muted">
+              {sentenceCount} {sentenceCount === 1 ? 'sentence' : 'sentences'}
+            </span>
             {hasMorphology && analysisStatus !== 'raw' && (
               <span className="text-tiny text-muted">· Morphology</span>
             )}
@@ -347,29 +404,34 @@ export function ReadingPane({
           <div
             dir={isRtl ? 'rtl' : 'ltr'}
             className={cn(
-              "font-serif tracking-wide transition-all",
-              isHebrewFont ? "font-hebrew" : "",
-              isRtl ? "text-right" : "text-left",
-              readingMode === 'page' ? "text-[24px] leading-[2.5]" : "leading-[2.2]",
+              'font-serif tracking-wide transition-all',
+              isHebrewFont ? 'font-hebrew' : '',
+              isRtl ? 'text-right' : 'text-left',
+              readingMode === 'page' ? 'text-[24px] leading-[2.5]' : 'leading-[2.2]'
             )}
           >
             {visibleSentences.map((sentence, idx) => {
-              const sIdx = sentenceSliceStart + (readingMode === 'page'
-                ? (currentSentenceIndex + (sentence._displayOffset || 0))
-                : idx);
-              const isActivePageMode = readingMode === 'page'
-                ? (sentence._displayOffset === 0)
-                : true;
+              const sIdx =
+                sentenceSliceStart +
+                (readingMode === 'page'
+                  ? currentSentenceIndex + (sentence._displayOffset || 0)
+                  : idx);
+              const isActivePageMode =
+                readingMode === 'page' ? sentence._displayOffset === 0 : true;
               const sentenceText = sentence._cachedText;
               const difficulty = sentenceDifficulty[sIdx] ?? 0;
 
               // Difficulty heatmap: left border color when not in focus mode
-              const difficultyBorderColor = !isFocusMode && difficulty > 0
-                ? difficulty >= 0.6 ? 'border-l-red-400'
-                  : difficulty >= 0.35 ? 'border-l-amber-400'
-                  : difficulty >= 0.1 ? 'border-l-blue-300'
-                  : 'border-l-green-300'
-                : '';
+              const difficultyBorderColor =
+                !isFocusMode && difficulty > 0
+                  ? difficulty >= 0.6
+                    ? 'border-l-red-400'
+                    : difficulty >= 0.35
+                      ? 'border-l-amber-400'
+                      : difficulty >= 0.1
+                        ? 'border-l-blue-300'
+                        : 'border-l-green-300'
+                  : '';
 
               return (
                 <span
@@ -377,17 +439,24 @@ export function ReadingPane({
                   key={sentence.id}
                   style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 48px' }}
                   className={cn(
-                    "inline transition-opacity duration-500",
-                    isRtl ? "ml-2 md:ml-3" : "mr-2 md:mr-3",
-                    !isActivePageMode && readingMode === 'page' ? "opacity-30" : "opacity-100",
-                    !isFocusMode && difficultyBorderColor ? `border-l-2 pl-1 ${difficultyBorderColor}` : "",
+                    'inline transition-opacity duration-500',
+                    isRtl ? 'ml-2 md:ml-3' : 'mr-2 md:mr-3',
+                    !isActivePageMode && readingMode === 'page' ? 'opacity-30' : 'opacity-100',
+                    !isFocusMode && difficultyBorderColor
+                      ? `border-l-2 pl-1 ${difficultyBorderColor}`
+                      : ''
                   )}
                 >
                   {sentence.tokens.map((token, tIdx) => {
                     if (token.type === 'whitespace') {
-                      return <span key={token.id} className="whitespace-pre"> </span>;
+                      return (
+                        <span key={token.id} className="whitespace-pre">
+                          {' '}
+                        </span>
+                      );
                     }
-                    const isAudioActive = audioPos.sentenceIdx === sIdx && audioPos.wordIdx === tIdx;
+                    const isAudioActive =
+                      audioPos.sentenceIdx === sIdx && audioPos.wordIdx === tIdx;
 
                     return (
                       <ReaderToken
@@ -471,25 +540,27 @@ export function ReadingPane({
                         : t('reader.markPageKnown', 'Mark Page as Seen & Next')}
                     </button>
                     {/* Next section — only shown when a real next section exists */}
-                    {currentScrollPage >= totalPages - 1 && currentChapterIndex < totalChapters - 1 && (
-                      <button
-                        onClick={onNextChapter}
-                        className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
-                      >
-                        {t('reader.nextSection', 'Next Section')}
-                      </button>
-                    )}
+                    {currentScrollPage >= totalPages - 1 &&
+                      currentChapterIndex < totalChapters - 1 && (
+                        <button
+                          onClick={onNextChapter}
+                          className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
+                        >
+                          {t('reader.nextSection', 'Next Section')}
+                        </button>
+                      )}
                     {/* Back to library / import — shown when there is no next section */}
-                    {currentScrollPage >= totalPages - 1 && currentChapterIndex >= totalChapters - 1 && (
-                      <button
-                        onClick={onBackToLibrary}
-                        className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
-                      >
-                        {sourceKind === 'import'
-                          ? t('reader.importMoreText', 'Import More Text')
-                          : t('common.backToLibrary', 'Back to Library')}
-                      </button>
-                    )}
+                    {currentScrollPage >= totalPages - 1 &&
+                      currentChapterIndex >= totalChapters - 1 && (
+                        <button
+                          onClick={onBackToLibrary}
+                          className="px-8 py-3 bg-parch3 text-ink2 rounded-2xl font-bold border border-bdr/50 hover:bg-parch2 transition-all active:scale-95"
+                        >
+                          {sourceKind === 'import'
+                            ? t('reader.importMoreText', 'Import More Text')
+                            : t('common.backToLibrary', 'Back to Library')}
+                        </button>
+                      )}
                     {currentScrollPage < totalPages - 1 && (
                       <button
                         onClick={onNextPage}
@@ -509,26 +580,33 @@ export function ReadingPane({
           <div className="col-span-1 pt-8 lg:pt-0 pb-16">
             {visibleSentences.map((sentence, idx) => {
               // Note: sIdx computed but not needed for parallel view
-              const isActivePageMode = readingMode === 'page' 
-                ? (sentence._displayOffset === 0) 
-                : true;
+              const isActivePageMode =
+                readingMode === 'page' ? sentence._displayOffset === 0 : true;
 
               return (
                 <div
                   key={`par-${sentence.id}`}
                   data-sentence-idx={sentenceSliceStart + idx}
                   className={cn(
-                    "font-serif text-ink2 mb-3 transition-opacity duration-500",
-                    readingMode === 'page' ? "text-[20px] leading-[2.2]" : "text-[18px] leading-[2.2]",
-                    !isActivePageMode && readingMode === 'page' ? "opacity-20" : "opacity-80 hover:opacity-100",
+                    'font-serif text-ink2 mb-3 transition-opacity duration-500',
+                    readingMode === 'page'
+                      ? 'text-[20px] leading-[2.2]'
+                      : 'text-[18px] leading-[2.2]',
+                    !isActivePageMode && readingMode === 'page'
+                      ? 'opacity-20'
+                      : 'opacity-80 hover:opacity-100'
                   )}
                 >
                   {aiTranslations[sentence.id] ? (
                     aiTranslations[sentence.id]
                   ) : (
                     <div className="flex flex-col gap-1 items-start">
-                      {sentence.parallel && !sentence.parallel.includes('No parallel text') && <div>{sentence.parallel}</div>}
-                      {sentence.translation && !sentence.translation.includes('No translation') && <div>{sentence.translation}</div>}
+                      {sentence.parallel && !sentence.parallel.includes('No parallel text') && (
+                        <div>{sentence.parallel}</div>
+                      )}
+                      {sentence.translation && !sentence.translation.includes('No translation') && (
+                        <div>{sentence.translation}</div>
+                      )}
                       <button
                         onClick={() => onAITranslate(sentence.id, sentence.tokens)}
                         disabled={translatingId === sentence.id}
@@ -546,10 +624,15 @@ export function ReadingPane({
                       </button>
                       {onAnalyzeSentence && (
                         <button
-                          onClick={() => onAnalyzeSentence({
-                            id: sentence.id,
-                            text: sentence.tokens.filter(tk => tk.type === 'word').map(tk => tk.text).join(' '),
-                          })}
+                          onClick={() =>
+                            onAnalyzeSentence({
+                              id: sentence.id,
+                              text: sentence.tokens
+                                .filter((tk) => tk.type === 'word')
+                                .map((tk) => tk.text)
+                                .join(' '),
+                            })
+                          }
                           className="text-sm font-sans flex items-center justify-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 font-medium rounded-lg hover:bg-green-100 transition-colors mt-1"
                         >
                           <Sparkles className="w-3.5 h-3.5" />

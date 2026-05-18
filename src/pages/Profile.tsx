@@ -1,14 +1,20 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft } from "lucide-react";
-import { useAuth } from "../lib/hooks/useAuth.js";
-import { fetchOwnProfile, fetchPublicProfile, fetchPublicTextsByAuthor, UserProfileData, PublicText } from "../lib/services/profileService.js";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import {
+  fetchOwnProfile,
+  fetchPublicProfile,
+  fetchPublicTextsByAuthor,
+  UserProfileData,
+  PublicText,
+} from '../lib/services/profileService.js';
+import { cn } from '@/lib/utils';
 
 function formatDate(val: any): string {
-  if (!val) return "";
+  if (!val) return '';
   const d = val?.toDate ? val.toDate() : new Date(val);
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "long" });
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
 }
 
 export const ProfilePage = () => {
@@ -63,10 +69,10 @@ export const ProfilePage = () => {
     load();
   }, [userId, isOwnProfile]);
 
-  const initials = (profile?.displayName || "?")
-    .split(" ")
+  const initials = (profile?.displayName || '?')
+    .split(' ')
     .map((n) => n[0])
-    .join("")
+    .join('')
     .toUpperCase()
     .slice(0, 2);
 
@@ -126,7 +132,7 @@ export const ProfilePage = () => {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <h1 className="text-[24px] font-serif font-semibold text-ink leading-tight">
-                {profile?.displayName || "Scholar"}
+                {profile?.displayName || 'Scholar'}
               </h1>
               {!profile?.isPublic && isOwnProfile && (
                 <span className="px-2 py-0.5 rounded-full bg-parch2 border border-bdr text-[10px] font-bold text-muted uppercase tracking-wider flex items-center gap-1">
@@ -149,14 +155,16 @@ export const ProfilePage = () => {
             )}
 
             {profile?.createdAt && (
-              <p className="text-[11px] text-muted">Scholar since {formatDate(profile.createdAt)}</p>
+              <p className="text-[11px] text-muted">
+                Scholar since {formatDate(profile.createdAt)}
+              </p>
             )}
           </div>
 
           {/* Own profile: edit button */}
           {isOwnProfile && (
             <button
-              onClick={() => navigate("/app/settings")}
+              onClick={() => navigate('/app/settings')}
               className="btn-secondary flex items-center gap-2 px-4 py-2 text-[13px] shrink-0"
             >
               <Settings className="w-3.5 h-3.5" /> Edit Profile
@@ -170,7 +178,9 @@ export const ProfilePage = () => {
             <div className="flex flex-col items-center p-3 rounded-xl bg-parch2/60">
               <div className="flex items-center gap-1.5 mb-1">
                 <GraduationCap className="w-4 h-4 text-blue" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Known words</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                  Known words
+                </span>
               </div>
               <span className="text-[22px] font-serif font-semibold text-ink">
                 {profile.stats.totalKnown.toLocaleString()}
@@ -179,14 +189,20 @@ export const ProfilePage = () => {
             <div className="flex flex-col items-center p-3 rounded-xl bg-parch2/60">
               <div className="flex items-center gap-1.5 mb-1">
                 <Flame className="w-4 h-4 text-orange-400" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Day streak</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                  Day streak
+                </span>
               </div>
-              <span className="text-[22px] font-serif font-semibold text-ink">{profile.stats.streak}</span>
+              <span className="text-[22px] font-serif font-semibold text-ink">
+                {profile.stats.streak}
+              </span>
             </div>
             <div className="flex flex-col items-center p-3 rounded-xl bg-parch2/60 col-span-2 sm:col-span-1">
               <div className="flex items-center gap-1.5 mb-1">
                 <BookOpen className="w-4 h-4 text-blue" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Shared texts</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                  Shared texts
+                </span>
               </div>
               <span className="text-[22px] font-serif font-semibold text-ink">{texts.length}</span>
             </div>
@@ -215,17 +231,17 @@ export const ProfilePage = () => {
                     {text.title}
                   </div>
                   <div className="flex items-center gap-3 text-[11px] text-muted">
-                    <span className={cn(
-                      "px-1.5 py-0.5 rounded-md font-mono bg-parch2 border border-bdr/50 text-[10px] uppercase tracking-wider"
-                    )}>
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 rounded-md font-mono bg-parch2 border border-bdr/50 text-[10px] uppercase tracking-wider'
+                      )}
+                    >
                       {text.languageId}
                     </span>
                     {text.stats?.totalWords && (
                       <span>{text.stats.totalWords.toLocaleString()} words</span>
                     )}
-                    {text.createdAt && (
-                      <span>{formatDate(text.createdAt)}</span>
-                    )}
+                    {text.createdAt && <span>{formatDate(text.createdAt)}</span>}
                   </div>
                 </div>
               </button>
@@ -244,7 +260,7 @@ export const ProfilePage = () => {
           </p>
           {isOwnProfile && (
             <button
-              onClick={() => navigate("/app/import")}
+              onClick={() => navigate('/app/import')}
               className="mt-4 btn-secondary px-5 py-2.5 text-[13px]"
             >
               Import a text

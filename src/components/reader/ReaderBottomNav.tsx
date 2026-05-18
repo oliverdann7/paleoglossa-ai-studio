@@ -17,8 +17,16 @@ interface Props {
 }
 
 export function ReaderBottomNav({
-  scrollProgress, readingMode, sourceKind, currentSentenceIndex, totalSentences,
-  canGoPrev, canGoNext, onPrev, onNext, onMarkKnown,
+  scrollProgress,
+  readingMode,
+  sourceKind,
+  currentSentenceIndex,
+  totalSentences,
+  canGoPrev,
+  canGoNext,
+  onPrev,
+  onNext,
+  onMarkKnown,
 }: Props) {
   const { t } = useTranslation();
   return (

@@ -4,7 +4,6 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp', 'im
 const MAX_BASE64 = 14 * 1024 * 1024;
 
 describe('OCR endpoint validation', () => {
-
   it('rejects missing languageId', () => {
     const result = validate({ imageBase64: 'abc', mimeType: 'image/jpeg' });
     expect(result.status).toBe(400);
@@ -88,7 +87,11 @@ function validate(body: any): { status: number; body: any } {
 
   return {
     status: 200,
-    body: { text: '', confidence: null, warnings: ['Gemini API key not configured. OCR is unavailable.'] },
+    body: {
+      text: '',
+      confidence: null,
+      warnings: ['Gemini API key not configured. OCR is unavailable.'],
+    },
   };
 }
 

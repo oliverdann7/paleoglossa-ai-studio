@@ -30,7 +30,10 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
         <div>
           <div className="eyebrow text-blue mb-3">Dictionary Entry</div>
           <h2
-            className={cn('text-[42px] md:text-[56px] font-serif leading-none text-ink', isRtl ? 'font-hebrew' : '')}
+            className={cn(
+              'text-[42px] md:text-[56px] font-serif leading-none text-ink',
+              isRtl ? 'font-hebrew' : ''
+            )}
             dir={isRtl ? 'rtl' : 'ltr'}
           >
             <bdi>{entry.lemma}</bdi>
@@ -47,7 +50,12 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
               {entry.partOfSpeech}
             </span>
           )}
-          <span className={cn("px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider", tier.color)}>
+          <span
+            className={cn(
+              'px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider',
+              tier.color
+            )}
+          >
             {tier.label}
           </span>
           <span className="px-3 py-1 rounded-full border border-bdr/60 bg-white text-[11px] font-bold uppercase tracking-wider text-muted">
@@ -58,13 +66,20 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
 
       {/* Tabs */}
       <div className="flex border-b border-bdr/40 mb-6">
-        {([['definition', 'Definition', BookOpen], ['concordance', 'Concordance', AlignLeft]] as const).map(([id, label, Icon]) => (
+        {(
+          [
+            ['definition', 'Definition', BookOpen],
+            ['concordance', 'Concordance', AlignLeft],
+          ] as const
+        ).map(([id, label, Icon]) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-bold uppercase tracking-widest border-b-2 transition-colors",
-              activeTab === id ? "border-blue text-blue" : "border-transparent text-muted hover:text-ink",
+              'flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-bold uppercase tracking-widest border-b-2 transition-colors',
+              activeTab === id
+                ? 'border-blue text-blue'
+                : 'border-transparent text-muted hover:text-ink'
             )}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -79,7 +94,9 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
             <div className="p-5 rounded-[20px] bg-parch/40 border border-bdr/30">
               <div className="eyebrow mb-3 text-ink">Definition</div>
               <p className="font-body text-[22px] text-ink leading-snug mb-4">{entry.shortGloss}</p>
-              <p className="font-body text-[15px] text-ink2 leading-relaxed">{entry.fullDefinition}</p>
+              <p className="font-body text-[15px] text-ink2 leading-relaxed">
+                {entry.fullDefinition}
+              </p>
             </div>
 
             <div className="p-5 rounded-[20px] bg-parch2/30 border border-bdr/30">
@@ -87,11 +104,15 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
               <dl className="space-y-3 text-[13px]">
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">Semantic domain</dt>
-                  <dd className="font-bold text-ink text-right">{entry.semanticDomain.join(', ') || 'Unclassified'}</dd>
+                  <dd className="font-bold text-ink text-right">
+                    {entry.semanticDomain.join(', ') || 'Unclassified'}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">Related forms</dt>
-                  <dd className="font-bold text-ink text-right">{entry.relatedForms.slice(0, 6).join(', ') || 'No forms yet'}</dd>
+                  <dd className="font-bold text-ink text-right">
+                    {entry.relatedForms.slice(0, 6).join(', ') || 'No forms yet'}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">Corpus rank</dt>
@@ -113,21 +134,31 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
             </div>
             {entry.corpusExamples.length > 0 ? (
               <div className="space-y-3">
-                {entry.corpusExamples.slice(0, 3).map(example => (
+                {entry.corpusExamples.slice(0, 3).map((example) => (
                   <Link
                     key={example.id}
                     to={`/app/reader/${encodeURIComponent(example.textId)}?lemma=${encodeURIComponent(entry.lemma)}&sentence=${encodeURIComponent(example.sentenceId)}`}
                     className="block p-4 rounded-2xl border border-bdr/30 bg-white hover:border-blue/30 hover:shadow-sm transition-all"
                   >
                     <div className="flex items-center justify-between gap-4 mb-2">
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-blue">{example.textTitle}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-blue">
+                        {example.textTitle}
+                      </span>
                       <span className="text-[11px] text-muted">Open in reader</span>
                     </div>
-                    <p className={cn('font-serif text-[17px] text-ink2 mb-2', isRtl ? 'font-hebrew' : '')} dir={isRtl ? 'rtl' : 'ltr'}>
+                    <p
+                      className={cn(
+                        'font-serif text-[17px] text-ink2 mb-2',
+                        isRtl ? 'font-hebrew' : ''
+                      )}
+                      dir={isRtl ? 'rtl' : 'ltr'}
+                    >
                       {example.sentenceText}
                     </p>
                     {example.translation && (
-                      <p className="font-body text-[12px] italic text-muted">{example.translation}</p>
+                      <p className="font-body text-[12px] italic text-muted">
+                        {example.translation}
+                      </p>
                     )}
                   </Link>
                 ))}
@@ -142,14 +173,22 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
           <div className="p-4 rounded-2xl bg-parch/40 border border-bdr/30">
             <div className="eyebrow mb-2 text-ink">Source / License</div>
             <div className="space-y-2">
-              {entry.dictionaries.map(source => (
-                <div key={source.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-[12px] text-ink2">
+              {entry.dictionaries.map((source) => (
+                <div
+                  key={source.id}
+                  className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-[12px] text-ink2"
+                >
                   <span>
                     <span className="font-bold">{source.name}</span>
                     <span className="text-muted"> · {source.licenseName}</span>
                   </span>
                   {source.url && (
-                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue font-bold hover:text-ink">
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-blue font-bold hover:text-ink"
+                    >
                       Source <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
@@ -175,7 +214,10 @@ export const Dictionary = () => {
   const [languageId, setLanguageId] = useState(searchParams.get('lang') || params.languageId || '');
 
   const languages = useMemo(() => getDictionaryLanguages(), []);
-  const results = useMemo(() => searchDictionaryEntries(query, languageId || undefined, 80), [query, languageId]);
+  const results = useMemo(
+    () => searchDictionaryEntries(query, languageId || undefined, 80),
+    [query, languageId]
+  );
   const selectedEntry = useMemo(() => {
     if (params.lemma) return findDictionaryEntry(params.lemma, params.languageId);
     return results[0] || null;
@@ -192,12 +234,18 @@ export const Dictionary = () => {
     <div className="p-6 md:p-12 max-w-7xl mx-auto font-sans min-h-screen">
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">Dictionary Hub</h1>
+          <h1 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
+            Dictionary Hub
+          </h1>
           <p className="font-body text-[15px] italic text-ink2 max-w-2xl">
-            Lemma-aware lookup connected to real corpus examples, reader occurrences, and source metadata.
+            Lemma-aware lookup connected to real corpus examples, reader occurrences, and source
+            metadata.
           </p>
         </div>
-        <Link to="/app/library" className="btn-primary px-5 py-2.5 inline-flex items-center justify-center gap-2">
+        <Link
+          to="/app/library"
+          className="btn-primary px-5 py-2.5 inline-flex items-center justify-center gap-2"
+        >
           <Library className="w-4 h-4" /> Browse Corpus
         </Link>
       </header>
@@ -221,8 +269,10 @@ export const Dictionary = () => {
             className="w-full mb-5 px-3 py-3 bg-white border border-bdr rounded-[14px] text-[13px] text-ink3 focus:outline-none focus:border-blue"
           >
             <option value="">All languages</option>
-            {languages.map(language => (
-              <option key={language.id} value={language.id}>{language.name}</option>
+            {languages.map((language) => (
+              <option key={language.id} value={language.id}>
+                {language.name}
+              </option>
             ))}
           </select>
 
@@ -232,7 +282,7 @@ export const Dictionary = () => {
           </div>
 
           <div className="max-h-[62vh] overflow-y-auto space-y-2 pr-1">
-            {results.map(entry => {
+            {results.map((entry) => {
               const active = selectedEntry?.id === entry.id;
               return (
                 <button
@@ -240,15 +290,23 @@ export const Dictionary = () => {
                   onClick={() => navigate(entryPath(entry))}
                   className={cn(
                     'w-full text-left p-3 rounded-2xl border transition-all',
-                    active ? 'bg-bluexl border-blue/30 shadow-sm' : 'bg-white border-bdr/30 hover:border-blue/20 hover:bg-parch/30',
+                    active
+                      ? 'bg-bluexl border-blue/30 shadow-sm'
+                      : 'bg-white border-bdr/30 hover:border-blue/20 hover:bg-parch/30'
                   )}
                 >
                   <div className="flex items-center justify-between gap-3 mb-1">
-                    <span className="font-serif text-[22px] text-ink leading-none"><bdi>{entry.lemma}</bdi></span>
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted">{entry.language}</span>
+                    <span className="font-serif text-[22px] text-ink leading-none">
+                      <bdi>{entry.lemma}</bdi>
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted">
+                      {entry.language}
+                    </span>
                   </div>
                   <p className="text-[13px] text-ink2 line-clamp-2">{entry.shortGloss}</p>
-                  <p className="text-[10px] text-muted mt-1">{entry.relatedForms.slice(0, 3).join(', ')}</p>
+                  <p className="text-[10px] text-muted mt-1">
+                    {entry.relatedForms.slice(0, 3).join(', ')}
+                  </p>
                 </button>
               );
             })}
@@ -266,7 +324,9 @@ export const Dictionary = () => {
         ) : (
           <section className="card p-12 text-center border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center gap-4">
             <BookOpen className="w-12 h-12 text-muted" />
-            <p className="text-ink3 max-w-md">Search by lemma, surface form, transliteration, or gloss to open a dictionary entry.</p>
+            <p className="text-ink3 max-w-md">
+              Search by lemma, surface form, transliteration, or gloss to open a dictionary entry.
+            </p>
           </section>
         )}
       </div>

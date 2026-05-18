@@ -52,8 +52,15 @@ export function UserProfileCard() {
     : profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'Guest';
 
   const avatarUrl = profile?.avatarUrl ?? user?.photoURL;
-  const rawName = profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'Guest';
-  const initials = rawName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+  const rawName =
+    profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'Guest';
+  const initials =
+    rawName
+      .split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || '?';
 
   return (
     <div ref={ref} className="relative">
@@ -74,7 +81,9 @@ export function UserProfileCard() {
             {isAdmin ? 'Admin' : planLabel} · {planStatus}
           </div>
         </div>
-        <ChevronDown className={cn("w-3 h-3 text-muted shrink-0 transition-transform", open && "rotate-180")} />
+        <ChevronDown
+          className={cn('w-3 h-3 text-muted shrink-0 transition-transform', open && 'rotate-180')}
+        />
       </button>
 
       <AnimatePresence>
@@ -94,25 +103,48 @@ export function UserProfileCard() {
                 </div>
                 <div className="text-[11px] text-ink3 font-medium">{knownWords} known words</div>
                 <div className="mt-1 h-1 w-full bg-parch3 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue rounded-full transition-all" style={{ width: `${Math.min(100, (knownWords / 7000) * 100)}%` }} />
+                  <div
+                    className="h-full bg-blue rounded-full transition-all"
+                    style={{ width: `${Math.min(100, (knownWords / 7000) * 100)}%` }}
+                  />
                 </div>
               </div>
 
-              <button onClick={() => { setOpen(false); navigate(`/app/profile/${user?.uid}`); }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-ink2 hover:bg-parch2 transition-all text-left">
-                <User className="w-4 h-4 text-muted" /> {t("profile.viewProfile", "My Profile")}
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  navigate(`/app/profile/${user?.uid}`);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-ink2 hover:bg-parch2 transition-all text-left"
+              >
+                <User className="w-4 h-4 text-muted" /> {t('profile.viewProfile', 'My Profile')}
               </button>
-              <button onClick={() => { setOpen(false); navigate('/app/settings'); }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-ink2 hover:bg-parch2 transition-all text-left">
-                <Settings className="w-4 h-4 text-muted" /> {t("profile.settings", "Settings")}
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  navigate('/app/settings');
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-ink2 hover:bg-parch2 transition-all text-left"
+              >
+                <Settings className="w-4 h-4 text-muted" /> {t('profile.settings', 'Settings')}
               </button>
-              <button onClick={() => { setOpen(false); navigate('/app/subscription'); }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-ink2 hover:bg-parch2 transition-all text-left">
-                <Crown className="w-4 h-4 text-muted" /> {t("profile.subscription", "Subscription")}
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  navigate('/app/subscription');
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-ink2 hover:bg-parch2 transition-all text-left"
+              >
+                <Crown className="w-4 h-4 text-muted" /> {t('profile.subscription', 'Subscription')}
               </button>
-              <button onClick={() => { setOpen(false); navigate('/auth/logout'); }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-red-500 hover:bg-red-50 transition-all text-left">
-                <LogOut className="w-4 h-4" /> {t("profile.signOut", "Sign Out")}
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  navigate('/auth/logout');
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-red-500 hover:bg-red-50 transition-all text-left"
+              >
+                <LogOut className="w-4 h-4" /> {t('profile.signOut', 'Sign Out')}
               </button>
             </div>
           </motion.div>

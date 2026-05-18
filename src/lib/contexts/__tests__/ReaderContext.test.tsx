@@ -271,9 +271,31 @@ describe('ReaderStateProvider', () => {
     act(() => result.current.togglePlay());
     act(() => result.current.resetAll());
     expect(result.current.state).toEqual({
-      display: { mode: 'scroll', displayMode: 'scholar', showTranslit: false, showParallel: false, maskKnown: false, interlinearMode: false, fontSize: 18, highlightIntensity: 'normal', swipeMovesToNext: true },
-      navigation: { textId: null, currentChapterIndex: 0, currentSentenceIndex: 0, currentScrollPage: 0, scrollProgress: 0 },
-      audio: { isPlaying: false, speed: 1.0, loopSentence: false, loopWord: false, position: { sentenceIdx: 0, wordIdx: 0 } },
+      display: {
+        mode: 'scroll',
+        displayMode: 'scholar',
+        showTranslit: false,
+        showParallel: false,
+        maskKnown: false,
+        interlinearMode: false,
+        fontSize: 18,
+        highlightIntensity: 'normal',
+        swipeMovesToNext: true,
+      },
+      navigation: {
+        textId: null,
+        currentChapterIndex: 0,
+        currentSentenceIndex: 0,
+        currentScrollPage: 0,
+        scrollProgress: 0,
+      },
+      audio: {
+        isPlaying: false,
+        speed: 1.0,
+        loopSentence: false,
+        loopWord: false,
+        position: { sentenceIdx: 0, wordIdx: 0 },
+      },
     });
   });
 
@@ -287,11 +309,35 @@ describe('ReaderStateProvider', () => {
   });
 
   it('restores state from localStorage on mount', () => {
-    localStorage.setItem('paleoglossa_reader_state', JSON.stringify({
-      display: { mode: 'page', showTranslit: true, showParallel: false, maskKnown: false, interlinearMode: false, fontSize: 22, highlightIntensity: 'subtle', swipeMovesToNext: false },
-      navigation: { textId: 'iliad-1', currentChapterIndex: 2, currentSentenceIndex: 5, currentScrollPage: 1, scrollProgress: 33 },
-      audio: { isPlaying: true, speed: 1.5, loopSentence: false, loopWord: false, position: { sentenceIdx: 2, wordIdx: 3 } },
-    }));
+    localStorage.setItem(
+      'paleoglossa_reader_state',
+      JSON.stringify({
+        display: {
+          mode: 'page',
+          showTranslit: true,
+          showParallel: false,
+          maskKnown: false,
+          interlinearMode: false,
+          fontSize: 22,
+          highlightIntensity: 'subtle',
+          swipeMovesToNext: false,
+        },
+        navigation: {
+          textId: 'iliad-1',
+          currentChapterIndex: 2,
+          currentSentenceIndex: 5,
+          currentScrollPage: 1,
+          scrollProgress: 33,
+        },
+        audio: {
+          isPlaying: true,
+          speed: 1.5,
+          loopSentence: false,
+          loopWord: false,
+          position: { sentenceIdx: 2, wordIdx: 3 },
+        },
+      })
+    );
     const { result } = renderHook(() => useReaderState(), { wrapper });
     expect(result.current.state.display.mode).toBe('page');
     expect(result.current.state.display.showTranslit).toBe(true);
@@ -310,6 +356,8 @@ describe('ReaderStateProvider', () => {
   });
 
   it('throws if used outside provider', () => {
-    expect(() => renderHook(() => useReaderState())).toThrow('useReaderState must be used within ReaderStateProvider');
+    expect(() => renderHook(() => useReaderState())).toThrow(
+      'useReaderState must be used within ReaderStateProvider'
+    );
   });
 });

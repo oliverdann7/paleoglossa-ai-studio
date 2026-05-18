@@ -80,13 +80,13 @@ function tryInit(): void {
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
       'Firebase Admin SDK is not configured. Set FIREBASE_SERVICE_ACCOUNT_JSON ' +
-      'or FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY environment variables.'
+        'or FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY environment variables.'
     );
   }
 
   console.warn(
     '[firebaseAdmin] Firebase Admin SDK not configured in development. ' +
-    'Set FIREBASE_SERVICE_ACCOUNT_JSON or individual env vars for Admin features.'
+      'Set FIREBASE_SERVICE_ACCOUNT_JSON or individual env vars for Admin features.'
   );
 }
 

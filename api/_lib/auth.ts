@@ -22,23 +22,30 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
   const token = getBearerToken(req);
 
   if (!token) {
-    res.status(401).json({ error: 'Missing or malformed Authorization header', code: 'UNAUTHORIZED' });
+    res
+      .status(401)
+      .json({ error: 'Missing or malformed Authorization header', code: 'UNAUTHORIZED' });
     return;
   }
 
   if (!isAdminAvailable()) {
-    res.status(503).json({ error: 'Authentication service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    res
+      .status(503)
+      .json({ error: 'Authentication service unavailable', code: 'SERVICE_UNAVAILABLE' });
     return;
   }
 
   const auth = getAdminAuth();
   if (!auth) {
-    res.status(503).json({ error: 'Authentication service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    res
+      .status(503)
+      .json({ error: 'Authentication service unavailable', code: 'SERVICE_UNAVAILABLE' });
     return;
   }
 
-  auth.verifyIdToken(token)
-    .then(decoded => {
+  auth
+    .verifyIdToken(token)
+    .then((decoded) => {
       req.user = {
         uid: decoded.uid,
         email: decoded.email || null,
@@ -46,10 +53,9 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
       };
       next();
     })
-    .catch(err => {
-      const message = err.code === 'auth/id-token-expired'
-        ? 'Token expired'
-        : 'Invalid authentication token';
+    .catch((err) => {
+      const message =
+        err.code === 'auth/id-token-expired' ? 'Token expired' : 'Invalid authentication token';
       res.status(401).json({ error: message, code: 'UNAUTHORIZED' });
     });
 }
@@ -68,8 +74,9 @@ export function optionalAuth(req: AuthenticatedRequest, _res: Response, next: Ne
     return;
   }
 
-  auth.verifyIdToken(token)
-    .then(decoded => {
+  auth
+    .verifyIdToken(token)
+    .then((decoded) => {
       req.user = {
         uid: decoded.uid,
         email: decoded.email || null,

@@ -61,9 +61,13 @@ export const useStats = (languageId?: string) => {
           let freezesTotal = currentStats.freezesTotal ?? 2;
           let freezesUsed = currentStats.freezesUsed ?? 0;
 
-          const diffDays = Math.floor(now.valueOf() / 86400000) - Math.floor(last.valueOf() / 86400000);
+          const diffDays =
+            Math.floor(now.valueOf() / 86400000) - Math.floor(last.valueOf() / 86400000);
 
-          if (now.getUTCMonth() !== last.getUTCMonth() || now.getUTCFullYear() !== last.getUTCFullYear()) {
+          if (
+            now.getUTCMonth() !== last.getUTCMonth() ||
+            now.getUTCFullYear() !== last.getUTCFullYear()
+          ) {
             freezesTotal = 2;
             freezesUsed = 0;
             needUpdate = true;
@@ -87,7 +91,7 @@ export const useStats = (languageId?: string) => {
             if (currentStats.readToday > 0 || currentStats.readingTime > 0) {
               const history = [...(currentStats.history || [])];
               const lastStr = last.toISOString().split('T')[0];
-              if (!history.find(h => h.date === lastStr)) {
+              if (!history.find((h) => h.date === lastStr)) {
                 history.push({
                   date: lastStr,
                   knownWords: currentStats.totalKnown,
@@ -113,51 +117,65 @@ export const useStats = (languageId?: string) => {
           StatsService.updateStats(userId, languageId || 'unknown', currentStats);
         }
       } catch (e: any) {
-        console.error("useStats init error:", e);
-        setError(e.message || "Failed to load stats");
+        console.error('useStats init error:', e);
+        setError(e.message || 'Failed to load stats');
       } finally {
         if (active) setIsLoading(false);
       }
     };
     init();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [userId, languageId]);
 
-  const updateStatsState = useCallback((updater: (prev: ReadingStats) => ReadingStats) => {
-    setStats(prev => {
-      if (!prev) return null;
-      const next = updater(prev);
-      if (statsUpdateTimer.current) clearTimeout(statsUpdateTimer.current);
-      statsUpdateTimer.current = setTimeout(() => {
-        StatsService.updateStats(userId, languageId || 'unknown', next);
-      }, 10000);
-      return next;
-    });
-  }, [userId, languageId]);
+  const updateStatsState = useCallback(
+    (updater: (prev: ReadingStats) => ReadingStats) => {
+      setStats((prev) => {
+        if (!prev) return null;
+        const next = updater(prev);
+        if (statsUpdateTimer.current) clearTimeout(statsUpdateTimer.current);
+        statsUpdateTimer.current = setTimeout(() => {
+          StatsService.updateStats(userId, languageId || 'unknown', next);
+        }, 10000);
+        return next;
+      });
+    },
+    [userId, languageId]
+  );
 
-  const addReadWords = useCallback((count: number) => {
-    updateStatsState(prev => ({
-      ...prev,
-      readToday: (prev.readToday || 0) + count,
-      lastActive: new Date().toISOString(),
-    }));
-  }, [updateStatsState]);
+  const addReadWords = useCallback(
+    (count: number) => {
+      updateStatsState((prev) => ({
+        ...prev,
+        readToday: (prev.readToday || 0) + count,
+        lastActive: new Date().toISOString(),
+      }));
+    },
+    [updateStatsState]
+  );
 
-  const incrementReadingTime = useCallback((minutes: number) => {
-    updateStatsState(prev => ({
-      ...prev,
-      readingTime: (prev.readingTime || 0) + minutes,
-      lastActive: new Date().toISOString(),
-    }));
-  }, [updateStatsState]);
+  const incrementReadingTime = useCallback(
+    (minutes: number) => {
+      updateStatsState((prev) => ({
+        ...prev,
+        readingTime: (prev.readingTime || 0) + minutes,
+        lastActive: new Date().toISOString(),
+      }));
+    },
+    [updateStatsState]
+  );
 
-  const recordReviewSession = useCallback((accuracy: number) => {
-    updateStatsState(prev => ({
-      ...prev,
-      lastAccuracy: accuracy,
-      lastActive: new Date().toISOString(),
-    }));
-  }, [updateStatsState]);
+  const recordReviewSession = useCallback(
+    (accuracy: number) => {
+      updateStatsState((prev) => ({
+        ...prev,
+        lastAccuracy: accuracy,
+        lastActive: new Date().toISOString(),
+      }));
+    },
+    [updateStatsState]
+  );
 
   return {
     stats: stats || DEFAULT_STATS,

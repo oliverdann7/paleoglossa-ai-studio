@@ -10,7 +10,6 @@ import {
 } from './dictionary.js';
 
 describe('Dictionary data', () => {
-
   it('index contains corpus-derived entries', () => {
     const entries = getDictionaryEntries();
     expect(entries.length).toBeGreaterThan(0);
@@ -20,23 +19,22 @@ describe('Dictionary data', () => {
     const logos = findDictionaryEntry('λόγος', 'grc-koine');
     expect(logos).toBeTruthy();
     expect(logos?.shortGloss).toBeTruthy();
-    expect((logos?.corpusExamples.length || 0)).toBeGreaterThan(0);
-    expect((logos?.dictionaries.length || 0)).toBeGreaterThan(0);
+    expect(logos?.corpusExamples.length || 0).toBeGreaterThan(0);
+    expect(logos?.dictionaries.length || 0).toBeGreaterThan(0);
   });
 
   it('surface-form search maps to lemma entries', () => {
     const surfaceResults = searchDictionaryEntries('Ἐν', 'grc-koine');
-    expect(surfaceResults.some(entry => entry.lemma === 'ἐν')).toBe(true);
+    expect(surfaceResults.some((entry) => entry.lemma === 'ἐν')).toBe(true);
   });
 
   it('language filter restricts dictionary search', () => {
     const filtered = searchDictionaryEntries('created', 'hbo');
-    expect(filtered.every(entry => entry.languageId === 'hbo')).toBe(true);
+    expect(filtered.every((entry) => entry.languageId === 'hbo')).toBe(true);
   });
 });
 
 describe('getGlossWithFallbacks', () => {
-
   it('finds exact lemma match', () => {
     const gloss = getGlossWithFallbacks('λόγος', 'grc-koine');
     expect(gloss).toBeTruthy();
@@ -71,7 +69,6 @@ describe('getGlossWithFallbacks', () => {
 });
 
 describe('getGlossForLemma', () => {
-
   it('returns null for unknown lemma (no fake definitions)', () => {
     const result = getGlossForLemma('nonexistentword12345');
     expect(result).toBeNull();
@@ -84,7 +81,6 @@ describe('getGlossForLemma', () => {
 });
 
 describe('normalizeSearch', () => {
-
   it('strips Greek diacritics', () => {
     const result = normalizeSearch('λόγος');
     expect(result).toBe('λογος');
@@ -101,7 +97,6 @@ describe('normalizeSearch', () => {
 });
 
 describe('stripHebrewVowels', () => {
-
   it('removes Hebrew vowel marks', () => {
     const result = stripHebrewVowels('דָּבָר');
     expect(result).toBe('דבר');
@@ -118,7 +113,6 @@ describe('stripHebrewVowels', () => {
 });
 
 describe('dictionary fallback chain order', () => {
-
   it('corpus-derived entries take priority over static dictionaryDB', () => {
     const dictGloss = getGlossWithFallbacks('θεός', 'grc');
     expect(dictGloss).toBeTruthy();

@@ -1,7 +1,16 @@
 import { Router } from 'express';
-import { findDictionaryEntry, searchDictionaryEntries as searchCorpusEntries, normalizeSearch, getGlobalDictionary } from '../../src/lib/data/dictionary.js';
+import {
+  findDictionaryEntry,
+  searchDictionaryEntries as searchCorpusEntries,
+  normalizeSearch,
+  getGlobalDictionary,
+} from '../../src/lib/data/dictionary.js';
 import { getDictionaryEntry as getStaticDictEntry } from '../../src/lib/data/dictionaryDB.js';
-import { getDictionaryEntry, getDictionaryLanguages, searchDictionaryEntries } from '../../src/lib/data/dictionaryDB.js';
+import {
+  getDictionaryEntry,
+  getDictionaryLanguages,
+  searchDictionaryEntries,
+} from '../../src/lib/data/dictionaryDB.js';
 
 const router = Router();
 
@@ -11,10 +20,14 @@ router.get('/api/lemmas/:language/:lemma', (req: any, res: any) => {
   try {
     const { language, lemma } = req.params;
     if (!lemma || typeof lemma !== 'string') {
-      return res.status(400).json({ error: 'lemma is required', code: 'INVALID_INPUT', field: 'lemma' });
+      return res
+        .status(400)
+        .json({ error: 'lemma is required', code: 'INVALID_INPUT', field: 'lemma' });
     }
     if (!language || typeof language !== 'string') {
-      return res.status(400).json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
+      return res
+        .status(400)
+        .json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
     }
 
     const entry = findDictionaryEntry(lemma, language);
@@ -38,12 +51,14 @@ router.get('/api/lemmas', (req: any, res: any) => {
   try {
     const { q: query, lang } = req.query;
     if (!query || typeof query !== 'string' || !query.trim()) {
-      return res.status(400).json({ error: 'query parameter q is required', code: 'INVALID_INPUT', field: 'q' });
+      return res
+        .status(400)
+        .json({ error: 'query parameter q is required', code: 'INVALID_INPUT', field: 'q' });
     }
     const results = searchCorpusEntries(
       query.trim(),
       lang && typeof lang === 'string' ? lang : undefined,
-      50,
+      50
     );
     res.status(200).json(results);
   } catch (err: any) {
@@ -62,10 +77,14 @@ router.get('/api/tokens/:language/:token', (req: any, res: any) => {
   try {
     const { language, token } = req.params;
     if (!token || typeof token !== 'string') {
-      return res.status(400).json({ error: 'token is required', code: 'INVALID_INPUT', field: 'token' });
+      return res
+        .status(400)
+        .json({ error: 'token is required', code: 'INVALID_INPUT', field: 'token' });
     }
     if (!language || typeof language !== 'string') {
-      return res.status(400).json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
+      return res
+        .status(400)
+        .json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
     }
 
     const normalized = normalizeSearch(token);
@@ -102,7 +121,7 @@ router.get('/api/tokens/:language/:token', (req: any, res: any) => {
       }
     }
 
-    const lemmaInfo = candidates.map(c => {
+    const lemmaInfo = candidates.map((c) => {
       const entry = findDictionaryEntry(c.lemma, language);
       const tokenObj = globalDict?.[c.lemma];
       return {

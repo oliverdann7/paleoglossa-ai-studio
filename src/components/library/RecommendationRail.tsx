@@ -21,7 +21,7 @@ export function RecommendationRail({ texts }: Props) {
         </h3>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-        {texts.map(text => (
+        {texts.map((text) => (
           <button
             key={text.id}
             onClick={() => navigate(`/app/reader/${text.id}`)}

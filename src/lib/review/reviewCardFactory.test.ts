@@ -8,11 +8,16 @@ const baseItem = {
   userGloss: 'I loosen / I destroy',
   contexts: ['λύω τὸ δεσμά', 'λύω τὸν λόγον'],
   status: 'LEARNING',
-  srs: { interval: 1, ease: 2.5, step: 1, lastReviewed: null, nextReview: new Date().toISOString() },
+  srs: {
+    interval: 1,
+    ease: 2.5,
+    step: 1,
+    lastReviewed: null,
+    nextReview: new Date().toISOString(),
+  },
 };
 
 describe('generateReviewCard', () => {
-
   it('creates a FORM_TO_MEANING card when gloss exists', () => {
     const card = generateReviewCard(baseItem, { enabledTypes: [CardType.FORM_TO_MEANING] });
     expect(card).not.toBeNull();
@@ -58,7 +63,10 @@ describe('generateReviewCard', () => {
   });
 
   it('creates PARSE card when includeMorphology is true', () => {
-    const card = generateReviewCard(baseItem, { enabledTypes: [CardType.PARSE], includeMorphology: true });
+    const card = generateReviewCard(baseItem, {
+      enabledTypes: [CardType.PARSE],
+      includeMorphology: true,
+    });
     // The test may not have real morphology data in the dictionary, so it might return null
     // But if morphology exists, it should be a PARSE card
     if (card) {
@@ -78,7 +86,6 @@ describe('generateReviewCard', () => {
 });
 
 describe('generateReviewCards', () => {
-
   it('generates cards for all items with valid gloss', () => {
     const items = [
       baseItem,
@@ -99,7 +106,7 @@ describe('generateReviewCards', () => {
       { ...baseItem, term: 'e', id: 'e', userGloss: 'e' },
     ];
     const cards = generateReviewCards(items, { enabledTypes: [CardType.FORM_TO_MEANING] });
-    const ids = cards.map(c => c.term);
+    const ids = cards.map((c) => c.term);
     // If shuffled, the order won't exactly match the input (probabilistic)
     expect(ids.sort()).toEqual(['a', 'b', 'c', 'd', 'e']);
   });

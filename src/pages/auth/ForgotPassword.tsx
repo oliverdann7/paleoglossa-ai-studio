@@ -20,8 +20,11 @@ export const ForgotPassword = () => {
   const startCooldown = () => {
     setCooldown(60);
     const interval = setInterval(() => {
-      setCooldown(prev => {
-        if (prev <= 1) { clearInterval(interval); return 0; }
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
@@ -49,9 +52,11 @@ export const ForgotPassword = () => {
     } catch (err: any) {
       const code = err.code as string;
       if (code === 'auth/user-not-found' || code === 'auth/invalid-email') {
-        setError(t("auth.resetNoAccount", "No account found with this email address."));
+        setError(t('auth.resetNoAccount', 'No account found with this email address.'));
       } else if (code === 'auth/network-request-failed') {
-        setError(t("auth.networkError", "Network error. Please check your connection and try again."));
+        setError(
+          t('auth.networkError', 'Network error. Please check your connection and try again.')
+        );
       } else {
         setError(err.message);
       }
@@ -67,7 +72,7 @@ export const ForgotPassword = () => {
       await sendReset(email);
       startCooldown();
     } catch {
-      setError(t("auth.resendFailed", "Failed to resend. Please try again."));
+      setError(t('auth.resendFailed', 'Failed to resend. Please try again.'));
     }
     setLoading(false);
   };
@@ -86,10 +91,13 @@ export const ForgotPassword = () => {
           </div>
 
           <h3 className="text-3xl font-serif font-bold mb-2 text-center text-ink">
-            {t("auth.resetPassword", "Reset Password")}
+            {t('auth.resetPassword', 'Reset Password')}
           </h3>
           <p className="text-ink3 mb-8 text-center">
-            {t("auth.resetDesc", "Enter your email address and we'll send you a link to reset your password.")}
+            {t(
+              'auth.resetDesc',
+              "Enter your email address and we'll send you a link to reset your password."
+            )}
           </p>
 
           {error && (
@@ -106,16 +114,19 @@ export const ForgotPassword = () => {
               className="mb-6 p-5 rounded-xl bg-parch3 border border-bdr"
             >
               <p className="text-sm font-semibold text-ink mb-1">
-                {t("auth.googleAccountTitle", "This account uses Google Sign-In")}
+                {t('auth.googleAccountTitle', 'This account uses Google Sign-In')}
               </p>
               <p className="text-sm text-ink3 mb-4">
-                {t("auth.googleAccountDesc", "Your account is linked to Google. You don't need a password — just sign in with Google.")}
+                {t(
+                  'auth.googleAccountDesc',
+                  "Your account is linked to Google. You don't need a password — just sign in with Google."
+                )}
               </p>
               <button
                 onClick={() => navigate('/auth/login')}
                 className="btn-primary w-full py-2.5 text-sm"
               >
-                {t("auth.goToSignIn", "Go to Sign In")}
+                {t('auth.goToSignIn', 'Go to Sign In')}
               </button>
             </motion.div>
           )}
@@ -128,12 +139,13 @@ export const ForgotPassword = () => {
             >
               <div className="p-6 rounded-xl bg-jadexl border border-jade/20 flex flex-col items-center text-center gap-3 text-jade mb-4">
                 <CheckCircle2 className="w-10 h-10 mb-2" />
-                <h4 className="font-bold text-lg">{t("auth.checkEmail", "Check your email")}</h4>
+                <h4 className="font-bold text-lg">{t('auth.checkEmail', 'Check your email')}</h4>
                 <p className="text-sm font-medium opacity-80">
-                  {t("auth.sentLink", "We've sent a password reset link to")} <span className="font-bold">{email}</span>
+                  {t('auth.sentLink', "We've sent a password reset link to")}{' '}
+                  <span className="font-bold">{email}</span>
                 </p>
                 <p className="text-xs opacity-60">
-                  {t("auth.checkSpam", "Don't see it? Check your spam folder.")}
+                  {t('auth.checkSpam', "Don't see it? Check your spam folder.")}
                 </p>
               </div>
 
@@ -144,16 +156,16 @@ export const ForgotPassword = () => {
               >
                 <RefreshCw className="w-4 h-4" />
                 {cooldown > 0
-                  ? t("auth.resendIn", "Resend in {{s}}s", { s: cooldown })
+                  ? t('auth.resendIn', 'Resend in {{s}}s', { s: cooldown })
                   : loading
-                    ? t("auth.sendingLink", "Sending Link...")
-                    : t("auth.resendLink", "Resend reset link")}
+                    ? t('auth.sendingLink', 'Sending Link...')
+                    : t('auth.resendLink', 'Resend reset link')}
               </button>
             </motion.div>
           ) : !isGoogleAccount ? (
             <form onSubmit={handleReset} className="space-y-6">
               <div>
-                <label className="nav-label mb-2 block">{t("auth.email", "Email Address")}</label>
+                <label className="nav-label mb-2 block">{t('auth.email', 'Email Address')}</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                   <input
@@ -172,7 +184,9 @@ export const ForgotPassword = () => {
                 disabled={loading}
                 className="btn-primary w-full py-3 disabled:opacity-70"
               >
-                {loading ? t("auth.sendingLink", "Sending Link...") : t("auth.sendLink", "Send Reset Link")}
+                {loading
+                  ? t('auth.sendingLink', 'Sending Link...')
+                  : t('auth.sendLink', 'Send Reset Link')}
               </button>
             </form>
           ) : null}
@@ -183,7 +197,7 @@ export const ForgotPassword = () => {
               className="inline-flex items-center gap-2 text-sm font-bold text-ink3 hover:text-ink transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              {t("auth.backToSignIn", "Back to Sign In")}
+              {t('auth.backToSignIn', 'Back to Sign In')}
             </button>
           </div>
         </motion.div>
