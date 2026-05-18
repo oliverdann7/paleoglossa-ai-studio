@@ -8,6 +8,7 @@ import {
   Settings as SettingsIcon,
   Snowflake,
   User,
+  Shield,
 } from 'lucide-react';
 import { useSettings } from '../lib/hooks/useSettings.js';
 import { cn } from '@/lib/utils';
@@ -17,11 +18,18 @@ import { db } from '../lib/firebase.js';
 import { DICTIONARY_SOURCES } from '../lib/data/dictionaryDB.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { uploadAvatar, updateUserProfile } from '../lib/services/profileService.js';
+import { privacyService } from '../lib/services/privacyService.js';
+import { optInAnalytics, optOutAnalytics } from '../lib/analytics.js';
+import { setErrorReportingEnabled } from '../lib/sentry.js';
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
   const { exportData, stats } = useKnowledge();
   const { user, profile, refreshProfile } = useAuth();
+  
+  // ── Privacy State ────────────────────────────────────────────────────────
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(privacyService.isAnalyticsEnabled());
+  const [errorReportingEnabled, setErrorReportingEnabledState] = useState(privacyService.isErrorReportingEnabled());
 
   // ── Profile form state ───────────────────────────────────────────────────
   const [displayName, setDisplayName] = useState(profile?.displayName ?? user?.displayName ?? '');
@@ -157,6 +165,67 @@ export const Settings = () => {
       </header>
 
       <div className="space-y-8">
+        {/* ── Privacy ────────────────────────────────────────────────────── */}
+        <section className="card p-8">
+          <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr flex items-center gap-2">
+            <Shield className="w-5 h-5 text-muted" />
+            {t('settings.privacy', 'Privacy & Analytics')}
+          </h3>
+          
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-[14px] text-ink">Product Analytics</h4>
+                <p className="text-[12px] text-muted">Help us improve by sharing usage data anonymously.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (analyticsEnabled) optOutAnalytics();
+                  else optInAnalytics();
+                  setAnalyticsEnabled(!analyticsEnabled);
+                }}
+                className={cn(
+                  'relative w-11 h-6 rounded-full transition-colors',
+                  analyticsEnabled ? 'bg-blue' : 'bg-parch3 border border-bdr'
+                )}
+              >
+                <span
+                  className={cn(
+                    'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform',
+                    analyticsEnabled && 'translate-x-5'
+                  )}
+                />
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-[14px] text-ink">Error Reporting</h4>
+                <p className="text-[12px] text-muted">Automatically report crashes to help us fix bugs.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorReportingEnabled(!errorReportingEnabled);
+                  setErrorReportingEnabledState(!errorReportingEnabled);
+                }}
+                className={cn(
+                  'relative w-11 h-6 rounded-full transition-colors',
+                  errorReportingEnabled ? 'bg-blue' : 'bg-parch3 border border-bdr'
+                )}
+              >
+                <span
+                  className={cn(
+                    'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform',
+                    errorReportingEnabled && 'translate-x-5'
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* ── Profile & Identity ─────────────────────────────────────────── */}
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr flex items-center gap-2">
