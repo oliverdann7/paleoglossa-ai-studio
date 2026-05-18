@@ -657,6 +657,13 @@ export const Settings = () => {
             </div>
           )}
         </section>
+
+        {/* ── Footer Links ───────────────────────────────────────────────── */}
+        <section className="flex justify-center gap-6 text-[13px] text-muted pb-12">
+          <a href="/privacy" className="hover:text-ink transition-colors underline">Privacy</a>
+          <a href="/terms" className="hover:text-ink transition-colors underline">Terms</a>
+          <a href="/support" className="hover:text-ink transition-colors underline">Support</a>
+        </section>
       </div>
     </div>
   );
