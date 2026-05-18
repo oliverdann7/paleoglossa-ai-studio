@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 describe('Public text share route validation', () => {
-
   it('rejects unauthenticated share', () => {
     const result = checkShareAuth(false);
     expect(result.status).toBe(401);
@@ -34,9 +33,13 @@ describe('Public text share route validation', () => {
 });
 
 describe('Fork behavior', () => {
-
   it('fork creates private copy with original attribution', () => {
-    const fork = createFork({ id: 'fork_abc_123', title: 'Iliad (forked)', forkedFrom: 'abc', authorId: 'user1' });
+    const fork = createFork({
+      id: 'fork_abc_123',
+      title: 'Iliad (forked)',
+      forkedFrom: 'abc',
+      authorId: 'user1',
+    });
     expect(fork.visibility).toBe('private');
     expect(fork.forkedFrom).toBe('abc');
     expect(fork.originalPublicTextId).toBe('abc');
@@ -51,7 +54,6 @@ describe('Fork behavior', () => {
 });
 
 describe('Unshare behavior', () => {
-
   it('unshare sets visibility to private', () => {
     const unshared = { visibility: 'private', publishedAt: null };
     expect(unshared.visibility).toBe('private');
@@ -60,7 +62,6 @@ describe('Unshare behavior', () => {
 });
 
 describe('Public Library filters', () => {
-
   it('only shows texts with moderationStatus visible', () => {
     const texts = [
       { id: '1', moderationStatus: 'visible' },
@@ -68,9 +69,9 @@ describe('Public Library filters', () => {
       { id: '3', moderationStatus: 'under_review' },
       { id: '4', moderationStatus: 'visible' },
     ];
-    const visible = texts.filter(t => t.moderationStatus === 'visible');
+    const visible = texts.filter((t) => t.moderationStatus === 'visible');
     expect(visible.length).toBe(2);
-    expect(visible.map(t => t.id)).toEqual(['1', '4']);
+    expect(visible.map((t) => t.id)).toEqual(['1', '4']);
   });
 
   it('filters by language', () => {
@@ -79,7 +80,7 @@ describe('Public Library filters', () => {
       { id: '2', languageId: 'lat' },
       { id: '3', languageId: 'hbo' },
     ];
-    const grc = texts.filter(t => t.languageId === 'grc');
+    const grc = texts.filter((t) => t.languageId === 'grc');
     expect(grc.length).toBe(1);
     expect(grc[0].id).toBe('1');
   });

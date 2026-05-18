@@ -13,7 +13,18 @@ export interface OfflineTextPayload {
   textId: string;
   title: string;
   languageId: string;
-  sentences: { tokens: { text: string; lemma: string; gloss?: string; type: string; transliteration?: string; pos?: string; confidence?: number | null }[]; translation?: string | null }[];
+  sentences: {
+    tokens: {
+      text: string;
+      lemma: string;
+      gloss?: string;
+      type: string;
+      transliteration?: string;
+      pos?: string;
+      confidence?: number | null;
+    }[];
+    translation?: string | null;
+  }[];
   source: 'corpus' | 'import';
   cachedAt: string;
 }
@@ -26,29 +37,31 @@ export interface SyncQueueItem {
 }
 
 export const OfflineService = {
-
   // ── Text metadata ───────────────────────────────────────────────────
 
   getOfflineTexts(): OfflineText[] {
-    try { return JSON.parse(localStorage.getItem(OFFLINE_TEXTS_KEY) || '[]'); }
-    catch { return []; }
+    try {
+      return JSON.parse(localStorage.getItem(OFFLINE_TEXTS_KEY) || '[]');
+    } catch {
+      return [];
+    }
   },
 
   setOfflineText(textId: string, title: string, languageId: string): void {
     const texts = this.getOfflineTexts();
-    if (texts.some(t => t.textId === textId)) return;
+    if (texts.some((t) => t.textId === textId)) return;
     texts.push({ textId, title, languageId, cachedAt: new Date().toISOString() });
     localStorage.setItem(OFFLINE_TEXTS_KEY, JSON.stringify(texts));
   },
 
   removeOfflineText(textId: string): void {
-    const texts = this.getOfflineTexts().filter(t => t.textId !== textId);
+    const texts = this.getOfflineTexts().filter((t) => t.textId !== textId);
     localStorage.setItem(OFFLINE_TEXTS_KEY, JSON.stringify(texts));
     localStorage.removeItem(`${OFFLINE_PAYLOADS_KEY}_${textId}`);
   },
 
   isOfflineText(textId: string): boolean {
-    return this.getOfflineTexts().some(t => t.textId === textId);
+    return this.getOfflineTexts().some((t) => t.textId === textId);
   },
 
   // ── Text payload (sentences/tokens for offline reading) ────────────
@@ -66,14 +79,19 @@ export const OfflineService = {
     try {
       const raw = localStorage.getItem(`${OFFLINE_PAYLOADS_KEY}_${textId}`);
       return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   },
 
   // ── Sync queue for pending writes ──────────────────────────────────
 
   getSyncQueue(): SyncQueueItem[] {
-    try { return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]'); }
-    catch { return []; }
+    try {
+      return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]');
+    } catch {
+      return [];
+    }
   },
 
   addToSyncQueue(item: Omit<SyncQueueItem, 'id' | 'createdAt'>): void {

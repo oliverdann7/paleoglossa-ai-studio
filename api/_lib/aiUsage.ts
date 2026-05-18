@@ -47,7 +47,7 @@ export async function checkAndIncrementUsage(
   uid: string,
   planId: string,
   endpoint: string,
-  inputLength: number,
+  inputLength: number
 ): Promise<QuotaResult> {
   const limit = getPlanAILimit(planId);
   const resetDate = getNextResetDate();
@@ -73,7 +73,7 @@ export async function checkAndIncrementUsage(
     const docRef = adminDb_.doc('aiUsage/' + docId);
     const snap = await docRef.get();
 
-    const currentCount: number = snap.exists ? (snap.data()?.count || 0) : 0;
+    const currentCount: number = snap.exists ? snap.data()?.count || 0 : 0;
     const newCount = currentCount + 1;
 
     if (newCount > limit) {
@@ -86,14 +86,17 @@ export async function checkAndIncrementUsage(
     }
 
     // Increment
-    await docRef.set({
-      count: newCount,
-      endpoints: {
-        ...(snap.exists ? (snap.data()?.endpoints || {}) : {}),
-        [endpoint]: ((snap.exists ? (snap.data()?.endpoints || {}) : {})[endpoint] || 0) + 1,
+    await docRef.set(
+      {
+        count: newCount,
+        endpoints: {
+          ...(snap.exists ? snap.data()?.endpoints || {} : {}),
+          [endpoint]: ((snap.exists ? snap.data()?.endpoints || {} : {})[endpoint] || 0) + 1,
+        },
+        updatedAt: FieldValue.serverTimestamp(),
       },
-      updatedAt: FieldValue.serverTimestamp(),
-    }, { merge: true });
+      { merge: true }
+    );
 
     return {
       allowed: true,
@@ -120,15 +123,18 @@ async function incrementUsage(uid: string, endpoint: string, inputLength: number
     const docRef = adminDb_.doc('aiUsage/' + docId);
     const snap = await docRef.get();
 
-    await docRef.set({
-      count: (snap.exists ? (snap.data()?.count || 0) : 0) + 1,
-      totalInputLength: (snap.exists ? (snap.data()?.totalInputLength || 0) : 0) + inputLength,
-      endpoints: {
-        ...(snap.exists ? (snap.data()?.endpoints || {}) : {}),
-        [endpoint]: ((snap.exists ? (snap.data()?.endpoints || {}) : {})[endpoint] || 0) + 1,
+    await docRef.set(
+      {
+        count: (snap.exists ? snap.data()?.count || 0 : 0) + 1,
+        totalInputLength: (snap.exists ? snap.data()?.totalInputLength || 0 : 0) + inputLength,
+        endpoints: {
+          ...(snap.exists ? snap.data()?.endpoints || {} : {}),
+          [endpoint]: ((snap.exists ? snap.data()?.endpoints || {} : {})[endpoint] || 0) + 1,
+        },
+        updatedAt: FieldValue.serverTimestamp(),
       },
-      updatedAt: FieldValue.serverTimestamp(),
-    }, { merge: true });
+      { merge: true }
+    );
   } catch {
     // Silent fail for analytics-only tracking
   }

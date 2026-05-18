@@ -3,7 +3,14 @@ import { useAuth } from '../hooks/useAuth.js';
 import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { apiFetch } from '../services/apiFetch.js';
-import { PlanId, SubscriptionStatus, getPlanById, canAddLanguage as canAddByPlan, canAccessLanguage as canAccessByPlan, TRIAL_DAYS } from '../constants/plans.js';
+import {
+  PlanId,
+  SubscriptionStatus,
+  getPlanById,
+  canAddLanguage as canAddByPlan,
+  canAccessLanguage as canAccessByPlan,
+  TRIAL_DAYS,
+} from '../constants/plans.js';
 
 const SUBSCRIPTION_STORAGE_KEY = 'paleoglossa_subscription';
 
@@ -25,7 +32,10 @@ interface SubscriptionContextValue {
   isLoaded: boolean;
   isAdmin: boolean;
   isOnTrial: () => boolean;
-  createCheckoutSession: (planId: PlanId, billingCycle?: 'monthly' | 'yearly') => Promise<string | null>;
+  createCheckoutSession: (
+    planId: PlanId,
+    billingCycle?: 'monthly' | 'yearly'
+  ) => Promise<string | null>;
   createPortalSession: () => Promise<string | null>;
 }
 
@@ -88,7 +98,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             setIsLoaded(true);
             return;
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
       setIsLoaded(true);
     };
@@ -98,18 +110,28 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Save selectedLanguageIds to localStorage only (guest/demo).
   // The server (Stripe webhook) is the authority for paid subscription fields.
   // Firestore writes for language selection are handled by the server.
-  const persistLanguages = useCallback((langIds: string[]) => {
-    const stored = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
-    const existing = stored ? JSON.parse(stored) : {};
-    localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify({ ...existing, selectedLanguageIds: langIds }));
-    if (user) {
-      // Update Firestore with language selection only (not subscription fields).
-      setDoc(doc(db, `users/${user.uid}`), {
-        selectedLanguageIds: langIds,
-        updatedAt: serverTimestamp(),
-      }, { merge: true }).catch(() => {});
-    }
-  }, [user]);
+  const persistLanguages = useCallback(
+    (langIds: string[]) => {
+      const stored = localStorage.getItem(SUBSCRIPTION_STORAGE_KEY);
+      const existing = stored ? JSON.parse(stored) : {};
+      localStorage.setItem(
+        SUBSCRIPTION_STORAGE_KEY,
+        JSON.stringify({ ...existing, selectedLanguageIds: langIds })
+      );
+      if (user) {
+        // Update Firestore with language selection only (not subscription fields).
+        setDoc(
+          doc(db, `users/${user.uid}`),
+          {
+            selectedLanguageIds: langIds,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        ).catch(() => {});
+      }
+    },
+    [user]
+  );
 
   // Only callable for the free plan. Paid plans must go through createCheckoutSession
   // which is handled server-side via the Stripe webhook.
@@ -125,22 +147,25 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     persistLanguages(newSelected);
   }, [subscription.selectedLanguageIds, persistLanguages]);
 
-  const toggleLanguage = useCallback((languageId: string) => {
-    setSubscription(prev => {
-      const isSelected = prev.selectedLanguageIds.includes(languageId);
-      let newSelected: string[];
-      if (isSelected) {
-        newSelected = prev.selectedLanguageIds.filter(id => id !== languageId);
-        if (newSelected.length === 0) newSelected = ['grc'];
-      } else {
-        const canAdd = canAddByPlan(prev.currentPlan, prev.selectedLanguageIds);
-        if (!canAdd) return prev;
-        newSelected = [...prev.selectedLanguageIds, languageId];
-      }
-      persistLanguages(newSelected);
-      return { ...prev, selectedLanguageIds: newSelected };
-    });
-  }, [persistLanguages]);
+  const toggleLanguage = useCallback(
+    (languageId: string) => {
+      setSubscription((prev) => {
+        const isSelected = prev.selectedLanguageIds.includes(languageId);
+        let newSelected: string[];
+        if (isSelected) {
+          newSelected = prev.selectedLanguageIds.filter((id) => id !== languageId);
+          if (newSelected.length === 0) newSelected = ['grc'];
+        } else {
+          const canAdd = canAddByPlan(prev.currentPlan, prev.selectedLanguageIds);
+          if (!canAdd) return prev;
+          newSelected = [...prev.selectedLanguageIds, languageId];
+        }
+        persistLanguages(newSelected);
+        return { ...prev, selectedLanguageIds: newSelected };
+      });
+    },
+    [persistLanguages]
+  );
 
   const isOnTrial = useCallback((): boolean => {
     if (!subscription.trialEnd) return false;
@@ -153,48 +178,67 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     return false;
   }, [isAdmin, isOnTrial]);
 
-  const checkAccess = useCallback((languageId: string): boolean => {
-    if (hasTrialAccess()) return true;
-    return canAccessByPlan(subscription.currentPlan, languageId, subscription.selectedLanguageIds);
-  }, [subscription, hasTrialAccess]);
+  const checkAccess = useCallback(
+    (languageId: string): boolean => {
+      if (hasTrialAccess()) return true;
+      return canAccessByPlan(
+        subscription.currentPlan,
+        languageId,
+        subscription.selectedLanguageIds
+      );
+    },
+    [subscription, hasTrialAccess]
+  );
 
   const checkCanAdd = useCallback((): boolean => {
     if (hasTrialAccess()) return true;
     return canAddByPlan(subscription.currentPlan, subscription.selectedLanguageIds);
   }, [subscription, hasTrialAccess]);
 
-  const createCheckoutSession = useCallback(async (planId: PlanId, billingCycle: 'monthly' | 'yearly' = 'monthly'): Promise<string | null> => {
-    try {
-      const data = await apiFetch<{ url: string | null; devMode?: boolean }>('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        body: { planId, billingCycle },
-      });
-      if (data.devMode) {
-        // Dev mode: store plan in memory + localStorage (transient, no Firestore write).
-        // The Stripe webhook is the authority in production.
-        const trialEnd = new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString();
-        const devSub: UserSubscription = {
-          currentPlan: planId,
-          selectedLanguageIds: subscription.selectedLanguageIds,
-          subscriptionStatus: 'trialing',
-          trialEnd,
-        };
-        setSubscription(devSub);
-        localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(devSub));
+  const createCheckoutSession = useCallback(
+    async (
+      planId: PlanId,
+      billingCycle: 'monthly' | 'yearly' = 'monthly'
+    ): Promise<string | null> => {
+      try {
+        const data = await apiFetch<{ url: string | null; devMode?: boolean }>(
+          '/api/stripe/create-checkout-session',
+          {
+            method: 'POST',
+            body: { planId, billingCycle },
+          }
+        );
+        if (data.devMode) {
+          // Dev mode: store plan in memory + localStorage (transient, no Firestore write).
+          // The Stripe webhook is the authority in production.
+          const trialEnd = new Date(Date.now() + TRIAL_DAYS * 86400000).toISOString();
+          const devSub: UserSubscription = {
+            currentPlan: planId,
+            selectedLanguageIds: subscription.selectedLanguageIds,
+            subscriptionStatus: 'trialing',
+            trialEnd,
+          };
+          setSubscription(devSub);
+          localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify(devSub));
+          return null;
+        }
+        return data.url || null;
+      } catch (err) {
+        console.error('Checkout error:', err);
         return null;
       }
-      return data.url || null;
-    } catch (err) {
-      console.error('Checkout error:', err);
-      return null;
-    }
-  }, [subscription.selectedLanguageIds]);
+    },
+    [subscription.selectedLanguageIds]
+  );
 
   const createPortalSession = useCallback(async (): Promise<string | null> => {
     try {
-      const data = await apiFetch<{ url: string | null; devMode?: boolean }>('/api/stripe/create-portal-session', {
-        method: 'POST',
-      });
+      const data = await apiFetch<{ url: string | null; devMode?: boolean }>(
+        '/api/stripe/create-portal-session',
+        {
+          method: 'POST',
+        }
+      );
       if (data.devMode) return null;
       return data.url || null;
     } catch (err) {
@@ -203,24 +247,30 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const remainingSlots = isAdmin || isOnTrial() ? Infinity : subscription.currentPlan === 'full_all'
-    ? Infinity
-    : (getPlanById(subscription.currentPlan).languageLimit as number) - subscription.selectedLanguageIds.length;
+  const remainingSlots =
+    isAdmin || isOnTrial()
+      ? Infinity
+      : subscription.currentPlan === 'full_all'
+        ? Infinity
+        : (getPlanById(subscription.currentPlan).languageLimit as number) -
+          subscription.selectedLanguageIds.length;
 
   return (
-    <SubscriptionContext.Provider value={{
-      subscription,
-      selectFreePlan,
-      toggleLanguage,
-      canAccessLanguage: checkAccess,
-      canAddLanguage: checkCanAdd,
-      remainingSlots,
-      isLoaded,
-      isAdmin,
-      isOnTrial,
-      createCheckoutSession,
-      createPortalSession,
-    }}>
+    <SubscriptionContext.Provider
+      value={{
+        subscription,
+        selectFreePlan,
+        toggleLanguage,
+        canAccessLanguage: checkAccess,
+        canAddLanguage: checkCanAdd,
+        remainingSlots,
+        isLoaded,
+        isAdmin,
+        isOnTrial,
+        createCheckoutSession,
+        createPortalSession,
+      }}
+    >
       {children}
     </SubscriptionContext.Provider>
   );

@@ -5,7 +5,6 @@ import { basicAnalyze } from '../_lib/basicAnalyze';
 import { parseAndValidateAIResponse } from '../_lib/aiValidation';
 
 describe('basicAnalyze fallback', () => {
-
   it('tokenizes simple Greek text into sentences and tokens', () => {
     const result = basicAnalyze('Μῆνιν ἄειδε θεὰ. Πηληϊάδεω Ἀχιλῆος.');
     expect(result.sentences.length).toBeGreaterThanOrEqual(1);
@@ -24,7 +23,7 @@ describe('basicAnalyze fallback', () => {
   it('handles mixed punctuation and whitespace', () => {
     const result = basicAnalyze('Hello, world!');
     expect(result.sentences.length).toBe(1);
-    const texts = result.sentences[0].tokens.map(t => t.text);
+    const texts = result.sentences[0].tokens.map((t) => t.text);
     expect(texts).toContain('Hello,');
     expect(texts).toContain(' ');
     expect(texts).toContain('world!');
@@ -41,13 +40,21 @@ describe('basicAnalyze fallback', () => {
 });
 
 describe('parseAndValidateAIResponse', () => {
-
   it('parses clean valid JSON from Gemini', () => {
     const json = JSON.stringify({
       sentences: [
         {
           tokens: [
-            { text: 'Μῆνιν', lemma: 'μῆνις', normalized: 'μῆνιν', type: 'word', transliteration: 'mēnin', gloss: 'wrath', pos: 'noun', confidence: 0.95 },
+            {
+              text: 'Μῆνιν',
+              lemma: 'μῆνις',
+              normalized: 'μῆνιν',
+              type: 'word',
+              transliteration: 'mēnin',
+              gloss: 'wrath',
+              pos: 'noun',
+              confidence: 0.95,
+            },
           ],
           translation: 'Sing, goddess, the wrath',
         },
@@ -61,14 +68,16 @@ describe('parseAndValidateAIResponse', () => {
   });
 
   it('repairs markdown-wrapped JSON', () => {
-    const response = '```json\n{"sentences":[{"tokens":[{"text":"test","lemma":"test","normalized":"test","type":"word","transliteration":null,"gloss":null,"pos":null,"confidence":0.9}],"translation":null}]}\n```';
+    const response =
+      '```json\n{"sentences":[{"tokens":[{"text":"test","lemma":"test","normalized":"test","type":"word","transliteration":null,"gloss":null,"pos":null,"confidence":0.9}],"translation":null}]}\n```';
     const { data } = parseAndValidateAIResponse(response);
     expect(data).not.toBeNull();
     expect(data!.sentences.length).toBe(1);
   });
 
   it('repairs JSON with trailing comma', () => {
-    const json = '{"sentences":[{"tokens":[{"text":"test","lemma":"test","normalized":"test","type":"word","transliteration":null,"gloss":null,"pos":null,"confidence":0.9,}],"translation":null,}]}';
+    const json =
+      '{"sentences":[{"tokens":[{"text":"test","lemma":"test","normalized":"test","type":"word","transliteration":null,"gloss":null,"pos":null,"confidence":0.9,}],"translation":null,}]}';
     const { data } = parseAndValidateAIResponse(json);
     expect(data).not.toBeNull();
     expect(data!.sentences.length).toBe(1);
@@ -91,7 +100,16 @@ describe('parseAndValidateAIResponse', () => {
       sentences: [
         {
           tokens: [
-            { text: 'word', lemma: 'word', normalized: 'word', type: 'invalid_type', transliteration: null, gloss: null, pos: null, confidence: 0.5 },
+            {
+              text: 'word',
+              lemma: 'word',
+              normalized: 'word',
+              type: 'invalid_type',
+              transliteration: null,
+              gloss: null,
+              pos: null,
+              confidence: 0.5,
+            },
           ],
           translation: null,
         },
@@ -107,13 +125,31 @@ describe('parseAndValidateAIResponse', () => {
       sentences: [
         {
           tokens: [
-            { text: 'good', lemma: 'good', normalized: 'good', type: 'word', transliteration: null, gloss: null, pos: null, confidence: 0.9 },
+            {
+              text: 'good',
+              lemma: 'good',
+              normalized: 'good',
+              type: 'word',
+              transliteration: null,
+              gloss: null,
+              pos: null,
+              confidence: 0.9,
+            },
           ],
           translation: null,
         },
         {
           tokens: [
-            { text: 'bad', lemma: 'bad', normalized: 'bad', type: 'invalid', transliteration: null, gloss: null, pos: null, confidence: 0.5 },
+            {
+              text: 'bad',
+              lemma: 'bad',
+              normalized: 'bad',
+              type: 'invalid',
+              transliteration: null,
+              gloss: null,
+              pos: null,
+              confidence: 0.5,
+            },
           ],
           translation: null,
         },

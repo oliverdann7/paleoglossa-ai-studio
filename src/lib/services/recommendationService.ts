@@ -4,7 +4,7 @@ import { KnowledgeMap } from './vocabularyService.js';
 export function computeRecommendations(
   texts: LibraryText[],
   knowledge: KnowledgeMap,
-  limit = 5,
+  limit = 5
 ): LibraryText[] {
   // Determine user's most-active language from recently-seen vocabulary
   const langFreq: Record<string, number> = {};
@@ -15,7 +15,7 @@ export function computeRecommendations(
   const primaryLang = Object.entries(langFreq).sort((a, b) => b[1] - a[1])[0]?.[0];
 
   // Filter to the comprehensible-input sweet spot
-  const candidates = texts.filter(t => {
+  const candidates = texts.filter((t) => {
     const pku = t.percentKnownUnique ?? t.percentKnown ?? 0;
     return pku >= 85 && pku <= 96;
   });

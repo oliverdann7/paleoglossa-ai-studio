@@ -14,7 +14,7 @@ const SUPPORTED_LANGS = ['en', 'es', 'de', 'pt', 'fr', 'ru', 'zh', 'tr'] as cons
 
 function resolveInitialLanguage(): string {
   // 1. Explicit user choice saved in localStorage
-  const saved = localStorage.getItem("app_lang");
+  const saved = localStorage.getItem('app_lang');
   if (saved && SUPPORTED_LANGS.includes(saved as any)) return saved;
   // 2. Browser / OS system language (e.g. "tr-TR" → "tr", "en-US" → "en")
   const browserLang = (navigator.language || '').split('-')[0].toLowerCase();
@@ -24,18 +24,23 @@ function resolveInitialLanguage(): string {
 }
 
 const resources = {
-  en, es, de, pt, fr, ru, zh, tr
+  en,
+  es,
+  de,
+  pt,
+  fr,
+  ru,
+  zh,
+  tr,
 };
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: resolveInitialLanguage(),
-    fallbackLng: 'en',
-    interpolation: {
-      escapeValue: false
-    }
-  });
+i18n.use(initReactI18next).init({
+  resources,
+  lng: resolveInitialLanguage(),
+  fallbackLng: 'en',
+  interpolation: {
+    escapeValue: false,
+  },
+});
 
 export default i18n;

@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { buildTutorPrompt, LANGUAGE_SUGGESTED_QUESTIONS, DEFAULT_SUGGESTED_QUESTIONS } from '../_lib/aiPrompts';
+import {
+  buildTutorPrompt,
+  LANGUAGE_SUGGESTED_QUESTIONS,
+  DEFAULT_SUGGESTED_QUESTIONS,
+} from '../_lib/aiPrompts';
 
 describe('Tutor session creation', () => {
-
   it('requires authentication', () => {
     const result = requireAuth(false);
     expect(result.status).toBe(401);
@@ -29,7 +32,6 @@ describe('Tutor session creation', () => {
 });
 
 describe('Tutor message', () => {
-
   it('requires sessionId', () => {
     const result = validateMessage({ message: 'hello' });
     expect(result.status).toBe(400);
@@ -50,7 +52,6 @@ describe('Tutor message', () => {
 });
 
 describe('Guardrails', () => {
-
   it('returns uncertainty warning when AI expresses uncertainty', () => {
     const result = checkUncertainty('I am not certain about this parsing');
     expect(result).toBe(true);
@@ -63,7 +64,6 @@ describe('Guardrails', () => {
 });
 
 describe('buildTutorPrompt', () => {
-
   it('includes the student message', () => {
     const prompt = buildTutorPrompt('grc', 'What case is this?');
     expect(prompt).toContain("Student's question: What case is this?");
@@ -110,7 +110,6 @@ describe('buildTutorPrompt', () => {
 });
 
 describe('LANGUAGE_SUGGESTED_QUESTIONS', () => {
-
   it('has language-specific questions for Greek', () => {
     expect(LANGUAGE_SUGGESTED_QUESTIONS['grc']).toBeDefined();
     expect(LANGUAGE_SUGGESTED_QUESTIONS['grc'].length).toBeGreaterThan(0);
@@ -118,7 +117,11 @@ describe('LANGUAGE_SUGGESTED_QUESTIONS', () => {
 
   it('has language-specific questions for Hebrew', () => {
     expect(LANGUAGE_SUGGESTED_QUESTIONS['hbo']).toBeDefined();
-    expect(LANGUAGE_SUGGESTED_QUESTIONS['hbo'].some(q => q.toLowerCase().includes('stem') || q.toLowerCase().includes('verbal'))).toBe(true);
+    expect(
+      LANGUAGE_SUGGESTED_QUESTIONS['hbo'].some(
+        (q) => q.toLowerCase().includes('stem') || q.toLowerCase().includes('verbal')
+      )
+    ).toBe(true);
   });
 
   it('DEFAULT_SUGGESTED_QUESTIONS is non-empty', () => {
@@ -137,18 +140,30 @@ function validateStart(body: any): { status: number; body: any } {
   }
   return {
     status: 200,
-    body: { sessionId: 'sess_' + Date.now(), greeting: 'Hello', suggestedQuestions: ['Parse this'] },
+    body: {
+      sessionId: 'sess_' + Date.now(),
+      greeting: 'Hello',
+      suggestedQuestions: ['Parse this'],
+    },
   };
 }
 
 function validateMessage(body: any): { status: number; body: any } {
-  if (!body.sessionId) return { status: 400, body: { error: 'sessionId is required', code: 'INVALID_INPUT' } };
-  if (!body.message) return { status: 400, body: { error: 'message is required', code: 'INVALID_INPUT' } };
+  if (!body.sessionId)
+    return { status: 400, body: { error: 'sessionId is required', code: 'INVALID_INPUT' } };
+  if (!body.message)
+    return { status: 400, body: { error: 'message is required', code: 'INVALID_INPUT' } };
   return { status: 200, body: { text: 'Response', warnings: undefined } };
 }
 
 function simulateNoApiKey(): { status: number; body: any } {
-  return { status: 200, body: { text: 'AI tutor requires a Gemini API key to be configured.', warnings: ['Gemini API key not configured.'] } };
+  return {
+    status: 200,
+    body: {
+      text: 'AI tutor requires a Gemini API key to be configured.',
+      warnings: ['Gemini API key not configured.'],
+    },
+  };
 }
 
 function checkUncertainty(text: string): boolean {

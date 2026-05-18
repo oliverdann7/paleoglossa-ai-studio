@@ -1,11 +1,20 @@
-import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Send, Loader2, ChevronLeft, BookOpen, AlertTriangle, Plus, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "../lib/hooks/useAuth.js";
-import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
-import { apiFetch } from "../lib/services/apiFetch.js";
-import { formatDistanceToNow } from "date-fns";
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import {
+  MessageCircle,
+  Send,
+  Loader2,
+  ChevronLeft,
+  BookOpen,
+  AlertTriangle,
+  Plus,
+  Clock,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
+import { apiFetch } from '../lib/services/apiFetch.js';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Message {
   id?: string;
@@ -37,7 +46,7 @@ export const Tutor = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
@@ -46,7 +55,9 @@ export const Tutor = () => {
   const [showSessionsList, setShowSessionsList] = useState(!sessionIdParam);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Load sessions list
   useEffect(() => {
@@ -71,9 +82,11 @@ export const Tutor = () => {
     const load = async () => {
       setIsLoadingMessages(true);
       try {
-        const data = await apiFetch<{ session: Session; messages: Message[]; suggestedQuestions: string[] }>(
-          `/api/ai/tutor/sessions/${activeSessionId}`
-        );
+        const data = await apiFetch<{
+          session: Session;
+          messages: Message[];
+          suggestedQuestions: string[];
+        }>(`/api/ai/tutor/sessions/${activeSessionId}`);
         setMessages(data.messages);
         setSuggestedQuestions(data.suggestedQuestions || []);
       } catch {
@@ -89,7 +102,11 @@ export const Tutor = () => {
     setIsStarting(true);
     setStartError(null);
     try {
-      const data = await apiFetch<{ sessionId: string; greeting: string; suggestedQuestions: string[] }>('/api/ai/tutor/start', {
+      const data = await apiFetch<{
+        sessionId: string;
+        greeting: string;
+        suggestedQuestions: string[];
+      }>('/api/ai/tutor/start', {
         method: 'POST',
         body: { languageId: activeLanguageId, textId: textIdParam || undefined },
       });
@@ -113,9 +130,9 @@ export const Tutor = () => {
   const handleSend = async (text?: string) => {
     const userMsg = (text ?? input).trim();
     if (!userMsg || !activeSessionId) return;
-    setInput("");
+    setInput('');
     setSuggestedQuestions([]);
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    setMessages((prev) => [...prev, { role: 'user', content: userMsg }]);
     setIsSending(true);
     try {
       const context = textIdParam ? { textId: textIdParam } : undefined;
@@ -123,9 +140,19 @@ export const Tutor = () => {
         method: 'POST',
         body: { sessionId: activeSessionId, message: userMsg, context },
       });
-      setMessages(prev => [...prev, { role: 'assistant', content: data.text, warnings: data.warnings }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: data.text, warnings: data.warnings },
+      ]);
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Failed to get response. Please try again.', warnings: ['Error'] }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Failed to get response. Please try again.',
+          warnings: ['Error'],
+        },
+      ]);
     } finally {
       setIsSending(false);
     }
@@ -142,7 +169,10 @@ export const Tutor = () => {
             <h2 className="text-[28px] font-serif font-bold text-ink">Tutor</h2>
             <p className="text-ink2 text-[14px]">Get guided help reading ancient texts.</p>
           </div>
-          <button onClick={() => navigate('/app/library')} className="text-muted hover:text-ink transition-colors">
+          <button
+            onClick={() => navigate('/app/library')}
+            className="text-muted hover:text-ink transition-colors"
+          >
             <BookOpen className="w-5 h-5" />
           </button>
         </div>
@@ -165,12 +195,16 @@ export const Tutor = () => {
 
         {textIdParam && (
           <div className="card p-4 mb-6 bg-blue/5 border-blue/20">
-            <p className="text-[13px] text-ink2">New session will be linked to the text you are reading.</p>
+            <p className="text-[13px] text-ink2">
+              New session will be linked to the text you are reading.
+            </p>
           </div>
         )}
 
         {isLoadingSessions ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-blue" />
+          </div>
         ) : sessions.length === 0 ? (
           <div className="text-center py-12 text-muted text-[14px]">
             <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-40" />
@@ -178,8 +212,10 @@ export const Tutor = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            <p className="text-[11px] uppercase tracking-widest font-bold text-muted mb-3">Recent Sessions</p>
-            {sessions.map(s => (
+            <p className="text-[11px] uppercase tracking-widest font-bold text-muted mb-3">
+              Recent Sessions
+            </p>
+            {sessions.map((s) => (
               <button
                 key={s.id}
                 onClick={() => handleOpenSession(s.id)}
@@ -209,14 +245,21 @@ export const Tutor = () => {
       {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b border-bdr bg-parch2">
         <button
-          onClick={() => { setShowSessionsList(true); setActiveSessionId(null); setMessages([]); }}
+          onClick={() => {
+            setShowSessionsList(true);
+            setActiveSessionId(null);
+            setMessages([]);
+          }}
           className="text-muted hover:text-ink transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <span className="font-bold text-ink text-[15px] flex-1">Tutor</span>
         {textIdParam && (
-          <button onClick={() => navigate(`/app/reader/${textIdParam}`)} className="text-muted hover:text-ink transition-colors">
+          <button
+            onClick={() => navigate(`/app/reader/${textIdParam}`)}
+            className="text-muted hover:text-ink transition-colors"
+          >
             <BookOpen className="w-4 h-4" />
           </button>
         )}
@@ -225,7 +268,9 @@ export const Tutor = () => {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {isLoadingMessages ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue" /></div>
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-blue" />
+          </div>
         ) : (
           <>
             {messages.length === 0 && (
@@ -235,15 +280,25 @@ export const Tutor = () => {
               </div>
             )}
             {messages.map((msg, i) => (
-              <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-                <div className={cn("max-w-[80%] p-4 rounded-2xl", msg.role === 'user'
-                  ? 'bg-blue text-white'
-                  : 'bg-white border border-bdr shadow-sm')}>
+              <div
+                key={i}
+                className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}
+              >
+                <div
+                  className={cn(
+                    'max-w-[80%] p-4 rounded-2xl',
+                    msg.role === 'user'
+                      ? 'bg-blue text-white'
+                      : 'bg-white border border-bdr shadow-sm'
+                  )}
+                >
                   <p className="text-[14px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                   {msg.warnings && msg.warnings.length > 0 && (
                     <div className="flex items-center gap-1.5 mt-2 text-[11px] text-amber">
                       <AlertTriangle className="w-3 h-3" />
-                      {msg.warnings.map((w, j) => <span key={j}>{w}</span>)}
+                      {msg.warnings.map((w, j) => (
+                        <span key={j}>{w}</span>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -278,11 +333,17 @@ export const Tutor = () => {
 
       {/* Input */}
       <div className="p-4 border-t border-bdr bg-parch2">
-        <form onSubmit={e => { e.preventDefault(); handleSend(); }} className="flex gap-2">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+          className="flex gap-2"
+        >
           <input
             type="text"
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about vocabulary, grammar, or translation…"
             className="flex-1 px-4 py-3 bg-parch border border-bdr rounded-xl text-[14px] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all"
             disabled={isSending || isLoadingMessages}

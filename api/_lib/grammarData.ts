@@ -16,7 +16,6 @@ export interface GrammarConcept {
 }
 
 export const GRAMMAR_CONCEPTS: GrammarConcept[] = [
-
   // ──────────────────────────────────────────────────────────────
   //  ANCIENT GREEK — NOUNS
   // ──────────────────────────────────────────────────────────────
@@ -483,7 +482,11 @@ Key particles:
 • τε … καί — "both … and" (close connection)
 • εἴτε … εἴτε — "whether … or" (alternative)`,
     examples: [
-      { surface: 'μὲν … δέ', gloss: 'on one hand … on the other', translation: 'He, on the one hand, went; she, on the other, stayed.' },
+      {
+        surface: 'μὲν … δέ',
+        gloss: 'on one hand … on the other',
+        translation: 'He, on the one hand, went; she, on the other, stayed.',
+      },
       { surface: 'εὐθὺς γάρ', gloss: 'for immediately (γάρ post-positive)' },
       { surface: 'οὔπω οὖν εἰσῆλθεν', gloss: 'he had not yet entered, therefore' },
     ],
@@ -493,7 +496,7 @@ Key particles:
 
   {
     id: 'greek-an',
-    title: "The Greek Particle ἄν",
+    title: 'The Greek Particle ἄν',
     languageId: 'grc',
     category: 'particles',
     difficulty: 'advanced',
@@ -869,17 +872,37 @@ Verbs conjugate for person, number, gender, and tense (perfect, imperfect, imper
 export const PATHWAY: { step: number; conceptId: string; title: string; level: string }[] = [
   { step: 1, conceptId: 'greek-cases', title: 'Greek Cases', level: 'beginner' },
   { step: 2, conceptId: 'greek-article', title: 'Greek Article', level: 'beginner' },
-  { step: 3, conceptId: 'greek-first-declension', title: 'Greek 1st Declension', level: 'beginner' },
-  { step: 4, conceptId: 'greek-second-declension', title: 'Greek 2nd Declension', level: 'beginner' },
+  {
+    step: 3,
+    conceptId: 'greek-first-declension',
+    title: 'Greek 1st Declension',
+    level: 'beginner',
+  },
+  {
+    step: 4,
+    conceptId: 'greek-second-declension',
+    title: 'Greek 2nd Declension',
+    level: 'beginner',
+  },
   { step: 5, conceptId: 'greek-present-active', title: 'Greek Present Active', level: 'beginner' },
-  { step: 6, conceptId: 'greek-tense-aspect', title: 'Greek Tense & Aspect', level: 'intermediate' },
+  {
+    step: 6,
+    conceptId: 'greek-tense-aspect',
+    title: 'Greek Tense & Aspect',
+    level: 'intermediate',
+  },
   { step: 7, conceptId: 'greek-aorist-active', title: 'Greek Aorist', level: 'intermediate' },
   { step: 8, conceptId: 'greek-perfect-active', title: 'Greek Perfect', level: 'intermediate' },
   { step: 9, conceptId: 'greek-participles', title: 'Greek Participles', level: 'intermediate' },
   { step: 10, conceptId: 'greek-moods', title: 'Greek Moods', level: 'intermediate' },
   { step: 11, conceptId: 'greek-conditions', title: 'Greek Conditionals', level: 'advanced' },
   { step: 12, conceptId: 'latin-declensions', title: 'Latin Declensions', level: 'beginner' },
-  { step: 13, conceptId: 'latin-verb-conjugations', title: 'Latin Conjugations', level: 'beginner' },
+  {
+    step: 13,
+    conceptId: 'latin-verb-conjugations',
+    title: 'Latin Conjugations',
+    level: 'beginner',
+  },
   { step: 14, conceptId: 'hebrew-stems', title: 'Hebrew Stems', level: 'intermediate' },
   { step: 15, conceptId: 'hebrew-qal-perfect', title: 'Hebrew Qal Perfect', level: 'beginner' },
 ];

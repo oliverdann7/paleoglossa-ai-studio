@@ -50,34 +50,40 @@ export function useNotebook(options: UseNotebookOptions = {}): UseNotebookReturn
     if (!skipFetch) fetch(); // eslint-disable-line react-hooks/set-state-in-effect
   }, [fetch, skipFetch]);
 
-  const saveNote = useCallback(async (input: CreateNoteInput): Promise<ResearchNote | null> => {
-    if (!user || isDemoMode) return null;
-    setIsSaving(true);
-    setError(null);
-    try {
-      const created = await NotebookService.createNote(input);
-      if (created) {
-        setNotes(prev => [created, ...prev]);
+  const saveNote = useCallback(
+    async (input: CreateNoteInput): Promise<ResearchNote | null> => {
+      if (!user || isDemoMode) return null;
+      setIsSaving(true);
+      setError(null);
+      try {
+        const created = await NotebookService.createNote(input);
+        if (created) {
+          setNotes((prev) => [created, ...prev]);
+        }
+        return created;
+      } catch {
+        setError('Failed to save note.');
+        return null;
+      } finally {
+        setIsSaving(false);
       }
-      return created;
-    } catch {
-      setError('Failed to save note.');
-      return null;
-    } finally {
-      setIsSaving(false);
-    }
-  }, [user, isDemoMode]);
+    },
+    [user, isDemoMode]
+  );
 
-  const deleteNote = useCallback(async (noteId: string): Promise<boolean> => {
-    if (!user) return false;
-    try {
-      const ok = await NotebookService.deleteNote(noteId);
-      if (ok) setNotes(prev => prev.filter(n => n.id !== noteId));
-      return ok;
-    } catch {
-      return false;
-    }
-  }, [user]);
+  const deleteNote = useCallback(
+    async (noteId: string): Promise<boolean> => {
+      if (!user) return false;
+      try {
+        const ok = await NotebookService.deleteNote(noteId);
+        if (ok) setNotes((prev) => prev.filter((n) => n.id !== noteId));
+        return ok;
+      } catch {
+        return false;
+      }
+    },
+    [user]
+  );
 
   return { notes, isLoading, isSaving, error, saveNote, deleteNote, refresh: fetch };
 }

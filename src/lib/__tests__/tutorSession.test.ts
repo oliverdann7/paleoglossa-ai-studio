@@ -57,7 +57,11 @@ class TutorSessionStore {
     const now = this.ts();
     const userMsg: Message = { role: 'user', content, createdAt: now };
     msgs.push(userMsg);
-    const reply: Message = { role: 'assistant', content: `Response to: ${content}`, createdAt: now };
+    const reply: Message = {
+      role: 'assistant',
+      content: `Response to: ${content}`,
+      createdAt: now,
+    };
     msgs.push(reply);
     this.messages.set(sessionId, msgs);
 
@@ -77,8 +81,9 @@ class TutorSessionStore {
   }
 
   listSessions(): Session[] {
-    return Array.from(this.sessions.values())
-      .sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
+    return Array.from(this.sessions.values()).sort(
+      (a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+    );
   }
 }
 
@@ -133,9 +138,9 @@ describe('Tutor session persistence', () => {
 
   it('lists sessions in reverse chronological order', async () => {
     store.createSession('grc');
-    await new Promise(r => setTimeout(r, 5)); // ensure timestamp ordering
+    await new Promise((r) => setTimeout(r, 5)); // ensure timestamp ordering
     const s2 = store.createSession('lat');
-    await new Promise(r => setTimeout(r, 5));
+    await new Promise((r) => setTimeout(r, 5));
     store.createSession('hbo');
 
     store.sendMessage(s2.id, 'Hello'); // updates s2 timestamp

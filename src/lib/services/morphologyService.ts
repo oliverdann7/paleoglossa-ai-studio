@@ -66,24 +66,65 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 const LANGUAGE_FIELDS: Record<string, string[]> = {
-  'grc-koine': ['partOfSpeech', 'case', 'number', 'gender', 'person', 'tense', 'voice', 'mood', 'degree'],
+  'grc-koine': [
+    'partOfSpeech',
+    'case',
+    'number',
+    'gender',
+    'person',
+    'tense',
+    'voice',
+    'mood',
+    'degree',
+  ],
   grc: ['partOfSpeech', 'case', 'number', 'gender', 'person', 'tense', 'voice', 'mood', 'degree'],
-  hbo: ['partOfSpeech', 'stem', 'binyan', 'state', 'person', 'tense', 'voice', 'mood', 'number', 'gender'],
+  hbo: [
+    'partOfSpeech',
+    'stem',
+    'binyan',
+    'state',
+    'person',
+    'tense',
+    'voice',
+    'mood',
+    'number',
+    'gender',
+  ],
   lat: ['partOfSpeech', 'case', 'number', 'gender', 'person', 'tense', 'voice', 'mood', 'degree'],
   syr: ['partOfSpeech', 'stem', 'state', 'person', 'tense', 'number', 'gender'],
   cop: ['partOfSpeech', 'person', 'tense', 'number', 'gender', 'state'],
   akk: ['partOfSpeech', 'case', 'number', 'gender', 'state', 'stem', 'person', 'tense'],
-  hit: ['partOfSpeech', 'case', 'number', 'gender', 'person', 'tense', 'voice', 'mood', 'determinative', 'logogram'],
+  hit: [
+    'partOfSpeech',
+    'case',
+    'number',
+    'gender',
+    'person',
+    'tense',
+    'voice',
+    'mood',
+    'determinative',
+    'logogram',
+  ],
   uga: ['partOfSpeech', 'case', 'number', 'gender', 'state', 'stem', 'person', 'tense'],
   egy: ['partOfSpeech', 'signType', 'state', 'person', 'number', 'gender'],
 };
 
-const COMPACT_FIELDS = ['partOfSpeech', 'case', 'number', 'gender', 'person', 'tense', 'voice', 'mood', 'stem', 'state'];
+const COMPACT_FIELDS = [
+  'partOfSpeech',
+  'case',
+  'number',
+  'gender',
+  'person',
+  'tense',
+  'voice',
+  'mood',
+  'stem',
+  'state',
+];
 
 function titleCase(value: string) {
-  return value
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function cleanValue(value: unknown) {
@@ -93,14 +134,14 @@ function cleanValue(value: unknown) {
 
 function getCorpusSource(languageId: string) {
   const corpus = CorpusDB.getTexts()
-    .map(text => CorpusDB.getCorpusOverview(text.corpusId))
-    .find(c => c?.language === languageId);
+    .map((text) => CorpusDB.getCorpusOverview(text.corpusId))
+    .find((c) => c?.language === languageId);
   if (!corpus?.sourceAttributionId) return undefined;
   return ATTRIBUTIONS[corpus.sourceAttributionId]?.sourceName;
 }
 
 function getTokenSource(textId: string) {
-  const text = CorpusDB.getTexts().find(t => t.id === textId);
+  const text = CorpusDB.getTexts().find((t) => t.id === textId);
   if (!text) return undefined;
   const corpus = CorpusDB.getCorpusOverview(text.corpusId);
   if (!corpus?.sourceAttributionId) return undefined;
@@ -134,25 +175,24 @@ export class MorphologyService {
   static formatMorphologyForDisplay(
     languageId: string,
     morphology: unknown,
-    options?: { source?: string; confidence?: number },
+    options?: { source?: string; confidence?: number }
   ): FormattedMorphology {
     const normalized = this.normalizeMorphology(morphology);
     const preferredFields = LANGUAGE_FIELDS[languageId] || LANGUAGE_FIELDS.grc;
     const orderedKeys = [
       ...preferredFields,
-      ...Object.keys(normalized).filter(key => !preferredFields.includes(key)),
+      ...Object.keys(normalized).filter((key) => !preferredFields.includes(key)),
     ];
 
     const expanded = orderedKeys
-      .filter(key => key in normalized && normalized[key])
-      .map(key => ({
+      .filter((key) => key in normalized && normalized[key])
+      .map((key) => ({
         label: FIELD_LABELS[key] || titleCase(key),
         value: titleCase(String(normalized[key])),
       }));
 
-    const compact = COMPACT_FIELDS
-      .filter(key => normalized[key])
-      .map(key => String(normalized[key]))
+    const compact = COMPACT_FIELDS.filter((key) => normalized[key])
+      .map((key) => String(normalized[key]))
       .join(' · ');
 
     return {
@@ -171,7 +211,9 @@ export class MorphologyService {
         if (!section) continue;
 
         for (const sentence of section.sentences) {
-          const token = sentence.tokens.find(t => t.id === tokenId) as (Token & { confidence?: number; aiGenerated?: boolean }) | undefined;
+          const token = sentence.tokens.find((t) => t.id === tokenId) as
+            | (Token & { confidence?: number; aiGenerated?: boolean })
+            | undefined;
           if (!token) continue;
 
           return {
@@ -215,13 +257,18 @@ export class MorphologyService {
 
     const forms = new Map<string, InflectedForm>();
     CorpusDB.getTexts()
-      .filter(text => text.language === languageId)
-      .forEach(text => {
-        text.sectionsPreview?.forEach(preview => {
+      .filter((text) => text.language === languageId)
+      .forEach((text) => {
+        text.sectionsPreview?.forEach((preview) => {
           const section = CorpusDB.getSection(preview.id);
-          section?.sentences.forEach(sentence => {
-            sentence.tokens.forEach(token => {
-              if (token.lemma !== lemmaOrForm && token.surface !== lemmaOrForm && token.normalized !== lemmaOrForm) return;
+          section?.sentences.forEach((sentence) => {
+            sentence.tokens.forEach((token) => {
+              if (
+                token.lemma !== lemmaOrForm &&
+                token.surface !== lemmaOrForm &&
+                token.normalized !== lemmaOrForm
+              )
+                return;
               const features = this.normalizeMorphology(token.morphology);
               const key = `${token.surface}:${JSON.stringify(features)}`;
               const current = forms.get(key);

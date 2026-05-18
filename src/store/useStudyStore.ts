@@ -1,7 +1,12 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
 type StudyWordState = 'new' | 'seen' | 'learning' | 'familiar' | 'known' | 'ignored';
-interface LexicalData { lemma?: string; gloss?: string; morphology?: string; [key: string]: unknown; }
+interface LexicalData {
+  lemma?: string;
+  gloss?: string;
+  morphology?: string;
+  [key: string]: unknown;
+}
 
 const STORAGE_KEY = 'paleoglossa-study-state';
 
@@ -30,7 +35,7 @@ export interface StudyStoreSnapshot extends PersistedStudyState {
 const defaultState: PersistedStudyState = {
   wordData: {},
   activeWordId: null,
-  showTranslation: false
+  showTranslation: false,
 };
 
 let state: PersistedStudyState = loadState();
@@ -52,7 +57,7 @@ function saveState(nextState: PersistedStudyState) {
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
   }
-  listeners.forEach(listener => listener());
+  listeners.forEach((listener) => listener());
 }
 
 function subscribe(listener: () => void) {
@@ -67,7 +72,7 @@ function getSnapshot(): StudyStoreSnapshot {
     processSrsReview,
     setActiveWord,
     toggleTranslation,
-    getDueReviews
+    getDueReviews,
   };
 }
 
@@ -78,7 +83,7 @@ function getServerSnapshot(): StudyStoreSnapshot {
     processSrsReview,
     setActiveWord,
     toggleTranslation,
-    getDueReviews
+    getDueReviews,
   };
 }
 
@@ -91,9 +96,9 @@ function setWordState(lemma: string, nextWordState: StudyWordState, lexicalData?
       [lemma]: {
         ...existing,
         state: nextWordState,
-        lexicalData: lexicalData || existing.lexicalData
-      }
-    }
+        lexicalData: lexicalData || existing.lexicalData,
+      },
+    },
   });
 }
 
@@ -123,8 +128,8 @@ function processSrsReview(lemma: string, grade: 'again' | 'hard' | 'good' | 'eas
     ...state,
     wordData: {
       ...state.wordData,
-      [lemma]: { ...item, state: promotedState, interval, ease, nextReview }
-    }
+      [lemma]: { ...item, state: promotedState, interval, ease, nextReview },
+    },
   });
 }
 
@@ -148,6 +153,6 @@ export const useStudyStore = () => {
 
   return {
     ...snapshot,
-    getDueReviews: useCallback(() => getDueReviews(), [])
+    getDueReviews: useCallback(() => getDueReviews(), []),
   };
 };

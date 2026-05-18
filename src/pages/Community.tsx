@@ -32,7 +32,13 @@ function ScholarAvatar({ scholar }: { scholar: PublicScholar }) {
   );
 }
 
-function ScholarCard({ scholar, isCurrentUser }: { scholar: PublicScholar; isCurrentUser: boolean }) {
+function ScholarCard({
+  scholar,
+  isCurrentUser,
+}: {
+  scholar: PublicScholar;
+  isCurrentUser: boolean;
+}) {
   const { t } = useTranslation();
 
   const joinedDate = useMemo(() => {
@@ -48,7 +54,12 @@ function ScholarCard({ scholar, isCurrentUser }: { scholar: PublicScholar; isCur
   }, [scholar.createdAt]);
 
   return (
-    <div className={cn('card p-5 flex flex-col gap-4 hover:shadow-md transition-all', isCurrentUser && 'ring-1 ring-blue/30')}>
+    <div
+      className={cn(
+        'card p-5 flex flex-col gap-4 hover:shadow-md transition-all',
+        isCurrentUser && 'ring-1 ring-blue/30'
+      )}
+    >
       <div className="flex items-start gap-3">
         <ScholarAvatar scholar={scholar} />
         <div className="flex-1 min-w-0">
@@ -74,7 +85,9 @@ function ScholarCard({ scholar, isCurrentUser }: { scholar: PublicScholar; isCur
       </div>
 
       {scholar.bio && (
-        <p className="text-[13px] text-ink2 font-sans leading-relaxed line-clamp-2">{scholar.bio}</p>
+        <p className="text-[13px] text-ink2 font-sans leading-relaxed line-clamp-2">
+          {scholar.bio}
+        </p>
       )}
 
       {scholar.stats && (
@@ -136,13 +149,20 @@ export const CommunityPage = () => {
         const data = await fetchCommunityScholars();
         if (!cancelled) setScholars(data);
       } catch (err: unknown) {
-        if (!cancelled) setError(err instanceof Error ? err.message : t('community.errorDesc', 'Could not load scholars. Please try again.'));
+        if (!cancelled)
+          setError(
+            err instanceof Error
+              ? err.message
+              : t('community.errorDesc', 'Could not load scholars. Please try again.')
+          );
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [t]);
 
   const filtered = useMemo(() => {
@@ -152,7 +172,7 @@ export const CommunityPage = () => {
       (s) =>
         s.displayName.toLowerCase().includes(q) ||
         (s.nickname?.toLowerCase().includes(q) ?? false) ||
-        (s.bio?.toLowerCase().includes(q) ?? false),
+        (s.bio?.toLowerCase().includes(q) ?? false)
     );
   }, [scholars, query]);
 
@@ -175,7 +195,10 @@ export const CommunityPage = () => {
 
       {/* Search */}
       <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" strokeWidth={1.5} />
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted"
+          strokeWidth={1.5}
+        />
         <input
           type="text"
           value={query}
@@ -212,7 +235,9 @@ export const CommunityPage = () => {
             <AlertCircle className="w-6 h-6 text-ruby" />
           </div>
           <div>
-            <h3 className="text-[16px] font-serif text-ink mb-1">{t('community.errorTitle', 'Something went wrong')}</h3>
+            <h3 className="text-[16px] font-serif text-ink mb-1">
+              {t('community.errorTitle', 'Something went wrong')}
+            </h3>
             <p className="text-[13px] text-muted">{error}</p>
           </div>
         </div>
@@ -232,7 +257,10 @@ export const CommunityPage = () => {
             <p className="text-[13px] text-muted">
               {query
                 ? t('community.noResultsDesc', 'Try a different name or handle.')
-                : t('community.emptyDesc', 'Scholars who make their profile public will appear here.')}
+                : t(
+                    'community.emptyDesc',
+                    'Scholars who make their profile public will appear here.'
+                  )}
             </p>
           </div>
         </div>

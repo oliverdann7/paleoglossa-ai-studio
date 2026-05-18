@@ -22,7 +22,8 @@ export function InterfaceLanguageSwitcher() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const currentLang = INTERFACE_LANGUAGES.find(l => l.code === i18n.language) || INTERFACE_LANGUAGES[0];
+  const currentLang =
+    INTERFACE_LANGUAGES.find((l) => l.code === i18n.language) || INTERFACE_LANGUAGES[0];
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -46,7 +47,9 @@ export function InterfaceLanguageSwitcher() {
       >
         <Globe className="w-4 h-4 text-muted shrink-0" />
         <span className="flex-1">{currentLang.native}</span>
-        <ChevronDown className={cn("w-3 h-3 text-muted shrink-0 transition-transform", open && "rotate-180")} />
+        <ChevronDown
+          className={cn('w-3 h-3 text-muted shrink-0 transition-transform', open && 'rotate-180')}
+        />
       </button>
 
       <AnimatePresence>
@@ -59,15 +62,17 @@ export function InterfaceLanguageSwitcher() {
             className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-bdr rounded-xl shadow-xl z-50 overflow-hidden"
           >
             <div className="p-1.5">
-              {INTERFACE_LANGUAGES.map(lang => {
+              {INTERFACE_LANGUAGES.map((lang) => {
                 const isActive = lang.code === i18n.language;
                 return (
                   <button
                     key={lang.code}
                     onClick={() => switchLanguage(lang.code)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all text-[13px]",
-                      isActive ? "bg-blue/10 text-blue font-bold" : "text-ink2 hover:bg-parch2 font-medium"
+                      'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all text-[13px]',
+                      isActive
+                        ? 'bg-blue/10 text-blue font-bold'
+                        : 'text-ink2 hover:bg-parch2 font-medium'
                     )}
                   >
                     <span className="flex-1">{lang.native}</span>

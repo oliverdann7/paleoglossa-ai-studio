@@ -1,13 +1,16 @@
 import { describe, it, expect } from 'vitest';
 
 const SERVER_CONTROLLED = [
-  'currentPlan', 'subscriptionStatus', 'stripeCustomerId',
-  'stripeSubscriptionId', 'selectedLanguageIds', 'trialEnd',
+  'currentPlan',
+  'subscriptionStatus',
+  'stripeCustomerId',
+  'stripeSubscriptionId',
+  'selectedLanguageIds',
+  'trialEnd',
   'subscriptionUpdatedAt',
 ];
 
 describe('Profile creation does not include server-controlled fields', () => {
-
   it('AuthContext profile payload has no server-controlled fields', () => {
     const payload = {
       email: 'test@example.com',
@@ -17,8 +20,8 @@ describe('Profile creation does not include server-controlled fields', () => {
     };
 
     const keys = Object.keys(payload);
-    const serverFieldsPresent = keys.filter(k => SERVER_CONTROLLED.includes(k));
-    const requiredMissing = ['email', 'displayName', 'createdAt'].filter(k => !keys.includes(k));
+    const serverFieldsPresent = keys.filter((k) => SERVER_CONTROLLED.includes(k));
+    const requiredMissing = ['email', 'displayName', 'createdAt'].filter((k) => !keys.includes(k));
 
     expect(serverFieldsPresent).toEqual([]);
     expect(requiredMissing).toEqual([]);
@@ -32,8 +35,8 @@ describe('Profile creation does not include server-controlled fields', () => {
     };
 
     const keys = Object.keys(payload);
-    const serverFieldsPresent = keys.filter(k => SERVER_CONTROLLED.includes(k));
-    const requiredMissing = ['email', 'displayName', 'createdAt'].filter(k => !keys.includes(k));
+    const serverFieldsPresent = keys.filter((k) => SERVER_CONTROLLED.includes(k));
+    const requiredMissing = ['email', 'displayName', 'createdAt'].filter((k) => !keys.includes(k));
 
     expect(serverFieldsPresent).toEqual([]);
     expect(requiredMissing).toEqual([]);

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 describe('Translate endpoint validation', () => {
-
   it('rejects missing languageId', async () => {
     const body = { tokens: ['hello'] };
     const res = await validate(body);
@@ -61,20 +60,36 @@ async function validate(body: any): Promise<{ status: number; code?: string; bod
   const { languageId, tokens } = body || {};
 
   if (!languageId || typeof languageId !== 'string') {
-    return { status: 400, code: 'INVALID_INPUT', body: { error: 'languageId is required', code: 'INVALID_INPUT' } };
+    return {
+      status: 400,
+      code: 'INVALID_INPUT',
+      body: { error: 'languageId is required', code: 'INVALID_INPUT' },
+    };
   }
   if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
-    return { status: 400, code: 'INVALID_INPUT', body: { error: 'tokens must be a non-empty array of strings', code: 'INVALID_INPUT' } };
+    return {
+      status: 400,
+      code: 'INVALID_INPUT',
+      body: { error: 'tokens must be a non-empty array of strings', code: 'INVALID_INPUT' },
+    };
   }
 
   const sentence = tokens.join(' ').trim();
   if (!sentence) {
-    return { status: 400, code: 'INVALID_INPUT', body: { error: 'Sentence text is empty after joining tokens', code: 'INVALID_INPUT' } };
+    return {
+      status: 400,
+      code: 'INVALID_INPUT',
+      body: { error: 'Sentence text is empty after joining tokens', code: 'INVALID_INPUT' },
+    };
   }
 
   // No API key: return fallback
   return {
     status: 200,
-    body: { text: sentence, confidence: null, notes: 'Gemini API key not configured. Returning original text.' },
+    body: {
+      text: sentence,
+      confidence: null,
+      notes: 'Gemini API key not configured. Returning original text.',
+    },
   };
 }

@@ -17,9 +17,7 @@ export function LoadingState({ text, className, size = 'md' }: Props) {
   return (
     <div className={cn('flex flex-col items-center justify-center gap-3 py-12', className)}>
       <Loader2 className={cn('animate-spin text-gold', sizes[size])} />
-      {text && (
-        <p className="text-[14px] text-muted italic">{text}</p>
-      )}
+      {text && <p className="text-[14px] text-muted italic">{text}</p>}
     </div>
   );
 }

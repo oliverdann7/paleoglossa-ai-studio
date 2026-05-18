@@ -3,7 +3,6 @@ import { canAccessLanguage, canAddLanguage, getPlanById } from '../plans';
 import type { PlanId } from '../plans';
 
 describe('Plan language limits', () => {
-
   it('free user can access one selected language', () => {
     const selected = ['grc'];
     expect(canAccessLanguage('free', 'grc', selected)).toBe(true);
@@ -45,7 +44,6 @@ describe('Plan language limits', () => {
 });
 
 describe('canAddLanguage', () => {
-
   it('free user cannot add beyond 1 language', () => {
     expect(canAddLanguage('free', ['grc'])).toBe(false);
     expect(canAddLanguage('free', [])).toBe(true);
@@ -69,7 +67,6 @@ describe('canAddLanguage', () => {
 });
 
 describe('getPlanById', () => {
-
   it('returns plan for all valid PlanId values', () => {
     const ids: PlanId[] = ['free', 'basic_1', 'duo_2', 'full_all'];
     for (const id of ids) {

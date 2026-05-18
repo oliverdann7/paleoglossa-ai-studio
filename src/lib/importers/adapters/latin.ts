@@ -1,4 +1,9 @@
-import { ContentSourceAdapter, NormalizedText, NormalizedSection, ImportValidationResult } from '../types.js';
+import {
+  ContentSourceAdapter,
+  NormalizedText,
+  NormalizedSection,
+  ImportValidationResult,
+} from '../types.js';
 import { validateImport } from '../validate.js';
 
 export const LatinCorpusAdapter: ContentSourceAdapter = {
@@ -9,15 +14,15 @@ export const LatinCorpusAdapter: ContentSourceAdapter = {
   license: 'Varies',
   canFetch: true,
   canImportFile: true,
-  
+
   async fetchIndex() {
     return [];
   },
-  
+
   async fetchText() {
     return '';
   },
-  
+
   async normalize(raw: any, metadata: any) {
     console.log('Normalizing raw data', !!raw);
     return {
@@ -26,13 +31,16 @@ export const LatinCorpusAdapter: ContentSourceAdapter = {
         corpusId: 'LATIN',
         title: metadata?.title || 'Latin Text',
         language: 'lat',
-        direction: 'ltr'
+        direction: 'ltr',
       },
-      sections: []
+      sections: [],
     };
   },
-  
-  validate(normalized: { text: NormalizedText; sections: NormalizedSection[] }): ImportValidationResult {
+
+  validate(normalized: {
+    text: NormalizedText;
+    sections: NormalizedSection[];
+  }): ImportValidationResult {
     return validateImport(normalized);
-  }
+  },
 };

@@ -12,7 +12,10 @@ export const ProgressRing = ({ progress, size = 32, strokeWidth = 3 }: ProgressR
   const offset = circumference - progress * circumference;
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="transform -rotate-90">
         {/* Background circle */}
         <circle
@@ -35,7 +38,7 @@ export const ProgressRing = ({ progress, size = 32, strokeWidth = 3 }: ProgressR
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          transition={{ duration: 1, ease: 'easeOut' }}
           className="text-gold"
           strokeLinecap="round"
         />
