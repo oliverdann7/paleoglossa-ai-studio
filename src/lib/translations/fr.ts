@@ -375,6 +375,15 @@ export const fr = {
     "nav.readingLevel": "Reading Level",
     "nav.wordsToLevel": "2.4k words to B2",
     "nav.freePlan": "Free Plan →",
+
+    "more.title": "Plus",
+    "more.study": "Étude",
+    "more.personal": "Personnel",
+    "more.tools": "Outils",
+    "more.community": "Communauté",
+    "more.account": "Compte",
+    "more.admin": "Admin",
+
     "settings.freezesNone": "No streak freezes remaining this month.",
     "landing.tryDemo": "Try Demo",
     "admin.title": "Admin Dashboard",

@@ -375,6 +375,15 @@ export const zh = {
     "nav.readingLevel": "Reading Level",
     "nav.wordsToLevel": "2.4k words to B2",
     "nav.freePlan": "Free Plan →",
+
+    "more.title": "其他",
+    "more.study": "学习",
+    "more.personal": "个人",
+    "more.tools": "工具",
+    "more.community": "社区",
+    "more.account": "账户",
+    "more.admin": "管理",
+
     "settings.freezesNone": "No streak freezes remaining this month.",
     "landing.tryDemo": "Try Demo",
     "admin.title": "Admin Dashboard",
