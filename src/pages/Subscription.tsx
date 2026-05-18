@@ -7,6 +7,7 @@ import { LANGUAGES, getLanguageIcon } from '../lib/constants/languages.js';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isCapacitor } from '../lib/platform.js';
+import { features } from '../lib/features.js';
 
 export const Subscription = () => {
   const { t } = useTranslation();
@@ -24,7 +25,7 @@ export const Subscription = () => {
   const [portalLoading, setPortalLoading] = useState(false);
   const [searchParams] = useSearchParams();
 
-  const isNative = isCapacitor() && import.meta.env.VITE_ENABLE_MOBILE_PURCHASES !== 'true';
+  const isNative = isCapacitor() && !features.isMobilePurchaseEnabled();
   const currentPlan = getPlanById(subscription.currentPlan);
   const success = searchParams.get('success');
   const canceled = searchParams.get('canceled');
