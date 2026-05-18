@@ -375,6 +375,15 @@ export const ru = {
     "nav.readingLevel": "Reading Level",
     "nav.wordsToLevel": "2.4k words to B2",
     "nav.freePlan": "Free Plan →",
+
+    "more.title": "Ещё",
+    "more.study": "Обучение",
+    "more.personal": "Личное",
+    "more.tools": "Инструменты",
+    "more.community": "Сообщество",
+    "more.account": "Аккаунт",
+    "more.admin": "Админ",
+
     "settings.freezesNone": "No streak freezes remaining this month.",
     "landing.tryDemo": "Try Demo",
     "admin.title": "Admin Dashboard",

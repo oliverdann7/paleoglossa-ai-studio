@@ -128,7 +128,7 @@ export const Navbar = () => {
         <MobileNavItem icon={Library} label={t("nav.library", "Library")} isActive={path.startsWith('/app/library')} to="/app/library" />
         <MobileNavItem icon={Brain} label={t("nav.review", "Review")} isActive={path.startsWith('/app/review')} to="/app/review" />
         <MobileNavItem icon={GraduationCap} label={t("nav.words", "Words")} isActive={path.startsWith('/app/vocabulary')} to="/app/vocabulary" />
-        <MobileNavItem icon={MoreHorizontal} label={t("nav.more", "More")} isActive={['/app/import', '/app/settings', '/app/subscription'].includes(path)} to="/app/settings" />
+        <MobileNavItem icon={MoreHorizontal} label={t("nav.more", "More")} isActive={path === '/app/more' || path === '/app/settings' || path === '/app/subscription' || path === '/app/import' || path.startsWith('/app/search') || path.startsWith('/app/dictionary') || path.startsWith('/app/tutor') || path.startsWith('/app/grammar') || path.startsWith('/app/syntax') || path.startsWith('/app/courses') || path.startsWith('/app/notes') || path.startsWith('/app/notebooks') || path.startsWith('/app/statistics') || path.startsWith('/app/audio-lab') || path.startsWith('/app/community')} to="/app/more" />
       </nav>
     </>
   );

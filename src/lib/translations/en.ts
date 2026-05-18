@@ -343,6 +343,14 @@ export const en = {
     "nav.wordsToLevel": "2.4k words to B2",
     "nav.freePlan": "Free Plan →",
 
+    "more.title": "More",
+    "more.study": "Study",
+    "more.personal": "Personal",
+    "more.tools": "Tools",
+    "more.community": "Community",
+    "more.account": "Account",
+    "more.admin": "Admin",
+
     "notes.title": "My Notes",
     "notes.description": "Your personal annotations on specific vocabulary.",
     "notes.search": "Search notes...",
