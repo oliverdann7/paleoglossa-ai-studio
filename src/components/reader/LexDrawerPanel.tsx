@@ -14,22 +14,39 @@ import { useSettings } from '@/lib/hooks/useSettings';
 import { getGrammarReference } from '@/lib/grammar/references';
 import { useNotebook } from '@/lib/hooks/useNotebook';
 import { normalizeLemmaKey } from '@/lib/utils/lemmaUtils';
+import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
+
+interface LemmaSentenceToken {
+  lemma?: string;
+  surface?: string;
+  punctBefore?: string;
+  punctAfter?: string;
+}
+
+interface LemmaSentenceEntry {
+  sentence: {
+    tokens: LemmaSentenceToken[];
+    translation?: string;
+  };
+  sectionId: string;
+  textId: string;
+}
 
 interface LexDrawerPanelProps {
   selectedWord: any;
   setSelectedWord: (w: any) => void;
-  knowledge: any;
+  knowledge: KnowledgeMap;
   setWordState: (lemma: string, state: WordState, languageId: string, context?: string) => void;
   setWordNote: (lemma: string, notes: string) => void;
   updateGloss: (lemma: string, gloss: string, languageId: string) => void;
-  getWordInfo: (lemma: string) => any;
+  getWordInfo: (lemma: string) => WordInfo;
   showTranslit: boolean;
   isHebrewFont: boolean;
   isRtl: boolean;
   textLanguageId: string;
-  exampleSentences: any[];
+  exampleSentences: LemmaSentenceEntry[];
   playTTS: (text: string, lang: string) => void;
-  text?: any;
+  text?: { corpusId?: string; language?: string; id?: string };
 }
 
 const getDictionaryPath = (lemma: string, langId: string) =>
@@ -694,7 +711,7 @@ export const LexDrawerPanel = ({
                 </span>
               </div>
               <div className="space-y-4">
-                {exampleSentences.map((ex: any, idx: number) => {
+                {exampleSentences.map((ex, idx: number) => {
                   return (
                     <div
                       key={idx}
@@ -707,7 +724,7 @@ export const LexDrawerPanel = ({
                         )}
                         dir={isRtl ? "rtl" : "ltr"}
                       >
-                        {ex.sentence.tokens.map((t: any, i: number) => (
+                        {ex.sentence.tokens.map((t, i: number) => (
                           <span key={i}>
                             {t.punctBefore}
                             <span

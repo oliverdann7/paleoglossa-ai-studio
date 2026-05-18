@@ -135,8 +135,8 @@ export const CommunityPage = () => {
       try {
         const data = await fetchCommunityScholars();
         if (!cancelled) setScholars(data);
-      } catch (err: any) {
-        if (!cancelled) setError(err?.message || t('community.errorDesc', 'Could not load scholars. Please try again.'));
+      } catch (err: unknown) {
+        if (!cancelled) setError(err instanceof Error ? err.message : t('community.errorDesc', 'Could not load scholars. Please try again.'));
       } finally {
         if (!cancelled) setLoading(false);
       }

@@ -8,8 +8,11 @@ import { useActiveLanguage } from "../lib/hooks/useActiveLanguage.js";
 import { WordState } from "../lib/constants/wordStates.js";
 import { ReviewService, ReviewItem } from "../lib/services/reviewService.js";
 import { Rating } from "../lib/srs/sm2.js";
+import type { SRSState } from "../lib/srs/sm2.js";
 import { CardType, ReviewCard, generateReviewCards } from "../lib/review/reviewCardFactory.js";
 import { useTranslation } from "react-i18next";
+import type { WordInfo } from "../lib/services/vocabularyService.js";
+import { Timestamp } from "firebase/firestore";
 
 interface ReviewSettings {
   enabledTypes: CardType[];
@@ -24,6 +27,9 @@ const DEFAULT_SETTINGS: ReviewSettings = {
 };
 
 const SETTINGS_KEY = 'paleoglossa_review_settings';
+
+const toDateStr = (v: string | Timestamp): string =>
+  typeof v === 'string' ? v : v.toDate().toISOString();
 
 function loadSettings(): ReviewSettings {
   try {
@@ -71,13 +77,13 @@ export const Review = () => {
   useEffect(() => {
     if (!user || isDemoMode) {
       // Demo mode: compute from local knowledge
-      const due = Object.entries(knowledgeRef.current).filter(([, info]: [string, any]) => {
-        const state = typeof info === 'object' ? info.state : info;
+      const due = Object.entries(knowledgeRef.current).filter(([, info]: [string, WordInfo]) => {
+        const state = typeof info === 'string' ? info : info.state;
         if (state === WordState.NEW || state === WordState.IGNORED) return false;
-        const lang = typeof info === 'object' ? (info as any).languageId || '' : '';
+        const lang = typeof info === 'object' ? info.languageId || '' : '';
         if (lang && lang !== activeLanguageId) return false;
         if (!info.srs?.nextReview) return true;
-        return new Date(info.srs.nextReview) <= new Date();
+        return new Date(toDateStr(info.srs.nextReview)) <= new Date();
       });
       setReviewSummary({ dueCount: due.length, reviewedToday: 0, lastAccuracy: null, avgResponseMs: null });
       return;
@@ -92,33 +98,44 @@ export const Review = () => {
     const loadQueue = async () => {
       setIsLoading(true);
       try {
-        let items: any[] = [];
+        let items: ReviewItem[] = [];
         if (!isDemoMode && user) {
           items = await ReviewService.getDueItems(user.uid, settings.maxCards, activeLanguageId);
         } else {
           items = Object.entries(knowledgeRef.current)
-            .filter(([, info]: [string, any]) => {
+            .filter(([, info]: [string, WordInfo]) => {
               const state = typeof info === "object" ? info.state : info;
               if (state === WordState.NEW || state === WordState.IGNORED || state === WordState.SEEN) return false;
               return true;
             })
-            .filter(([, info]: [string, any]) => {
-              const lang = typeof info === "object" ? (info as any).languageId || '' : '';
+            .filter(([, info]: [string, WordInfo]) => {
+              const lang = info.languageId || '';
               return !lang || lang === activeLanguageId;
             })
-            .filter(([, info]: [string, any]) => {
+            .filter(([, info]: [string, WordInfo]) => {
               if (!info.srs?.nextReview) return true;
-              return new Date(info.srs.nextReview) <= new Date();
+              return new Date(toDateStr(info.srs.nextReview)) <= new Date();
             })
-            .map(([lemma, info]) => ({
-              id: lemma,
-              term: lemma,
-              languageId: (info as any).languageId || activeLanguageId || "unknown",
-              userGloss: (info as any).userGloss,
-              contexts: (info as any).contexts,
-              status: (info as any).state || info,
-              srs: info.srs || { interval: 0, ease: 2.5, step: 0, lastReviewed: null, nextReview: new Date().toISOString() }
-            }));
+            .map(([lemma, info]) => {
+              const srs: SRSState = info.srs
+                ? {
+                    interval: info.srs.interval,
+                    ease: info.srs.ease,
+                    step: info.srs.step,
+                    lastReviewed: info.srs.lastReviewed ? toDateStr(info.srs.lastReviewed) : null,
+                    nextReview: toDateStr(info.srs.nextReview),
+                  }
+                : { interval: 0, ease: 2.5, step: 0, lastReviewed: null, nextReview: new Date().toISOString() };
+              return {
+                id: lemma,
+                term: lemma,
+                languageId: info.languageId || activeLanguageId || "unknown",
+                userGloss: info.userGloss,
+                contexts: info.contexts,
+                status: info.state,
+                srs,
+              };
+            });
         }
 
         const cards = generateReviewCards(items, {
