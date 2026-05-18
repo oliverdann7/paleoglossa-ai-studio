@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, AlertCircle, UserCircle } from 'lucide-react';
-import { auth, appleProvider } from '@/lib/firebase';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, fetchSignInMethodsForEmail } from 'firebase/auth';
+import {
+  signInWithEmail,
+  signInWithGoogle,
+  signInWithApple,
+  fetchSignInMethods,
+} from '@/lib/services/authService';
 import { useTranslation } from "react-i18next";
 import { PaleoIcon } from '@/components/PaleoIcon';
 
@@ -23,13 +27,15 @@ export const SignIn = () => {
     setLoading(true);
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      const code = err.code as string;
+      const result = await signInWithEmail(email, password);
+      if (result.success) {
+        navigate(from, { replace: true });
+        return;
+      }
+      const code = result.errorCode;
       if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
         try {
-          const methods = await fetchSignInMethodsForEmail(auth, email);
+          const methods = await fetchSignInMethods(email);
           if (methods.includes('google.com')) {
             setError(t("auth.googleAccountExists", "This email is linked to a Google account. Please sign in with Google above."));
           } else {
@@ -45,8 +51,11 @@ export const SignIn = () => {
       } else if (code === 'auth/network-request-failed') {
         setError(t("auth.networkError", "Network error. Please check your connection and try again."));
       } else {
-        setError(err.message);
+        setError(result.error ?? 'Sign in failed');
       }
+    } catch {
+      setError(t("auth.invalidCredentials", "Incorrect email or password. Please try again."));
+    } finally {
       setLoading(false);
     }
   };
@@ -56,16 +65,15 @@ export const SignIn = () => {
     setLoading(true);
     setError(null);
     try {
-      await signInWithPopup(auth, appleProvider);
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === 'auth/popup-blocked') {
+      const result = await signInWithApple();
+      if (result.success) {
+        navigate(from, { replace: true });
+        return;
+      }
+      if (result.errorCode === 'auth/popup-blocked') {
         setError(t("auth.popupBlocked", "Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Apple."));
-      } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        setError(null);
-      } else {
-        setError(err.message);
+      } else if (result.error) {
+        setError(result.error);
       }
     } finally {
       setLoading(false);
@@ -77,20 +85,15 @@ export const SignIn = () => {
     setLoading(true);
     setError(null);
     try {
-      const provider = new GoogleAuthProvider();
-      if (promptAccountSelect) {
-        provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithGoogle(promptAccountSelect);
+      if (result.success) {
+        navigate(from, { replace: true });
+        return;
       }
-      await signInWithPopup(auth, provider);
-      navigate(from, { replace: true });
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === 'auth/popup-blocked') {
+      if (result.errorCode === 'auth/popup-blocked') {
         setError(t("auth.popupBlocked", "Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google."));
-      } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        setError(null);
-      } else {
-        setError(err.message);
+      } else if (result.error) {
+        setError(result.error);
       }
     } finally {
       setLoading(false);

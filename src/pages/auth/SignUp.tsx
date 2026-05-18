@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, User, AlertCircle } from 'lucide-react';
-import { auth, googleProvider, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, signInWithPopup, fetchSignInMethodsForEmail } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithGoogle, fetchSignInMethods } from '@/lib/services/authService';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firebase';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +43,7 @@ export const SignUp = () => {
       const code = err.code as string;
       if (code === 'auth/email-already-in-use') {
         try {
-          const methods = await fetchSignInMethodsForEmail(auth, email);
+          const methods = await fetchSignInMethods(email);
           if (methods.includes('google.com')) {
             setError(t("auth.emailInUseGoogle", "This email is already linked to a Google account. Please sign in with Google instead."));
           } else {
@@ -69,19 +70,15 @@ export const SignUp = () => {
     setLoading(true);
     setError(null);
     try {
-      const cred = await signInWithPopup(auth, googleProvider);
-      if (cred.user) {
-        await createUserProfile(cred.user.uid, cred.user.email || '', cred.user.displayName || '');
+      const result = await signInWithGoogle();
+      if (result.success) {
+        navigate('/onboarding');
+        return;
       }
-      navigate('/onboarding');
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === 'auth/popup-blocked') {
+      if (result.errorCode === 'auth/popup-blocked') {
         setError('Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google.');
-      } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        setError(null);
-      } else {
-        setError(err.message);
+      } else if (result.error) {
+        setError(result.error);
       }
     } finally {
       setLoading(false);
