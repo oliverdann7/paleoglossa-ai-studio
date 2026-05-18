@@ -1,74 +1,312 @@
 # Mobile Release Guide
 
-This document covers building and releasing Paleoglossa as a native
-iOS/Android app via Capacitor.
+Capacitor-based native iOS/Android build and release guide for
+Paleoglossa.
+
+| Property | Value |
+|----------|-------|
+| appId | `com.paleoglossa.app` |
+| appName | `Paleoglossa` |
+| Capacitor | 8.x |
+| iOS target | 16+ (inferred from Capacitor 8 defaults) |
+| Android minSdk | 24 (Android 7.0) |
+| Android targetSdk | 36 (Android 16) |
+
+---
 
 ## Prerequisites
 
 - Xcode 16+ (iOS)
 - Android Studio (Android)
-- Node 20+
+- Node 22+
 - Java 17+ (Android)
+- An Apple Developer account ($99/yr) for iOS distribution
+- A Google Play Developer account ($25 one-time) for Android distribution
 
-## Environment
+---
 
-Copy `.env.example` to `.env` and fill in the required values.
+## Environment variables
 
-**Critical for native builds** — set the API base URL so the app can reach
-the backend from the native WebView:
+Copy `.env.example` to `.env` and fill in the required values.  Critical
+for native builds:
 
 ```bash
 VITE_API_BASE_URL=https://paleoglossa.com
+VITE_FIREBASE_PROJECT_ID=paleoglossa-reader
+VITE_FIREBASE_APP_ID=REDACTED_FIREBASE_APP_ID
+VITE_FIREBASE_API_KEY=REDACTED_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN=paleoglossa-reader.firebaseapp.com
 ```
 
-Without this, all `/api/…` requests will resolve against the local file
-protocol or `capacitor://localhost`, which will fail.
+Without `VITE_API_BASE_URL`, all `/api/…` requests resolve against the
+local file protocol or `capacitor://localhost`, which will fail in native
+WebViews.
 
-## Build the Web bundle
+All env vars are listed in `.env.example`.  Firebase client values are
+already baked into `firebase-applet-config.json` for local dev.
+
+---
+
+## Available scripts
 
 ```bash
-npm run build
+# Build web bundle + sync all platforms
+npm run mobile:build
+
+# Sync only (copy web bundle changes)
+npm run mobile:sync
+
+# iOS
+npm run ios:sync          # build + sync iOS only
+npm run ios:open          # open Xcode project
+
+# Android
+npm run android:sync      # build + sync Android only
+npm run android:open      # open Android Studio project
+npm run android:assemble  # build debug APK
+npm run android:bundle    # build release AAB (requires signing config)
 ```
 
-Output goes to `dist/` (as configured in `capacitor.config.ts#webDir`).
+---
 
-## Sync Capacitor
+## iOS build steps
 
-```bash
-npx cap sync
-```
-
-This copies `dist/` into the native project folders and updates plugin
-native code.
-
-## Run on device / simulator
+### 1. Development (simulator)
 
 ```bash
+npm run ios:sync
 npx cap run ios
+```
+
+### 2. Release (device / TestFlight)
+
+```bash
+# Build the web bundle and sync
+npm run ios:sync
+
+# Open Xcode
+npx cap open ios
+```
+
+In Xcode:
+
+1. Select **Paleoglossa** target.
+2. Go to **Signing & Capabilities** and select your Apple Developer team.
+3. Change the Bundle Identifier if needed (default: `com.paleoglossa.app`).
+4. Choose **Any iOS Device** as the build target.
+5. Product → Archive.
+6. Once archived, distribute via **TestFlight** or **App Store Connect**.
+
+### Code signing
+
+- Requires an Apple Developer account and a Distribution Certificate.
+- Development signing uses your personal team; release signing uses your
+  Distribution certificate and App Store Provisioning Profile.
+- Do **not** commit signing secrets or provisioning profiles to the repo.
+
+### TestFlight checklist
+
+Before uploading:
+
+- [ ] App icon is set in `ios/App/App/Assets.xcassets/AppIcon.appiconset`.
+- [ ] Version and build numbers are set in Xcode target settings.
+- [ ] `ITSAppUsesNonExemptEncryption` is `NO` in `Info.plist` (unless the
+      app uses custom encryption — it does not).
+- [ ] Privacy policy URL is set in App Store Connect.
+- [ ] Terms of service URL is set (if applicable).
+- [ ] Test user accounts are available for the reviewer.
+- [ ] Run through the [QA checklist](mobile-qa-checklist.md).
+
+---
+
+## Android build steps
+
+### 1. Development (debug APK)
+
+```bash
+npm run android:sync
+npm run android:assemble
+# APK at android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Or run directly on a device/emulator:
+
+```bash
 npx cap run android
 ```
 
-## Open native IDE
+### 2. Release (AAB for Google Play)
+
+1. Create or locate your keystore file (keystore is **not** committed).
+2. Set up signing in `android/app/build.gradle` (see signing notes below).
+3. Build the release bundle:
 
 ```bash
-npx cap open ios
-npx cap open android
+npm run android:sync
+npm run android:bundle
+# AAB at android/app/build/outputs/bundle/release/app-release.aab
 ```
 
-Then build and run from Xcode / Android Studio as usual.
+### Code signing
 
-## API base URL architecture
+1. Generate a keystore (keep it safe, never commit):
 
-- `src/lib/services/apiBaseUrl.ts` exports `getApiUrl(path)`.
-- The function reads `import.meta.env.VITE_API_BASE_URL` and prepends it
-  to every API path.
-- Web deployments leave the variable empty so relative `/api/…` routes work
-  as before.
-- Native builds set `VITE_API_BASE_URL` to the production origin.
-- All raw `fetch('/api/…')` calls and the `apiFetch` wrapper use this
-  helper, so a single env var controls the base for the whole app.
+```bash
+keytool -genkey -v -keystore paleoglossa-release.keystore \
+  -alias paleoglossa -keyalg RSA -keysize 2048 -validity 10000
+```
 
-## Firebase Authentication in native builds
+2. Create `android/key.properties` (this file is **not** committed):
+
+```properties
+storePassword=your-store-password
+keyPassword=your-key-password
+keyAlias=paleoglossa
+storeFile=../paleoglossa-release.keystore
+```
+
+3. Add the signing config to `android/app/build.gradle`:
+
+```groovy
+// Inside android { ... }
+def keystorePropertiesFile = rootProject.file("key.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+signingConfigs {
+    release {
+        keyAlias keystoreProperties['keyAlias']
+        keyPassword keystoreProperties['keyPassword']
+        storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+        storePassword keystoreProperties['storePassword']
+    }
+}
+buildTypes {
+    release {
+        signingConfig signingConfigs.release
+        // ...
+    }
+}
+```
+
+4. Build the release bundle: `npm run android:bundle`.
+
+### Google Play internal / closed testing
+
+1. Go to [Google Play Console](https://play.google.com/console).
+2. Create a new app or select Paleoglossa.
+3. Set up **Internal testing** track.
+4. Upload the `app-release.aab`.
+5. Add tester email addresses (Google accounts).
+6. Publish the internal test.
+7. Testers install via the opt-in link.
+
+---
+
+## Firebase setup
+
+### Console
+
+| Setting | Value |
+|---------|-------|
+| Project ID | `paleoglossa-reader` |
+| API Key | Set in `VITE_FIREBASE_API_KEY` or `firebase-applet-config.json` |
+| Auth Domains | `paleoglossa-reader.firebaseapp.com`, `paleoglossa-reader.web.app` |
+| Authorized domains (Auth settings) | `localhost`, `paleoglossa.com`, `paleoglossa-reader.firebaseapp.com`, `paleoglossa-reader.web.app` |
+
+### google-services.json (Firebase + Android)
+
+> **Required for Android native builds** — Firebase services on Android
+> use the native `google-services.json` file, not just the web SDK config.
+
+1. In **Firebase Console > Project Settings > General > Your apps**,
+   click **Add app > Android**.
+2. Android package name: `com.paleoglossa.app`
+3. Download `google-services.json` and place it at
+   `android/app/google-services.json`.
+4. The `google-services` plugin (`com.google.gms:google-services:4.4.4`)
+   is already configured in `android/build.gradle` and `android/app/build.gradle`.
+5. The file is **not** committed (it is in `.gitignore`).
+
+### GoogleService-Info.plist (Firebase + iOS)
+
+> **Required for iOS native builds**, even when using the web SDK for auth.
+
+1. In Firebase Console, click **Add app > iOS**.
+2. iOS bundle ID: `com.paleoglossa.app`
+3. Download `GoogleService-Info.plist` and place it at
+   `ios/App/App/GoogleService-Info.plist`.
+4. Open `ios/App/App/AppDelegate.swift` and verify the Firebase
+   initialization reads the plist (Capacitor template handles this).
+5. The file is **not** committed (it is in `.gitignore`).
+
+### Authentication
+
+Detailed auth setup is covered above in the [Firebase Authentication](#firebase-authentication-in-native-builds) section.
+
+---
+
+## Build outputs
+
+| Artifact | Path | Command |
+|----------|------|---------|
+| Web bundle | `dist/` | `npm run build` |
+| iOS app (debug) | `ios/App/build/` | `npx cap run ios` |
+| iOS archive (release) | Xcode Organizer | Product → Archive |
+| Android debug APK | `android/app/build/outputs/apk/debug/app-debug.apk` | `npm run android:assemble` |
+| Android release AAB | `android/app/build/outputs/bundle/release/app-release.aab` | `npm run android:bundle` |
+
+---
+
+## Store metadata checklist
+
+- [ ] App name: **Paleoglossa**
+- [ ] Subtitle: Learn Ancient Languages
+- [ ] Category: Education
+- [ ] Privacy policy URL — hosted and accessible
+- [ ] Terms of service URL — hosted and accessible
+- [ ] Support URL / email
+- [ ] Account deletion policy / instructions
+- [ ] Screenshots: iPhone 6.7" + iPhone 5.5" + iPad + Android phone + Android tablet
+- [ ] App icon: 1024×1024
+- [ ] Description text (English + other supported languages)
+- [ ] Content rating questionnaire completed
+
+### Privacy policy / terms / support / account deletion
+
+- **Privacy policy**: The app collects only Firebase Auth account data and
+  usage analytics via PostHog (opt-out available in Settings).  Host the
+  policy at a public URL and link it in App Store Connect / Google Play.
+- **Account deletion**: Users can request deletion via the app's Settings
+  page or by emailing support.
+- **Support**: Provide a support email address in the store listing.
+- **Terms of Service**: Link to ToS URL if applicable.
+
+---
+
+## Known not-ready areas
+
+These features are either stubs or not functional in the current build:
+
+- **Syntax trees** (`src/pages/Syntax.tsx`) — UI is present but the API
+  endpoint is a stub returning placeholder data.
+- **Manuscripts** (`src/components/reader/Manuscripts.tsx`) — UI shell
+  only, no real manuscript data.
+- **AI pronunciation** — May not work on all devices depending on the
+  TTS provider.
+- **Push notifications** — Not yet implemented.
+- **Offline mode** — Service worker is registered but offline sync is
+  limited; the app requires network for most features.
+- **Apple Sign-In on iOS** — Requires Apple Developer membership and
+  native Sign In with Apple capability in Xcode.
+- **In-app purchases** — Not implemented; subscriptions are handled via
+  Stripe checkout (web-based).
+
+---
+
+## Firebase authentication in native builds
 
 ### Web vs native flow
 
@@ -171,3 +409,16 @@ OAuth client ID is required from the Google Cloud Console.
   `getRedirectResult`.
 - Apple Sign-In via OAuth redirect (as opposed to native Apple Sign-In)
   is not available on Android without a third-party plugin.
+
+---
+
+## API base URL architecture
+
+- `src/lib/services/apiBaseUrl.ts` exports `getApiUrl(path)`.
+- The function reads `import.meta.env.VITE_API_BASE_URL` and prepends it
+  to every API path.
+- Web deployments leave the variable empty so relative `/api/…` routes work
+  as before.
+- Native builds set `VITE_API_BASE_URL` to the production origin.
+- All raw `fetch('/api/…')` calls and the `apiFetch` wrapper use this
+  helper, so a single env var controls the base for the whole app.

@@ -20,7 +20,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "mobile:build": "npm run build && npx cap sync",
+    "mobile:sync": "npx cap sync",
+    "ios:open": "npx cap open ios",
+    "ios:sync": "npm run build && npx cap sync ios",
+    "android:open": "npx cap open android",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:bundle": "cd android && ./gradlew bundleRelease",
+    "android:assemble": "cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.3",
