@@ -6,6 +6,7 @@ import { useKnowledge } from "../lib/hooks/useKnowledge.js";
 import { useSettings } from "../lib/hooks/useSettings.js";
 import { useReaderState } from "../lib/contexts/ReaderContext.js";
 import { WordState } from "../lib/constants/wordStates.js";
+import type { ReaderToken, ReaderSentence, ReaderChapter } from "../types/reader.js";
 import { ReaderTutorial } from "../components/reader/ReaderTutorial.js";
 import { LexDrawerPanel } from "../components/reader/LexDrawerPanel.js";
 import { SentenceAnalysisPanel } from "../components/reader/SentenceAnalysisPanel.js";
@@ -102,7 +103,7 @@ export const Reader = () => {
   const { settings } = useSettings();
 
   const isOnline = useOnlineStatus();
-  const [selectedWord, setSelectedWord] = useState<any>(null);
+  const [selectedWord, setSelectedWord] = useState<(ReaderToken & { sentenceText?: string }) | null>(null);
   const [selectedSentence, setSelectedSentence] = useState<{ text: string; id: string } | null>(null);
   const [tutorialStep, setTutorialStep] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED) ? 0 : 1;
@@ -219,62 +220,64 @@ export const Reader = () => {
     }
   }, [currentSentenceIndex, readingMode]);
 
-  const chapters = useMemo(() => {
+  const chapters: ReaderChapter[] = useMemo(() => {
     const textId = text?.id;
 
     if (typeof textId === "string" && CorpusDB.getText(textId)) {
       const realText = CorpusDB.getText(textId);
-      return (
-        realText?.sectionsPreview?.map((preview) => {
-          const section = CorpusDB.getSection(preview.id);
-          if (!section)
-            return {
-              id: preview.id,
-              title: preview.label,
-              sentences: [],
-              translation: "",
-            };
+      if (!realText?.sectionsPreview) return [];
 
-          const sentences = section.sentences.map((s: any) => ({
-            id: s.id,
-            translation: s.translation,
-            parallel: s.translation, // Use actual translation as parallel text for demo purposes
-            tokens: s.tokens.map((t: any) => ({
-              id: t.id,
-              text: t.surface,
-              lemma: t.lemma,
-              gloss: t.gloss,
-              morphology: t.morphology,
-              translit:
-                t.transliteration ||
-                getTransliteration(
-                  t.surface,
-                  realText?.language || "",
-                  t.normalized,
-                ),
-              punctBefore: t.punctBefore || "",
-              punctAfter: t.punctAfter !== undefined ? t.punctAfter : " ",
-            })),
-          }));
-
+      return realText.sectionsPreview.map((preview: any) => {
+        const section = CorpusDB.getSection(preview.id);
+        if (!section)
           return {
-            id: section.id,
-            title: section.label,
-            sentences,
-            translation: section.sentences
-              .map((s) => s.translation)
-              .filter(Boolean)
-              .join(" "),
+            id: preview.id,
+            title: preview.label,
+            sentences: [],
+            translation: "",
           };
-        }) || []
-      );
-    } else if (text?.sentences) {
-      // Logic for imported text using structured analysis
+
+        const sentences: ReaderSentence[] = section.sentences.map((s: any) => ({
+          id: s.id,
+          translation: s.translation,
+          parallel: s.translation,
+          tokens: s.tokens.map((t: any) => ({
+            id: t.id,
+            text: t.surface,
+            lemma: t.lemma,
+            gloss: t.gloss,
+            morphology: t.morphology,
+            translit:
+              t.transliteration ||
+              getTransliteration(
+                t.surface,
+                realText?.language || "",
+                t.normalized,
+              ),
+            punctBefore: t.punctBefore || "",
+            punctAfter: t.punctAfter !== undefined ? t.punctAfter : " ",
+          })),
+        }));
+
+        return {
+          id: section.id,
+          title: section.label,
+          sentences,
+          translation: section.sentences
+            .map((s: any) => s.translation)
+            .filter(Boolean)
+            .join(" "),
+        };
+      });
+    }
+
+    const textSentences = text?.sentences as any[] | undefined;
+    if (textSentences) {
       return [
         {
           id: "imported-section-1",
           title: t("reader.fullText"),
-          sentences: text.sentences.map((s: any, i: number) => ({
+          sentences: textSentences.map((s: any, i: number) => ({
             id: `import-sent-${i}`,
             translation: s.translation || t("reader.noTranslation"),
             parallel: s.translation || t("reader.noParallelText"),
@@ -290,13 +293,15 @@ export const Reader = () => {
               punctAfter: tok.type === 'whitespace' ? " " : tok.type === 'punctuation' ? "" : (s.tokens[j+1]?.type === 'whitespace' ? "" : ""),
             })),
           })),
-          translation: text.sentences.map((s: any) => s.translation).filter(Boolean).join(" "),
+          translation: textSentences.map((s: any) => s.translation).filter(Boolean).join(" "),
         },
       ];
-    } else if (text?.content) {
-      // Fallback for legacy imports
-      const sentencesRaw = text.content.split(/(?<=[.?!])\s+/).filter(Boolean);
-      const sentences = sentencesRaw.map((sRaw: string, i: number) => {
+    }
+
+    const textContent = text?.content as string | undefined;
+    if (textContent) {
+      const sentencesRaw = textContent.split(/(?<=[.?!])\s+/).filter(Boolean);
+      const sentences: ReaderSentence[] = sentencesRaw.map((sRaw: string, i: number) => {
         const rawTokens = sRaw.split(/\s+/).filter(Boolean);
         return {
           id: `import-sent-${i}`,
@@ -339,17 +344,17 @@ export const Reader = () => {
   }, [text, textId]);
 
   const chapter = useMemo(
-    () => chapters[currentChapterIndex] || chapters[0] || { id: '', title: '', sentences: [] as any[], translation: '' },
+    () => chapters[currentChapterIndex] || chapters[0] || { id: '', title: '', sentences: [] as ReaderSentence[], translation: '' },
     [chapters, currentChapterIndex],
   );
 
   const SENTENCES_PER_PAGE = 30;
 
   const knownPercent = useMemo(() => {
-    const allTokens = (chapter?.sentences ?? []).flatMap((s: any) => s.tokens ?? []);
-    const contentTokens = allTokens.filter((t: any) => t.type !== 'punctuation' && t.type !== 'whitespace');
+    const allTokens = (chapter?.sentences ?? []).flatMap((s: ReaderSentence) => s.tokens ?? []);
+    const contentTokens = allTokens.filter((t: ReaderToken) => t.type !== 'punctuation' && t.type !== 'whitespace');
     if (contentTokens.length === 0) return null;
-    const knownCount = contentTokens.filter((t: any) => {
+    const knownCount = contentTokens.filter((t: ReaderToken) => {
       const info = getWordInfo(t.lemma || t.text);
       return info.state === WordState.KNOWN || info.state === WordState.FAMILIAR;
     }).length;
@@ -360,10 +365,10 @@ export const Reader = () => {
 
   // Estimated reading time: unknown words take ~8s, known words ~1.5s
   const readingTimeMinutes = useMemo(() => {
-    const allTokens = (chapter?.sentences ?? []).flatMap((s: any) => s.tokens ?? []);
-    const content = allTokens.filter((t: any) => t.type !== 'punctuation' && t.type !== 'whitespace');
+    const allTokens = (chapter?.sentences ?? []).flatMap((s: ReaderSentence) => s.tokens ?? []);
+    const content = allTokens.filter((t: ReaderToken) => t.type !== 'punctuation' && t.type !== 'whitespace');
     if (content.length === 0) return null;
-    const unknown = content.filter((t: any) => {
+    const unknown = content.filter((t: ReaderToken) => {
       const info = getWordInfo(t.lemma || t.text);
       return info.state === WordState.NEW || info.state === WordState.SEEN;
     }).length;
@@ -541,11 +546,11 @@ export const Reader = () => {
   }, [chapter, readingMode]);
 
   const handleMarkPageKnown = useCallback((andAdvance: boolean = true) => {
-    let tokensToMark: any[];
+    let tokensToMark: ReaderToken[];
     if (readingMode === "page") {
       tokensToMark = chapter.sentences[currentSentenceIndex]?.tokens || [];
     } else {
-      tokensToMark = displayedSentences?.flatMap((s: any) => s.tokens) || [];
+      tokensToMark = displayedSentences?.flatMap((s: ReaderSentence) => s.tokens) || [];
     }
 
     const validTokens = tokensToMark.filter(t => t.lemma && t.lemma.length > 0);
@@ -741,7 +746,7 @@ export const Reader = () => {
     settings,
   ]);
   
-  const handleWordClick = useCallback((token: any, sentenceText: string, sentenceIndex: number) => {
+  const handleWordClick = useCallback((token: ReaderToken, sentenceText: string, sentenceIndex: number) => {
     setSelectedSentence(null);
     setSelectedWord({ ...token, sentenceText });
     incrementEncounter(token.lemma, currentLanguageId);
@@ -754,8 +759,8 @@ export const Reader = () => {
     setSelectedSentence(sentence);
   }, []);
 
-  const handleSavePhrase = useCallback((sentence: any) => {
-    const phrase = sentence.tokens.map((tk: any) => tk.text).join(" ");
+  const handleSavePhrase = useCallback((sentence: ReaderSentence) => {
+    const phrase = sentence.tokens.map((tk: ReaderToken) => tk.text).join(" ");
     setWordState(phrase, WordState.LEARNING, currentLanguageId);
     if (sentence.translation || aiTranslations[sentence.id]) {
       updateGloss(phrase, aiTranslations[sentence.id] || sentence.translation || "", currentLanguageId);

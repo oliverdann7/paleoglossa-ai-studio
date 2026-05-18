@@ -3,25 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, normalizeWordState } from '@/lib/constants/wordStates';
+import type { WordInfo } from '@/lib/services/vocabularyService';
 import { GlossTooltip } from './GlossTooltip.js';
 import { MorphologyTooltip } from './MorphologyTooltip.js';
-import type { DisplayMode } from '@/types/reader';
-
-interface TokenData {
-  id: string;
-  text: string;
-  lemma: string;
-  gloss?: string;
-  translit?: string;
-  morphology?: string;
-  pos?: string;
-  punctBefore?: string;
-  punctAfter?: string;
-  type?: string;
-}
+import type { DisplayMode, ReaderToken, ReaderSentence } from '@/types/reader';
 
 /** POS-based token color for Morphology mode. Returns undefined for unknowns. */
-function getPosStyle(token: TokenData): React.CSSProperties | undefined {
+function getPosStyle(token: ReaderToken): React.CSSProperties | undefined {
   const raw = ((token.morphology || '') + ' ' + (token.pos || '')).toLowerCase();
   if (!raw.trim()) return undefined;
 
@@ -48,24 +36,15 @@ function getPosStyle(token: TokenData): React.CSSProperties | undefined {
   return undefined;
 }
 
-interface SentenceData {
-  id: string;
-  tokens: TokenData[];
-  translation?: string;
-  parallel?: string;
-  _cachedText?: string;
-  _displayOffset?: number;
-}
-
 type SourceKind = 'import' | 'sample' | 'partial' | 'complete';
 
 interface Props {
-  sentences: SentenceData[];
+  sentences: ReaderSentence[];
   readingMode: 'scroll' | 'page';
   currentSentenceIndex: number;
   fontSize: number;
   highlightIntensity: 'subtle' | 'normal' | 'strong';
-  getWordInfo: (lemma: string) => any;
+  getWordInfo: (lemma: string) => WordInfo;
   knowledgeVersion: number;
   selectedWordId?: string;
   showTranslit: boolean;
@@ -86,9 +65,9 @@ interface Props {
   glossTooltipForKnown?: boolean;
   interlinearMode?: boolean;
   displayMode?: DisplayMode;
-  onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
-  onAITranslate: (sentenceId: string, tokens: TokenData[]) => void;
-  onSavePhrase: (sentence: SentenceData) => void;
+  onWordClick: (token: ReaderToken, sentenceText: string, sentenceIndex: number) => void;
+  onAITranslate: (sentenceId: string, tokens: ReaderToken[]) => void;
+  onSavePhrase: (sentence: ReaderSentence) => void;
   onAnalyzeSentence?: (sentence: { text: string; id: string }) => void;
   onMarkPageKnown: () => void;
   onNextPage: () => void;
@@ -159,23 +138,23 @@ const ReaderToken = memo(function ReaderToken({
   onWordHover,
   onWordLeave,
 }: {
-  token: TokenData;
+  token: ReaderToken;
   sentenceText: string;
   sentenceIndex: number;
   readingMode: 'scroll' | 'page';
   fontSize: number;
-  wordInfo: any;
-  isAudioActive: boolean;
-  maskKnown: boolean;
   highlightIntensity: 'subtle' | 'normal' | 'strong';
-  isSelected: boolean;
   showTranslit: boolean;
+  maskKnown: boolean;
   interlinearMode?: boolean;
   displayMode?: DisplayMode;
+  wordInfo: WordInfo | WordState | null,
+  isAudioActive: boolean;
+  isSelected: boolean;
   showGlossTooltip?: boolean;
   glossTooltipForKnown?: boolean;
-  onWordClick: (token: TokenData, sentenceText: string, sentenceIndex: number) => void;
-  onWordHover: (token: TokenData, x: number, y: number) => void;
+  onWordClick: (token: ReaderToken, sentenceText: string, sentenceIndex: number) => void;
+  onWordHover: (token: ReaderToken, x: number, y: number) => void;
   onWordLeave: () => void;
 }) {
   const isMorphologyMode = displayMode === 'morphology';
@@ -255,9 +234,9 @@ export function ReadingPane({
   const isMorphologyMode = displayMode === 'morphology';
   const isFocusMode = displayMode === 'focus';
 
-  type HoverToken = { token: TokenData; x: number; y: number };
-  const [hoverToken, setHoverToken] = useState<HoverToken | null>(null);
-  const handleWordHover = useCallback((token: TokenData, x: number, y: number) => {
+  const [hoverToken, setHoverToken] = useState<{ token: ReaderToken; x: number; y: number } | null>(null);
+
+  const handleWordHover = useCallback((token: ReaderToken, x: number, y: number) => {
     setHoverToken({ token, x, y });
   }, []);
   const handleWordLeave = useCallback(() => { setHoverToken(null); }, []);
