@@ -1,4 +1,5 @@
 import { auth } from '../firebase.js';
+import { getApiUrl } from './apiBaseUrl.js';
 
 export class ApiError extends Error {
   status: number;
@@ -63,7 +64,7 @@ export async function apiFetch<T = any>(url: string, options: ApiFetchOptions = 
     headers['Authorization'] = 'Bearer ' + token;
   }
 
-  const res = await fetch(url, {
+  const res = await fetch(getApiUrl(url), {
     ...fetchOptions,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
