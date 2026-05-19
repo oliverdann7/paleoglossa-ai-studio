@@ -148,6 +148,87 @@ Before uploading:
 - [ ] Test user accounts are available for the reviewer.
 - [ ] Run through the [QA checklist](mobile-qa-checklist.md).
 
+### TestFlight upload steps
+
+Requires: **Apple Developer account** ($99/yr), an **App Store Connect** record, and
+**Xcode 16+**.
+
+1. Build the native production bundle:
+   ```bash
+   npm run ios:sync:production
+   ```
+2. Open Xcode:
+   ```bash
+   npx cap open ios
+   ```
+3. In Xcode:
+   - Select **Paleoglossa** target.
+   - Go to **Signing & Capabilities** and select your Apple Developer team.
+   - Change the Bundle Identifier if needed (default: `com.paleoglossa.app`).
+   - Choose **Any iOS Device** as the build target.
+   - **Product → Archive**.
+4. After archiving, the Organizer window opens.
+5. Click **Distribute App → App Store Connect → Upload**.
+6. Select your development team and follow the prompts.
+7. Once uploaded, go to [App Store Connect](https://appstoreconnect.apple.com)
+   and manage the build under **TestFlight**.
+
+### Google Play Internal Testing upload steps
+
+Requires: **Google Play Developer account** ($25), a **Google Play Console** app record,
+a **keystore**, and **Android SDK / Studio**.
+
+1. Configure code signing:
+   - Generate a keystore if you don't have one (see [Code signing](#code-signing) below).
+   - Create `android/key.properties` with your keystore details.
+   - The keystore and `key.properties` must **never** be committed.
+2. Build the release AAB:
+   ```bash
+   npm run android:sync:production
+   npm run android:bundle
+   # AAB at android/app/build/outputs/bundle/release/app-release.aab
+   ```
+3. Go to [Google Play Console](https://play.google.com/console).
+4. Select your app → **Testing → Internal testing**.
+5. Click **Create new release**.
+6. Upload the `app-release.aab` file.
+7. Fill in the release name and release notes.
+8. Click **Save** and then **Review release**.
+9. After review, click **Start rollout to Internal testing**.
+10. Add tester email addresses under **Testers**.
+11. Testers install via the opt-in link.
+
+### What requires Apple / Google / Firebase / secret access
+
+| Step | Requires | Notes |
+|------|----------|-------|
+| TestFlight upload | Apple Developer account, App Store Connect app record | $99/yr |
+| Google Play Internal Testing | Google Play Developer account, app record | $25 one-time |
+| Firebase Auth / native config | Firebase Console project, `google-services.json`, `GoogleService-Info.plist` | Download from Firebase Console |
+| Android code signing | Keystore file + `android/key.properties` | Never commit |
+| iOS code signing | Apple Distribution Certificate + Provisioning Profile | Managed via Xcode |
+
+### Subscription QA (Web-Managed Subscriptions)
+
+Subscriptions in the native app are **web-managed only**:
+
+- Paid plan buttons are disabled on native iOS/Android builds by default.
+- The Stripe Billing Portal button is hidden.
+- A neutral notice reads: "Subscription management is currently available on the web."
+- Existing paid users retain full entitlement access after logging in.
+- To enable in-app purchases (future), set `VITE_ENABLE_MOBILE_PURCHASES=true`
+  and integrate StoreKit / Google Play Billing.
+
+### Internal testing checklist
+
+Pre-submit checks before uploading to TestFlight or Google Play Internal Testing:
+
+- [ ] Build a debug APK / local iOS build and run through the
+      [QA checklist](mobile-qa-checklist.md).
+- [ ] Verify subscription notice appears on the pricing page in native builds.
+- [ ] Verify existing paid users can access their languages and features.
+- [ ] Confirm no external purchase links are shown to native users.
+
 ---
 
 ## Android Release Readiness Improvements

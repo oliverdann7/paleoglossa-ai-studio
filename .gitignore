@@ -8,6 +8,12 @@ coverage/
 *.log
 .env*
 !.env.example
+!.env.native-production.example
 firebase-applet-config.json
 .vercel
 .ratelimit.json
+
+# Native signing / provisioning — never commit
+*.p12
+*.cer
+*.mobileprovision

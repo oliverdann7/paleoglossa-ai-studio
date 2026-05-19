@@ -179,12 +179,16 @@ submitting to TestFlight or Google Play.
 
 ## Community visibility
 
-- [ ] Community page loads.
-- [ ] Public profiles appear (users who opted in via `isPublic` toggle).
-- [ ] Your own public profile appears after enabling `isPublic` in
-      Settings.
-- [ ] Disabling `isPublic` removes your profile from the Community page.
-- [ ] Shared imported texts appear under a user's public profile.
+- [ ] Community page is only accessible when `VITE_ENABLE_COMMUNITY=true`.
+- [ ] When community is disabled:
+  - [ ] Community nav link is hidden.
+  - [ ] Navigating to `/app/community` redirects to `/app`.
+- [ ] When community is enabled:
+  - [ ] Community page loads.
+  - [ ] Public profiles appear (users who opted in via `isPublic` toggle).
+  - [ ] Your own public profile appears after enabling `isPublic` in
+        Settings.
+  - [ ] Disabling `isPublic` removes your profile from the Community page.
 
 ---
 
@@ -192,13 +196,15 @@ submitting to TestFlight or Google Play.
 
 - [ ] Subscription page loads and displays plan tiers.
 - [ ] Monthly / yearly toggle works.
-- [ ] "Subscribe" navigates to Stripe checkout (web-based, opens in
-      browser).
+- [ ] On **web**: "Subscribe" navigates to Stripe checkout.
+- [ ] On **native (iOS/Android)**:
+  - [ ] Paid plan buttons are disabled.
+  - [ ] A neutral notice reads: "Subscription management is currently available on the web."
+  - [ ] Existing paid users retain full entitlement access after login.
 - [ ] Successful checkout redirects back to the app.
 - [ ] Cancelled checkout returns to Subscription page gracefully.
-- [ ] Manage subscription button opens Stripe Customer Portal.
-- [ ] Plan limits (language access) are enforced after subscription
-      changes.
+- [ ] Manage subscription button opens Stripe Customer Portal (web only).
+- [ ] Plan limits (language access) are enforced after subscription changes.
 - [ ] Free plan allows the expected number of languages.
 - [ ] Subscription status persists across app restarts.
 
