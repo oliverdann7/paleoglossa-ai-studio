@@ -51,7 +51,7 @@
     "mammoth": "^1.12.0",
     "motion": "^11.15.0",
     "multer": "^2.1.1",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "1.1.1",
     "posthog-js": "^1.373.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
