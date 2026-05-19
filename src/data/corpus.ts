@@ -66,6 +66,30 @@ export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
     allowsModification: true,
     shareAlike: false,
   },
+  "lxx-text": {
+    id: "lxx-text",
+    sourceName: "Septuagint (LXX)",
+    sourceUrl: "https://www.academic-bible.com/en/online-bibles/septuagint-lxx/",
+    dataType: "text",
+    licenseName: "Public Domain",
+    attributionText: "Septuagint text (Rahlfs-Hanhart). Public Domain.",
+    requiresAttribution: false,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false,
+  },
+  "patristic-texts": {
+    id: "patristic-texts",
+    sourceName: "Patristic Greek Texts",
+    sourceUrl: "",
+    dataType: "text",
+    licenseName: "Public Domain",
+    attributionText: "Patristic Greek texts are in the Public Domain.",
+    requiresAttribution: false,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false,
+  },
 };
 
 export const GREEK_CORPUS: Corpus = {
@@ -108,6 +132,26 @@ export const ANCIENT_GREEK_CORPUS: Corpus = {
   licenseSummary: "CC BY-SA 3.0",
   importStatus: "partial",
   attribution: [ATTRIBUTIONS["perseus-texts"]],
+};
+export const LXX_CORPUS: Corpus = {
+  id: "LXX",
+  title: "Septuagint (LXX)",
+  description: "The Greek Old Testament — Koine Greek Genesis, Psalms, Exodus, and Isaiah",
+  language: "grc-koine",
+  sourceAttributionId: "lxx-text",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["lxx-text"]],
+};
+export const PATRISTIC_CORPUS: Corpus = {
+  id: "PATRISTIC_GREEK",
+  title: "Patristic Greek",
+  description: "Early Christian writings in Koine Greek — Clement, Didache, Athanasius, Chrysostom",
+  language: "grc-koine",
+  sourceAttributionId: "patristic-texts",
+  licenseSummary: "Public Domain",
+  importStatus: "partial",
+  attribution: [ATTRIBUTIONS["patristic-texts"]],
 };
 export const SYRIAC_CORPUS: Corpus = {
   id: "SYRIAC_PESHITTA",
@@ -661,6 +705,304 @@ export const TEXT_PLATO_APOLOGY: Text = {
   sentenceCount: 6,
   sectionsPreview: [
     { id: "Plato-Apol-1", label: "Apology" },
+  ],
+};
+
+// ─── Septuagint (LXX) Texts ─────────────────────────────────────────────────
+export const TEXT_LXX_GENESIS: Text = {
+  id: "LXX-Gen-1",
+  corpusId: "LXX",
+  title: "Γένεσις",
+  canonicalRef: "Genesis 1",
+  author: "Moses",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 30,
+  sectionsPreview: [
+    { id: "LXX-Gen-1-1", label: "Genesis 1:1–13" },
+    { id: "LXX-Gen-1-2", label: "Genesis 1:14–31" },
+  ],
+};
+
+export const TEXT_LXX_PSALM_1: Text = {
+  id: "LXX-Ps-1",
+  corpusId: "LXX",
+  title: "Ψαλμὸς Α′",
+  canonicalRef: "Psalm 1",
+  author: "David",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "LXX-Ps-1-1", label: "Psalm 1" },
+  ],
+};
+
+export const TEXT_LXX_PSALM_33: Text = {
+  id: "LXX-Ps-33",
+  corpusId: "LXX",
+  title: "Ψαλμὸς ΛΓ′",
+  canonicalRef: "Psalm 33 (LXX)",
+  author: "David",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 10,
+  sectionsPreview: [
+    { id: "LXX-Ps-33-1", label: "Psalm 33 (LXX)" },
+  ],
+};
+
+export const TEXT_LXX_EXODUS_12: Text = {
+  id: "LXX-Exod-12",
+  corpusId: "LXX",
+  title: "Ἔξοδος",
+  canonicalRef: "Exodus 12:1–20",
+  author: "Moses",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 17,
+  sectionsPreview: [
+    { id: "LXX-Exod-12-1", label: "Exodus 12:1–20" },
+  ],
+};
+
+export const TEXT_LXX_ISAIAH_6: Text = {
+  id: "LXX-Isa-6",
+  corpusId: "LXX",
+  title: "Ἠσαΐας",
+  canonicalRef: "Isaiah 6:1–9",
+  author: "Isaiah",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 8,
+  sectionsPreview: [
+    { id: "LXX-Isa-6-1", label: "Isaiah 6:1–9" },
+  ],
+};
+
+export const TEXT_LXX_PROVERBS: Text = {
+  id: "LXX-Prov-1",
+  corpusId: "LXX",
+  title: "Παροιμίαι",
+  canonicalRef: "Proverbs 1:1–9",
+  author: "Solomon",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "LXX-Prov-1-1", label: "Proverbs 1:1–9" },
+  ],
+};
+
+export const TEXT_LXX_PSALM_50: Text = {
+  id: "LXX-Ps-50",
+  corpusId: "LXX",
+  title: "Ψαλμὸς Ν′",
+  canonicalRef: "Psalm 50 (LXX)",
+  author: "David",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 11,
+  sectionsPreview: [
+    { id: "LXX-Ps-50-1", label: "Psalm 50 (LXX)" },
+  ],
+};
+
+export const TEXT_LXX_JONAH: Text = {
+  id: "LXX-Jonah-1",
+  corpusId: "LXX",
+  title: "Ἰωνᾶς",
+  canonicalRef: "Jonah 1:1–12",
+  author: "Jonah",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 11,
+  sectionsPreview: [
+    { id: "LXX-Jonah-1-1", label: "Jonah 1:1–12" },
+  ],
+};
+
+// ─── Patristic Texts ─────────────────────────────────────────────────────────
+export const TEXT_1_CLEMENT: Text = {
+  id: "1Clem-1",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Κλήμεντος πρὸς Κορινθίους",
+  canonicalRef: "1 Clement 1–2",
+  author: "Clement of Rome",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 5,
+  sectionsPreview: [
+    { id: "1Clem-1", label: "1 Clement 1–2" },
+  ],
+};
+
+export const TEXT_DIDACHE: Text = {
+  id: "Did-1",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Διδαχὴ τῶν Δώδεκα Ἀποστόλων",
+  canonicalRef: "Didache 1–4",
+  author: "The Twelve Apostles",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 12,
+  sectionsPreview: [
+    { id: "Did-1", label: "Didache 1–2" },
+    { id: "Did-2", label: "Didache 3–4" },
+  ],
+};
+
+export const TEXT_ATHANASIUS_INCARNATION: Text = {
+  id: "Athan-Inc-1",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Περὶ τῆς Ἐνανθρωπήσεως τοῦ Λόγου",
+  canonicalRef: "On the Incarnation 1–2",
+  author: "Athanasius of Alexandria",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "Athan-Inc-1", label: "On the Incarnation 1–2" },
+  ],
+};
+
+export const TEXT_CHRYSOSTOM_HOMILY: Text = {
+  id: "Chrys-Jn-1",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Ὁμιλία Α′ εἰς τὸ κατὰ Ἰωάννην",
+  canonicalRef: "Homily 1 on John",
+  author: "John Chrysostom",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "Chrys-Jn-1", label: "Homily 1 on John" },
+  ],
+};
+
+export const TEXT_HERMAS: Text = {
+  id: "Hermas-Vis-1",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Ποιμὴν τοῦ Ἑρμᾶ",
+  canonicalRef: "Vision 1.1–3",
+  author: "Hermas",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 3,
+  sectionsPreview: [
+    { id: "Hermas-Vis-1", label: "Vision 1.1–3" },
+  ],
+};
+
+export const TEXT_BASIL: Text = {
+  id: "Basil-Hex-1",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Ὁμιλία Α′ τῆς Ἑξαημέρου",
+  canonicalRef: "Hexaemeron 1.1",
+  author: "Basil the Great",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "Basil-Hex-1", label: "Hexaemeron 1.1" },
   ],
 };
 
@@ -3047,6 +3389,8 @@ import { CICERO_CATILINA_1, CICERO_CATILINA_2, CICERO_CATILINA_3, CICERO_CATILIN
 import { OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_METAMORPHOSES_4 } from "./corpus/ovid-metamorphoses.js";
 import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4 } from "./corpus/caesar-bellum-gallicum.js";
 import { PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLATO_APOLOGY_5 } from "./corpus/plato-apology.js";
+import { LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1 } from "./corpus/lxx-septuagint.js";
+import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1 } from "./corpus/patristics.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3072,6 +3416,20 @@ function getAllEnhancedTexts() {
       TEXT_ILIAD,
       TEXT_ODYSSEY,
       TEXT_AESOP,
+      TEXT_LXX_GENESIS,
+      TEXT_LXX_PSALM_1,
+      TEXT_LXX_PSALM_33,
+      TEXT_LXX_EXODUS_12,
+      TEXT_LXX_ISAIAH_6,
+      TEXT_LXX_PROVERBS,
+      TEXT_LXX_PSALM_50,
+      TEXT_LXX_JONAH,
+      TEXT_1_CLEMENT,
+      TEXT_DIDACHE,
+      TEXT_ATHANASIUS_INCARNATION,
+      TEXT_CHRYSOSTOM_HOMILY,
+      TEXT_HERMAS,
+      TEXT_BASIL,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -3097,6 +3455,8 @@ function getLemmaIndex() {
     OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_METAMORPHOSES_4,
     CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4,
     PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLATO_APOLOGY_5,
+    LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1,
+    CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1,
     ...ALL_EXPANDED_SECTIONS,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
@@ -3133,6 +3493,22 @@ export const CorpusDB = {
     if (sectionId === "San-Gita-1-1") return SANSKRIT_GITA_1_1;
     if (sectionId === "Hit-Annals-1-1") return HITTITE_ANNALS_1_1;
     if (sectionId === "Egy-Ptah-1-1") return EGYPTIAN_PTAHHOTEP_1_1;
+    if (sectionId === "LXX-Gen-1-1") return LXX_GENESIS_1_1;
+    if (sectionId === "LXX-Gen-1-2") return LXX_GENESIS_1_2;
+    if (sectionId === "LXX-Ps-1-1") return LXX_PSALM_1_1;
+    if (sectionId === "LXX-Ps-33-1") return LXX_PSALM_33_1;
+    if (sectionId === "LXX-Exod-12-1") return LXX_EXODUS_12_1;
+    if (sectionId === "LXX-Isa-6-1") return LXX_ISAIAH_6_1;
+    if (sectionId === "LXX-Prov-1-1") return LXX_PROVERBS_1_1;
+    if (sectionId === "LXX-Ps-50-1") return LXX_PSALM_50_1;
+    if (sectionId === "LXX-Jonah-1-1") return LXX_JONAH_1_1;
+    if (sectionId === "1Clem-1") return CLEMENT_1;
+    if (sectionId === "Did-1") return DIDACHE_1;
+    if (sectionId === "Did-2") return DIDACHE_2;
+    if (sectionId === "Athan-Inc-1") return ATHANASIUS_INCARNATION_1;
+    if (sectionId === "Chrys-Jn-1") return CHRYSOSTOM_HOMILY_1;
+    if (sectionId === "Hermas-Vis-1") return HERMAS_VISION_1;
+    if (sectionId === "Basil-Hex-1") return BASIL_HEXAEMERON_1;
     if (sectionId === "Anab-1-1") return ANABASIS_1_1;
     if (sectionId === "Iliad-1-1") return ILIAD_1_1;
     if (sectionId === "Odyssey-1-1") return ODYSSEY_1_1;
@@ -3178,6 +3554,8 @@ export const CorpusDB = {
     if (corpusId === "HITTITE_ANNALS") return HITTITE_CORPUS;
     if (corpusId === "EGYPTIAN_TEXTS") return EGYPTIAN_CORPUS;
     if (corpusId === "ANCIENT_GREEK") return ANCIENT_GREEK_CORPUS;
+    if (corpusId === "LXX") return LXX_CORPUS;
+    if (corpusId === "PATRISTIC_GREEK") return PATRISTIC_CORPUS;
     return null;
   },
   findSentencesWithLemma: (
@@ -3222,6 +3600,8 @@ export const CorpusDB = {
       COPTIC_JOHN_1_1, ARAMAIC_GENESIS_1_1, AKKADIAN_GILGAMESH_1_1,
       SANSKRIT_GITA_1_1, HITTITE_ANNALS_1_1, EGYPTIAN_PTAHHOTEP_1_1,
       ANABASIS_1_1, ILIAD_1_1, ODYSSEY_1_1, AESOP_1_1,
+      LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1,
+      CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1,
       ...ALL_EXPANDED_SECTIONS,
     ];
 
