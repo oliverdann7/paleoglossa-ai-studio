@@ -4,6 +4,7 @@ import {
   searchDictionaryEntries as searchCorpusEntries,
   normalizeSearch,
   getGlobalDictionary,
+  getDictionaryEntries,
 } from '../../src/lib/data/dictionary.js';
 import { getDictionaryEntry as getStaticDictEntry } from '../../src/lib/data/dictionaryDB.js';
 import {
@@ -206,6 +207,48 @@ router.get('/api/dictionary/search', (req: any, res: any) => {
     limit && typeof limit === 'string' ? parseInt(limit, 10) : 20
   );
   res.status(200).json(results);
+});
+
+// ─── Lemma Frequency Index ────────────────────────────────────────────────────
+// Returns corpus-derived lemma frequencies for a language, sorted by frequency
+// descending. Supports pagination via ?limit and ?offset query params.
+//
+// The index is computed once at first call (getDictionaryEntries is memoised)
+// and served from memory on subsequent requests.
+
+router.get('/api/lemma-frequency/:lang', (req: any, res: any) => {
+  try {
+    const { lang } = req.params;
+    if (!lang || typeof lang !== 'string') {
+      return res.status(400).json({ error: 'lang is required', code: 'INVALID_INPUT' });
+    }
+
+    const limitParam = req.query.limit;
+    const offsetParam = req.query.offset;
+    const limit = limitParam && typeof limitParam === 'string' ? Math.min(parseInt(limitParam, 10), 2000) : 500;
+    const offset = offsetParam && typeof offsetParam === 'string' ? Math.max(parseInt(offsetParam, 10), 0) : 0;
+
+    const all = getDictionaryEntries();
+    const forLang = all.filter((e) => e.languageId === lang);
+    const page = forLang.slice(offset, offset + limit);
+
+    res.status(200).json({
+      language: lang,
+      total: forLang.length,
+      offset,
+      limit,
+      entries: page.map((e) => ({
+        lemma: e.lemma,
+        frequency: e.frequency,
+        gloss: e.shortGloss || '',
+        partOfSpeech: e.partOfSpeech || null,
+        transliteration: e.transliteration || null,
+      })),
+    });
+  } catch (err: any) {
+    console.error('[lemma-frequency/:lang] Error:', err.message);
+    res.status(500).json({ error: 'Failed to build frequency index', code: 'INTERNAL_ERROR' });
+  }
 });
 
 export default router;
