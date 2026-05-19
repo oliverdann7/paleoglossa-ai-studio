@@ -89,6 +89,9 @@ const CommunityPage = lazy(() =>
 const AdminDashboard = lazy(() =>
   import('./pages/admin/Dashboard.js').then((module) => ({ default: module.AdminDashboard }))
 );
+const FirebaseDebug = lazy(() =>
+  import('./pages/admin/FirebaseDebug.js').then((module) => ({ default: module.FirebaseDebug }))
+);
 const SignIn = lazy(() =>
   import('./pages/auth/SignIn.js').then((module) => ({ default: module.SignIn }))
 );
@@ -181,6 +184,7 @@ export default function App() {
             }
           >
             <Route index element={<AdminDashboard />} />
+            <Route path="firebase-debug" element={<FirebaseDebug />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

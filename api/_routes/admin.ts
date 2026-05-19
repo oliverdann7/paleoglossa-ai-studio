@@ -443,4 +443,81 @@ router.get(
   }
 );
 
+// ─── Firebase Debug Diagnostics ───────────────────────────────────────────────
+
+router.get(
+  '/api/admin/firebase-debug',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    const adminDb = getAdminDb();
+    const adminAuth = getAdminAuth();
+
+    const result: Record<string, unknown> = {
+      adminSdkAvailable: adminDb !== null && adminAuth !== null,
+      projectId: null as string | null,
+      clientTokenVerified: false,
+      clientEmail: req.user?.email || null,
+      clientUid: req.user?.uid || null,
+      serverTimestamp: new Date().toISOString(),
+      serverTests: { adminDb: null, adminAuth: null },
+    };
+
+    if (adminDb) {
+      try {
+        result.projectId =
+          process.env.FIREBASE_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || null;
+      } catch {
+        result.projectId = null;
+      }
+      try {
+        await adminDb
+          .collection('adminDebug')
+          .doc('server-write-test')
+          .set({
+            testedAt: new Date().toISOString(),
+            testedBy: req.user?.uid || 'unknown',
+            action: 'write',
+          });
+        const snap = await adminDb.collection('adminDebug').doc('server-write-test').get();
+        const exists = snap.exists;
+        await adminDb.collection('adminDebug').doc('server-write-test').delete();
+        (result.serverTests as Record<string, unknown>).adminDb = {
+          writeOk: true,
+          readOk: exists,
+          deleteOk: true,
+        };
+      } catch (e: any) {
+        (result.serverTests as Record<string, unknown>).adminDb = {
+          ok: false,
+          error: e.message,
+          code: e.code || 'UNKNOWN',
+        };
+      }
+    }
+
+    if (adminAuth) {
+      try {
+        const userRecord = await adminAuth.getUser(req.user!.uid);
+        (result.serverTests as Record<string, unknown>).adminAuth = {
+          ok: true,
+          userFound: !!userRecord,
+          email: userRecord.email || null,
+          emailVerified: userRecord.emailVerified,
+          disabled: userRecord.disabled,
+          hasCustomClaims: Object.keys(userRecord.customClaims || {}).length > 0,
+        };
+      } catch (e: any) {
+        (result.serverTests as Record<string, unknown>).adminAuth = {
+          ok: false,
+          error: e.message,
+          code: e.code || 'UNKNOWN',
+        };
+      }
+    }
+
+    res.status(200).json(result);
+  }
+);
+
 export default router;
