@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar.js';
 import { AuthGuard } from './AuthGuard.js';
@@ -8,9 +9,17 @@ import { AuthProvider } from '../lib/contexts/AuthContext.js';
 import { ActiveLanguageProvider } from '../lib/contexts/ActiveLanguageContext.js';
 import { SubscriptionProvider } from '../lib/contexts/SubscriptionContext.js';
 import { SyncStatusProvider } from '../lib/contexts/SyncStatusContext.js';
+import { useCapacitorAppState } from '../lib/hooks/useCapacitorAppState.js';
+import { VocabularyService } from '../lib/services/vocabularyService.js';
 
 function AppLayoutContent() {
   useSettings();
+
+  // Flush pending vocabulary writes when the native app goes to background.
+  const onBackground = useCallback(() => {
+    VocabularyService.flushPendingWrites();
+  }, []);
+  useCapacitorAppState(onBackground);
 
   return (
     <div className="min-h-screen">
