@@ -1,4 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('../../firebase.js', () => ({
+  auth: { currentUser: null },
+  db: {},
+}));
+
 import { reportPersistenceError } from '../persistenceReporter.js';
 
 // Test the classification and return value without mocking everything
