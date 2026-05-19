@@ -28,6 +28,7 @@ import { PaleoIcon } from './PaleoIcon.js';
 import { InterfaceLanguageSwitcher } from './InterfaceLanguageSwitcher.js';
 import { UserProfileCard } from './UserProfileCard.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
+import { features } from '../lib/features.js';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -205,12 +206,14 @@ export const Navbar = () => {
           />
 
           <div className="nav-label px-3 mb-1 mt-6">{t('nav.discover', 'Discover')}</div>
-          <DesktopNavItem
-            icon={Users}
-            label={t('nav.community', 'Community')}
-            isActive={path.startsWith('/app/community')}
-            to="/app/community"
-          />
+          {features.isCommunityEnabled() && (
+            <DesktopNavItem
+              icon={Users}
+              label={t('nav.community', 'Community')}
+              isActive={path.startsWith('/app/community')}
+              to="/app/community"
+            />
+          )}
 
           <div className="nav-label px-3 mb-1 mt-6">{t('nav.manage', 'Manage')}</div>
           <DesktopNavItem

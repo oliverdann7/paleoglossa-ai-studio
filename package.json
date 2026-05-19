@@ -23,10 +23,13 @@
     "e2e": "playwright test",
     "mobile:build": "npm run build && npx cap sync",
     "mobile:sync": "npx cap sync",
+    "mobile:build:production": "vite build --mode native-production && npx cap sync",
     "ios:open": "npx cap open ios",
     "ios:sync": "npm run build && npx cap sync ios",
+    "ios:sync:production": "vite build --mode native-production && npx cap sync ios",
     "android:open": "npx cap open android",
     "android:sync": "npm run build && npx cap sync android",
+    "android:sync:production": "vite build --mode native-production && npx cap sync android",
     "android:bundle": "cd android && ./gradlew bundleRelease",
     "android:assemble": "cd android && ./gradlew assembleDebug"
   },

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { features } from './lib/features.js';
 
 const Landing = lazy(() =>
   import('./pages/Landing.js').then((module) => ({ default: module.Landing }))
@@ -126,6 +127,7 @@ export default function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/support" element={<Support />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
+          <Route path="/account-deletion" element={<DeleteAccount />} />
 
           {/* Auth */}
           <Route path="/auth/login" element={<SignIn />} />
@@ -161,7 +163,9 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
             <Route path="subscription" element={<Subscription />} />
             <Route path="profile/:userId" element={<ProfilePage />} />
-            <Route path="community" element={<CommunityPage />} />
+            {features.isCommunityEnabled() && (
+              <Route path="community" element={<CommunityPage />} />
+            )}
           </Route>
 
           {/* Admin */}
