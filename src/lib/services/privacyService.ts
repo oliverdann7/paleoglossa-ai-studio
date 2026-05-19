@@ -1,4 +1,3 @@
-
 import { isCapacitor } from '../platform.js';
 
 const ANALYTICS_STORAGE_KEY = 'paleoglossa_analytics_enabled';

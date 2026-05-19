@@ -170,16 +170,14 @@ router.post('/api/notes', requireAuth as any, async (req: AuthenticatedRequest, 
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });
-    res
-      .status(200)
-      .json({
-        id: ref.id,
-        content,
-        languageId,
-        targetType,
-        source: source || 'manual',
-        createdAt: new Date().toISOString(),
-      });
+    res.status(200).json({
+      id: ref.id,
+      content,
+      languageId,
+      targetType,
+      source: source || 'manual',
+      createdAt: new Date().toISOString(),
+    });
   } catch (e: any) {
     console.error('[notes] Error creating:', e.message);
     res.status(500).json({ error: 'Failed to create note', code: 'INTERNAL_ERROR' });

@@ -26,10 +26,12 @@ export const Settings = () => {
   const { settings, updateSettings } = useSettings();
   const { exportData, stats } = useKnowledge();
   const { user, profile, refreshProfile } = useAuth();
-  
+
   // ── Privacy State ────────────────────────────────────────────────────────
   const [analyticsEnabled, setAnalyticsEnabled] = useState(privacyService.isAnalyticsEnabled());
-  const [errorReportingEnabled, setErrorReportingEnabledState] = useState(privacyService.isErrorReportingEnabled());
+  const [errorReportingEnabled, setErrorReportingEnabledState] = useState(
+    privacyService.isErrorReportingEnabled()
+  );
 
   // ── Profile form state ───────────────────────────────────────────────────
   const [displayName, setDisplayName] = useState(profile?.displayName ?? user?.displayName ?? '');
@@ -171,12 +173,14 @@ export const Settings = () => {
             <Shield className="w-5 h-5 text-muted" />
             {t('settings.privacy', 'Privacy & Analytics')}
           </h3>
-          
+
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-bold text-[14px] text-ink">Product Analytics</h4>
-                <p className="text-[12px] text-muted">Help us improve by sharing usage data anonymously.</p>
+                <p className="text-[12px] text-muted">
+                  Help us improve by sharing usage data anonymously.
+                </p>
               </div>
               <button
                 type="button"
@@ -198,11 +202,13 @@ export const Settings = () => {
                 />
               </button>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-bold text-[14px] text-ink">Error Reporting</h4>
-                <p className="text-[12px] text-muted">Automatically report crashes to help us fix bugs.</p>
+                <p className="text-[12px] text-muted">
+                  Automatically report crashes to help us fix bugs.
+                </p>
               </div>
               <button
                 type="button"
@@ -729,9 +735,15 @@ export const Settings = () => {
 
         {/* ── Footer Links ───────────────────────────────────────────────── */}
         <section className="flex justify-center gap-6 text-[13px] text-muted pb-12">
-          <a href="/privacy" className="hover:text-ink transition-colors underline">Privacy</a>
-          <a href="/terms" className="hover:text-ink transition-colors underline">Terms</a>
-          <a href="/support" className="hover:text-ink transition-colors underline">Support</a>
+          <a href="/privacy" className="hover:text-ink transition-colors underline">
+            Privacy
+          </a>
+          <a href="/terms" className="hover:text-ink transition-colors underline">
+            Terms
+          </a>
+          <a href="/support" className="hover:text-ink transition-colors underline">
+            Support
+          </a>
         </section>
       </div>
     </div>

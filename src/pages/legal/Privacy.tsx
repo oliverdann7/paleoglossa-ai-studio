@@ -11,7 +11,10 @@ export const Privacy = () => {
           {t('privacy.title', 'Privacy Policy')}
         </h1>
         <p className="text-ink2 text-sm italic">
-          {t('legal.disclaimer', 'Note: This is a draft for information purposes. Please review with legal counsel before publication.')}
+          {t(
+            'legal.disclaimer',
+            'Note: This is a draft for information purposes. Please review with legal counsel before publication.'
+          )}
         </p>
 
         <section className="card p-6 space-y-4">
@@ -20,7 +23,10 @@ export const Privacy = () => {
             {t('privacy.dataCollection', 'Data Collection')}
           </h2>
           <p className="text-ink2 text-[15px]">
-            {t('privacy.collectionDesc', 'We collect data necessary to provide our language learning services, including:')}
+            {t(
+              'privacy.collectionDesc',
+              'We collect data necessary to provide our language learning services, including:'
+            )}
           </p>
           <ul className="text-ink2 text-[14px] list-disc list-inside space-y-1">
             <li>{t('privacy.firebaseAuth', 'Firebase Authentication data')}</li>
@@ -40,7 +46,10 @@ export const Privacy = () => {
             {t('privacy.dataUsage', 'How We Use Data')}
           </h2>
           <p className="text-ink2 text-[15px]">
-            {t('privacy.usageDesc', 'Data is used to provide service functionality, analyze learning patterns, and maintain application security. We do not sell your personal data.')}
+            {t(
+              'privacy.usageDesc',
+              'Data is used to provide service functionality, analyze learning patterns, and maintain application security. We do not sell your personal data.'
+            )}
           </p>
         </section>
 
@@ -50,7 +59,10 @@ export const Privacy = () => {
             {t('privacy.deletion', 'Data Deletion')}
           </h2>
           <p className="text-ink2 text-[15px]">
-            {t('privacy.deletionDesc', 'You can delete your account and all associated data at any time via the Danger Zone in your account settings.')}
+            {t(
+              'privacy.deletionDesc',
+              'You can delete your account and all associated data at any time via the Danger Zone in your account settings.'
+            )}
           </p>
           <a href="/delete-account" className="text-blue font-bold hover:underline">
             {t('privacy.learnMoreDeletion', 'Learn more about account deletion')}

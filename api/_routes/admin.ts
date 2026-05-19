@@ -53,16 +53,14 @@ router.get(
         totalAiCalls += d.data()?.count || 0;
       });
 
-      res
-        .status(200)
-        .json({
-          totalUsers,
-          paidUsers,
-          freeUsers,
-          publicTextCount: publicTextsSnap.size,
-          openReports: reportsSnap.size,
-          recentAiCalls: totalAiCalls,
-        });
+      res.status(200).json({
+        totalUsers,
+        paidUsers,
+        freeUsers,
+        publicTextCount: publicTextsSnap.size,
+        openReports: reportsSnap.size,
+        recentAiCalls: totalAiCalls,
+      });
     } catch (e: any) {
       console.error('[admin/overview] Error:', e.message);
       res.status(500).json({ error: 'Failed to get overview', code: 'INTERNAL_ERROR' });

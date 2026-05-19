@@ -118,12 +118,10 @@ router.post(
       res.status(200).json({ url: session.url, sessionId: session.id });
     } catch (err: any) {
       console.error('Stripe checkout error:', err);
-      res
-        .status(500)
-        .json({
-          error: err.message || 'Failed to create checkout session',
-          code: 'CHECKOUT_ERROR',
-        });
+      res.status(500).json({
+        error: err.message || 'Failed to create checkout session',
+        code: 'CHECKOUT_ERROR',
+      });
     }
   }
 );
@@ -149,12 +147,10 @@ router.post(
 
       const stripeCustomerId = userSnap.data()?.stripeCustomerId as string | undefined;
       if (!stripeCustomerId) {
-        return res
-          .status(404)
-          .json({
-            error: 'No Stripe customer ID found. Have you subscribed?',
-            code: 'NO_CUSTOMER',
-          });
+        return res.status(404).json({
+          error: 'No Stripe customer ID found. Have you subscribed?',
+          code: 'NO_CUSTOMER',
+        });
       }
 
       const stripeKey = process.env.STRIPE_SECRET_KEY;
