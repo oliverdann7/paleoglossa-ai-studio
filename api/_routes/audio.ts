@@ -34,25 +34,21 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
     const { languageId, text } = req.body;
 
     if (!languageId) {
-      return res
-        .status(400)
-        .json({
-          audioUrl: null,
-          supported: false,
-          reason: 'languageId is required',
-          code: 'INVALID_INPUT',
-        });
+      return res.status(400).json({
+        audioUrl: null,
+        supported: false,
+        reason: 'languageId is required',
+        code: 'INVALID_INPUT',
+      });
     }
 
     if (!text) {
-      return res
-        .status(400)
-        .json({
-          audioUrl: null,
-          supported: false,
-          reason: 'text is required',
-          code: 'INVALID_INPUT',
-        });
+      return res.status(400).json({
+        audioUrl: null,
+        supported: false,
+        reason: 'text is required',
+        code: 'INVALID_INPUT',
+      });
     }
 
     const langConfig = TTS_SUPPORTED_LANGUAGES[languageId];

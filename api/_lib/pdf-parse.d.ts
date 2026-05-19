@@ -4,6 +4,12 @@ declare module 'pdf-parse/lib/pdf-parse.js' {
   function pdfParse(
     dataBuffer: Buffer,
     options?: { max?: number; version?: string }
-  ): Promise<{ text: string; numpages: number; numrender: number; info: unknown; metadata: unknown }>;
+  ): Promise<{
+    text: string;
+    numpages: number;
+    numrender: number;
+    info: unknown;
+    metadata: unknown;
+  }>;
   export = pdfParse;
 }

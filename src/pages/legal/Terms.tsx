@@ -11,7 +11,10 @@ export const Terms = () => {
           {t('terms.title', 'Terms of Service')}
         </h1>
         <p className="text-ink2 text-sm italic">
-          {t('legal.disclaimer', 'Note: This is a draft for information purposes. Please review with legal counsel before publication.')}
+          {t(
+            'legal.disclaimer',
+            'Note: This is a draft for information purposes. Please review with legal counsel before publication.'
+          )}
         </p>
 
         <section className="card p-6 space-y-4">
@@ -20,25 +23,30 @@ export const Terms = () => {
             {t('terms.acceptableUse', 'Acceptable Use')}
           </h2>
           <p className="text-ink2 text-[15px]">
-            {t('terms.useDesc', 'By using Paleoglossa, you agree to use our services for educational and research purposes only. You are responsible for any texts you upload or import, including copyright compliance.')}
+            {t(
+              'terms.useDesc',
+              'By using Paleoglossa, you agree to use our services for educational and research purposes only. You are responsible for any texts you upload or import, including copyright compliance.'
+            )}
           </p>
         </section>
 
         <section className="card p-6 space-y-4">
-          <h2 className="text-xl font-bold">
-            {t('terms.aiLimitations', 'AI Output Limitations')}
-          </h2>
+          <h2 className="text-xl font-bold">{t('terms.aiLimitations', 'AI Output Limitations')}</h2>
           <p className="text-ink2 text-[15px]">
-            {t('terms.aiDesc', 'Our AI-powered tools provide assistance, not absolute accuracy. Please verify critical information.')}
+            {t(
+              'terms.aiDesc',
+              'Our AI-powered tools provide assistance, not absolute accuracy. Please verify critical information.'
+            )}
           </p>
         </section>
 
         <section className="card p-6 space-y-4">
-          <h2 className="text-xl font-bold">
-            {t('terms.payments', 'Subscriptions & Payments')}
-          </h2>
+          <h2 className="text-xl font-bold">{t('terms.payments', 'Subscriptions & Payments')}</h2>
           <p className="text-ink2 text-[15px]">
-            {t('terms.paymentDesc', 'Subscriptions are managed through secure third-party payment providers (Stripe).')}
+            {t(
+              'terms.paymentDesc',
+              'Subscriptions are managed through secure third-party payment providers (Stripe).'
+            )}
           </p>
         </section>
       </div>

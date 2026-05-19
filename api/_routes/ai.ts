@@ -347,35 +347,29 @@ router.post('/api/ai/translate', async (req: any, res: any) => {
         .json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
     }
     if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error: 'tokens must be a non-empty array of strings',
-          code: 'INVALID_INPUT',
-          field: 'tokens',
-        });
+      return res.status(400).json({
+        error: 'tokens must be a non-empty array of strings',
+        code: 'INVALID_INPUT',
+        field: 'tokens',
+      });
     }
 
     const sentence = tokens.join(' ').trim();
     if (!sentence) {
-      return res
-        .status(400)
-        .json({
-          error: 'Sentence text is empty after joining tokens',
-          code: 'INVALID_INPUT',
-          field: 'tokens',
-        });
+      return res.status(400).json({
+        error: 'Sentence text is empty after joining tokens',
+        code: 'INVALID_INPUT',
+        field: 'tokens',
+      });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res
-        .status(200)
-        .json({
-          text: sentence,
-          confidence: null,
-          notes: 'Gemini API key not configured. Returning original text.',
-        });
+      return res.status(200).json({
+        text: sentence,
+        confidence: null,
+        notes: 'Gemini API key not configured. Returning original text.',
+      });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
@@ -428,36 +422,30 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
     }
 
     if (!type || !['word', 'phrase', 'paradigm'].includes(type)) {
-      return res
-        .status(400)
-        .json({
-          error: 'type must be one of: word, phrase, paradigm',
-          code: 'INVALID_INPUT',
-          field: 'type',
-        });
+      return res.status(400).json({
+        error: 'type must be one of: word, phrase, paradigm',
+        code: 'INVALID_INPUT',
+        field: 'type',
+      });
     }
 
     if (type === 'phrase' && (!phrase || typeof phrase !== 'string')) {
-      return res
-        .status(400)
-        .json({
-          error: 'phrase is required for type=phrase',
-          code: 'INVALID_INPUT',
-          field: 'phrase',
-        });
+      return res.status(400).json({
+        error: 'phrase is required for type=phrase',
+        code: 'INVALID_INPUT',
+        field: 'phrase',
+      });
     }
 
     if (
       type !== 'phrase' &&
       (!word || typeof word !== 'string' || !lemma || typeof lemma !== 'string')
     ) {
-      return res
-        .status(400)
-        .json({
-          error: 'word and lemma are required for type=word or type=paradigm',
-          code: 'INVALID_INPUT',
-          field: 'word',
-        });
+      return res.status(400).json({
+        error: 'word and lemma are required for type=word or type=paradigm',
+        code: 'INVALID_INPUT',
+        field: 'word',
+      });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
@@ -527,13 +515,11 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
     res.status(200).json({ explanation: cleaned || 'No explanation could be generated.' });
   } catch (err: any) {
     console.error('[ai/explain] Error:', err.message);
-    res
-      .status(500)
-      .json({
-        explanation: 'Failed to generate explanation.',
-        error: err.message,
-        code: 'EXPLAIN_ERROR',
-      });
+    res.status(500).json({
+      explanation: 'Failed to generate explanation.',
+      error: err.message,
+      code: 'EXPLAIN_ERROR',
+    });
   }
 });
 
@@ -542,24 +528,20 @@ router.post('/api/ai/pronunciation', async (req: any, res: any) => {
     const { languageId, text, transliteration } = req.body;
 
     if (!languageId || typeof languageId !== 'string') {
-      return res
-        .status(400)
-        .json({
-          guide: null,
-          reconstructionSystem: null,
-          warnings: ['languageId is required'],
-          code: 'INVALID_INPUT',
-        });
+      return res.status(400).json({
+        guide: null,
+        reconstructionSystem: null,
+        warnings: ['languageId is required'],
+        code: 'INVALID_INPUT',
+      });
     }
     if (!text || typeof text !== 'string') {
-      return res
-        .status(400)
-        .json({
-          guide: null,
-          reconstructionSystem: null,
-          warnings: ['text is required'],
-          code: 'INVALID_INPUT',
-        });
+      return res.status(400).json({
+        guide: null,
+        reconstructionSystem: null,
+        warnings: ['text is required'],
+        code: 'INVALID_INPUT',
+      });
     }
 
     const note = LANGUAGE_RECONSTRUCTION_NOTES[languageId] || null;
@@ -655,13 +637,11 @@ router.post('/api/ai/scrape', async (req: any, res: any) => {
     });
 
     if (!response.ok) {
-      return res
-        .status(502)
-        .json({
-          error: `Remote server returned ${response.status}`,
-          code: 'FETCH_ERROR',
-          text: '',
-        });
+      return res.status(502).json({
+        error: `Remote server returned ${response.status}`,
+        code: 'FETCH_ERROR',
+        text: '',
+      });
     }
 
     const html = await response.text();
@@ -696,30 +676,26 @@ router.post('/api/ai/metadata', async (req: any, res: any) => {
     const { languageId, rawText } = req.body;
 
     if (!languageId || typeof languageId !== 'string' || !rawText || typeof rawText !== 'string') {
-      return res
-        .status(400)
-        .json({
-          error: 'languageId and rawText are required',
-          code: 'INVALID_INPUT',
-          difficulty: '',
-          tags: [],
-          summary: '',
-          warnings: ['Invalid input'],
-        });
+      return res.status(400).json({
+        error: 'languageId and rawText are required',
+        code: 'INVALID_INPUT',
+        difficulty: '',
+        tags: [],
+        summary: '',
+        warnings: ['Invalid input'],
+      });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res
-        .status(200)
-        .json({
-          difficulty: 'unknown',
-          tags: [],
-          summary: '',
-          period: '',
-          genre: '',
-          warnings: ['Gemini API key not configured. Metadata unavailable.'],
-        });
+      return res.status(200).json({
+        difficulty: 'unknown',
+        tags: [],
+        summary: '',
+        period: '',
+        genre: '',
+        warnings: ['Gemini API key not configured. Metadata unavailable.'],
+      });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
@@ -766,25 +742,21 @@ Text: ${rawText.slice(0, 5000)}`;
         warnings: undefined,
       });
     } catch {
-      res
-        .status(200)
-        .json({
-          difficulty: 'unknown',
-          tags: [],
-          summary: '',
-          warnings: ['AI returned unparseable metadata.'],
-        });
-    }
-  } catch (err: any) {
-    console.error('[ai/metadata] Error:', err.message);
-    res
-      .status(200)
-      .json({
+      res.status(200).json({
         difficulty: 'unknown',
         tags: [],
         summary: '',
-        warnings: ['Metadata generation failed.'],
+        warnings: ['AI returned unparseable metadata.'],
       });
+    }
+  } catch (err: any) {
+    console.error('[ai/metadata] Error:', err.message);
+    res.status(200).json({
+      difficulty: 'unknown',
+      tags: [],
+      summary: '',
+      warnings: ['Metadata generation failed.'],
+    });
   }
 });
 
@@ -800,15 +772,13 @@ router.post('/api/ai/quiz', async (req: any, res: any) => {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res
-        .status(200)
-        .json({
-          question: '',
-          choices: [],
-          answer: '',
-          explanation: 'Quiz requires GEMINI_API_KEY.',
-          confidence: null,
-        });
+      return res.status(200).json({
+        question: '',
+        choices: [],
+        answer: '',
+        explanation: 'Quiz requires GEMINI_API_KEY.',
+        confidence: null,
+      });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
@@ -855,27 +825,23 @@ Rules:
         confidence: null,
       });
     } catch {
-      res
-        .status(200)
-        .json({
-          question: '',
-          choices: [],
-          answer: '',
-          explanation: 'Failed to parse quiz response.',
-          confidence: null,
-        });
-    }
-  } catch (err: any) {
-    console.error('[ai/quiz] Error:', err.message);
-    res
-      .status(200)
-      .json({
+      res.status(200).json({
         question: '',
         choices: [],
         answer: '',
-        explanation: 'Quiz generation failed.',
+        explanation: 'Failed to parse quiz response.',
         confidence: null,
       });
+    }
+  } catch (err: any) {
+    console.error('[ai/quiz] Error:', err.message);
+    res.status(200).json({
+      question: '',
+      choices: [],
+      answer: '',
+      explanation: 'Quiz generation failed.',
+      confidence: null,
+    });
   }
 });
 
@@ -896,14 +862,12 @@ router.post('/api/ai/syntax', async (req: any, res: any) => {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res
-        .status(200)
-        .json({
-          tokens: [],
-          explanation: 'Syntax analysis requires GEMINI_API_KEY.',
-          confidence: null,
-          warnings: ['Gemini API key not configured.'],
-        });
+      return res.status(200).json({
+        tokens: [],
+        explanation: 'Syntax analysis requires GEMINI_API_KEY.',
+        confidence: null,
+        warnings: ['Gemini API key not configured.'],
+      });
     }
 
     const { GoogleGenAI } = await import('@google/genai');
@@ -970,14 +934,12 @@ Rules:
     });
   } catch (err: any) {
     console.error('[ai/syntax] Error:', err.message);
-    res
-      .status(200)
-      .json({
-        tokens: [],
-        explanation: 'Syntax analysis failed.',
-        confidence: null,
-        warnings: ['Analysis failed: ' + err.message],
-      });
+    res.status(200).json({
+      tokens: [],
+      explanation: 'Syntax analysis failed.',
+      confidence: null,
+      warnings: ['Analysis failed: ' + err.message],
+    });
   }
 });
 
@@ -1289,13 +1251,11 @@ router.post(
           .json({ error: 'language is required', code: 'INVALID_INPUT', field: 'language' });
       }
       if (!['beginner', 'scholar'].includes(mode)) {
-        return res
-          .status(400)
-          .json({
-            error: 'mode must be beginner or scholar',
-            code: 'INVALID_INPUT',
-            field: 'mode',
-          });
+        return res.status(400).json({
+          error: 'mode must be beginner or scholar',
+          code: 'INVALID_INPUT',
+          field: 'mode',
+        });
       }
 
       const apiKey = process.env.GEMINI_API_KEY;

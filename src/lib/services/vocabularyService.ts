@@ -13,6 +13,7 @@ import { STORAGE_KEYS } from '../constants/storage.js';
 import { SRSData } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
+import { markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
 
 export type { SRSData };
 
@@ -66,9 +67,11 @@ const flushVocabWrites = async () => {
 
     try {
       await batch.commit();
+      markWriteSuccess();
     } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
       console.error('Failed to commit vocabulary batch', e);
-      // Depending on strictness, we might want to put them back in the queue
+      markWriteFailure(msg);
     }
   }
 };

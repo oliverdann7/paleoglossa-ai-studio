@@ -147,14 +147,12 @@ router.post('/api/courses', requireAuth as any, async (req: AuthenticatedRequest
       joinedAt: FieldValue.serverTimestamp(),
     });
 
-    res
-      .status(200)
-      .json({
-        id: ref.id,
-        ...courseData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+    res.status(200).json({
+      id: ref.id,
+      ...courseData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
   } catch (e: any) {
     console.error('[courses] Error creating:', e.message);
     res.status(500).json({ error: 'Failed to create course', code: 'INTERNAL_ERROR' });

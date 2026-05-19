@@ -2,6 +2,7 @@ import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { normalizeTimestamp } from '../utils.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
+import { markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
 
 const progressCache = new Map<string, { data: TextProgress[]; at: number }>();
 const PROGRESS_CACHE_TTL = 30_000;
@@ -120,8 +121,11 @@ export class StatsService {
         },
         { merge: true }
       );
+      markWriteSuccess();
     } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
       console.error('Error updating stats:', e);
+      markWriteFailure(msg);
     }
   }
 
@@ -183,8 +187,11 @@ export class StatsService {
         },
         { merge: true }
       );
+      markWriteSuccess();
     } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
       console.error('Error saving text progress:', e);
+      markWriteFailure(msg);
     }
   }
 

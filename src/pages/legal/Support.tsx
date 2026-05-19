@@ -7,9 +7,7 @@ export const Support = () => {
   return (
     <div className="min-h-screen bg-parch p-6 md:p-12">
       <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-4xl font-serif font-bold text-ink">
-          {t('support.title', 'Support')}
-        </h1>
+        <h1 className="text-4xl font-serif font-bold text-ink">{t('support.title', 'Support')}</h1>
 
         <section className="card p-6 space-y-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
@@ -17,7 +15,10 @@ export const Support = () => {
             {t('support.contactUs', 'Contact Us')}
           </h2>
           <p className="text-ink2 text-[15px]">
-            {t('support.contactDesc', 'For bug reports, feature requests, or questions, please email us:')}
+            {t(
+              'support.contactDesc',
+              'For bug reports, feature requests, or questions, please email us:'
+            )}
           </p>
           <a href="mailto:support@paleoglossa.com" className="text-blue font-bold hover:underline">
             support@paleoglossa.com

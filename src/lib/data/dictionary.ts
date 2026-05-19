@@ -408,8 +408,7 @@ export const getDefinitionWithFallbacks = (
   // 5. Language alias fallback for static dict (e.g. grc-koine -> grc)
   const langAliases = languageId === 'grc-koine' ? ['grc'] : [];
   for (const alias of langAliases) {
-    const aliasResult =
-      tryStatic(`${alias}:${lemma}`) || tryStatic(`${alias}:${lower}`);
+    const aliasResult = tryStatic(`${alias}:${lemma}`) || tryStatic(`${alias}:${lower}`);
     if (aliasResult) return aliasResult;
   }
 

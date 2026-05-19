@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { Check, Sparkles, Crown, ArrowRight, Lock, ExternalLink, Loader2, Info } from 'lucide-react';
+import {
+  Check,
+  Sparkles,
+  Crown,
+  ArrowRight,
+  Lock,
+  ExternalLink,
+  Loader2,
+  Info,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { PLANS, getPlanById } from '../lib/constants/plans.js';
@@ -75,7 +84,9 @@ export const Subscription = () => {
       {isNative && (
         <div className="mb-8 p-4 bg-parch2 border border-bdr rounded-xl text-ink2 text-[14px] flex items-center justify-center gap-3">
           <Info className="w-5 h-5 text-ink3" />
-          {t('sub.mobileSubscriptionNotice', { defaultValue: "Subscription management is currently available on the web." })}
+          {t('sub.mobileSubscriptionNotice', {
+            defaultValue: 'Subscription management is currently available on the web.',
+          })}
         </div>
       )}
 
@@ -200,22 +211,24 @@ export const Subscription = () => {
       </div>
 
       {/* Manage Billing */}
-      {subscription.subscriptionStatus === 'active' && subscription.stripeCustomerId && !isNative && (
-        <div className="text-center mb-12">
-          <button
-            onClick={handleManageBilling}
-            disabled={portalLoading}
-            className="inline-flex items-center gap-2 px-6 py-3 border border-bdr/60 rounded-xl text-[14px] font-bold text-ink hover:bg-parch2 transition-all"
-          >
-            {portalLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <ExternalLink className="w-4 h-4" />
-            )}
-            {t('sub.manageBilling')}
-          </button>
-        </div>
-      )}
+      {subscription.subscriptionStatus === 'active' &&
+        subscription.stripeCustomerId &&
+        !isNative && (
+          <div className="text-center mb-12">
+            <button
+              onClick={handleManageBilling}
+              disabled={portalLoading}
+              className="inline-flex items-center gap-2 px-6 py-3 border border-bdr/60 rounded-xl text-[14px] font-bold text-ink hover:bg-parch2 transition-all"
+            >
+              {portalLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ExternalLink className="w-4 h-4" />
+              )}
+              {t('sub.manageBilling')}
+            </button>
+          </div>
+        )}
 
       {/* Language Selection */}
       <div className="card p-8 max-w-3xl mx-auto">
