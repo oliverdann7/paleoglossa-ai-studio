@@ -23,6 +23,19 @@ const DEFAULT_SETTINGS: UserSettings = {
 };
 
 export class SettingsService {
+  static async migrateLocalStorage(userId: string): Promise<boolean> {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return false;
+    try {
+      await this.saveSettings(userId, JSON.parse(saved));
+      localStorage.removeItem(STORAGE_KEY);
+      return true;
+    } catch (e) {
+      console.error('Settings migration failed:', e);
+      return false;
+    }
+  }
+
   static async getSettings(userId: string | null): Promise<UserSettings> {
     if (!userId) {
       const saved = localStorage.getItem(STORAGE_KEY);
