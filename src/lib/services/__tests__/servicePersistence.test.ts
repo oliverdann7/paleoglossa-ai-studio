@@ -8,7 +8,7 @@
  *    Firestore paths with the expected payload shape.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // ── Hoisted mocks (must be declared before vi.mock factories are executed) ────
 
