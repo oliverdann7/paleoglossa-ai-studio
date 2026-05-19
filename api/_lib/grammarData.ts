@@ -12,6 +12,7 @@ export interface GrammarConcept {
     rows: { label: string; cells: string[] }[];
   };
   relatedMorphKeys: string[];
+  lemmaKeys?: string[];
   status: 'complete' | 'partial';
 }
 
@@ -43,6 +44,7 @@ The case endings vary by declension, gender, and number (singular, dual, plural)
       { surface: 'λόγε', gloss: 'O word! (voc. sg.)', translation: 'O word!' },
     ],
     relatedMorphKeys: ['case', 'number', 'declension'],
+    lemmaKeys: ['λόγος', 'χώρα'],
     status: 'complete',
   },
 
@@ -74,6 +76,7 @@ Typical feminine pattern: ἡ χώρᾱ (Doric/Ionic) → ἡ χώρα (Attic).`
       ],
     },
     relatedMorphKeys: ['declension', 'case', 'number', 'gender'],
+    lemmaKeys: ['χώρα', 'ἀρχή'],
     status: 'complete',
   },
 
@@ -101,6 +104,7 @@ Typical feminine pattern: ἡ χώρᾱ (Doric/Ionic) → ἡ χώρα (Attic).`
       ],
     },
     relatedMorphKeys: ['declension', 'case', 'number', 'gender'],
+    lemmaKeys: ['λόγος', 'ἔργον'],
     status: 'complete',
   },
 
@@ -127,6 +131,7 @@ The dative plural always ends in -σι(ν), which often causes consonant changes
       { surface: 'τοῦ πατρός', gloss: 'of the father (gen. sg.)' },
     ],
     relatedMorphKeys: ['declension', 'case', 'number', 'stem'],
+    lemmaKeys: ['ἐλπίς', 'πατήρ', 'πνεῦμα'],
     status: 'complete',
   },
 
@@ -159,6 +164,7 @@ The article is also used to substantivize adjectives, participles, and infinitiv
       ],
     },
     relatedMorphKeys: ['article', 'case', 'number', 'gender'],
+    lemmaKeys: ['λόγος', 'θεός', 'ἄνθρωπος'],
     status: 'complete',
   },
 
@@ -190,6 +196,7 @@ The augment (ε- prefix, or vowel lengthening) marks past time in the indicative
       { surface: 'λέλυκα', gloss: 'I have loosened (pf.)' },
     ],
     relatedMorphKeys: ['tense', 'aspect', 'mood', 'augment'],
+    lemmaKeys: ['λύω', 'λέγω', 'πιστεύω'],
     status: 'complete',
   },
 
@@ -220,6 +227,7 @@ The principal parts of a Greek verb: (1) present active indicative 1sg, (2) futu
       ],
     },
     relatedMorphKeys: ['tense', 'voice', 'mood', 'person', 'number'],
+    lemmaKeys: ['λύω', 'πιστεύω', 'λέγω'],
     status: 'complete',
   },
 
@@ -251,6 +259,7 @@ The augment (ε-) marks past time in the indicative.`,
       ],
     },
     relatedMorphKeys: ['tense', 'aspect', 'voice', 'mood', 'augment'],
+    lemmaKeys: ['λύω', 'λαμβάνω', 'λέγω', 'βάλλω'],
     status: 'complete',
   },
 
@@ -279,6 +288,7 @@ The perfect is often better translated with an English present than a present pe
       ],
     },
     relatedMorphKeys: ['tense', 'aspect', 'reduplication', 'voice', 'mood'],
+    lemmaKeys: ['γράφω', 'πιστεύω', 'λύω'],
     status: 'complete',
   },
 
@@ -307,6 +317,7 @@ Uses:
       { surface: 'λελυκώς', gloss: 'having loosened (pf. act. masc. nom. sg.)' },
     ],
     relatedMorphKeys: ['participle', 'tense', 'voice', 'case', 'number', 'gender'],
+    lemmaKeys: ['λύω', 'πιστεύω', 'γράφω', 'εἰμί'],
     status: 'complete',
   },
 
@@ -333,6 +344,7 @@ Key uses:
       { surface: 'τὸ λύειν', gloss: 'the act of loosening (articular inf.)' },
     ],
     relatedMorphKeys: ['infinitive', 'tense', 'voice', 'complementary', 'indirect discourse'],
+    lemmaKeys: ['βούλομαι', 'κελεύω', 'λέγω'],
     status: 'complete',
   },
 
@@ -359,6 +371,7 @@ The distinction between subjunctive and optative often reflects primary vs. seco
       { surface: 'λύε', gloss: 'loosen! (imperative)' },
     ],
     relatedMorphKeys: ['mood', 'subjunctive', 'optative', 'imperative', 'indicative'],
+    lemmaKeys: ['λύω', 'πιστεύω'],
     status: 'complete',
   },
 
@@ -395,6 +408,7 @@ They often show ablaut (vowel alternation) in the stem: long vowel in singular, 
       ],
     },
     relatedMorphKeys: ['athematic', 'conjugation', 'person', 'number'],
+    lemmaKeys: ['εἰμί', 'δίδωμι', 'τίθημι'],
     status: 'complete',
   },
 
@@ -430,6 +444,7 @@ They often show ablaut (vowel alternation) in the stem: long vowel in singular, 
       { surface: 'ἐὰν λύῃ, χαιρήσει', gloss: 'If he should loosen, he will rejoice (FMV)' },
     ],
     relatedMorphKeys: ['conditional', 'mood', 'ἄν', 'εἰ', 'ἐάν'],
+    lemmaKeys: ['εἰ', 'λύω', 'χαίρω'],
     status: 'complete',
   },
 
@@ -456,6 +471,7 @@ They often show ablaut (vowel alternation) in the stem: long vowel in singular, 
       { surface: 'ὁράᾳ αὐτὸν γράφοντα', gloss: 'he sees him writing' },
     ],
     relatedMorphKeys: ['indirect discourse', 'infinitive', 'participle', 'ὅτι'],
+    lemmaKeys: ['λέγω', 'νομίζω', 'ὁράω'],
     status: 'complete',
   },
 
@@ -491,6 +507,7 @@ Key particles:
       { surface: 'οὔπω οὖν εἰσῆλθεν', gloss: 'he had not yet entered, therefore' },
     ],
     relatedMorphKeys: ['particle', 'discourse', 'post-positive', 'μέν', 'δέ', 'γάρ'],
+    lemmaKeys: ['δέ', 'γάρ', 'καί', 'οὖν'],
     status: 'complete',
   },
 
@@ -514,6 +531,7 @@ Key particles:
       { surface: 'ὅταν λύῃ', gloss: 'whenever he loosens (general)' },
     ],
     relatedMorphKeys: ['ἄν', 'potential', 'conditional', 'optative', 'subjunctive'],
+    lemmaKeys: ['ἄν'],
     status: 'complete',
   },
 
@@ -547,6 +565,7 @@ The third-person pronoun αὐτός also serves as an intensifier ("himself/her
       ],
     },
     relatedMorphKeys: ['pronoun', 'person', 'number', 'case'],
+    lemmaKeys: ['αὐτός', 'ἐγώ', 'σύ'],
     status: 'complete',
   },
 
@@ -577,6 +596,7 @@ Latin has six cases: Nominative, Genitive, Dative, Accusative, Ablative, Vocativ
       { surface: 'res, rei', gloss: 'thing (5th decl.)', translation: 'thing/matter' },
     ],
     relatedMorphKeys: ['case', 'number', 'declension'],
+    lemmaKeys: ['rosa', 'rex', 'dominus', 'res'],
     status: 'complete',
   },
 
@@ -608,6 +628,7 @@ The genitive plural ends in -ārum; the dative and ablative plural share -īs.`,
       ],
     },
     relatedMorphKeys: ['declension', 'case', 'number', 'gender'],
+    lemmaKeys: ['puella', 'aqua', 'terra'],
     status: 'complete',
   },
 
@@ -640,6 +661,7 @@ The ablative absolute: a participial phrase with a separate subject in the ablat
       { surface: 'nōbīs dormientibus', gloss: 'while we were sleeping (ablative absolute)' },
     ],
     relatedMorphKeys: ['ablative', 'case', 'preposition', 'absolute'],
+    lemmaKeys: ['gladius', 'cura', 'dux'],
     status: 'complete',
   },
 
@@ -674,6 +696,7 @@ Principal parts: (1) 1sg pres. act. ind., (2) pres. act. inf., (3) 1sg perf. act
       ],
     },
     relatedMorphKeys: ['conjugation', 'tense', 'voice', 'mood', 'person', 'number'],
+    lemmaKeys: ['amo', 'dico', 'audio', 'sum'],
     status: 'complete',
   },
 
@@ -696,6 +719,7 @@ Tense of infinitive does not reflect absolute time, only relative time.`,
       { surface: 'spērat sē victūrum esse', gloss: 'he hopes that he will win (future)' },
     ],
     relatedMorphKeys: ['indirect discourse', 'accusative', 'infinitive', 'oratio obliqua'],
+    lemmaKeys: ['dico', 'credo', 'spero'],
     status: 'complete',
   },
 
@@ -725,6 +749,7 @@ Dependent (sequence of tenses applies):
       { surface: 'nesciō quid dīcat', gloss: 'I do not know what he says (indirect question)' },
     ],
     relatedMorphKeys: ['subjunctive', 'mood', 'sequence of tenses', 'purpose', 'result'],
+    lemmaKeys: ['venio', 'video', 'dico'],
     status: 'complete',
   },
 
@@ -756,6 +781,7 @@ The root consonants carry the core meaning; the stem pattern adds voice and nuan
       { surface: 'הִתְפַּלֵּל', gloss: 'he prayed (Hithpael of פלל)' },
     ],
     relatedMorphKeys: ['stem', 'root', 'binyan', 'voice'],
+    lemmaKeys: ['כָּתַב', 'אָמַר', 'הָלַךְ'],
     status: 'complete',
   },
 
@@ -790,6 +816,7 @@ The Qal perfect uses suffixed personal endings. The 3rd masculine singular is th
       ],
     },
     relatedMorphKeys: ['perfect', 'qal', 'conjugation', 'stem'],
+    lemmaKeys: ['כָּתַב', 'אָמַר', 'עָשָׂה'],
     status: 'complete',
   },
 
@@ -814,6 +841,7 @@ This is why the tense system is better described as an aspect system — the ver
       { surface: 'וְשָׁמַרְתָּ', gloss: 'and you shall keep (weqatal — future)' },
     ],
     relatedMorphKeys: ['waw', 'consecutive', 'narrative', 'aspect', 'tense'],
+    lemmaKeys: ['אָמַר', 'הָלַךְ', 'שָׁמַר'],
     status: 'complete',
   },
 
@@ -836,6 +864,7 @@ Gutturals (א ה ח ע) and ר cannot take dagesh forte; instead, the preceding 
       { surface: 'הַמֶּלֶךְ', gloss: 'the king (ham-melek — dagesh in מ)' },
     ],
     relatedMorphKeys: ['article', 'dagesh', 'guttural', 'prefix'],
+    lemmaKeys: ['סֵפֶר', 'אָרֶץ', 'מֶלֶךְ'],
     status: 'complete',
   },
 
