@@ -758,6 +758,31 @@ export const pt = {
     'deleteAccount.tos': 'Termos de Serviço',
     'deleteAccount.viewTerms': 'Ver termos',
 
+    'demo.banner': 'Modo demonstração: seu progresso é salvo apenas neste dispositivo.',
+    'demo.signIn': 'Entrar',
+    'demo.createAccount': 'Criar Conta',
+    'demo.export': 'Exportar dados',
+    'demo.exported': 'Exportado!',
+
+    'demo.migration.title': 'Encontramos progresso de demonstração neste dispositivo.',
+    'demo.migration.subtitle':
+      'Transfira para sua conta para salvar na nuvem e acessar de qualquer dispositivo.',
+    'demo.migration.found': 'Encontrado: {{items}}',
+    'demo.migration.vocabulary': 'vocabulário',
+    'demo.migration.imports': 'textos importados',
+    'demo.migration.stats': 'estatísticas de leitura',
+    'demo.migration.settings': 'configurações',
+    'demo.migration.progress': 'progresso de leitura',
+    'demo.migration.move': 'Transferir para minha conta',
+    'demo.migration.keepLocal': 'Manter apenas local',
+    'demo.migration.discard': 'Descartar dados de demonstração',
+    'demo.migration.successTitle': 'Progresso salvo na sua conta!',
+    'demo.migration.successDesc':
+      'Seu progresso de demonstração foi salvo na sua conta. Você pode acessá-lo de qualquer dispositivo.',
+    'demo.migration.errorTitle': 'Falha na migração',
+    'demo.migration.errorDesc': 'Seus dados locais foram preservados. Tente novamente.',
+    'demo.migration.retry': 'Tentar novamente',
+
     'syncStatus.cloudSyncedLabel': 'Sincronização ativa',
     'syncStatus.demoModeLabel': 'Modo demonstração',
     'syncStatus.localOnlyLabel': 'Apenas local',

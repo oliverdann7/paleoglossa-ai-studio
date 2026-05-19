@@ -144,6 +144,55 @@ export class StatsService {
     }
   }
 
+  static async migrateLocalReadingProgress(userId: string): Promise<number> {
+    let count = 0;
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(STORAGE_KEYS.READING_PROGRESS_PREFIX)) {
+        keys.push(key);
+      }
+    }
+    const recentKey = STORAGE_KEYS.RECENT_PROGRESS;
+    const recentRaw = localStorage.getItem(recentKey);
+    if (recentRaw) {
+      try {
+        JSON.parse(recentRaw) as TextProgress[];
+      } catch {
+        /* ignore */
+      }
+    }
+    for (const key of keys) {
+      const textId = key.replace(STORAGE_KEYS.READING_PROGRESS_PREFIX, '');
+      if (!textId) continue;
+      try {
+        const saved = localStorage.getItem(key);
+        if (!saved) continue;
+        const progress = JSON.parse(saved) as TextProgress;
+        progress.textId = textId;
+        await this.setTextProgress(userId, progress);
+        localStorage.removeItem(key);
+        count++;
+      } catch (e) {
+        console.error(`Reading progress migration failed for ${textId}:`, e);
+      }
+    }
+    // Migrate recent progress list
+    if (recentRaw) {
+      try {
+        const recent = JSON.parse(recentRaw) as TextProgress[];
+        for (const r of recent) {
+          r.lastReadAt = new Date().toISOString();
+          await this.setTextProgress(userId, r);
+        }
+        localStorage.removeItem(recentKey);
+      } catch {
+        /* ignore */
+      }
+    }
+    return count;
+  }
+
   // ── Text Progress ────────────────────────────────────────────────────
 
   static async getTextProgress(

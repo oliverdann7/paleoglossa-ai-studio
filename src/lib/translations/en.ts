@@ -651,10 +651,30 @@ export const en = {
     'community.errorTitle': 'Something went wrong',
     'community.errorDesc': 'Could not load scholars. Please try again.',
 
-    'demo.banner': "You're exploring as a guest. Your progress is saved only on this device.",
+    'demo.banner': 'Demo mode: your progress is saved only on this device.',
     'demo.signIn': 'Sign In',
     'demo.createAccount': 'Create Account',
-    'demo.dismiss': 'Dismiss',
+    'demo.export': 'Export data',
+    'demo.exported': 'Exported!',
+
+    'demo.migration.title': 'We found demo progress on this device.',
+    'demo.migration.subtitle':
+      'Move it to your account so it is saved to the cloud and available on any device.',
+    'demo.migration.found': 'Found: {{items}}',
+    'demo.migration.vocabulary': 'vocabulary',
+    'demo.migration.imports': 'imported texts',
+    'demo.migration.stats': 'reading stats',
+    'demo.migration.settings': 'settings',
+    'demo.migration.progress': 'reading progress',
+    'demo.migration.move': 'Move to my account',
+    'demo.migration.keepLocal': 'Keep local only',
+    'demo.migration.discard': 'Discard demo data',
+    'demo.migration.successTitle': 'Progress saved to your account!',
+    'demo.migration.successDesc':
+      'Your demo progress has been saved to your account. You can access it from any device.',
+    'demo.migration.errorTitle': 'Migration failed',
+    'demo.migration.errorDesc': 'Your local data has been preserved. Please try again.',
+    'demo.migration.retry': 'Retry',
 
     'account.dangerZone': 'Danger Zone',
     'account.dangerZoneDesc': 'Irreversible account deletion actions.',
