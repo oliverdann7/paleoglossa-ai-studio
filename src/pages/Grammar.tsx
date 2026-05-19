@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
   GraduationCap,
@@ -10,6 +11,7 @@ import {
   MessageSquare,
   AlignLeft,
   Hash,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +21,15 @@ interface Paradigm {
   caption: string;
   headers: string[];
   rows: { label: string; cells: string[] }[];
+}
+
+interface CorpusSentence {
+  lemma: string;
+  surface: string;
+  sentenceText: string;
+  translation: string;
+  textTitle: string;
+  textId: string;
 }
 
 interface Concept {
@@ -31,6 +42,7 @@ interface Concept {
   examples: { surface: string; gloss: string; translation?: string }[];
   paradigm?: Paradigm;
   relatedMorphKeys: string[];
+  corpusSentences?: CorpusSentence[];
   status: string;
 }
 
@@ -123,8 +135,17 @@ function ParadigmTable({ paradigm, rtl }: { paradigm: Paradigm; rtl: boolean }) 
   );
 }
 
-function ConceptDetail({ concept, onBack }: { concept: Concept; onBack: () => void }) {
+function ConceptDetail({
+  concept,
+  isLoadingCorpus,
+  onBack,
+}: {
+  concept: Concept;
+  isLoadingCorpus: boolean;
+  onBack: () => void;
+}) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const rtl = RTL.has(concept.languageId);
   const Icon = CATEGORY_ICONS[concept.category] ?? GraduationCap;
 
@@ -228,6 +249,42 @@ function ConceptDetail({ concept, onBack }: { concept: Concept; onBack: () => vo
           </div>
         </div>
       )}
+
+      {(isLoadingCorpus || (concept.corpusSentences && concept.corpusSentences.length > 0)) && (
+        <div className="mt-8">
+          <h3 className="text-[11px] font-bold text-ink mb-3 uppercase tracking-widest flex items-center gap-2">
+            {t('grammar.corpusExamples', 'Found in Corpus')}
+            {isLoadingCorpus && <Loader2 className="w-3 h-3 animate-spin text-muted" />}
+          </h3>
+          <div className="space-y-3">
+            {(concept.corpusSentences ?? []).map((cs, i) => (
+              <div key={i} className="card p-4 border-l-2 border-l-gold/40">
+                <div
+                  className="text-[16px] font-serif text-ink leading-relaxed mb-1"
+                  dir={rtl ? 'rtl' : 'ltr'}
+                >
+                  {cs.sentenceText}
+                </div>
+                {cs.translation && (
+                  <div className="text-[13px] text-ink2 italic mb-2">{cs.translation}</div>
+                )}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-muted">{cs.textTitle}</span>
+                  {cs.textId && (
+                    <button
+                      onClick={() => navigate(`/app/reader/${cs.textId}`)}
+                      className="flex items-center gap-1 text-[11px] text-blue hover:underline"
+                    >
+                      {t('grammar.readInContext', 'Read in context')}
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -317,6 +374,7 @@ export const Grammar = () => {
   const [concepts, setConcepts] = useState<Concept[]>([]);
   const [selected, setSelected] = useState<Concept | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeLang, setActiveLang] = useState<string>('all');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -330,6 +388,18 @@ export const Grammar = () => {
       })
       .catch(() => setIsLoading(false));
   }, []);
+
+  const selectConcept = (concept: Concept) => {
+    setIsLoadingDetail(true);
+    setSelected(concept);
+    fetch(getApiUrl(`/api/grammar/concepts/${concept.id}`))
+      .then((r) => r.json())
+      .then((data: Concept | null) => {
+        if (data) setSelected(data);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingDetail(false));
+  };
 
   const languages = useMemo(() => {
     const seen = new Set<string>();
@@ -378,7 +448,14 @@ export const Grammar = () => {
       </div>
     );
 
-  if (selected) return <ConceptDetail concept={selected} onBack={() => setSelected(null)} />;
+  if (selected)
+    return (
+      <ConceptDetail
+        concept={selected}
+        isLoadingCorpus={isLoadingDetail}
+        onBack={() => setSelected(null)}
+      />
+    );
 
   return (
     <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen">
@@ -465,7 +542,7 @@ export const Grammar = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {items.map((c) => (
-                    <ConceptCard key={c.id} concept={c} onClick={() => setSelected(c)} />
+                    <ConceptCard key={c.id} concept={c} onClick={() => selectConcept(c)} />
                   ))}
                 </div>
               </section>
@@ -476,7 +553,7 @@ export const Grammar = () => {
         // Flat filtered view
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filtered.map((c) => (
-            <ConceptCard key={c.id} concept={c} onClick={() => setSelected(c)} />
+            <ConceptCard key={c.id} concept={c} onClick={() => selectConcept(c)} />
           ))}
         </div>
       )}
