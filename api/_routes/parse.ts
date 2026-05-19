@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { PDFParse, PasswordException } from 'pdf-parse';
+// pdf-parse v1.1.1 — pure JS, no native binaries, works on Vercel Linux
+import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import mammoth from 'mammoth';
 
 const router = Router();
@@ -40,22 +41,17 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
     const warnings: string[] = [];
 
     if (mimetype === 'application/pdf') {
-      const parser = new PDFParse({ data: buffer });
-      try {
-        const result = await parser.getText();
-        text = result.text.trim();
-        if (!text) {
-          warnings.push(
-            'PDF contained no extractable text. It may be a scanned image — try the Image OCR tab instead.'
-          );
-        }
-        if (result.total > 200) {
-          warnings.push(
-            `Large document (${result.total} pages). Only the first 100,000 characters will be analyzed.`
-          );
-        }
-      } finally {
-        await parser.destroy();
+      const data = await pdfParse(buffer);
+      text = data.text.trim();
+      if (!text) {
+        warnings.push(
+          'PDF contained no extractable text. It may be a scanned image — try the Image OCR tab instead.'
+        );
+      }
+      if (data.numpages > 200) {
+        warnings.push(
+          `Large document (${data.numpages} pages). Only the first 100,000 characters will be analyzed.`
+        );
       }
     } else if (
       mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -88,13 +84,13 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
       warnings: warnings.length > 0 ? warnings : undefined,
     });
   } catch (err: unknown) {
-    if (err instanceof PasswordException) {
+    const msg = err instanceof Error ? err.message.toLowerCase() : '';
+    if (msg.includes('password') || msg.includes('encrypted')) {
       return res.status(422).json({
         error: 'This PDF is password-protected. Remove the password and try again.',
         code: 'PDF_ENCRYPTED',
       });
     }
-    const msg = err instanceof Error ? err.message.toLowerCase() : '';
     if (msg.includes('central directory') || msg.includes('zip')) {
       return res.status(422).json({
         error: 'The DOCX file appears to be corrupt or is not a valid Word document.',

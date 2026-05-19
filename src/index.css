@@ -90,6 +90,18 @@
     --gold: #964f16;
     --blue: #5C3A21;
     --bluexl: #f0decd;
+    /* Mirror as --color-* so Tailwind utility classes also respond to sepia mode */
+    --color-parch: #F7ECD2;
+    --color-parch2: #E6D0AC;
+    --color-parch3: #D0B388;
+    --color-bdr: #B59363;
+    --color-ink: #301705;
+    --color-ink2: #4D2508;
+    --color-ink3: #753B11;
+    --color-muted: #915F33;
+    --color-gold: #964f16;
+    --color-blue: #5C3A21;
+    --color-bluexl: #f0decd;
   }
 
   :root.theme-dark {
@@ -108,6 +120,22 @@
     --amberxl: #3e2610;
     --jade: #4bb376;
     --jadexl: #123722;
+    /* Mirror as --color-* so Tailwind utility classes (text-ink, bg-parch, etc.) also respond to dark mode */
+    --color-parch: #151b23;
+    --color-parch2: #1e2630;
+    --color-parch3: #2a3544;
+    --color-bdr: #3d4d63;
+    --color-ink: #e0e5ea;
+    --color-ink2: #a2b1c4;
+    --color-ink3: #7b8fa7;
+    --color-muted: #5e6f85;
+    --color-gold: #dcb360;
+    --color-blue: #579ee5;
+    --color-bluexl: #183452;
+    --color-amber: #de8c3f;
+    --color-amberxl: #3e2610;
+    --color-jade: #4bb376;
+    --color-jadexl: #123722;
   }
 
   body {
