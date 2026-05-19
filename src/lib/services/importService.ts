@@ -14,7 +14,8 @@ import { apiFetch } from './apiFetch.js';
 import { ImportedText as FSImportedText } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
-import { markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
+import { markWriteSuccess, markWriteFailure, markPendingWrite } from '../sync/syncStatus.js';
+import { reportPersistenceError } from '../errors/persistenceReporter.js';
 
 export async function computeContentHash(text: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -156,6 +157,7 @@ export class ImportService {
     const cleanedPayload = this.stripUndefined(payload);
 
     importsCache.delete(userId);
+    markPendingWrite();
     try {
       await setDoc(doc(db, `users/${userId}/imports`, importId), {
         ...cleanedPayload,
@@ -167,6 +169,12 @@ export class ImportService {
       const message = e instanceof Error ? e.message : String(e);
       console.error('Import Save Error:', e);
       markWriteFailure(message);
+      reportPersistenceError(e, {
+        operation: 'import:save',
+        path: `users/${userId}/imports/${importId}`,
+        category: 'import',
+        dataPreservedLocally: false,
+      });
       throw new Error(
         `Failed to save import to Firestore: ${message}`,
         e instanceof Error ? { cause: e } : undefined
@@ -181,10 +189,21 @@ export class ImportService {
   ): Promise<void> {
     importsCache.delete(userId);
     const cleanedPatch = this.stripUndefined(patch);
-    await updateDoc(doc(db, `users/${userId}/imports`, importId), {
-      ...cleanedPatch,
-      updatedAt: serverTimestamp(),
-    });
+    try {
+      await updateDoc(doc(db, `users/${userId}/imports`, importId), {
+        ...cleanedPatch,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      console.error('Import Update Error:', e);
+      reportPersistenceError(e, {
+        operation: 'import:update',
+        path: `users/${userId}/imports/${importId}`,
+        category: 'import',
+        dataPreservedLocally: false,
+      });
+      throw e;
+    }
   }
 
   static async getImportByHash(userId: string, contentHash: string): Promise<ImportedText | null> {

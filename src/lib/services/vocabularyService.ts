@@ -13,7 +13,8 @@ import { STORAGE_KEYS } from '../constants/storage.js';
 import { SRSData } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
-import { markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
+import { markWriteSuccess, markWriteFailure, markPendingWrite } from '../sync/syncStatus.js';
+import { reportPersistenceError } from '../errors/persistenceReporter.js';
 
 export type { SRSData };
 
@@ -65,6 +66,7 @@ const flushVocabWrites = async () => {
       }
     }
 
+    markPendingWrite();
     try {
       await batch.commit();
       markWriteSuccess();
@@ -72,6 +74,12 @@ const flushVocabWrites = async () => {
       const msg = e instanceof Error ? e.message : String(e);
       console.error('Failed to commit vocabulary batch', e);
       markWriteFailure(msg);
+      reportPersistenceError(e, {
+        operation: 'vocabulary:flushBatch',
+        path: `users/{userId}/vocabulary/batch-${i}`,
+        category: 'vocabulary',
+        dataPreservedLocally: true,
+      });
     }
   }
 };
