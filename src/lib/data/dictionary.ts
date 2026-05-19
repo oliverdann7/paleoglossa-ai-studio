@@ -59,6 +59,7 @@ interface EntryAccumulator {
 
 let _dictCache: Record<string, any> | null = null;
 let _entriesCache: DictionaryEntry[] | null = null;
+let _staticDictNormCache: Record<string, string> | null = null;
 
 const LANGUAGE_ALIASES: Record<string, string> = {
   'Ancient Greek': 'grc',
@@ -112,6 +113,23 @@ export function normalizeSearch(value: string) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
+}
+
+function buildStaticDictNormCache(): Record<string, string> {
+  if (_staticDictNormCache) return _staticDictNormCache;
+  _staticDictNormCache = {};
+  for (const key of Object.keys(STATIC_DICT)) {
+    const colonIdx = key.indexOf(':');
+    if (colonIdx === -1) continue;
+    const lang = key.slice(0, colonIdx);
+    const lemmaPart = key.slice(colonIdx + 1);
+    const normed = normalizeSearch(lemmaPart);
+    const normKey = `${lang}:${normed}`;
+    if (!_staticDictNormCache[normKey]) {
+      _staticDictNormCache[normKey] = key;
+    }
+  }
+  return _staticDictNormCache;
 }
 
 export function stripHebrewVowels(value: string): string {
@@ -282,7 +300,33 @@ export const getGlossWithFallbacks = (lemma: string, languageId: string): string
     if (staticLower?.shortGloss) return staticLower.shortGloss;
   }
 
-  // 5. Hebrew consonantal form (without vowel marks)
+  // 5. Language alias fallback for static dict (e.g. grc-koine -> grc)
+  const langAliases = languageId === 'grc-koine' ? ['grc'] : [];
+  for (const alias of langAliases) {
+    const aliasEntry = STATIC_DICT[`${alias}:${lemma}`];
+    if (aliasEntry?.shortGloss) return aliasEntry.shortGloss;
+    const aliasLower = STATIC_DICT[`${alias}:${lower}`];
+    if (aliasLower?.shortGloss) return aliasLower.shortGloss;
+  }
+
+  // 6. Accent-insensitive static dict lookup via normalized keys
+  const normCache = buildStaticDictNormCache();
+  const lookupLangs = [...new Set([languageId, ...langAliases])];
+  for (const lang of lookupLangs) {
+    const normKey = `${lang}:${normalized}`;
+    const origKey = normCache[normKey];
+    if (
+      origKey &&
+      origKey !== `${languageId}:${lemma}` &&
+      origKey !== `${languageId}:${lower}` &&
+      !langAliases.some((a) => origKey === `${a}:${lemma}` || origKey === `${a}:${lower}`)
+    ) {
+      const normEntry = STATIC_DICT[origKey];
+      if (normEntry?.shortGloss) return normEntry.shortGloss;
+    }
+  }
+
+  // 7. Hebrew consonantal form (without vowel marks)
   if (isHebrew && consonantal && consonantal !== lemma) {
     entry = findDictionaryEntry(consonantal, languageId);
     if (entry?.shortGloss) return entry.shortGloss;
@@ -290,7 +334,7 @@ export const getGlossWithFallbacks = (lemma: string, languageId: string): string
     if (staticConsonantal?.shortGloss) return staticConsonantal.shortGloss;
   }
 
-  // 6. Corpus global dictionary
+  // 8. Corpus global dictionary
   const dict = getGlobalDictionary();
   const corpusGloss = dict[lemma]?.gloss || dict[lower]?.gloss || dict[normalized]?.gloss;
   if (corpusGloss) return corpusGloss;
@@ -361,7 +405,32 @@ export const getDefinitionWithFallbacks = (
   const staticResult = tryStatic(`${languageId}:${lemma}`) || tryStatic(`${languageId}:${lower}`);
   if (staticResult) return staticResult;
 
-  // 5. Hebrew consonantal form (without vowel marks)
+  // 5. Language alias fallback for static dict (e.g. grc-koine -> grc)
+  const langAliases = languageId === 'grc-koine' ? ['grc'] : [];
+  for (const alias of langAliases) {
+    const aliasResult =
+      tryStatic(`${alias}:${lemma}`) || tryStatic(`${alias}:${lower}`);
+    if (aliasResult) return aliasResult;
+  }
+
+  // 6. Accent-insensitive static dict lookup via normalized keys
+  const normCache = buildStaticDictNormCache();
+  const lookupLangs = [...new Set([languageId, ...langAliases])];
+  for (const lang of lookupLangs) {
+    const normKey = `${lang}:${normalized}`;
+    const origKey = normCache[normKey];
+    if (
+      origKey &&
+      origKey !== `${languageId}:${lemma}` &&
+      origKey !== `${languageId}:${lower}` &&
+      !langAliases.some((a) => origKey === `${a}:${lemma}` || origKey === `${a}:${lower}`)
+    ) {
+      const normResult = tryStatic(origKey);
+      if (normResult) return normResult;
+    }
+  }
+
+  // 7. Hebrew consonantal form (without vowel marks)
   if (isHebrew && consonantal && consonantal !== lemma) {
     entry = findDictionaryEntry(consonantal, languageId);
     if (entry?.fullDefinition) {
@@ -374,7 +443,7 @@ export const getDefinitionWithFallbacks = (
     if (staticConsonantal) return staticConsonantal;
   }
 
-  // 6. Corpus global dictionary
+  // 8. Corpus global dictionary
   const dict = getGlobalDictionary();
   const token = dict[lemma] || dict[lower] || dict[normalized];
   if (token?.gloss) {
