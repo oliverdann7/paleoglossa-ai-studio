@@ -13,7 +13,7 @@ import { STORAGE_KEYS } from '../constants/storage.js';
 import { SRSData } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
-import { markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
+import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
 
 export type { SRSData };
 
@@ -97,9 +97,25 @@ const enqueueVocabWrite = (
     vocabWriteQueue.set(queueKey, { docRef, payload, isNew });
   }
 
+  markPendingWrite();
   if (vocabWriteTimer) clearTimeout(vocabWriteTimer);
   vocabWriteTimer = setTimeout(flushVocabWrites, 2000); // 2 second debounce
 };
+
+// Flush pending vocab writes when the tab is hidden or unloaded so queued
+// writes reach Firestore's local IndexedDB cache before the page dies.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      flushVocabWrites();
+    }
+  });
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => {
+    flushVocabWrites();
+  });
+}
 
 export class VocabularyService {
   static async getVocabulary(userId: string | null): Promise<KnowledgeMap> {

@@ -399,7 +399,7 @@ export const Statistics = () => {
             />
             <StatCard
               label={t('stats.lastReviewAccuracy', 'Last Review Accuracy')}
-              value={stats.lastAccuracy != null ? `${stats.lastAccuracy}%` : '—'}
+              value={stats.lastAccuracy != null ? `${stats.lastAccuracy <= 1 ? Math.round(stats.lastAccuracy * 100) : stats.lastAccuracy}%` : '—'}
               icon={Target}
               color="blue"
               sub={stats.lastAccuracy == null ? t('stats.noSession', 'No session yet') : undefined}
