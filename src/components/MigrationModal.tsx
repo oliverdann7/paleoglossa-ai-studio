@@ -164,7 +164,7 @@ export function MigrationModal() {
     }
   }, [phase, reset]);
 
-  if (phase === 'idle' || phase === 'checking' || !summary) return null;
+  if (phase === 'idle' || !summary) return null;
 
   const handleChoice = (choice: MigrationChoice) => {
     runMigration(choice);
