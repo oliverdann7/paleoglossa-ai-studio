@@ -12,6 +12,8 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile as updateFirebaseProfile } from 'firebase/auth';
+import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
+import { reportPersistenceError } from '../errors/persistenceReporter.js';
 
 export interface UserProfileData {
   uid: string;
@@ -78,7 +80,21 @@ export async function updateUserProfile(
   const sanitized = Object.fromEntries(
     Object.entries(data).filter(([, v]) => v !== undefined)
   ) as Record<string, unknown>;
-  await updateDoc(profileRef, sanitized);
+
+  try {
+    markPendingWrite();
+    await updateDoc(profileRef, sanitized);
+    markWriteSuccess();
+  } catch (e) {
+    markWriteFailure(e instanceof Error ? e.message : String(e));
+    reportPersistenceError(e, {
+      operation: 'profile:update',
+      path: `users/${uid}`,
+      category: 'profile',
+      dataPreservedLocally: false,
+    });
+    throw e;
+  }
 
   const firebaseUser = auth.currentUser;
   if (firebaseUser) {
@@ -86,7 +102,9 @@ export async function updateUserProfile(
     if (data.displayName !== undefined) authUpdate.displayName = data.displayName;
     if (data.avatarUrl !== undefined) authUpdate.photoURL = data.avatarUrl;
     if (Object.keys(authUpdate).length > 0) {
-      await updateFirebaseProfile(firebaseUser, authUpdate);
+      await updateFirebaseProfile(firebaseUser, authUpdate).catch((e) => {
+        console.error('Auth profile update failed:', e);
+      });
     }
   }
 }
