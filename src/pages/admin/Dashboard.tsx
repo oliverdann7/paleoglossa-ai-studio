@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Loader2,
   ShieldAlert,
@@ -21,6 +22,7 @@ import {
   Trash2,
   Globe,
   Lock,
+  Bug,
 } from 'lucide-react';
 import { apiFetch } from '../../lib/services/apiFetch.js';
 import { useTranslation } from 'react-i18next';
@@ -888,12 +890,20 @@ export const AdminDashboard = () => {
             {t('admin.description', 'Site overview and moderation.')}
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-bdr hover:bg-parch3 text-[13px] font-medium text-ink3 transition-colors"
-        >
-          <RefreshCw className="w-3.5 h-3.5" /> Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/admin/firebase-debug"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-bdr hover:bg-parch3 text-[13px] font-medium text-ink3 transition-colors"
+          >
+            <Bug className="w-3.5 h-3.5" /> Firebase Debug
+          </Link>
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-bdr hover:bg-parch3 text-[13px] font-medium text-ink3 transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
