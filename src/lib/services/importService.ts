@@ -14,6 +14,7 @@ import { apiFetch } from './apiFetch.js';
 import { ImportedText as FSImportedText } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
+import { markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
 
 export async function computeContentHash(text: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -161,9 +162,11 @@ export class ImportService {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+      markWriteSuccess();
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       console.error('Import Save Error:', e);
+      markWriteFailure(message);
       throw new Error(
         `Failed to save import to Firestore: ${message}`,
         e instanceof Error ? { cause: e } : undefined

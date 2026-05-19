@@ -702,5 +702,28 @@ export const tr = {
     'deleteAccount.viewPrivacy': 'Tam gizlilik politikasını görüntüleyin',
     'deleteAccount.tos': 'Hizmet Şartları',
     'deleteAccount.viewTerms': 'Şartları görüntüleyin',
+
+    'syncStatus.cloudSyncedLabel': 'Bulut senkronizasyonu aktif',
+    'syncStatus.demoModeLabel': 'Demo modu',
+    'syncStatus.localOnlyLabel': 'Yalnızca yerel',
+    'syncStatus.pendingLabel': 'Kaydediliyor…',
+    'syncStatus.failedLabel': 'Senkronizasyon başarısız',
+    'syncStatus.offlineLabel': 'Çevrimdışı',
+    'syncStatus.unknownLabel': 'Senkronize ediliyor…',
+    'syncStatus.cloudSynced': 'İlerlemeniz bulutta hesabınıza kaydedilir.',
+    'syncStatus.demoMode': 'Demo modu — yalnızca bu cihazda kaydedilir.',
+    'syncStatus.localOnly':
+      'Yalnızca bu cihazda kaydedilir. Bulut senkronizasyonunu etkinleştirmek için giriş yapın.',
+    'syncStatus.pending': 'İlerlemeniz kaydediliyor…',
+    'syncStatus.failed': 'Senkronizasyon başarısız. Verileriniz buluta kaydedilmemiş olabilir.',
+    'syncStatus.offline':
+      'Çevrimdışısınız. Bağlantı sağlandığında değişiklikler senkronize edilecek.',
+    'syncStatus.unknown': 'Senkronizasyon durumu bilinmiyor.',
+    'syncStatus.lastSaved': 'Son kayıt: {{time}}',
+    'syncStatus.pendingWrites': '{{count}} bekleyen yazma',
+    'syncStatus.lastError': 'Hata: {{error}}',
+    'syncStatus.createAccount': 'İlerlemeyi kaydetmek için hesap oluşturun',
+    'syncStatus.signIn': 'Bulut senkronizasyonunu etkinleştirmek için giriş yapın',
+    'syncStatus.retry': 'Tekrar dene',
   },
 };

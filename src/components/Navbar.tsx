@@ -27,6 +27,7 @@ import { LanguageSwitcher } from './LanguageSwitcher.js';
 import { PaleoIcon } from './PaleoIcon.js';
 import { InterfaceLanguageSwitcher } from './InterfaceLanguageSwitcher.js';
 import { UserProfileCard } from './UserProfileCard.js';
+import { SyncStatusBadge } from './SyncStatusBadge.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { features } from '../lib/features.js';
 
@@ -245,6 +246,9 @@ export const Navbar = () => {
         </div>
 
         <div className="p-2 border-t border-bdr space-y-1">
+          <div className="flex justify-end px-2">
+            <SyncStatusBadge />
+          </div>
           <InterfaceLanguageSwitcher />
           <UserProfileCard />
         </div>

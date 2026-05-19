@@ -6,6 +6,7 @@ import { useSettings } from '../lib/hooks/useSettings.js';
 import { AuthProvider } from '../lib/contexts/AuthContext.js';
 import { ActiveLanguageProvider } from '../lib/contexts/ActiveLanguageContext.js';
 import { SubscriptionProvider } from '../lib/contexts/SubscriptionContext.js';
+import { SyncStatusProvider } from '../lib/contexts/SyncStatusContext.js';
 
 function AppLayoutContent() {
   useSettings();
@@ -28,7 +29,9 @@ export function AppLayout() {
     <AuthProvider>
       <ActiveLanguageProvider>
         <SubscriptionProvider>
-          <AppLayoutContent />
+          <SyncStatusProvider>
+            <AppLayoutContent />
+          </SyncStatusProvider>
         </SubscriptionProvider>
       </ActiveLanguageProvider>
     </AuthProvider>

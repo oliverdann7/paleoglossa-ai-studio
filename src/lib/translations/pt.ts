@@ -366,7 +366,8 @@ export const pt = {
 
     'privacy.title': 'Política de Privacidade',
     'privacy.dataCollection': 'Coleta de Dados',
-    'privacy.collectionDesc': 'Coletamos os dados necessários para fornecer nossos serviços de aprendizado de idiomas, incluindo:',
+    'privacy.collectionDesc':
+      'Coletamos os dados necessários para fornecer nossos serviços de aprendizado de idiomas, incluindo:',
     'privacy.firebaseAuth': 'Dados de autenticação Firebase',
     'privacy.profileData': 'Informações de perfil do usuário',
     'privacy.learningData': 'Progresso de vocabulário, histórico SRS, estatísticas',
@@ -376,26 +377,33 @@ export const pt = {
     'privacy.analytics': 'Análise de uso (PostHog)',
     'privacy.errorLogs': 'Monitoramento de erros (Sentry)',
     'privacy.dataUsage': 'Como usamos os dados',
-    'privacy.usageDesc': 'Os dados são usados para fornecer funcionalidade ao serviço, analisar padrões de aprendizado e manter a segurança do aplicativo. Não vendemos seus dados pessoais.',
+    'privacy.usageDesc':
+      'Os dados são usados para fornecer funcionalidade ao serviço, analisar padrões de aprendizado e manter a segurança do aplicativo. Não vendemos seus dados pessoais.',
     'privacy.deletion': 'Exclusão de Dados',
-    'privacy.deletionDesc': 'Você pode excluir sua conta e todos os dados associados a qualquer momento através da Zona de Perigo nas configurações da sua conta.',
+    'privacy.deletionDesc':
+      'Você pode excluir sua conta e todos os dados associados a qualquer momento através da Zona de Perigo nas configurações da sua conta.',
     'privacy.learnMoreDeletion': 'Saiba mais sobre a exclusão de conta',
     'privacy.contact': 'Contato',
     'privacy.contactDesc': 'Se você tiver dúvidas, envie-nos um e-mail para:',
     'terms.title': 'Termos de Serviço',
     'terms.acceptableUse': 'Uso Aceitável',
-    'terms.useDesc': 'Ao usar o Paleoglossa, você concorda em usar nossos serviços apenas para fins educacionais e de pesquisa. Você é responsável por quaisquer textos que enviar ou importar, incluindo conformidade com direitos autorais.',
+    'terms.useDesc':
+      'Ao usar o Paleoglossa, você concorda em usar nossos serviços apenas para fins educacionais e de pesquisa. Você é responsável por quaisquer textos que enviar ou importar, incluindo conformidade com direitos autorais.',
     'terms.aiLimitations': 'Limitações da IA',
-    'terms.aiDesc': 'Nossas ferramentas de IA fornecem assistência, não precisão absoluta. Verifique informações críticas.',
+    'terms.aiDesc':
+      'Nossas ferramentas de IA fornecem assistência, não precisão absoluta. Verifique informações críticas.',
     'terms.payments': 'Assinaturas e Pagamentos',
-    'terms.paymentDesc': 'As assinaturas são gerenciadas por provedores de pagamento terceirizados seguros (Stripe).',
+    'terms.paymentDesc':
+      'As assinaturas são gerenciadas por provedores de pagamento terceirizados seguros (Stripe).',
     'support.title': 'Suporte',
     'support.contactUs': 'Contato',
-    'support.contactDesc': 'Para relatórios de bugs, solicitações de recursos ou perguntas, envie-nos um e-mail:',
+    'support.contactDesc':
+      'Para relatórios de bugs, solicitações de recursos ou perguntas, envie-nos um e-mail:',
     'support.accountDeletion': 'Exclusão de Conta',
     'support.deletionDesc': 'Você pode excluir sua conta via Configurações -> Zona de Perigo.',
     'support.viewDeletionSteps': 'Ver etapas de exclusão',
-    'legal.disclaimer': 'Nota: Este é um rascunho para fins informativos. Consulte um advogado antes da publicação.',
+    'legal.disclaimer':
+      'Nota: Este é um rascunho para fins informativos. Consulte um advogado antes da publicação.',
 
     'notes.title': 'Minhas Notas',
     'notes.description': 'Suas anotações pessoais em vocabulário específico.',
@@ -749,5 +757,28 @@ export const pt = {
     'deleteAccount.viewPrivacy': 'Ver política de privacidade completa',
     'deleteAccount.tos': 'Termos de Serviço',
     'deleteAccount.viewTerms': 'Ver termos',
+
+    'syncStatus.cloudSyncedLabel': 'Sincronização ativa',
+    'syncStatus.demoModeLabel': 'Modo demonstração',
+    'syncStatus.localOnlyLabel': 'Apenas local',
+    'syncStatus.pendingLabel': 'Salvando…',
+    'syncStatus.failedLabel': 'Falha na sincronização',
+    'syncStatus.offlineLabel': 'Offline',
+    'syncStatus.unknownLabel': 'Sincronizando…',
+    'syncStatus.cloudSynced': 'Seu progresso está salvo na sua conta na nuvem.',
+    'syncStatus.demoMode': 'Modo demonstração — salvo apenas neste dispositivo.',
+    'syncStatus.localOnly':
+      'Salvo apenas neste dispositivo. Faça login para ativar a sincronização na nuvem.',
+    'syncStatus.pending': 'Salvando seu progresso…',
+    'syncStatus.failed': 'Falha na sincronização. Seus dados podem não estar salvos na nuvem.',
+    'syncStatus.offline':
+      'Você está offline. As alterações serão sincronizadas quando você reconectar.',
+    'syncStatus.unknown': 'Status de sincronização desconhecido.',
+    'syncStatus.lastSaved': 'Último salvamento: {{time}}',
+    'syncStatus.pendingWrites': '{{count}} gravação pendente',
+    'syncStatus.lastError': 'Erro: {{error}}',
+    'syncStatus.createAccount': 'Crie uma conta para salvar o progresso',
+    'syncStatus.signIn': 'Faça login para ativar a sincronização na nuvem',
+    'syncStatus.retry': 'Tentar novamente',
   },
 };
