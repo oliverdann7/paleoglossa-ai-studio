@@ -142,6 +142,9 @@ const enqueueVocabWrite = (
   payload: any,
   isNew: boolean = false
 ) => {
+  // Bust the read cache so the next getVocabulary reflects this write.
+  vocabCache.delete(userId);
+
   const docRef = doc(db, `users/${userId}/vocabulary`, termId);
   const queueKey = `${userId}_${termId}`;
 
