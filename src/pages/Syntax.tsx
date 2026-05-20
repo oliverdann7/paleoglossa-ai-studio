@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { GitBranch, Loader2, AlertTriangle, ChevronRight, Info, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorpusDB } from '../data/corpus.js';
@@ -6,6 +6,7 @@ import { isRtlLanguage } from '../lib/constants/languages.js';
 import { apiFetch } from '../lib/services/apiFetch.js';
 import type { Sentence } from '../types/corpus.js';
 import { DependencyTree, type DepToken } from '../components/reader/DependencyTree.js';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,14 +46,28 @@ function sentenceSurface(sentence: Sentence): string {
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export const Syntax = () => {
+  const { activeLanguageId } = useActiveLanguage();
   const texts = useMemo(() => CorpusDB.getTexts(), []);
 
-  const [selectedTextId, setSelectedTextId] = useState<string>(texts[0]?.id ?? '');
+  // Default to the first text that matches the global active language.
+  const defaultTextId = useMemo(() => {
+    const match = texts.find((t) => t.language === activeLanguageId);
+    return match?.id ?? texts[0]?.id ?? '';
+  }, [texts, activeLanguageId]);
+
+  const [selectedTextId, setSelectedTextId] = useState<string>(defaultTextId);
   const [selectedSentenceIdx, setSelectedSentenceIdx] = useState<number | null>(null);
   const [selectedTokenIdx, setSelectedTokenIdx] = useState<number | null>(null);
   const [syntaxResult, setSyntaxResult] = useState<SyntaxResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // When the global active language changes, switch to the first text for that language.
+  useEffect(() => {
+    const match = texts.find((t) => t.language === activeLanguageId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (match) setSelectedTextId(match.id);
+  }, [activeLanguageId, texts]);
 
   const selectedText = useMemo(
     () => texts.find((t) => t.id === selectedTextId),

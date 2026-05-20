@@ -151,7 +151,24 @@ export const Reader = () => {
     fetchTextProgress,
     saveTextProgress,
     setWordContext,
+    vocabLimit,
   } = useKnowledge(activeLanguageId);
+
+  // Wrapped version that shows a paywall toast when the vocab limit blocks a save.
+  // Pass this to child components (LexDrawerPanel) instead of the raw setWordState.
+  const setWordStateWithFeedback = useCallback(
+    (lemma: string, state: WordState, languageId: string, context?: string) => {
+      const saved = setWordState(lemma, state, languageId, context);
+      if (!saved) {
+        addToast(
+          `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+          'info'
+        );
+      }
+    },
+    [setWordState, addToast, vocabLimit.limit]
+  );
+
   const { settings } = useSettings();
 
   const isOnline = useOnlineStatus();
@@ -742,41 +759,25 @@ export const Reader = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Shortcuts for selected word
       if (selectedWord) {
-        if (e.key === '1') {
-          setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
-          setSelectedWord(null);
-          return;
-        }
-        if (e.key === '2') {
-          setWordState(selectedWord.lemma, WordState.FAMILIAR, currentLanguageId);
-          setSelectedWord(null);
-          return;
-        }
-        if (e.key === '3') {
-          setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
-          setSelectedWord(null);
-          return;
-        }
-        if (e.key === '4') {
-          setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
-          setSelectedWord(null);
-          return;
-        }
-        if (e.key === 'k' || e.key === 'K') {
-          setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
-          setSelectedWord(null);
-          return;
-        }
-        if (e.key === 'l' || e.key === 'L') {
-          setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
-          setSelectedWord(null);
-          return;
-        }
-        if (e.key === 'i' || e.key === 'I') {
-          setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
-          setSelectedWord(null);
-          return;
-        }
+        /** Helper: attempt to set state; show paywall toast and keep panel open if blocked. */
+        const trySetState = (state: WordState) => {
+          const saved = setWordState(selectedWord.lemma, state, currentLanguageId);
+          if (saved) {
+            setSelectedWord(null);
+          } else {
+            addToast(
+              `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+              'info'
+            );
+          }
+        };
+        if (e.key === '1') { trySetState(WordState.LEARNING); return; }
+        if (e.key === '2') { trySetState(WordState.FAMILIAR); return; }
+        if (e.key === '3') { trySetState(WordState.KNOWN); return; }
+        if (e.key === '4') { trySetState(WordState.IGNORED); return; }
+        if (e.key === 'k' || e.key === 'K') { trySetState(WordState.KNOWN); return; }
+        if (e.key === 'l' || e.key === 'L') { trySetState(WordState.LEARNING); return; }
+        if (e.key === 'i' || e.key === 'I') { trySetState(WordState.IGNORED); return; }
         if (e.key === 'Escape') {
           setSelectedWord(null);
           return;
@@ -859,6 +860,8 @@ export const Reader = () => {
     chapters,
     currentChapterIndex,
     setWordState,
+    addToast,
+    vocabLimit.limit,
     currentLanguageId,
     currentScrollPage,
     totalPages,
@@ -900,7 +903,14 @@ export const Reader = () => {
   const handleSavePhrase = useCallback(
     (sentence: ReaderSentence) => {
       const phrase = sentence.tokens.map((tk: ReaderToken) => tk.text).join(' ');
-      setWordState(phrase, WordState.LEARNING, currentLanguageId);
+      const saved = setWordState(phrase, WordState.LEARNING, currentLanguageId);
+      if (!saved) {
+        addToast(
+          `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+          'info'
+        );
+        return;
+      }
       if (sentence.translation || aiTranslations[sentence.id]) {
         updateGloss(
           phrase,
@@ -910,7 +920,7 @@ export const Reader = () => {
       }
       addToast(t('reader.sentenceSaved'), 'success');
     },
-    [setWordState, updateGloss, currentLanguageId, aiTranslations, addToast, t]
+    [setWordState, updateGloss, currentLanguageId, aiTranslations, addToast, t, vocabLimit.limit]
   );
 
   if (!text || chapters.length === 0 || !chapter) {
@@ -1167,7 +1177,7 @@ export const Reader = () => {
           selectedWord={selectedWord}
           setSelectedWord={setSelectedWord}
           knowledge={knowledge}
-          setWordState={setWordState}
+          setWordState={setWordStateWithFeedback}
           setWordNote={setWordNote}
           updateGloss={updateGloss}
           getWordInfo={getWordInfo}
@@ -1213,7 +1223,13 @@ export const Reader = () => {
           surface={contextMenu.token.text}
           currentState={getWordInfo(contextMenu.token.lemma).state}
           onSetState={(state) => {
-            setWordState(contextMenu.token.lemma, state, currentLanguageId);
+            const saved = setWordState(contextMenu.token.lemma, state, currentLanguageId);
+            if (!saved) {
+              addToast(
+                `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+                'info'
+              );
+            }
           }}
           onOpenDictionary={(lemma) => {
             navigate(`/app/lemma/${encodeURIComponent(currentLanguageId)}/${encodeURIComponent(lemma)}`);

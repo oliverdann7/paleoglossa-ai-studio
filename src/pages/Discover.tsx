@@ -11,6 +11,7 @@ import { Skeleton } from '../components/Skeleton.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { normalizeLemmaKey } from '../lib/utils/lemmaUtils.js';
 import { WordState, normalizeWordState } from '../lib/constants/wordStates.js';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 
 /** Returns 0-100 score of how much of this text's vocabulary the user already knows. */
 function computeKnownPct(text: ImportedText, knownSet: Set<string>): number {
@@ -151,12 +152,20 @@ export function Discover() {
   const { user } = useAuth();
   const { addToast } = useToast();
   const { t } = useTranslation();
+  const { activeLanguageId } = useActiveLanguage();
 
   const [texts, setTexts] = useState<ImportedText[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
-  const [filterLang, setFilterLang] = useState<string>('');
+  // Default to the global active language; empty string means "all languages".
+  const [filterLang, setFilterLang] = useState<string>(activeLanguageId);
   const [isForkingId, setIsForkingId] = useState<string | null>(null);
+
+  // Sync the language filter when the global active language changes.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFilterLang(activeLanguageId);
+  }, [activeLanguageId]);
 
   const { knowledge } = useKnowledge(undefined as any);
 

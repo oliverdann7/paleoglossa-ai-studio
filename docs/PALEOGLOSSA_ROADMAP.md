@@ -752,22 +752,23 @@ After Phase 0, immediately begin **Phase 1 (Corpus Engine)** — it delivers the
 
 The items below are the highest-impact gaps not yet covered by the phase plan above.
 
-### Production Hardening (near-term)
+### Production Hardening — PR #167 (merged 2026-05-20)
 
 | Priority | Item | Status |
 |----------|------|--------|
-| High | Demo migration safety — migration functions must throw on failure; `discardDemoData()` must not run on partial failure | ⏳ In progress |
-| High | Production config audit — `scripts/check-production-config.ts` with `npm run config:check` | ⏳ In progress |
-| High | Sync status consistency — `ImportService.updateImport` and other write paths missing `markPendingWrite`/`markWriteSuccess` calls | ⏳ In progress |
-| Medium | Word Analysis panel auto-close — keyboard status shortcuts in Reader do not close the selected-word panel | ⏳ In progress |
+| High | Demo migration safety — migration functions must throw on failure; `discardDemoData()` must not run on partial failure | ✅ Complete |
+| High | Production config audit — `scripts/check-production-config.ts` with `npm run config:check` | ✅ Complete |
+| High | Sync status consistency — `ImportService.updateImport` and other write paths missing `markPendingWrite`/`markWriteSuccess` calls | ✅ Complete |
+| Medium | README/ROADMAP accuracy — SM-2 corrected to FSRS-5, stub statuses updated | ✅ Complete |
+| Medium | Word Analysis panel auto-close — keyboard status shortcuts in Reader do not close the selected-word panel | ✅ Complete |
 
-### Language Entitlements (next PR)
+### Language Entitlements — PR #168 (open 2026-05-20)
 
 | Priority | Item | Status |
 |----------|------|--------|
-| High | Global ancient-language selection — Grammar, Syntax, Discover pages should use `ActiveLanguageContext` instead of local state | ⬜ Not started |
-| High | Free language + paid second language UI — Navbar and Settings should surface the free-vs-paid slot distinction | ⬜ Not started |
-| High | 200-word free-language vocabulary limit — gate new word saves after 200 tracked words per free language | ⬜ Not started |
+| High | Global ancient-language selection — Grammar, Syntax, Discover pages now use `ActiveLanguageContext` | ✅ Complete |
+| High | Free language + paid second language UI — Navbar (LanguageSwitcher vocab progress bar) and Settings Language Slots section | ✅ Complete |
+| High | 200-word free-language vocabulary limit — `FREE_LANGUAGE_WORD_LIMIT=200`, `useVocabLimit`, gate in `useKnowledge`, paywall toast in Reader + Vocabulary | ✅ Complete |
 
 ### Reading Loop & Social (medium-term)
 
