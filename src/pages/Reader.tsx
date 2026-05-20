@@ -17,6 +17,7 @@ import { ReaderBottomNav } from '../components/reader/ReaderBottomNav.js';
 import { ReadingPane } from '../components/reader/ReadingPane.js';
 import { ReaderSkeleton } from '../components/Skeleton.js';
 import { getTransliteration } from '../lib/transliterate.js';
+import { useReaderTTS } from '../lib/hooks/useReaderTTS.js';
 
 import { AIClient } from '../lib/services/aiClient.js';
 import { ImportService } from '../lib/services/importService.js';
@@ -26,19 +27,6 @@ import { useToast } from '../lib/hooks/useToast.js';
 import { STORAGE_KEYS } from '../lib/constants/storage.js';
 import { OfflineService } from '../lib/services/offlineService.js';
 import { useOnlineStatus } from '../lib/hooks/useOnlineStatus.js';
-
-// Module-level constant — avoids object recreation on every render
-const TTS_LANG_MAP: Record<string, string> = {
-  grc: 'el-GR',
-  'grc-koine': 'el-GR',
-  hbo: 'he-IL',
-  lat: 'it-IT',
-  syr: 'ar-SA',
-  arc: 'ar-SA',
-  cop: 'el-GR',
-  akk: 'ar-SA',
-  san: 'hi-IN',
-};
 
 export const Reader = () => {
   const { textId } = useParams();
@@ -488,60 +476,19 @@ export const Reader = () => {
     currentSentenceIndexRef.current = currentSentenceIndex;
   }, [currentSentenceIndex]);
 
-  // Speak current word via TTS when audio position advances
-  useEffect(() => {
-    if (!isPlaying || !window.speechSynthesis) return;
-    const currentSentence = chapter?.sentences[audioPos.sentenceIdx];
-    if (!currentSentence) return;
-    const token = currentSentence.tokens[audioPos.wordIdx];
-    if (!token || token.type === 'whitespace' || !token.text) return;
-
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(token.text);
-    u.lang = TTS_LANG_MAP[currentLanguageId] || 'el-GR';
-    u.rate = Math.min(audioSpeed, 1.1);
-    window.speechSynthesis.speak(u);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioPos.sentenceIdx, audioPos.wordIdx]);
-
-  // Cancel TTS when paused
-  useEffect(() => {
-    if (!isPlaying) window.speechSynthesis?.cancel();
-  }, [isPlaying]);
-
-  // Audio Playback Effect
-  useEffect(() => {
-    if (!isPlaying) return;
-    const currentSentence = chapter?.sentences[audioPos.sentenceIdx];
-    if (!currentSentence) {
-      setPlayState(false);
-      return;
-    }
-
-    const baseSpeed = isHebrewFont ? 180 : 150;
-    const delay = baseSpeed / audioSpeed;
-
-    const timer = setTimeout(() => {
-      if (loopWord) {
-        // Do not advance token
-      } else if (audioPos.wordIdx < currentSentence.tokens.length - 1) {
-        setAudioPosition(audioPos.sentenceIdx, audioPos.wordIdx + 1);
-      } else {
-        if (loopSentence) {
-          setAudioPosition(audioPos.sentenceIdx, 0);
-        } else if (audioPos.sentenceIdx < chapter.sentences.length - 1) {
-          setAudioPosition(audioPos.sentenceIdx + 1, 0);
-          if (readingMode === 'page') setSentenceIndex(audioPos.sentenceIdx + 1);
-        } else {
-          setPlayState(false);
-          setAudioPosition(0, 0);
-        }
-      }
-    }, delay);
-
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying, audioPos, audioSpeed, chapter, loopWord, loopSentence, isHebrewFont, readingMode]);
+  const { audioProgress } = useReaderTTS({
+    sentences: chapter?.sentences ?? [],
+    currentLanguageId,
+    audioSpeed,
+    isPlaying,
+    loopSentence,
+    loopWord,
+    audioPos,
+    readingMode,
+    onSetAudioPosition: setAudioPosition,
+    onSetPlayState: setPlayState,
+    onSetSentenceIndex: setSentenceIndex,
+  });
 
   // Tutorial logic
   useEffect(() => {
@@ -988,9 +935,7 @@ export const Reader = () => {
         <ReaderAudioBar
           isPlaying={isPlaying}
           onTogglePlay={togglePlay}
-          audioProgress={
-            chapter.sentences.length > 0 ? audioPos.sentenceIdx / chapter.sentences.length : 0
-          }
+          audioProgress={audioProgress}
           audioSpeed={audioSpeed}
           onChangeSpeed={() => {
             const speeds = [0.7, 0.85, 1.0, 1.15, 1.3];
@@ -1138,7 +1083,11 @@ export const Reader = () => {
             if (!window.speechSynthesis) return;
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(textStr);
-            u.lang = TTS_LANG_MAP[lang] || 'en-US';
+            const langMap: Record<string, string> = {
+              grc: 'el-GR', 'grc-koine': 'el-GR', hbo: 'he-IL', lat: 'it-IT',
+              syr: 'ar-SA', arc: 'ar-SA', cop: 'el-GR', akk: 'ar-SA', san: 'hi-IN',
+            };
+            u.lang = langMap[lang] || 'en-US';
             u.rate = 0.9;
             window.speechSynthesis.speak(u);
           }}

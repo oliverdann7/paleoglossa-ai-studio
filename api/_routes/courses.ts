@@ -375,6 +375,63 @@ router.post(
   }
 );
 
+// ─── Roster (members + display names, teacher only) ──────────────────────────
+
+router.get(
+  '/api/courses/:courseId/roster',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const userId = req.user!.uid;
+    const { courseId } = req.params;
+
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    try {
+      const doc = await adminDb_.doc(`courses/${courseId}`).get();
+      if (!doc.exists)
+        return res.status(404).json({ error: 'Course not found', code: 'NOT_FOUND' });
+      if (doc.data()!.ownerId !== userId)
+        return res.status(403).json({ error: 'Access denied', code: 'FORBIDDEN' });
+
+      const snap = await adminDb_.collection(`courses/${courseId}/members`).get();
+      const members: any[] = [];
+
+      await Promise.all(
+        snap.docs.map(async (d) => {
+          const data = d.data();
+          let displayName = `Student ${d.id.slice(0, 6)}`;
+          let email = '';
+          try {
+            const userDoc = await adminDb_.doc(`users/${d.id}`).get();
+            if (userDoc.exists) {
+              displayName = userDoc.data()?.displayName || displayName;
+              email = userDoc.data()?.email || '';
+            }
+          } catch {
+            // best-effort
+          }
+          members.push({
+            userId: d.id,
+            role: data.role || 'student',
+            progress: data.progress || {},
+            joinedAt: data.joinedAt?.toDate?.()?.toISOString?.() ?? null,
+            displayName,
+            email,
+          });
+        })
+      );
+
+      members.sort((a, b) => (a.joinedAt || '').localeCompare(b.joinedAt || ''));
+      res.status(200).json(members);
+    } catch (e: any) {
+      console.error('[courses] Error fetching roster:', e.message);
+      res.status(200).json([]);
+    }
+  }
+);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function serializeCourse(id: string, data: any) {

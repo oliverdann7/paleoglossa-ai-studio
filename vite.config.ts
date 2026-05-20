@@ -189,7 +189,7 @@ export default defineConfig(({mode}) => {
       globals: true,
       setupFiles: ['./src/test-setup.ts'],
       url: 'http://localhost',
-      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**'],
+      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', 'tests/**'],
     },
   };
 });

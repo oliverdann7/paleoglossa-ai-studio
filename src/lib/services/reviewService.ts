@@ -13,6 +13,8 @@ import {
 import { calculateSM2, SRSState, Rating } from '../srs/sm2.js';
 import { calculateFSRS, FSRSState, FSRRating } from '../srs/fsrs.js';
 import { WordState } from '../constants/wordStates.js';
+import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
+import { reportPersistenceError } from '../errors/persistenceReporter.js';
 
 // Toggle to use FSRS algorithm
 const USE_FSRS = true;
@@ -192,7 +194,23 @@ export class ReviewService {
       createdAt: serverTimestamp(),
       algorithm: USE_FSRS ? 'FSRS' : 'SM-2',
     });
-    await batch.commit();
+
+    try {
+      markPendingWrite();
+      await batch.commit();
+      markWriteSuccess();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('Error saving review log:', e);
+      markWriteFailure(msg);
+      reportPersistenceError(e, {
+        operation: 'review:log',
+        path: `users/${userId}/vocabulary/${item.id}`,
+        category: 'review',
+        dataPreservedLocally: false,
+      });
+      throw e;
+    }
 
     return nextState;
   }
