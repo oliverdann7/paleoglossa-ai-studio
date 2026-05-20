@@ -3,10 +3,12 @@ import {
   signInWithRedirect,
   getRedirectResult,
   signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
   GoogleAuthProvider,
 } from 'firebase/auth';
 import { auth, appleProvider } from '../firebase.js';
 import { isCapacitor } from '../platform.js';
+import { VocabularyService } from './vocabularyService.js';
 
 export interface AuthResult {
   success: boolean;
@@ -91,6 +93,24 @@ export async function handleRedirectResult(): Promise<AuthResult> {
   } catch (err: any) {
     return mapFirebaseError(err);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Sign-out
+// ---------------------------------------------------------------------------
+
+/**
+ * Flush any pending vocabulary writes for the current user, then sign out of
+ * Firebase Auth.  Always call this instead of the raw Firebase `signOut` so
+ * that queued writes are not lost.
+ */
+export async function signOut(): Promise<void> {
+  try {
+    await VocabularyService.flushPendingWrites();
+  } catch {
+    // Non-fatal — proceed with sign-out regardless.
+  }
+  await firebaseSignOut(auth);
 }
 
 // ---------------------------------------------------------------------------

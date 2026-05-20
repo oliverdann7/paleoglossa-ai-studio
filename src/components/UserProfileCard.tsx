@@ -10,6 +10,7 @@ import { useVocabulary } from '../lib/hooks/useVocabulary.js';
 import { getPlanById } from '../lib/constants/plans.js';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { signOut } from '../lib/services/authService.js';
 
 function getReadingLevel(knownWords: number): string {
   if (knownWords >= 7000) return 'Scholar';
@@ -138,9 +139,10 @@ export function UserProfileCard() {
                 <Crown className="w-4 h-4 text-muted" /> {t('profile.subscription', 'Subscription')}
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   setOpen(false);
-                  navigate('/auth/logout');
+                  await signOut();
+                  navigate('/');
                 }}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] text-red-500 hover:bg-red-50 transition-all text-left"
               >
