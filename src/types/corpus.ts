@@ -51,6 +51,12 @@ export interface Token {
   transliteration?: string;
   punctBefore: string;
   punctAfter: string;
+  /** 0-based index of the syntactic head token; -1 = root (PROIEL/UD style) */
+  head?: number;
+  /** Universal Dependency relation label (e.g. "nsubj", "obj", "root") */
+  deprel?: string;
+  /** Treebank source identifier, e.g. "PROIEL", "Gorman", "Pedalion" */
+  treebankSource?: string;
 }
 
 export interface Sentence {

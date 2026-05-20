@@ -14,6 +14,7 @@ interface SyntaxResult {
   explanation: string;
   confidence: number | null;
   warnings?: string[];
+  source?: string; // 'ai' | 'treebank:PROIEL' | 'treebank:PLDT' | etc.
 }
 
 // ── Relation legend ──────────────────────────────────────────────────────────
@@ -89,6 +90,30 @@ export const Syntax = () => {
     setSyntaxResult(null);
     setError(null);
     try {
+      // 1. Check if corpus tokens carry treebank dependency annotations
+      const annotated = selectedSentence.tokens.filter(
+        (t: any) => t.deprel != null || t.head != null
+      );
+      if (annotated.length > 0) {
+        const treebankSource = (annotated[0] as any).treebankSource ?? 'corpus';
+        const depTokens: DepToken[] = selectedSentence.tokens.map((t: any, idx: number) => ({
+          index: idx,
+          form: t.surface ?? t.text ?? '',
+          lemma: t.lemma ?? '',
+          pos: t.morphology?.partOfSpeech ?? '',
+          head: t.head ?? -1,
+          relation: t.deprel ?? 'dep',
+        }));
+        setSyntaxResult({
+          tokens: depTokens,
+          explanation: `Dependency tree from ${treebankSource} treebank. Annotations are human-verified.`,
+          confidence: 1.0,
+          source: `treebank:${treebankSource}`,
+        });
+        return;
+      }
+
+      // 2. Fall back to AI analysis
       const surface = sentenceSurface(selectedSentence);
       const res = await apiFetch('/api/ai/syntax', {
         method: 'POST',
@@ -101,7 +126,7 @@ export const Syntax = () => {
       });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = (await res.json()) as SyntaxResult;
-      setSyntaxResult(data);
+      setSyntaxResult({ ...data, source: 'ai' });
     } catch (e: any) {
       setError(e.message ?? 'Analysis failed');
     } finally {
@@ -136,9 +161,15 @@ export const Syntax = () => {
             <h2 className="text-[26px] font-serif font-light text-ink tracking-tight">
               Syntax &amp; Treebank Viewer
             </h2>
-            <p className="text-[10px] font-bold text-blue tracking-wider uppercase">
-              AI-Generated · Experimental
-            </p>
+            {syntaxResult?.source?.startsWith('treebank:') ? (
+              <p className="text-[10px] font-bold text-emerald-600 tracking-wider uppercase">
+                {syntaxResult.source.replace('treebank:', '')} Treebank · Human-verified
+              </p>
+            ) : (
+              <p className="text-[10px] font-bold text-blue tracking-wider uppercase">
+                AI-Generated · Experimental
+              </p>
+            )}
           </div>
         </div>
         <p className="text-[14px] text-ink2 max-w-2xl">

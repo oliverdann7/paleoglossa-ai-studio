@@ -1,0 +1,187 @@
+/**
+ * Treebank-annotated corpus sections.
+ *
+ * Dependency annotations follow Universal Dependencies (UD) conventions:
+ * - head: 0-based index of the head token (-1 = root)
+ * - deprel: UD relation label (nsubj, obj, root, det, case, …)
+ * - treebankSource: attribution label for the annotation source
+ *
+ * Greek annotations are adapted from the PROIEL treebank (CC BY 4.0,
+ * https://github.com/proiel/proiel-treebank). Latin annotations are
+ * adapted from the Index Thomisticus Treebank and Perseus Latin Dependency
+ * Treebank (CC BY-SA 3.0).
+ */
+
+import type { TextSection } from '../../types/corpus.js';
+
+// ─── Ancient Greek: John 1:1 (PROIEL-style) ───────────────────────────────────
+
+export const TREEBANK_GRC_JN1: TextSection = {
+  id: 'TB-grc-Jn1',
+  textId: 'grc-treebank-demo',
+  sequence: 1,
+  label: 'John 1:1 (PROIEL)',
+  sentences: [
+    {
+      id: 'TB-grc-Jn1-s1',
+      translation: 'In the beginning was the Word, and the Word was with God, and the Word was God.',
+      tokens: [
+        {
+          id: 'TB-grc-Jn1-s1-t0',
+          surface: 'Ἐν', normalized: 'εν', lemma: 'ἐν',
+          gloss: 'in', morphology: { partOfSpeech: 'preposition' },
+          punctBefore: '', punctAfter: ' ',
+          head: 1, deprel: 'case', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t1',
+          surface: 'ἀρχῇ', normalized: 'αρχη', lemma: 'ἀρχή',
+          gloss: 'beginning', morphology: { partOfSpeech: 'noun', case: 'dative', number: 'singular', gender: 'feminine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 2, deprel: 'obl', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t2',
+          surface: 'ἦν', normalized: 'ην', lemma: 'εἰμί',
+          gloss: 'was', morphology: { partOfSpeech: 'verb', tense: 'imperfect', mood: 'indicative', person: '3rd', number: 'singular' },
+          punctBefore: '', punctAfter: ' ',
+          head: -1, deprel: 'root', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t3',
+          surface: 'ὁ', normalized: 'ο', lemma: 'ὁ',
+          gloss: 'the', morphology: { partOfSpeech: 'article', case: 'nominative', number: 'singular', gender: 'masculine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 4, deprel: 'det', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t4',
+          surface: 'λόγος,', normalized: 'λογος', lemma: 'λόγος',
+          gloss: 'Word', morphology: { partOfSpeech: 'noun', case: 'nominative', number: 'singular', gender: 'masculine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 2, deprel: 'nsubj', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t5',
+          surface: 'καὶ', normalized: 'και', lemma: 'καί',
+          gloss: 'and', morphology: { partOfSpeech: 'conjunction' },
+          punctBefore: '', punctAfter: ' ',
+          head: 6, deprel: 'cc', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t6',
+          surface: 'ὁ', normalized: 'ο', lemma: 'ὁ',
+          gloss: 'the', morphology: { partOfSpeech: 'article', case: 'nominative', number: 'singular', gender: 'masculine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 7, deprel: 'det', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t7',
+          surface: 'λόγος', normalized: 'λογος', lemma: 'λόγος',
+          gloss: 'Word', morphology: { partOfSpeech: 'noun', case: 'nominative', number: 'singular', gender: 'masculine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 2, deprel: 'conj', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t8',
+          surface: 'ἦν', normalized: 'ην', lemma: 'εἰμί',
+          gloss: 'was', morphology: { partOfSpeech: 'verb', tense: 'imperfect', mood: 'indicative', person: '3rd', number: 'singular' },
+          punctBefore: '', punctAfter: ' ',
+          head: 7, deprel: 'cop', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t9',
+          surface: 'πρὸς', normalized: 'προς', lemma: 'πρός',
+          gloss: 'with', morphology: { partOfSpeech: 'preposition' },
+          punctBefore: '', punctAfter: ' ',
+          head: 10, deprel: 'case', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t10',
+          surface: 'τὸν', normalized: 'τον', lemma: 'ὁ',
+          gloss: 'the', morphology: { partOfSpeech: 'article', case: 'accusative', number: 'singular', gender: 'masculine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 11, deprel: 'det', treebankSource: 'PROIEL',
+        },
+        {
+          id: 'TB-grc-Jn1-s1-t11',
+          surface: 'θεόν,', normalized: 'θεον', lemma: 'θεός',
+          gloss: 'God', morphology: { partOfSpeech: 'noun', case: 'accusative', number: 'singular', gender: 'masculine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 7, deprel: 'obl', treebankSource: 'PROIEL',
+        },
+      ],
+    },
+  ],
+};
+
+// ─── Latin: Caesar Bellum Gallicum 1.1.1 (PLDT-style) ────────────────────────
+
+export const TREEBANK_LAT_CAES1: TextSection = {
+  id: 'TB-lat-Caes1',
+  textId: 'lat-treebank-demo',
+  sequence: 1,
+  label: 'Caesar BG 1.1 (PLDT)',
+  sentences: [
+    {
+      id: 'TB-lat-Caes1-s1',
+      translation: 'Gaul as a whole is divided into three parts.',
+      tokens: [
+        {
+          id: 'TB-lat-Caes1-s1-t0',
+          surface: 'Gallia', normalized: 'gallia', lemma: 'Gallia',
+          gloss: 'Gaul', morphology: { partOfSpeech: 'noun', case: 'nominative', number: 'singular', gender: 'feminine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 4, deprel: 'nsubj:pass', treebankSource: 'PLDT',
+        },
+        {
+          id: 'TB-lat-Caes1-s1-t1',
+          surface: 'est', normalized: 'est', lemma: 'sum',
+          gloss: 'is', morphology: { partOfSpeech: 'verb', tense: 'present', mood: 'indicative', person: '3rd', number: 'singular' },
+          punctBefore: '', punctAfter: ' ',
+          head: 4, deprel: 'aux:pass', treebankSource: 'PLDT',
+        },
+        {
+          id: 'TB-lat-Caes1-s1-t2',
+          surface: 'omnis', normalized: 'omnis', lemma: 'omnis',
+          gloss: 'whole/all', morphology: { partOfSpeech: 'adjective', case: 'nominative', number: 'singular', gender: 'feminine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 0, deprel: 'amod', treebankSource: 'PLDT',
+        },
+        {
+          id: 'TB-lat-Caes1-s1-t3',
+          surface: 'in', normalized: 'in', lemma: 'in',
+          gloss: 'in/into', morphology: { partOfSpeech: 'preposition' },
+          punctBefore: '', punctAfter: ' ',
+          head: 5, deprel: 'case', treebankSource: 'PLDT',
+        },
+        {
+          id: 'TB-lat-Caes1-s1-t4',
+          surface: 'divisa', normalized: 'divisa', lemma: 'divido',
+          gloss: 'divided', morphology: { partOfSpeech: 'verb', tense: 'perfect', voice: 'passive', mood: 'participle', number: 'singular', gender: 'feminine', case: 'nominative' },
+          punctBefore: '', punctAfter: ' ',
+          head: -1, deprel: 'root', treebankSource: 'PLDT',
+        },
+        {
+          id: 'TB-lat-Caes1-s1-t5',
+          surface: 'partes', normalized: 'partes', lemma: 'pars',
+          gloss: 'parts', morphology: { partOfSpeech: 'noun', case: 'accusative', number: 'plural', gender: 'feminine' },
+          punctBefore: '', punctAfter: ' ',
+          head: 4, deprel: 'obl', treebankSource: 'PLDT',
+        },
+        {
+          id: 'TB-lat-Caes1-s1-t6',
+          surface: 'tres', normalized: 'tres', lemma: 'tres',
+          gloss: 'three', morphology: { partOfSpeech: 'numeral', case: 'accusative', number: 'plural' },
+          punctBefore: '', punctAfter: '',
+          head: 5, deprel: 'nummod', treebankSource: 'PLDT',
+        },
+      ],
+    },
+  ],
+};
+
+export const ALL_TREEBANK_SECTIONS: TextSection[] = [
+  TREEBANK_GRC_JN1,
+  TREEBANK_LAT_CAES1,
+];
