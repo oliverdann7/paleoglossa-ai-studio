@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
 import type { KnowledgeMap } from '../services/vocabularyService.js';
 import { useSubscription } from '../contexts/SubscriptionContext.js';
-import { FREE_LANGUAGE_WORD_LIMIT, hasVocabLimit, isTrackedWordState } from '../constants/plans.js';
+import { FREE_LANGUAGE_WORD_LIMIT, hasVocabLimit } from '../constants/plans.js';
+import { countTrackedWords } from '../utils/vocabCount.js';
+
+// Re-export for callers that want the pure function alongside the hook.
+export { countTrackedWords } from '../utils/vocabCount.js';
 
 export interface VocabLimitInfo {
   /** The language the limit applies to (first selected language on free plan). */
@@ -14,25 +18,6 @@ export interface VocabLimitInfo {
   isFull: boolean;
   /** True when a vocabulary limit is enforced (free plan only). */
   isEnabled: boolean;
-}
-
-/**
- * Counts the number of tracked (non-NEW, non-IGNORED) vocabulary entries
- * for a given language in the provided knowledge map.
- *
- * Pure function — safe to call in useMemo with no external dependencies.
- */
-export function countTrackedWords(knowledge: KnowledgeMap, langId: string): number {
-  let count = 0;
-  for (const info of Object.values(knowledge)) {
-    if (info && typeof info === 'object') {
-      const entry = info as { state?: unknown; languageId?: string };
-      if (entry.languageId === langId && isTrackedWordState(entry.state)) {
-        count++;
-      }
-    }
-  }
-  return count;
 }
 
 /**
