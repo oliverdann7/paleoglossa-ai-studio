@@ -66,6 +66,7 @@ interface Props {
   interlinearMode?: boolean;
   displayMode?: DisplayMode;
   onWordClick: (token: ReaderToken, sentenceText: string, sentenceIndex: number) => void;
+  onWordContextMenu: (token: ReaderToken, x: number, y: number) => void;
   onAITranslate: (sentenceId: string, tokens: ReaderToken[]) => void;
   onSavePhrase: (sentence: ReaderSentence) => void;
   onAnalyzeSentence?: (sentence: { text: string; id: string }) => void;
@@ -124,6 +125,8 @@ function getWordStyle(
   };
 }
 
+const LONG_PRESS_MS = 500;
+
 const ReaderToken = memo(function ReaderToken({
   token,
   sentenceText,
@@ -143,6 +146,7 @@ const ReaderToken = memo(function ReaderToken({
   onWordClick,
   onWordHover,
   onWordLeave,
+  onWordContextMenu,
 }: {
   token: ReaderToken;
   sentenceText: string;
@@ -162,6 +166,7 @@ const ReaderToken = memo(function ReaderToken({
   onWordClick: (token: ReaderToken, sentenceText: string, sentenceIndex: number) => void;
   onWordHover: (token: ReaderToken, x: number, y: number) => void;
   onWordLeave: () => void;
+  onWordContextMenu: (token: ReaderToken, x: number, y: number) => void;
 }) {
   const isMorphologyMode = displayMode === 'morphology';
   const state = normalizeWordState(
@@ -170,6 +175,7 @@ const ReaderToken = memo(function ReaderToken({
   const isKnown = state === WordState.KNOWN;
   const gloss = token.gloss;
   const showGloss = showGlossTooltip && !!gloss && (glossTooltipForKnown || !isKnown);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const baseStyle: React.CSSProperties = {
     fontSize: readingMode === 'page' ? `${fontSize * 1.2}px` : `${fontSize}px`,
@@ -198,11 +204,42 @@ const ReaderToken = memo(function ReaderToken({
     [isMorphologyMode, showGloss, gloss, token, onWordHover]
   );
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent<HTMLSpanElement>) => {
+      e.preventDefault();
+      onWordContextMenu(token, e.clientX, e.clientY);
+    },
+    [token, onWordContextMenu]
+  );
+
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent<HTMLSpanElement>) => {
+      const touch = e.touches[0];
+      const x = touch.clientX;
+      const y = touch.clientY;
+      longPressTimer.current = setTimeout(() => {
+        onWordContextMenu(token, x, y);
+      }, LONG_PRESS_MS);
+    },
+    [token, onWordContextMenu]
+  );
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
   return (
     <span className="inline">
       {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
       <span
         onClick={() => onWordClick(token, sentenceText, sentenceIndex)}
+        onContextMenu={handleContextMenu}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={onWordLeave}
         className="cursor-pointer px-1 rounded-sm inline-flex flex-col items-center align-top leading-none"
@@ -259,6 +296,7 @@ export function ReadingPane({
   interlinearMode,
   displayMode,
   onWordClick,
+  onWordContextMenu,
   onAITranslate,
   onSavePhrase,
   onAnalyzeSentence,
@@ -479,6 +517,7 @@ export function ReadingPane({
                         onWordClick={onWordClick}
                         onWordHover={handleWordHover}
                         onWordLeave={handleWordLeave}
+                        onWordContextMenu={onWordContextMenu}
                       />
                     );
                   })}
