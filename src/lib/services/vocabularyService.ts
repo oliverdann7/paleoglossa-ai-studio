@@ -410,38 +410,35 @@ export class VocabularyService {
     const ls = localStorage.getItem(STORAGE_KEY);
     if (!ls) return 0;
 
-    try {
-      const map = JSON.parse(ls) as KnowledgeMap;
-      const entries = Object.entries(map);
-      let count = 0;
+    // Do not catch — caller (useDemoMigration) must see failures so it does
+    // not call discardDemoData() when local data could not be saved to Firestore.
+    const map = JSON.parse(ls) as KnowledgeMap;
+    const entries = Object.entries(map);
+    let count = 0;
 
-      for (const [term, info] of entries) {
-        const safeState = normalizeWordState(
-          typeof info === 'object' && info !== null
-            ? ((info as any).state ?? (info as any).status)
-            : info
-        );
-        await this.setWordState(
-          userId,
-          term,
-          safeState,
-          (info as any)?.languageId || 'unknown',
-          (info as any)?.srs
-        );
-        count++;
-      }
-
-      // Flush immediately so migration writes reach Firestore before returning.
-      await flushVocabWrites();
-
-      // Invalidate cache so the next getVocabulary call reads the migrated data.
-      vocabCache.delete(userId);
-      localStorage.removeItem(STORAGE_KEY);
-      return count;
-    } catch (e) {
-      console.error('Migration failed', e);
-      return 0;
+    for (const [term, info] of entries) {
+      const safeState = normalizeWordState(
+        typeof info === 'object' && info !== null
+          ? ((info as any).state ?? (info as any).status)
+          : info
+      );
+      await this.setWordState(
+        userId,
+        term,
+        safeState,
+        (info as any)?.languageId || 'unknown',
+        (info as any)?.srs
+      );
+      count++;
     }
+
+    // Flush immediately so migration writes reach Firestore before returning.
+    await flushVocabWrites();
+
+    // Invalidate cache so the next getVocabulary call reads the migrated data.
+    vocabCache.delete(userId);
+    localStorage.removeItem(STORAGE_KEY);
+    return count;
   }
 
   /**

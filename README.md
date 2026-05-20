@@ -30,7 +30,7 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 |---------|--------|
 | Ancient text reader (scroll + page modes) | ✅ |
 | Knowledge states (NEW → KNOWN, color-coded) | ✅ |
-| SM-2 spaced repetition reviews | ✅ |
+| FSRS-5 spaced repetition reviews | ✅ |
 | AI word / phrase / paradigm explanations | ✅ |
 | Text import (paste, file, URL, OCR) | ✅ |
 | Reading progress, streak, daily goals | ✅ |
@@ -45,10 +45,16 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | Grammar pathways & reference | ✅ |
 | AI philology tutor | ✅ |
 | Research notebook | ✅ |
-| Syntax / treebank viewer | 🚧 |
+| Cloud sync (Firestore) + demo migration | ✅ |
+| Admin Firebase debug page | ✅ |
+| Public Discover / community text library | ✅ |
+| Vocabulary frequency & difficulty scores | ✅ |
+| Reader notes & context-menu actions | ✅ |
+| Pronunciation / AudioLab (TTS playback) | ✅ |
+| User recording upload | 🚧 |
+| Classroom / course builder | 🚧 |
+| Syntax / dependency treebank | 🚧 |
 | Manuscript / epigraphy lab | 🚧 |
-| Pronunciation lab | ✅ |
-| Classroom / course builder | ✅ |
 
 ## API Routes
 
@@ -67,9 +73,9 @@ Routes are modularized under `api/_routes/`. Some require a Gemini API key and F
 | `/api/notebooks`, `/api/notes` | GET/POST/DELETE | ✅ | Research notebook CRUD |
 | `/api/syntax/...` | GET | 🚧 | Syntax treebank (partial) |
 | `/api/audio/tts` | POST | 🚧 | TTS metadata (no audio stream yet) |
-| `/api/audio/recordings` | POST | 🚧 | User recording upload (stub) |
-| `/api/manuscripts` | GET | 🚧 | Manuscript metadata (stub) |
-| `/api/courses` | GET/POST | 🚧 | Classroom management (stub) |
+| `/api/audio/recordings` | POST | 🚧 | User recording upload (infrastructure not yet in place) |
+| `/api/manuscripts` | GET | 🚧 | Manuscript metadata (placeholder) |
+| `/api/courses` | GET/POST | 🚧 | Classroom management (models exist; detail views incomplete) |
 
 ## Corpus Status
 
@@ -115,7 +121,7 @@ For texts with full morphology, add tokens directly to the `src/data/corpus.ts` 
 | **Database** | Firebase Firestore |
 | **Auth** | Firebase Auth (Google + Email/Password) |
 | **i18n** | i18next + react-i18next (en, es, de, pt, fr, ru, zh, tr) |
-| **SRS** | SM-2 algorithm |
+| **SRS** | FSRS-5 algorithm |
 | **Charts** | Recharts |
 | **Validation** | Zod |
 | **Deployment** | Vercel (SPA rewrites + serverless) |
@@ -197,7 +203,7 @@ src/
 │   ├── services/            # Vocabulary, Review, Settings, AI, Search, …
 │   ├── grammar/             # Grammar reference data & tests
 │   ├── importers/           # SBLGNT, OSHB, StepBible, OGL, Latin adapters
-│   ├── srs/                 # SM-2 algorithm + tests
+│   ├── srs/                 # FSRS-5 + SM-2 algorithms + tests
 │   └── translations/        # en, es, de, pt, fr, ru, zh + Turkish
 ├── types/
 │   ├── corpus.ts            # Token, Sentence, Text, Corpus, Morphology

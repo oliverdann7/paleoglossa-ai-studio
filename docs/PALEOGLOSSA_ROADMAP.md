@@ -1,6 +1,6 @@
 # Paleoglossa: Technical Implementation Roadmap
 
-> **Audit date:** 2026-05-11 · **Updated:** 2026-05-17
+> **Audit date:** 2026-05-11 · **Updated:** 2026-05-20
 > **Target:** A serious platform for studying ancient languages through real texts.
 > **Current state:** React 19 + Vite 6 + Firebase/Firestore + Express 5 + Gemini AI.
 > **Guiding principle:** Extend what exists; build new modules only where gaps cannot be filled.
@@ -22,7 +22,7 @@
 | **Database** | Firestore (9 collections) | Indexes defined in `firestore.indexes.json` |
 | **Auth** | Firebase Auth (Google + Email/Password) | Guest/demo mode supported |
 | **i18n** | i18next + react-i18next | 8 languages (en, es, de, pt, fr, ru, zh, tr) |
-| **SRS** | SM-2 algorithm | Custom implementation in `src/lib/srs/sm2.ts` |
+| **SRS** | FSRS-5 algorithm | Implementation in `src/lib/srs/fsrs.ts`; SM-2 retained in `sm2.ts` |
 | **Validation** | Zod | AI responses, import validation |
 | **Charts** | Recharts | Dashboard statistics |
 | **Deployment** | Vercel + GitHub Actions | Auto-deploy on push to `main` via `deploy.yml`; CI on every PR |
@@ -47,7 +47,7 @@
 |---------|--------|---------|
 | Ancient text reader | ✅ Complete | Good — two reading modes, keyboard shortcuts, parallel text |
 | Word knowledge states | ✅ Complete | 6 states (NEW→KNOWN + IGNORED), color-coded |
-| Spaced repetition (SM-2) | ✅ Complete | Review page, 4 ratings, multiple card types |
+| Spaced repetition (FSRS-5) | ✅ Complete | Review page, 4 ratings, multiple card types; SM-2 retained as fallback |
 | AI word/phrase explanations | ✅ Complete | Gemini-powered, cached per session |
 | Text import (paste/file/URL/OCR) | ✅ Complete | 4 source types, adapter-based importers |
 | i18n | ✅ Complete | All user-facing strings in 8 languages (en, es, de, pt, fr, ru, zh, tr) |
@@ -499,16 +499,16 @@ The Reader page should be extended (not rewritten) via:
 ### Phase 0: Foundation & Cleanup (2-3 weeks)
 **No new features. Pay down technical debt before building up.**
 
-- [ ] Add Vitest + React Testing Library; write smoke tests for existing pages
-- [ ] Set up GitHub Actions CI: lint → typecheck → test → build
+- [x] Add Vitest + React Testing Library; write smoke tests for existing pages
+- [x] Set up GitHub Actions CI: lint → typecheck → test → build
 - [ ] Decompose `corpus.ts` into per-text modules or Firestore documents
 - [ ] Consolidate duplicate types (`types/corpus.ts` + `types/library.ts`)
 - [ ] Remove unused components (`LexDrawer`, `FastWordPopup`)
 - [ ] Fix stale closure in `useVocabulary.markPageAsSeen` (`src/lib/hooks/useVocabulary.ts:96-103`)
 - [ ] Bundle optimization: lazy-load Firebase modules where possible
-- [ ] Add Sentry or equivalent error monitoring
-- [ ] Add `AGENTS.md` with lint/typecheck/build commands for AI tooling
-- [ ] Refactor `server.ts` route handlers into separate modules
+- [x] Add Sentry error monitoring (`@sentry/react` initialized in `main.tsx`)
+- [x] Add `CLAUDE.md` / `AGENTS.md` with conventions for AI tooling
+- [x] Refactor `server.ts` route handlers into separate modules under `api/_routes/`
 
 **Risk:** No tests = changes may regress existing behavior. This phase mitigates that.
 
@@ -626,12 +626,12 @@ The Reader page should be extended (not rewritten) via:
 
 ### Technical Debt to Resolve Early
 
-1. **No test suite** — highest priority. Without tests, refactoring is risky.
+1. ~~**No test suite**~~ ✅ Resolved — Vitest + React Testing Library in place (26+ test files).
 2. **Monolithic corpus.ts** — must be decomposed before adding more texts.
 3. **Duplicate type definitions** — `types/corpus.ts` and `types/library.ts` conflict.
 4. **Unused components** — `LexDrawer`, `FastWordPopup` confuse new developers.
 5. **Build chunk size** — 2MB+ JS bundle will grow worse with new features.
-6. **No CI/CD** — every change is a manual deploy risk.
+6. ~~**No CI/CD**~~ ✅ Resolved — `ci.yml` runs lint + typecheck + test + build on every PR.
 7. **Stale closure bug** — `markPageAsSeen` persists wrong data for the current session.
 
 ### Licensing & Corpus Considerations
@@ -742,4 +742,38 @@ After Phase 0, immediately begin **Phase 1 (Corpus Engine)** — it delivers the
 
 ### Recommended Next Implementation Step
 
-**Phase 0, Task 1: Set up Vitest + React Testing Library + CI.** The extension architecture is now in place, but without tests and CI, every subsequent implementation is higher risk. Start with a `vitest.config.ts`, write a smoke test for the existing Reader page, and wire up GitHub Actions to run `lint && tsc && test && build` on every PR.
+~~**Phase 0, Task 1: Set up Vitest + React Testing Library + CI.**~~ ✅ Resolved.
+
+**Next:** Phase 1 (Corpus Engine) delivers the most user-visible value: browsable corpus, lemma pages, paradigm tables, and the data foundation for all subsequent phases.
+
+---
+
+## 10. Remaining Next Priorities (as of 2026-05-20)
+
+The items below are the highest-impact gaps not yet covered by the phase plan above.
+
+### Production Hardening (near-term)
+
+| Priority | Item | Status |
+|----------|------|--------|
+| High | Demo migration safety — migration functions must throw on failure; `discardDemoData()` must not run on partial failure | ⏳ In progress |
+| High | Production config audit — `scripts/check-production-config.ts` with `npm run config:check` | ⏳ In progress |
+| High | Sync status consistency — `ImportService.updateImport` and other write paths missing `markPendingWrite`/`markWriteSuccess` calls | ⏳ In progress |
+| Medium | Word Analysis panel auto-close — keyboard status shortcuts in Reader do not close the selected-word panel | ⏳ In progress |
+
+### Language Entitlements (next PR)
+
+| Priority | Item | Status |
+|----------|------|--------|
+| High | Global ancient-language selection — Grammar, Syntax, Discover pages should use `ActiveLanguageContext` instead of local state | ⬜ Not started |
+| High | Free language + paid second language UI — Navbar and Settings should surface the free-vs-paid slot distinction | ⬜ Not started |
+| High | 200-word free-language vocabulary limit — gate new word saves after 200 tracked words per free language | ⬜ Not started |
+
+### Reading Loop & Social (medium-term)
+
+| Priority | Item | Status |
+|----------|------|--------|
+| Medium | LingQ-style reading loop — seamless click → mark → continue without panel friction | ⬜ Not started |
+| Medium | Public Discover / community text library — browse and fork public imported texts | ⬜ Not started |
+| Medium | Vocabulary frequency and difficulty recommendations | ⬜ Not started |
+| Low | Social/community roadmap — follow readers, share notebooks, leaderboard | ⬜ Not started |

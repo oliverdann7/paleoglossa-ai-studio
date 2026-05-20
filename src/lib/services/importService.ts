@@ -68,19 +68,16 @@ export class ImportService {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return 0;
 
-    try {
-      const imports = JSON.parse(saved) as ImportedText[];
-      let count = 0;
-      for (const imp of imports) {
-        await this.saveImport(userId, imp);
-        count++;
-      }
-      localStorage.removeItem(STORAGE_KEY);
-      return count;
-    } catch (e) {
-      console.error('Import migration failed:', e);
-      return 0;
+    // Do not catch — caller (useDemoMigration) must see failures so it does
+    // not call discardDemoData() when local data could not be saved to Firestore.
+    const imports = JSON.parse(saved) as ImportedText[];
+    let count = 0;
+    for (const imp of imports) {
+      await this.saveImport(userId, imp);
+      count++;
     }
+    localStorage.removeItem(STORAGE_KEY);
+    return count;
   }
 
   static async getImport(userId: string | null, importId: string): Promise<ImportedText | null> {
@@ -189,13 +186,17 @@ export class ImportService {
   ): Promise<void> {
     importsCache.delete(userId);
     const cleanedPatch = this.stripUndefined(patch);
+    markPendingWrite();
     try {
       await updateDoc(doc(db, `users/${userId}/imports`, importId), {
         ...cleanedPatch,
         updatedAt: serverTimestamp(),
       });
+      markWriteSuccess();
     } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
       console.error('Import Update Error:', e);
+      markWriteFailure(message);
       reportPersistenceError(e, {
         operation: 'import:update',
         path: `users/${userId}/imports/${importId}`,

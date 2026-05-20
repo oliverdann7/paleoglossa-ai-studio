@@ -106,6 +106,8 @@ export function useDemoMigration() {
       setState({ phase: 'migrating', summary: null, error: null, results: null });
       const migrationResults: Record<string, number | boolean> = {};
       try {
+        // Each migration function throws on failure — if any throws, the catch
+        // block runs and discardDemoData() is never called, preserving local data.
         const vocabCount = await VocabularyService.migrateLocalStorage(userId);
         migrationResults.vocabulary = vocabCount;
         const importCount = await ImportService.migrateLocalStorage(userId);
@@ -116,13 +118,15 @@ export function useDemoMigration() {
         migrationResults.readingProgress = progressCount;
         const settingsResult = await SettingsService.migrateLocalStorage(userId);
         migrationResults.settings = settingsResult;
+        // Only reached if every category succeeded (or had nothing to migrate).
         discardDemoData();
         setState({ phase: 'success', summary: null, error: null, results: migrationResults });
-      } catch (e: any) {
+      } catch {
+        // Local data is preserved — discardDemoData() was not called.
         setState({
           phase: 'error',
           summary: null,
-          error: e.message || 'Migration failed',
+          error: 'Migration failed. Your local demo data has been preserved. Please try again.',
           results: null,
         });
       }

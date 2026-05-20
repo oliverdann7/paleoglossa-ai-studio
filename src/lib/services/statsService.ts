@@ -141,19 +141,17 @@ export class StatsService {
     const saved = localStorage.getItem(STATS_STORAGE_KEY);
     if (!saved) return null;
 
-    try {
-      const stats = JSON.parse(saved) as ReadingStats;
-      await this.updateStats(userId, 'unknown', stats);
-      localStorage.removeItem(STATS_STORAGE_KEY);
-      return stats;
-    } catch (e) {
-      console.error('Stats migration failed:', e);
-      return null;
-    }
+    // Do not catch — caller (useDemoMigration) must see failures so it does
+    // not call discardDemoData() when local data could not be saved to Firestore.
+    const stats = JSON.parse(saved) as ReadingStats;
+    await this.updateStats(userId, 'unknown', stats);
+    localStorage.removeItem(STATS_STORAGE_KEY);
+    return stats;
   }
 
   static async migrateLocalReadingProgress(userId: string): Promise<number> {
     let count = 0;
+    const failures: string[] = [];
     const keys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -163,13 +161,6 @@ export class StatsService {
     }
     const recentKey = STORAGE_KEYS.RECENT_PROGRESS;
     const recentRaw = localStorage.getItem(recentKey);
-    if (recentRaw) {
-      try {
-        JSON.parse(recentRaw) as TextProgress[];
-      } catch {
-        /* ignore */
-      }
-    }
     for (const key of keys) {
       const textId = key.replace(STORAGE_KEYS.READING_PROGRESS_PREFIX, '');
       if (!textId) continue;
@@ -183,6 +174,7 @@ export class StatsService {
         count++;
       } catch (e) {
         console.error(`Reading progress migration failed for ${textId}:`, e);
+        failures.push(textId);
       }
     }
     // Migrate recent progress list
@@ -194,9 +186,15 @@ export class StatsService {
           await this.setTextProgress(userId, r);
         }
         localStorage.removeItem(recentKey);
-      } catch {
-        /* ignore */
+      } catch (e) {
+        console.error('Recent progress migration failed:', e);
+        failures.push('recent');
       }
+    }
+    if (failures.length > 0) {
+      throw new Error(
+        `Reading progress migration failed for: ${failures.join(', ')}`
+      );
     }
     return count;
   }
