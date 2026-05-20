@@ -16,6 +16,7 @@ import { ReaderToolbar } from '../components/reader/ReaderToolbar.js';
 import { ReaderAudioBar } from '../components/reader/ReaderAudioBar.js';
 import { ReaderBottomNav } from '../components/reader/ReaderBottomNav.js';
 import { ReadingPane } from '../components/reader/ReadingPane.js';
+import { WordContextMenu } from '../components/reader/WordContextMenu.js';
 import { ReaderSkeleton } from '../components/Skeleton.js';
 import { getTransliteration } from '../lib/transliterate.js';
 import { useReaderTTS } from '../lib/hooks/useReaderTTS.js';
@@ -161,6 +162,11 @@ export const Reader = () => {
   });
   const [isTranslatingId, setIsTranslatingId] = useState<string | null>(null);
   const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
+  const [contextMenu, setContextMenu] = useState<{
+    token: ReaderToken;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const {
     state: {
@@ -862,6 +868,13 @@ export const Reader = () => {
     [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex]
   );
 
+  const handleWordContextMenu = useCallback(
+    (token: ReaderToken, x: number, y: number) => {
+      setContextMenu({ token, x, y });
+    },
+    []
+  );
+
   const handleAnalyzeSentence = useCallback((sentence: { text: string; id: string }) => {
     setSelectedWord(null);
     setSelectedSentence(sentence);
@@ -1040,6 +1053,7 @@ export const Reader = () => {
           interlinearMode={effectiveInterlinear}
           displayMode={displayMode ?? 'scholar'}
           onWordClick={handleWordClick}
+          onWordContextMenu={handleWordContextMenu}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}
           onAnalyzeSentence={handleAnalyzeSentence}
@@ -1160,6 +1174,23 @@ export const Reader = () => {
       )}
 
       <ReaderTutorial currentStep={tutorialStep} onDismiss={dismissTutorial} />
+
+      {contextMenu && (
+        <WordContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          lemma={contextMenu.token.lemma}
+          surface={contextMenu.token.text}
+          currentState={getWordInfo(contextMenu.token.lemma).state}
+          onSetState={(state) => {
+            setWordState(contextMenu.token.lemma, state, currentLanguageId);
+          }}
+          onOpenDictionary={(lemma) => {
+            navigate(`/app/lemma/${encodeURIComponent(currentLanguageId)}/${encodeURIComponent(lemma)}`);
+          }}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 };
