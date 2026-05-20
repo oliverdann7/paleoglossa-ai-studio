@@ -66,14 +66,9 @@ npm run e2e          # playwright test
 ### Stubs / in-progress — do not claim these are done
 | Feature | File(s) | What's missing |
 |---------|---------|----------------|
-| Paradigm inflection tables | `api/_routes/lexicon.ts` | Returns stub index only |
-| SBLGNT full-text lookup | `src/lib/importers/adapters/sblgnt.ts` | Returns `"stub raw data for ${ref}"` |
-| Audio TTS stream | `api/_routes/audio.ts` | No actual audio; metadata only |
-| User recording upload | `api/_routes/audio.ts` | Stub endpoint |
-| Syntax treebank | `src/pages/Syntax.tsx`, `api/_routes/syntax.ts` | PROIEL/Gorman/Perseus not integrated |
-| Manuscripts lab | `src/pages/Manuscripts.tsx`, `api/_routes/manuscripts.ts` | Placeholder UI + stub API |
-| Courses/classroom | `src/pages/Courses.tsx`, `api/_routes/courses.ts` | Basic CRUD; enrollment/progress missing |
-| FSRS algorithm | `src/lib/srs/fsrs.ts` | Stub — SM-2 is production |
+| Paradigm inflection tables | `api/_routes/lexicon.ts` | `/api/lemmas/:lemma/paradigm` returns `[]`; full-paradigm AI generation not wired |
+| User recording upload | `api/_routes/audio.ts` | Stub endpoint — infrastructure not yet in place |
+| Syntax treebank | `src/pages/Syntax.tsx`, `api/_routes/syntax.ts` | PROIEL/Gorman/Perseus bulk import not integrated |
 
 ---
 
