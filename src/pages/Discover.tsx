@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Globe, Play, GitFork, BookOpen, Languages, Filter } from 'lucide-react';
+import { Search, Globe, Play, GitFork, BookOpen, Languages, Filter, Star, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImportService, ImportedText } from '../lib/services/importService.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -8,17 +8,60 @@ import { useToast } from '../lib/hooks/useToast.js';
 import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '../components/Skeleton.js';
+import { useKnowledge } from '../lib/hooks/useKnowledge.js';
+import { normalizeLemmaKey } from '../lib/utils/lemmaUtils.js';
+import { WordState, normalizeWordState } from '../lib/constants/wordStates.js';
+
+/** Returns 0-100 score of how much of this text's vocabulary the user already knows. */
+function computeKnownPct(text: ImportedText, knownSet: Set<string>): number {
+  if (knownSet.size === 0) return 0;
+  // Prefer token lemmas if available; fall back to raw words
+  const lemmas = new Set<string>();
+  for (const sentence of text.sentences ?? []) {
+    for (const token of sentence.tokens ?? []) {
+      if (token.type === 'word') {
+        const key = normalizeLemmaKey(token.lemma || token.text || '');
+        if (key) lemmas.add(key);
+      }
+    }
+  }
+  if (lemmas.size === 0 && text.rawContent) {
+    for (const word of text.rawContent.split(/[\s\p{P}]+/u)) {
+      const key = normalizeLemmaKey(word);
+      if (key.length > 1) lemmas.add(key);
+    }
+  }
+  if (lemmas.size === 0) return 0;
+  let hits = 0;
+  for (const l of lemmas) if (knownSet.has(l)) hits++;
+  return Math.round((hits / lemmas.size) * 100);
+}
+
+function KnownBadge({ pct }: { pct: number }) {
+  const color =
+    pct >= 80 ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30'
+    : pct >= 50 ? 'bg-blue/10 text-blue border-blue/30'
+    : pct >= 20 ? 'bg-amber/10 text-amber border-amber/30'
+    : 'bg-ink3/10 text-ink3 border-ink3/20';
+  return (
+    <span className={cn('px-1.5 py-0.5 rounded-md border text-[10px] font-bold', color)} title="% of words you already know">
+      {pct}% known
+    </span>
+  );
+}
 
 function TextCard({
   text,
   onRead,
   onFork,
   isForkingId,
+  knownPct,
 }: {
   text: ImportedText;
   onRead: (id: string) => void;
   onFork: (id: string) => void;
   isForkingId: string | null;
+  knownPct?: number;
 }) {
   const langLabel = getLanguageDisplayName(text.languageId) || text.languageId;
   const wordCount = text.stats?.totalWords ?? 0;
@@ -45,7 +88,7 @@ function TextCard({
         </p>
       )}
 
-      <div className="flex items-center gap-3 text-[11px] text-muted">
+      <div className="flex items-center gap-3 text-[11px] text-muted flex-wrap">
         <span className="flex items-center gap-1">
           <BookOpen className="w-3 h-3" />
           {wordCount.toLocaleString()} words
@@ -56,6 +99,7 @@ function TextCard({
             {forkCount} {forkCount === 1 ? 'fork' : 'forks'}
           </span>
         )}
+        {knownPct !== undefined && <KnownBadge pct={knownPct} />}
       </div>
 
       <div className="flex gap-2 mt-1">
@@ -114,6 +158,8 @@ export function Discover() {
   const [filterLang, setFilterLang] = useState<string>('');
   const [isForkingId, setIsForkingId] = useState<string | null>(null);
 
+  const { knowledge } = useKnowledge(undefined as any);
+
   useEffect(() => {
     let cancelled = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -164,6 +210,40 @@ export function Discover() {
     },
     [user, addToast, navigate, t]
   );
+
+  const knownSet = useMemo<Set<string>>(() => {
+    const s = new Set<string>();
+    if (!knowledge) return s;
+    for (const [lemma, entry] of Object.entries(knowledge)) {
+      const state = normalizeWordState(entry.state);
+      if (state !== WordState.NEW) s.add(normalizeLemmaKey(lemma));
+    }
+    return s;
+  }, [knowledge]);
+
+  const knownPctMap = useMemo<Map<string, number>>(() => {
+    const m = new Map<string, number>();
+    if (knownSet.size === 0) return m;
+    for (const text of texts) {
+      if (text.id) m.set(text.id, computeKnownPct(text, knownSet));
+    }
+    return m;
+  }, [texts, knownSet]);
+
+  const recommended = useMemo<ImportedText[]>(() => {
+    if (knownSet.size === 0) return [];
+    return [...texts]
+      .filter((t) => {
+        const pct = t.id ? (knownPctMap.get(t.id) ?? 0) : 0;
+        return pct >= 20 && pct <= 85;
+      })
+      .sort((a, b) => {
+        const pa = a.id ? (knownPctMap.get(a.id) ?? 0) : 0;
+        const pb = b.id ? (knownPctMap.get(b.id) ?? 0) : 0;
+        return pb - pa;
+      })
+      .slice(0, 3);
+  }, [texts, knownSet, knownPctMap]);
 
   const displayed = texts.filter((t) => {
     const matchesLang = !filterLang || t.languageId === filterLang;
@@ -234,6 +314,39 @@ export function Discover() {
         </p>
       )}
 
+      {/* Recommended for you */}
+      {!loading && recommended.length > 0 && !query && !filterLang && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Star className="w-4 h-4 text-gold" />
+            <h2 className="text-sm font-semibold text-ink">
+              {t('discover.recommended', 'Recommended for you')}
+            </h2>
+            <span className="text-xs text-muted">
+              {t('discover.recommendedHint', 'Best vocabulary overlap with what you know')}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recommended.map((text) => (
+              <TextCard
+                key={text.id}
+                text={text}
+                onRead={handleRead}
+                onFork={handleFork}
+                isForkingId={isForkingId}
+                knownPct={text.id ? knownPctMap.get(text.id) : undefined}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <TrendingUp className="w-4 h-4 text-muted" />
+            <h2 className="text-sm font-semibold text-ink">
+              {t('discover.allTexts', 'All texts')}
+            </h2>
+          </div>
+        </div>
+      )}
+
       {/* Grid */}
       {loading ? (
         <DiscoverSkeleton />
@@ -273,6 +386,7 @@ export function Discover() {
               onRead={handleRead}
               onFork={handleFork}
               isForkingId={isForkingId}
+              knownPct={text.id ? knownPctMap.get(text.id) : undefined}
             />
           ))}
         </div>
