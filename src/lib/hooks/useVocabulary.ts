@@ -73,25 +73,32 @@ export const useVocabulary = () => {
   const setWordState = useCallback(
     (lemma: string, state: WordState, languageId: string = 'unknown', context?: string) => {
       const normKey = normalizeLemmaKey(lemma);
+      const current = knowledgeRef.current[normKey];
+
+      // Compute initial SRS here so we can pass it to VocabularyService (Firestore
+      // needs nextReview written so the due-items query can find this word).
+      let initialSrs: SRSData | undefined;
+      if (state === WordState.LEARNING && !current?.srs) {
+        initialSrs = {
+          lastReviewed: null,
+          nextReview: new Date().toISOString(),
+          interval: 0,
+          ease: 2.5,
+          step: 0,
+        };
+      }
+
       setKnowledge((prev) => {
-        const current = prev[normKey] || { addedAt: new Date().toISOString() };
-        const info: WordInfo = { ...current, state, languageId };
+        const curr = prev[normKey] || { addedAt: new Date().toISOString() };
+        const info: WordInfo = { ...curr, state, languageId };
         if (context && (!info.contexts || !info.contexts.includes(context))) {
           info.contexts = [...(info.contexts || []), context].slice(-5);
         }
-        if (state === WordState.LEARNING && !info.srs) {
-          info.srs = {
-            lastReviewed: null,
-            nextReview: new Date().toISOString(),
-            interval: 0,
-            ease: 2.5,
-            step: 0,
-          };
-        }
+        if (initialSrs) info.srs = initialSrs;
         return { ...prev, [normKey]: info };
       });
       bumpVersion();
-      VocabularyService.setWordState(userId, lemma, state, languageId);
+      VocabularyService.setWordState(userId, lemma, state, languageId, initialSrs);
     },
     [userId, bumpVersion]
   );

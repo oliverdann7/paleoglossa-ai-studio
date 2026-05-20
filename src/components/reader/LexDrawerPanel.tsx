@@ -181,9 +181,8 @@ export const LexDrawerPanel = ({
     }
 
     try {
-      const languageName = text?.language || selectedWord.language || 'ancient language';
       const explanation = await AIClient.explainWord(
-        languageName,
+        textLanguageId,
         selectedWord.text,
         selectedWord.lemma
       );
@@ -195,9 +194,9 @@ export const LexDrawerPanel = ({
     } catch (error) {
       console.error(error);
       if (useAsGloss) {
-        setAiFallbackGloss('Failed to fetch explanation.');
+        setAiFallbackGloss(t('reader.failedInsights', 'Failed to fetch insights.'));
       } else {
-        setAiWordInsight('Failed to fetch insights.');
+        setAiWordInsight(t('reader.failedInsights', 'Failed to fetch insights.'));
       }
     } finally {
       setIsAiWordLoading(false);
@@ -235,9 +234,8 @@ export const LexDrawerPanel = ({
     setIsAiFallbackLoading(true);
     (async () => {
       try {
-        const languageName = text?.language || selectedWord.language || 'ancient language';
         const explanation = await AIClient.explainWord(
-          languageName,
+          textLanguageId,
           selectedWord.text,
           selectedWord.lemma
         );
@@ -253,7 +251,7 @@ export const LexDrawerPanel = ({
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, !!definitionLookup, text?.language]);
+  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
@@ -393,11 +391,6 @@ export const LexDrawerPanel = ({
                 );
               })()}
             </div>
-            {!sourceInfo && (
-              <div className="text-tiny text-muted italic mb-4">
-                {t('reader.ancientWord', 'Ancient word')}
-              </div>
-            )}
 
             <div className="mt-4 pt-4 border-t border-bdr/20">
               <div className="text-tiny uppercase font-bold text-muted mb-2 tracking-widest">

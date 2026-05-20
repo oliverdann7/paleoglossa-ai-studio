@@ -25,6 +25,7 @@ import { useReaderTTS } from '../lib/hooks/useReaderTTS.js';
 import { AIClient } from '../lib/services/aiClient.js';
 import { ImportService } from '../lib/services/importService.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { useToast } from '../lib/hooks/useToast.js';
 import { STORAGE_KEYS } from '../lib/constants/storage.js';
@@ -35,6 +36,7 @@ export const Reader = () => {
   const { textId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { activeLanguageId } = useActiveLanguage();
   const { canAccessLanguage } = useSubscription();
   const { addToast } = useToast();
   const { t } = useTranslation();
@@ -138,6 +140,7 @@ export const Reader = () => {
     knowledge,
     knowledgeVersion,
     setWordState,
+    markPageAsSeen,
     stats,
     addReadWords,
     incrementReadingTime,
@@ -148,7 +151,7 @@ export const Reader = () => {
     fetchTextProgress,
     saveTextProgress,
     setWordContext,
-  } = useKnowledge();
+  } = useKnowledge(activeLanguageId);
   const { settings } = useSettings();
 
   const isOnline = useOnlineStatus();
@@ -380,7 +383,7 @@ export const Reader = () => {
               translit:
                 tok.transliteration ||
                 getTransliteration(tok.text, text.languageId || '', tok.normalized),
-              gloss: tok.gloss || t('reader.ancientWord'),
+              gloss: tok.gloss || undefined,
               morphology: tok.pos || '',
               punctBefore: '',
               punctAfter:
@@ -639,11 +642,7 @@ export const Reader = () => {
           ...t,
           languageId: currentLanguageId,
         }));
-        if (typeof (setWordState as any).markPageAsSeen === 'function') {
-          (setWordState as any).markPageAsSeen(tokensWithLang);
-        } else {
-          validTokens.forEach((t) => setWordState(t.lemma, WordState.KNOWN, currentLanguageId));
-        }
+        markPageAsSeen(tokensWithLang);
       }
 
       addReadWords(validTokens.length);
@@ -678,7 +677,7 @@ export const Reader = () => {
       currentSentenceIndex,
       displayedSentences,
       currentLanguageId,
-      setWordState,
+      markPageAsSeen,
       addReadWords,
       addToast,
       t,
