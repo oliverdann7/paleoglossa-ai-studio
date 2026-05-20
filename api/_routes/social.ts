@@ -1,17 +1,12 @@
 import { Router } from 'express';
-import { requireAuth } from '../_lib/auth.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
-import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 
-router.get(
-  '/api/social/community',
-  requireAuth as any,
-  async (_req: AuthenticatedRequest, res: any) => {
+router.get('/api/social/community', async (_req: any, res: any) => {
     const adminDb_ = getAdminDb();
     if (!adminDb_) {
-      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+      return res.status(200).json({ scholars: [] });
     }
     try {
       // No orderBy here — combining where(isPublic) + orderBy(createdAt) requires

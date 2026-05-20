@@ -77,8 +77,8 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
     if (!apiKey) {
       return res.status(200).json({
         audioUrl: null,
-        supported: true,
-        reason: `Google Cloud TTS is configured but API key (GOOGLE_TTS_API_KEY) is not set.`,
+        supported: false,
+        reason: 'Audio playback is not available in this environment.',
         provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
       });
     }

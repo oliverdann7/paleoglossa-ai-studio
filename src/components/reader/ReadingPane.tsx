@@ -661,9 +661,6 @@ export function ReadingPane({
                       {sentence.parallel && !sentence.parallel.includes('No parallel text') && (
                         <div>{sentence.parallel}</div>
                       )}
-                      {sentence.translation && !sentence.translation.includes('No translation') && (
-                        <div>{sentence.translation}</div>
-                      )}
                       <button
                         onClick={() => onAITranslate(sentence.id, sentence.tokens)}
                         disabled={translatingId === sentence.id}
