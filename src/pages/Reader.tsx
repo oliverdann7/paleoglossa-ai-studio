@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CorpusDB } from '../data/corpus.js';
+import { corpusService } from '../lib/services/corpusService.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useSettings } from '../lib/hooks/useSettings.js';
 import { useReaderState } from '../lib/contexts/ReaderContext.js';
@@ -38,6 +39,7 @@ export const Reader = () => {
   const onBack = useCallback(() => navigate('/app/library'), [navigate]);
 
   const [localText, setLocalText] = useState<any>(null);
+  const [firestoreChapters, setFirestoreChapters] = useState<ReaderChapter[]>([]);
 
   useEffect(() => {
     if (!textId) return;
@@ -51,6 +53,20 @@ export const Reader = () => {
     } else if (tObj) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalText(tObj);
+    } else {
+      // Try Firestore-sourced corpus text (added via ingest script, not in static bundle)
+      corpusService.getText(textId).then((meta) => {
+        if (meta) {
+          setLocalText({
+            id: meta.id,
+            title: meta.title,
+            languageId: meta.languageId,
+            language: meta.languageId,
+            sectionsPreview: meta.sectionsPreview,
+            _firestoreCorpus: true,
+          });
+        }
+      });
     }
 
     // Fallback to offline payload if no text loaded
@@ -70,6 +86,49 @@ export const Reader = () => {
       }
     }
   }, [textId, user]);
+
+  // Load sections from API for Firestore-sourced corpus texts
+  useEffect(() => {
+    if (!localText?._firestoreCorpus || !localText.sectionsPreview?.length) return;
+    let cancelled = false;
+    const loadSections = async () => {
+      const chapters: ReaderChapter[] = [];
+      for (const preview of localText.sectionsPreview) {
+        const section = await corpusService.getSection(localText.id, preview.id);
+        if (cancelled) return;
+        if (!section) {
+          chapters.push({ id: preview.id, title: preview.label, sentences: [], translation: '' });
+          continue;
+        }
+        const sentences: ReaderSentence[] = (section.sentences ?? []).map((s: any) => ({
+          id: s.id,
+          translation: s.translation,
+          parallel: s.translation,
+          tokens: (s.tokens ?? []).map((tok: any) => ({
+            id: tok.id,
+            text: tok.surface,
+            lemma: tok.lemma,
+            gloss: tok.gloss,
+            morphology: tok.morphology,
+            translit: tok.transliteration || getTransliteration(tok.surface, localText.languageId || '', tok.normalized),
+            punctBefore: tok.punctBefore || '',
+            punctAfter: tok.punctAfter !== undefined ? tok.punctAfter : ' ',
+          })),
+        }));
+        chapters.push({
+          id: section.id,
+          title: section.label,
+          sentences,
+          translation: sentences.map((s) => s.translation).filter(Boolean).join(' '),
+        });
+      }
+      if (!cancelled) {
+        setFirestoreChapters(chapters);
+      }
+    };
+    loadSections();
+    return () => { cancelled = true; };
+  }, [localText]);
 
   const text = localText;
 
@@ -245,6 +304,11 @@ export const Reader = () => {
   const chapters: ReaderChapter[] = useMemo(() => {
     const textId = text?.id;
 
+    // Firestore-sourced corpus text — sections loaded asynchronously
+    if (text?._firestoreCorpus) {
+      return firestoreChapters;
+    }
+
     if (typeof textId === 'string' && CorpusDB.getText(textId)) {
       const realText = CorpusDB.getText(textId);
       if (!realText?.sectionsPreview) return [];
@@ -360,7 +424,7 @@ export const Reader = () => {
       ];
     }
     return [];
-  }, [text, t]);
+  }, [text, t, firestoreChapters]);
 
   // Determine what kind of content is being read so UI can be honest about it
   const sourceKind: 'import' | 'sample' | 'partial' | 'complete' = useMemo(() => {
