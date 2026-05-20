@@ -3385,6 +3385,7 @@ const enhanceText = (text: Text): Text => ({
 
 import { getMockTexts, getMockSections } from "./mockTexts.js";
 import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections.js";
+import { ALL_TREEBANK_SECTIONS, TREEBANK_GRC_JN1, TREEBANK_LAT_CAES1 } from "./corpus/treebank-sections.js";
 import { CICERO_CATILINA_1, CICERO_CATILINA_2, CICERO_CATILINA_3, CICERO_CATILINA_4 } from "./corpus/cicero-catilina.js";
 import { OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_METAMORPHOSES_4 } from "./corpus/ovid-metamorphoses.js";
 import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4 } from "./corpus/caesar-bellum-gallicum.js";
@@ -3396,6 +3397,46 @@ import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_H
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
 let _textByIdCache: Map<string, ReturnType<typeof enhanceText>> | null = null;
 let _lemmaIndexCache: Map<string, Array<{ sentence: any; sectionId: string; textId: string }>> | null = null;
+
+// ─── Treebank demo texts ──────────────────────────────────────────────────────
+
+const TEXT_TREEBANK_GRC: Text = {
+  id: 'grc-treebank-demo',
+  corpusId: 'ANCIENT_GREEK',
+  title: 'Treebank Demo: John 1:1 (PROIEL)',
+  canonicalRef: 'John 1:1',
+  author: 'New Testament',
+  language: 'grc',
+  direction: 'ltr',
+  level: 'B1',
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt' as const,
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 1,
+  sectionsPreview: [{ id: 'TB-grc-Jn1', label: 'John 1:1' }],
+};
+
+const TEXT_TREEBANK_LAT: Text = {
+  id: 'lat-treebank-demo',
+  corpusId: 'LATIN_CLASSIC',
+  title: 'Treebank Demo: Caesar BG 1.1 (PLDT)',
+  canonicalRef: 'Caesar BG 1.1',
+  author: 'Julius Caesar',
+  language: 'lat',
+  direction: 'ltr',
+  level: 'B1',
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt' as const,
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 1,
+  sectionsPreview: [{ id: 'TB-lat-Caes1', label: 'BG 1.1' }],
+};
 
 function getAllEnhancedTexts() {
   if (!_textsCache) {
@@ -3430,6 +3471,8 @@ function getAllEnhancedTexts() {
       TEXT_CHRYSOSTOM_HOMILY,
       TEXT_HERMAS,
       TEXT_BASIL,
+      TEXT_TREEBANK_GRC,
+      TEXT_TREEBANK_LAT,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -3458,6 +3501,7 @@ function getLemmaIndex() {
     LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1,
     CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1,
     ...ALL_EXPANDED_SECTIONS,
+    ...ALL_TREEBANK_SECTIONS,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
@@ -3531,9 +3575,14 @@ export const CorpusDB = {
     if (sectionId === "Plato-Apol-4") return PLATO_APOLOGY_4;
     if (sectionId === "Plato-Apol-5") return PLATO_APOLOGY_5;
 
+    if (sectionId === "TB-grc-Jn1") return TREEBANK_GRC_JN1;
+    if (sectionId === "TB-lat-Caes1") return TREEBANK_LAT_CAES1;
+
     // Expanded sections
     const expandedMatch = ALL_EXPANDED_SECTIONS.find(s => s.id === sectionId);
     if (expandedMatch) return expandedMatch;
+    const treebankMatch = ALL_TREEBANK_SECTIONS.find(s => s.id === sectionId);
+    if (treebankMatch) return treebankMatch;
     
     if (import.meta.env.DEV) {
       const mockMatch = getMockSections().find(s => s.id === sectionId);
