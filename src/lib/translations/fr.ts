@@ -428,6 +428,18 @@ export const fr = {
     'nav.manuscripts': 'Manuscripts',
     'nav.audioLab': 'Audio Lab',
     'nav.courses': 'Courses',
+    'grammar.title': 'Atlas grammatical',
+    'grammar.subtitle': 'Concepts grammaticaux sélectionnés pour les langues classiques.',
+    'grammar.back': 'Retour aux concepts',
+    'grammar.browse': 'Parcourir',
+    'grammar.pathway': 'Parcours',
+    'grammar.search': 'Rechercher des concepts…',
+    'grammar.examples': 'Exemples',
+    'grammar.corpusExamples': 'Trouvé dans le corpus',
+    'grammar.readInContext': 'Lire en contexte',
+    'grammar.pathwayEmpty': 'Aucune étape de parcours trouvée.',
+    'grammar.pathwayFooter':
+      'Suivez le parcours pour une introduction structurée à la grammaire classique.',
     'grammar.comingSoon':
       'Grammar concept browser with dependency graphs, corpus examples, and SRS integration — coming soon.',
     'grammar.experimental':

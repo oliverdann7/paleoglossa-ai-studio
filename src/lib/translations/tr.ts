@@ -233,6 +233,18 @@ export const tr = {
     'search.experimental':
       'Morfoloji filtreleri, KWC görüntüsü ve lemma farkında eşleşme ile çapraz külliyat araması — bu özellik gerçek içe aktarılan metinlerinizi ve kütüphanenizi arar.',
 
+    'grammar.title': 'Dilbilgisi Atlası',
+    'grammar.subtitle': 'Klasik diller için seçilmiş dilbilgisi kavramları.',
+    'grammar.back': 'Kavramlara Dön',
+    'grammar.browse': 'Gözat',
+    'grammar.pathway': 'Öğrenme Yolu',
+    'grammar.search': 'Kavram ara…',
+    'grammar.examples': 'Örnekler',
+    'grammar.corpusExamples': 'Derlemde Bulundu',
+    'grammar.readInContext': 'Bağlamda oku',
+    'grammar.pathwayEmpty': 'Öğrenme yolu adımı bulunamadı.',
+    'grammar.pathwayFooter':
+      'Klasik dilbilgisine yapılandırılmış bir giriş için öğrenme yolunu takip edin.',
     'grammar.comingSoon':
       'Bağımlılık grafikleri, külliyat örnekleri ve SRS entegrasyonu ile dilbilgisi kavram tarayıcısı — yakında.',
     'grammar.experimental':

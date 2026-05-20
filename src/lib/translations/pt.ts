@@ -460,6 +460,18 @@ export const pt = {
     'notebooks.empty': 'Nenhum caderno ainda.',
     'notebooks.createFirst': 'Criar Seu Primeiro Caderno',
 
+    'grammar.title': 'Atlas Gramatical',
+    'grammar.subtitle': 'Conceitos gramaticais selecionados para línguas clássicas.',
+    'grammar.back': 'Voltar aos conceitos',
+    'grammar.browse': 'Explorar',
+    'grammar.pathway': 'Trilha de aprendizado',
+    'grammar.search': 'Pesquisar conceitos…',
+    'grammar.examples': 'Exemplos',
+    'grammar.corpusExamples': 'Encontrado no corpus',
+    'grammar.readInContext': 'Ler no contexto',
+    'grammar.pathwayEmpty': 'Nenhuma etapa encontrada na trilha.',
+    'grammar.pathwayFooter':
+      'Siga a trilha para uma introdução estruturada à gramática clássica.',
     'grammar.comingSoon':
       'Navegador de conceitos gramaticais com gráficos de dependência, exemplos do corpus e integração SRS — em breve.',
     'grammar.experimental':

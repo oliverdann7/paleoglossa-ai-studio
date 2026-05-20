@@ -432,6 +432,18 @@ export const en = {
     'notebooks.empty': 'No notebooks yet.',
     'notebooks.createFirst': 'Create Your First Notebook',
 
+    'grammar.title': 'Grammar Atlas',
+    'grammar.subtitle': 'Curated grammar concepts for classical languages.',
+    'grammar.back': 'Back to Concepts',
+    'grammar.browse': 'Browse',
+    'grammar.pathway': 'Pathway',
+    'grammar.search': 'Search concepts…',
+    'grammar.examples': 'Examples',
+    'grammar.corpusExamples': 'Found in Corpus',
+    'grammar.readInContext': 'Read in context',
+    'grammar.pathwayEmpty': 'No pathway steps found.',
+    'grammar.pathwayFooter':
+      'Follow the pathway for a structured introduction to classical grammar.',
     'grammar.comingSoon':
       'Grammar concept browser with dependency graphs, corpus examples, and SRS integration — coming soon.',
     'grammar.experimental':

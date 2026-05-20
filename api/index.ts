@@ -34,7 +34,7 @@ app.use((req: any, _res: any, next: any) => {
   }
 });
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '20mb' }));
 
 app.use((_req: any, res: any, next: any) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

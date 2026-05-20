@@ -20,6 +20,7 @@ export const Notebooks = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || isDemoMode) {
@@ -35,6 +36,7 @@ export const Notebooks = () => {
 
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
+    setCreateError(null);
     try {
       const nb = await apiFetch<Notebook>('/api/notebooks', {
         method: 'POST',
@@ -44,8 +46,8 @@ export const Notebooks = () => {
       setNewTitle('');
       setNewDesc('');
       setShowCreate(false);
-    } catch {
-      /* ignore */
+    } catch (err: any) {
+      setCreateError(err.message || 'Failed to create notebook. Please try again.');
     }
   };
 
@@ -103,6 +105,9 @@ export const Notebooks = () => {
           >
             Create
           </button>
+          {createError && (
+            <p className="text-[12px] text-ruby mt-1">{createError}</p>
+          )}
         </div>
       )}
 

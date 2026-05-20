@@ -126,6 +126,11 @@ export const Import = () => {
 
   const handleExtractText = async () => {
     if (!imageBase64 || !imageMimeType) return;
+    // ~14 MB base64 limit — matches server MAX_IMAGE_BASE64_LENGTH
+    if (imageBase64.length > 14 * 1024 * 1024) {
+      alert(t('import.imageTooLarge', 'Image is too large. Please use an image under 10 MB.'));
+      return;
+    }
     setIsProcessing(true);
     setProcessingStep(t('import.extracting', 'Extracting Text...'));
     try {
