@@ -226,6 +226,7 @@ function CourseForm({
       });
     } catch {
       setError('Failed to save. Please try again.');
+    } finally {
       setIsSaving(false);
     }
   };
