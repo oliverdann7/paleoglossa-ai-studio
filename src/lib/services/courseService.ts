@@ -9,6 +9,12 @@ export interface CourseWithMeta extends Course {
   updatedAt?: string;
 }
 
+export interface CourseRosterMember extends CourseMembership {
+  displayName: string;
+  email: string;
+  joinedAt: string;
+}
+
 export class CourseService {
   static async getCourses(): Promise<CourseWithMeta[]> {
     try {
@@ -88,6 +94,16 @@ export class CourseService {
     try {
       return await apiFetch<CourseMembership[]>(
         `/api/courses/${encodeURIComponent(courseId)}/members`
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  static async getRoster(courseId: string): Promise<CourseRosterMember[]> {
+    try {
+      return await apiFetch<CourseRosterMember[]>(
+        `/api/courses/${encodeURIComponent(courseId)}/roster`
       );
     } catch {
       return [];

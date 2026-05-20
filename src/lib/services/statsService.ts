@@ -2,7 +2,8 @@ import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { normalizeTimestamp } from '../utils.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
-import { markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
+import { markWriteSuccess, markWriteFailure, markPendingWrite } from '../sync/syncStatus.js';
+import { reportPersistenceError } from '../errors/persistenceReporter.js';
 
 const progressCache = new Map<string, { data: TextProgress[]; at: number }>();
 const PROGRESS_CACHE_TTL = 30_000;
@@ -111,6 +112,7 @@ export class StatsService {
       return;
     }
 
+    markPendingWrite();
     try {
       await setDoc(
         getStatsDocRef(userId, lang),
@@ -126,6 +128,12 @@ export class StatsService {
       const msg = e instanceof Error ? e.message : String(e);
       console.error('Error updating stats:', e);
       markWriteFailure(msg);
+      reportPersistenceError(e, {
+        operation: 'stats:update',
+        path: `users/${userId}/languageStats/${lang}`,
+        category: 'stats',
+        dataPreservedLocally: true,
+      });
     }
   }
 
@@ -227,6 +235,7 @@ export class StatsService {
     }
 
     progressCache.delete(userId);
+    markPendingWrite();
     try {
       await setDoc(
         doc(db, `users/${userId}/readingProgress`, progress.textId),
@@ -241,6 +250,12 @@ export class StatsService {
       const msg = e instanceof Error ? e.message : String(e);
       console.error('Error saving text progress:', e);
       markWriteFailure(msg);
+      reportPersistenceError(e, {
+        operation: 'reading:setProgress',
+        path: `users/${userId}/readingProgress/${progress.textId}`,
+        category: 'reading',
+        dataPreservedLocally: true,
+      });
     }
   }
 

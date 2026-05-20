@@ -20,6 +20,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:firestore-rules": "firebase emulators:exec --project paleoglossa-test --only firestore 'vitest run --config tests/firestore-rules/vitest.config.ts'",
+    "test:persistence": "vitest run src/lib/services/__tests__/servicePersistence.test.ts",
     "e2e": "playwright test",
     "mobile:build": "npm run build && npx cap sync",
     "mobile:sync": "npx cap sync",
@@ -68,6 +70,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
+    "@firebase/rules-unit-testing": "^4.0.1",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/vite": "^4.0.0",
     "@testing-library/jest-dom": "^6.9.1",

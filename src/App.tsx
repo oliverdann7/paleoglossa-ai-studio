@@ -86,6 +86,9 @@ const ProfilePage = lazy(() =>
 const CommunityPage = lazy(() =>
   import('./pages/Community.js').then((module) => ({ default: module.CommunityPage }))
 );
+const Discover = lazy(() =>
+  import('./pages/Discover.js').then((module) => ({ default: module.Discover }))
+);
 const AdminDashboard = lazy(() =>
   import('./pages/admin/Dashboard.js').then((module) => ({ default: module.AdminDashboard }))
 );
@@ -162,6 +165,7 @@ export default function App() {
             <Route path="courses" element={<Courses />} />
             <Route path="audio-lab" element={<AudioLab />} />
             <Route path="more" element={<More />} />
+            <Route path="discover" element={<Discover />} />
             <Route path="import" element={<Import />} />
             <Route path="settings" element={<Settings />} />
             <Route path="subscription" element={<Subscription />} />

@@ -29,6 +29,10 @@ vi.mock('../../utils/lemmaUtils.js', () => ({
   normalizeLemmaKey: (s: string) => s.toLowerCase(),
 }));
 
+vi.mock('../../errors/persistenceReporter.js', () => ({
+  reportPersistenceError: vi.fn(),
+}));
+
 // Track batch commit calls.
 const mockBatchCommit = vi.fn();
 const mockBatchSet = vi.fn();

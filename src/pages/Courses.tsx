@@ -18,11 +18,13 @@ import {
   LogOut,
   Brain,
   Flame,
+  BarChart2,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
-import { CourseService, CourseWithMeta } from '../lib/services/courseService.js';
+import { CourseService, CourseWithMeta, CourseRosterMember } from '../lib/services/courseService.js';
 import { CourseTextAssignment } from '../types/modules.js';
 import { LANGUAGES, getLanguageById, getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
@@ -440,6 +442,38 @@ function CourseDetail({
   const [isLeaving, setIsLeaving] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(Boolean(course.isEnrolled));
 
+  // Teacher roster
+  const [roster, setRoster] = useState<CourseRosterMember[]>([]);
+  const [showRoster, setShowRoster] = useState(false);
+  const [rosterLoading, setRosterLoading] = useState(false);
+
+  const loadRoster = useCallback(async () => {
+    setRosterLoading(true);
+    const data = await CourseService.getRoster(course.id);
+    setRoster(data);
+    setRosterLoading(false);
+  }, [course.id]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (isOwner) loadRoster();
+  }, [isOwner, loadRoster]);
+
+  // Sync reading progress to course member doc (enrolled students and owner)
+  useEffect(() => {
+    if (!userId || course.texts.length === 0) return;
+    const syncProgress = async () => {
+      for (const assignment of course.texts) {
+        const pct = readingProgress[assignment.textId];
+        if (pct && pct > 0) {
+          await CourseService.updateProgress(course.id, assignment.textId, pct);
+        }
+      }
+    };
+    syncProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course.id, userId]);
+
   // Import data for difficulty calculation
   const [importData, setImportData] = useState<
     Record<
@@ -797,6 +831,129 @@ function CourseDetail({
             </div>
           )}
         </>
+      )}
+
+      {/* ── Teacher dashboard ─────────────────────────────────────────────── */}
+      {isOwner && (
+        <div className="mt-8">
+          <button
+            onClick={() => setShowRoster((v) => !v)}
+            className="flex items-center gap-2 text-[13px] font-bold text-ink mb-3 hover:text-blue transition-colors"
+          >
+            <BarChart2 className="w-4 h-4" />
+            Student Progress
+            {!rosterLoading && (
+              <span className="text-[11px] text-muted font-normal">
+                ({roster.filter((m) => m.role !== 'teacher').length} enrolled)
+              </span>
+            )}
+            {rosterLoading && <Loader2 className="w-3 h-3 animate-spin text-muted" />}
+            <ChevronDown
+              className={cn('w-4 h-4 text-muted transition-transform', showRoster && 'rotate-180')}
+            />
+          </button>
+
+          {showRoster && (
+            <div className="card overflow-hidden">
+              {roster.filter((m) => m.role !== 'teacher').length === 0 ? (
+                <div className="p-6 text-center text-[13px] text-muted">
+                  No students have joined yet.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[12px]">
+                    <thead>
+                      <tr className="border-b border-bdr bg-parch2">
+                        <th className="px-4 py-2.5 text-left font-bold text-muted uppercase tracking-wider">
+                          Student
+                        </th>
+                        {sortedTexts.map((t, i) => (
+                          <th
+                            key={t.textId}
+                            className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider whitespace-nowrap"
+                          >
+                            Text {i + 1}
+                          </th>
+                        ))}
+                        <th className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider">
+                          Overall
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roster
+                        .filter((m) => m.role !== 'teacher')
+                        .map((member) => {
+                          const textPcts = sortedTexts.map(
+                            (t) => member.progress[t.textId] ?? 0
+                          );
+                          const overall =
+                            textPcts.length > 0
+                              ? Math.round(textPcts.reduce((a, b) => a + b, 0) / textPcts.length)
+                              : 0;
+                          return (
+                            <tr key={member.userId} className="border-b border-bdr/50 last:border-0">
+                              <td className="px-4 py-3">
+                                <div className="font-medium text-ink truncate max-w-[140px]">
+                                  {member.displayName}
+                                </div>
+                                {member.email && (
+                                  <div className="text-muted text-[11px] truncate max-w-[140px]">
+                                    {member.email}
+                                  </div>
+                                )}
+                              </td>
+                              {textPcts.map((pct, i) => (
+                                <td key={i} className="px-3 py-3 text-center">
+                                  <div className="flex flex-col items-center gap-1">
+                                    <span
+                                      className={cn(
+                                        'font-bold text-[11px]',
+                                        pct === 0
+                                          ? 'text-muted'
+                                          : pct >= 100
+                                            ? 'text-emerald-600'
+                                            : 'text-blue'
+                                      )}
+                                    >
+                                      {pct}%
+                                    </span>
+                                    <div className="w-12 h-1 bg-parch3 rounded-full overflow-hidden">
+                                      <div
+                                        className={cn(
+                                          'h-full rounded-full transition-all',
+                                          pct >= 100 ? 'bg-emerald-500' : 'bg-blue'
+                                        )}
+                                        style={{ width: `${Math.min(pct, 100)}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                </td>
+                              ))}
+                              <td className="px-3 py-3 text-center">
+                                <span
+                                  className={cn(
+                                    'font-bold text-[12px]',
+                                    overall === 0
+                                      ? 'text-muted'
+                                      : overall >= 100
+                                        ? 'text-emerald-600'
+                                        : 'text-ink'
+                                  )}
+                                >
+                                  {overall}%
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </motion.div>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { StatsService, ReadingStats } from '../services/statsService.js';
 import { useAuth } from './useAuth.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
@@ -10,6 +10,8 @@ export const useStats = (languageId?: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const statsUpdateTimer = useRef<NodeJS.Timeout | null>(null);
+  // Keep a ref to the latest stats so flush-on-hide can access current value.
+  const latestStatsRef = useRef<ReadingStats | null>(null);
   const langRef = useRef(languageId);
 
   const DEFAULT_STATS: ReadingStats = {
@@ -134,15 +136,40 @@ export const useStats = (languageId?: string) => {
       setStats((prev) => {
         if (!prev) return null;
         const next = updater(prev);
+        latestStatsRef.current = next;
         if (statsUpdateTimer.current) clearTimeout(statsUpdateTimer.current);
         statsUpdateTimer.current = setTimeout(() => {
           StatsService.updateStats(userId, languageId || 'unknown', next);
-        }, 10000);
+        }, 1500);
         return next;
       });
     },
     [userId, languageId]
   );
+
+  // Flush pending stats write when the tab is hidden or the hook unmounts.
+  const flushStats = useMemo(
+    () => () => {
+      if (!latestStatsRef.current || !userId) return;
+      if (statsUpdateTimer.current) {
+        clearTimeout(statsUpdateTimer.current);
+        statsUpdateTimer.current = null;
+        StatsService.updateStats(userId, languageId || 'unknown', latestStatsRef.current);
+      }
+    },
+    [userId, languageId]
+  );
+
+  useEffect(() => {
+    const onHide = () => flushStats();
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onHide);
+      flushStats();
+    };
+  }, [flushStats]);
 
   const addReadWords = useCallback(
     (count: number) => {

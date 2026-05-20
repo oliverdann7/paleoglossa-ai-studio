@@ -2,6 +2,8 @@ import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { UserSettings } from '../../types/firestore.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
+import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
+import { reportPersistenceError } from '../errors/persistenceReporter.js';
 
 const STORAGE_KEY = STORAGE_KEYS.SETTINGS;
 
@@ -64,14 +66,23 @@ export class SettingsService {
     try {
       const ref = doc(db, `users/${userId}/settings`, 'main');
       const existing = (await getDoc(ref)).data() as UserSettings | undefined;
+      markPendingWrite();
       await setDoc(ref, {
         ...DEFAULT_SETTINGS,
         ...existing,
         ...settings,
         updatedAt: serverTimestamp(),
       });
+      markWriteSuccess();
     } catch (e) {
       console.error('Settings Save Error:', e);
+      markWriteFailure(e instanceof Error ? e.message : String(e));
+      reportPersistenceError(e, {
+        operation: 'settings:save',
+        path: `users/${userId}/settings/main`,
+        category: 'settings',
+        dataPreservedLocally: true,
+      });
     }
   }
 }

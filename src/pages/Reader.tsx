@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CorpusDB } from '../data/corpus.js';
+import { corpusService } from '../lib/services/corpusService.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useSettings } from '../lib/hooks/useSettings.js';
 import { useReaderState } from '../lib/contexts/ReaderContext.js';
@@ -17,6 +18,7 @@ import { ReaderBottomNav } from '../components/reader/ReaderBottomNav.js';
 import { ReadingPane } from '../components/reader/ReadingPane.js';
 import { ReaderSkeleton } from '../components/Skeleton.js';
 import { getTransliteration } from '../lib/transliterate.js';
+import { useReaderTTS } from '../lib/hooks/useReaderTTS.js';
 
 import { AIClient } from '../lib/services/aiClient.js';
 import { ImportService } from '../lib/services/importService.js';
@@ -26,19 +28,6 @@ import { useToast } from '../lib/hooks/useToast.js';
 import { STORAGE_KEYS } from '../lib/constants/storage.js';
 import { OfflineService } from '../lib/services/offlineService.js';
 import { useOnlineStatus } from '../lib/hooks/useOnlineStatus.js';
-
-// Module-level constant — avoids object recreation on every render
-const TTS_LANG_MAP: Record<string, string> = {
-  grc: 'el-GR',
-  'grc-koine': 'el-GR',
-  hbo: 'he-IL',
-  lat: 'it-IT',
-  syr: 'ar-SA',
-  arc: 'ar-SA',
-  cop: 'el-GR',
-  akk: 'ar-SA',
-  san: 'hi-IN',
-};
 
 export const Reader = () => {
   const { textId } = useParams();
@@ -50,6 +39,7 @@ export const Reader = () => {
   const onBack = useCallback(() => navigate('/app/library'), [navigate]);
 
   const [localText, setLocalText] = useState<any>(null);
+  const [firestoreChapters, setFirestoreChapters] = useState<ReaderChapter[]>([]);
 
   useEffect(() => {
     if (!textId) return;
@@ -63,6 +53,20 @@ export const Reader = () => {
     } else if (tObj) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalText(tObj);
+    } else {
+      // Try Firestore-sourced corpus text (added via ingest script, not in static bundle)
+      corpusService.getText(textId).then((meta) => {
+        if (meta) {
+          setLocalText({
+            id: meta.id,
+            title: meta.title,
+            languageId: meta.languageId,
+            language: meta.languageId,
+            sectionsPreview: meta.sectionsPreview,
+            _firestoreCorpus: true,
+          });
+        }
+      });
     }
 
     // Fallback to offline payload if no text loaded
@@ -82,6 +86,49 @@ export const Reader = () => {
       }
     }
   }, [textId, user]);
+
+  // Load sections from API for Firestore-sourced corpus texts
+  useEffect(() => {
+    if (!localText?._firestoreCorpus || !localText.sectionsPreview?.length) return;
+    let cancelled = false;
+    const loadSections = async () => {
+      const chapters: ReaderChapter[] = [];
+      for (const preview of localText.sectionsPreview) {
+        const section = await corpusService.getSection(localText.id, preview.id);
+        if (cancelled) return;
+        if (!section) {
+          chapters.push({ id: preview.id, title: preview.label, sentences: [], translation: '' });
+          continue;
+        }
+        const sentences: ReaderSentence[] = (section.sentences ?? []).map((s: any) => ({
+          id: s.id,
+          translation: s.translation,
+          parallel: s.translation,
+          tokens: (s.tokens ?? []).map((tok: any) => ({
+            id: tok.id,
+            text: tok.surface,
+            lemma: tok.lemma,
+            gloss: tok.gloss,
+            morphology: tok.morphology,
+            translit: tok.transliteration || getTransliteration(tok.surface, localText.languageId || '', tok.normalized),
+            punctBefore: tok.punctBefore || '',
+            punctAfter: tok.punctAfter !== undefined ? tok.punctAfter : ' ',
+          })),
+        }));
+        chapters.push({
+          id: section.id,
+          title: section.label,
+          sentences,
+          translation: sentences.map((s) => s.translation).filter(Boolean).join(' '),
+        });
+      }
+      if (!cancelled) {
+        setFirestoreChapters(chapters);
+      }
+    };
+    loadSections();
+    return () => { cancelled = true; };
+  }, [localText]);
 
   const text = localText;
 
@@ -257,6 +304,11 @@ export const Reader = () => {
   const chapters: ReaderChapter[] = useMemo(() => {
     const textId = text?.id;
 
+    // Firestore-sourced corpus text — sections loaded asynchronously
+    if (text?._firestoreCorpus) {
+      return firestoreChapters;
+    }
+
     if (typeof textId === 'string' && CorpusDB.getText(textId)) {
       const realText = CorpusDB.getText(textId);
       if (!realText?.sectionsPreview) return [];
@@ -372,7 +424,7 @@ export const Reader = () => {
       ];
     }
     return [];
-  }, [text, t]);
+  }, [text, t, firestoreChapters]);
 
   // Determine what kind of content is being read so UI can be honest about it
   const sourceKind: 'import' | 'sample' | 'partial' | 'complete' = useMemo(() => {
@@ -488,60 +540,19 @@ export const Reader = () => {
     currentSentenceIndexRef.current = currentSentenceIndex;
   }, [currentSentenceIndex]);
 
-  // Speak current word via TTS when audio position advances
-  useEffect(() => {
-    if (!isPlaying || !window.speechSynthesis) return;
-    const currentSentence = chapter?.sentences[audioPos.sentenceIdx];
-    if (!currentSentence) return;
-    const token = currentSentence.tokens[audioPos.wordIdx];
-    if (!token || token.type === 'whitespace' || !token.text) return;
-
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(token.text);
-    u.lang = TTS_LANG_MAP[currentLanguageId] || 'el-GR';
-    u.rate = Math.min(audioSpeed, 1.1);
-    window.speechSynthesis.speak(u);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioPos.sentenceIdx, audioPos.wordIdx]);
-
-  // Cancel TTS when paused
-  useEffect(() => {
-    if (!isPlaying) window.speechSynthesis?.cancel();
-  }, [isPlaying]);
-
-  // Audio Playback Effect
-  useEffect(() => {
-    if (!isPlaying) return;
-    const currentSentence = chapter?.sentences[audioPos.sentenceIdx];
-    if (!currentSentence) {
-      setPlayState(false);
-      return;
-    }
-
-    const baseSpeed = isHebrewFont ? 180 : 150;
-    const delay = baseSpeed / audioSpeed;
-
-    const timer = setTimeout(() => {
-      if (loopWord) {
-        // Do not advance token
-      } else if (audioPos.wordIdx < currentSentence.tokens.length - 1) {
-        setAudioPosition(audioPos.sentenceIdx, audioPos.wordIdx + 1);
-      } else {
-        if (loopSentence) {
-          setAudioPosition(audioPos.sentenceIdx, 0);
-        } else if (audioPos.sentenceIdx < chapter.sentences.length - 1) {
-          setAudioPosition(audioPos.sentenceIdx + 1, 0);
-          if (readingMode === 'page') setSentenceIndex(audioPos.sentenceIdx + 1);
-        } else {
-          setPlayState(false);
-          setAudioPosition(0, 0);
-        }
-      }
-    }, delay);
-
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying, audioPos, audioSpeed, chapter, loopWord, loopSentence, isHebrewFont, readingMode]);
+  const { audioProgress } = useReaderTTS({
+    sentences: chapter?.sentences ?? [],
+    currentLanguageId,
+    audioSpeed,
+    isPlaying,
+    loopSentence,
+    loopWord,
+    audioPos,
+    readingMode,
+    onSetAudioPosition: setAudioPosition,
+    onSetPlayState: setPlayState,
+    onSetSentenceIndex: setSentenceIndex,
+  });
 
   // Tutorial logic
   useEffect(() => {
@@ -988,9 +999,7 @@ export const Reader = () => {
         <ReaderAudioBar
           isPlaying={isPlaying}
           onTogglePlay={togglePlay}
-          audioProgress={
-            chapter.sentences.length > 0 ? audioPos.sentenceIdx / chapter.sentences.length : 0
-          }
+          audioProgress={audioProgress}
           audioSpeed={audioSpeed}
           onChangeSpeed={() => {
             const speeds = [0.7, 0.85, 1.0, 1.15, 1.3];
@@ -1138,7 +1147,11 @@ export const Reader = () => {
             if (!window.speechSynthesis) return;
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(textStr);
-            u.lang = TTS_LANG_MAP[lang] || 'en-US';
+            const langMap: Record<string, string> = {
+              grc: 'el-GR', 'grc-koine': 'el-GR', hbo: 'he-IL', lat: 'it-IT',
+              syr: 'ar-SA', arc: 'ar-SA', cop: 'el-GR', akk: 'ar-SA', san: 'hi-IN',
+            };
+            u.lang = langMap[lang] || 'en-US';
             u.rate = 0.9;
             window.speechSynthesis.speak(u);
           }}

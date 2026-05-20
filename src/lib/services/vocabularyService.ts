@@ -14,6 +14,7 @@ import { SRSData } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
 import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
+import { reportPersistenceError } from '../errors/persistenceReporter.js';
 
 export type { SRSData };
 
@@ -118,6 +119,12 @@ const flushVocabWrites = (): Promise<void> => {
         const msg = e instanceof Error ? e.message : String(e);
         console.error('Failed to commit vocabulary batch', e);
         markWriteFailure(msg);
+        reportPersistenceError(e, {
+          operation: 'vocabulary:flushBatch',
+          path: `users/{userId}/vocabulary/batch-${i}`,
+          category: 'vocabulary',
+          dataPreservedLocally: true,
+        });
       }
     }
   };
@@ -162,7 +169,6 @@ const enqueueVocabWrite = (
 // Registered once at module load.  visibilitychange fires in Capacitor
 // WebViews when the native app goes to background, so this covers both web
 // and native without needing @capacitor/app for the basic case.
-
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
@@ -186,6 +192,7 @@ if (typeof window !== 'undefined') {
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
+
 
 export class VocabularyService {
   /**
