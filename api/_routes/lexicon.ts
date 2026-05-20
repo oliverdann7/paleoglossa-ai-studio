@@ -12,6 +12,7 @@ import {
   getDictionaryLanguages,
   searchDictionaryEntries,
 } from '../../src/lib/data/dictionaryDB.js';
+import { CorpusDB } from '../../src/data/corpus.js';
 
 const router = Router();
 
@@ -70,6 +71,61 @@ router.get('/api/lemmas', (req: any, res: any) => {
 
 router.get('/api/lemmas/:lemma/paradigm', (_req: any, res: any) => {
   res.status(200).json([]);
+});
+
+// ─── Attested corpus forms for a lemma ────────────────────────────────────────
+// Returns all surface forms found in the corpus for this lemma, grouped with
+// their morphological features. Used to render offline paradigm tables.
+
+router.get('/api/lemmas/:language/:lemma/forms', (req: any, res: any) => {
+  try {
+    const { language, lemma } = req.params;
+    if (!lemma || !language) {
+      return res.status(400).json({ error: 'language and lemma are required' });
+    }
+
+    const texts = CorpusDB.getTexts() as any[];
+
+    const formsMap = new Map<string, { surface: string; features: Record<string, string>; count: number }>();
+
+    for (const text of texts) {
+      const textLang = (text as any).languageId || (text as any).language || '';
+      if (textLang && textLang !== language && !textLang.startsWith(language)) continue;
+      const sections: { id: string }[] = (text as any).sectionsPreview ?? [];
+      for (const preview of sections) {
+        const section = CorpusDB.getSection(preview.id) as any;
+        if (!section?.sentences) continue;
+        for (const sentence of section.sentences) {
+          for (const token of sentence.tokens ?? []) {
+            if (!token.lemma || token.lemma !== lemma) continue;
+            const surface = token.surface || token.text || token.normalized || '';
+            if (!surface) continue;
+            const features: Record<string, string> = {};
+            const m = token.morphology || {};
+            if (m.partOfSpeech) features.pos = m.partOfSpeech;
+            if (m.case) features.case = m.case;
+            if (m.number) features.number = m.number;
+            if (m.gender) features.gender = m.gender;
+            if (m.tense) features.tense = m.tense;
+            if (m.voice) features.voice = m.voice;
+            if (m.mood) features.mood = m.mood;
+            if (m.person) features.person = m.person;
+            if (m.stem) features.stem = m.stem;
+            const key = surface + '|' + JSON.stringify(features);
+            const existing = formsMap.get(key);
+            if (existing) existing.count++;
+            else formsMap.set(key, { surface, features, count: 1 });
+          }
+        }
+      }
+    }
+
+    const forms = Array.from(formsMap.values()).sort((a, b) => b.count - a.count);
+    res.status(200).json({ lemma, language, forms });
+  } catch (err: any) {
+    console.error('[lemmas/:language/:lemma/forms] Error:', err.message);
+    res.status(500).json({ error: 'Failed to collect forms', code: 'INTERNAL_ERROR' });
+  }
 });
 
 // ─── Token Lookup ─────────────────────────────────────────────────────────────

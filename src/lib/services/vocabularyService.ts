@@ -42,46 +42,98 @@ function getTermId(term: string, languageId: string): string {
   return btoa(encodeURIComponent(key)).replace(/[+/=]/g, '_').substring(0, 120);
 }
 
-// Global queue for batching vocabulary writes to reduce Firestore costs
-const vocabWriteQueue = new Map<string, { docRef: any; payload: any; isNew: boolean }>();
-let vocabWriteTimer: NodeJS.Timeout | null = null;
+// ── Write queue ──────────────────────────────────────────────────────────────
 
-const flushVocabWrites = async () => {
-  if (vocabWriteQueue.size === 0) return;
+type QueueEntry = { docRef: any; payload: any; isNew: boolean };
+type QueueListener = (pendingCount: number) => void;
 
-  const entries = Array.from(vocabWriteQueue.entries());
-  vocabWriteQueue.clear();
+const vocabWriteQueue = new Map<string, QueueEntry>();
+let vocabWriteTimer: ReturnType<typeof setTimeout> | null = null;
+// De-duplicate concurrent flush calls — callers share the same promise.
+let flushInProgress: Promise<void> | null = null;
+const queueListeners = new Set<QueueListener>();
 
-  // Firestore batches support up to 500 operations
-  const chunkSize = 500;
-  for (let i = 0; i < entries.length; i += chunkSize) {
-    const chunk = entries.slice(i, i + chunkSize);
-    const batch = writeBatch(db);
+function notifyQueueListeners() {
+  const count = vocabWriteQueue.size;
+  queueListeners.forEach((fn) => fn(count));
+}
 
-    for (const data of chunk.map((c) => c[1])) {
-      if (data.isNew) {
-        batch.set(data.docRef, data.payload, { merge: true });
-      } else {
-        batch.update(data.docRef, data.payload);
+/** Returns the number of term writes currently queued but not yet sent. */
+export function getPendingVocabularyWriteCount(): number {
+  return vocabWriteQueue.size;
+}
+
+/** True when there are writes in the queue that have not been flushed. */
+export function hasPendingVocabularyWrites(): boolean {
+  return vocabWriteQueue.size > 0;
+}
+
+/**
+ * Subscribe to changes in the pending-write count.
+ * The listener is called immediately with the current count, then on every
+ * enqueue or flush.  Returns an unsubscribe function.
+ */
+export function subscribeToVocabularyQueueStatus(listener: QueueListener): () => void {
+  queueListeners.add(listener);
+  listener(vocabWriteQueue.size); // immediate snapshot
+  return () => queueListeners.delete(listener);
+}
+
+/**
+ * Commit every queued write to Firestore now, in 500-operation batches.
+ * Concurrent calls share the same in-flight promise — safe to call from
+ * multiple places simultaneously.
+ */
+const flushVocabWrites = (): Promise<void> => {
+  if (flushInProgress) return flushInProgress;
+
+  const run = async () => {
+    if (vocabWriteQueue.size === 0) return;
+
+    if (vocabWriteTimer) {
+      clearTimeout(vocabWriteTimer);
+      vocabWriteTimer = null;
+    }
+
+    const entries = Array.from(vocabWriteQueue.entries());
+    vocabWriteQueue.clear();
+    notifyQueueListeners();
+
+    const chunkSize = 500;
+    for (let i = 0; i < entries.length; i += chunkSize) {
+      const chunk = entries.slice(i, i + chunkSize);
+      const batch = writeBatch(db);
+
+      for (const data of chunk.map((c) => c[1])) {
+        if (data.isNew) {
+          batch.set(data.docRef, data.payload, { merge: true });
+        } else {
+          batch.update(data.docRef, data.payload);
+        }
+      }
+
+      try {
+        await batch.commit();
+        markWriteSuccess();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error('Failed to commit vocabulary batch', e);
+        markWriteFailure(msg);
+        reportPersistenceError(e, {
+          operation: 'vocabulary:flushBatch',
+          path: `users/{userId}/vocabulary/batch-${i}`,
+          category: 'vocabulary',
+          dataPreservedLocally: true,
+        });
       }
     }
+  };
 
-    markPendingWrite();
-    try {
-      await batch.commit();
-      markWriteSuccess();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      console.error('Failed to commit vocabulary batch', e);
-      markWriteFailure(msg);
-      reportPersistenceError(e, {
-        operation: 'vocabulary:flushBatch',
-        path: `users/{userId}/vocabulary/batch-${i}`,
-        category: 'vocabulary',
-        dataPreservedLocally: true,
-      });
-    }
-  }
+  flushInProgress = run().finally(() => {
+    flushInProgress = null;
+  });
+
+  return flushInProgress;
 };
 
 const enqueueVocabWrite = (
@@ -95,23 +147,28 @@ const enqueueVocabWrite = (
 
   const existing = vocabWriteQueue.get(queueKey);
   if (existing) {
-    // Merge payloads
+    // Merge payloads so repeated updates to the same word coalesce.
     vocabWriteQueue.set(queueKey, {
       docRef,
       payload: { ...existing.payload, ...payload },
       isNew: existing.isNew || isNew,
     });
+    // Do not call markPendingWrite again — this entry was already counted.
   } else {
     vocabWriteQueue.set(queueKey, { docRef, payload, isNew });
+    markPendingWrite();
   }
 
-  markPendingWrite();
+  notifyQueueListeners();
+
   if (vocabWriteTimer) clearTimeout(vocabWriteTimer);
-  vocabWriteTimer = setTimeout(flushVocabWrites, 2000); // 2 second debounce
+  vocabWriteTimer = setTimeout(flushVocabWrites, 2000);
 };
 
-// Flush pending vocab writes when the tab is hidden or unloaded so queued
-// writes reach Firestore's local IndexedDB cache before the page dies.
+// ── Browser / native lifecycle flush ────────────────────────────────────────
+// Registered once at module load.  visibilitychange fires in Capacitor
+// WebViews when the native app goes to background, so this covers both web
+// and native without needing @capacitor/app for the basic case.
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
@@ -119,13 +176,33 @@ if (typeof document !== 'undefined') {
     }
   });
 }
+
 if (typeof window !== 'undefined') {
+  // pagehide fires reliably on mobile browsers and bfcache-navigations.
   window.addEventListener('pagehide', () => {
+    flushVocabWrites();
+  });
+
+  // beforeunload: synchronous context — we can only kick off the flush, not
+  // await it.  Combined with pagehide + visibilitychange this maximises
+  // coverage across environments.
+  window.addEventListener('beforeunload', () => {
     flushVocabWrites();
   });
 }
 
+// ── Public API ───────────────────────────────────────────────────────────────
+
+
 export class VocabularyService {
+  /**
+   * Flush all pending vocabulary writes to Firestore immediately.
+   * Safe to call multiple times — concurrent calls share the same promise.
+   */
+  static flushPendingWrites(): Promise<void> {
+    return flushVocabWrites();
+  }
+
   static async getVocabulary(userId: string | null): Promise<KnowledgeMap> {
     if (!userId) {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -162,8 +239,8 @@ export class VocabularyService {
         const nextReview = normalizeTimestamp(data.nextReview);
         const addedAt = normalizeTimestamp(data.createdAt);
 
-        // Key by lemma when available — ensures different inflected forms of the same
-        // lemma resolve to a single knowledge entry.
+        // Key by lemma when available — ensures different inflected forms of the
+        // same lemma resolve to a single knowledge entry.
         const mapKey = normalizeLemmaKey(data.lemma || data.term);
 
         const incoming: WordInfo = {
@@ -261,7 +338,6 @@ export class VocabularyService {
   static incrementEncounter(userId: string | null, term: string, languageId: string = 'unknown') {
     if (!userId) return;
     const termId = getTermId(term, languageId);
-    // Use merge=true so the write creates the doc if it doesn't exist yet
     enqueueVocabWrite(
       userId,
       termId,
@@ -315,7 +391,7 @@ export class VocabularyService {
   ) {
     if (!userId) return;
     const termId = getTermId(term, languageId);
-    // arrayUnion is idempotent and avoids a read round-trip; the 5-item limit is enforced locally
+    // arrayUnion is idempotent; the 5-item limit is enforced locally
     enqueueVocabWrite(
       userId,
       termId,
@@ -352,10 +428,10 @@ export class VocabularyService {
         count++;
       }
 
-      // Flush now for migration
+      // Flush immediately so migration writes reach Firestore before returning.
       await flushVocabWrites();
 
-      // Invalidate cache so the next getVocabulary call reads the migrated data
+      // Invalidate cache so the next getVocabulary call reads the migrated data.
       vocabCache.delete(userId);
       localStorage.removeItem(STORAGE_KEY);
       return count;

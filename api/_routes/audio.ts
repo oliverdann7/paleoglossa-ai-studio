@@ -2,6 +2,19 @@ import { Router } from 'express';
 
 const router = Router();
 
+// In-memory LRU cache: key = `${languageId}::${text}`, value = base64 audio data URL
+// Capped at 200 entries (~40 MB assuming ~200 KB per audio) to bound memory usage.
+const TTS_CACHE_MAX = 200;
+const ttsCache = new Map<string, string>();
+
+function cachePut(key: string, value: string) {
+  if (ttsCache.size >= TTS_CACHE_MAX) {
+    // Evict oldest entry (Map preserves insertion order)
+    ttsCache.delete(ttsCache.keys().next().value!);
+  }
+  ttsCache.set(key, value);
+}
+
 const TTS_SUPPORTED_LANGUAGES: Record<string, { code: string; voice: string; note: string }> = {
   grc: { code: 'el-GR', voice: 'el-GR-Standard-A', note: 'Ancient Greek accent reconstruction' },
   lat: { code: 'it-IT', voice: 'it-IT-Standard-A', note: 'Restored Classical pronunciation' },
@@ -70,6 +83,13 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
       });
     }
 
+    // Return cached audio if available
+    const cacheKey = `${languageId}::${text}`;
+    const cached = ttsCache.get(cacheKey);
+    if (cached) {
+      return res.status(200).json({ audioUrl: cached, supported: true, cached: true, provider: `Google Cloud Text-to-Speech (${langConfig.note})` });
+    }
+
     const requestBody = {
       input: { text: text.substring(0, 5000) },
       voice: {
@@ -115,6 +135,7 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
     }
 
     const audioBase64 = `data:audio/mpeg;base64,${audioContent}`;
+    cachePut(cacheKey, audioBase64);
     return res.status(200).json({
       audioUrl: audioBase64,
       supported: true,

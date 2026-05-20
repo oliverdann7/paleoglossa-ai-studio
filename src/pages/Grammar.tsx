@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -12,6 +12,10 @@ import {
   AlignLeft,
   Hash,
   ExternalLink,
+  Brain,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -131,6 +135,160 @@ function ParadigmTable({ paradigm, rtl }: { paradigm: Paradigm; rtl: boolean }) 
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+interface QuizQuestion {
+  question: string;
+  choices: string[];
+  answer: string;
+  explanation: string;
+}
+
+function MorphologyQuiz({ concept }: { concept: Concept }) {
+  const [question, setQuestion] = useState<QuizQuestion | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [score, setScore] = useState({ correct: 0, total: 0 });
+
+  const pickExample = useCallback(() => {
+    const examples = concept.examples ?? [];
+    if (examples.length === 0) return null;
+    return examples[Math.floor(Math.random() * examples.length)];
+  }, [concept.examples]);
+
+  const fetchQuestion = useCallback(async () => {
+    const ex = pickExample();
+    if (!ex) return;
+    setLoading(true);
+    setQuestion(null);
+    setSelected(null);
+    try {
+      const url = getApiUrl('/api/ai/quiz');
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          languageId: concept.languageId,
+          lemma: ex.gloss || ex.surface,
+          form: ex.surface,
+          type: 'morphology',
+        }),
+      });
+      if (!res.ok) throw new Error('quiz failed');
+      const data = (await res.json()) as QuizQuestion;
+      if (data.question && Array.isArray(data.choices) && data.choices.length > 0) {
+        setQuestion(data);
+      }
+    } catch {
+      // silently ignore — the quiz section just won't show
+    } finally {
+      setLoading(false);
+    }
+  }, [concept.languageId, pickExample]);
+
+  const handleAnswer = useCallback(
+    (choice: string) => {
+      if (selected !== null || !question) return;
+      setSelected(choice);
+      setScore((s) => ({
+        correct: s.correct + (choice === question.answer ? 1 : 0),
+        total: s.total + 1,
+      }));
+    },
+    [selected, question]
+  );
+
+  return (
+    <div className="mt-8">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-[11px] font-bold text-ink uppercase tracking-widest flex items-center gap-2">
+          <Brain className="w-3.5 h-3.5 text-blue" />
+          Practice Quiz
+        </h3>
+        {score.total > 0 && (
+          <span className="text-[11px] text-muted">
+            {score.correct}/{score.total} correct
+          </span>
+        )}
+      </div>
+
+      {!question && !loading && (
+        <button
+          onClick={fetchQuestion}
+          disabled={concept.examples.length === 0}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue text-white text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Brain className="w-4 h-4" />
+          Generate question
+        </button>
+      )}
+
+      {loading && (
+        <div className="card p-6 flex items-center gap-3 text-muted">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span className="text-sm">Generating question…</span>
+        </div>
+      )}
+
+      {question && !loading && (
+        <div className="card p-5 space-y-4">
+          <p className="text-[15px] text-ink leading-relaxed font-medium">{question.question}</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {question.choices.map((choice) => {
+              const isCorrect = choice === question.answer;
+              const isSelected = choice === selected;
+              const revealed = selected !== null;
+              return (
+                <button
+                  key={choice}
+                  onClick={() => handleAnswer(choice)}
+                  disabled={revealed}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm text-left transition-colors',
+                    !revealed
+                      ? 'border-bdr hover:border-blue/40 hover:bg-parch3 text-ink'
+                      : isCorrect
+                        ? 'border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold'
+                        : isSelected
+                          ? 'border-red-400 bg-red-50 text-red-800'
+                          : 'border-bdr text-muted opacity-60'
+                  )}
+                >
+                  {revealed && isCorrect && <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />}
+                  {revealed && isSelected && !isCorrect && <XCircle className="w-4 h-4 shrink-0 text-red-500" />}
+                  <span>{choice}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {selected !== null && (
+            <div className="space-y-3">
+              <div
+                className={cn(
+                  'rounded-lg px-4 py-3 text-sm leading-relaxed',
+                  selected === question.answer
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                )}
+              >
+                {selected === question.answer ? '✓ Correct! ' : '✗ Incorrect. '}
+                {question.explanation}
+              </div>
+              <button
+                onClick={fetchQuestion}
+                className="flex items-center gap-1.5 text-sm text-blue hover:underline"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Next question
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -285,6 +443,8 @@ function ConceptDetail({
           </div>
         </div>
       )}
+
+      <MorphologyQuiz concept={concept} />
     </div>
   );
 }

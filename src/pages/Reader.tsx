@@ -17,6 +17,7 @@ import { ReaderAudioBar } from '../components/reader/ReaderAudioBar.js';
 import { ReaderBottomNav } from '../components/reader/ReaderBottomNav.js';
 import { ReadingPane } from '../components/reader/ReadingPane.js';
 import { SentenceNoteModal } from '../components/reader/SentenceNoteModal.js';
+import { WordContextMenu } from '../components/reader/WordContextMenu.js';
 import { ReaderSkeleton } from '../components/Skeleton.js';
 import { getTransliteration } from '../lib/transliterate.js';
 import { useReaderTTS } from '../lib/hooks/useReaderTTS.js';
@@ -164,6 +165,11 @@ export const Reader = () => {
   const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
   const [noteModal, setNoteModal] = useState<{ sentence: any; sentenceIndex: number } | null>(null);
   const [notedSentenceIds, setNotedSentenceIds] = useState<Set<string>>(new Set());
+  const [contextMenu, setContextMenu] = useState<{
+    token: ReaderToken;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const {
     state: {
@@ -865,6 +871,13 @@ export const Reader = () => {
     [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex]
   );
 
+  const handleWordContextMenu = useCallback(
+    (token: ReaderToken, x: number, y: number) => {
+      setContextMenu({ token, x, y });
+    },
+    []
+  );
+
   const handleAnalyzeSentence = useCallback((sentence: { text: string; id: string }) => {
     setSelectedWord(null);
     setSelectedSentence(sentence);
@@ -1053,6 +1066,7 @@ export const Reader = () => {
           onWordClick={handleWordClick}
           onSentenceNote={handleSentenceNote}
           notedSentenceIds={notedSentenceIds}
+          onWordContextMenu={handleWordContextMenu}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}
           onAnalyzeSentence={handleAnalyzeSentence}
@@ -1182,6 +1196,23 @@ export const Reader = () => {
           languageId={currentLanguageId}
           onSaved={handleNoteSaved}
           onClose={() => setNoteModal(null)}
+        />
+      )}
+
+      {contextMenu && (
+        <WordContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          lemma={contextMenu.token.lemma}
+          surface={contextMenu.token.text}
+          currentState={getWordInfo(contextMenu.token.lemma).state}
+          onSetState={(state) => {
+            setWordState(contextMenu.token.lemma, state, currentLanguageId);
+          }}
+          onOpenDictionary={(lemma) => {
+            navigate(`/app/lemma/${encodeURIComponent(currentLanguageId)}/${encodeURIComponent(lemma)}`);
+          }}
+          onClose={() => setContextMenu(null)}
         />
       )}
     </div>
