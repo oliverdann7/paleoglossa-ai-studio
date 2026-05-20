@@ -7,6 +7,7 @@ import { ActiveLanguageProvider } from './ActiveLanguageContext.js';
 import { SubscriptionProvider } from './SubscriptionContext.js';
 import { SyncStatusProvider } from './SyncStatusContext.js';
 import { ReaderStateProvider } from './ReaderContext.js';
+import { VocabLimitProvider } from './VocabLimitContext.js';
 
 export function RootProviders({ children }: { children: ReactNode }) {
   return (
@@ -17,7 +18,9 @@ export function RootProviders({ children }: { children: ReactNode }) {
           <ActiveLanguageProvider>
             <SubscriptionProvider>
               <SyncStatusProvider>
-                <ReaderStateProvider>{children}</ReaderStateProvider>
+                <VocabLimitProvider>
+                  <ReaderStateProvider>{children}</ReaderStateProvider>
+                </VocabLimitProvider>
               </SyncStatusProvider>
             </SubscriptionProvider>
           </ActiveLanguageProvider>

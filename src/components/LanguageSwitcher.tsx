@@ -5,11 +5,13 @@ import { cn } from '@/lib/utils';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { getLanguageIcon } from '../lib/constants/languages.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
+import { useVocabLimitContext } from '../lib/contexts/VocabLimitContext.js';
 
 export function LanguageSwitcher() {
   const { activeLanguageId, setActiveLanguageId, currentLanguage, availableLanguages } =
     useActiveLanguage();
   const { canAccessLanguage, remainingSlots, subscription } = useSubscription();
+  const vocabLimit = useVocabLimitContext();
   const [open, setOpen] = useState(false);
   const [upgradePromptLang, setUpgradePromptLang] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -122,20 +124,43 @@ export function LanguageSwitcher() {
                           </span>
                         )}
                       </div>
-                      <div
-                        className={cn(
-                          'text-[10px] uppercase tracking-wider',
-                          isActive ? 'text-blue/70' : 'text-muted'
-                        )}
-                      >
-                        {isLocked
-                          ? 'Tap to unlock'
-                          : lang.corpusStatus === 'available'
-                            ? 'Available'
-                            : lang.corpusStatus === 'partial'
-                              ? 'In Progress'
-                              : 'Sample'}
-                      </div>
+                      {/* Show vocab progress bar for the free language on free plan */}
+                      {isFree && vocabLimit.isEnabled ? (
+                        <div className="mt-0.5">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={cn(
+                              'text-[9px] font-bold',
+                              vocabLimit.isFull ? 'text-red-500' : 'text-muted'
+                            )}>
+                              {vocabLimit.count}/{vocabLimit.limit} words
+                            </span>
+                          </div>
+                          <div className="h-1 w-full bg-parch3 rounded-full overflow-hidden">
+                            <div
+                              className={cn(
+                                'h-full rounded-full transition-all',
+                                vocabLimit.isFull ? 'bg-red-400' : vocabLimit.count >= vocabLimit.limit * 0.8 ? 'bg-amber' : 'bg-blue'
+                              )}
+                              style={{ width: `${Math.min(100, (vocabLimit.count / vocabLimit.limit) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className={cn(
+                            'text-[10px] uppercase tracking-wider',
+                            isActive ? 'text-blue/70' : 'text-muted'
+                          )}
+                        >
+                          {isLocked
+                            ? 'Tap to unlock'
+                            : lang.corpusStatus === 'available'
+                              ? 'Available'
+                              : lang.corpusStatus === 'partial'
+                                ? 'In Progress'
+                                : 'Sample'}
+                        </div>
+                      )}
                     </div>
                     {isActive && <span className="w-2 h-2 rounded-full bg-blue shrink-0" />}
                     {isLocked && <Lock className="w-3.5 h-3.5 text-muted/60 shrink-0" />}

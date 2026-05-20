@@ -8,6 +8,7 @@ import { useReadingProgress } from './useReadingProgress.js';
 import { useAuth } from './useAuth.js';
 import { useVocabLimit } from './useVocabLimit.js';
 import { isTrackedWordState } from '../constants/plans.js';
+import { usePublishVocabLimit } from '../contexts/VocabLimitContext.js';
 
 export const useKnowledge = (languageId?: string) => {
   const vocab = useVocabulary();
@@ -19,6 +20,14 @@ export const useKnowledge = (languageId?: string) => {
 
   // Vocab limit — computed from the already-loaded knowledge map, no extra Firestore reads.
   const vocabLimit = useVocabLimit(vocab.knowledge);
+
+  // Publish the latest limit info to VocabLimitContext so navbar components
+  // (LanguageSwitcher) can display the count without a second Firestore read.
+  const publishVocabLimit = usePublishVocabLimit();
+  useEffect(() => {
+    publishVocabLimit(vocabLimit);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vocabLimit.count, vocabLimit.isFull, vocabLimit.isEnabled, vocabLimit.freeLangId]);
 
   useEffect(() => {
     let active = true;
