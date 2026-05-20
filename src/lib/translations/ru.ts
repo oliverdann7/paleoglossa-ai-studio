@@ -427,6 +427,18 @@ export const ru = {
     'nav.manuscripts': 'Manuscripts',
     'nav.audioLab': 'Audio Lab',
     'nav.courses': 'Courses',
+    'grammar.title': 'Грамматический атлас',
+    'grammar.subtitle': 'Избранные грамматические концепции для классических языков.',
+    'grammar.back': 'Назад к концепциям',
+    'grammar.browse': 'Обзор',
+    'grammar.pathway': 'Учебный путь',
+    'grammar.search': 'Поиск концепций…',
+    'grammar.examples': 'Примеры',
+    'grammar.corpusExamples': 'Найдено в корпусе',
+    'grammar.readInContext': 'Читать в контексте',
+    'grammar.pathwayEmpty': 'Шаги учебного пути не найдены.',
+    'grammar.pathwayFooter':
+      'Следуйте учебному пути для структурированного введения в классическую грамматику.',
     'grammar.comingSoon':
       'Grammar concept browser with dependency graphs, corpus examples, and SRS integration — coming soon.',
     'grammar.experimental':

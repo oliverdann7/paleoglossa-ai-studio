@@ -429,6 +429,18 @@ export const de = {
     'nav.manuscripts': 'Manuscripts',
     'nav.audioLab': 'Audio Lab',
     'nav.courses': 'Courses',
+    'grammar.title': 'Grammatik-Atlas',
+    'grammar.subtitle': 'Ausgewählte Grammatikkonzepte für klassische Sprachen.',
+    'grammar.back': 'Zurück zu den Konzepten',
+    'grammar.browse': 'Durchsuchen',
+    'grammar.pathway': 'Lernpfad',
+    'grammar.search': 'Konzepte suchen…',
+    'grammar.examples': 'Beispiele',
+    'grammar.corpusExamples': 'Im Korpus gefunden',
+    'grammar.readInContext': 'Im Kontext lesen',
+    'grammar.pathwayEmpty': 'Keine Lernpfad-Schritte gefunden.',
+    'grammar.pathwayFooter':
+      'Folge dem Lernpfad für eine strukturierte Einführung in die klassische Grammatik.',
     'grammar.comingSoon':
       'Grammar concept browser with dependency graphs, corpus examples, and SRS integration — coming soon.',
     'grammar.experimental':

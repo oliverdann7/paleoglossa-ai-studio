@@ -421,6 +421,17 @@ export const zh = {
     'nav.manuscripts': 'Manuscripts',
     'nav.audioLab': 'Audio Lab',
     'nav.courses': 'Courses',
+    'grammar.title': '语法图集',
+    'grammar.subtitle': '精选古典语言语法概念。',
+    'grammar.back': '返回概念列表',
+    'grammar.browse': '浏览',
+    'grammar.pathway': '学习路径',
+    'grammar.search': '搜索概念…',
+    'grammar.examples': '示例',
+    'grammar.corpusExamples': '在语料库中找到',
+    'grammar.readInContext': '在上下文中阅读',
+    'grammar.pathwayEmpty': '未找到学习路径步骤。',
+    'grammar.pathwayFooter': '按照学习路径系统地学习古典语法。',
     'grammar.comingSoon':
       'Grammar concept browser with dependency graphs, corpus examples, and SRS integration — coming soon.',
     'grammar.experimental':

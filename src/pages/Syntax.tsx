@@ -115,17 +115,15 @@ export const Syntax = () => {
 
       // 2. Fall back to AI analysis
       const surface = sentenceSurface(selectedSentence);
-      const res = await apiFetch('/api/ai/syntax', {
+      const data = await apiFetch<SyntaxResult>('/api/ai/syntax', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           languageId: selectedText.language,
           sentence: surface,
           tokens: selectedSentence.tokens.map((t) => ({ surface: t.surface, lemma: t.lemma })),
-        }),
+        },
+        skipAuth: true,
       });
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const data = (await res.json()) as SyntaxResult;
       setSyntaxResult({ ...data, source: 'ai' });
     } catch (e: any) {
       setError(e.message ?? 'Analysis failed');

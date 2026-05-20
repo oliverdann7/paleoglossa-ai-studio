@@ -12,15 +12,21 @@ let initialized = false;
 
 function loadServiceAccount(): object | null {
   const json = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (json) {
+  if (!json) return null;
+  try {
+    return JSON.parse(json);
+  } catch {
+    // Try base64-encoded JSON (common Vercel deployment pattern)
     try {
-      return JSON.parse(json);
+      const decoded = Buffer.from(json, 'base64').toString('utf-8');
+      return JSON.parse(decoded);
     } catch {
-      console.error('[firebaseAdmin] FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON');
+      console.error(
+        '[firebaseAdmin] FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON or base64-encoded JSON'
+      );
       return null;
     }
   }
-  return null;
 }
 
 function buildCredentialFromEnv(): object | null {
