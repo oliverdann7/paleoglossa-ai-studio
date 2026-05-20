@@ -511,6 +511,77 @@ export const Dashboard = () => {
           );
         })()}
 
+      {/* Suggested Reading — corpus texts the user hasn't started yet */}
+      {hasAnyActivity &&
+        progressLoaded &&
+        (() => {
+          const readIds = new Set(readingProgress.map((p) => p.textId));
+          const allTexts = CorpusDB.getTexts();
+          const langFilter = activeLanguageId && activeLanguageId !== 'all' ? activeLanguageId : null;
+
+          const suggestions = allTexts
+            .filter((txt) => {
+              if (readIds.has(txt.id)) return false;
+              if (langFilter && txt.language !== langFilter) return false;
+              return true;
+            })
+            .sort((a, b) => {
+              // Prefer texts with morphology, then by level order
+              const levelOrder: Record<string, number> = { beginner: 0, intermediate: 1, advanced: 2 };
+              const aLevel = levelOrder[a.level ?? ''] ?? 1;
+              const bLevel = levelOrder[b.level ?? ''] ?? 1;
+              if (a.hasMorphology && !b.hasMorphology) return -1;
+              if (!a.hasMorphology && b.hasMorphology) return 1;
+              return aLevel - bLevel;
+            })
+            .slice(0, 3);
+
+          if (suggestions.length === 0) return null;
+
+          return (
+            <div className="mb-14">
+              <h3 className="eyebrow mb-6 font-bold text-ink3">
+                {t('dashboard.suggestedReading', 'Suggested Reading')}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {suggestions.map((txt) => (
+                  <button
+                    key={txt.id}
+                    onClick={() => navigate(`/app/reader/${txt.id}`)}
+                    className="card p-5 text-left hover:border-blue/30 hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <BookMarked className="w-5 h-5 text-blue shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                      {txt.level && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-parch3 text-muted shrink-0">
+                          {txt.level}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-serif text-[16px] text-ink mb-1 line-clamp-2 group-hover:text-blue transition-colors">
+                      {txt.title}
+                    </h4>
+                    {txt.author && (
+                      <p className="text-[12px] text-muted italic mb-2 line-clamp-1">{txt.author}</p>
+                    )}
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue/70">
+                        {getLanguageDisplayName(txt.language)}
+                      </span>
+                      {txt.hasMorphology && (
+                        <span className="text-[10px] text-muted">· morphology</span>
+                      )}
+                      {txt.sentenceCount && (
+                        <span className="text-[10px] text-muted">· {txt.sentenceCount} sentences</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
       {/* New-user onboarding grid — show when no activity at all */}
       {!hasAnyActivity && progressLoaded && (
         <div className="mb-14">
