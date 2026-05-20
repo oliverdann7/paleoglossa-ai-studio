@@ -380,7 +380,7 @@ export const Reader = () => {
               translit:
                 tok.transliteration ||
                 getTransliteration(tok.text, text.languageId || '', tok.normalized),
-              gloss: tok.gloss || t('reader.ancientWord'),
+              gloss: tok.gloss || undefined,
               morphology: tok.pos || '',
               punctBefore: '',
               punctAfter:
