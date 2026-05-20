@@ -113,7 +113,7 @@ export const Reader = () => {
             text: tok.surface,
             lemma: tok.lemma,
             gloss: tok.gloss,
-            morphology: tok.morphology,
+            morphology: typeof tok.morphology === 'string' ? tok.morphology : (tok.morphology?.partOfSpeech || undefined),
             translit: tok.transliteration || getTransliteration(tok.surface, localText.languageId || '', tok.normalized),
             punctBefore: tok.punctBefore || '',
             punctAfter: tok.punctAfter !== undefined ? tok.punctAfter : ' ',
@@ -344,7 +344,7 @@ export const Reader = () => {
             text: t.surface,
             lemma: t.lemma,
             gloss: t.gloss,
-            morphology: t.morphology,
+            morphology: typeof t.morphology === 'string' ? t.morphology : (t.morphology?.partOfSpeech || undefined),
             translit:
               t.transliteration ||
               getTransliteration(t.surface, realText?.language || '', t.normalized),

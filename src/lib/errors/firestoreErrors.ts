@@ -61,6 +61,11 @@ const FIREBASE_ERROR_CODES: Record<string, Omit<FirestoreErrorCategory, 'technic
     userMessage: 'Firebase is misconfigured. Contact support.',
     retryable: true,
   },
+  unknown: {
+    code: 'UNKNOWN',
+    userMessage: 'Sync pending — your changes are saved locally and will retry.',
+    retryable: true,
+  },
 };
 
 const ERROR_MSG_PATTERNS: { pattern: RegExp; code: string }[] = [
