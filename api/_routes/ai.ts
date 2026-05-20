@@ -515,9 +515,19 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
     res.status(200).json({ explanation: cleaned || 'No explanation could be generated.' });
   } catch (err: any) {
     console.error('[ai/explain] Error:', err.message);
+    let safeMessage = 'AI service error. Please try again.';
+    try {
+      const parsed = JSON.parse(err.message);
+      if (parsed?.error?.message) safeMessage = parsed.error.message;
+    } catch {
+      // err.message is not JSON — use as-is if it looks safe
+      if (typeof err.message === 'string' && err.message.length < 200) {
+        safeMessage = err.message;
+      }
+    }
     res.status(500).json({
       explanation: 'Failed to generate explanation.',
-      error: err.message,
+      error: safeMessage,
       code: 'EXPLAIN_ERROR',
     });
   }

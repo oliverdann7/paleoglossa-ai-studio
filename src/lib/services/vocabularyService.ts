@@ -117,7 +117,7 @@ const flushVocabWrites = (): Promise<void> => {
         markWriteSuccess();
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        console.error('Failed to commit vocabulary batch', e);
+        console.error('Failed to commit vocabulary batch', e, 'code:', (e as any)?.code);
         markWriteFailure(msg);
         reportPersistenceError(e, {
           operation: 'vocabulary:flushBatch',

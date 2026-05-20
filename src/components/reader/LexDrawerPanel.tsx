@@ -136,6 +136,7 @@ export const LexDrawerPanel = ({
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
   const [aiFallbackGloss, setAiFallbackGloss] = useState<string | null>(null);
   const [isAiFallbackLoading, setIsAiFallbackLoading] = useState(false);
+  const [aiFallbackFailed, setAiFallbackFailed] = useState(false);
   const aiFallbackLemmaRef = useRef<string | null>(null);
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
@@ -221,6 +222,7 @@ export const LexDrawerPanel = ({
   useEffect(() => {
     setAiFallbackGloss(null); // eslint-disable-line react-hooks/set-state-in-effect
     setIsAiFallbackLoading(false);
+    setAiFallbackFailed(false);
     aiFallbackLemmaRef.current = null;
   }, [selectedWord?.lemma]);
 
@@ -244,6 +246,9 @@ export const LexDrawerPanel = ({
         }
       } catch (error) {
         console.error('AI fallback failed:', error);
+        if (aiFallbackLemmaRef.current === currentLemma) {
+          setAiFallbackFailed(true);
+        }
       } finally {
         if (aiFallbackLemmaRef.current === currentLemma) {
           setIsAiFallbackLoading(false);
@@ -369,7 +374,9 @@ export const LexDrawerPanel = ({
                 return (
                   <div>
                     <span className="text-muted italic text-[16px]">
-                      {t('reader.definitionUnavailable', 'No definition available.')}
+                      {aiFallbackFailed
+                        ? t('reader.definitionUnavailableAiFailed', 'Definition unavailable — try \'Ask AI\' manually.')
+                        : t('reader.definitionUnavailable', 'No definition available.')}
                     </span>
                     <div className="mt-2 flex flex-col gap-1">
                       <button

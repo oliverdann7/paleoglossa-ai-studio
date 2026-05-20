@@ -225,7 +225,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         return data.url || null;
       } catch (err) {
         console.error('Checkout error:', err);
-        return null;
+        throw err;
       }
     },
     [subscription.selectedLanguageIds]

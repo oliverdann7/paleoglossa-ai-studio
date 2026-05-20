@@ -23,18 +23,21 @@ export const ParadigmModal: React.FC<ParadigmModalProps> = ({
 }) => {
   const { user } = useAuth();
   const [paradigm, setParadigm] = useState<string | null>(null);
+  const [paradigmError, setParadigmError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen && lemma) {
       const fetchParadigm = async () => {
+        setParadigm(null);
+        setParadigmError(null);
         setIsLoading(true);
         try {
           const result = await AIClient.getParadigm(languageId, word, lemma);
           setParadigm(result);
         } catch (error: any) {
           console.error(error);
-          setParadigm(error.message || 'Failed to load paradigm data.');
+          setParadigmError('Could not load the paradigm table. Please try again.');
         } finally {
           setIsLoading(false);
         }
@@ -88,6 +91,13 @@ export const ParadigmModal: React.FC<ParadigmModalProps> = ({
                   <Loader2 className="w-8 h-8 animate-spin text-blue" />
                   <p className="font-serif italic animate-pulse">
                     Consulting the ancient scrolls...
+                  </p>
+                </div>
+              ) : paradigmError ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+                  <p className="text-[15px] text-ink2 font-medium">{paradigmError}</p>
+                  <p className="text-[12px] text-muted italic">
+                    The AI service may be temporarily unavailable.
                   </p>
                 </div>
               ) : (

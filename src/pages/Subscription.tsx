@@ -31,6 +31,7 @@ export const Subscription = () => {
   } = useSubscription();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [searchParams] = useSearchParams();
 
@@ -46,11 +47,15 @@ export const Subscription = () => {
     }
 
     setLoadingPlan(planId);
+    setCheckoutError(null);
     try {
       const url = await createCheckoutSession(planId as any, billingCycle);
       if (url) {
-        window.location.href = url;
+        window.location.assign(url);
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setCheckoutError(msg || t('sub.checkoutFailed', 'Could not start checkout. Please try again.'));
     } finally {
       setLoadingPlan(null);
     }
@@ -209,6 +214,12 @@ export const Subscription = () => {
           );
         })}
       </div>
+
+      {checkoutError && (
+        <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 text-[14px] font-medium text-center max-w-xl mx-auto">
+          {checkoutError}
+        </div>
+      )}
 
       {/* Manage Billing */}
       {subscription.subscriptionStatus === 'active' &&

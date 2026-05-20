@@ -13,7 +13,7 @@ interface Props {
 
 /** Maps abbreviated morphology codes to human-readable labels. */
 function parseMorphFields(morphology: string): string[] {
-  if (!morphology) return [];
+  if (!morphology || typeof morphology !== 'string') return [];
   const labels: string[] = [];
 
   // POS prefixes (Greek/Hebrew/Latin patterns)
