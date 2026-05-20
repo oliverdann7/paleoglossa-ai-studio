@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BookOpen, ExternalLink, Library, Search, AlignLeft } from 'lucide-react';
+import { BookOpen, ExternalLink, Library, Search, AlignLeft, Table2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DictionaryEntry,
@@ -10,13 +10,225 @@ import {
 } from '@/lib/data/dictionary';
 import { KWICPanel } from '../components/corpus/KWICPanel.js';
 import { frequencyTier } from '../lib/utils/frequencyTier.js';
+import { getApiUrl } from '../lib/services/apiBaseUrl.js';
 
 const isRtlLanguage = (languageId: string) => ['hbo', 'arc', 'syr', 'egy'].includes(languageId);
 
 const entryPath = (entry: DictionaryEntry) =>
   `/app/dictionary/${encodeURIComponent(entry.languageId)}/${encodeURIComponent(entry.lemma)}`;
 
-type EntryTab = 'definition' | 'concordance';
+type EntryTab = 'definition' | 'concordance' | 'paradigm';
+
+// ─── Paradigm tab ─────────────────────────────────────────────────────────────
+
+interface AttestedForm {
+  surface: string;
+  features: Record<string, string>;
+  count: number;
+}
+
+const CASE_ORDER = ['nominative', 'vocative', 'accusative', 'genitive', 'dative'];
+const NUMBER_ORDER = ['singular', 'dual', 'plural'];
+const TENSE_ORDER = ['present', 'imperfect', 'future', 'aorist', 'perfect', 'pluperfect'];
+const PERSON_ORDER = ['first', 'second', 'third'];
+const VOICE_ORDER = ['active', 'middle', 'passive', 'middle/passive'];
+
+function capitalize(s: string) {
+  return s ? s[0].toUpperCase() + s.slice(1) : '';
+}
+
+function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
+  const [forms, setForms] = useState<AttestedForm[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true);
+    setForms(null);
+    fetch(getApiUrl(`/api/lemmas/${encodeURIComponent(entry.languageId)}/${encodeURIComponent(entry.lemma)}/forms`))
+      .then((r) => r.json())
+      .then((d) => setForms(d.forms ?? []))
+      .catch(() => setForms([]))
+      .finally(() => setLoading(false));
+  }, [entry.languageId, entry.lemma]);
+
+  if (loading) {
+    return (
+      <div className="py-16 text-center text-muted text-[14px]">
+        Loading corpus forms…
+      </div>
+    );
+  }
+
+  if (!forms || forms.length === 0) {
+    return (
+      <div className="py-12 text-center text-muted text-[14px]">
+        No attested forms found for <span className="font-serif text-ink">{entry.lemma}</span> in the corpus.
+      </div>
+    );
+  }
+
+  const pos = forms[0]?.features?.pos || entry.partOfSpeech || '';
+  const isVerb = pos.toLowerCase().includes('verb');
+  const isNoun = pos.toLowerCase().includes('noun') || pos.toLowerCase().includes('adjective') || pos.toLowerCase().includes('article');
+  const isRtl = isRtlLanguage(entry.languageId);
+
+  // Group forms by relevant features
+  if (isNoun) {
+    // Case × Number table
+    const genders = Array.from(new Set(forms.map((f) => f.features.gender).filter(Boolean)));
+    const cases = CASE_ORDER.filter((c) => forms.some((f) => f.features.case === c));
+    const numbers = NUMBER_ORDER.filter((n) => forms.some((f) => f.features.number === n));
+
+    return (
+      <div className="space-y-6">
+        <p className="text-[12px] text-muted italic">
+          Showing all forms attested in the corpus for <span className="font-serif text-ink not-italic">{entry.lemma}</span>. Grey cells = form not yet attested.
+        </p>
+        {(genders.length > 0 ? genders : ['']).map((gender) => {
+          const gForms = gender ? forms.filter((f) => !f.features.gender || f.features.gender === gender) : forms;
+          if (gForms.length === 0) return null;
+          return (
+            <div key={gender || 'all'}>
+              {gender && <div className="eyebrow mb-3 text-ink">{capitalize(gender)}</div>}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-[13px]">
+                  <thead>
+                    <tr>
+                      <th className="p-2 text-left text-muted font-bold border-b border-bdr/40 bg-parch/30 w-28"></th>
+                      {numbers.map((n) => (
+                        <th key={n} className="p-2 text-center text-muted font-bold border-b border-bdr/40 bg-parch/30 capitalize">
+                          {capitalize(n)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cases.map((c, i) => (
+                      <tr key={c} className={i % 2 === 0 ? 'bg-white' : 'bg-parch/20'}>
+                        <td className="p-2 text-muted font-bold capitalize border-r border-bdr/20">{capitalize(c)}</td>
+                        {numbers.map((n) => {
+                          const match = gForms.find((f) => f.features.case === c && f.features.number === n);
+                          return (
+                            <td
+                              key={n}
+                              className={cn(
+                                'p-2 text-center font-serif text-[16px]',
+                                match ? 'text-ink' : 'text-muted/30',
+                                isRtl ? 'font-hebrew' : ''
+                              )}
+                              dir={isRtl ? 'rtl' : 'ltr'}
+                              title={match ? `${match.count}× attested` : 'Not attested'}
+                            >
+                              {match ? match.surface : '—'}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })}
+        <UnorganizedForms forms={forms.filter((f) => !f.features.case)} isRtl={isRtl} />
+      </div>
+    );
+  }
+
+  if (isVerb) {
+    // Tense × Person table per Voice
+    const voices = VOICE_ORDER.filter((v) => forms.some((f) => f.features.voice === v));
+    const tenses = TENSE_ORDER.filter((t) => forms.some((f) => f.features.tense === t));
+    const persons = PERSON_ORDER.filter((p) => forms.some((f) => f.features.person === p));
+    const numbers = NUMBER_ORDER.filter((n) => forms.some((f) => f.features.number === n));
+
+    const personNum = persons.length > 0 && numbers.length > 0
+      ? persons.flatMap((p) => numbers.map((n) => ({ p, n, label: `${capitalize(p).slice(0, 3)} ${capitalize(n).slice(0, 2)}` })))
+      : [];
+
+    return (
+      <div className="space-y-8">
+        <p className="text-[12px] text-muted italic">
+          Showing forms attested in the corpus. Grey = not yet attested.
+        </p>
+        {voices.map((voice) => {
+          const vForms = forms.filter((f) => f.features.voice === voice);
+          if (vForms.length === 0) return null;
+          return (
+            <div key={voice}>
+              <div className="eyebrow mb-3 text-ink">{capitalize(voice)} Voice</div>
+              {personNum.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr>
+                        <th className="p-2 text-left text-muted font-bold border-b border-bdr/40 bg-parch/30 w-20"></th>
+                        {tenses.map((t) => (
+                          <th key={t} className="p-2 text-center text-muted font-bold border-b border-bdr/40 bg-parch/30 capitalize text-[11px]">
+                            {capitalize(t)}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {personNum.map(({ p, n, label }, i) => (
+                        <tr key={`${p}-${n}`} className={i % 2 === 0 ? 'bg-white' : 'bg-parch/20'}>
+                          <td className="p-2 text-muted font-bold text-[11px] border-r border-bdr/20">{label}</td>
+                          {tenses.map((t) => {
+                            const match = vForms.find((f) => f.features.tense === t && f.features.person === p && f.features.number === n);
+                            return (
+                              <td
+                                key={t}
+                                className={cn('p-2 text-center font-serif text-[15px]', match ? 'text-ink' : 'text-muted/30')}
+                                title={match ? `${match.count}× attested` : 'Not attested'}
+                              >
+                                {match ? match.surface : '—'}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <UnorganizedForms forms={vForms} isRtl={false} />
+              )}
+            </div>
+          );
+        })}
+        <UnorganizedForms forms={forms.filter((f) => !f.features.voice && !f.features.tense)} isRtl={false} />
+      </div>
+    );
+  }
+
+  // Fallback: flat list of all forms
+  return <UnorganizedForms forms={forms} isRtl={isRtl} />;
+}
+
+function UnorganizedForms({ forms, isRtl }: { forms: AttestedForm[]; isRtl: boolean }) {
+  if (forms.length === 0) return null;
+  return (
+    <div>
+      <div className="eyebrow mb-3 text-ink">Other Attested Forms</div>
+      <div className="flex flex-wrap gap-2">
+        {forms.map((f, i) => (
+          <span
+            key={i}
+            className={cn('px-3 py-1.5 rounded-xl border border-bdr/40 bg-parch/30 font-serif text-[15px] text-ink', isRtl ? 'font-hebrew' : '')}
+            dir={isRtl ? 'rtl' : 'ltr'}
+            title={Object.entries(f.features).map(([k, v]) => `${k}: ${v}`).join(' · ') + ` · ${f.count}×`}
+          >
+            {f.surface}
+            <span className="ml-1.5 text-[10px] text-muted font-sans">{f.count}×</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function EntryCard({ entry }: { entry: DictionaryEntry }) {
   const isRtl = isRtlLanguage(entry.languageId);
@@ -69,6 +281,7 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
         {(
           [
             ['definition', 'Definition', BookOpen],
+            ['paradigm', 'Paradigm', Table2],
             ['concordance', 'Concordance', AlignLeft],
           ] as const
         ).map(([id, label, Icon]) => (
@@ -198,6 +411,8 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
           </div>
         </>
       )}
+
+      {activeTab === 'paradigm' && <ParadigmTab entry={entry} />}
 
       {activeTab === 'concordance' && (
         <KWICPanel lemma={entry.lemma} languageId={entry.languageId} maxResults={200} />
