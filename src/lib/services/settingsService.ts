@@ -28,14 +28,11 @@ export class SettingsService {
   static async migrateLocalStorage(userId: string): Promise<boolean> {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return false;
-    try {
-      await this.saveSettings(userId, JSON.parse(saved));
-      localStorage.removeItem(STORAGE_KEY);
-      return true;
-    } catch (e) {
-      console.error('Settings migration failed:', e);
-      return false;
-    }
+    // Do not catch — caller (useDemoMigration) must see failures so it does
+    // not call discardDemoData() when local data could not be saved to Firestore.
+    await this.saveSettings(userId, JSON.parse(saved));
+    localStorage.removeItem(STORAGE_KEY);
+    return true;
   }
 
   static async getSettings(userId: string | null): Promise<UserSettings> {

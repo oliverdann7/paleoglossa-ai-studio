@@ -25,6 +25,88 @@ vi.mock('lucide-react', () => {
   };
 });
 
+// ── Migration safety: services must throw on failure, preserving localStorage ──
+
+describe('migration safety — services throw on failure, discardDemoData is not called', () => {
+  it('VocabularyService.migrateLocalStorage throws when Firestore write fails and preserves localStorage', async () => {
+    const { VocabularyService } = await import('../services/vocabularyService.js');
+    const key = STORAGE_KEYS.KNOWLEDGE;
+    localStorage.setItem(key, JSON.stringify({ μῆνιν: { state: 'KNOWN', languageId: 'grc' } }));
+
+    // Spy on setWordState to simulate a Firestore failure
+    vi.spyOn(VocabularyService, 'setWordState').mockRejectedValueOnce(
+      new Error('Firestore unavailable')
+    );
+
+    await expect(VocabularyService.migrateLocalStorage('user1')).rejects.toThrow();
+    // Local data must still be present
+    expect(localStorage.getItem(key)).not.toBeNull();
+
+    vi.restoreAllMocks();
+  });
+
+  it('ImportService.migrateLocalStorage throws when Firestore write fails and preserves localStorage', async () => {
+    const { ImportService } = await import('../services/importService.js');
+    const key = STORAGE_KEYS.IMPORTS;
+    localStorage.setItem(key, JSON.stringify([{ id: '1', title: 'Demo text', sentences: [] }]));
+
+    vi.spyOn(ImportService, 'saveImport').mockRejectedValueOnce(
+      new Error('Firestore unavailable')
+    );
+
+    await expect(ImportService.migrateLocalStorage('user1')).rejects.toThrow();
+    expect(localStorage.getItem(key)).not.toBeNull();
+
+    vi.restoreAllMocks();
+  });
+
+  it('SettingsService.migrateLocalStorage throws when Firestore write fails and preserves localStorage', async () => {
+    const { SettingsService } = await import('../services/settingsService.js');
+    const key = STORAGE_KEYS.SETTINGS;
+    localStorage.setItem(key, JSON.stringify({ theme: 'dark' }));
+
+    vi.spyOn(SettingsService, 'saveSettings').mockRejectedValueOnce(
+      new Error('Firestore unavailable')
+    );
+
+    await expect(SettingsService.migrateLocalStorage('user1')).rejects.toThrow();
+    expect(localStorage.getItem(key)).not.toBeNull();
+
+    vi.restoreAllMocks();
+  });
+
+  it('StatsService.migrateLocalStorage throws when Firestore write fails and preserves localStorage', async () => {
+    const { StatsService } = await import('../services/statsService.js');
+    const key = STORAGE_KEYS.STATS;
+    localStorage.setItem(key, JSON.stringify({ totalKnown: 5 }));
+
+    vi.spyOn(StatsService, 'updateStats').mockRejectedValueOnce(
+      new Error('Firestore unavailable')
+    );
+
+    await expect(StatsService.migrateLocalStorage('user1')).rejects.toThrow();
+    expect(localStorage.getItem(key)).not.toBeNull();
+
+    vi.restoreAllMocks();
+  });
+
+  it('StatsService.migrateLocalReadingProgress throws when any item fails and preserves that item in localStorage', async () => {
+    const { StatsService } = await import('../services/statsService.js');
+    const progressKey = `${STORAGE_KEYS.READING_PROGRESS_PREFIX}text-failing`;
+    localStorage.setItem(progressKey, JSON.stringify({ lastSentence: 3 }));
+
+    vi.spyOn(StatsService, 'setTextProgress').mockRejectedValueOnce(
+      new Error('Firestore unavailable')
+    );
+
+    await expect(StatsService.migrateLocalReadingProgress('user1')).rejects.toThrow();
+    // Failed item must still be in localStorage
+    expect(localStorage.getItem(progressKey)).not.toBeNull();
+
+    vi.restoreAllMocks();
+  });
+});
+
 beforeEach(() => {
   localStorage.clear();
 });

@@ -744,30 +744,37 @@ export const Reader = () => {
       if (selectedWord) {
         if (e.key === '1') {
           setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
+          setSelectedWord(null);
           return;
         }
         if (e.key === '2') {
           setWordState(selectedWord.lemma, WordState.FAMILIAR, currentLanguageId);
+          setSelectedWord(null);
           return;
         }
         if (e.key === '3') {
           setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
+          setSelectedWord(null);
           return;
         }
         if (e.key === '4') {
           setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
+          setSelectedWord(null);
           return;
         }
         if (e.key === 'k' || e.key === 'K') {
           setWordState(selectedWord.lemma, WordState.KNOWN, currentLanguageId);
+          setSelectedWord(null);
           return;
         }
         if (e.key === 'l' || e.key === 'L') {
           setWordState(selectedWord.lemma, WordState.LEARNING, currentLanguageId);
+          setSelectedWord(null);
           return;
         }
         if (e.key === 'i' || e.key === 'I') {
           setWordState(selectedWord.lemma, WordState.IGNORED, currentLanguageId);
+          setSelectedWord(null);
           return;
         }
         if (e.key === 'Escape') {
