@@ -16,6 +16,9 @@ import {
   CheckCircle2,
   XCircle,
   RefreshCw,
+  ListOrdered,
+  LayoutGrid,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -527,6 +530,115 @@ function ConceptCard({ concept, onClick }: { concept: Concept; onClick: () => vo
   );
 }
 
+// ─── Pathway view ─────────────────────────────────────────────────────────────
+
+interface PathwayStep {
+  step: number;
+  conceptId: string;
+  title: string;
+  level: string;
+}
+
+const LEVEL_STYLES: Record<string, string> = {
+  beginner: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  intermediate: 'bg-blue/10 text-blue border-blue/20',
+  advanced: 'bg-amber/10 text-amber-700 border-amber/20',
+};
+
+function PathwayView({
+  concepts,
+  onSelectConcept,
+}: {
+  concepts: Concept[];
+  onSelectConcept: (c: Concept) => void;
+}) {
+  const { t } = useTranslation();
+  const [steps, setSteps] = useState<PathwayStep[]>([]);
+
+  useEffect(() => {
+    fetch(getApiUrl('/api/grammar/pathway'))
+      .then((r) => r.json())
+      .then((data) => setSteps(Array.isArray(data) ? data : []))
+      .catch(() => setSteps([]));
+  }, []);
+
+  if (steps.length === 0) {
+    return (
+      <div className="py-12 text-center text-muted text-[14px]">
+        {t('grammar.pathwayEmpty', 'No pathway steps found.')}
+      </div>
+    );
+  }
+
+  const conceptById = new Map(concepts.map((c) => [c.id, c]));
+  const levels = ['beginner', 'intermediate', 'advanced'];
+
+  return (
+    <div className="space-y-8">
+      {levels.map((level) => {
+        const levelSteps = steps.filter((s) => s.level === level);
+        if (levelSteps.length === 0) return null;
+        return (
+          <div key={level}>
+            <div className="flex items-center gap-3 mb-4">
+              <span
+                className={cn(
+                  'px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full border',
+                  LEVEL_STYLES[level] ?? 'bg-parch2 text-muted border-bdr/40'
+                )}
+              >
+                {level}
+              </span>
+              <div className="flex-1 h-px bg-bdr/40" />
+            </div>
+            <div className="space-y-2">
+              {levelSteps.map((step) => {
+                const concept = conceptById.get(step.conceptId);
+                const Icon = concept ? (CATEGORY_ICONS[concept.category] ?? GraduationCap) : GraduationCap;
+                return (
+                  <button
+                    key={step.step}
+                    onClick={() => concept && onSelectConcept(concept)}
+                    disabled={!concept}
+                    className={cn(
+                      'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all',
+                      concept
+                        ? 'border-bdr/60 bg-parch hover:border-blue/40 hover:shadow-sm cursor-pointer group'
+                        : 'border-bdr/30 bg-parch2/40 cursor-not-allowed opacity-50'
+                    )}
+                  >
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue/10 text-blue font-bold text-[13px] shrink-0 group-hover:bg-blue group-hover:text-white transition-colors">
+                      {step.step}
+                    </div>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Icon className="w-4 h-4 text-muted shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[14px] font-semibold text-ink truncate">{step.title}</p>
+                        {concept && (
+                          <p className="text-[11px] text-muted truncate">
+                            {LANG_LABELS[concept.languageId] || concept.languageId} ·{' '}
+                            {concept.examples.length} examples
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {concept && (
+                      <ChevronRight className="w-4 h-4 text-muted group-hover:text-blue transition-colors shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+      <p className="text-center text-muted text-[12px] italic pt-2">
+        {t('grammar.pathwayFooter', 'Follow the pathway for a structured introduction to classical grammar.')}
+      </p>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export const Grammar = () => {
@@ -538,6 +650,7 @@ export const Grammar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeLang, setActiveLang] = useState<string>('all');
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [view, setView] = useState<'browse' | 'pathway'>('browse');
 
   useEffect(() => {
     fetch(getApiUrl('/api/grammar/concepts'))
@@ -619,20 +732,50 @@ export const Grammar = () => {
 
   return (
     <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen">
-      <header className="mb-6 flex items-center gap-3">
-        <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue">
-          <GraduationCap className="w-5 h-5" />
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue">
+            <GraduationCap className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-[28px] font-serif font-light text-ink tracking-tight">
+              {t('grammar.title', 'Grammar Atlas')}
+            </h2>
+            <p className="text-ink2 text-[12px]">
+              {t('grammar.subtitle', 'Curated grammar concepts for classical languages.')}
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-[28px] font-serif font-light text-ink tracking-tight">
-            {t('grammar.title', 'Grammar Atlas')}
-          </h2>
-          <p className="text-ink2 text-[12px]">
-            {t('grammar.subtitle', 'Curated grammar concepts for classical languages.')}
-          </p>
+        <div className="flex items-center gap-1 bg-parch2 border border-bdr/60 rounded-lg p-1 shrink-0">
+          <button
+            onClick={() => setView('browse')}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors',
+              view === 'browse' ? 'bg-white text-blue shadow-sm' : 'text-muted hover:text-ink'
+            )}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            {t('grammar.browse', 'Browse')}
+          </button>
+          <button
+            onClick={() => setView('pathway')}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors',
+              view === 'pathway' ? 'bg-white text-blue shadow-sm' : 'text-muted hover:text-ink'
+            )}
+          >
+            <ListOrdered className="w-3.5 h-3.5" />
+            {t('grammar.pathway', 'Pathway')}
+          </button>
         </div>
       </header>
 
+      {view === 'pathway' && (
+        <PathwayView concepts={concepts} onSelectConcept={selectConcept} />
+      )}
+
+      {view === 'pathway' ? null : (
+      <>
       {/* Search */}
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
@@ -721,6 +864,8 @@ export const Grammar = () => {
       <p className="text-center text-muted text-[12px] mt-10 italic">
         {t('grammar.footer', 'More concepts will be added as the corpus grows.')}
       </p>
+      </>
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BookOpen, ExternalLink, Library, Search, AlignLeft, Table2 } from 'lucide-react';
+import { BookOpen, ExternalLink, Library, Search, AlignLeft, Table2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DictionaryEntry,
@@ -37,6 +37,75 @@ function capitalize(s: string) {
   return s ? s[0].toUpperCase() + s.slice(1) : '';
 }
 
+function AiParadigmFallback({ entry }: { entry: DictionaryEntry }) {
+  const [aiText, setAiText] = useState<string | null>(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  const generate = () => {
+    setLoadingAi(true);
+    setAiError(null);
+    fetch(getApiUrl('/api/ai/explain'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        languageId: entry.languageId,
+        word: entry.lemma,
+        lemma: entry.lemma,
+        type: 'paradigm',
+      }),
+    })
+      .then((r) => r.json())
+      .then((d) => setAiText(d.explanation ?? null))
+      .catch(() => setAiError('Failed to generate paradigm.'))
+      .finally(() => setLoadingAi(false));
+  };
+
+  if (loadingAi) {
+    return (
+      <div className="py-16 text-center text-muted text-[14px]">
+        Generating AI paradigm…
+      </div>
+    );
+  }
+
+  if (aiText) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1.5 px-2 py-0.5 bg-blue/10 text-blue text-[11px] font-semibold rounded-full">
+            <Sparkles className="w-3 h-3" />
+            AI-generated
+          </span>
+          <span className="text-[12px] text-muted italic">
+            Theoretical paradigm — may include reconstructed or uncertain forms.
+          </span>
+        </div>
+        <pre className="whitespace-pre-wrap font-mono text-[12px] text-ink leading-relaxed bg-parch2/60 border border-bdr/30 rounded-lg p-4 overflow-x-auto">
+          {aiText}
+        </pre>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-12 text-center space-y-4">
+      <p className="text-muted text-[14px]">
+        No attested forms found for{' '}
+        <span className="font-serif text-ink">{entry.lemma}</span> in the corpus.
+      </p>
+      {aiError && <p className="text-red-500 text-[13px]">{aiError}</p>}
+      <button
+        onClick={generate}
+        className="inline-flex items-center gap-2 px-4 py-2 bg-blue/10 text-blue text-[13px] font-semibold rounded-lg hover:bg-blue/20 transition-colors"
+      >
+        <Sparkles className="w-3.5 h-3.5" />
+        Generate AI Paradigm
+      </button>
+    </div>
+  );
+}
+
 function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
   const [forms, setForms] = useState<AttestedForm[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,11 +130,7 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
   }
 
   if (!forms || forms.length === 0) {
-    return (
-      <div className="py-12 text-center text-muted text-[14px]">
-        No attested forms found for <span className="font-serif text-ink">{entry.lemma}</span> in the corpus.
-      </div>
-    );
+    return <AiParadigmFallback entry={entry} />;
   }
 
   const pos = forms[0]?.features?.pos || entry.partOfSpeech || '';

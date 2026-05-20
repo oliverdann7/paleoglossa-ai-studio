@@ -59,15 +59,6 @@ const DesktopNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
   </Link>
 );
 
-const DesktopNavItemComingSoon = ({ icon: Icon, label }: Pick<NavItemProps, 'icon' | 'label'>) => (
-  <span className="flex items-center gap-3 px-3 py-2 text-[12.5px] font-sans font-medium w-full cursor-not-allowed opacity-40 border-l-2 border-transparent">
-    <Icon className="w-4 h-4 text-muted" strokeWidth={1.5} />
-    <span>{label}</span>
-    <span className="ml-auto text-[9px] font-semibold uppercase tracking-wide bg-parch3 text-muted px-1.5 py-0.5 rounded-full">
-      Soon
-    </span>
-  </span>
-);
 
 const MobileNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
   <Link
@@ -192,7 +183,12 @@ export const Navbar = () => {
             isActive={path.startsWith('/app/syntax')}
             to="/app/syntax"
           />
-          <DesktopNavItemComingSoon icon={ScanLine} label={t('nav.manuscripts', 'Manuscripts')} />
+          <DesktopNavItem
+            icon={ScanLine}
+            label={t('nav.manuscripts', 'Manuscripts')}
+            isActive={path.startsWith('/app/manuscripts')}
+            to="/app/manuscripts"
+          />
           <DesktopNavItem
             icon={Headphones}
             label={t('nav.audioLab', 'Audio Lab')}
