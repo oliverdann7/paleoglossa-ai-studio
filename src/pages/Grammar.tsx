@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import {
   ChevronLeft,
   GraduationCap,
@@ -643,14 +644,22 @@ function PathwayView({
 
 export const Grammar = () => {
   const { t } = useTranslation();
+  const { activeLanguageId } = useActiveLanguage();
   const [concepts, setConcepts] = useState<Concept[]>([]);
   const [selected, setSelected] = useState<Concept | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeLang, setActiveLang] = useState<string>('all');
+  // Default to the global active language; 'all' is available as an explicit filter.
+  const [activeLang, setActiveLang] = useState<string>(activeLanguageId);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [view, setView] = useState<'browse' | 'pathway'>('browse');
+
+  // Sync the language filter when the global active language changes.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveLang(activeLanguageId);
+  }, [activeLanguageId]);
 
   useEffect(() => {
     fetch(getApiUrl('/api/grammar/concepts'))

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -25,6 +25,7 @@ import { getTokenInfo } from '../lib/data/dictionary.js';
 import { useTranslation } from 'react-i18next';
 import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { apiFetch } from '../lib/services/apiFetch.js';
+import { useToast } from '../lib/hooks/useToast.js';
 
 const PAGE_SIZE = 50;
 
@@ -86,6 +87,9 @@ const STATE_CLASSES: Record<string, string> = {
 
 export const Vocabulary = () => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
+  // Debounce paywall toast so rapid cycling doesn't spam the user.
+  const limitToastShown = useRef(false);
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
@@ -96,7 +100,7 @@ export const Vocabulary = () => {
   const { t } = useTranslation();
 
   // We read knowledge for all languages by passing undefined
-  const { knowledge, setWordState } = useKnowledge(undefined as any);
+  const { knowledge, setWordState, vocabLimit } = useKnowledge(undefined as any);
 
   const filters = ['All', 'Due', 'Known', 'Familiar', 'Learning', 'Seen', 'Ignored'];
 
@@ -161,12 +165,23 @@ export const Vocabulary = () => {
   const handleDelete = (id: string) => setWordState(id, WordState.NEW);
 
   const handleCycleState = useCallback(
-    (id: string, currentState: WordState) => {
+    (id: string, currentState: WordState, languageId?: string) => {
       const idx = STATE_CYCLE.indexOf(currentState);
       const nextState = STATE_CYCLE[(idx + 1) % STATE_CYCLE.length];
-      setWordState(id, nextState);
+      const saved = setWordState(id, nextState, languageId ?? 'unknown');
+      if (!saved && !limitToastShown.current) {
+        limitToastShown.current = true;
+        addToast(
+          `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+          'info'
+        );
+        // Allow showing the toast again after a cooldown.
+        setTimeout(() => {
+          limitToastShown.current = false;
+        }, 5000);
+      }
     },
-    [setWordState]
+    [setWordState, addToast, vocabLimit.limit]
   );
 
   const filteredWords = useMemo(() => {
@@ -432,7 +447,7 @@ export const Vocabulary = () => {
               <div className="flex items-center gap-3 flex-shrink-0 md:pl-2">
                 {/* Inline state toggle */}
                 <button
-                  onClick={() => handleCycleState(word.id, word.rawState)}
+                  onClick={() => handleCycleState(word.id, word.rawState, word.languageId)}
                   className={cn(
                     'pill px-2.5 py-1 text-[10.5px] font-bold shadow-sm cursor-pointer hover:opacity-80 transition-opacity active:scale-95',
                     STATE_CLASSES[word.status] || ''

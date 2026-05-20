@@ -1,5 +1,28 @@
 export type PlanId = 'free' | 'basic_1' | 'duo_2' | 'full_all';
 
+/**
+ * Maximum number of tracked vocabulary words allowed on the free plan,
+ * per language. Words in states NEW and IGNORED are excluded from this count.
+ */
+export const FREE_LANGUAGE_WORD_LIMIT = 200;
+
+/**
+ * Returns true for word states that count against the vocabulary limit.
+ * NEW and IGNORED words do NOT count — only actively-studied words do.
+ */
+export function isTrackedWordState(state: unknown): boolean {
+  return (
+    state === 'SEEN' || state === 'LEARNING' || state === 'FAMILIAR' || state === 'KNOWN'
+  );
+}
+
+/**
+ * Returns true if the given plan enforces a per-language vocabulary word limit.
+ */
+export function hasVocabLimit(planId: PlanId): boolean {
+  return planId === 'free';
+}
+
 export type SubscriptionStatus = 'free' | 'trialing' | 'active' | 'past_due' | 'canceled';
 
 export const TRIAL_DAYS = 14;

@@ -6,6 +6,8 @@ import { useVocabulary } from './useVocabulary.js';
 import { useStats } from './useStats.js';
 import { useReadingProgress } from './useReadingProgress.js';
 import { useAuth } from './useAuth.js';
+import { useVocabLimit } from './useVocabLimit.js';
+import { isTrackedWordState } from '../constants/plans.js';
 
 export const useKnowledge = (languageId?: string) => {
   const vocab = useVocabulary();
@@ -14,6 +16,9 @@ export const useKnowledge = (languageId?: string) => {
   const { user } = useAuth();
   const userId = user ? user.uid : null;
   const [userImports, setUserImports] = useState<any[]>([]);
+
+  // Vocab limit — computed from the already-loaded knowledge map, no extra Firestore reads.
+  const vocabLimit = useVocabLimit(vocab.knowledge);
 
   useEffect(() => {
     let active = true;
@@ -41,16 +46,43 @@ export const useKnowledge = (languageId?: string) => {
   }, [vocab.knowledge, statsHook.stats, userId]);
 
   const setWordStateWithStats = useCallback(
-    (lemma: string, state: WordState, langId: string = 'unknown', context?: string) => {
+    (
+      lemma: string,
+      state: WordState,
+      langId: string = 'unknown',
+      context?: string
+    ): boolean => {
       const previousState = vocab.getWordInfo(lemma).state;
+
+      // Guard: block new tracked-word saves when the free-language limit is full.
+      // Only blocks when ALL conditions hold:
+      //   1. The target language is the user's free language slot
+      //   2. A vocab limit is in effect (free plan)
+      //   3. The word is currently NOT tracked (NEW or IGNORED)
+      //   4. The new state IS tracked (SEEN/LEARNING/FAMILIAR/KNOWN)
+      //   5. The limit has been reached
+      const isNewTracked =
+        !isTrackedWordState(previousState) && isTrackedWordState(state);
+      if (
+        isNewTracked &&
+        vocabLimit.isEnabled &&
+        langId === vocabLimit.freeLangId &&
+        vocabLimit.isFull
+      ) {
+        // Return false to signal that the save was blocked; the caller can
+        // show a paywall prompt instead of silently doing nothing.
+        return false;
+      }
+
       vocab.setWordState(lemma, state, langId, context);
       if (state === WordState.KNOWN && previousState !== WordState.KNOWN) {
         statsHook.updateStatsState((s) => ({ ...s, totalKnown: s.totalKnown + 1 }));
       } else if (state !== WordState.KNOWN && previousState === WordState.KNOWN) {
         statsHook.updateStatsState((s) => ({ ...s, totalKnown: Math.max(0, s.totalKnown - 1) }));
       }
+      return true;
     },
-    [vocab, statsHook]
+    [vocab, statsHook, vocabLimit]
   );
 
   return {
@@ -76,5 +108,6 @@ export const useKnowledge = (languageId?: string) => {
     getAllProgress: progress.getAllProgress,
     isLoading: vocab.isLoading || statsHook.isLoading,
     error: vocab.error || statsHook.error,
+    vocabLimit,
   };
 };

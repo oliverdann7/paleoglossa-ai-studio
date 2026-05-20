@@ -4,6 +4,8 @@ import {
   Check,
   Download,
   Globe,
+  Languages,
+  Lock,
   RefreshCcw,
   Settings as SettingsIcon,
   Snowflake,
@@ -14,6 +16,8 @@ import { useSettings } from '../lib/hooks/useSettings.js';
 import { cn } from '@/lib/utils';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useTranslation } from 'react-i18next';
+import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
+import { getLanguageIcon, getLanguageDisplayName } from '../lib/constants/languages.js';
 import { db } from '../lib/firebase.js';
 import { DICTIONARY_SOURCES } from '../lib/data/dictionaryDB.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -24,7 +28,8 @@ import { setErrorReportingEnabled } from '../lib/sentry.js';
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
-  const { exportData, stats } = useKnowledge();
+  const { exportData, stats, vocabLimit } = useKnowledge();
+  const { subscription } = useSubscription();
   const { user, profile, refreshProfile } = useAuth();
 
   // ── Privacy State ────────────────────────────────────────────────────────
@@ -229,6 +234,92 @@ export const Settings = () => {
                 />
               </button>
             </div>
+          </div>
+        </section>
+
+        {/* ── Language Slots ─────────────────────────────────────────────── */}
+        <section className="card p-8">
+          <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr flex items-center gap-2">
+            <Languages className="w-5 h-5 text-muted" />
+            {t('settings.languageSlots', 'Language Slots')}
+          </h3>
+
+          <div className="space-y-3">
+            {/* Free language slot */}
+            {subscription.selectedLanguageIds[0] ? (
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-parch2/60 border border-bdr">
+                <span className="text-[22px]">{getLanguageIcon(subscription.selectedLanguageIds[0])}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="font-bold text-[14px] text-ink">
+                      {getLanguageDisplayName(subscription.selectedLanguageIds[0]) || subscription.selectedLanguageIds[0]}
+                    </span>
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                      Free
+                    </span>
+                  </div>
+                  {vocabLimit.isEnabled && (
+                    <>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[11px] text-muted">Vocabulary tracked</span>
+                        <span className={cn(
+                          'text-[11px] font-bold',
+                          vocabLimit.isFull ? 'text-red-500' : vocabLimit.count >= vocabLimit.limit * 0.8 ? 'text-amber' : 'text-ink2'
+                        )}>
+                          {vocabLimit.count}/{vocabLimit.limit}
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full bg-parch3 rounded-full overflow-hidden">
+                        <div
+                          className={cn(
+                            'h-full rounded-full transition-all',
+                            vocabLimit.isFull ? 'bg-red-400' : vocabLimit.count >= vocabLimit.limit * 0.8 ? 'bg-amber' : 'bg-blue'
+                          )}
+                          style={{ width: `${Math.min(100, (vocabLimit.count / vocabLimit.limit) * 100)}%` }}
+                        />
+                      </div>
+                      {vocabLimit.isFull && (
+                        <p className="text-[11px] text-red-500 mt-1">
+                          Limit reached — upgrade to track more words.
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Additional language slots (paid plans) */}
+            {subscription.selectedLanguageIds.slice(1).map((langId) => (
+              <div key={langId} className="flex items-center gap-4 p-4 rounded-xl bg-parch2/60 border border-bdr">
+                <span className="text-[22px]">{getLanguageIcon(langId)}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[14px] text-ink">
+                      {getLanguageDisplayName(langId) || langId}
+                    </span>
+                    <span className="text-[9px] font-bold text-blue bg-blue/10 px-1.5 py-0.5 rounded">
+                      Paid
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-muted">Unlimited vocabulary tracking</span>
+                </div>
+              </div>
+            ))}
+
+            {/* Upgrade CTA for free plan */}
+            {subscription.currentPlan === 'free' && (
+              <div className="flex items-center gap-3 p-4 rounded-xl border border-dashed border-bdr text-muted">
+                <Lock className="w-4 h-4 shrink-0" />
+                <span className="text-[13px]">
+                  Add a second language with the{' '}
+                  <a href="/app/subscription" className="text-blue font-semibold hover:underline">
+                    Duo plan
+                  </a>
+                  {' '}— or unlock all 11 with Full Pack.
+                </span>
+              </div>
+            )}
           </div>
         </section>
 

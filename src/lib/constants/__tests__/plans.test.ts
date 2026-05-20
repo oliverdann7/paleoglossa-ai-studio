@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { canAccessLanguage, canAddLanguage, getPlanById } from '../plans';
+import {
+  canAccessLanguage,
+  canAddLanguage,
+  getPlanById,
+  FREE_LANGUAGE_WORD_LIMIT,
+  isTrackedWordState,
+  hasVocabLimit,
+} from '../plans';
 import type { PlanId } from '../plans';
 
 describe('Plan language limits', () => {
@@ -79,5 +86,45 @@ describe('getPlanById', () => {
   it('defaults to free for unknown plan IDs', () => {
     const plan = getPlanById('unknown' as PlanId);
     expect(plan.id).toBe('free');
+  });
+});
+
+describe('FREE_LANGUAGE_WORD_LIMIT', () => {
+  it('equals 200', () => {
+    expect(FREE_LANGUAGE_WORD_LIMIT).toBe(200);
+  });
+});
+
+describe('isTrackedWordState', () => {
+  it('returns true for SEEN, LEARNING, FAMILIAR, KNOWN', () => {
+    expect(isTrackedWordState('SEEN')).toBe(true);
+    expect(isTrackedWordState('LEARNING')).toBe(true);
+    expect(isTrackedWordState('FAMILIAR')).toBe(true);
+    expect(isTrackedWordState('KNOWN')).toBe(true);
+  });
+
+  it('returns false for NEW and IGNORED', () => {
+    expect(isTrackedWordState('NEW')).toBe(false);
+    expect(isTrackedWordState('IGNORED')).toBe(false);
+  });
+
+  it('returns false for null, undefined, and empty string', () => {
+    expect(isTrackedWordState(null)).toBe(false);
+    expect(isTrackedWordState(undefined)).toBe(false);
+    expect(isTrackedWordState('')).toBe(false);
+  });
+
+  it('returns false for unknown values', () => {
+    expect(isTrackedWordState('unknown')).toBe(false);
+    expect(isTrackedWordState(42)).toBe(false);
+  });
+});
+
+describe('hasVocabLimit', () => {
+  it('returns true only for the free plan', () => {
+    expect(hasVocabLimit('free')).toBe(true);
+    expect(hasVocabLimit('basic_1')).toBe(false);
+    expect(hasVocabLimit('duo_2')).toBe(false);
+    expect(hasVocabLimit('full_all')).toBe(false);
   });
 });
