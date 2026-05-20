@@ -53,7 +53,7 @@ export const Review = () => {
   const navigate = useNavigate();
   const { user, isDemoMode } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
-  const { knowledge, updateWordSRS } = useKnowledge(activeLanguageId);
+  const { knowledge, updateWordSRS, recordReviewSession } = useKnowledge(activeLanguageId);
   const { t } = useTranslation();
   // Stable ref so the queue-load effect doesn't re-run on every word state change
   const knowledgeRef = useRef(knowledge);
@@ -257,6 +257,10 @@ export const Review = () => {
       }
 
       if (currentCardIndex >= queue.length - 1) {
+        const finalResults = [...sessionResults, result];
+        const correct = finalResults.filter((r) => r.rating !== 'AGAIN').length;
+        const acc = finalResults.length > 0 ? correct / finalResults.length : 0;
+        recordReviewSession(Math.round(acc * 100));
         setIsFinished(true);
         return;
       }
@@ -265,7 +269,7 @@ export const Review = () => {
       setIsRevealed(false);
       setCardStartTime(Date.now());
     },
-    [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS]
+    [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS, sessionResults, recordReviewSession]
   );
 
   const handleReveal = () => setIsRevealed(true);
