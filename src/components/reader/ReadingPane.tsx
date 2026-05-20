@@ -1,6 +1,6 @@
 import { memo, useRef, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Repeat } from 'lucide-react';
+import { Sparkles, Repeat, StickyNote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, normalizeWordState } from '@/lib/constants/wordStates';
 import type { WordInfo } from '@/lib/services/vocabularyService';
@@ -69,6 +69,8 @@ interface Props {
   onAITranslate: (sentenceId: string, tokens: ReaderToken[]) => void;
   onSavePhrase: (sentence: ReaderSentence) => void;
   onAnalyzeSentence?: (sentence: { text: string; id: string }) => void;
+  onSentenceNote?: (sentence: ReaderSentence, sentenceIndex: number) => void;
+  notedSentenceIds?: Set<string>;
   onMarkPageKnown: () => void;
   onNextPage: () => void;
   onNextChapter: () => void;
@@ -272,6 +274,8 @@ export function ReadingPane({
   currentChapterIndex,
   totalChapters,
   sentenceSliceStart,
+  onSentenceNote,
+  notedSentenceIds,
 }: Props) {
   const { t } = useTranslation();
   const touchStartX = useRef(0);
@@ -439,7 +443,7 @@ export function ReadingPane({
                   key={sentence.id}
                   style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 48px' }}
                   className={cn(
-                    'inline transition-opacity duration-500',
+                    'group inline transition-opacity duration-500',
                     isRtl ? 'ml-2 md:ml-3' : 'mr-2 md:mr-3',
                     !isActivePageMode && readingMode === 'page' ? 'opacity-30' : 'opacity-100',
                     !isFocusMode && difficultyBorderColor
@@ -482,6 +486,20 @@ export function ReadingPane({
                       />
                     );
                   })}
+                  {onSentenceNote && isActivePageMode && (
+                    <button
+                      onClick={() => onSentenceNote(sentence, sIdx)}
+                      title="Add note to this sentence"
+                      className={cn(
+                        'inline-flex items-center justify-center align-middle w-5 h-5 rounded-sm ml-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity',
+                        notedSentenceIds?.has(sentence.id)
+                          ? 'opacity-100 text-gold'
+                          : 'text-muted hover:text-ink2'
+                      )}
+                    >
+                      <StickyNote className="w-3 h-3" />
+                    </button>
+                  )}
                 </span>
               );
             })}

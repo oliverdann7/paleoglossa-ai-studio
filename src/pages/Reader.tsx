@@ -16,6 +16,7 @@ import { ReaderToolbar } from '../components/reader/ReaderToolbar.js';
 import { ReaderAudioBar } from '../components/reader/ReaderAudioBar.js';
 import { ReaderBottomNav } from '../components/reader/ReaderBottomNav.js';
 import { ReadingPane } from '../components/reader/ReadingPane.js';
+import { SentenceNoteModal } from '../components/reader/SentenceNoteModal.js';
 import { ReaderSkeleton } from '../components/Skeleton.js';
 import { getTransliteration } from '../lib/transliterate.js';
 import { useReaderTTS } from '../lib/hooks/useReaderTTS.js';
@@ -161,6 +162,8 @@ export const Reader = () => {
   });
   const [isTranslatingId, setIsTranslatingId] = useState<string | null>(null);
   const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
+  const [noteModal, setNoteModal] = useState<{ sentence: any; sentenceIndex: number } | null>(null);
+  const [notedSentenceIds, setNotedSentenceIds] = useState<Set<string>>(new Set());
 
   const {
     state: {
@@ -867,6 +870,14 @@ export const Reader = () => {
     setSelectedSentence(sentence);
   }, []);
 
+  const handleSentenceNote = useCallback((sentence: any, sentenceIndex: number) => {
+    setNoteModal({ sentence, sentenceIndex });
+  }, []);
+
+  const handleNoteSaved = useCallback((sentenceId: string) => {
+    setNotedSentenceIds((prev) => new Set([...prev, sentenceId]));
+  }, []);
+
   const handleSavePhrase = useCallback(
     (sentence: ReaderSentence) => {
       const phrase = sentence.tokens.map((tk: ReaderToken) => tk.text).join(' ');
@@ -1040,6 +1051,8 @@ export const Reader = () => {
           interlinearMode={effectiveInterlinear}
           displayMode={displayMode ?? 'scholar'}
           onWordClick={handleWordClick}
+          onSentenceNote={handleSentenceNote}
+          notedSentenceIds={notedSentenceIds}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}
           onAnalyzeSentence={handleAnalyzeSentence}
@@ -1160,6 +1173,17 @@ export const Reader = () => {
       )}
 
       <ReaderTutorial currentStep={tutorialStep} onDismiss={dismissTutorial} />
+
+      {noteModal && (
+        <SentenceNoteModal
+          sentence={noteModal.sentence}
+          sentenceIndex={noteModal.sentenceIndex}
+          textId={textId ?? ''}
+          languageId={currentLanguageId}
+          onSaved={handleNoteSaved}
+          onClose={() => setNoteModal(null)}
+        />
+      )}
     </div>
   );
 };
