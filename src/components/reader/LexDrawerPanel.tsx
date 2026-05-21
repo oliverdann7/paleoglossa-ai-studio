@@ -380,6 +380,24 @@ export const LexDrawerPanel = ({
                   </span>
                 );
               })()}
+              {wordInfo?.srs?.nextReview && (() => {
+                const due = new Date(wordInfo.srs.nextReview as string);
+                const now = new Date();
+                const diffDays = Math.round((due.getTime() - now.getTime()) / 86400000);
+                const label = diffDays <= 0
+                  ? 'Due for review'
+                  : diffDays === 1
+                    ? 'Review tomorrow'
+                    : `Review in ${diffDays} days`;
+                return (
+                  <span className={cn(
+                    'text-[11px] font-sans font-medium px-2 py-0.5 rounded-full',
+                    diffDays <= 0 ? 'bg-amber/10 text-amber' : 'bg-parch3 text-ink3'
+                  )}>
+                    {label}
+                  </span>
+                );
+              })()}
             </div>
           </div>
 
