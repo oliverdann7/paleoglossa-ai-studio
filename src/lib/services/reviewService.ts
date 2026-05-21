@@ -27,7 +27,7 @@ export interface ReviewItem {
   contexts?: string[];
   notes?: string;
   status: string;
-  srs: SRSState;
+  srs: SRSState & { fsrsStability?: number; fsrsDifficulty?: number };
 }
 
 export interface ReviewLogEntry {
@@ -94,6 +94,8 @@ export class ReviewService {
               step: data.step || 0,
               lastReviewed: data.lastReviewed || null,
               nextReview: data.nextReview || now,
+              fsrsStability: data.fsrsStability ?? undefined,
+              fsrsDifficulty: data.fsrsDifficulty ?? undefined,
             },
           });
         }
@@ -119,6 +121,7 @@ export class ReviewService {
     const now = new Date();
 
     let nextState: SRSState;
+    let nextFSRS: FSRSState | null = null;
 
     if (USE_FSRS) {
       const fsrsRating: FSRRating =
@@ -131,8 +134,8 @@ export class ReviewService {
               : 'easy';
 
       const fsrsState: FSRSState = {
-        stability: item.srs.interval || 1,
-        difficulty: 5,
+        stability: item.srs.fsrsStability ?? item.srs.interval ?? 1,
+        difficulty: item.srs.fsrsDifficulty ?? 5,
         interval: item.srs.interval || 0,
         dueDate: now,
         repetitions: item.srs.step || 0,
@@ -142,7 +145,7 @@ export class ReviewService {
         nextReview: item.srs.nextReview || now.toISOString(),
       };
 
-      const nextFSRS = calculateFSRS(fsrsRating, fsrsState, now);
+      nextFSRS = calculateFSRS(fsrsRating, fsrsState, now);
       nextState = {
         interval: nextFSRS.interval,
         ease: nextFSRS.ease,
@@ -169,9 +172,9 @@ export class ReviewService {
       updatedAt: serverTimestamp(),
     };
 
-    if (USE_FSRS) {
-      updateData.fsrsStability = nextState.interval;
-      updateData.fsrsDifficulty = 5;
+    if (nextFSRS) {
+      updateData.fsrsStability = nextFSRS.stability;
+      updateData.fsrsDifficulty = nextFSRS.difficulty;
     }
 
     const wasCorrect = metadata?.wasCorrect ?? rating !== 'AGAIN';

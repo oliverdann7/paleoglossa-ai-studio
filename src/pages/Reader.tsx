@@ -592,7 +592,7 @@ export const Reader = () => {
     currentSentenceIndexRef.current = currentSentenceIndex;
   }, [currentSentenceIndex]);
 
-  const { audioProgress } = useReaderTTS({
+  const { audioProgress, highlightedSentenceIdx, highlightedTokenIdx } = useReaderTTS({
     sentences: chapter?.sentences ?? [],
     currentLanguageId,
     audioSpeed,
@@ -1125,6 +1125,8 @@ export const Reader = () => {
           isHebrewFont={isHebrewFont}
           isRtl={isRtl}
           audioPos={audioPos}
+          highlightedSentenceIdx={highlightedSentenceIdx}
+          highlightedTokenIdx={highlightedTokenIdx}
           aiTranslations={aiTranslations}
           translatingId={isTranslatingId}
           sourceKind={sourceKind}

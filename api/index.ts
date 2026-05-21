@@ -18,6 +18,7 @@ import corpusRouter from './_routes/corpus.js';
 import discussionsRouter from './_routes/discussions.js';
 import bookmarksRouter from './_routes/bookmarks.js';
 import annotationsRouter from './_routes/annotations.js';
+import challengesRouter from './_routes/challenges.js';
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use(corpusRouter);
 app.use(discussionsRouter);
 app.use(bookmarksRouter);
 app.use(annotationsRouter);
+app.use(challengesRouter);
 
 export const expressApp = app;
 export default function handler(req: any, res: any) {

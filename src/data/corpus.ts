@@ -624,6 +624,120 @@ export const TEXT_AESOP: Text = {
   ],
 };
 
+// ─── Beginner texts (A1) ──────────────────────────────────────────────────────
+
+export const TEXT_GRC_MINI_STORIES: Text = {
+  id: "GrcMini",
+  corpusId: "SBLGNT",
+  title: "Ἑλληνικαὶ Διηγήσεις",
+  canonicalRef: "Greek Mini-Stories",
+  author: "Paleoglossa",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 35,
+  sectionsPreview: [
+    { id: "GrcMini-1", label: "A man at the marketplace" },
+    { id: "GrcMini-2", label: "The teacher and the student" },
+    { id: "GrcMini-3", label: "The fisherman" },
+    { id: "GrcMini-4", label: "The traveler" },
+    { id: "GrcMini-5", label: "The shepherd" },
+  ],
+};
+
+export const TEXT_LAT_VG_JOHN: Text = {
+  id: "Lat-Vg-Jn",
+  corpusId: "LATIN_CLASSIC",
+  title: "Ioannem",
+  canonicalRef: "Vulgate John 1:1–14",
+  author: "Jerome (translator)",
+  language: "lat",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 14,
+  sectionsPreview: [
+    { id: "Lat-Vg-Jn-1", label: "John 1:1–14 — In principio erat Verbum" },
+  ],
+};
+
+export const TEXT_LAT_CATO: Text = {
+  id: "Lat-Cato",
+  corpusId: "LATIN_CLASSIC",
+  title: "Disticha Catonis",
+  canonicalRef: "Moral Distichs",
+  author: "Pseudo-Cato",
+  language: "lat",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 8,
+  sectionsPreview: [
+    { id: "Lat-Cat-1", label: "Praecepta moralia — Moral Precepts" },
+  ],
+};
+
+export const TEXT_HEB_JONAH: Text = {
+  id: "Heb-Jonah",
+  corpusId: "OSHB",
+  title: "יוֹנָה",
+  canonicalRef: "Jonah 1–4",
+  author: "Anonymous",
+  language: "hbo",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 38,
+  sectionsPreview: [
+    { id: "Heb-Jon-1", label: "Jonah 1 — The Flight" },
+    { id: "Heb-Jon-2", label: "Jonah 2 — The Prayer" },
+    { id: "Heb-Jon-3", label: "Jonah 3 — Nineveh Repents" },
+    { id: "Heb-Jon-4", label: "Jonah 4 — God's Mercy" },
+  ],
+};
+
+export const TEXT_HEB_PS91: Text = {
+  id: "Heb-Ps91",
+  corpusId: "OSHB",
+  title: "מִזְמוֹר צא",
+  canonicalRef: "Psalm 91",
+  author: "Anonymous",
+  language: "hbo",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 10,
+  sectionsPreview: [
+    { id: "Heb-Ps-91", label: "Psalm 91 — He who dwells in the shelter" },
+  ],
+};
+
 export const TEXT_CICERO_CATILINA: Text = {
   id: "Cic-Catilina-1",
   corpusId: "LATIN_CLASSIC",
@@ -3392,6 +3506,9 @@ import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLI
 import { PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLATO_APOLOGY_5 } from "./corpus/plato-apology.js";
 import { LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1 } from "./corpus/lxx-septuagint.js";
 import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1 } from "./corpus/patristics.js";
+import { ALL_GREEK_MINI_STORIES, GRC_MINI_1, GRC_MINI_2, GRC_MINI_3, GRC_MINI_4, GRC_MINI_5 } from "./corpus/greek-mini-stories.js";
+import { ALL_LATIN_BEGINNER_SECTIONS, LAT_VULGATE_JOHN_1, LAT_DISTICHA_CATONIS } from "./corpus/latin-beginner.js";
+import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3473,6 +3590,11 @@ function getAllEnhancedTexts() {
       TEXT_BASIL,
       TEXT_TREEBANK_GRC,
       TEXT_TREEBANK_LAT,
+      TEXT_GRC_MINI_STORIES,
+      TEXT_LAT_VG_JOHN,
+      TEXT_LAT_CATO,
+      TEXT_HEB_JONAH,
+      TEXT_HEB_PS91,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -3502,6 +3624,9 @@ function getLemmaIndex() {
     CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1,
     ...ALL_EXPANDED_SECTIONS,
     ...ALL_TREEBANK_SECTIONS,
+    ...ALL_GREEK_MINI_STORIES,
+    ...ALL_LATIN_BEGINNER_SECTIONS,
+    ...ALL_HEBREW_BEGINNER_SECTIONS,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
@@ -3577,6 +3702,20 @@ export const CorpusDB = {
 
     if (sectionId === "TB-grc-Jn1") return TREEBANK_GRC_JN1;
     if (sectionId === "TB-lat-Caes1") return TREEBANK_LAT_CAES1;
+
+    // Beginner sections
+    if (sectionId === "GrcMini-1") return GRC_MINI_1;
+    if (sectionId === "GrcMini-2") return GRC_MINI_2;
+    if (sectionId === "GrcMini-3") return GRC_MINI_3;
+    if (sectionId === "GrcMini-4") return GRC_MINI_4;
+    if (sectionId === "GrcMini-5") return GRC_MINI_5;
+    if (sectionId === "Lat-Vg-Jn-1") return LAT_VULGATE_JOHN_1;
+    if (sectionId === "Lat-Cat-1") return LAT_DISTICHA_CATONIS;
+    if (sectionId === "Heb-Jon-1") return HEB_JONAH_1;
+    if (sectionId === "Heb-Jon-2") return HEB_JONAH_2;
+    if (sectionId === "Heb-Jon-3") return HEB_JONAH_3;
+    if (sectionId === "Heb-Jon-4") return HEB_JONAH_4;
+    if (sectionId === "Heb-Ps-91") return HEB_PSALM_91;
 
     // Expanded sections
     const expandedMatch = ALL_EXPANDED_SECTIONS.find(s => s.id === sectionId);

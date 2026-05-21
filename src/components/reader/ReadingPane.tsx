@@ -1,6 +1,6 @@
 import { memo, useRef, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Repeat, StickyNote, Bookmark } from 'lucide-react';
+import { Sparkles, Repeat, StickyNote, Bookmark, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, normalizeWordState } from '@/lib/constants/wordStates';
 import type { WordInfo } from '@/lib/services/vocabularyService';
@@ -53,6 +53,8 @@ interface Props {
   isHebrewFont: boolean;
   isRtl: boolean;
   audioPos: { sentenceIdx: number; wordIdx: number };
+  highlightedSentenceIdx?: number;
+  highlightedTokenIdx?: number;
   aiTranslations: Record<string, string>;
   translatingId: string | null;
   sourceKind: SourceKind;
@@ -287,6 +289,8 @@ export function ReadingPane({
   isHebrewFont,
   isRtl,
   audioPos,
+  highlightedSentenceIdx = -1,
+  highlightedTokenIdx = 0,
   aiTranslations,
   translatingId,
   sourceKind,
@@ -322,6 +326,25 @@ export function ReadingPane({
   const { t } = useTranslation();
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
+  const [revealedTranslations, setRevealedTranslations] = useState<Set<string>>(new Set());
+
+  const toggleSentenceTranslation = useCallback(
+    (sentence: ReaderSentence) => {
+      setRevealedTranslations((prev) => {
+        const next = new Set(prev);
+        if (next.has(sentence.id)) {
+          next.delete(sentence.id);
+        } else {
+          next.add(sentence.id);
+          if (!sentence.translation && !sentence.parallel) {
+            onAITranslate(sentence.id, sentence.tokens);
+          }
+        }
+        return next;
+      });
+    },
+    [onAITranslate]
+  );
 
   const isMorphologyMode = displayMode === 'morphology';
   const isFocusMode = displayMode === 'focus';
@@ -502,7 +525,8 @@ export function ReadingPane({
                       );
                     }
                     const isAudioActive =
-                      audioPos.sentenceIdx === sIdx && audioPos.wordIdx === tIdx;
+                      (audioPos.sentenceIdx === sIdx && audioPos.wordIdx === tIdx) ||
+                      (highlightedSentenceIdx === sIdx && highlightedTokenIdx === tIdx);
 
                     return (
                       <ReaderToken
@@ -556,6 +580,37 @@ export function ReadingPane({
                     >
                       <Bookmark className="w-3 h-3" />
                     </button>
+                  )}
+                  {!showParallel && isActivePageMode && (
+                    <button
+                      onClick={() => toggleSentenceTranslation(sentence)}
+                      title={revealedTranslations.has(sentence.id) ? 'Hide translation' : 'Show translation'}
+                      className={cn(
+                        'inline-flex items-center justify-center align-middle w-5 h-5 rounded-sm ml-0.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity',
+                        revealedTranslations.has(sentence.id)
+                          ? 'opacity-100 text-blue'
+                          : 'text-muted hover:text-blue'
+                      )}
+                    >
+                      {translatingId === sentence.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : revealedTranslations.has(sentence.id) ? (
+                        <EyeOff className="w-3 h-3" />
+                      ) : (
+                        <Eye className="w-3 h-3" />
+                      )}
+                    </button>
+                  )}
+                  {!showParallel && revealedTranslations.has(sentence.id) && (
+                    <span
+                      className="block text-[0.72em] text-ink2/70 italic mt-0.5 mb-1 font-sans leading-snug"
+                      dir="ltr"
+                    >
+                      {aiTranslations[sentence.id] ||
+                        sentence.translation ||
+                        sentence.parallel ||
+                        (translatingId === sentence.id ? '…' : t('reader.noTranslation', 'No translation available'))}
+                    </span>
                   )}
                 </span>
               );
