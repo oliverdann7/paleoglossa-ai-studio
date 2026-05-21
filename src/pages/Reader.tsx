@@ -31,6 +31,7 @@ import { useToast } from '../lib/hooks/useToast.js';
 import { STORAGE_KEYS } from '../lib/constants/storage.js';
 import { OfflineService } from '../lib/services/offlineService.js';
 import { useOnlineStatus } from '../lib/hooks/useOnlineStatus.js';
+import { BookmarkService } from '../lib/services/bookmarkService.js';
 
 export const Reader = () => {
   const { textId } = useParams();
@@ -188,6 +189,7 @@ export const Reader = () => {
   const [aiTranslations, setAiTranslations] = useState<Record<string, string>>({});
   const [noteModal, setNoteModal] = useState<{ sentence: any; sentenceIndex: number } | null>(null);
   const [notedSentenceIds, setNotedSentenceIds] = useState<Set<string>>(new Set());
+  const [bookmarkedSentenceIds, setBookmarkedSentenceIds] = useState<Set<string>>(new Set());
   const [contextMenu, setContextMenu] = useState<{
     token: ReaderToken;
     x: number;
@@ -926,6 +928,40 @@ export const Reader = () => {
     [setWordState, updateGloss, currentLanguageId, aiTranslations, addToast, t, vocabLimit.limit]
   );
 
+  const handleBookmarkSentence = useCallback(
+    async (sentence: ReaderSentence, sentenceIndex: number) => {
+      if (!user) {
+        addToast('Sign in to bookmark sentences.', 'info');
+        return;
+      }
+      // Toggle: remove if already bookmarked
+      if (bookmarkedSentenceIds.has(sentence.id)) {
+        setBookmarkedSentenceIds((prev) => {
+          const next = new Set(prev);
+          next.delete(sentence.id);
+          return next;
+        });
+        addToast('Bookmark removed.', 'info');
+        return;
+      }
+      const sentenceText = sentence.tokens.map((tk: ReaderToken) => tk.text).join(' ');
+      try {
+        await BookmarkService.create({
+          textId: textId || 'unknown',
+          textTitle: text?.title || undefined,
+          sentenceText,
+          sentenceIndex,
+          languageId: currentLanguageId,
+        });
+        setBookmarkedSentenceIds((prev) => new Set([...prev, sentence.id]));
+        addToast('Sentence bookmarked!', 'success');
+      } catch {
+        addToast('Could not save bookmark.', 'error');
+      }
+    },
+    [user, textId, text, currentLanguageId, bookmarkedSentenceIds, addToast]
+  );
+
   if (!text || chapters.length === 0 || !chapter) {
     return <ReaderSkeleton />;
   }
@@ -1085,6 +1121,8 @@ export const Reader = () => {
           onWordClick={handleWordClick}
           onSentenceNote={handleSentenceNote}
           notedSentenceIds={notedSentenceIds}
+          onBookmarkSentence={handleBookmarkSentence}
+          bookmarkedSentenceIds={bookmarkedSentenceIds}
           onWordContextMenu={handleWordContextMenu}
           onAITranslate={handleAITranslate}
           onSavePhrase={handleSavePhrase}

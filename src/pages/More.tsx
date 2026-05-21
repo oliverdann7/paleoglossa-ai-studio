@@ -82,6 +82,7 @@ export const More = () => {
         <Section title={t('more.personal', 'Personal')}>
           <MoreCard icon={FileText} label={t('nav.notes', 'Notes')} to="/app/notes" />
           <MoreCard icon={BookMarked} label={t('nav.notebooks', 'Notebooks')} to="/app/notebooks" />
+          <MoreCard icon={BookMarked} label={t('nav.bookmarks', 'Saved Sentences')} to="/app/bookmarks" />
           <MoreCard
             icon={BarChart3}
             label={t('nav.statistics', 'Statistics')}

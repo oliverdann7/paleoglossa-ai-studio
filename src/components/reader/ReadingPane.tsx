@@ -1,6 +1,6 @@
 import { memo, useRef, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Repeat, StickyNote } from 'lucide-react';
+import { Sparkles, Repeat, StickyNote, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, normalizeWordState } from '@/lib/constants/wordStates';
 import type { WordInfo } from '@/lib/services/vocabularyService';
@@ -71,6 +71,8 @@ interface Props {
   onSavePhrase: (sentence: ReaderSentence) => void;
   onAnalyzeSentence?: (sentence: { text: string; id: string }) => void;
   onSentenceNote?: (sentence: ReaderSentence, sentenceIndex: number) => void;
+  onBookmarkSentence?: (sentence: ReaderSentence, sentenceIndex: number) => void;
+  bookmarkedSentenceIds?: Set<string>;
   notedSentenceIds?: Set<string>;
   onMarkPageKnown: () => void;
   onNextPage: () => void;
@@ -314,6 +316,8 @@ export function ReadingPane({
   sentenceSliceStart,
   onSentenceNote,
   notedSentenceIds,
+  onBookmarkSentence,
+  bookmarkedSentenceIds,
 }: Props) {
   const { t } = useTranslation();
   const touchStartX = useRef(0);
@@ -539,6 +543,20 @@ export function ReadingPane({
                       <StickyNote className="w-3 h-3" />
                     </button>
                   )}
+                  {onBookmarkSentence && isActivePageMode && (
+                    <button
+                      onClick={() => onBookmarkSentence(sentence, sIdx)}
+                      title="Bookmark this sentence"
+                      className={cn(
+                        'inline-flex items-center justify-center align-middle w-5 h-5 rounded-sm ml-0.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity',
+                        bookmarkedSentenceIds?.has(sentence.id)
+                          ? 'opacity-100 text-amber'
+                          : 'text-muted hover:text-amber'
+                      )}
+                    >
+                      <Bookmark className="w-3 h-3" />
+                    </button>
+                  )}
                 </span>
               );
             })}
@@ -691,6 +709,20 @@ export function ReadingPane({
                         >
                           <Sparkles className="w-3.5 h-3.5" />
                           Analyze Sentence
+                        </button>
+                      )}
+                      {onBookmarkSentence && (
+                        <button
+                          onClick={() => onBookmarkSentence(sentence, sentenceSliceStart + idx)}
+                          className={cn(
+                            'text-sm font-sans flex items-center justify-center gap-1.5 px-3 py-1 font-medium rounded-lg transition-colors mt-1',
+                            bookmarkedSentenceIds?.has(sentence.id)
+                              ? 'bg-amber/15 text-amber'
+                              : 'bg-parch2 text-ink3 hover:bg-parch3'
+                          )}
+                        >
+                          <Bookmark className="w-3.5 h-3.5" />
+                          {bookmarkedSentenceIds?.has(sentence.id) ? 'Bookmarked' : 'Bookmark'}
                         </button>
                       )}
                     </div>
