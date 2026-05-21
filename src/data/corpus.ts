@@ -722,7 +722,7 @@ export const TEXT_HEB_GENESIS: Text = {
   id: "Heb-Genesis",
   corpusId: "OSHB",
   title: "בְּרֵאשִׁית",
-  canonicalRef: "Genesis 1 — Creation",
+  canonicalRef: "Genesis 1–3 — Creation and the Fall",
   author: "Anonymous",
   language: "hbo",
   direction: "rtl",
@@ -733,9 +733,11 @@ export const TEXT_HEB_GENESIS: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 17,
+  sentenceCount: 42,
   sectionsPreview: [
     { id: "Heb-Gen-1", label: "Genesis 1 — In the beginning" },
+    { id: "Heb-Gen-2", label: "Genesis 2 — The Garden of Eden" },
+    { id: "Heb-Gen-3", label: "Genesis 3 — The Fall" },
   ],
 };
 
@@ -3577,7 +3579,7 @@ import { ALL_GREEK_MINI_STORIES, GRC_MINI_1, GRC_MINI_2, GRC_MINI_3, GRC_MINI_4,
 import { ALL_LATIN_BEGINNER_SECTIONS, LAT_VULGATE_JOHN_1, LAT_DISTICHA_CATONIS } from "./corpus/latin-beginner.js";
 import { ALL_LATIN_MINI_STORIES, LAT_MINI_1, LAT_MINI_2, LAT_MINI_3, LAT_MINI_4, LAT_MINI_5 } from "./corpus/latin-mini-stories.js";
 import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
-import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
+import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS_3, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3791,6 +3793,8 @@ export const CorpusDB = {
     if (sectionId === "Lat-Vg-Jn-1") return LAT_VULGATE_JOHN_1;
     if (sectionId === "Lat-Cat-1") return LAT_DISTICHA_CATONIS;
     if (sectionId === "Heb-Gen-1") return HEB_GENESIS_1;
+    if (sectionId === "Heb-Gen-2") return HEB_GENESIS_2;
+    if (sectionId === "Heb-Gen-3") return HEB_GENESIS_3;
     if (sectionId === "Heb-Ps-23") return HEB_PSALM_23;
     if (sectionId === "Heb-Jon-1") return HEB_JONAH_1;
     if (sectionId === "Heb-Jon-2") return HEB_JONAH_2;
