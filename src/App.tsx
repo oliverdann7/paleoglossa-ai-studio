@@ -89,6 +89,9 @@ const ProfilePage = lazy(() =>
 const CommunityPage = lazy(() =>
   import('./pages/Community.js').then((module) => ({ default: module.CommunityPage }))
 );
+const ChallengesPage = lazy(() =>
+  import('./pages/Challenges.js').then((module) => ({ default: module.Challenges }))
+);
 const Discover = lazy(() =>
   import('./pages/Discover.js').then((module) => ({ default: module.Discover }))
 );
@@ -176,6 +179,9 @@ export default function App() {
             <Route path="profile/:userId" element={<ProfilePage />} />
             {features.isCommunityEnabled() && (
               <Route path="community" element={<CommunityPage />} />
+            )}
+            {features.isCommunityEnabled() && (
+              <Route path="challenges" element={<ChallengesPage />} />
             )}
           </Route>
 
