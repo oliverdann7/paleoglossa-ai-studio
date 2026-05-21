@@ -56,7 +56,7 @@ interface LexDrawerPanelProps {
   selectedWord: any;
   setSelectedWord: (w: any) => void;
   knowledge: KnowledgeMap;
-  setWordState: (lemma: string, state: WordState, languageId: string, context?: string) => void;
+  setWordState: (lemma: string, state: WordState, languageId: string, context?: string) => boolean | void;
   setWordNote: (lemma: string, notes: string) => void;
   updateGloss: (lemma: string, gloss: string, languageId: string) => void;
   getWordInfo: (lemma: string) => WordInfo;
@@ -437,14 +437,15 @@ export const LexDrawerPanel = ({
                 return (
                   <button
                     key={state}
-                    onClick={() =>
-                      setWordState(
+                    onClick={() => {
+                      const saved = setWordState(
                         selectedWord.lemma,
                         state,
                         textLanguageId,
                         selectedWord.sentenceText
-                      )
-                    }
+                      );
+                      if (saved !== false) setSelectedWord(null);
+                    }}
                     className={cn(
                       'flex-1 min-w-[70px] py-2 md:py-3 rounded-xl border flex flex-col items-center gap-1 transition-all',
                       isActive
@@ -479,14 +480,15 @@ export const LexDrawerPanel = ({
 
             <div className="mt-4">
               <button
-                onClick={() =>
-                  setWordState(
+                onClick={() => {
+                  const saved = setWordState(
                     selectedWord.lemma,
                     WordState.LEARNING,
                     textLanguageId,
                     selectedWord.sentenceText
-                  )
-                }
+                  );
+                  if (saved !== false) setSelectedWord(null);
+                }}
                 className="w-full py-4 bg-blue text-white rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all active:scale-[0.98]"
               >
                 <BookMarked className="w-5 h-5" />
