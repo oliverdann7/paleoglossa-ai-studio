@@ -11,6 +11,7 @@ function serializeManuscript(id: string, data: FirebaseFirestore.DocumentData) {
     title: data.title ?? '',
     description: data.description ?? '',
     imageUrl: data.imageUrl ?? '',
+    iiifManifestUrl: data.iiifManifestUrl ?? '',
     transcription: data.transcription ?? '',
     languageId: data.languageId ?? '',
     source: data.source ?? '',
@@ -51,8 +52,17 @@ router.post('/api/manuscripts', requireAuth as any, async (req: AuthenticatedReq
   if (!adminDb_)
     return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
-  const { title, description, imageUrl, transcription, languageId, source, date, tags } =
-    req.body ?? {};
+  const {
+    title,
+    description,
+    imageUrl,
+    iiifManifestUrl,
+    transcription,
+    languageId,
+    source,
+    date,
+    tags,
+  } = req.body ?? {};
 
   if (!title?.trim()) {
     return res.status(400).json({ error: 'title is required', code: 'INVALID_INPUT' });
@@ -65,6 +75,7 @@ router.post('/api/manuscripts', requireAuth as any, async (req: AuthenticatedReq
       title: title.trim(),
       description: String(description ?? '').trim(),
       imageUrl: String(imageUrl ?? '').trim(),
+      iiifManifestUrl: String(iiifManifestUrl ?? '').trim(),
       transcription: String(transcription ?? '').trim(),
       languageId: String(languageId ?? '').trim(),
       source: String(source ?? '').trim(),
@@ -125,6 +136,7 @@ router.patch(
         'title',
         'description',
         'imageUrl',
+        'iiifManifestUrl',
         'transcription',
         'languageId',
         'source',

@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Edit2,
+  ExternalLink,
   Maximize2,
   Minimize2,
   Minus,
@@ -24,6 +27,7 @@ interface Manuscript {
   title: string;
   description: string;
   imageUrl: string;
+  iiifManifestUrl: string;
   transcription: string;
   languageId: string;
   source: string;
@@ -39,6 +43,7 @@ const EMPTY_FORM: FormData = {
   title: '',
   description: '',
   imageUrl: '',
+  iiifManifestUrl: '',
   transcription: '',
   languageId: '',
   source: '',
@@ -207,6 +212,161 @@ function ImageViewer({ imageUrl, title }: { imageUrl: string; title: string }) {
   );
 }
 
+// ─── IIIF helpers ─────────────────────────────────────────────────────────────
+
+function extractLabel(label: unknown): string {
+  if (!label) return '';
+  if (typeof label === 'string') return label;
+  if (Array.isArray(label)) return String((label as unknown[])[0] ?? '');
+  const values = Object.values(label as Record<string, unknown>)[0];
+  if (Array.isArray(values)) return String(values[0] ?? '');
+  return '';
+}
+
+function buildIIIFImageUrl(serviceOrId: string): string {
+  return serviceOrId.replace(/\/info\.json$/, '') + '/full/max/0/default.jpg';
+}
+
+function extractIIIFImages(manifest: Record<string, unknown>): { url: string; label: string }[] {
+  const ctx = manifest['@context'];
+  const isV3 =
+    (typeof ctx === 'string' && ctx.includes('/3/')) ||
+    (Array.isArray(ctx) && ctx.some((c) => typeof c === 'string' && c.includes('/3/')));
+
+  if (isV3) {
+    return ((manifest.items ?? []) as Record<string, unknown>[]).flatMap((canvas) => {
+      const label = extractLabel(canvas.label) || `Page`;
+      const annotationPages = (canvas.items ?? []) as Record<string, unknown>[];
+      const annotations = (annotationPages[0]?.items ?? []) as Record<string, unknown>[];
+      const body = annotations[0]?.body as Record<string, unknown> | undefined;
+      if (!body) return [];
+      const services = (
+        Array.isArray(body.service) ? body.service : body.service ? [body.service] : []
+      ) as Record<string, unknown>[];
+      if (services.length) {
+        const svc = services[0];
+        const base = String(svc['@id'] ?? svc.id ?? '');
+        if (base) return [{ url: buildIIIFImageUrl(base), label }];
+      }
+      const id = String(body.id ?? body['@id'] ?? '');
+      return id ? [{ url: id, label }] : [];
+    });
+  }
+
+  // IIIF v2
+  const sequences = (manifest.sequences ?? []) as Record<string, unknown>[];
+  const canvases = (sequences[0]?.canvases ?? []) as Record<string, unknown>[];
+  return canvases.flatMap((canvas) => {
+    const label = extractLabel(canvas.label) || `Page`;
+    const images = (canvas.images ?? []) as Record<string, unknown>[];
+    const resource = images[0]?.resource as Record<string, unknown> | undefined;
+    if (!resource) return [];
+    const svc = resource.service as Record<string, unknown> | undefined;
+    if (svc) {
+      const base = String(svc['@id'] ?? svc.id ?? '');
+      if (base) return [{ url: buildIIIFImageUrl(base), label }];
+    }
+    const id = String(resource['@id'] ?? resource.id ?? '');
+    return id ? [{ url: id, label }] : [];
+  });
+}
+
+// ─── IIIF viewer ──────────────────────────────────────────────────────────────
+
+function IIIFViewer({ manifestUrl, title }: { manifestUrl: string; title: string }) {
+  const [pages, setPages] = useState<{ url: string; label: string }[]>([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!manifestUrl) return;
+    let cancelled = false;
+    setLoading(true); // eslint-disable-line react-hooks/set-state-in-effect
+    setError(null);
+    fetch(manifestUrl)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} loading manifest`);
+        return r.json();
+      })
+      .then((manifest: Record<string, unknown>) => {
+        if (cancelled) return;
+        const extracted = extractIIIFImages(manifest);
+        if (!extracted.length) {
+          setError('No images found in this IIIF manifest.');
+        } else {
+          setPages(extracted);
+          setPage(0);
+        }
+        setLoading(false);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setError((e as Error).message ?? 'Failed to load IIIF manifest');
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [manifestUrl]);
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted text-[13px]">
+        Loading IIIF manifest…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6">
+        <ScanLine className="w-8 h-8 text-muted/30" />
+        <p className="text-[13px] text-red-500 text-center max-w-xs">{error}</p>
+        <a
+          href={manifestUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-[12px] text-blue hover:underline"
+        >
+          Open manifest <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+    );
+  }
+
+  const current = pages[page];
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0">
+      {pages.length > 1 && (
+        <div className="flex items-center justify-between px-3 py-1.5 bg-parch2/80 border border-bdr/40 rounded-t-lg border-b-0 shrink-0">
+          <button
+            disabled={page === 0}
+            onClick={() => setPage((p) => p - 1)}
+            className="p-1 hover:bg-bdr/20 rounded disabled:opacity-30 transition-opacity"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-[11px] text-muted font-medium">
+            {current.label} · {page + 1} / {pages.length}
+          </span>
+          <button
+            disabled={page === pages.length - 1}
+            onClick={() => setPage((p) => p + 1)}
+            className="p-1 hover:bg-bdr/20 rounded disabled:opacity-30 transition-opacity"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+      <div className={cn('flex flex-col flex-1 min-h-0', pages.length > 1 && 'border border-bdr/40 rounded-b-lg border-t-0 overflow-hidden')}>
+        <ImageViewer imageUrl={current.url} title={`${title} — ${current.label}`} />
+      </div>
+    </div>
+  );
+}
+
 // ─── Transcription panel ──────────────────────────────────────────────────────
 
 function TranscriptionPanel({ text, isRtl }: { text: string; isRtl: boolean }) {
@@ -348,7 +508,25 @@ function ManuscriptForm({
 
           <div>
             <label className="block text-[12px] font-bold text-muted uppercase tracking-wider mb-1.5">
-              {t('manuscripts.form.imageUrl', 'Manuscript Image URL')}
+              {t('manuscripts.form.iiifManifestUrl', 'IIIF Manifest URL')}
+            </label>
+            <input
+              value={form.iiifManifestUrl}
+              onChange={(e) => set('iiifManifestUrl', e.target.value)}
+              placeholder="https://…/manifest.json"
+              className="w-full px-3 py-2 bg-parch2 border border-bdr/60 rounded-lg text-[13px] text-ink font-mono focus:outline-none focus:border-blue/60"
+            />
+            <p className="text-[11px] text-muted mt-1">
+              {t(
+                'manuscripts.form.iiifManifestNote',
+                'Paste a IIIF Presentation API manifest URL for deep zoom and page navigation. Available from major digital libraries (British Library, Bodleian, BnF, Walters Art Museum, etc.).'
+              )}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-bold text-muted uppercase tracking-wider mb-1.5">
+              {t('manuscripts.form.imageUrl', 'Card Preview Image URL')}
             </label>
             <input
               value={form.imageUrl}
@@ -357,7 +535,10 @@ function ManuscriptForm({
               className="w-full px-3 py-2 bg-parch2 border border-bdr/60 rounded-lg text-[13px] text-ink font-mono focus:outline-none focus:border-blue/60"
             />
             <p className="text-[11px] text-muted mt-1">
-              {t('manuscripts.form.imageNote', 'Paste a direct URL to a public image (JPEG, PNG, TIFF, WebP).')}
+              {t(
+                'manuscripts.form.imageNote',
+                'Optional thumbnail shown on the card (JPEG, PNG, WebP). Leave blank if using a IIIF manifest.'
+              )}
             </p>
           </div>
 
@@ -483,7 +664,7 @@ function ManuscriptCard({
       className="card p-0 overflow-hidden text-left hover:shadow-md transition-all group cursor-pointer w-full"
     >
       {manuscript.imageUrl ? (
-        <div className="h-36 bg-ink/5 overflow-hidden">
+        <div className="h-36 bg-ink/5 overflow-hidden relative">
           <img
             src={manuscript.imageUrl}
             alt={manuscript.title}
@@ -492,10 +673,20 @@ function ManuscriptCard({
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
+          {manuscript.iiifManifestUrl && (
+            <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-ink/70 text-white text-[10px] font-bold rounded tracking-wider">
+              IIIF
+            </span>
+          )}
         </div>
       ) : (
-        <div className="h-36 bg-gradient-to-br from-parch2 to-bdr/20 flex items-center justify-center">
+        <div className="h-36 bg-gradient-to-br from-parch2 to-bdr/20 flex items-center justify-center relative">
           <ScanLine className="w-10 h-10 text-muted/30" />
+          {manuscript.iiifManifestUrl && (
+            <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-blue/80 text-white text-[10px] font-bold rounded tracking-wider">
+              IIIF
+            </span>
+          )}
         </div>
       )}
 
@@ -640,12 +831,31 @@ function ManuscriptDetail({
 
       {/* Split view */}
       <div className="flex gap-4 flex-1 min-h-0">
-        {/* Image viewer */}
+        {/* Image / IIIF viewer */}
         <div className="flex flex-col flex-1 min-w-0 min-h-[400px]">
-          <div className="text-[11px] font-bold text-muted uppercase tracking-wider mb-2">
-            {t('manuscripts.imagePanel', 'Manuscript Image')}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[11px] font-bold text-muted uppercase tracking-wider">
+              {manuscript.iiifManifestUrl
+                ? t('manuscripts.iiifPanel', 'IIIF Deep Viewer')
+                : t('manuscripts.imagePanel', 'Manuscript Image')}
+            </span>
+            {manuscript.iiifManifestUrl && (
+              <a
+                href={manuscript.iiifManifestUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-0.5 text-[10px] text-blue hover:underline"
+                title="Open IIIF manifest"
+              >
+                manifest <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            )}
           </div>
-          <ImageViewer imageUrl={manuscript.imageUrl} title={manuscript.title} />
+          {manuscript.iiifManifestUrl ? (
+            <IIIFViewer manifestUrl={manuscript.iiifManifestUrl} title={manuscript.title} />
+          ) : (
+            <ImageViewer imageUrl={manuscript.imageUrl} title={manuscript.title} />
+          )}
         </div>
 
         {/* Transcription */}
@@ -712,6 +922,7 @@ export const Manuscripts = () => {
       title: m.title,
       description: m.description,
       imageUrl: m.imageUrl,
+      iiifManifestUrl: m.iiifManifestUrl ?? '',
       transcription: m.transcription,
       languageId: m.languageId,
       source: m.source,
