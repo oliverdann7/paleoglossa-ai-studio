@@ -257,7 +257,6 @@ export const LexDrawerPanel = ({
     if (!lemma) return null;
     const entry = findDictionaryEntry(lemma, textLanguageId);
     return entry?.frequency ?? null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord, textLanguageId]);
 
   // Reset AI gloss state whenever the selected word changes.

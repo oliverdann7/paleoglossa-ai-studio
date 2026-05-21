@@ -249,6 +249,7 @@ export const Reader = () => {
   const onAskTutor = () =>
     navigate(`/app/tutor?textId=${textId || ''}&sentenceIndex=${currentSentenceIndex || 0}`);
 
+
   // Refs for progress saving to avoid re-renders
   const scrollProgressRef = useRef(0);
   const currentSentenceIndexRef = useRef(0);
@@ -514,6 +515,23 @@ export const Reader = () => {
     return Math.max(1, Math.round(seconds / 60));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter, knowledgeVersion, getWordInfo]);
+
+  const handleReviewText = useCallback(() => {
+    const lemmas = Array.from(
+      new Set(
+        chapters
+          .flatMap((ch) => ch.sentences)
+          .flatMap((s: ReaderSentence) => s.tokens)
+          .filter(
+            (t: ReaderToken) =>
+              t.type !== 'punctuation' && t.type !== 'whitespace' && (t.lemma || t.text)
+          )
+          .map((t: ReaderToken) => t.lemma || t.text)
+      )
+    );
+    sessionStorage.setItem('reviewTextFilter', JSON.stringify({ textId: textId || '', lemmas }));
+    navigate('/app/review?filter=text');
+  }, [chapters, textId, navigate]);
 
   // Derive effective display flags from the active displayMode
   const effectiveShowParallel = displayMode === 'parallel' ? true : showParallel;
@@ -1008,6 +1026,7 @@ export const Reader = () => {
           displayMode={displayMode ?? 'scholar'}
           onChangeDisplayMode={setDisplayMode}
           readingTimeMinutes={readingTimeMinutes}
+          onReviewText={handleReviewText}
         />
         <button
           onClick={onAskTutor}
