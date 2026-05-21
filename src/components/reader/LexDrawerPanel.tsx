@@ -36,6 +36,7 @@ import { useSettings } from '@/lib/hooks/useSettings';
 import { getGrammarReference } from '@/lib/grammar/references';
 import { useNotebook } from '@/lib/hooks/useNotebook';
 import { normalizeLemmaKey } from '@/lib/utils/lemmaUtils';
+import { frequencyTier } from '@/lib/utils/frequencyTier';
 import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
 
 interface LemmaSentenceToken {
@@ -251,6 +252,14 @@ export const LexDrawerPanel = ({
     return null;
   }, [selectedWord, wordInfo?.userGloss, textLanguageId]);
 
+  const wordFrequency = useMemo(() => {
+    const lemma = selectedWord?.lemma;
+    if (!lemma) return null;
+    const entry = findDictionaryEntry(lemma, textLanguageId);
+    return entry?.frequency ?? null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWord, textLanguageId]);
+
   // Reset AI gloss state whenever the selected word changes.
   useEffect(() => {
     setAiFallbackGloss(null); // eslint-disable-line react-hooks/set-state-in-effect
@@ -363,6 +372,14 @@ export const LexDrawerPanel = ({
               <span className="text-[18px] font-serif text-blue font-semibold tracking-wide">
                 From '<bdi className={isHebrewFont ? 'font-hebrew' : ''}>{selectedWord.lemma}</bdi>'
               </span>
+              {wordFrequency !== null && wordFrequency > 0 && (() => {
+                const tier = frequencyTier(wordFrequency);
+                return (
+                  <span className={cn('text-[11px] font-sans font-semibold px-2 py-0.5 rounded-full', tier.color)}>
+                    {tier.label} · {wordFrequency.toLocaleString()}×
+                  </span>
+                );
+              })()}
             </div>
           </div>
 
