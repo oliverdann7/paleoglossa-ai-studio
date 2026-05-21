@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   Check,
+  ExternalLink,
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { cn } from '@/lib/utils';
@@ -73,6 +74,35 @@ interface LexDrawerPanelProps {
 
 const getDictionaryPath = (lemma: string, langId: string) =>
   `/app/dictionary/${encodeURIComponent(langId)}/${encodeURIComponent(lemma)}`;
+
+interface ExternalDictLink { label: string; url: string }
+function getExternalDictLinks(lemma: string, langId: string): ExternalDictLink[] {
+  if (!lemma) return [];
+  const enc = encodeURIComponent(lemma);
+  const grcLangs = new Set(['grc', 'grc-koine', 'grc-class', 'cop']);
+  const latLangs = new Set(['lat', 'lat-class', 'lat-med']);
+  const hebLangs = new Set(['hbo', 'arc', 'Biblical Hebrew']);
+  if (grcLangs.has(langId)) {
+    return [
+      { label: 'Perseus', url: `https://www.perseus.tufts.edu/hopper/morph?l=${enc}&la=greek` },
+      { label: 'Logeion', url: `https://logeion.uchicago.edu/${enc}` },
+    ];
+  }
+  if (latLangs.has(langId)) {
+    return [
+      { label: 'Logeion', url: `https://logeion.uchicago.edu/${enc}` },
+      { label: 'Perseus', url: `https://www.perseus.tufts.edu/hopper/morph?l=${enc}&la=la` },
+    ];
+  }
+  if (hebLangs.has(langId)) {
+    return [
+      { label: 'Blue Letter Bible', url: `https://www.blueletterbible.org/lexicon/h${enc}/kjv/wlc/0-1/` },
+    ];
+  }
+  return [
+    { label: 'Wiktionary', url: `https://en.wiktionary.org/wiki/${enc}` },
+  ];
+}
 
 const LABEL_TO_CATEGORY: Record<string, string> = {
   Case: 'case',
@@ -781,6 +811,31 @@ export const LexDrawerPanel = ({
               sentenceExcerpt={selectedWord.sentenceText?.slice(0, 120)}
             />
           )}
+
+          {/* External scholarly resources */}
+          {selectedWord.lemma && (() => {
+            const links = getExternalDictLinks(selectedWord.lemma, textLanguageId);
+            if (links.length === 0) return null;
+            return (
+              <div className="mt-4 pt-4 border-t border-bdr/30">
+                <div className="eyebrow mb-3 text-ink3">External Resources</div>
+                <div className="flex flex-wrap gap-2">
+                  {links.map((l) => (
+                    <a
+                      key={l.label}
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-bdr text-[12px] font-medium text-ink3 hover:text-blue hover:border-blue/40 transition-colors"
+                    >
+                      {l.label}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Example sentences */}
           {exampleSentences.length > 0 && (
