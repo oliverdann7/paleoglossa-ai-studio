@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import {
   ChevronLeft,
@@ -755,6 +755,14 @@ export const Grammar = () => {
             </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/app/grammar/pathways"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue text-white text-[12px] font-bold rounded-lg hover:opacity-90 transition-opacity shrink-0"
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            Pathways
+          </Link>
         <div className="flex items-center gap-1 bg-parch2 border border-bdr/60 rounded-lg p-1 shrink-0">
           <button
             onClick={() => setView('browse')}
@@ -776,6 +784,7 @@ export const Grammar = () => {
             <ListOrdered className="w-3.5 h-3.5" />
             {t('grammar.pathway', 'Pathway')}
           </button>
+        </div>
         </div>
       </header>
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { GRAMMAR_CONCEPTS, PATHWAY } from '../_lib/grammarData.js';
+import { GRAMMAR_CONCEPTS, PATHWAY, NAMED_PATHWAYS } from '../_lib/grammarData.js';
 import { getDictionaryEntries } from '../../src/lib/data/dictionary.js';
 
 const router = Router();
@@ -50,6 +50,20 @@ router.get('/api/grammar/concepts/:conceptId', (req: any, res: any) => {
 
 router.get('/api/grammar/pathway', (_req: any, res: any) => {
   res.status(200).json(PATHWAY);
+});
+
+router.get('/api/grammar/pathways', (_req: any, res: any) => {
+  res.status(200).json(NAMED_PATHWAYS);
+});
+
+router.get('/api/grammar/pathways/:pathwayId', (req: any, res: any) => {
+  const pathway = NAMED_PATHWAYS.find((p) => p.id === req.params.pathwayId);
+  if (!pathway) return res.status(404).json({ error: 'Not found' });
+  const steps = pathway.steps.map((s) => ({
+    ...s,
+    concept: GRAMMAR_CONCEPTS.find((c) => c.id === s.conceptId) ?? null,
+  }));
+  res.status(200).json({ ...pathway, steps });
 });
 
 export default router;

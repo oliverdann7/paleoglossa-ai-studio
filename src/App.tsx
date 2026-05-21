@@ -63,6 +63,9 @@ const SearchPage = lazy(() =>
 const Grammar = lazy(() =>
   import('./pages/Grammar.js').then((module) => ({ default: module.Grammar }))
 );
+const GrammarPathways = lazy(() =>
+  import('./pages/GrammarPathways.js').then((module) => ({ default: module.GrammarPathways }))
+);
 const Tutor = lazy(() => import('./pages/Tutor.js').then((module) => ({ default: module.Tutor })));
 const Syntax = lazy(() =>
   import('./pages/Syntax.js').then((module) => ({ default: module.Syntax }))
@@ -166,6 +169,8 @@ export default function App() {
             <Route path="notebooks/:notebookId" element={<NotebookDetail />} />
             <Route path="search" element={<SearchPage />} />
             <Route path="grammar" element={<Grammar />} />
+            <Route path="grammar/pathways" element={<GrammarPathways />} />
+            <Route path="grammar/pathways/:pathwayId" element={<GrammarPathways />} />
             <Route path="tutor" element={<Tutor />} />
             <Route path="syntax" element={<Syntax />} />
             <Route path="manuscripts" element={<Manuscripts />} />
