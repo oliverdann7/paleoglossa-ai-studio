@@ -82,6 +82,10 @@ class SyncStatusManager {
         this.state = { ...this.state, isOffline: true };
         this.emit();
       });
+
+      // On native Capacitor, augment browser events with the Network plugin for
+      // accurate connection status (WebView events can be unreliable on mobile).
+      this.initCapacitorNetwork();
     }
 
     if (auth?.currentUser) {
@@ -96,6 +100,34 @@ class SyncStatusManager {
       this.setAuthMode('unknown');
     }
     this.emit();
+  }
+
+  private initCapacitorNetwork() {
+    // Uses the Capacitor global plugin bridge — no npm import needed.
+    // If @capacitor/network is registered in the native project the plugin will
+    // be available via window.Capacitor.Plugins.Network; otherwise we fall back
+    // to the browser online/offline events already registered above.
+    const win = typeof window !== 'undefined' ? (window as any) : null;
+    const Network = win?.Capacitor?.Plugins?.Network as
+      | undefined
+      | {
+          getStatus(): Promise<{ connected: boolean }>;
+          addListener(
+            event: string,
+            fn: (s: { connected: boolean }) => void
+          ): Promise<void> | { remove(): void };
+        };
+    if (!Network) return;
+    Network.getStatus()
+      .then(({ connected }) => {
+        this.state = { ...this.state, isOffline: !connected };
+        this.emit();
+      })
+      .catch(() => {});
+    Network.addListener('networkStatusChange', ({ connected }) => {
+      this.state = { ...this.state, isOffline: !connected };
+      this.emit();
+    });
   }
 
   setAuthMode(mode: AuthMode) {

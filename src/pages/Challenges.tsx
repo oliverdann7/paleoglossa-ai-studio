@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Trophy, Flame, BookOpen, Star, Crown, Loader2, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStats } from '../lib/hooks/useStats.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { fetchCommunityScholars } from '../lib/services/communityService.js';
+import { ChallengeService } from '../lib/services/challengeService.js';
 import type { PublicScholar } from '../types/social.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 
@@ -60,7 +61,15 @@ function getMetricValue(
 
 // ─── Challenge card ───────────────────────────────────────────────────────────
 
-function ChallengeCard({ challenge, value }: { challenge: ChallengeDef; value: number }) {
+function ChallengeCard({
+  challenge,
+  value,
+  completedAt,
+}: {
+  challenge: ChallengeDef;
+  value: number;
+  completedAt?: string;
+}) {
   const pct = Math.min(100, Math.round((value / challenge.target) * 100));
   const done = value >= challenge.target;
   const styles = TIER_STYLES[challenge.tier];
@@ -92,8 +101,8 @@ function ChallengeCard({ challenge, value }: { challenge: ChallengeDef; value: n
             {value.toLocaleString()} / {challenge.target.toLocaleString()}
           </span>
           {done ? (
-            <span className="text-green-600 flex items-center gap-1">
-              <Star className="w-3 h-3 fill-current" /> Complete!
+            <span className="text-green-600 flex items-center gap-1" title={completedAt ? `Achieved ${new Date(completedAt).toLocaleDateString()}` : undefined}>
+              <Star className="w-3 h-3 fill-current" /> {completedAt ? new Date(completedAt).toLocaleDateString() : 'Complete!'}
             </span>
           ) : (
             <span className="text-muted">{pct}%</span>
@@ -188,6 +197,8 @@ export function Challenges() {
   const [loadingScholars, setLoadingScholars] = useState(true);
   const [leaderMetric, setLeaderMetric] = useState<LeaderMetric>('streak');
   const [activeTab, setActiveTab] = useState<'challenges' | 'leaderboard'>('challenges');
+  const [completionMap, setCompletionMap] = useState<Record<string, string>>({});
+  const recordedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     fetchCommunityScholars()
@@ -195,6 +206,18 @@ export function Challenges() {
       .catch(() => setScholars([]))
       .finally(() => setLoadingScholars(false));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    ChallengeService.getCompletions()
+      .then((completions) => {
+        const map: Record<string, string> = {};
+        for (const c of completions) map[c.challengeId] = c.completedAt;
+        setCompletionMap(map);
+        for (const id of Object.keys(map)) recordedRef.current.add(id);
+      })
+      .catch(() => {});
+  }, [user]);
 
   const userMetrics = useMemo(
     () => ({
@@ -204,6 +227,27 @@ export function Challenges() {
     }),
     [stats]
   );
+
+  // Record newly-completed challenges to Firestore
+  useEffect(() => {
+    if (!user) return;
+    void (async () => {
+      const newEntries: Record<string, string> = {};
+      const now = new Date().toISOString();
+      for (const c of CHALLENGES) {
+        if (recordedRef.current.has(c.id)) continue;
+        const value = getMetricValue(c.metric, userMetrics);
+        if (value >= c.target) {
+          recordedRef.current.add(c.id);
+          newEntries[c.id] = now;
+          ChallengeService.recordCompletion(c.id, c.metric, value).catch(() => {});
+        }
+      }
+      if (Object.keys(newEntries).length > 0) {
+        setCompletionMap((prev) => ({ ...prev, ...newEntries }));
+      }
+    })();
+  }, [userMetrics, user]);
 
   const sortedScholars = useMemo(() => {
     return [...scholars]
@@ -216,9 +260,7 @@ export function Challenges() {
       .slice(0, 50);
   }, [scholars, leaderMetric]);
 
-  const completedCount = CHALLENGES.filter(
-    (c) => getMetricValue(c.metric, userMetrics) >= c.target
-  ).length;
+  const completedCount = Object.keys(completionMap).length;
 
   return (
     <div className="p-6 md:p-12 max-w-4xl mx-auto min-h-screen">
@@ -283,6 +325,7 @@ export function Challenges() {
                       key={c.id}
                       challenge={c}
                       value={getMetricValue(c.metric, userMetrics)}
+                      completedAt={completionMap[c.id]}
                     />
                   ))}
                 </div>

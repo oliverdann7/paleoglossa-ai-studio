@@ -32,6 +32,10 @@ interface UseReaderTTSOptions {
 export interface UseReaderTTSResult {
   /** 0–1 progress: sentence playback progress (sentence mode) or chapter position (word mode) */
   audioProgress: number;
+  /** Which sentence is being highlighted word-by-word (-1 = none) */
+  highlightedSentenceIdx: number;
+  /** Which token index within the highlighted sentence is active */
+  highlightedTokenIdx: number;
 }
 
 export function useReaderTTS({
@@ -53,6 +57,9 @@ export function useReaderTTS({
   const currentAudio = useRef<HTMLAudioElement | null>(null);
   const isPlayingRef = useRef(isPlaying);
   const [audioProgress, setAudioProgress] = useState(0);
+  const [highlightedSentenceIdx, setHighlightedSentenceIdx] = useState(-1);
+  const [highlightedTokenIdx, setHighlightedTokenIdx] = useState(0);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
@@ -184,18 +191,40 @@ export function useReaderTTS({
       if (audio && wordIdx === 0) {
         // Sentence-level playback
         currentAudio.current?.pause();
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
         currentAudio.current = audio;
         audio.playbackRate = Math.min(audioSpeed, 2);
         audio.currentTime = 0;
         setAudioProgress(0);
 
-        const onTimeUpdate = () => {
-          if (audio.duration) setAudioProgress(audio.currentTime / audio.duration);
+        // Precompute cumulative character-length weights for proportional word highlighting
+        const contentTokens = sentence.tokens
+          .map((t, i) => ({ idx: i, len: t.text?.length ?? 0, type: t.type }))
+          .filter((t) => t.type !== 'whitespace');
+        const totalChars = contentTokens.reduce((s, t) => s + t.len, 0) || 1;
+        const cumulative: { tokenIdx: number; threshold: number }[] = [];
+        let acc = 0;
+        for (const t of contentTokens) {
+          acc += t.len / totalChars;
+          cumulative.push({ tokenIdx: t.idx, threshold: acc });
+        }
+
+        setHighlightedSentenceIdx(sentenceIdx);
+        setHighlightedTokenIdx(contentTokens[0]?.idx ?? 0);
+
+        const trackWords = () => {
+          if (cancelled || !audio.duration) return;
+          const progress = audio.currentTime / audio.duration;
+          setAudioProgress(progress);
+          const match = cumulative.find((c) => progress <= c.threshold);
+          if (match) setHighlightedTokenIdx(match.tokenIdx);
+          rafRef.current = requestAnimationFrame(trackWords);
         };
-        audio.addEventListener('timeupdate', onTimeUpdate);
+        rafRef.current = requestAnimationFrame(trackWords);
 
         audio.onended = () => {
-          audio.removeEventListener('timeupdate', onTimeUpdate);
+          if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+          setHighlightedSentenceIdx(-1);
           if (cancelled || !isPlayingRef.current) return;
 
           if (loopSentence || loopWord) {
@@ -217,7 +246,8 @@ export function useReaderTTS({
 
         audio.play().catch(() => {
           // Browser blocked autoplay — fall back to word mode
-          audio.removeEventListener('timeupdate', onTimeUpdate);
+          if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+          setHighlightedSentenceIdx(-1);
           audio.onended = null;
           currentAudio.current = null;
           if (!cancelled) startWordMode();
@@ -233,6 +263,7 @@ export function useReaderTTS({
     return () => {
       cancelled = true;
       if (wordTimer) clearTimeout(wordTimer);
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       currentAudio.current?.pause();
       window.speechSynthesis?.cancel();
     };
@@ -246,11 +277,14 @@ export function useReaderTTS({
   useEffect(() => {
     audioCache.current.clear();
     fetchingRef.current.clear();
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     currentAudio.current?.pause();
     currentAudio.current = null;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAudioProgress(0);
+    void Promise.resolve().then(() => {
+      setAudioProgress(0);
+      setHighlightedSentenceIdx(-1);
+    });
   }, [currentLanguageId]);
 
-  return { audioProgress };
+  return { audioProgress, highlightedSentenceIdx, highlightedTokenIdx };
 }

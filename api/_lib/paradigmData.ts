@@ -163,6 +163,75 @@ const GRC_PARADIGMS: ParadigmEntry[] = [
 - Participle (M/F/N): **ὤν** / **οὖσα** / **ὄν**`,
   },
   {
+    id: 'grc-omega-mid-pass',
+    label: 'ω-Verb: Present Middle/Passive (λύομαι)',
+    language: 'grc',
+    pos: 'verb',
+    endings: ['ομαι', 'εσθαι'],
+    markdown: `## ω-Verb Present Middle/Passive — λύομαι (lúomai)
+
+### Present Middle/Passive Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | λύ**ομαι** | λυ**όμεθα** |
+| 2nd | λύ**ῃ** (λύει) | λύ**εσθε** |
+| 3rd | λύ**εται** | λύ**ονται** |
+
+### Imperfect Middle/Passive Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | ἐλυ**όμην** | ἐλυ**όμεθα** |
+| 2nd | ἐλύ**ου** | ἐλύ**εσθε** |
+| 3rd | ἐλύ**ετο** | ἐλύ**οντο** |
+
+### Present Middle/Passive Infinitive
+λύ**εσθαι**
+
+> The **middle voice** expresses action in the subject's own interest. The **passive voice** expresses the subject receiving action. Present/Imperfect forms are identical for both voices.`,
+  },
+  {
+    id: 'grc-aorist-pass',
+    label: 'Aorist Passive (ἐλύθην)',
+    language: 'grc',
+    pos: 'verb',
+    endings: ['θην', 'θης', 'θη', 'θημεν', 'θητε', 'θησαν'],
+    markdown: `## Aorist Passive — ἐλύθην (elúthēn, "I was loosened")
+
+### Aorist Passive Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | ἐλύ**θην** | ἐλύ**θημεν** |
+| 2nd | ἐλύ**θης** | ἐλύ**θητε** |
+| 3rd | ἐλύ**θη** | ἐλύ**θησαν** |
+
+### Aorist Passive Infinitive & Participle
+- Infinitive: λυ**θῆναι**
+- Participle (M/F/N): λυ**θείς** / λυ**θεῖσα** / λυ**θέν**
+
+> The aorist passive adds **-θη-** (or **-η-** for 2nd aorist passives) after the verb stem, plus an augment (ε-) in the indicative. It is conjugated with **active** personal endings.`,
+  },
+  {
+    id: 'grc-perfect-mid-pass',
+    label: 'Perfect Middle/Passive (λέλυμαι)',
+    language: 'grc',
+    pos: 'verb',
+    endings: ['μαι', 'σαι', 'ται', 'μεθα', 'σθε', 'νται'],
+    markdown: `## Perfect Middle/Passive — λέλυμαι (lélümai, "I have been loosened")
+
+### Perfect Middle/Passive Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | λέλυ**μαι** | λελύ**μεθα** |
+| 2nd | λέλυ**σαι** | λέλυ**σθε** |
+| 3rd | λέλυ**ται** | λελύ**νται** |
+
+### Perfect Middle/Passive Infinitive & Participle
+- Infinitive: λελύ**σθαι**
+- Participle (M/F/N): λελυ**μένος** / λελυ**μένη** / λελυ**μένον**
+
+> The perfect middle/passive uses the **reduplicated stem** + middle personal endings directly on the stem (no connecting vowel). Consonant stems undergo significant changes before μ, σ, τ endings.`,
+  },
+  {
     id: 'grc-3decl',
     label: '3rd Declension (Consonant Stem)',
     language: 'grc',
@@ -295,6 +364,169 @@ const LAT_PARADIGMS: ParadigmEntry[] = [
 
 ### Principal Parts
 amō · amāre · amāvī · amātum`,
+  },
+  {
+    id: 'lat-2conj',
+    label: '2nd Conjugation (moneō)',
+    language: 'lat',
+    pos: 'verb',
+    endings: ['ēre', 'ere'],
+    markdown: `## 2nd Conjugation — moneō, monēre (to warn/advise)
+
+### Present Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | mon**eō** | monē**mus** |
+| 2nd | monē**s** | monē**tis** |
+| 3rd | mone**t** | mone**nt** |
+
+### Imperfect Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | monē**bam** | monē**bāmus** |
+| 2nd | monē**bās** | monē**bātis** |
+| 3rd | monē**bat** | monē**bant** |
+
+### Future Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | monē**bō** | monē**bimus** |
+| 2nd | monē**bis** | monē**bitis** |
+| 3rd | monē**bit** | monē**bunt** |
+
+### Perfect Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | monu**ī** | monu**imus** |
+| 2nd | monu**istī** | monu**istis** |
+| 3rd | monu**it** | monu**ērunt** |
+
+### Principal Parts
+moneō · monēre · monuī · monitum`,
+  },
+  {
+    id: 'lat-3conj',
+    label: '3rd Conjugation (regō)',
+    language: 'lat',
+    pos: 'verb',
+    endings: ['ere', 'ō'],
+    markdown: `## 3rd Conjugation — regō, regere (to rule/lead)
+
+### Present Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | reg**ō** | reg**imus** |
+| 2nd | reg**is** | reg**itis** |
+| 3rd | reg**it** | reg**unt** |
+
+### Imperfect Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | regē**bam** | regē**bāmus** |
+| 2nd | regē**bās** | regē**bātis** |
+| 3rd | regē**bat** | regē**bant** |
+
+### Future Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | reg**am** | reg**ēmus** |
+| 2nd | reg**ēs** | reg**ētis** |
+| 3rd | reg**et** | reg**ent** |
+
+### Perfect Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | rēx**ī** | rēx**imus** |
+| 2nd | rēx**istī** | rēx**istis** |
+| 3rd | rēx**it** | rēx**ērunt** |
+
+### Principal Parts
+regō · regere · rēxī · rēctum`,
+  },
+  {
+    id: 'lat-4conj',
+    label: '4th Conjugation (audiō)',
+    language: 'lat',
+    pos: 'verb',
+    endings: ['īre', 'ire'],
+    markdown: `## 4th Conjugation — audiō, audīre (to hear)
+
+### Present Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | aud**iō** | audī**mus** |
+| 2nd | audī**s** | audī**tis** |
+| 3rd | audi**t** | audi**unt** |
+
+### Imperfect Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | audiē**bam** | audiē**bāmus** |
+| 2nd | audiē**bās** | audiē**bātis** |
+| 3rd | audiē**bat** | audiē**bant** |
+
+### Future Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | aud**iam** | aud**iēmus** |
+| 2nd | aud**iēs** | aud**iētis** |
+| 3rd | aud**iet** | aud**ient** |
+
+### Perfect Active Indicative
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | audīv**ī** | audīv**imus** |
+| 2nd | audīv**istī** | audīv**istis** |
+| 3rd | audīv**it** | audīv**ērunt** |
+
+### Principal Parts
+audiō · audīre · audīvī · audītum`,
+  },
+  {
+    id: 'lat-4decl',
+    label: '4th Declension (cornū)',
+    language: 'lat',
+    pos: 'noun',
+    endings: ['us', 'ū', 'uī'],
+    markdown: `## 4th Declension — cornū, cornūs n. (horn)
+
+| Case | Singular | Plural |
+|------|----------|--------|
+| **Nom** | corn**ū** | corn**ua** |
+| **Gen** | corn**ūs** | corn**uum** |
+| **Dat** | corn**uī** | corn**ibus** |
+| **Acc** | corn**ū** | corn**ua** |
+| **Abl** | corn**ū** | corn**ibus** |
+| **Voc** | corn**ū** | corn**ua** |
+
+### Masc/Fem example — gradus, gradūs m. (step, rank)
+| Case | Singular | Plural |
+|------|----------|--------|
+| **Nom** | grad**us** | grad**ūs** |
+| **Gen** | grad**ūs** | grad**uum** |
+| **Dat** | grad**uī** | grad**ibus** |
+| **Acc** | grad**um** | grad**ūs** |
+| **Abl** | grad**ū** | grad**ibus** |
+| **Voc** | grad**us** | grad**ūs** |`,
+  },
+  {
+    id: 'lat-5decl',
+    label: '5th Declension (rēs)',
+    language: 'lat',
+    pos: 'noun',
+    endings: ['ēs', 'eī', 'em'],
+    markdown: `## 5th Declension — rēs, reī f. (thing, affair)
+
+| Case | Singular | Plural |
+|------|----------|--------|
+| **Nom** | r**ēs** | r**ēs** |
+| **Gen** | r**eī** | r**ērum** |
+| **Dat** | r**eī** | r**ēbus** |
+| **Acc** | r**em** | r**ēs** |
+| **Abl** | r**ē** | r**ēbus** |
+| **Voc** | r**ēs** | r**ēs** |
+
+> Most 5th-declension nouns are feminine. Only **diēs** (day) and **merīdiēs** (midday) are masculine.`,
   },
   {
     id: 'lat-esse',

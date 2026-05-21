@@ -23,6 +23,7 @@ import { DashboardSkeleton } from '../components/Skeleton.js';
 
 import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
+import { useStreakNotifications } from '../lib/hooks/useStreakNotifications.js';
 
 const RTL_LANGS = new Set([
   'hbo',
@@ -104,6 +105,12 @@ export const Dashboard = () => {
 
     return { knownCount: known, learningCount: learning, reviewCount: review, recentVocab: recent };
   }, [knowledge, activeLanguageId]);
+
+  useStreakNotifications({
+    dueCount: reviewCount,
+    streak: stats.streak,
+    isAuthenticated: !!user,
+  });
 
   // Derive first name for personalized greeting
   const firstName = useMemo(() => {
