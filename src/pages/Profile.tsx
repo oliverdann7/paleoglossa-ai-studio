@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft } from 'lucide-react';
+import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft, UserPlus, UserCheck, Users } from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import {
   fetchOwnProfile,
@@ -9,6 +9,11 @@ import {
   UserProfileData,
   PublicText,
 } from '../lib/services/profileService.js';
+import {
+  getFollowStatus,
+  followScholar,
+  unfollowScholar,
+} from '../lib/services/communityService.js';
 import { cn } from '@/lib/utils';
 
 function formatDate(val: any): string {
@@ -28,6 +33,10 @@ export const ProfilePage = () => {
   const [texts, setTexts] = useState<PublicText[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [followLoading, setFollowLoading] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -59,6 +68,17 @@ export const ProfilePage = () => {
             // non-fatal
           }
         }
+
+        if (!isOwnProfile && user) {
+          try {
+            const status = await getFollowStatus(userId);
+            setIsFollowing(status.isFollowing);
+            setFollowerCount(status.followerCount);
+            setFollowingCount(status.followingCount);
+          } catch {
+            // non-fatal
+          }
+        }
       } catch {
         setIsPrivate(true);
       } finally {
@@ -67,7 +87,24 @@ export const ProfilePage = () => {
     };
 
     load();
-  }, [userId, isOwnProfile]);
+  }, [userId, isOwnProfile, user]);
+
+  const handleFollowToggle = async () => {
+    if (!userId || followLoading || !user) return;
+    setFollowLoading(true);
+    try {
+      const result = isFollowing
+        ? await unfollowScholar(userId)
+        : await followScholar(userId);
+      setIsFollowing(result.isFollowing);
+      setFollowerCount(result.followerCount);
+      setFollowingCount(result.followingCount);
+    } catch {
+      // silent
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const initials = (profile?.displayName || '?')
     .split(' ')
@@ -170,7 +207,42 @@ export const ProfilePage = () => {
               <Settings className="w-3.5 h-3.5" /> Edit Profile
             </button>
           )}
+
+          {/* Other profile: follow button */}
+          {!isOwnProfile && user && profile?.isPublic && (
+            <button
+              onClick={handleFollowToggle}
+              disabled={followLoading}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 text-[13px] rounded-xl font-semibold border transition-all shrink-0 disabled:opacity-50',
+                isFollowing
+                  ? 'bg-parch2 border-bdr text-ink2 hover:border-red-300 hover:text-red-500'
+                  : 'bg-blue text-white border-blue hover:bg-blue/80'
+              )}
+            >
+              {isFollowing ? (
+                <><UserCheck className="w-3.5 h-3.5" /> Following</>
+              ) : (
+                <><UserPlus className="w-3.5 h-3.5" /> Follow</>
+              )}
+            </button>
+          )}
         </div>
+
+        {/* ── Follower counts ────────────────────────────────────────────── */}
+        {!isOwnProfile && (followerCount > 0 || followingCount > 0) && (
+          <div className="mt-4 flex items-center gap-5 text-[13px] text-ink2">
+            <span className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-muted" />
+              <strong>{followerCount.toLocaleString()}</strong>
+              <span className="text-muted">followers</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <strong>{followingCount.toLocaleString()}</strong>
+              <span className="text-muted">following</span>
+            </span>
+          </div>
+        )}
 
         {/* ── Stats row ─────────────────────────────────────────────────── */}
         {profile?.stats && (

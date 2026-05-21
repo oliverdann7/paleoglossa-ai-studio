@@ -22,6 +22,7 @@ import {
 } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
 import { ParadigmModal } from './ParadigmModal.js';
+import { DiscussionPanel } from './DiscussionPanel.js';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
 import {
@@ -67,6 +68,7 @@ interface LexDrawerPanelProps {
   exampleSentences: LemmaSentenceEntry[];
   playTTS: (text: string, lang: string) => void;
   text?: { corpusId?: string; language?: string; id?: string };
+  currentSentenceIndex?: number;
 }
 
 const getDictionaryPath = (lemma: string, langId: string) =>
@@ -127,6 +129,7 @@ export const LexDrawerPanel = ({
   exampleSentences,
   playTTS,
   text,
+  currentSentenceIndex,
 }: LexDrawerPanelProps) => {
   const { t } = useTranslation();
   const { settings } = useSettings();
@@ -764,6 +767,20 @@ export const LexDrawerPanel = ({
               {noteSaved ? t('reader.noteSaved', 'Saved!') : t('reader.saveNote', 'Save Note')}
             </button>
           </div>
+
+          {/* Community Discussion */}
+          {text?.id && (
+            <div className="mt-4">
+              <DiscussionPanel
+                textId={text.id}
+                languageId={text.language || textLanguageId}
+                sentenceIndex={selectedWord.sentenceIndex ?? currentSentenceIndex ?? 0}
+                wordText={selectedWord.text}
+                lemma={selectedWord.lemma}
+                sentenceExcerpt={selectedWord.sentenceText?.slice(0, 120)}
+              />
+            </div>
+          )}
 
           {/* Example sentences */}
           {exampleSentences.length > 0 && (

@@ -130,3 +130,31 @@ export interface ReviewLog {
   newInterval: number;
   quality: number; // 0-5
 }
+
+export interface DiscussionThread {
+  id?: string;
+  textId: string;
+  languageId: string;
+  sentenceIndex: number;
+  tokenIndex?: number | null;
+  wordText?: string | null;
+  lemma?: string | null;
+  sentenceExcerpt?: string | null;
+  commentCount: number;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
+}
+
+export interface DiscussionComment {
+  id?: string;
+  discussionId: string;
+  authorUid: string;
+  authorDisplayName: string;
+  authorAvatarUrl?: string | null;
+  body: string;
+  upvoteCount: number;
+  upvotedBy?: string[];
+  parentCommentId?: string | null;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
+}
