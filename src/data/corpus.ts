@@ -693,6 +693,73 @@ export const TEXT_LAT_CATO: Text = {
   ],
 };
 
+export const TEXT_LAT_MINI_STORIES: Text = {
+  id: "LatMini",
+  corpusId: "LATIN_CLASSIC",
+  title: "Fabulae Latinae",
+  canonicalRef: "Latin Mini-Stories — A1",
+  author: "Original compositions",
+  language: "lat",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 35,
+  sectionsPreview: [
+    { id: "LatMini-1", label: "Agricola et villa — The farmer and his estate" },
+    { id: "LatMini-2", label: "Puer et magister — The boy and the teacher" },
+    { id: "LatMini-3", label: "Piscator — The fisherman" },
+    { id: "LatMini-4", label: "Viator — The traveler" },
+    { id: "LatMini-5", label: "Pastor et oves — The shepherd and the sheep" },
+  ],
+};
+
+export const TEXT_HEB_GENESIS: Text = {
+  id: "Heb-Genesis",
+  corpusId: "OSHB",
+  title: "בְּרֵאשִׁית",
+  canonicalRef: "Genesis 1 — Creation",
+  author: "Anonymous",
+  language: "hbo",
+  direction: "rtl",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 17,
+  sectionsPreview: [
+    { id: "Heb-Gen-1", label: "Genesis 1 — In the beginning" },
+  ],
+};
+
+export const TEXT_HEB_PS23: Text = {
+  id: "Heb-Ps23",
+  corpusId: "OSHB",
+  title: "מִזְמוֹר כג",
+  canonicalRef: "Psalm 23",
+  author: "David",
+  language: "hbo",
+  direction: "rtl",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Heb-Ps-23", label: "Psalm 23 — The LORD is my shepherd" },
+  ],
+};
+
 export const TEXT_HEB_JONAH: Text = {
   id: "Heb-Jonah",
   corpusId: "OSHB",
@@ -3508,7 +3575,9 @@ import { LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EX
 import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1 } from "./corpus/patristics.js";
 import { ALL_GREEK_MINI_STORIES, GRC_MINI_1, GRC_MINI_2, GRC_MINI_3, GRC_MINI_4, GRC_MINI_5 } from "./corpus/greek-mini-stories.js";
 import { ALL_LATIN_BEGINNER_SECTIONS, LAT_VULGATE_JOHN_1, LAT_DISTICHA_CATONIS } from "./corpus/latin-beginner.js";
+import { ALL_LATIN_MINI_STORIES, LAT_MINI_1, LAT_MINI_2, LAT_MINI_3, LAT_MINI_4, LAT_MINI_5 } from "./corpus/latin-mini-stories.js";
 import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
+import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3591,8 +3660,11 @@ function getAllEnhancedTexts() {
       TEXT_TREEBANK_GRC,
       TEXT_TREEBANK_LAT,
       TEXT_GRC_MINI_STORIES,
+      TEXT_LAT_MINI_STORIES,
       TEXT_LAT_VG_JOHN,
       TEXT_LAT_CATO,
+      TEXT_HEB_GENESIS,
+      TEXT_HEB_PS23,
       TEXT_HEB_JONAH,
       TEXT_HEB_PS91,
       ...(import.meta.env.DEV ? getMockTexts() : [])
@@ -3625,7 +3697,9 @@ function getLemmaIndex() {
     ...ALL_EXPANDED_SECTIONS,
     ...ALL_TREEBANK_SECTIONS,
     ...ALL_GREEK_MINI_STORIES,
+    ...ALL_LATIN_MINI_STORIES,
     ...ALL_LATIN_BEGINNER_SECTIONS,
+    ...ALL_HEBREW_EXTENDED_SECTIONS,
     ...ALL_HEBREW_BEGINNER_SECTIONS,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
@@ -3709,8 +3783,15 @@ export const CorpusDB = {
     if (sectionId === "GrcMini-3") return GRC_MINI_3;
     if (sectionId === "GrcMini-4") return GRC_MINI_4;
     if (sectionId === "GrcMini-5") return GRC_MINI_5;
+    if (sectionId === "LatMini-1") return LAT_MINI_1;
+    if (sectionId === "LatMini-2") return LAT_MINI_2;
+    if (sectionId === "LatMini-3") return LAT_MINI_3;
+    if (sectionId === "LatMini-4") return LAT_MINI_4;
+    if (sectionId === "LatMini-5") return LAT_MINI_5;
     if (sectionId === "Lat-Vg-Jn-1") return LAT_VULGATE_JOHN_1;
     if (sectionId === "Lat-Cat-1") return LAT_DISTICHA_CATONIS;
+    if (sectionId === "Heb-Gen-1") return HEB_GENESIS_1;
+    if (sectionId === "Heb-Ps-23") return HEB_PSALM_23;
     if (sectionId === "Heb-Jon-1") return HEB_JONAH_1;
     if (sectionId === "Heb-Jon-2") return HEB_JONAH_2;
     if (sectionId === "Heb-Jon-3") return HEB_JONAH_3;
