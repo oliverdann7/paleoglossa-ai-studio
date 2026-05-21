@@ -16,6 +16,7 @@ import {
   ChevronRight,
   GraduationCap,
   GitBranch,
+  Trophy,
 } from 'lucide-react';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 
@@ -96,6 +97,7 @@ export const More = () => {
 
         <Section title={t('more.community', 'Community')}>
           <MoreCard icon={Users} label={t('nav.community', 'Community')} to="/app/community" />
+          <MoreCard icon={Trophy} label={t('nav.challenges', 'Challenges')} to="/app/challenges" />
         </Section>
 
         <Section title={t('more.account', 'Account')}>
