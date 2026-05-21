@@ -15,6 +15,7 @@ import adminRouter from './_routes/admin.js';
 import socialRouter from './_routes/social.js';
 import parseRouter from './_routes/parse.js';
 import corpusRouter from './_routes/corpus.js';
+import discussionsRouter from './_routes/discussions.js';
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use(adminRouter);
 app.use(socialRouter);
 app.use(parseRouter);
 app.use(corpusRouter);
+app.use(discussionsRouter);
 
 export const expressApp = app;
 export default function handler(req: any, res: any) {

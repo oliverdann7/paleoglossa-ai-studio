@@ -176,7 +176,7 @@ export const Reader = () => {
 
   const isOnline = useOnlineStatus();
   const [selectedWord, setSelectedWord] = useState<
-    (ReaderToken & { sentenceText?: string }) | null
+    (ReaderToken & { sentenceText?: string; sentenceIndex?: number }) | null
   >(null);
   const [selectedSentence, setSelectedSentence] = useState<{ text: string; id: string } | null>(
     null
@@ -875,7 +875,7 @@ export const Reader = () => {
   const handleWordClick = useCallback(
     (token: ReaderToken, sentenceText: string, sentenceIndex: number) => {
       setSelectedSentence(null);
-      setSelectedWord({ ...token, sentenceText });
+      setSelectedWord({ ...token, sentenceText, sentenceIndex });
       incrementEncounter(token.lemma, currentLanguageId);
       setWordContext(token.lemma, sentenceText, currentLanguageId);
       if (readingMode === 'page') setSentenceIndex(sentenceIndex);
@@ -1202,6 +1202,7 @@ export const Reader = () => {
             window.speechSynthesis.speak(u);
           }}
           text={text}
+          currentSentenceIndex={currentSentenceIndex}
         />
       )}
 
