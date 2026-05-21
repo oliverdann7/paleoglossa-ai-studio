@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,8 @@ import {
   ShieldAlert,
   Check,
   ExternalLink,
+  ListPlus,
+  Plus,
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { cn } from '@/lib/utils';
@@ -38,6 +40,10 @@ import { useNotebook } from '@/lib/hooks/useNotebook';
 import { normalizeLemmaKey } from '@/lib/utils/lemmaUtils';
 import { frequencyTier } from '@/lib/utils/frequencyTier';
 import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
+import {
+  WordCollectionService,
+  type WordCollection,
+} from '@/lib/services/wordCollectionService';
 
 interface LemmaSentenceToken {
   lemma?: string;
@@ -179,6 +185,39 @@ export const LexDrawerPanel = ({
   const [noteSaved, setNoteSaved] = useState(false);
   const { saveNote, isSaving: isSavingNote } = useNotebook({ skipFetch: true });
 
+  // Word collections picker
+  const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+  const [collections, setCollections] = useState<WordCollection[]>([]);
+  const [collectionsLoaded, setCollectionsLoaded] = useState(false);
+  const [addingToCollection, setAddingToCollection] = useState<string | null>(null);
+  const [addedToCollections, setAddedToCollections] = useState<Set<string>>(new Set());
+
+  const loadCollections = useCallback(async () => {
+    if (collectionsLoaded) return;
+    try {
+      const data = await WordCollectionService.list();
+      setCollections(data);
+      setCollectionsLoaded(true);
+    } catch {
+      // silent
+    }
+  }, [collectionsLoaded]);
+
+  const handleAddToCollection = useCallback(
+    async (collectionId: string, lemma: string) => {
+      setAddingToCollection(collectionId);
+      try {
+        await WordCollectionService.addWord(collectionId, lemma);
+        setAddedToCollections((prev) => new Set([...prev, collectionId]));
+      } catch {
+        // silent
+      } finally {
+        setAddingToCollection(null);
+      }
+    },
+    []
+  );
+
   // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
   const wordInfo = useMemo(
     () => (selectedWord ? getWordInfo(selectedWord.lemma) : null),
@@ -264,6 +303,8 @@ export const LexDrawerPanel = ({
     setAiFallbackGloss(null); // eslint-disable-line react-hooks/set-state-in-effect
     setIsAiFallbackLoading(false);
     setAiFallbackFailed(false);
+    setShowCollectionPicker(false); // eslint-disable-line react-hooks/set-state-in-effect
+    setAddedToCollections(new Set()); // eslint-disable-line react-hooks/set-state-in-effect
     aiFallbackLemmaRef.current = null;
   }, [selectedWord?.lemma]);
 
@@ -545,7 +586,7 @@ export const LexDrawerPanel = ({
               })}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
               <button
                 onClick={() => {
                   const saved = setWordState(
@@ -561,6 +602,72 @@ export const LexDrawerPanel = ({
                 <BookMarked className="w-5 h-5" />
                 {t('reader.addToReview', 'Add to Review')}
               </button>
+
+              {/* Save to Collection */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    if (!showCollectionPicker) loadCollections();
+                    setShowCollectionPicker((v) => !v);
+                  }}
+                  className="w-full py-3 border border-bdr bg-parch2 hover:bg-parch3 rounded-2xl font-semibold text-[14px] text-ink flex items-center justify-center gap-2 transition-colors"
+                >
+                  <ListPlus className="w-4 h-4" />
+                  {t('reader.saveToCollection', 'Save to Collection')}
+                </button>
+
+                {showCollectionPicker && (
+                  <div className="absolute left-0 right-0 top-full mt-1 z-10 bg-parch border border-bdr rounded-2xl shadow-lg overflow-hidden">
+                    {!collectionsLoaded ? (
+                      <div className="flex justify-center py-4">
+                        <Loader2 className="w-4 h-4 animate-spin text-muted" />
+                      </div>
+                    ) : collections.length === 0 ? (
+                      <div className="px-4 py-4 text-center">
+                        <p className="text-[13px] text-muted mb-3">
+                          {t('reader.noCollections', 'No collections yet')}
+                        </p>
+                        <a
+                          href="/app/collections"
+                          className="text-[13px] text-blue font-medium hover:underline"
+                        >
+                          {t('reader.createCollection', 'Create one →')}
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="max-h-52 overflow-y-auto">
+                        {collections.map((col) => {
+                          const added = addedToCollections.has(col.id);
+                          return (
+                            <button
+                              key={col.id}
+                              onClick={() =>
+                                !added && handleAddToCollection(col.id, selectedWord.lemma)
+                              }
+                              disabled={addingToCollection === col.id || added}
+                              className={cn(
+                                'w-full flex items-center justify-between px-4 py-3 text-left text-[13px] transition-colors border-b border-bdr/40 last:border-0',
+                                added
+                                  ? 'text-green-600 bg-green-50/50 cursor-default'
+                                  : 'text-ink hover:bg-parch3'
+                              )}
+                            >
+                              <span className="truncate">{col.name}</span>
+                              {addingToCollection === col.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0 ml-2" />
+                              ) : added ? (
+                                <Check className="w-3.5 h-3.5 shrink-0 ml-2" />
+                              ) : (
+                                <Plus className="w-3.5 h-3.5 text-muted shrink-0 ml-2" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

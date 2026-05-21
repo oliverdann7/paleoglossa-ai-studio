@@ -80,6 +80,12 @@ const More = lazy(() => import('./pages/More.js').then((module) => ({ default: m
 const Courses = lazy(() =>
   import('./pages/Courses.js').then((module) => ({ default: module.Courses }))
 );
+const Collections = lazy(() =>
+  import('./pages/Collections.js').then((module) => ({ default: module.Collections }))
+);
+const CollectionDetail = lazy(() =>
+  import('./pages/CollectionDetail.js').then((module) => ({ default: module.CollectionDetail }))
+);
 const AudioLab = lazy(() =>
   import('./pages/AudioLab.js').then((module) => ({ default: module.AudioLab }))
 );
@@ -167,6 +173,8 @@ export default function App() {
             <Route path="syntax" element={<Syntax />} />
             <Route path="manuscripts" element={<Manuscripts />} />
             <Route path="courses" element={<Courses />} />
+            <Route path="collections" element={<Collections />} />
+            <Route path="collections/:collectionId" element={<CollectionDetail />} />
             <Route path="audio-lab" element={<AudioLab />} />
             <Route path="more" element={<More />} />
             <Route path="discover" element={<Discover />} />

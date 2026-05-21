@@ -17,6 +17,7 @@ import parseRouter from './_routes/parse.js';
 import corpusRouter from './_routes/corpus.js';
 import discussionsRouter from './_routes/discussions.js';
 import bookmarksRouter from './_routes/bookmarks.js';
+import wordCollectionsRouter from './_routes/wordCollections.js';
 
 const app = express();
 
@@ -69,6 +70,7 @@ app.use(parseRouter);
 app.use(corpusRouter);
 app.use(discussionsRouter);
 app.use(bookmarksRouter);
+app.use(wordCollectionsRouter);
 
 export const expressApp = app;
 export default function handler(req: any, res: any) {
