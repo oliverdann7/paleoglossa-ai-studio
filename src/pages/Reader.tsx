@@ -1174,6 +1174,8 @@ export const Reader = () => {
           mode="scholar"
           onClose={() => setSelectedSentence(null)}
           isRtl={isRtl}
+          textId={textId}
+          sentenceIndex={currentSentenceIndex}
         />
       ) : (
         <LexDrawerPanel
