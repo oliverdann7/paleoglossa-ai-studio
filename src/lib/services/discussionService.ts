@@ -1,70 +1,68 @@
 import { apiFetch } from './apiFetch.js';
 import type { DiscussionThread, DiscussionComment } from '../../types/firestore.js';
 
-interface GetThreadsParams {
-  textId: string;
-  sentenceIndex?: number;
-  tokenIndex?: number | null;
+export interface CommentWithMeta extends DiscussionComment {
+  id: string;
+  /** Whether the current user has upvoted this comment */
+  userUpvoted?: boolean;
 }
 
-interface PostCommentParams {
-  discussionId: string;
-  body: string;
-  parentCommentId?: string | null;
+export interface ThreadOptions {
+  textId: string;
+  languageId?: string;
+  sentenceIndex: number;
+  tokenIndex?: number | null;
+  wordText?: string;
+  lemma?: string;
+  sentenceExcerpt?: string;
 }
 
 export const DiscussionService = {
-  async getThreads(params: GetThreadsParams): Promise<DiscussionThread[]> {
-    let url = `/api/discussions?textId=${encodeURIComponent(params.textId)}`;
-    if (params.sentenceIndex != null) url += `&sentenceIndex=${params.sentenceIndex}`;
-    if (params.tokenIndex != null) url += `&tokenIndex=${params.tokenIndex}`;
-    const data = await apiFetch<{ threads: DiscussionThread[] }>(url, { skipAuth: true });
-    return data?.threads ?? [];
+  async getThreads(textId: string, sentenceIndex: number, tokenIndex?: number | null) {
+    const params = new URLSearchParams({
+      textId,
+      sentenceIndex: String(sentenceIndex),
+    });
+    if (tokenIndex != null) params.set('tokenIndex', String(tokenIndex));
+    const data = await apiFetch<{ threads: (DiscussionThread & { id: string })[] }>(
+      `/api/discussions?${params}`,
+      { skipAuth: true }
+    );
+    return data.threads;
   },
 
-  async getOrCreateThread(params: {
-    textId: string;
-    languageId: string;
-    sentenceIndex: number;
-    tokenIndex?: number | null;
-    wordText?: string;
-    lemma?: string;
-    sentenceExcerpt?: string;
-  }): Promise<DiscussionThread> {
-    return apiFetch<DiscussionThread>('/api/discussions', {
+  async getOrCreateThread(opts: ThreadOptions) {
+    return apiFetch<DiscussionThread & { id: string }>('/api/discussions', {
       method: 'POST',
-      body: JSON.stringify(params),
+      body: opts,
     });
   },
 
-  async getComments(discussionId: string): Promise<DiscussionComment[]> {
-    const data = await apiFetch<{ comments: DiscussionComment[] }>(
-      `/api/discussions/${encodeURIComponent(discussionId)}/comments`,
+  async getComments(discussionId: string) {
+    const data = await apiFetch<{ comments: CommentWithMeta[] }>(
+      `/api/discussions/${discussionId}/comments`,
       { skipAuth: true }
     );
-    return data?.comments ?? [];
+    return data.comments;
   },
 
-  async postComment(params: PostCommentParams): Promise<DiscussionComment> {
-    return apiFetch<DiscussionComment>(
-      `/api/discussions/${encodeURIComponent(params.discussionId)}/comments`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ body: params.body, parentCommentId: params.parentCommentId }),
-      }
-    );
+  async postComment(discussionId: string, body: string, parentCommentId?: string) {
+    return apiFetch<CommentWithMeta>(`/api/discussions/${discussionId}/comments`, {
+      method: 'POST',
+      body: { body, parentCommentId },
+    });
   },
 
-  async upvoteComment(discussionId: string, commentId: string): Promise<{ upvoted: boolean }> {
-    return apiFetch<{ upvoted: boolean }>(
-      `/api/discussions/${encodeURIComponent(discussionId)}/comments/${encodeURIComponent(commentId)}/upvote`,
+  async upvoteComment(discussionId: string, commentId: string) {
+    return apiFetch<{ upvoted: boolean; upvoteCount: number }>(
+      `/api/discussions/${discussionId}/comments/${commentId}/upvote`,
       { method: 'POST' }
     );
   },
 
-  async deleteComment(discussionId: string, commentId: string): Promise<void> {
-    await apiFetch<{ deleted: boolean }>(
-      `/api/discussions/${encodeURIComponent(discussionId)}/comments/${encodeURIComponent(commentId)}`,
+  async deleteComment(discussionId: string, commentId: string) {
+    return apiFetch<{ ok: boolean }>(
+      `/api/discussions/${discussionId}/comments/${commentId}`,
       { method: 'DELETE' }
     );
   },

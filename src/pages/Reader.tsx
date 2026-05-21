@@ -155,16 +155,19 @@ export const Reader = () => {
   } = useKnowledge(activeLanguageId);
 
   // Wrapped version that shows a paywall toast when the vocab limit blocks a save.
+  // Returns true when the save was accepted/queued, false when blocked by the limit.
   // Pass this to child components (LexDrawerPanel) instead of the raw setWordState.
   const setWordStateWithFeedback = useCallback(
-    (lemma: string, state: WordState, languageId: string, context?: string) => {
+    (lemma: string, state: WordState, languageId: string, context?: string): boolean => {
       const saved = setWordState(lemma, state, languageId, context);
       if (!saved) {
         addToast(
           `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
           'info'
         );
+        return false;
       }
+      return true;
     },
     [setWordState, addToast, vocabLimit.limit]
   );
