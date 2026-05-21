@@ -3,7 +3,7 @@ import type { VocabLimitInfo } from '../hooks/useVocabLimit.js';
 
 /** Default (safe) state before any knowledge has been loaded. */
 const DEFAULT_INFO: VocabLimitInfo = {
-  freeLangId: 'grc',
+  freeLangId: '',
   count: 0,
   limit: 200,
   isFull: false,

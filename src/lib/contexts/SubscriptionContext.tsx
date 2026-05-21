@@ -20,12 +20,18 @@ interface UserSubscription {
   subscriptionStatus: SubscriptionStatus;
   stripeCustomerId?: string;
   trialEnd?: string;
+  /** The language a free user wants to unlock as their second slot when upgrading to Duo. */
+  desiredSecondLanguageId?: string;
 }
 
 interface SubscriptionContextValue {
   subscription: UserSubscription;
   selectFreePlan: () => void;
   toggleLanguage: (languageId: string) => void;
+  /** Replace the user's free language slot (index 0) with a new language. */
+  setFreeLanguage: (languageId: string) => void;
+  /** Save a locked language as the user's intended second-slot language for checkout. */
+  setDesiredSecondLanguage: (languageId: string | undefined) => void;
   canAccessLanguage: (languageId: string) => boolean;
   canAddLanguage: () => boolean;
   remainingSlots: number;
@@ -41,9 +47,11 @@ interface SubscriptionContextValue {
 
 const DEFAULT_SUBSCRIPTION: UserSubscription = {
   currentPlan: 'free',
-  selectedLanguageIds: ['grc'],
+  selectedLanguageIds: [],
   subscriptionStatus: 'free',
 };
+
+const DESIRED_SECOND_LANG_KEY = 'paleoglossa_desired_second_lang';
 
 const PAID_PLANS: PlanId[] = ['basic_1', 'duo_2', 'full_all'];
 // Must stay in sync with ADMIN_EMAILS in api/index.ts
@@ -60,6 +68,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Load subscription: trust Firestore for paid plans, fall back to localStorage for free.
   useEffect(() => {
     const load = async () => {
+      const desiredSecond = localStorage.getItem(DESIRED_SECOND_LANG_KEY) || undefined;
       if (user) {
         try {
           const snap = await getDoc(doc(db, `users/${user.uid}`));
@@ -71,8 +80,20 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             if (plan && PAID_PLANS.includes(plan)) {
               setSubscription({
                 currentPlan: plan,
-                selectedLanguageIds: (data.selectedLanguageIds as string[]) || ['grc'],
+                selectedLanguageIds: (data.selectedLanguageIds as string[]) || [],
                 subscriptionStatus: (data.subscriptionStatus as SubscriptionStatus) || 'free',
+                desiredSecondLanguageId: desiredSecond,
+              });
+              setIsLoaded(true);
+              return;
+            }
+            // Free authenticated user: read selectedLanguageIds from Firestore if present.
+            if (data.selectedLanguageIds?.length) {
+              setSubscription({
+                currentPlan: 'free',
+                selectedLanguageIds: data.selectedLanguageIds as string[],
+                subscriptionStatus: 'free',
+                desiredSecondLanguageId: desiredSecond,
               });
               setIsLoaded(true);
               return;
@@ -92,8 +113,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           if (parsed.currentPlan === 'free' || parsed.currentPlan === undefined) {
             setSubscription({
               currentPlan: 'free',
-              selectedLanguageIds: parsed.selectedLanguageIds || ['grc'],
+              selectedLanguageIds: parsed.selectedLanguageIds || [],
               subscriptionStatus: 'free',
+              desiredSecondLanguageId: desiredSecond,
             });
             setIsLoaded(true);
             return;
@@ -146,6 +168,31 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     });
     persistLanguages(newSelected);
   }, [subscription.selectedLanguageIds, persistLanguages]);
+
+  const setFreeLanguage = useCallback(
+    (languageId: string) => {
+      setSubscription((prev) => {
+        // Replace slot 0 with the new language; preserve any paid extra slots.
+        const extras = prev.selectedLanguageIds.slice(1);
+        const newSelected = [languageId, ...extras];
+        persistLanguages(newSelected);
+        return { ...prev, selectedLanguageIds: newSelected };
+      });
+    },
+    [persistLanguages]
+  );
+
+  const setDesiredSecondLanguage = useCallback(
+    (languageId: string | undefined) => {
+      if (languageId) {
+        localStorage.setItem(DESIRED_SECOND_LANG_KEY, languageId);
+      } else {
+        localStorage.removeItem(DESIRED_SECOND_LANG_KEY);
+      }
+      setSubscription((prev) => ({ ...prev, desiredSecondLanguageId: languageId }));
+    },
+    []
+  );
 
   const toggleLanguage = useCallback(
     (languageId: string) => {
@@ -261,6 +308,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         subscription,
         selectFreePlan,
         toggleLanguage,
+        setFreeLanguage,
+        setDesiredSecondLanguage,
         canAccessLanguage: checkAccess,
         canAddLanguage: checkCanAdd,
         remainingSlots,

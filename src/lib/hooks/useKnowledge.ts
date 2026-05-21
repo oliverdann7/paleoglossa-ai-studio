@@ -9,6 +9,7 @@ import { useAuth } from './useAuth.js';
 import { useVocabLimit } from './useVocabLimit.js';
 import { isTrackedWordState } from '../constants/plans.js';
 import { usePublishVocabLimit } from '../contexts/VocabLimitContext.js';
+import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
 
 export const useKnowledge = (languageId?: string) => {
   const vocab = useVocabulary();
@@ -94,6 +95,29 @@ export const useKnowledge = (languageId?: string) => {
     [vocab, statsHook, vocabLimit]
   );
 
+  // Guarded markPageAsSeen: filters out words that would exceed the free-language
+  // vocab limit before delegating to the underlying vocabulary hook.
+  const markPageAsSeenGuarded = useCallback(
+    (tokens: any[]) => {
+      if (!vocabLimit.isEnabled || !vocabLimit.isFull) {
+        vocab.markPageAsSeen(tokens);
+        return;
+      }
+      // Limit is full: only allow tokens already tracked (state changes on known words are fine),
+      // and skip new-tracked writes for the free language.
+      const allowed = tokens.filter((token) => {
+        if (!token.lemma) return false;
+        const lang = token.languageId || token.language || 'unknown';
+        if (lang !== vocabLimit.freeLangId) return true; // non-free-language tokens pass through
+        const normKey = normalizeLemmaKey(token.lemma);
+        const existing = vocab.knowledge[normKey];
+        return existing && isTrackedWordState(existing.state); // only already-tracked words
+      });
+      if (allowed.length > 0) vocab.markPageAsSeen(allowed);
+    },
+    [vocab, vocabLimit]
+  );
+
   return {
     knowledge: vocab.knowledge,
     knowledgeVersion: vocab.knowledgeVersion,
@@ -104,7 +128,7 @@ export const useKnowledge = (languageId?: string) => {
     setWordContext: vocab.setWordContext,
     incrementEncounter: vocab.incrementEncounter,
     updateGloss: vocab.updateGloss,
-    markPageAsSeen: vocab.markPageAsSeen,
+    markPageAsSeen: markPageAsSeenGuarded,
     stats: statsHook.stats,
     addReadWords: statsHook.addReadWords,
     incrementReadingTime: statsHook.incrementReadingTime,

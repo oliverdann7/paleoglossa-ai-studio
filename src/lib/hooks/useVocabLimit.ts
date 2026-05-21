@@ -35,8 +35,9 @@ export interface VocabLimitInfo {
  */
 export function useVocabLimit(knowledge: KnowledgeMap): VocabLimitInfo {
   const { subscription } = useSubscription();
-  const freeLangId = subscription.selectedLanguageIds[0] ?? 'grc';
-  const isEnabled = hasVocabLimit(subscription.currentPlan);
+  const freeLangId = subscription.selectedLanguageIds[0] ?? '';
+  // Limit only applies when the user has an active free plan AND has chosen a language.
+  const isEnabled = hasVocabLimit(subscription.currentPlan) && freeLangId !== '';
   const limit = FREE_LANGUAGE_WORD_LIMIT;
 
   const count = useMemo(() => {
