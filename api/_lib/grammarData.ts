@@ -898,6 +898,103 @@ Verbs conjugate for person, number, gender, and tense (perfect, imperfect, imper
   },
 ];
 
+// ─── Named pathways (structured curricula per language) ───────────────────────
+
+export interface NamedPathwayStep {
+  step: number;
+  conceptId: string;
+  recommendedTextIds: string[];
+}
+
+export interface NamedPathway {
+  id: string;
+  title: string;
+  description: string;
+  languageId: string;
+  icon: string;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  estimatedHours: number;
+  steps: NamedPathwayStep[];
+}
+
+export const NAMED_PATHWAYS: NamedPathway[] = [
+  {
+    id: 'koine-greek-beginner',
+    title: 'Koine Greek: From Zero',
+    description: 'Master the essentials of Koine Greek through the Gospel of John — cases, declensions, the article, and core verb forms.',
+    languageId: 'grc-koine',
+    icon: '🏛️',
+    level: 'beginner',
+    estimatedHours: 12,
+    steps: [
+      { step: 1, conceptId: 'greek-cases', recommendedTextIds: ['Jn-1'] },
+      { step: 2, conceptId: 'greek-article', recommendedTextIds: ['Jn-1'] },
+      { step: 3, conceptId: 'greek-first-declension', recommendedTextIds: ['Jn-1'] },
+      { step: 4, conceptId: 'greek-second-declension', recommendedTextIds: ['Jn-1'] },
+      { step: 5, conceptId: 'greek-present-active', recommendedTextIds: ['Jn-1', 'Jn-full'] },
+    ],
+  },
+  {
+    id: 'koine-greek-intermediate',
+    title: 'Koine Greek: Verb Mastery',
+    description: 'Deepen your Greek with tense, aspect, the aorist, perfect, and the four moods — essential for reading the New Testament fluently.',
+    languageId: 'grc-koine',
+    icon: '⚗️',
+    level: 'intermediate',
+    estimatedHours: 16,
+    steps: [
+      { step: 1, conceptId: 'greek-tense-aspect', recommendedTextIds: ['Jn-1', 'Jn-full'] },
+      { step: 2, conceptId: 'greek-aorist-active', recommendedTextIds: ['Jn-full'] },
+      { step: 3, conceptId: 'greek-perfect-active', recommendedTextIds: ['Jn-full'] },
+      { step: 4, conceptId: 'greek-participles', recommendedTextIds: ['Jn-full'] },
+      { step: 5, conceptId: 'greek-moods', recommendedTextIds: ['Jn-full'] },
+    ],
+  },
+  {
+    id: 'classical-greek-epic',
+    title: 'Classical Greek: Epic & History',
+    description: 'Read Homer and Xenophon. Focuses on cases, tense/aspect, and participles as used in Attic and Homeric dialect.',
+    languageId: 'grc',
+    icon: '⚔️',
+    level: 'intermediate',
+    estimatedHours: 20,
+    steps: [
+      { step: 1, conceptId: 'greek-cases', recommendedTextIds: ['Iliad-1', 'Odyssey-1'] },
+      { step: 2, conceptId: 'greek-first-declension', recommendedTextIds: ['Iliad-1'] },
+      { step: 3, conceptId: 'greek-second-declension', recommendedTextIds: ['Odyssey-1'] },
+      { step: 4, conceptId: 'greek-aorist-active', recommendedTextIds: ['Iliad-1', 'Anab-1'] },
+      { step: 5, conceptId: 'greek-participles', recommendedTextIds: ['Anab-1'] },
+      { step: 6, conceptId: 'greek-conditions', recommendedTextIds: ['Anab-1'] },
+    ],
+  },
+  {
+    id: 'latin-beginner',
+    title: 'Latin Foundations',
+    description: 'Start reading Vergil and Cicero. Covers the five declensions and core verb conjugations.',
+    languageId: 'lat',
+    icon: '🦅',
+    level: 'beginner',
+    estimatedHours: 10,
+    steps: [
+      { step: 1, conceptId: 'latin-declensions', recommendedTextIds: ['Aeneid-1'] },
+      { step: 2, conceptId: 'latin-verb-conjugations', recommendedTextIds: ['Aeneid-1', 'Cic-Catilina-1'] },
+    ],
+  },
+  {
+    id: 'biblical-hebrew-beginner',
+    title: 'Biblical Hebrew: First Steps',
+    description: 'Begin reading Genesis and Psalms with a focus on the Qal stem and foundational verb patterns.',
+    languageId: 'hbo',
+    icon: '📜',
+    level: 'beginner',
+    estimatedHours: 14,
+    steps: [
+      { step: 1, conceptId: 'hebrew-qal-perfect', recommendedTextIds: ['Gen', 'Ps-23'] },
+      { step: 2, conceptId: 'hebrew-stems', recommendedTextIds: ['Gen'] },
+    ],
+  },
+];
+
 export const PATHWAY: { step: number; conceptId: string; title: string; level: string }[] = [
   { step: 1, conceptId: 'greek-cases', title: 'Greek Cases', level: 'beginner' },
   { step: 2, conceptId: 'greek-article', title: 'Greek Article', level: 'beginner' },
