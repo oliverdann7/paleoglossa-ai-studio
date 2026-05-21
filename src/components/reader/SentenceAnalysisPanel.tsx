@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Loader2, BookOpen, Network, Sparkles, Globe, Languages } from 'lucide-react';
+import { X, Loader2, BookOpen, Network, Sparkles, Globe, Languages, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getApiUrl } from '../../lib/services/apiBaseUrl.js';
 import { DependencyTree } from './DependencyTree.js';
 import type { DepToken } from './DependencyTree.js';
+import { DiscussionPanel } from './DiscussionPanel.js';
 
 interface WordParsing {
   text: string;
@@ -38,9 +39,11 @@ interface Props {
   mode: 'beginner' | 'scholar';
   onClose: () => void;
   isRtl?: boolean;
+  textId?: string;
+  sentenceIndex?: number;
 }
 
-type TabId = 'parsing' | 'syntax' | 'semantics' | 'context' | 'translation';
+type TabId = 'parsing' | 'syntax' | 'semantics' | 'context' | 'translation' | 'discuss';
 
 const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'parsing', label: 'Parsing', icon: BookOpen },
@@ -48,6 +51,7 @@ const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'semantics', label: 'Semantics', icon: Sparkles },
   { id: 'context', label: 'Context', icon: Globe },
   { id: 'translation', label: 'Translation', icon: Languages },
+  { id: 'discuss', label: 'Discuss', icon: MessageSquare },
 ];
 
 const POS_COLORS: Record<string, string> = {
@@ -71,7 +75,7 @@ function posColor(pos: string): string {
   return 'bg-gray-100 text-gray-700';
 }
 
-export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl = false }: Props) {
+export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl = false, textId, sentenceIndex }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>('parsing');
   const [analysis, setAnalysis] = useState<SentenceAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
@@ -448,6 +452,23 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'discuss' && (
+            <div className="pt-1">
+              {textId ? (
+                <DiscussionPanel
+                  textId={textId}
+                  languageId={language}
+                  sentenceIndex={sentenceIndex ?? 0}
+                  sentenceExcerpt={sentence?.text?.slice(0, 120)}
+                />
+              ) : (
+                <p className="text-sm text-muted italic py-4 text-center">
+                  Discussions are only available for corpus texts and imported texts.
+                </p>
               )}
             </div>
           )}

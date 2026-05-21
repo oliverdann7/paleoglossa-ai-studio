@@ -54,6 +54,9 @@ const Onboarding = lazy(() =>
   import('./pages/Onboarding.js').then((module) => ({ default: module.Onboarding }))
 );
 const Notes = lazy(() => import('./pages/Notes.js').then((module) => ({ default: module.Notes })));
+const BookmarksPage = lazy(() =>
+  import('./pages/Bookmarks.js').then((module) => ({ default: module.Bookmarks }))
+);
 const SearchPage = lazy(() =>
   import('./pages/Search.js').then((module) => ({ default: module.SearchPage }))
 );
@@ -155,6 +158,7 @@ export default function App() {
             <Route path="review" element={<Review />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="notes" element={<Notes />} />
+            <Route path="bookmarks" element={<BookmarksPage />} />
             <Route path="notebooks" element={<Notebooks />} />
             <Route path="notebooks/:notebookId" element={<NotebookDetail />} />
             <Route path="search" element={<SearchPage />} />

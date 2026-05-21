@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Award, Loader2, Brain, History, Target, Settings2 } from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -51,10 +51,29 @@ function saveSettings(s: ReviewSettings) {
 
 export const Review = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isDemoMode } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
   const { knowledge, updateWordSRS, recordReviewSession } = useKnowledge(activeLanguageId);
   const { t } = useTranslation();
+
+  // Text-specific filter: set when arriving from Reader via "Review This Text"
+  const textFilterActive = searchParams.get('filter') === 'text';
+  const [textFilter] = useState<{ textId: string; lemmas: Set<string> } | null>(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('filter') !== 'text') return null;
+      const stored = sessionStorage.getItem('reviewTextFilter');
+      if (stored) {
+        const parsed = JSON.parse(stored) as { textId: string; lemmas: string[] };
+        sessionStorage.removeItem('reviewTextFilter');
+        return { textId: parsed.textId, lemmas: new Set(parsed.lemmas) };
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
+
   // Stable ref so the queue-load effect doesn't re-run on every word state change
   const knowledgeRef = useRef(knowledge);
   useLayoutEffect(() => {
@@ -121,6 +140,9 @@ export const Review = () => {
         let items: ReviewItem[] = [];
         if (!isDemoMode && user) {
           items = await ReviewService.getDueItems(user.uid, settings.maxCards, activeLanguageId);
+          if (textFilter) {
+            items = items.filter((item) => textFilter.lemmas.has(item.term));
+          }
         } else {
           items = Object.entries(knowledgeRef.current)
             .filter(([, info]: [string, WordInfo]) => {
@@ -167,6 +189,9 @@ export const Review = () => {
                 srs,
               };
             });
+          if (textFilter) {
+            items = items.filter((item) => textFilter.lemmas.has(item.term));
+          }
         }
 
         const cards = generateReviewCards(items, {
@@ -181,7 +206,7 @@ export const Review = () => {
       }
     };
     loadQueue();
-  }, [user, isDemoMode, activeLanguageId, settings]);
+  }, [user, isDemoMode, activeLanguageId, settings, textFilter]);
 
   const handleStart = () => {
     setIsStarted(true);
@@ -429,6 +454,12 @@ export const Review = () => {
           <p className="text-ink2 text-[15px]">
             {t('review.subtitle', 'Reinforce your vocabulary with spaced repetition')}
           </p>
+          {textFilterActive && (
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue/10 text-blue text-[13px] font-medium rounded-full border border-blue/20">
+              <Brain className="w-3.5 h-3.5" />
+              {t('review.textFilterActive', 'Filtered to vocabulary from this text')}
+            </div>
+          )}
         </div>
 
         {/* Summary */}

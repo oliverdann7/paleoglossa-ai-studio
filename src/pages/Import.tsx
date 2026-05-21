@@ -56,6 +56,7 @@ export const Import = () => {
   const [importHistory, setImportHistory] = useState<ImportedText[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [retryingId, setRetryingId] = useState<string | null>(null);
+  const [makePublic, setMakePublic] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -365,7 +366,7 @@ export const Import = () => {
       sourceType: sourceTypeMap[activeTab] || 'paste',
       status: 'processing',
       analysisStatus: 'needs_ai',
-      visibility: 'private',
+      visibility: user && makePublic ? 'public' : 'private',
       stats: { totalWords: 0, uniqueWords: 0, knownWords: 0, newWords: 0, learningWords: 0 },
       contentHash,
       createdAt: new Date().toISOString(),
@@ -813,6 +814,36 @@ export const Import = () => {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Visibility toggle — only for authenticated users */}
+            {user && (
+              <label className="flex items-center gap-3 mt-6 cursor-pointer select-none">
+                <div
+                  onClick={() => setMakePublic((v) => !v)}
+                  className={cn(
+                    'relative w-10 h-5 rounded-full transition-colors flex-shrink-0',
+                    makePublic ? 'bg-blue' : 'bg-ink3/30'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform',
+                      makePublic ? 'translate-x-5' : 'translate-x-0.5'
+                    )}
+                  />
+                </div>
+                <div>
+                  <span className="text-[13px] font-semibold text-ink">
+                    {makePublic ? 'Share with community' : 'Keep private'}
+                  </span>
+                  <p className="text-[11px] text-ink3">
+                    {makePublic
+                      ? 'Other scholars can read and fork this text from Discover.'
+                      : 'Only you can see this text.'}
+                  </p>
+                </div>
+              </label>
             )}
 
             <button

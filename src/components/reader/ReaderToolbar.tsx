@@ -7,6 +7,7 @@ import {
   BookOpen,
   Microscope,
   Columns,
+  Brain,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +31,7 @@ interface Props {
   displayMode?: DisplayMode;
   onChangeDisplayMode?: (mode: DisplayMode) => void;
   readingTimeMinutes?: number | null;
+  onReviewText?: () => void;
 }
 
 const DISPLAY_MODES: { id: DisplayMode; label: string; icon: React.ReactNode }[] = [
@@ -58,6 +60,7 @@ export function ReaderToolbar({
   displayMode = 'scholar',
   onChangeDisplayMode,
   readingTimeMinutes,
+  onReviewText,
 }: Props) {
   const { t } = useTranslation();
   const isFocus = displayMode === 'focus';
@@ -180,6 +183,18 @@ export function ReaderToolbar({
           </>
         )}
 
+        {onReviewText && !isFocus && (
+          <>
+            <div className="w-px h-4 bg-bdr mx-1 hidden md:block" />
+            <button
+              onClick={onReviewText}
+              title={t('reader.reviewThisText', 'Review vocabulary from this text')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors text-[10px] font-bold uppercase tracking-widest text-muted hover:bg-parch3 hidden md:flex"
+            >
+              <Brain className="w-3.5 h-3.5" /> {t('reader.review', 'Review')}
+            </button>
+          </>
+        )}
         <div className="w-px h-4 bg-bdr mx-1 hidden md:block" />
         <div className="flex bg-parch3 p-0.5 rounded-lg border border-bdr shrink-0">
           <button

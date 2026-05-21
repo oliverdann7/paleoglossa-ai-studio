@@ -69,6 +69,38 @@ function exportToCSV(
   URL.revokeObjectURL(url);
 }
 
+function exportToAnki(
+  words: {
+    term: string;
+    definition: string;
+    translit: string;
+    language: string;
+    status: string;
+  }[],
+  filename: string
+) {
+  // Anki tab-separated import format — import via File > Import in Anki desktop.
+  // Each line: Front<TAB>Back. HTML is enabled so we can include transliteration.
+  const header = ['#separator:tab', '#html:true', '#notetype:Basic', '#deck:Paleoglossa'];
+  const rows = words
+    .filter((w) => w.term && w.definition)
+    .map((w) => {
+      const front = w.translit
+        ? `${w.term}<br><span style="font-size:0.85em;color:#888;">${w.translit}</span>`
+        : w.term;
+      const back = `${w.definition}<br><span style="font-size:0.8em;color:#aaa;">${w.language} · ${w.status}</span>`;
+      return `${front}\t${back}`;
+    });
+  const content = [...header, ...rows].join('\n');
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const STATE_CYCLE: WordState[] = [
   WordState.SEEN,
   WordState.LEARNING,
@@ -90,6 +122,8 @@ export const Vocabulary = () => {
   const { addToast } = useToast();
   // Debounce paywall toast so rapid cycling doesn't spam the user.
   const limitToastShown = useRef(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
@@ -226,6 +260,18 @@ export const Vocabulary = () => {
     setCurrentPage(0);
   }, [activeFilter, searchQuery, sortKey, selectedLang]);
 
+  // Close export menu on outside click
+  useEffect(() => {
+    if (!showExportMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showExportMenu]);
+
   const totalPages = Math.ceil(filteredWords.length / PAGE_SIZE);
   const pagedWords = filteredWords.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
@@ -242,14 +288,42 @@ export const Vocabulary = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => exportToCSV(filteredWords, `vocabulary-${selectedLang}-${new Date().toISOString().slice(0, 10)}.csv`)}
-            disabled={filteredWords.length === 0}
-            className="flex items-center gap-2 px-4 py-2.5 border border-bdr rounded-xl text-[13px] font-bold text-ink3 hover:bg-parch2 disabled:opacity-40 transition-all"
-          >
-            <Download className="w-4 h-4" />
-            {t('vocab.export', 'Export')}
-          </button>
+          {/* Export dropdown */}
+          <div className="relative" ref={exportMenuRef}>
+            <button
+              onClick={() => setShowExportMenu((v) => !v)}
+              disabled={filteredWords.length === 0}
+              className="flex items-center gap-2 px-4 py-2.5 border border-bdr rounded-xl text-[13px] font-bold text-ink3 hover:bg-parch2 disabled:opacity-40 transition-all"
+            >
+              <Download className="w-4 h-4" />
+              {t('vocab.export', 'Export')}
+              <ChevronDown className="w-3 h-3 ml-0.5" />
+            </button>
+            {showExportMenu && (
+              <div className="absolute right-0 top-full mt-1 w-48 bg-parch border border-bdr rounded-xl shadow-lg z-20 overflow-hidden">
+                <button
+                  onClick={() => {
+                    exportToCSV(filteredWords, `vocabulary-${selectedLang}-${new Date().toISOString().slice(0, 10)}.csv`);
+                    setShowExportMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-3 text-[13px] font-medium text-ink hover:bg-parch2 transition-colors"
+                >
+                  CSV (.csv)
+                  <span className="block text-[11px] text-ink3 font-normal">Spreadsheet / Excel</span>
+                </button>
+                <button
+                  onClick={() => {
+                    exportToAnki(filteredWords, `vocabulary-${selectedLang}-${new Date().toISOString().slice(0, 10)}.txt`);
+                    setShowExportMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-3 text-[13px] font-medium text-ink hover:bg-parch2 transition-colors border-t border-bdr"
+                >
+                  Anki deck (.txt)
+                  <span className="block text-[11px] text-ink3 font-normal">Import via File › Import</span>
+                </button>
+              </div>
+            )}
+          </div>
           <button onClick={() => navigate('/app/review')} className="btn-primary px-6 py-2.5">
             {t('dashboard.startReview', 'Start Review')}
           </button>
