@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Search, BookOpen, Flame, ExternalLink, AlertCircle } from 'lucide-react';
+import { Users, Search, BookOpen, Flame, ExternalLink, AlertCircle, UserPlus, UserCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/hooks/useAuth.js';
-import { fetchCommunityScholars } from '../lib/services/communityService.js';
+import { fetchCommunityScholars, followScholar, unfollowScholar } from '../lib/services/communityService.js';
 import { cn } from '@/lib/utils';
 import type { PublicScholar } from '../types/social.js';
 
@@ -35,11 +35,31 @@ function ScholarAvatar({ scholar }: { scholar: PublicScholar }) {
 function ScholarCard({
   scholar,
   isCurrentUser,
+  isAuthenticated,
 }: {
   scholar: PublicScholar;
   isCurrentUser: boolean;
+  isAuthenticated: boolean;
 }) {
   const { t } = useTranslation();
+  const [following, setFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  const handleFollow = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (followLoading || !isAuthenticated) return;
+    setFollowLoading(true);
+    try {
+      const result = following
+        ? await unfollowScholar(scholar.uid)
+        : await followScholar(scholar.uid);
+      setFollowing(result.isFollowing);
+    } catch {
+      // silent
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const joinedDate = useMemo(() => {
     if (!scholar.createdAt) return null;
@@ -108,24 +128,30 @@ function ScholarCard({
       )}
 
       <div className="flex items-center justify-between pt-1">
-        <div />
-        {!isCurrentUser && (
-          <Link
-            to={`/app/profile/${scholar.uid}`}
-            className="btn-secondary flex items-center gap-1.5 text-[12px] px-3 py-1.5"
+        <Link
+          to={`/app/profile/${scholar.uid}`}
+          className="text-[12px] text-muted hover:text-blue transition-colors flex items-center gap-1"
+        >
+          {t('community.viewProfile', 'View Profile')}
+          <ExternalLink className="w-3 h-3" />
+        </Link>
+        {!isCurrentUser && isAuthenticated && (
+          <button
+            onClick={handleFollow}
+            disabled={followLoading}
+            className={cn(
+              'flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg font-semibold border transition-all disabled:opacity-50',
+              following
+                ? 'bg-parch2 border-bdr text-ink2 hover:border-red-300 hover:text-red-500'
+                : 'bg-blue/10 border-blue/20 text-blue hover:bg-blue hover:text-white'
+            )}
           >
-            {t('community.viewProfile', 'View Profile')}
-            <ExternalLink className="w-3 h-3" />
-          </Link>
-        )}
-        {isCurrentUser && (
-          <Link
-            to={`/app/profile/${scholar.uid}`}
-            className="text-[12px] text-blue hover:underline font-sans flex items-center gap-1"
-          >
-            {t('community.viewProfile', 'View Profile')}
-            <ExternalLink className="w-3 h-3" />
-          </Link>
+            {following ? (
+              <><UserCheck className="w-3 h-3" /> {t('community.following', 'Following')}</>
+            ) : (
+              <><UserPlus className="w-3 h-3" /> {t('community.follow', 'Follow')}</>
+            )}
+          </button>
         )}
       </div>
     </div>
@@ -278,6 +304,7 @@ export const CommunityPage = () => {
                 key={scholar.uid}
                 scholar={scholar}
                 isCurrentUser={user?.uid === scholar.uid}
+                isAuthenticated={!!user}
               />
             ))}
           </div>

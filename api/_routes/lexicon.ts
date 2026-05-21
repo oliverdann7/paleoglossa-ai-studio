@@ -13,6 +13,7 @@ import {
   searchDictionaryEntries,
 } from '../../src/lib/data/dictionaryDB.js';
 import { CorpusDB } from '../../src/data/corpus.js';
+import { findParadigm, listParadigms } from '../_lib/paradigmData.js';
 
 const router = Router();
 
@@ -69,8 +70,23 @@ router.get('/api/lemmas', (req: any, res: any) => {
   }
 });
 
-router.get('/api/lemmas/:lemma/paradigm', (_req: any, res: any) => {
-  res.status(200).json([]);
+router.get('/api/lemmas/:lemma/paradigm', (req: any, res: any) => {
+  const lemma = req.params.lemma as string;
+  const lang = (req.query.lang as string | undefined) || '';
+  const pos = (req.query.pos as string | undefined) || undefined;
+
+  if (lang) {
+    const result = findParadigm(lemma, lang, pos);
+    if (result) {
+      return res.status(200).json({ found: true, ...result });
+    }
+  }
+  res.status(200).json({ found: false, available: lang ? listParadigms(lang) : [] });
+});
+
+router.get('/api/paradigms/:lang', (req: any, res: any) => {
+  const lang = req.params.lang as string;
+  res.status(200).json({ paradigms: listParadigms(lang) });
 });
 
 // ─── Attested corpus forms for a lemma ────────────────────────────────────────

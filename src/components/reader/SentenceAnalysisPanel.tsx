@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Loader2, BookOpen, Network, Sparkles, Globe, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getApiUrl } from '../../lib/services/apiBaseUrl.js';
+import { DependencyTree } from './DependencyTree.js';
+import type { DepToken } from './DependencyTree.js';
 
 interface WordParsing {
   text: string;
@@ -74,6 +76,9 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
   const [analysis, setAnalysis] = useState<SentenceAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [depTokens, setDepTokens] = useState<DepToken[] | null>(null);
+  const [depLoading, setDepLoading] = useState(false);
+  const [selectedDepIndex, setSelectedDepIndex] = useState<number | null>(null);
 
   const fetchAnalysis = useCallback(async () => {
     if (!sentence) return;
@@ -101,12 +106,40 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
     }
   }, [sentence, language, mode]);
 
+  const fetchDepTree = useCallback(async () => {
+    if (!sentence) return;
+    setDepLoading(true);
+    try {
+      const res = await fetch(getApiUrl('/api/ai/syntax'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ languageId: language, sentence: sentence.text, tokens: [] }),
+      });
+      if (!res.ok) throw new Error('Syntax fetch failed');
+      const data = await res.json();
+      const tokens: DepToken[] = (data.tokens ?? []).map((t: any, i: number) => ({
+        index: i,
+        form: t.form || t.surface || t.text || '',
+        lemma: t.lemma || '',
+        pos: t.pos || t.partOfSpeech || '',
+        head: t.head ?? -1,
+        relation: t.relation || t.deprel || 'dep',
+      }));
+      setDepTokens(tokens.length > 0 ? tokens : null);
+    } catch {
+      setDepTokens(null);
+    } finally {
+      setDepLoading(false);
+    }
+  }, [sentence, language]);
+
   // Reset tab and fetch when sentence changes — setActiveTab is safe to call without triggering loops
   // because it only runs when sentence?.id changes (a stable external input, not derived from state)
   useEffect(() => {
     if (!sentence) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveTab('parsing');
+    setDepTokens(null);
     fetchAnalysis();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sentence?.id]);
@@ -162,7 +195,12 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.id === 'syntax' && !depTokens && !depLoading) {
+                    fetchDepTree();
+                  }
+                }}
                 className={cn(
                   'flex items-center gap-1 px-3 py-2 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2',
                   activeTab === tab.id
@@ -249,7 +287,7 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
               )}
 
               {activeTab === 'syntax' && (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <p className="text-[13px] text-ink leading-relaxed">
                     {analysis.syntax.description || 'No syntax analysis available.'}
                   </p>
@@ -285,6 +323,51 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
                       )}
                     </div>
                   )}
+
+                  {/* Dependency tree */}
+                  <div className="border border-bdr/40 rounded-lg overflow-hidden">
+                    <div className="px-3 py-2 border-b border-bdr/30 flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                        Dependency Tree
+                      </span>
+                      {!depTokens && !depLoading && (
+                        <button
+                          onClick={fetchDepTree}
+                          className="text-[10px] text-blue hover:underline"
+                        >
+                          Generate
+                        </button>
+                      )}
+                    </div>
+                    <div className="p-2 overflow-x-auto min-h-[60px] flex items-center justify-center">
+                      {depLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-muted" />
+                      ) : depTokens && depTokens.length > 0 ? (
+                        <DependencyTree
+                          tokens={depTokens}
+                          isRTL={isRtl}
+                          selectedIndex={selectedDepIndex}
+                          onTokenClick={(i) =>
+                            setSelectedDepIndex((prev) => (prev === i ? null : i))
+                          }
+                        />
+                      ) : (
+                        <p className="text-[11px] text-muted italic py-2">
+                          Click "Generate" to build the dependency tree.
+                        </p>
+                      )}
+                    </div>
+                    {selectedDepIndex != null && depTokens && (
+                      <div className="px-3 py-2 border-t border-bdr/30 bg-parch2/40 text-[11px] text-ink2">
+                        <strong className="font-mono">{depTokens[selectedDepIndex]?.form}</strong>
+                        {' · '}
+                        <span className="text-muted">{depTokens[selectedDepIndex]?.relation}</span>
+                        {depTokens[selectedDepIndex]?.head >= 0 && (
+                          <> → <strong className="font-mono">{depTokens[depTokens[selectedDepIndex].head]?.form}</strong></>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
