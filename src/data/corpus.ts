@@ -651,6 +651,28 @@ export const TEXT_GRC_MINI_STORIES: Text = {
   ],
 };
 
+export const TEXT_GRC_MARK: Text = {
+  id: "GrcMk",
+  corpusId: "SBLGNT",
+  title: "Κατὰ Μάρκον",
+  canonicalRef: "Mark 1",
+  author: "Mark",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 27,
+  sectionsPreview: [
+    { id: "GrcMk-1a", label: "Mark 1:1–13 — John the Baptist and the baptism of Jesus" },
+    { id: "GrcMk-1b", label: "Mark 1:14–45 — The kingdom at hand; call of the disciples" },
+  ],
+};
+
 export const TEXT_LAT_VG_JOHN: Text = {
   id: "Lat-Vg-Jn",
   corpusId: "LATIN_CLASSIC",
@@ -3580,6 +3602,7 @@ import { ALL_LATIN_BEGINNER_SECTIONS, LAT_VULGATE_JOHN_1, LAT_DISTICHA_CATONIS }
 import { ALL_LATIN_MINI_STORIES, LAT_MINI_1, LAT_MINI_2, LAT_MINI_3, LAT_MINI_4, LAT_MINI_5 } from "./corpus/latin-mini-stories.js";
 import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
 import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS_3, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
+import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3662,6 +3685,7 @@ function getAllEnhancedTexts() {
       TEXT_TREEBANK_GRC,
       TEXT_TREEBANK_LAT,
       TEXT_GRC_MINI_STORIES,
+      TEXT_GRC_MARK,
       TEXT_LAT_MINI_STORIES,
       TEXT_LAT_VG_JOHN,
       TEXT_LAT_CATO,
@@ -3699,6 +3723,7 @@ function getLemmaIndex() {
     ...ALL_EXPANDED_SECTIONS,
     ...ALL_TREEBANK_SECTIONS,
     ...ALL_GREEK_MINI_STORIES,
+    ...ALL_GREEK_MARK_SECTIONS,
     ...ALL_LATIN_MINI_STORIES,
     ...ALL_LATIN_BEGINNER_SECTIONS,
     ...ALL_HEBREW_EXTENDED_SECTIONS,
@@ -3792,6 +3817,8 @@ export const CorpusDB = {
     if (sectionId === "LatMini-5") return LAT_MINI_5;
     if (sectionId === "Lat-Vg-Jn-1") return LAT_VULGATE_JOHN_1;
     if (sectionId === "Lat-Cat-1") return LAT_DISTICHA_CATONIS;
+    if (sectionId === "GrcMk-1a") return GRC_MARK_1A;
+    if (sectionId === "GrcMk-1b") return GRC_MARK_1B;
     if (sectionId === "Heb-Gen-1") return HEB_GENESIS_1;
     if (sectionId === "Heb-Gen-2") return HEB_GENESIS_2;
     if (sectionId === "Heb-Gen-3") return HEB_GENESIS_3;
