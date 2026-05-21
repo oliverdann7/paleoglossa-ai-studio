@@ -15,7 +15,9 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
+import { ScholarAnnotations } from './ScholarAnnotations.js';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/hooks/useAuth';
 import {
   WordState,
   normalizeWordState,
@@ -164,6 +166,7 @@ export const LexDrawerPanel = ({
 }: LexDrawerPanelProps) => {
   const { t } = useTranslation();
   const { settings } = useSettings();
+  const { user } = useAuth();
 
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
@@ -833,6 +836,16 @@ export const LexDrawerPanel = ({
               {noteSaved ? t('reader.noteSaved', 'Saved!') : t('reader.saveNote', 'Save Note')}
             </button>
           </div>
+
+          {/* Scholar Annotations */}
+          {selectedWord?.lemma && (text?.language || textLanguageId) && (
+            <ScholarAnnotations
+              lemma={selectedWord.lemma}
+              wordText={selectedWord.text || selectedWord.lemma}
+              languageId={text?.language || textLanguageId}
+              currentUserId={user?.uid ?? null}
+            />
+          )}
 
           {/* Community Discussion */}
           {text?.id && (
