@@ -29,9 +29,8 @@ export function LanguageSwitcher() {
 
   const icon = currentLanguage ? getLanguageIcon(activeLanguageId) : '🌐';
 
-  // Hide the switcher for users who only have one language — nothing to switch between.
-  const accessibleLanguages = availableLanguages.filter((l) => canAccessLanguage(l.id));
-  if (accessibleLanguages.length <= 1 && subscription.currentPlan !== 'full_all') {
+  // Hide the switcher when there's only one language available — nothing to switch between.
+  if (availableLanguages.length <= 1) {
     return null;
   }
 
