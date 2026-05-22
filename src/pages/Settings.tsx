@@ -3,7 +3,11 @@ import {
   Camera,
   Check,
   Download,
+  Eye,
+  EyeOff,
+  ExternalLink,
   Globe,
+  Key,
   Languages,
   RefreshCcw,
   Settings as SettingsIcon,
@@ -54,6 +58,24 @@ export const Settings = () => {
   // ── Language slot state ──────────────────────────────────────────────────
   const [showFreeLangPicker, setShowFreeLangPicker] = useState(false);
   const [showDesiredPicker, setShowDesiredPicker] = useState(false);
+
+  // ── Gemini API key (stored in localStorage only — never synced to Firestore) ─
+  const [geminiApiKey, setGeminiApiKey] = useState(() =>
+    localStorage.getItem('user_gemini_api_key') ?? ''
+  );
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKeySaved, setApiKeySaved] = useState(false);
+
+  const handleSaveApiKey = () => {
+    const trimmed = geminiApiKey.trim();
+    if (trimmed) {
+      localStorage.setItem('user_gemini_api_key', trimmed);
+    } else {
+      localStorage.removeItem('user_gemini_api_key');
+    }
+    setApiKeySaved(true);
+    setTimeout(() => setApiKeySaved(false), 2000);
+  };
 
   // ── Other state ──────────────────────────────────────────────────────────
   const freezesTotal = stats?.freezesTotal ?? 2;
@@ -936,6 +958,92 @@ export const Settings = () => {
                 </button>
               </div>
             </div>
+          )}
+        </section>
+
+        {/* ── AI / Gemini API Key ────────────────────────────────────────── */}
+        <section className="card p-8">
+          <h3 className="font-serif text-[20px] text-ink mb-2 pb-4 border-b border-bdr flex items-center gap-2">
+            <Key className="w-5 h-5 text-muted" />
+            {t('settings.aiApiKey', 'AI API Key')}
+          </h3>
+          <p className="text-[13px] text-muted mb-5 leading-relaxed">
+            {t(
+              'settings.aiApiKeyDesc',
+              'Paleoglossa uses Google Gemini for AI-powered features (word analysis, tutor, OCR). If AI features are unavailable, you can provide your own free Gemini API key.'
+            )}
+          </p>
+
+          <div className="bg-blue/5 border border-blue/20 rounded-xl p-4 mb-6">
+            <p className="text-[13px] font-semibold text-ink mb-2">
+              {t('settings.howToGetKey', 'How to get a free Gemini API key:')}
+            </p>
+            <ol className="list-decimal list-inside text-[13px] text-muted space-y-1.5">
+              <li>
+                {t('settings.apiStep1', 'Go to')}{' '}
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue underline inline-flex items-center gap-1 hover:text-blue/80"
+                >
+                  Google AI Studio
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </li>
+              <li>{t('settings.apiStep2', 'Sign in with your Google account')}</li>
+              <li>{t('settings.apiStep3', 'Click "Create API Key" and copy it')}</li>
+              <li>{t('settings.apiStep4', 'Paste it in the field below and save')}</li>
+            </ol>
+            <p className="text-[12px] text-muted mt-3 italic">
+              {t(
+                'settings.apiKeyPrivacy',
+                'Your key is stored only on this device and never sent to our servers — it is used directly from your browser.'
+              )}
+            </p>
+          </div>
+
+          <div className="flex gap-2 items-stretch">
+            <div className="relative flex-1">
+              <input
+                type={showApiKey ? 'text' : 'password'}
+                value={geminiApiKey}
+                onChange={(e) => setGeminiApiKey(e.target.value)}
+                placeholder={t('settings.apiKeyPlaceholder', 'AIza...')}
+                className="w-full px-4 py-3 pr-12 rounded-xl border border-bdr bg-white text-ink text-[14px] font-mono focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
+              >
+                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <button
+              onClick={handleSaveApiKey}
+              className="px-5 py-3 rounded-xl bg-blue text-white text-[14px] font-semibold hover:bg-blue/90 transition-colors flex items-center gap-2 shrink-0"
+            >
+              {apiKeySaved ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  {t('settings.saved', 'Saved')}
+                </>
+              ) : (
+                t('settings.save', 'Save')
+              )}
+            </button>
+          </div>
+          {geminiApiKey && (
+            <button
+              onClick={() => {
+                setGeminiApiKey('');
+                localStorage.removeItem('user_gemini_api_key');
+              }}
+              className="mt-3 text-[12px] text-red-500 hover:text-red-700 transition-colors"
+            >
+              {t('settings.removeApiKey', 'Remove saved key')}
+            </button>
           )}
         </section>
 
