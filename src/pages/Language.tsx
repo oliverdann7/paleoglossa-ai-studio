@@ -1,7 +1,7 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, BookOpen, Play, AlertCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, AlertCircle, GraduationCap } from 'lucide-react';
 import { CorpusDB } from '../data/corpus.js';
 import { cn } from '../lib/utils.js';
 import { useTranslation } from 'react-i18next';
@@ -220,6 +220,32 @@ export const Language = () => {
               )}
             </div>
           </motion.div>
+
+          {languageInfo.hasScriptLearning && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="mb-10"
+            >
+              <Link
+                to={`/app/language/${langId}/script-lab`}
+                className="inline-flex items-center gap-3 px-5 py-3 bg-sand rounded-xl border border-bdr hover:border-blue transition-colors group"
+              >
+                <div className="w-10 h-10 bg-parch2 rounded-lg flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 text-ink2" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium text-ink">
+                    {t('language.learnScript', 'Learn the Script')}
+                  </div>
+                  <div className="text-xs text-muted">
+                    {t('language.learnScriptDesc', 'Practice signs, sounds, and reading')}
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          )}
 
           {beginnerTexts.length > 0 && (
             <motion.section

@@ -468,6 +468,53 @@ export const TEXT_AKKADIAN_GILGAMESH: Text = {
   ],
 };
 
+export const TEXT_AKKADIAN_GILGAMESH_FULL: Text = {
+  id: "Akk-Gilg-full",
+  corpusId: "AKKADIAN_GILGAMESH",
+  title: "Epic of Gilgamesh — Tablets II, VI, X",
+  canonicalRef: "Gilgamesh Tablets II, VI, X (selections)",
+  author: "Sin-leqi-unninni",
+  language: "akk",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 22,
+  corpusType: 'classical',
+  sectionsPreview: [
+    { id: "Akk-Gilg-2", label: "Tablet II — Enkidu Comes to Uruk" },
+    { id: "Akk-Gilg-6", label: "Tablet VI — Ishtar and the Bull of Heaven" },
+    { id: "Akk-Gilg-10", label: "Tablet X — The Search for Eternal Life" },
+  ],
+};
+
+export const TEXT_HAMMURABI_CODE: Text = {
+  id: "Akk-Ham",
+  corpusId: "AKKADIAN_GILGAMESH",
+  title: "Code of Hammurabi",
+  canonicalRef: "Codex Hammurabi (selections)",
+  author: "Hammurabi",
+  language: "akk",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 16,
+  corpusType: 'inscription',
+  sectionsPreview: [
+    { id: "Akk-Ham-1", label: "Prologue — When Anum the Lofty" },
+    { id: "Akk-Ham-2", label: "Selected Laws (§1, §3, §5)" },
+  ],
+};
+
 export const TEXT_SANSKRIT_GITA: Text = {
   id: "San-Gita-1",
   corpusId: "SANSKRIT_MAHABHARATA",
@@ -859,6 +906,33 @@ export const TEXT_HEB_PS91: Text = {
   sentenceCount: 10,
   sectionsPreview: [
     { id: "Heb-Ps-91", label: "Psalm 91 — He who dwells in the shelter" },
+  ],
+};
+
+export const TEXT_HEB_RUTH: Text = {
+  id: "Heb-Ruth",
+  corpusId: "OSHB",
+  title: "מְגִלַּת רוּת",
+  canonicalRef: "Ruth 1-4",
+  author: "Anonymous",
+  language: "hbo",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 30,
+  corpusType: 'biblical',
+  sectionsPreview: [
+    { id: "Heb-Ruth-1", label: "Ruth 1:1-5 — Famine and Death in Moab" },
+    { id: "Heb-Ruth-2", label: "Ruth 1:6-14 — Naomi Returns" },
+    { id: "Heb-Ruth-3", label: "Ruth 1:16-17 — Where You Go, I Will Go" },
+    { id: "Heb-Ruth-4", label: "Ruth 2 — Ruth Meets Boaz" },
+    { id: "Heb-Ruth-5", label: "Ruth 3 — At the Threshing Floor" },
+    { id: "Heb-Ruth-6", label: "Ruth 4:13-17 — Redemption and the Son" },
   ],
 };
 
@@ -4249,6 +4323,19 @@ import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS
 import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
 import { ALL_LATIN_CLASSICS_SECTIONS, LAT_HORACE_ODES_1_1, LAT_HORACE_ODES_1_9, LAT_HORACE_ODES_1_11, LAT_LIVY_PRAEF, LAT_LIVY_1_1, LAT_SALLUST_CAT, LAT_TACITUS_ANN } from "./corpus/latin-classics.js";
 import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOPHOCLES_ANT, GRC_PLUTARCH_ALEX, GRC_LUCIAN_CHARON } from "./corpus/greek-classics.js";
+import { ALL_GREEK_NT_EXTENDED_SECTIONS } from "./corpus/greek-nt-extended.js";
+import { ALL_GREEK_CLASSICS_EXTENDED_SECTIONS } from "./corpus/greek-classics-extended.js";
+import { ALL_LATIN_EXTENDED_SECTIONS } from "./corpus/latin-extended.js";
+import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION, GRC_KOINE_VOCAB_SECTION, LAT_VOCAB_SECTION, TEXT_VOCAB_HEB, HEB_VOCAB_SECTION, TEXT_VOCAB_SYR, SYR_VOCAB_SECTION, TEXT_VOCAB_COP, COP_VOCAB_SECTION, TEXT_VOCAB_ARC, ARC_VOCAB_SECTION, TEXT_VOCAB_AKK, AKK_VOCAB_SECTION, TEXT_VOCAB_HIT, HIT_VOCAB_SECTION, TEXT_VOCAB_UGA, UGA_VOCAB_SECTION, TEXT_VOCAB_SAN, SAN_VOCAB_SECTION, TEXT_VOCAB_EGY, EGY_VOCAB_SECTION } from "./corpus/vocabulary-texts.js";
+import { ALL_HEBREW_EXTENDED_2_SECTIONS } from "./corpus/hebrew-extended-2.js";
+import { ALL_SYRIAC_EXTENDED_SECTIONS } from "./corpus/syriac-extended.js";
+import { ALL_COPTIC_EXTENDED_SECTIONS } from "./corpus/coptic-extended.js";
+import { ALL_ARAMAIC_EXTENDED_SECTIONS } from "./corpus/aramaic-extended.js";
+import { ALL_AKKADIAN_EXTENDED_SECTIONS } from "./corpus/akkadian-extended.js";
+import { ALL_HITTITE_EXTENDED_SECTIONS } from "./corpus/hittite-extended.js";
+import { ALL_UGARITIC_EXTENDED_SECTIONS } from "./corpus/ugaritic-extended.js";
+import { ALL_SANSKRIT_EXTENDED_SECTIONS } from "./corpus/sanskrit-extended.js";
+import { ALL_EGYPTIAN_EXTENDED_SECTIONS } from "./corpus/egyptian-extended.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -4307,6 +4394,8 @@ function getAllEnhancedTexts() {
       TEXT_COPTIC_JOHN,
       TEXT_ARAMAIC_GENESIS,
       TEXT_AKKADIAN_GILGAMESH,
+      TEXT_AKKADIAN_GILGAMESH_FULL,
+      TEXT_HAMMURABI_CODE,
       TEXT_SANSKRIT_GITA,
       TEXT_HITTITE_ANNALS,
       TEXT_EGYPTIAN_PTAHHOTEP,
@@ -4341,6 +4430,7 @@ function getAllEnhancedTexts() {
       TEXT_HEB_PS23,
       TEXT_HEB_JONAH,
       TEXT_HEB_PS91,
+      TEXT_HEB_RUTH,
       // Patristics additions
       TEXT_IGNATIUS,
       TEXT_JUSTIN_MARTYR,
@@ -4356,6 +4446,19 @@ function getAllEnhancedTexts() {
       TEXT_SOPHOCLES,
       TEXT_PLUTARCH,
       TEXT_LUCIAN,
+      // Greco-Roman extended
+      TEXT_VOCAB_GRC,
+      TEXT_VOCAB_GRC_KOINE,
+      TEXT_VOCAB_LAT,
+      TEXT_VOCAB_HEB,
+      TEXT_VOCAB_SYR,
+      TEXT_VOCAB_COP,
+      TEXT_VOCAB_ARC,
+      TEXT_VOCAB_AKK,
+      TEXT_VOCAB_HIT,
+      TEXT_VOCAB_UGA,
+      TEXT_VOCAB_SAN,
+      TEXT_VOCAB_EGY,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -4393,6 +4496,30 @@ function getLemmaIndex() {
     ...ALL_HEBREW_BEGINNER_SECTIONS,
     ...ALL_LATIN_CLASSICS_SECTIONS,
     ...ALL_GREEK_CLASSICS_SECTIONS,
+    ...ALL_GREEK_NT_EXTENDED_SECTIONS,
+    ...ALL_GREEK_CLASSICS_EXTENDED_SECTIONS,
+    ...ALL_LATIN_EXTENDED_SECTIONS,
+    ...ALL_HEBREW_EXTENDED_2_SECTIONS,
+    ...ALL_SYRIAC_EXTENDED_SECTIONS,
+    ...ALL_COPTIC_EXTENDED_SECTIONS,
+    ...ALL_ARAMAIC_EXTENDED_SECTIONS,
+    ...ALL_AKKADIAN_EXTENDED_SECTIONS,
+    ...ALL_HITTITE_EXTENDED_SECTIONS,
+    ...ALL_UGARITIC_EXTENDED_SECTIONS,
+    ...ALL_SANSKRIT_EXTENDED_SECTIONS,
+    ...ALL_EGYPTIAN_EXTENDED_SECTIONS,
+    GRC_VOCAB_SECTION,
+    GRC_KOINE_VOCAB_SECTION,
+    LAT_VOCAB_SECTION,
+    HEB_VOCAB_SECTION,
+    SYR_VOCAB_SECTION,
+    COP_VOCAB_SECTION,
+    ARC_VOCAB_SECTION,
+    AKK_VOCAB_SECTION,
+    HIT_VOCAB_SECTION,
+    UGA_VOCAB_SECTION,
+    SAN_VOCAB_SECTION,
+    EGY_VOCAB_SECTION,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
@@ -4525,6 +4652,42 @@ export const CorpusDB = {
     if (expandedMatch) return expandedMatch;
     const treebankMatch = ALL_TREEBANK_SECTIONS.find(s => s.id === sectionId);
     if (treebankMatch) return treebankMatch;
+    const greekNtMatch = ALL_GREEK_NT_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (greekNtMatch) return greekNtMatch;
+    const greekClassicsExtMatch = ALL_GREEK_CLASSICS_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (greekClassicsExtMatch) return greekClassicsExtMatch;
+    const latinExtMatch = ALL_LATIN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (latinExtMatch) return latinExtMatch;
+    const hebrewExt2Match = ALL_HEBREW_EXTENDED_2_SECTIONS.find(s => s.id === sectionId);
+    if (hebrewExt2Match) return hebrewExt2Match;
+    const syriacExtMatch = ALL_SYRIAC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (syriacExtMatch) return syriacExtMatch;
+    const copticExtMatch = ALL_COPTIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (copticExtMatch) return copticExtMatch;
+    const aramaicExtMatch = ALL_ARAMAIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (aramaicExtMatch) return aramaicExtMatch;
+    if (sectionId === "grc-voc-1") return GRC_VOCAB_SECTION;
+    if (sectionId === "grc-koine-voc-1") return GRC_KOINE_VOCAB_SECTION;
+    if (sectionId === "lat-voc-1") return LAT_VOCAB_SECTION;
+    if (sectionId === "heb-voc-1") return HEB_VOCAB_SECTION;
+    if (sectionId === "syr-voc-1") return SYR_VOCAB_SECTION;
+    if (sectionId === "cop-voc-1") return COP_VOCAB_SECTION;
+    if (sectionId === "arc-voc-1") return ARC_VOCAB_SECTION;
+    const akkExtMatch = ALL_AKKADIAN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (akkExtMatch) return akkExtMatch;
+    const hitExtMatch = ALL_HITTITE_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (hitExtMatch) return hitExtMatch;
+    const ugaExtMatch = ALL_UGARITIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (ugaExtMatch) return ugaExtMatch;
+    if (sectionId === "akk-voc-1") return AKK_VOCAB_SECTION;
+    if (sectionId === "hit-voc-1") return HIT_VOCAB_SECTION;
+    if (sectionId === "uga-voc-1") return UGA_VOCAB_SECTION;
+    const sanskritExtMatch = ALL_SANSKRIT_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (sanskritExtMatch) return sanskritExtMatch;
+    const egyptianExtMatch = ALL_EGYPTIAN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (egyptianExtMatch) return egyptianExtMatch;
+    if (sectionId === "san-voc-1") return SAN_VOCAB_SECTION;
+    if (sectionId === "egy-voc-1") return EGY_VOCAB_SECTION;
     
     if (import.meta.env.DEV) {
       const mockMatch = getMockSections().find(s => s.id === sectionId);

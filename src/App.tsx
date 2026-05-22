@@ -29,6 +29,12 @@ const Library = lazy(() =>
 const Language = lazy(() =>
   import('./pages/Language.js').then((module) => ({ default: module.Language }))
 );
+const ScriptLab = lazy(() =>
+  import('./pages/ScriptLab.js').then((module) => ({ default: module.ScriptLab }))
+);
+const BeginnerHub = lazy(() =>
+  import('./pages/BeginnerHub.js').then((module) => ({ default: module.BeginnerHub }))
+);
 const Vocabulary = lazy(() =>
   import('./pages/Vocabulary.js').then((module) => ({ default: module.Vocabulary }))
 );
@@ -156,7 +162,9 @@ export default function App() {
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="library" element={<Library />} />
+            <Route path="beginner-hub" element={<BeginnerHub />} />
             <Route path="language/:langId" element={<Language />} />
+            <Route path="language/:langId/script-lab" element={<ScriptLab />} />
             <Route path="reader/:textId" element={<Reader />} />
             <Route path="vocabulary" element={<Vocabulary />} />
             <Route path="dictionary" element={<Dictionary />} />
