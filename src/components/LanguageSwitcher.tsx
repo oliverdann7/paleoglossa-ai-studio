@@ -31,6 +31,12 @@ export function LanguageSwitcher() {
   // The user's first selected language is their "free" language slot (may be empty for new users).
   const freeLangId = subscription.selectedLanguageIds[0] ?? '';
 
+  // Hide the switcher for users who only have one language — nothing to switch between.
+  const accessibleLanguages = availableLanguages.filter((l) => canAccessLanguage(l.id));
+  if (accessibleLanguages.length <= 1 && subscription.currentPlan !== 'full_all') {
+    return null;
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
