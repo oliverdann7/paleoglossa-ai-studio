@@ -3870,11 +3870,14 @@ import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOP
 import { ALL_GREEK_NT_EXTENDED_SECTIONS } from "./corpus/greek-nt-extended.js";
 import { ALL_GREEK_CLASSICS_EXTENDED_SECTIONS } from "./corpus/greek-classics-extended.js";
 import { ALL_LATIN_EXTENDED_SECTIONS } from "./corpus/latin-extended.js";
-import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION, GRC_KOINE_VOCAB_SECTION, LAT_VOCAB_SECTION, TEXT_VOCAB_HEB, HEB_VOCAB_SECTION, TEXT_VOCAB_SYR, SYR_VOCAB_SECTION, TEXT_VOCAB_COP, COP_VOCAB_SECTION, TEXT_VOCAB_ARC, ARC_VOCAB_SECTION } from "./corpus/vocabulary-texts.js";
+import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION, GRC_KOINE_VOCAB_SECTION, LAT_VOCAB_SECTION, TEXT_VOCAB_HEB, HEB_VOCAB_SECTION, TEXT_VOCAB_SYR, SYR_VOCAB_SECTION, TEXT_VOCAB_COP, COP_VOCAB_SECTION, TEXT_VOCAB_ARC, ARC_VOCAB_SECTION, TEXT_VOCAB_AKK, AKK_VOCAB_SECTION, TEXT_VOCAB_HIT, HIT_VOCAB_SECTION, TEXT_VOCAB_UGA, UGA_VOCAB_SECTION } from "./corpus/vocabulary-texts.js";
 import { ALL_HEBREW_EXTENDED_2_SECTIONS } from "./corpus/hebrew-extended-2.js";
 import { ALL_SYRIAC_EXTENDED_SECTIONS } from "./corpus/syriac-extended.js";
 import { ALL_COPTIC_EXTENDED_SECTIONS } from "./corpus/coptic-extended.js";
 import { ALL_ARAMAIC_EXTENDED_SECTIONS } from "./corpus/aramaic-extended.js";
+import { ALL_AKKADIAN_EXTENDED_SECTIONS } from "./corpus/akkadian-extended.js";
+import { ALL_HITTITE_EXTENDED_SECTIONS } from "./corpus/hittite-extended.js";
+import { ALL_UGARITIC_EXTENDED_SECTIONS } from "./corpus/ugaritic-extended.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3989,6 +3992,9 @@ function getAllEnhancedTexts() {
       TEXT_VOCAB_SYR,
       TEXT_VOCAB_COP,
       TEXT_VOCAB_ARC,
+      TEXT_VOCAB_AKK,
+      TEXT_VOCAB_HIT,
+      TEXT_VOCAB_UGA,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -4033,6 +4039,9 @@ function getLemmaIndex() {
     ...ALL_SYRIAC_EXTENDED_SECTIONS,
     ...ALL_COPTIC_EXTENDED_SECTIONS,
     ...ALL_ARAMAIC_EXTENDED_SECTIONS,
+    ...ALL_AKKADIAN_EXTENDED_SECTIONS,
+    ...ALL_HITTITE_EXTENDED_SECTIONS,
+    ...ALL_UGARITIC_EXTENDED_SECTIONS,
     GRC_VOCAB_SECTION,
     GRC_KOINE_VOCAB_SECTION,
     LAT_VOCAB_SECTION,
@@ -4040,6 +4049,9 @@ function getLemmaIndex() {
     SYR_VOCAB_SECTION,
     COP_VOCAB_SECTION,
     ARC_VOCAB_SECTION,
+    AKK_VOCAB_SECTION,
+    HIT_VOCAB_SECTION,
+    UGA_VOCAB_SECTION,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
@@ -4185,6 +4197,15 @@ export const CorpusDB = {
     if (sectionId === "syr-voc-1") return SYR_VOCAB_SECTION;
     if (sectionId === "cop-voc-1") return COP_VOCAB_SECTION;
     if (sectionId === "arc-voc-1") return ARC_VOCAB_SECTION;
+    const akkExtMatch = ALL_AKKADIAN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (akkExtMatch) return akkExtMatch;
+    const hitExtMatch = ALL_HITTITE_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (hitExtMatch) return hitExtMatch;
+    const ugaExtMatch = ALL_UGARITIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (ugaExtMatch) return ugaExtMatch;
+    if (sectionId === "akk-voc-1") return AKK_VOCAB_SECTION;
+    if (sectionId === "hit-voc-1") return HIT_VOCAB_SECTION;
+    if (sectionId === "uga-voc-1") return UGA_VOCAB_SECTION;
     
     if (import.meta.env.DEV) {
       const mockMatch = getMockSections().find(s => s.id === sectionId);
