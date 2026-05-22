@@ -12,7 +12,7 @@ import { useVocabulary } from '../lib/hooks/useVocabulary.js';
 export function LanguageSwitcher() {
   const { activeLanguageId, setActiveLanguageId, currentLanguage, availableLanguages } =
     useActiveLanguage();
-  const { subscription } = useSubscription();
+  const { subscription, canAccessLanguage } = useSubscription();
   const { knowledge } = useVocabulary();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

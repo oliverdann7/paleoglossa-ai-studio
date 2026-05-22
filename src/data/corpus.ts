@@ -468,6 +468,53 @@ export const TEXT_AKKADIAN_GILGAMESH: Text = {
   ],
 };
 
+export const TEXT_AKKADIAN_GILGAMESH_FULL: Text = {
+  id: "Akk-Gilg-full",
+  corpusId: "AKKADIAN_GILGAMESH",
+  title: "Epic of Gilgamesh — Tablets II, VI, X",
+  canonicalRef: "Gilgamesh Tablets II, VI, X (selections)",
+  author: "Sin-leqi-unninni",
+  language: "akk",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 22,
+  corpusType: 'classical',
+  sectionsPreview: [
+    { id: "Akk-Gilg-2", label: "Tablet II — Enkidu Comes to Uruk" },
+    { id: "Akk-Gilg-6", label: "Tablet VI — Ishtar and the Bull of Heaven" },
+    { id: "Akk-Gilg-10", label: "Tablet X — The Search for Eternal Life" },
+  ],
+};
+
+export const TEXT_HAMMURABI_CODE: Text = {
+  id: "Akk-Ham",
+  corpusId: "AKKADIAN_GILGAMESH",
+  title: "Code of Hammurabi",
+  canonicalRef: "Codex Hammurabi (selections)",
+  author: "Hammurabi",
+  language: "akk",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 16,
+  corpusType: 'inscription',
+  sectionsPreview: [
+    { id: "Akk-Ham-1", label: "Prologue — When Anum the Lofty" },
+    { id: "Akk-Ham-2", label: "Selected Laws (§1, §3, §5)" },
+  ],
+};
+
 export const TEXT_SANSKRIT_GITA: Text = {
   id: "San-Gita-1",
   corpusId: "SANSKRIT_MAHABHARATA",
@@ -859,6 +906,33 @@ export const TEXT_HEB_PS91: Text = {
   sentenceCount: 10,
   sectionsPreview: [
     { id: "Heb-Ps-91", label: "Psalm 91 — He who dwells in the shelter" },
+  ],
+};
+
+export const TEXT_HEB_RUTH: Text = {
+  id: "Heb-Ruth",
+  corpusId: "OSHB",
+  title: "מְגִלַּת רוּת",
+  canonicalRef: "Ruth 1-4",
+  author: "Anonymous",
+  language: "hbo",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 30,
+  corpusType: 'biblical',
+  sectionsPreview: [
+    { id: "Heb-Ruth-1", label: "Ruth 1:1-5 — Famine and Death in Moab" },
+    { id: "Heb-Ruth-2", label: "Ruth 1:6-14 — Naomi Returns" },
+    { id: "Heb-Ruth-3", label: "Ruth 1:16-17 — Where You Go, I Will Go" },
+    { id: "Heb-Ruth-4", label: "Ruth 2 — Ruth Meets Boaz" },
+    { id: "Heb-Ruth-5", label: "Ruth 3 — At the Threshing Floor" },
+    { id: "Heb-Ruth-6", label: "Ruth 4:13-17 — Redemption and the Son" },
   ],
 };
 
@@ -4320,6 +4394,8 @@ function getAllEnhancedTexts() {
       TEXT_COPTIC_JOHN,
       TEXT_ARAMAIC_GENESIS,
       TEXT_AKKADIAN_GILGAMESH,
+      TEXT_AKKADIAN_GILGAMESH_FULL,
+      TEXT_HAMMURABI_CODE,
       TEXT_SANSKRIT_GITA,
       TEXT_HITTITE_ANNALS,
       TEXT_EGYPTIAN_PTAHHOTEP,
@@ -4354,6 +4430,7 @@ function getAllEnhancedTexts() {
       TEXT_HEB_PS23,
       TEXT_HEB_JONAH,
       TEXT_HEB_PS91,
+      TEXT_HEB_RUTH,
       // Patristics additions
       TEXT_IGNATIUS,
       TEXT_JUSTIN_MARTYR,
