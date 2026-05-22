@@ -1,0 +1,12 @@
+# Copy this to key.properties (same directory) and fill in your keystore details.
+# key.properties is gitignored — never commit it.
+#
+# To generate a keystore:
+#   keytool -genkey -v -keystore paleoglossa-release.keystore \
+#     -alias paleoglossa -keyalg RSA -keysize 2048 -validity 10000
+# Then place the .keystore file next to this file (android/) and set storeFile below.
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=paleoglossa
+storeFile=../android/paleoglossa-release.keystore
