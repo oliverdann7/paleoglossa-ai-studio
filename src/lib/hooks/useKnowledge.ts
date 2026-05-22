@@ -20,7 +20,8 @@ export const useKnowledge = (languageId?: string) => {
   const [userImports, setUserImports] = useState<any[]>([]);
 
   // Vocab limit — computed from the already-loaded knowledge map, no extra Firestore reads.
-  const vocabLimit = useVocabLimit(vocab.knowledge);
+  // Pass the current languageId so the limit is scoped to the active language.
+  const vocabLimit = useVocabLimit(vocab.knowledge, languageId ?? '');
 
   // Publish the latest limit info to VocabLimitContext so navbar components
   // (LanguageSwitcher) can display the count without a second Firestore read.
@@ -28,7 +29,7 @@ export const useKnowledge = (languageId?: string) => {
   useEffect(() => {
     publishVocabLimit(vocabLimit);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocabLimit.count, vocabLimit.isFull, vocabLimit.isEnabled, vocabLimit.freeLangId]);
+  }, [vocabLimit.count, vocabLimit.isFull, vocabLimit.isEnabled, vocabLimit.languageId]);
 
   useEffect(() => {
     let active = true;
@@ -76,7 +77,7 @@ export const useKnowledge = (languageId?: string) => {
       if (
         isNewTracked &&
         vocabLimit.isEnabled &&
-        langId === vocabLimit.freeLangId &&
+        langId === vocabLimit.languageId &&
         vocabLimit.isFull
       ) {
         // Return false to signal that the save was blocked; the caller can
@@ -108,7 +109,7 @@ export const useKnowledge = (languageId?: string) => {
       const allowed = tokens.filter((token) => {
         if (!token.lemma) return false;
         const lang = token.languageId || token.language || 'unknown';
-        if (lang !== vocabLimit.freeLangId) return true; // non-free-language tokens pass through
+        if (lang !== vocabLimit.languageId) return true; // non-current-language tokens pass through
         const normKey = normalizeLemmaKey(token.lemma);
         const existing = vocab.knowledge[normKey];
         return existing && isTrackedWordState(existing.state); // only already-tracked words

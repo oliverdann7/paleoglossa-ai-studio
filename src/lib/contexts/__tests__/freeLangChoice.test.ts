@@ -98,29 +98,32 @@ describe('setDesiredSecondLanguage logic', () => {
 });
 
 describe('new-user empty selectedLanguageIds', () => {
-  it('canAdd is true for free plan with empty selectedLanguageIds', () => {
-    // Replicates canAddByPlan('free', [])
-    const limit = 1;
+  it('free plan cannot add any unlock slot (limit is 0)', () => {
+    // Free plan has 0 unlock slots — canAddLanguage('free', []) is false.
+    const limit = 0;
     const selected: string[] = [];
-    expect(selected.length < limit).toBe(true);
+    expect(selected.length < limit).toBe(false);
   });
 
-  it('canAccess returns false for all languages when selectedLanguageIds is empty', () => {
-    // Replicates canAccessByPlan('free', 'grc', [])
+  it('all languages are always accessible regardless of selectedLanguageIds', () => {
+    // Access is no longer gated on selectedLanguageIds.
+    // canAccessLanguage() always returns true.
     const selected: string[] = [];
-    expect(selected.includes('grc')).toBe(false);
-    expect(selected.includes('lat')).toBe(false);
+    // A free user with no unlocked languages can still access any language.
+    // The only restriction is the 25-word per-language vocabulary save cap.
+    expect(selected.length === 0).toBe(true); // no unlocked langs
+    // canAccessLanguage() returns true regardless — verified in plans.test.ts
   });
 
-  it('noLangChosen flag is true when selectedLanguageIds is empty', () => {
+  it('noUnlockedLangs flag is true when selectedLanguageIds is empty', () => {
     const selectedLanguageIds: string[] = [];
-    const noLangChosen = selectedLanguageIds.length === 0;
-    expect(noLangChosen).toBe(true);
+    const noUnlockedLangs = selectedLanguageIds.length === 0;
+    expect(noUnlockedLangs).toBe(true);
   });
 
-  it('noLangChosen flag is false once a language is set', () => {
+  it('noUnlockedLangs flag is false once a language is unlocked', () => {
     const selectedLanguageIds: string[] = ['grc'];
-    const noLangChosen = selectedLanguageIds.length === 0;
-    expect(noLangChosen).toBe(false);
+    const noUnlockedLangs = selectedLanguageIds.length === 0;
+    expect(noUnlockedLangs).toBe(false);
   });
 });
