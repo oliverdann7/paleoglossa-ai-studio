@@ -1006,6 +1006,472 @@ export const TEXT_BASIL: Text = {
   ],
 };
 
+// ─── Beginner texts (A1) ─────────────────────────────────────────────────────
+
+export const TEXT_GRC_MINI_STORIES: Text = {
+  id: "GrcMini",
+  corpusId: "SBLGNT",
+  title: "Ἑλληνικαὶ Διηγήσεις",
+  canonicalRef: "Greek Mini-Stories",
+  author: "Paleoglossa",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 35,
+  sectionsPreview: [
+    { id: "GrcMini-1", label: "A man at the marketplace" },
+    { id: "GrcMini-2", label: "The teacher and the student" },
+    { id: "GrcMini-3", label: "The fisherman" },
+    { id: "GrcMini-4", label: "The traveler" },
+    { id: "GrcMini-5", label: "The shepherd" },
+  ],
+};
+
+export const TEXT_GRC_MARK: Text = {
+  id: "GrcMk",
+  corpusId: "SBLGNT",
+  title: "Κατὰ Μάρκον",
+  canonicalRef: "Mark 1",
+  author: "Mark",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 27,
+  sectionsPreview: [
+    { id: "GrcMk-1a", label: "Mark 1:1–13 — John the Baptist and the baptism of Jesus" },
+    { id: "GrcMk-1b", label: "Mark 1:14–45 — The kingdom at hand; call of the disciples" },
+  ],
+};
+
+export const TEXT_LAT_VG_JOHN: Text = {
+  id: "Lat-Vg-Jn",
+  corpusId: "LATIN_CLASSIC",
+  title: "Ioannem",
+  canonicalRef: "Vulgate John 1:1–14",
+  author: "Jerome (translator)",
+  language: "lat",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 14,
+  sectionsPreview: [
+    { id: "Lat-Vg-Jn-1", label: "John 1:1–14 — In principio erat Verbum" },
+  ],
+};
+
+export const TEXT_LAT_CATO: Text = {
+  id: "Lat-Cato",
+  corpusId: "LATIN_CLASSIC",
+  title: "Disticha Catonis",
+  canonicalRef: "Moral Distichs",
+  author: "Pseudo-Cato",
+  language: "lat",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 8,
+  sectionsPreview: [
+    { id: "Lat-Cat-1", label: "Praecepta moralia — Moral Precepts" },
+  ],
+};
+
+export const TEXT_LAT_MINI_STORIES: Text = {
+  id: "LatMini",
+  corpusId: "LATIN_CLASSIC",
+  title: "Fabulae Latinae",
+  canonicalRef: "Latin Mini-Stories — A1",
+  author: "Original compositions",
+  language: "lat",
+  direction: "ltr",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 35,
+  sectionsPreview: [
+    { id: "LatMini-1", label: "Agricola et villa — The farmer and his estate" },
+    { id: "LatMini-2", label: "Puer et magister — The boy and the teacher" },
+    { id: "LatMini-3", label: "Piscator — The fisherman" },
+    { id: "LatMini-4", label: "Viator — The traveler" },
+    { id: "LatMini-5", label: "Pastor et oves — The shepherd and the sheep" },
+  ],
+};
+
+export const TEXT_HEB_GENESIS: Text = {
+  id: "Heb-Genesis",
+  corpusId: "OSHB",
+  title: "בְּרֵאשִׁית",
+  canonicalRef: "Genesis 1–3 — Creation and the Fall",
+  author: "Anonymous",
+  language: "hbo",
+  direction: "rtl",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 42,
+  sectionsPreview: [
+    { id: "Heb-Gen-1", label: "Genesis 1 — In the beginning" },
+    { id: "Heb-Gen-2", label: "Genesis 2 — The Garden of Eden" },
+    { id: "Heb-Gen-3", label: "Genesis 3 — The Fall" },
+  ],
+};
+
+export const TEXT_HEB_PS23: Text = {
+  id: "Heb-Ps23",
+  corpusId: "OSHB",
+  title: "מִזְמוֹר כג",
+  canonicalRef: "Psalm 23",
+  author: "David",
+  language: "hbo",
+  direction: "rtl",
+  level: "A1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Heb-Ps-23", label: "Psalm 23 — The LORD is my shepherd" },
+  ],
+};
+
+export const TEXT_HEB_JONAH: Text = {
+  id: "Heb-Jonah",
+  corpusId: "OSHB",
+  title: "יוֹנָה",
+  canonicalRef: "Jonah 1–4",
+  author: "Anonymous",
+  language: "hbo",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 38,
+  sectionsPreview: [
+    { id: "Heb-Jon-1", label: "Jonah 1 — The Flight" },
+    { id: "Heb-Jon-2", label: "Jonah 2 — The Prayer" },
+    { id: "Heb-Jon-3", label: "Jonah 3 — Nineveh Repents" },
+    { id: "Heb-Jon-4", label: "Jonah 4 — God's Mercy" },
+  ],
+};
+
+export const TEXT_HEB_PS91: Text = {
+  id: "Heb-Ps91",
+  corpusId: "OSHB",
+  title: "מִזְמוֹר צא",
+  canonicalRef: "Psalm 91",
+  author: "Anonymous",
+  language: "hbo",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 10,
+  sectionsPreview: [
+    { id: "Heb-Ps-91", label: "Psalm 91 — He who dwells in the shelter" },
+  ],
+};
+
+// ─── Patristic additions ──────────────────────────────────────────────────────
+
+export const TEXT_IGNATIUS: Text = {
+  id: "Ign-Eph",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Πρὸς Ἐφεσίους",
+  canonicalRef: "Ignatius to the Ephesians",
+  author: "Ignatius of Antioch",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 8,
+  sectionsPreview: [
+    { id: "Ign-Eph-1", label: "Proemium — Opening salutation and exhortation" },
+  ],
+};
+
+export const TEXT_JUSTIN_MARTYR: Text = {
+  id: "Justin-Apol",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Ἀπολογία Α′",
+  canonicalRef: "First Apology 1–3",
+  author: "Justin Martyr",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 7,
+  sectionsPreview: [
+    { id: "Justin-Apol-1", label: "Chapters 1–3 — Address and defence" },
+  ],
+};
+
+export const TEXT_POLYCARP: Text = {
+  id: "Polyc-Phil",
+  corpusId: "PATRISTIC_GREEK",
+  title: "Πρὸς Φιλιππησίους",
+  canonicalRef: "Polycarp to the Philippians",
+  author: "Polycarp of Smyrna",
+  language: "grc-koine",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 6,
+  sectionsPreview: [
+    { id: "Polyc-Phil-1", label: "Chapter 1–2 — Faith, hope, and love" },
+  ],
+};
+
+// ─── Latin classics (A2–B2) ───────────────────────────────────────────────────
+
+export const TEXT_HORACE_ODES: Text = {
+  id: "Hor-Carm",
+  corpusId: "LATIN_CLASSIC",
+  title: "Carmina",
+  canonicalRef: "Odes I.1, I.9, I.11",
+  author: "Quintus Horatius Flaccus",
+  language: "lat",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 22,
+  sectionsPreview: [
+    { id: "Hor-1-1", label: "Odes I.1 — Maecenas atavis" },
+    { id: "Hor-1-9", label: "Odes I.9 — Vides ut alta" },
+    { id: "Hor-1-11", label: "Odes I.11 — Tu ne quaesieris (Carpe diem)" },
+  ],
+};
+
+export const TEXT_LIVY: Text = {
+  id: "Livy-AUC",
+  corpusId: "LATIN_CLASSIC",
+  title: "Ab Urbe Condita",
+  canonicalRef: "Praefatio & Book I",
+  author: "Titus Livius",
+  language: "lat",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 12,
+  sectionsPreview: [
+    { id: "Livy-Praef", label: "Praefatio — Preface" },
+    { id: "Livy-1-1", label: "I.1 — The origins of Rome" },
+  ],
+};
+
+export const TEXT_SALLUST: Text = {
+  id: "Sall-Cat",
+  corpusId: "LATIN_CLASSIC",
+  title: "Bellum Catilinae",
+  canonicalRef: "Chapters 1–3",
+  author: "Gaius Sallustius Crispus",
+  language: "lat",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 10,
+  sectionsPreview: [
+    { id: "Sall-Cat-1", label: "Chapters 1–3 — On the nature of man and glory" },
+  ],
+};
+
+export const TEXT_TACITUS: Text = {
+  id: "Tac-Ann",
+  corpusId: "LATIN_CLASSIC",
+  title: "Annales",
+  canonicalRef: "Annals I.1–3",
+  author: "Publius Cornelius Tacitus",
+  language: "lat",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 8,
+  sectionsPreview: [
+    { id: "Tac-Ann-1", label: "I.1–3 — From kings to Augustus" },
+  ],
+};
+
+// ─── Ancient Greek classics (B1–C1) ──────────────────────────────────────────
+
+export const TEXT_HERODOTUS: Text = {
+  id: "Hdt-Hist",
+  corpusId: "ANCIENT_GREEK",
+  title: "Ἱστορίαι",
+  canonicalRef: "Histories I.1–5",
+  author: "Herodotus of Halicarnassus",
+  language: "grc-class",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 10,
+  sectionsPreview: [
+    { id: "Hdt-1-1", label: "I.1–5 — Proem and the mythic origins of the Persian Wars" },
+  ],
+};
+
+export const TEXT_THUCYDIDES: Text = {
+  id: "Thuc-Hist",
+  corpusId: "ANCIENT_GREEK",
+  title: "Ἱστορία τοῦ Πελοποννησιακοῦ Πολέμου",
+  canonicalRef: "I.1–3",
+  author: "Thucydides",
+  language: "grc-class",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 8,
+  sectionsPreview: [
+    { id: "Thuc-1-1", label: "I.1–3 — Introduction: the greatest war" },
+  ],
+};
+
+export const TEXT_SOPHOCLES: Text = {
+  id: "Soph-Ant",
+  corpusId: "ANCIENT_GREEK",
+  title: "Ἀντιγόνη",
+  canonicalRef: "Antigone 1–99",
+  author: "Sophocles",
+  language: "grc-class",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 10,
+  sectionsPreview: [
+    { id: "Soph-Ant-1", label: "Lines 1–99 — Antigone and Ismene; Creon's edict" },
+  ],
+};
+
+export const TEXT_PLUTARCH: Text = {
+  id: "Plut-Alex",
+  corpusId: "ANCIENT_GREEK",
+  title: "Ἀλέξανδρος",
+  canonicalRef: "Life of Alexander 1–4",
+  author: "Plutarch",
+  language: "grc-class",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 8,
+  sectionsPreview: [
+    { id: "Plut-Alex-1", label: "Chapters 1–4 — On biography and the battle of Issus" },
+  ],
+};
+
+export const TEXT_LUCIAN: Text = {
+  id: "Lucian-Char",
+  corpusId: "ANCIENT_GREEK",
+  title: "Χάρων ἢ Ἐπισκοποῦντες",
+  canonicalRef: "Charon 1–8",
+  author: "Lucian of Samosata",
+  language: "grc-class",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 9,
+  sectionsPreview: [
+    { id: "Lucian-Char-1", label: "Sections 1–8 — Charon surveys the world of the living" },
+  ],
+};
+
 export const JOHN_1_1: TextSection = {
   id: "Jn-1-1",
   textId: "Jn-1",
@@ -3391,7 +3857,15 @@ import { OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_
 import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4 } from "./corpus/caesar-bellum-gallicum.js";
 import { PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLATO_APOLOGY_5 } from "./corpus/plato-apology.js";
 import { LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1 } from "./corpus/lxx-septuagint.js";
-import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1 } from "./corpus/patristics.js";
+import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1, IGNATIUS_EPHESIANS_1, JUSTIN_MARTYR_APOLOGY_1, POLYCARP_PHILIPPIANS_1 } from "./corpus/patristics.js";
+import { ALL_GREEK_MINI_STORIES, GRC_MINI_1, GRC_MINI_2, GRC_MINI_3, GRC_MINI_4, GRC_MINI_5 } from "./corpus/greek-mini-stories.js";
+import { ALL_LATIN_BEGINNER_SECTIONS, LAT_VULGATE_JOHN_1, LAT_DISTICHA_CATONIS } from "./corpus/latin-beginner.js";
+import { ALL_LATIN_MINI_STORIES, LAT_MINI_1, LAT_MINI_2, LAT_MINI_3, LAT_MINI_4, LAT_MINI_5 } from "./corpus/latin-mini-stories.js";
+import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
+import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS_3, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
+import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
+import { ALL_LATIN_CLASSICS_SECTIONS, LAT_HORACE_ODES_1_1, LAT_HORACE_ODES_1_9, LAT_HORACE_ODES_1_11, LAT_LIVY_PRAEF, LAT_LIVY_1_1, LAT_SALLUST_CAT, LAT_TACITUS_ANN } from "./corpus/latin-classics.js";
+import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOPHOCLES_ANT, GRC_PLUTARCH_ALEX, GRC_LUCIAN_CHARON } from "./corpus/greek-classics.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3473,6 +3947,31 @@ function getAllEnhancedTexts() {
       TEXT_BASIL,
       TEXT_TREEBANK_GRC,
       TEXT_TREEBANK_LAT,
+      // Beginner texts
+      TEXT_GRC_MINI_STORIES,
+      TEXT_GRC_MARK,
+      TEXT_LAT_MINI_STORIES,
+      TEXT_LAT_VG_JOHN,
+      TEXT_LAT_CATO,
+      TEXT_HEB_GENESIS,
+      TEXT_HEB_PS23,
+      TEXT_HEB_JONAH,
+      TEXT_HEB_PS91,
+      // Patristics additions
+      TEXT_IGNATIUS,
+      TEXT_JUSTIN_MARTYR,
+      TEXT_POLYCARP,
+      // Latin classics
+      TEXT_HORACE_ODES,
+      TEXT_LIVY,
+      TEXT_SALLUST,
+      TEXT_TACITUS,
+      // Ancient Greek classics
+      TEXT_HERODOTUS,
+      TEXT_THUCYDIDES,
+      TEXT_SOPHOCLES,
+      TEXT_PLUTARCH,
+      TEXT_LUCIAN,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -3502,6 +4001,14 @@ function getLemmaIndex() {
     CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1,
     ...ALL_EXPANDED_SECTIONS,
     ...ALL_TREEBANK_SECTIONS,
+    ...ALL_GREEK_MINI_STORIES,
+    ...ALL_GREEK_MARK_SECTIONS,
+    ...ALL_LATIN_MINI_STORIES,
+    ...ALL_LATIN_BEGINNER_SECTIONS,
+    ...ALL_HEBREW_EXTENDED_SECTIONS,
+    ...ALL_HEBREW_BEGINNER_SECTIONS,
+    ...ALL_LATIN_CLASSICS_SECTIONS,
+    ...ALL_GREEK_CLASSICS_SECTIONS,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
@@ -3577,6 +4084,49 @@ export const CorpusDB = {
 
     if (sectionId === "TB-grc-Jn1") return TREEBANK_GRC_JN1;
     if (sectionId === "TB-lat-Caes1") return TREEBANK_LAT_CAES1;
+
+    // Beginner sections
+    if (sectionId === "GrcMini-1") return GRC_MINI_1;
+    if (sectionId === "GrcMini-2") return GRC_MINI_2;
+    if (sectionId === "GrcMini-3") return GRC_MINI_3;
+    if (sectionId === "GrcMini-4") return GRC_MINI_4;
+    if (sectionId === "GrcMini-5") return GRC_MINI_5;
+    if (sectionId === "GrcMk-1a") return GRC_MARK_1A;
+    if (sectionId === "GrcMk-1b") return GRC_MARK_1B;
+    if (sectionId === "LatMini-1") return LAT_MINI_1;
+    if (sectionId === "LatMini-2") return LAT_MINI_2;
+    if (sectionId === "LatMini-3") return LAT_MINI_3;
+    if (sectionId === "LatMini-4") return LAT_MINI_4;
+    if (sectionId === "LatMini-5") return LAT_MINI_5;
+    if (sectionId === "Lat-Vg-Jn-1") return LAT_VULGATE_JOHN_1;
+    if (sectionId === "Lat-Cat-1") return LAT_DISTICHA_CATONIS;
+    if (sectionId === "Heb-Gen-1") return HEB_GENESIS_1;
+    if (sectionId === "Heb-Gen-2") return HEB_GENESIS_2;
+    if (sectionId === "Heb-Gen-3") return HEB_GENESIS_3;
+    if (sectionId === "Heb-Ps-23") return HEB_PSALM_23;
+    if (sectionId === "Heb-Jon-1") return HEB_JONAH_1;
+    if (sectionId === "Heb-Jon-2") return HEB_JONAH_2;
+    if (sectionId === "Heb-Jon-3") return HEB_JONAH_3;
+    if (sectionId === "Heb-Jon-4") return HEB_JONAH_4;
+    if (sectionId === "Heb-Ps-91") return HEB_PSALM_91;
+    // Patristics additions
+    if (sectionId === "Ign-Eph-1") return IGNATIUS_EPHESIANS_1;
+    if (sectionId === "Justin-Apol-1") return JUSTIN_MARTYR_APOLOGY_1;
+    if (sectionId === "Polyc-Phil-1") return POLYCARP_PHILIPPIANS_1;
+    // Latin classics
+    if (sectionId === "Hor-1-1") return LAT_HORACE_ODES_1_1;
+    if (sectionId === "Hor-1-9") return LAT_HORACE_ODES_1_9;
+    if (sectionId === "Hor-1-11") return LAT_HORACE_ODES_1_11;
+    if (sectionId === "Livy-Praef") return LAT_LIVY_PRAEF;
+    if (sectionId === "Livy-1-1") return LAT_LIVY_1_1;
+    if (sectionId === "Sall-Cat-1") return LAT_SALLUST_CAT;
+    if (sectionId === "Tac-Ann-1") return LAT_TACITUS_ANN;
+    // Ancient Greek classics
+    if (sectionId === "Hdt-1-1") return GRC_HERODOTUS_1;
+    if (sectionId === "Thuc-1-1") return GRC_THUCYDIDES_1;
+    if (sectionId === "Soph-Ant-1") return GRC_SOPHOCLES_ANT;
+    if (sectionId === "Plut-Alex-1") return GRC_PLUTARCH_ALEX;
+    if (sectionId === "Lucian-Char-1") return GRC_LUCIAN_CHARON;
 
     // Expanded sections
     const expandedMatch = ALL_EXPANDED_SECTIONS.find(s => s.id === sectionId);
