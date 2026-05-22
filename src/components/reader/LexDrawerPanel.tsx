@@ -25,6 +25,11 @@ import {
   safeStateLabel,
 } from '@/lib/constants/wordStates';
 import { AIClient } from '@/lib/services/aiClient';
+import {
+  lookupWiktionary,
+  summarizeWiktionary,
+  type WiktionaryLookupResult,
+} from '@/lib/services/wiktionaryService';
 import { ParadigmModal } from './ParadigmModal.js';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
@@ -175,6 +180,9 @@ export const LexDrawerPanel = ({
   const [aiFallbackGloss, setAiFallbackGloss] = useState<string | null>(null);
   const [isAiFallbackLoading, setIsAiFallbackLoading] = useState(false);
   const aiFallbackLemmaRef = useRef<string | null>(null);
+  const [wiktionaryResult, setWiktionaryResult] = useState<WiktionaryLookupResult | null>(null);
+  const [isWiktionaryLoading, setIsWiktionaryLoading] = useState(false);
+  const wiktionaryLemmaRef = useRef<string | null>(null);
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -310,18 +318,41 @@ export const LexDrawerPanel = ({
     return entry?.frequency ?? null;
   }, [selectedWord, textLanguageId]);
 
-  // Reset AI gloss state whenever the selected word changes.
+  // Reset AI / Wiktionary state whenever the selected word changes.
   useEffect(() => {
     setAiFallbackGloss(null); // eslint-disable-line react-hooks/set-state-in-effect
     setIsAiFallbackLoading(false);
     aiFallbackLemmaRef.current = null;
+    setWiktionaryResult(null);
+    setIsWiktionaryLoading(false);
+    wiktionaryLemmaRef.current = null;
   }, [selectedWord?.lemma]);
 
-  // Automatically fetch a short AI gloss when no lexicon definition is available.
-  // Retries once silently before exposing failure to the UI — the meaning panel
-  // must never present a dead end.
+  // Hit Wiktionary first when no local lexicon entry exists — it's free,
+  // CORS-enabled, and covers every language in the corpus.
   useEffect(() => {
     if (!selectedWord || definitionLookup) return;
+    if (wiktionaryLemmaRef.current === selectedWord.lemma) return;
+    const currentLemma = selectedWord.lemma;
+    wiktionaryLemmaRef.current = currentLemma;
+    setIsWiktionaryLoading(true);
+    (async () => {
+      const result = await lookupWiktionary(currentLemma, textLanguageId);
+      if (wiktionaryLemmaRef.current !== currentLemma) return;
+      setWiktionaryResult(result);
+      setIsWiktionaryLoading(false);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
+
+  // Automatically fetch a short AI gloss when no lexicon definition is available
+  // AND Wiktionary returned nothing. Retries once silently before exposing
+  // failure to the UI — the meaning panel must never present a dead end.
+  useEffect(() => {
+    if (!selectedWord || definitionLookup) return;
+    // Wait until Wiktionary has reported success or failure before falling back to AI.
+    if (isWiktionaryLoading) return;
+    if (wiktionaryResult) return;
     if (aiFallbackLemmaRef.current === selectedWord.lemma) return;
     const currentLemma = selectedWord.lemma;
     aiFallbackLemmaRef.current = currentLemma;
@@ -365,7 +396,7 @@ export const LexDrawerPanel = ({
       setIsAiFallbackLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
+  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId, isWiktionaryLoading, !!wiktionaryResult]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
@@ -493,7 +524,32 @@ export const LexDrawerPanel = ({
                     </>
                   );
                 }
-                if (isAiFallbackLoading) {
+                if (wiktionaryResult) {
+                  const headline = summarizeWiktionary(wiktionaryResult);
+                  const extra = wiktionaryResult.entries[0]?.definitions.slice(1, 3) || [];
+                  return (
+                    <>
+                      <div className="text-ink">{headline}</div>
+                      {extra.length > 0 && (
+                        <ol className="mt-2 ml-5 list-decimal text-[15px] text-ink2 space-y-1">
+                          {extra.map((d, i) => (
+                            <li key={i}>{d}</li>
+                          ))}
+                        </ol>
+                      )}
+                      <a
+                        href={wiktionaryResult.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-2 text-[11px] text-muted hover:text-blue transition-colors"
+                      >
+                        {t('reader.wiktionarySource', 'Wiktionary · CC BY-SA')}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </>
+                  );
+                }
+                if (isWiktionaryLoading || isAiFallbackLoading) {
                   return (
                     <span className="text-muted italic text-[16px] inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin inline-block" />
