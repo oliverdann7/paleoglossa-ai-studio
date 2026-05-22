@@ -33,6 +33,7 @@ export interface Language {
   supportsTTS: boolean;
   supportsPronunciationGuide: boolean;
   supportsAiAnalysis?: boolean;
+  hasScriptLearning?: boolean;
   audioProvider?: string;
   reconstructionNote?: string;
   color?: string;
@@ -255,6 +256,7 @@ export const LANGUAGES: Language[] = [
     supportsTTS: false,
     supportsPronunciationGuide: true,
     supportsAiAnalysis: true,
+    hasScriptLearning: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: '#9333EA',
@@ -311,6 +313,7 @@ export const LANGUAGES: Language[] = [
     supportsTTS: false,
     supportsPronunciationGuide: true,
     supportsAiAnalysis: true,
+    hasScriptLearning: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: '#B45309',
@@ -338,9 +341,39 @@ export const LANGUAGES: Language[] = [
     supportsTTS: false,
     supportsPronunciationGuide: true,
     supportsAiAnalysis: true,
+    hasScriptLearning: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: '#78716C',
+    tokenizationHints: { wordBoundaries: 'whitespace' },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
+  },
+  {
+    id: 'uga',
+    name: 'Ugaritic',
+    nativeName: '𐎜𐎂𐎛𐎗𐎊𐎚',
+    shortName: 'Ugaritic',
+    icon: '𐎀',
+    symbol: '𐎀',
+    direction: 'ltr',
+    scripts: ['Ugaritic Cuneiform'],
+    era: 'c. 1400 BC – 1180 BC',
+    region: 'Ugarit (Syria)',
+    writingSystem: 'Ugaritic Cuneiform Alphabet',
+    description:
+      'An extinct Northwest Semitic language known from the city of Ugarit in Syria, written in a unique cuneiform alphabet.',
+    sampleText: '𐎀𐎚𐎐𐎊𐎐 𐎖𐎍𐎅𐎐 𐎍𐎛𐎍 𐎖𐎍𐎅𐎐',
+    recommendedStartTextId: 'Uga-Baal-1',
+    corpusStatus: 'coming_soon',
+    supportsMorphology: false,
+    supportsTransliteration: true,
+    supportsTTS: false,
+    supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
+    hasScriptLearning: true,
+    audioProvider: undefined,
+    reconstructionNote: undefined,
+    color: '#A21CAF',
     tokenizationHints: { wordBoundaries: 'whitespace' },
     dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
@@ -358,6 +391,7 @@ export const LANGUAGE_IDS = [
   'san',
   'egy',
   'hit',
+  'uga',
 ] as const;
 
 export type KnownLanguageId = (typeof LANGUAGE_IDS)[number];
