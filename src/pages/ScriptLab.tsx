@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Shuffle, Check, X, BookOpen } from 'lucide-react';
@@ -51,13 +51,31 @@ export const ScriptLab = () => {
     return result;
   }, [signs, searchQuery, typeFilter]);
 
-  const quizSigns = useMemo(() => {
+  const [quizSigns, setQuizSigns] = useState<ScriptSign[]>(() => {
     if (!signs) return [];
-    const shuffled = [...signs].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 20);
-  }, [signs, quizIndex]);
+    const arr = [...signs];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor((i + 1) * (crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr.slice(0, 20);
+  });
 
-  const currentQuizSign = quizSigns[quizIndex % quizSigns.length];
+  const shuffleQuiz = useCallback(() => {
+    if (!signs) return;
+    const arr = [...signs];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor((i + 1) * (crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    setQuizSigns(arr.slice(0, 20));
+    setQuizIndex(0);
+    setQuizRevealed(false);
+    setCorrectCount(0);
+    setAttemptedCount(0);
+  }, [signs]);
+
+  const currentQuizSign = quizSigns[quizIndex % (quizSigns.length || 1)];
 
   const typeOptions = useMemo(() => {
     if (!signs) return [];
@@ -108,7 +126,12 @@ export const ScriptLab = () => {
         {(['signs', 'practice', 'read'] as Tab[]).map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              setActiveTab(tab);
+              if (tab === 'practice' && quizSigns.length === 0) {
+                shuffleQuiz();
+              }
+            }}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab
                 ? 'border-blue text-blue'
@@ -185,7 +208,18 @@ export const ScriptLab = () => {
               attempted: attemptedCount,
             })}
           </div>
-          {currentQuizSign && (
+          {quizSigns.length === 0 && (
+            <div className="text-center py-12">
+              <button
+                onClick={shuffleQuiz}
+                className="px-6 py-3 bg-blue text-white rounded-lg text-sm font-medium hover:bg-blue-dark transition-colors"
+              >
+                <Shuffle className="w-5 h-5 inline mr-2" />
+                {t('scriptLab.startPractice', 'Start Practice')}
+              </button>
+            </div>
+          )}
+          {quizSigns.length > 0 && currentQuizSign && (
             <div className="border border-bdr rounded-xl p-8 text-center">
               <div className="text-5xl mb-4">
                 {currentQuizSign.unicode || currentQuizSign.transliteration}
