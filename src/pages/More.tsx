@@ -17,8 +17,10 @@ import {
   GraduationCap,
   GitBranch,
   Trophy,
+  LogOut,
 } from 'lucide-react';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
+import { signOut } from '@/lib/services/authService';
 
 interface MoreCardProps {
   icon: React.ElementType;
@@ -57,6 +59,12 @@ const Section = ({ title, children }: SectionProps) => (
 export const More = () => {
   const { t } = useTranslation();
   const { isAdmin } = useSubscription();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-parch pb-safe">
@@ -104,6 +112,17 @@ export const More = () => {
         <Section title={t('more.account', 'Account')}>
           <MoreCard icon={Settings} label={t('nav.settings', 'Settings')} to="/app/settings" />
           <MoreCard icon={Crown} label={t('nav.upgrade', 'Upgrade')} to="/app/subscription" />
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-4 px-5 py-4 bg-parch2 hover:bg-red-50 active:bg-red-50 transition-colors rounded-xl border border-bdr hover:border-red-200 text-left min-h-[52px] group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center shrink-0 transition-colors">
+              <LogOut className="w-5 h-5 text-red-500" />
+            </div>
+            <span className="flex-1 text-sm font-medium text-red-600">
+              {t('profile.signOut', 'Sign Out')}
+            </span>
+          </button>
         </Section>
 
         {isAdmin && (

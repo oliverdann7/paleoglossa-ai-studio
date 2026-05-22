@@ -344,6 +344,34 @@ export const LANGUAGES: Language[] = [
     tokenizationHints: { wordBoundaries: 'whitespace' },
     dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
   },
+  {
+    id: 'uga',
+    name: 'Ugaritic',
+    nativeName: '𐎀𐎃𐎗𐎚',
+    shortName: 'Ugaritic',
+    icon: '𐎁',
+    symbol: '𐎁',
+    direction: 'ltr',
+    scripts: ['Ugaritic', 'Latin (transliteration)'],
+    era: 'c. 1400 BC – 1200 BC',
+    region: 'Ugarit (modern Ras Shamra, Syria)',
+    writingSystem: 'Ugaritic Cuneiform Alphabet',
+    description:
+      'A Northwest Semitic language attested in the ancient city of Ugarit, closely related to Biblical Hebrew and Phoenician. Known primarily from the Baal Cycle and other mythological texts.',
+    sampleText: '𐎁𐎓𐎍 𐎎𐎍𐎋 𐎀𐎍𐎛𐎊𐎐',
+    recommendedStartTextId: 'Uga-Baal-1',
+    corpusStatus: 'sample',
+    supportsMorphology: false,
+    supportsTransliteration: true,
+    supportsTTS: false,
+    supportsPronunciationGuide: true,
+    supportsAiAnalysis: true,
+    audioProvider: undefined,
+    reconstructionNote: 'Ugaritic is fully deciphered. Texts shown in native script with Latin transliteration.',
+    color: '#0E7490',
+    tokenizationHints: { wordBoundaries: 'whitespace' },
+    dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },
+  },
 ];
 
 export const LANGUAGE_IDS = [
@@ -358,6 +386,7 @@ export const LANGUAGE_IDS = [
   'san',
   'egy',
   'hit',
+  'uga',
 ] as const;
 
 export type KnownLanguageId = (typeof LANGUAGE_IDS)[number];
