@@ -17,6 +17,7 @@ import {
   GraduationCap,
   GitBranch,
   Trophy,
+  Sparkles,
 } from 'lucide-react';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 
@@ -68,6 +69,7 @@ export const More = () => {
 
       <div className="px-4 pt-5 pb-8 max-w-lg mx-auto">
         <Section title={t('more.study', 'Study')}>
+          <MoreCard icon={Sparkles} label={t('nav.beginnerHub', 'Beginner Hub')} to="/app/beginner-hub" />
           <MoreCard icon={Search} label={t('nav.search', 'Search')} to="/app/search" />
           <MoreCard
             icon={BookText}

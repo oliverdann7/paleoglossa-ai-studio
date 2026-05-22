@@ -20,6 +20,7 @@ import {
   BookMarked,
   BookText,
   ShieldAlert,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -109,6 +110,12 @@ export const Navbar = () => {
 
         <div className="flex flex-col gap-1 flex-1 px-2">
           <div className="nav-label px-3 mb-1 mt-2">{t('nav.study', 'Study')}</div>
+          <DesktopNavItem
+            icon={Sparkles}
+            label={t('nav.beginnerHub', 'Beginner Hub')}
+            isActive={path === '/app/beginner-hub'}
+            to="/app/beginner-hub"
+          />
           <DesktopNavItem
             icon={BookOpen}
             label={t('nav.dashboard', 'Dashboard')}
