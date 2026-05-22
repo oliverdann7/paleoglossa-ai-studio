@@ -4,10 +4,10 @@ import {
   Sparkles,
   Crown,
   ArrowRight,
-  Lock,
   ExternalLink,
   Loader2,
   Info,
+  Infinity as InfinityIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
@@ -18,13 +18,29 @@ import { useTranslation } from 'react-i18next';
 import { isCapacitor } from '../lib/platform.js';
 import { features } from '../lib/features.js';
 
+/** Translation keys for each plan's features, in order. */
+const PLAN_FEATURE_KEYS: Record<string, string[]> = {
+  free: ['plans.free.feat1', 'plans.free.feat2', 'plans.free.feat3', 'plans.free.feat4'],
+  basic_1: [
+    'plans.basic.feat1', 'plans.basic.feat2', 'plans.basic.feat3',
+    'plans.basic.feat4', 'plans.basic.feat5', 'plans.basic.feat6',
+  ],
+  duo_2: [
+    'plans.duo.feat1', 'plans.duo.feat2', 'plans.duo.feat3',
+    'plans.duo.feat4', 'plans.duo.feat5', 'plans.duo.feat6',
+  ],
+  full_all: [
+    'plans.full.feat1', 'plans.full.feat2', 'plans.full.feat3',
+    'plans.full.feat4', 'plans.full.feat5', 'plans.full.feat6', 'plans.full.feat7',
+  ],
+};
+
 export const Subscription = () => {
   const { t } = useTranslation();
   const {
     subscription,
     selectFreePlan,
     toggleLanguage,
-    canAccessLanguage,
     canAddLanguage: canAdd,
     createCheckoutSession,
     createPortalSession,
@@ -172,7 +188,7 @@ export const Subscription = () => {
               </div>
 
               <div className="space-y-3 mb-6 flex-1">
-                {plan.features.map((f, i) => (
+                {(PLAN_FEATURE_KEYS[plan.id] ?? plan.features.map((_, i) => `${plan.id}.feat${i + 1}`)).map((key, i) => (
                   <div key={i} className="flex items-start gap-2.5">
                     <Check
                       className={cn(
@@ -180,7 +196,9 @@ export const Subscription = () => {
                         isCurrent ? 'text-blue' : 'text-muted'
                       )}
                     />
-                    <span className="text-[13px] text-ink2 font-sans">{f}</span>
+                    <span className="text-[13px] text-ink2 font-sans">
+                      {t(key, { defaultValue: plan.features[i] ?? key })}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -241,51 +259,59 @@ export const Subscription = () => {
           </div>
         )}
 
-      {/* Language Selection */}
+      {/* Language Unlock Selection */}
       <div className="card p-8 max-w-3xl mx-auto">
         <h3 className="font-serif text-[20px] font-medium text-ink mb-2">
-          {t('sub.yourLanguages')}
+          {t('sub.unlockedLanguages', 'Unlocked Languages')}
         </h3>
         <p className="text-[14px] text-ink2 mb-6">
           {currentPlan.languageLimit === 'all'
             ? t('sub.includesAll')
-            : t('sub.includesLimit', { count: currentPlan.languageLimit })}
+            : currentPlan.languageLimit === 0
+              ? t('sub.noUnlockedLangs', 'Upgrade to choose a language for unlimited saves.')
+              : t('sub.unlockSlotLabel', { count: currentPlan.languageLimit, defaultValue: `Select up to ${currentPlan.languageLimit} language(s) for unlimited saves.` })}
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {LANGUAGES.map((lang) => {
-            const isSelected = subscription.selectedLanguageIds.includes(lang.id);
-            const isLocked = !canAccessLanguage(lang.id);
+        {currentPlan.languageLimit !== 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {LANGUAGES.map((lang) => {
+              const isSelected = subscription.selectedLanguageIds.includes(lang.id);
+              const isAtLimit = !isSelected && !canAdd();
 
-            return (
-              <button
-                key={lang.id}
-                onClick={() => {
-                  if (isLocked && !canAdd()) return;
-                  toggleLanguage(lang.id);
-                }}
-                className={cn(
-                  'flex items-center gap-3 p-3 rounded-xl border transition-all text-left',
-                  isSelected
-                    ? 'border-blue/30 bg-blue/5 text-blue'
-                    : isLocked
-                      ? 'border-bdr/30 bg-parch2/50 text-muted opacity-60 cursor-not-allowed'
-                      : 'border-bdr/50 hover:border-blue/20 text-ink2'
-                )}
-              >
-                <span className="text-xl">{getLanguageIcon(lang.id)}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold truncate">{lang.shortName}</div>
-                  <div className="text-[9px] uppercase tracking-wider text-muted truncate">
-                    {lang.name}
+              return (
+                <button
+                  key={lang.id}
+                  onClick={() => {
+                    if (isAtLimit) return;
+                    toggleLanguage(lang.id);
+                  }}
+                  className={cn(
+                    'flex items-center gap-3 p-3 rounded-xl border transition-all text-left',
+                    isSelected
+                      ? 'border-blue/30 bg-blue/5 text-blue'
+                      : isAtLimit
+                        ? 'border-bdr/30 bg-parch2/50 text-muted/60 cursor-not-allowed'
+                        : 'border-bdr/50 hover:border-blue/20 text-ink2'
+                  )}
+                >
+                  <span className="text-xl">{getLanguageIcon(lang.id)}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-bold truncate">{lang.shortName}</div>
+                    <div className="text-[9px] uppercase tracking-wider text-muted truncate">
+                      {lang.name}
+                    </div>
                   </div>
-                </div>
-                {isSelected && <span className="w-2 h-2 rounded-full bg-blue shrink-0" />}
-                {isLocked && !isSelected && <Lock className="w-3.5 h-3.5 shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
+                  {isSelected && currentPlan.languageLimit !== 'all' && (
+                    <InfinityIcon className="w-3.5 h-3.5 text-blue shrink-0" />
+                  )}
+                  {isSelected && currentPlan.languageLimit === 'all' && (
+                    <span className="w-2 h-2 rounded-full bg-blue shrink-0" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Dev Notice — shown when running without Stripe */}

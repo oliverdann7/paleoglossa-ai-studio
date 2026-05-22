@@ -163,7 +163,7 @@ export const Reader = () => {
       const saved = setWordState(lemma, state, languageId, context);
       if (!saved) {
         addToast(
-          `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+          `You've reached the ${vocabLimit.limit}-word save limit for this language. Upgrade for unlimited saves.`,
           'info'
         );
         return false;
@@ -789,7 +789,7 @@ export const Reader = () => {
             setSelectedWord(null);
           } else {
             addToast(
-              `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+              `You've reached the ${vocabLimit.limit}-word save limit for this language. Upgrade for unlimited saves.`,
               'info'
             );
           }
@@ -929,7 +929,7 @@ export const Reader = () => {
       const saved = setWordState(phrase, WordState.LEARNING, currentLanguageId);
       if (!saved) {
         addToast(
-          `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+          `You've reached the ${vocabLimit.limit}-word save limit for this language. Upgrade for unlimited saves.`,
           'info'
         );
         return;
@@ -1291,7 +1291,7 @@ export const Reader = () => {
             const saved = setWordState(contextMenu.token.lemma, state, currentLanguageId);
             if (!saved) {
               addToast(
-                `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+                `You've reached the ${vocabLimit.limit}-word save limit for this language. Upgrade for unlimited saves.`,
                 'info'
               );
             }

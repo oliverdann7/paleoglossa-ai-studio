@@ -6,65 +6,65 @@ import {
   FREE_LANGUAGE_WORD_LIMIT,
   isTrackedWordState,
   hasVocabLimit,
+  isLanguageUnlocked,
+  hasVocabLimitForLanguage,
 } from '../plans';
 import type { PlanId } from '../plans';
 
-describe('Plan language limits', () => {
-  it('free user can access one selected language', () => {
-    const selected = ['grc'];
-    expect(canAccessLanguage('free', 'grc', selected)).toBe(true);
-    expect(canAccessLanguage('free', 'hbo', selected)).toBe(false);
-    expect(canAccessLanguage('free', 'lat', selected)).toBe(false);
+describe('canAccessLanguage', () => {
+  it('always returns true — all languages are accessible on every plan', () => {
+    expect(canAccessLanguage()).toBe(true);
+  });
+});
+
+describe('isLanguageUnlocked', () => {
+  it('free plan: no language is unlocked (no unlimited-save slots)', () => {
+    expect(isLanguageUnlocked('free', [], 'grc')).toBe(false);
+    expect(isLanguageUnlocked('free', ['grc'], 'grc')).toBe(false);
   });
 
-  it('basic_1 user can access one selected language', () => {
-    const selected = ['lat'];
-    expect(canAccessLanguage('basic_1', 'lat', selected)).toBe(true);
-    expect(canAccessLanguage('basic_1', 'grc', selected)).toBe(false);
-    expect(canAccessLanguage('basic_1', 'hbo', selected)).toBe(false);
+  it('basic_1: selected language is unlocked, others are not', () => {
+    expect(isLanguageUnlocked('basic_1', ['lat'], 'lat')).toBe(true);
+    expect(isLanguageUnlocked('basic_1', ['lat'], 'grc')).toBe(false);
   });
 
-  it('duo_2 user can access two selected languages', () => {
-    const selected = ['grc', 'hbo'];
-    expect(canAccessLanguage('duo_2', 'grc', selected)).toBe(true);
-    expect(canAccessLanguage('duo_2', 'hbo', selected)).toBe(true);
-    expect(canAccessLanguage('duo_2', 'lat', selected)).toBe(false);
+  it('duo_2: both selected languages are unlocked', () => {
+    expect(isLanguageUnlocked('duo_2', ['grc', 'hbo'], 'grc')).toBe(true);
+    expect(isLanguageUnlocked('duo_2', ['grc', 'hbo'], 'hbo')).toBe(true);
+    expect(isLanguageUnlocked('duo_2', ['grc', 'hbo'], 'lat')).toBe(false);
   });
 
-  it('full_all user can access all languages', () => {
-    const selected = ['grc', 'hbo', 'lat'];
-    expect(canAccessLanguage('full_all', 'grc', selected)).toBe(true);
-    expect(canAccessLanguage('full_all', 'hbo', selected)).toBe(true);
-    expect(canAccessLanguage('full_all', 'lat', selected)).toBe(true);
-    expect(canAccessLanguage('full_all', 'san', selected)).toBe(true);
-    expect(canAccessLanguage('full_all', 'egy', selected)).toBe(true);
-    expect(canAccessLanguage('full_all', 'akk', selected)).toBe(true);
+  it('full_all: every language is unlocked', () => {
+    expect(isLanguageUnlocked('full_all', [], 'grc')).toBe(true);
+    expect(isLanguageUnlocked('full_all', [], 'san')).toBe(true);
+    expect(isLanguageUnlocked('full_all', [], 'egy')).toBe(true);
   });
+});
 
-  it('admin bypass (represented by full_all plan with all languages)', () => {
-    // Admin is handled at the SubscriptionContext level via hasTrialAccess.
-    // The plan function itself works on plan rules — admin gets full_all semantics.
-    const selected = ['grc'];
-    expect(canAccessLanguage('full_all', 'hbo', selected)).toBe(true);
-    expect(canAccessLanguage('full_all', 'lat', selected)).toBe(true);
+describe('hasVocabLimitForLanguage', () => {
+  it('is the inverse of isLanguageUnlocked', () => {
+    expect(hasVocabLimitForLanguage('free', [], 'grc')).toBe(true);
+    expect(hasVocabLimitForLanguage('basic_1', ['lat'], 'lat')).toBe(false);
+    expect(hasVocabLimitForLanguage('basic_1', ['lat'], 'grc')).toBe(true);
+    expect(hasVocabLimitForLanguage('full_all', [], 'grc')).toBe(false);
   });
 });
 
 describe('canAddLanguage', () => {
-  it('free user cannot add beyond 1 language', () => {
+  it('free user cannot add any language (limit is 0 unlock slots)', () => {
+    expect(canAddLanguage('free', [])).toBe(false);
     expect(canAddLanguage('free', ['grc'])).toBe(false);
-    expect(canAddLanguage('free', [])).toBe(true);
   });
 
-  it('basic_1 user cannot add beyond 1 language', () => {
-    expect(canAddLanguage('basic_1', ['grc'])).toBe(false);
+  it('basic_1 user can add one language, then no more', () => {
     expect(canAddLanguage('basic_1', [])).toBe(true);
+    expect(canAddLanguage('basic_1', ['grc'])).toBe(false);
   });
 
   it('duo_2 user can add up to 2 languages', () => {
+    expect(canAddLanguage('duo_2', [])).toBe(true);
     expect(canAddLanguage('duo_2', ['grc'])).toBe(true);
     expect(canAddLanguage('duo_2', ['grc', 'hbo'])).toBe(false);
-    expect(canAddLanguage('duo_2', [])).toBe(true);
   });
 
   it('full_all user can always add languages', () => {
@@ -90,8 +90,8 @@ describe('getPlanById', () => {
 });
 
 describe('FREE_LANGUAGE_WORD_LIMIT', () => {
-  it('equals 200', () => {
-    expect(FREE_LANGUAGE_WORD_LIMIT).toBe(200);
+  it('equals 25', () => {
+    expect(FREE_LANGUAGE_WORD_LIMIT).toBe(25);
   });
 });
 
@@ -121,10 +121,10 @@ describe('isTrackedWordState', () => {
 });
 
 describe('hasVocabLimit', () => {
-  it('returns true only for the free plan', () => {
+  it('returns false only for full_all — all other plans have per-language word caps', () => {
     expect(hasVocabLimit('free')).toBe(true);
-    expect(hasVocabLimit('basic_1')).toBe(false);
-    expect(hasVocabLimit('duo_2')).toBe(false);
+    expect(hasVocabLimit('basic_1')).toBe(true);
+    expect(hasVocabLimit('duo_2')).toBe(true);
     expect(hasVocabLimit('full_all')).toBe(false);
   });
 });

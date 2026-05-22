@@ -8,7 +8,6 @@ import {
   SubscriptionStatus,
   getPlanById,
   canAddLanguage as canAddByPlan,
-  canAccessLanguage as canAccessByPlan,
   TRIAL_DAYS,
 } from '../constants/plans.js';
 
@@ -158,16 +157,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Only callable for the free plan. Paid plans must go through createCheckoutSession
   // which is handled server-side via the Stripe webhook.
   const selectFreePlan = useCallback(() => {
-    const plan = getPlanById('free');
-    const limit = plan.languageLimit;
-    const newSelected = subscription.selectedLanguageIds.slice(0, limit as number);
+    // Free plan has no unlocked language slots — clear selectedLanguageIds.
     setSubscription({
       currentPlan: 'free',
-      selectedLanguageIds: newSelected,
+      selectedLanguageIds: [],
       subscriptionStatus: 'free',
     });
-    persistLanguages(newSelected);
-  }, [subscription.selectedLanguageIds, persistLanguages]);
+    persistLanguages([]);
+  }, [persistLanguages]);
 
   const setFreeLanguage = useCallback(
     (languageId: string) => {
@@ -226,15 +223,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [isAdmin, isOnTrial]);
 
   const checkAccess = useCallback(
-    (languageId: string): boolean => {
-      if (hasTrialAccess()) return true;
-      return canAccessByPlan(
-        subscription.currentPlan,
-        languageId,
-        subscription.selectedLanguageIds
-      );
+    (): boolean => {
+      // All languages are accessible on every plan. The difference between plans
+      // is only how many words can be saved per language (vocab save limit).
+      return true;
     },
-    [subscription, hasTrialAccess]
+    []
   );
 
   const checkCanAdd = useCallback((): boolean => {

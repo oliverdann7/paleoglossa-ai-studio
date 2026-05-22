@@ -32,8 +32,8 @@ import { setErrorReportingEnabled } from '../lib/sentry.js';
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
-  const { exportData, stats, vocabLimit } = useKnowledge();
-  const { subscription, setFreeLanguage, setDesiredSecondLanguage, canAccessLanguage } = useSubscription();
+  const { exportData, stats } = useKnowledge();
+  const { subscription, setDesiredSecondLanguage } = useSubscription();
   const allLanguages = getAvailableLanguages();
   const { user, profile, refreshProfile } = useAuth();
 
@@ -56,7 +56,6 @@ export const Settings = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Language slot state ──────────────────────────────────────────────────
-  const [showFreeLangPicker, setShowFreeLangPicker] = useState(false);
   const [showDesiredPicker, setShowDesiredPicker] = useState(false);
 
   // ── Gemini API key (stored in localStorage only — never synced to Firestore) ─
@@ -272,107 +271,26 @@ export const Settings = () => {
           </h3>
 
           <div className="space-y-3">
-            {/* Free language slot */}
-            {subscription.selectedLanguageIds[0] ? (
-              <div className="p-4 rounded-xl bg-parch2/60 border border-bdr">
-                <div className="flex items-center gap-4">
-                  <span className="text-[22px]">{getLanguageIcon(subscription.selectedLanguageIds[0])}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-bold text-[14px] text-ink">
-                        {getLanguageDisplayName(subscription.selectedLanguageIds[0]) || subscription.selectedLanguageIds[0]}
-                      </span>
-                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Free
-                      </span>
-                    </div>
-                    {vocabLimit.isEnabled && (
-                      <>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] text-muted">Vocabulary tracked</span>
-                          <span className={cn(
-                            'text-[11px] font-bold',
-                            vocabLimit.isFull ? 'text-red-500' : vocabLimit.count >= vocabLimit.limit * 0.8 ? 'text-amber' : 'text-ink2'
-                          )}>
-                            {vocabLimit.count}/{vocabLimit.limit}
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-parch3 rounded-full overflow-hidden">
-                          <div
-                            className={cn(
-                              'h-full rounded-full transition-all',
-                              vocabLimit.isFull ? 'bg-red-400' : vocabLimit.count >= vocabLimit.limit * 0.8 ? 'bg-amber' : 'bg-blue'
-                            )}
-                            style={{ width: `${Math.min(100, (vocabLimit.count / vocabLimit.limit) * 100)}%` }}
-                          />
-                        </div>
-                        {vocabLimit.isFull && (
-                          <p className="text-[11px] text-red-500 mt-1">
-                            Limit reached — upgrade to track more words.
-                          </p>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  {subscription.currentPlan === 'free' && (
-                    <button
-                      onClick={() => setShowFreeLangPicker((v) => !v)}
-                      className="text-[11px] text-blue font-semibold hover:underline shrink-0 flex items-center gap-1"
-                    >
-                      Change <ChevronDown className={cn('w-3 h-3 transition-transform', showFreeLangPicker && 'rotate-180')} />
-                    </button>
-                  )}
-                </div>
-                {/* Free language picker */}
-                {showFreeLangPicker && subscription.currentPlan === 'free' && (
-                  <div className="mt-3 pt-3 border-t border-bdr/40">
-                    <p className="text-[11px] text-muted mb-2">
-                      Choose your free language. Your vocabulary count resets for the new language.
-                    </p>
-                    <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
-                      {allLanguages.map((lang) => (
-                        <button
-                          key={lang.id}
-                          onClick={() => {
-                            setFreeLanguage(lang.id);
-                            setShowFreeLangPicker(false);
-                          }}
-                          className={cn(
-                            'flex items-center gap-2 px-3 py-2 rounded-lg text-left text-[12px] transition-all',
-                            lang.id === subscription.selectedLanguageIds[0]
-                              ? 'bg-blue/10 text-blue font-bold'
-                              : 'bg-white border border-bdr/40 text-ink2 hover:border-blue/30'
-                          )}
-                        >
-                          <span>{getLanguageIcon(lang.id)}</span>
-                          <span className="truncate">{lang.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* No free language chosen yet */
-              <div className="p-4 rounded-xl border border-dashed border-blue/30 bg-blue/5">
-                <p className="text-[13px] text-ink2 mb-2">No language selected yet. Choose your free language:</p>
-                <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
-                  {allLanguages.map((lang) => (
-                    <button
-                      key={lang.id}
-                      onClick={() => setFreeLanguage(lang.id)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-[12px] bg-white border border-bdr/40 text-ink2 hover:border-blue/30 transition-all"
-                    >
-                      <span>{getLanguageIcon(lang.id)}</span>
-                      <span className="truncate">{lang.name}</span>
-                    </button>
-                  ))}
-                </div>
+            {/* Free plan: general cap notice */}
+            {subscription.currentPlan === 'free' && (
+              <div className="p-4 rounded-xl bg-blue/5 border border-blue/20">
+                <p className="text-[13px] text-ink2 font-medium mb-1">
+                  Free plan — all languages available
+                </p>
+                <p className="text-[11px] text-muted">
+                  You can read any language, but only <strong>25 words per language</strong> can be saved. Upgrade to unlock unlimited saves in one or more languages.
+                </p>
+                <a
+                  href="/app/subscription"
+                  className="mt-3 inline-block text-[11px] font-bold text-white bg-blue px-3 py-1.5 rounded-lg hover:bg-blue/80 transition-colors"
+                >
+                  View plans →
+                </a>
               </div>
             )}
 
-            {/* Additional language slots (paid plans) */}
-            {subscription.selectedLanguageIds.slice(1).map((langId) => (
+            {/* Unlocked languages (paid plans) */}
+            {subscription.selectedLanguageIds.map((langId) => (
               <div key={langId} className="flex items-center gap-4 p-4 rounded-xl bg-parch2/60 border border-bdr">
                 <span className="text-[22px]">{getLanguageIcon(langId)}</span>
                 <div className="flex-1 min-w-0">
@@ -380,20 +298,20 @@ export const Settings = () => {
                     <span className="font-bold text-[14px] text-ink">
                       {getLanguageDisplayName(langId) || langId}
                     </span>
-                    <span className="text-[9px] font-bold text-blue bg-blue/10 px-1.5 py-0.5 rounded">
-                      Paid
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                      Unlimited
                     </span>
                   </div>
-                  <span className="text-[11px] text-muted">Unlimited vocabulary tracking</span>
+                  <span className="text-[11px] text-muted">Unlimited vocabulary saves</span>
                 </div>
               </div>
             ))}
 
-            {/* Desired second language (free plan only) */}
-            {subscription.currentPlan === 'free' && (
+            {/* Save-for-upgrade: pre-select language before subscribing */}
+            {subscription.currentPlan !== 'full_all' && (
               <div className="p-4 rounded-xl border border-dashed border-bdr">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[13px] font-semibold text-ink">Desired Second Language</span>
+                  <span className="text-[13px] font-semibold text-ink">Pre-select language to unlock</span>
                   {subscription.desiredSecondLanguageId && (
                     <button
                       onClick={() => setDesiredSecondLanguage(undefined)}
@@ -410,12 +328,12 @@ export const Settings = () => {
                       {getLanguageDisplayName(subscription.desiredSecondLanguageId) || subscription.desiredSecondLanguageId}
                     </span>
                     <span className="text-[9px] bg-amber/10 text-amber-700 px-1.5 py-0.5 rounded font-bold">
-                      Saved for Duo upgrade
+                      Saved for upgrade
                     </span>
                   </div>
                 ) : (
                   <p className="text-[11px] text-muted mb-2">
-                    Pick the language you want unlocked when you upgrade to Duo.
+                    Choose the language you want unlimited saves for when you upgrade.
                   </p>
                 )}
                 <button
@@ -428,7 +346,7 @@ export const Settings = () => {
                 {showDesiredPicker && (
                   <div className="mt-2 grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
                     {allLanguages
-                      .filter((l) => !canAccessLanguage(l.id))
+                      .filter((l) => !subscription.selectedLanguageIds.includes(l.id))
                       .map((lang) => (
                         <button
                           key={lang.id}

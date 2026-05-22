@@ -64,12 +64,12 @@ describe('countTrackedWords', () => {
     expect(countTrackedWords(knowledge, 'grc')).toBe(0);
   });
 
-  it('counts exactly at the limit boundary (200)', () => {
+  it('counts exactly at the limit boundary (25)', () => {
     const knowledge: TestKnowledge = {};
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 25; i++) {
       knowledge[`word${i}`] = makeEntry(WordState.KNOWN, 'grc');
     }
-    expect(countTrackedWords(knowledge, 'grc')).toBe(200);
+    expect(countTrackedWords(knowledge, 'grc')).toBe(25);
   });
 
   it('counts correctly when mixed with non-target-language entries at scale', () => {
