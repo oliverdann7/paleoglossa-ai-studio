@@ -3867,6 +3867,10 @@ import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS
 import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
 import { ALL_LATIN_CLASSICS_SECTIONS, LAT_HORACE_ODES_1_1, LAT_HORACE_ODES_1_9, LAT_HORACE_ODES_1_11, LAT_LIVY_PRAEF, LAT_LIVY_1_1, LAT_SALLUST_CAT, LAT_TACITUS_ANN } from "./corpus/latin-classics.js";
 import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOPHOCLES_ANT, GRC_PLUTARCH_ALEX, GRC_LUCIAN_CHARON } from "./corpus/greek-classics.js";
+import { ALL_GREEK_NT_EXTENDED_SECTIONS } from "./corpus/greek-nt-extended.js";
+import { ALL_GREEK_CLASSICS_EXTENDED_SECTIONS } from "./corpus/greek-classics-extended.js";
+import { ALL_LATIN_EXTENDED_SECTIONS } from "./corpus/latin-extended.js";
+import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION, GRC_KOINE_VOCAB_SECTION, LAT_VOCAB_SECTION } from "./corpus/vocabulary-texts.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3973,6 +3977,10 @@ function getAllEnhancedTexts() {
       TEXT_SOPHOCLES,
       TEXT_PLUTARCH,
       TEXT_LUCIAN,
+      // Greco-Roman extended
+      TEXT_VOCAB_GRC,
+      TEXT_VOCAB_GRC_KOINE,
+      TEXT_VOCAB_LAT,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -4010,6 +4018,12 @@ function getLemmaIndex() {
     ...ALL_HEBREW_BEGINNER_SECTIONS,
     ...ALL_LATIN_CLASSICS_SECTIONS,
     ...ALL_GREEK_CLASSICS_SECTIONS,
+    ...ALL_GREEK_NT_EXTENDED_SECTIONS,
+    ...ALL_GREEK_CLASSICS_EXTENDED_SECTIONS,
+    ...ALL_LATIN_EXTENDED_SECTIONS,
+    GRC_VOCAB_SECTION,
+    GRC_KOINE_VOCAB_SECTION,
+    LAT_VOCAB_SECTION,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
@@ -4134,6 +4148,15 @@ export const CorpusDB = {
     if (expandedMatch) return expandedMatch;
     const treebankMatch = ALL_TREEBANK_SECTIONS.find(s => s.id === sectionId);
     if (treebankMatch) return treebankMatch;
+    const greekNtMatch = ALL_GREEK_NT_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (greekNtMatch) return greekNtMatch;
+    const greekClassicsExtMatch = ALL_GREEK_CLASSICS_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (greekClassicsExtMatch) return greekClassicsExtMatch;
+    const latinExtMatch = ALL_LATIN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (latinExtMatch) return latinExtMatch;
+    if (sectionId === "grc-voc-1") return GRC_VOCAB_SECTION;
+    if (sectionId === "grc-koine-voc-1") return GRC_KOINE_VOCAB_SECTION;
+    if (sectionId === "lat-voc-1") return LAT_VOCAB_SECTION;
     
     if (import.meta.env.DEV) {
       const mockMatch = getMockSections().find(s => s.id === sectionId);
