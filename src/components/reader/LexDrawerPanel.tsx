@@ -219,20 +219,29 @@ export const LexDrawerPanel = ({
     }
 
     try {
-      const explanation = await AIClient.explainWord(
-        textLanguageId,
-        selectedWord.text,
-        selectedWord.lemma
-      );
       if (useAsGloss) {
-        setAiFallbackGloss(explanation);
+        // Short-gloss request for the Meaning panel
+        const gloss = await AIClient.getWordGloss(
+          textLanguageId,
+          selectedWord.text,
+          selectedWord.lemma
+        );
+        setAiFallbackGloss(gloss);
+        setAiFallbackFailed(false);
       } else {
+        // Full philological explanation for the AI Insights section
+        const explanation = await AIClient.explainWord(
+          textLanguageId,
+          selectedWord.text,
+          selectedWord.lemma
+        );
         setAiWordInsight(explanation);
       }
     } catch (error) {
       console.error(error);
       if (useAsGloss) {
-        setAiFallbackGloss(t('reader.failedInsights', 'Failed to fetch insights.'));
+        // Don't pollute the gloss field with an error string — just mark as failed
+        setAiFallbackFailed(true);
       } else {
         setAiWordInsight(t('reader.failedInsights', 'Failed to fetch insights.'));
       }
@@ -270,7 +279,7 @@ export const LexDrawerPanel = ({
     aiFallbackLemmaRef.current = null;
   }, [selectedWord?.lemma]);
 
-  // Automatically fetch an AI definition when no lexicon definition is available.
+  // Automatically fetch a short AI gloss when no lexicon definition is available.
   useEffect(() => {
     if (!selectedWord || definitionLookup) return;
     // Guard: only attempt once per lemma to avoid repeated calls.
@@ -280,16 +289,18 @@ export const LexDrawerPanel = ({
     setIsAiFallbackLoading(true);
     (async () => {
       try {
-        const explanation = await AIClient.explainWord(
+        // Use the short-gloss endpoint so the Meaning panel shows "to do, make"
+        // rather than a multi-paragraph philological analysis.
+        const gloss = await AIClient.getWordGloss(
           textLanguageId,
           selectedWord.text,
           selectedWord.lemma
         );
-        if (aiFallbackLemmaRef.current === currentLemma && explanation) {
-          setAiFallbackGloss(explanation);
+        if (aiFallbackLemmaRef.current === currentLemma && gloss) {
+          setAiFallbackGloss(gloss);
         }
       } catch (error) {
-        console.error('AI fallback failed:', error);
+        console.error('AI gloss fallback failed:', error);
         if (aiFallbackLemmaRef.current === currentLemma) {
           setAiFallbackFailed(true);
         }
@@ -429,7 +440,12 @@ export const LexDrawerPanel = ({
                   );
                 }
                 if (isAiFallbackLoading) {
-                  return <span className="text-muted italic text-[16px]">Loading...</span>;
+                  return (
+                    <span className="text-muted italic text-[16px] inline-flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin inline-block" />
+                      {t('reader.lookingUp', 'Looking up definition…')}
+                    </span>
+                  );
                 }
                 if (aiFallbackGloss) {
                   return (
@@ -441,27 +457,34 @@ export const LexDrawerPanel = ({
                     </>
                   );
                 }
+                // AI failed — show retry button rather than a dead-end message
                 return (
                   <div>
                     <span className="text-muted italic text-[16px]">
-                      {aiFallbackFailed
-                        ? t('reader.definitionUnavailableAiFailed', 'Definition unavailable — try \'Ask AI\' manually.')
-                        : t('reader.definitionUnavailable', 'No definition available.')}
+                      {t('reader.definitionUnavailable', 'No definition found.')}
                     </span>
-                    <div className="mt-2 flex flex-col gap-1">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       <button
-                        onClick={() => handleAiWordExplain(true)}
-                        className="text-[12px] text-blue hover:text-blue-700 underline-offset-2 hover:underline inline-flex items-center gap-1"
+                        onClick={() => {
+                          // Reset guard so the auto-fetch can retry
+                          aiFallbackLemmaRef.current = null;
+                          setAiFallbackFailed(false);
+                          setAiFallbackGloss(null);
+                          handleAiWordExplain(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue/8 border border-blue/20 text-[12px] font-medium text-blue hover:bg-blue/15 transition-colors"
                       >
                         <Sparkles className="w-3 h-3" />
-                        {t('reader.askAiForDef', 'Ask AI for a definition')}
+                        {aiFallbackFailed
+                          ? t('reader.retryAi', 'Retry AI definition')
+                          : t('reader.askAiForDef', 'Ask AI for a definition')}
                       </button>
                       <Link
                         to={getDictionaryPath(selectedWord.lemma, textLanguageId)}
-                        className="text-[12px] text-blue hover:text-blue-700 underline-offset-2 hover:underline inline-flex items-center gap-1"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-parch border border-bdr/40 text-[12px] font-medium text-ink3 hover:text-blue hover:border-blue/30 transition-colors"
                       >
                         <BookOpen className="w-3 h-3" />
-                        {t('reader.viewDictionary', 'View dictionary entry')}
+                        {t('reader.viewDictionary', 'Dictionary entry')}
                       </Link>
                     </div>
                   </div>
