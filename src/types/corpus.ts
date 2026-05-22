@@ -98,6 +98,8 @@ export interface Text {
     | 'inscription'
     | 'manuscript'
     | 'islamicate'
+    | 'vocabulary'
+    | 'script'
     | 'other';
   sourceAttributionId?: string;
   hasMorphology?: boolean;

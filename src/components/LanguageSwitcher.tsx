@@ -12,7 +12,7 @@ import { useVocabulary } from '../lib/hooks/useVocabulary.js';
 export function LanguageSwitcher() {
   const { activeLanguageId, setActiveLanguageId, currentLanguage, availableLanguages } =
     useActiveLanguage();
-  const { subscription } = useSubscription();
+  const { subscription, canAccessLanguage } = useSubscription();
   const { knowledge } = useVocabulary();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -31,6 +31,12 @@ export function LanguageSwitcher() {
 
   // Hide the switcher when there's only one language available — nothing to switch between.
   if (availableLanguages.length <= 1) {
+    return null;
+  }
+
+  // Hide the switcher for users who only have one language — nothing to switch between.
+  const accessibleLanguages = availableLanguages.filter((l) => canAccessLanguage(l.id));
+  if (accessibleLanguages.length <= 1 && subscription.currentPlan !== 'full_all') {
     return null;
   }
 
