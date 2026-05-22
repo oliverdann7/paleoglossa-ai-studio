@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronRight, Brain, Library, Sparkles, BookMarked } from 'lucide-react';
+import { ChevronRight, Brain, Library, Sparkles, BookMarked, BookOpen, PlusCircle, MessageCircle } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { CorpusDB } from '../data/corpus.js';
 import { getLangForLemma } from '../lib/data/dictionary.js';
@@ -152,74 +152,126 @@ export const Dashboard = () => {
 
   return (
     <div className="p-6 md:p-12 max-w-6xl mx-auto font-sans min-h-screen">
-      <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <motion.h2
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="text-[32px] font-serif font-light tracking-tight text-ink"
-          >
-            {greetingLine}
-          </motion.h2>
-          <p className="font-body text-[16px] text-muted italic mt-1">
-            {t(subtitleKey, subtitleDefault)}
-          </p>
+      <header className="mb-8 md:mb-10">
+        {/* Greeting row */}
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="min-w-0">
+            <motion.h2
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-[26px] md:text-[32px] font-serif font-light tracking-tight text-ink leading-tight"
+            >
+              {greetingLine}
+            </motion.h2>
+            <p className="font-body text-[14px] md:text-[16px] text-muted italic mt-0.5 hidden md:block">
+              {t(subtitleKey, subtitleDefault)}
+            </p>
+          </div>
+
+          {/* Desktop stat chips */}
+          <div className="hidden md:flex items-center gap-3 shrink-0">
+            {stats.streak > 0 && (
+              <div className="card bg-amberxl/30 border-amber/20 px-4 py-3 flex items-center gap-3 shadow-sm">
+                <span className="text-xl">🔥</span>
+                <div>
+                  <div className="text-xl font-serif font-bold text-amber leading-none">{stats.streak}</div>
+                  <div className="eyebrow text-amber/60 text-[8px] mt-0.5">{t('dashboard.dayStreak', 'Day Streak')}</div>
+                </div>
+              </div>
+            )}
+            <div className="card px-4 py-3 flex items-center gap-3 border-bdr shadow-sm">
+              <ProgressRing progress={dailyProgress} size={36} />
+              <div>
+                <div className="text-[13px] font-bold text-ink leading-none">
+                  {stats.readToday.toLocaleString()} / {dailyGoal.toLocaleString()}
+                </div>
+                <div className="eyebrow text-[8px] mt-0.5">{t('dashboard.wordsReadToday', 'Words read today')}</div>
+              </div>
+            </div>
+            {stats.lastAccuracy !== undefined && stats.lastAccuracy > 0 && (
+              <div className="card px-4 py-3 flex items-center gap-3 border-bdr shadow-sm">
+                <div
+                  className={cn(
+                    'w-9 h-9 rounded-full flex items-center justify-center font-bold text-[13px]',
+                    stats.lastAccuracy >= 90
+                      ? 'bg-green-100 text-green-600'
+                      : stats.lastAccuracy >= 70
+                        ? 'bg-amber-100 text-amber-600'
+                        : 'bg-red-100 text-red-600'
+                  )}
+                >
+                  {stats.lastAccuracy}%
+                </div>
+                <div>
+                  <div className="text-[13px] font-bold text-ink leading-none">{t('dashboard.lastAccuracy', 'Last Accuracy')}</div>
+                  <div className="eyebrow text-[8px] mt-0.5">{t('dashboard.reviewPerformance', 'Review performance')}</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Streak — only show when streak > 0 */}
+        {/* Mobile stat strip — compact horizontal scroll */}
+        <div className="flex md:hidden gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
           {stats.streak > 0 && (
-            <div className="card bg-amberxl/30 border-amber/20 p-4 flex items-center gap-4 shadow-sm">
-              <span className="text-2xl">🔥</span>
+            <div className="shrink-0 flex items-center gap-2 bg-amber/10 border border-amber/20 rounded-xl px-3 py-2">
+              <span className="text-base">🔥</span>
               <div>
-                <div className="text-2xl font-serif font-bold text-amber leading-none">
-                  {stats.streak}
-                </div>
-                <div className="eyebrow text-amber/60 text-[8px] mt-1">
-                  {t('dashboard.dayStreak', 'Day Streak')}
-                </div>
+                <span className="text-[15px] font-bold text-amber leading-none">{stats.streak}</span>
+                <span className="text-[10px] text-amber/60 ml-1">{t('dashboard.days', 'days')}</span>
               </div>
             </div>
           )}
-
-          {/* Daily Goal — uses real goal from settings */}
-          <div className="card p-4 flex items-center gap-4 border-bdr shadow-sm">
-            <ProgressRing progress={dailyProgress} size={40} />
+          <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">
+            <ProgressRing progress={dailyProgress} size={24} />
             <div>
-              <div className="text-[14px] font-bold text-ink leading-none">
-                {stats.readToday.toLocaleString()} / {dailyGoal.toLocaleString()}
-              </div>
-              <div className="eyebrow text-[8px] mt-1">
-                {t('dashboard.wordsReadToday', 'Words read today')}
-              </div>
+              <span className="text-[14px] font-bold text-ink leading-none">
+                {stats.readToday} / {dailyGoal}
+              </span>
+              <div className="text-[10px] text-muted leading-none mt-0.5">{t('dashboard.wordsToday', 'words today')}</div>
             </div>
           </div>
-
-          {/* Last Accuracy — only when data exists */}
           {stats.lastAccuracy !== undefined && stats.lastAccuracy > 0 && (
-            <div className="card p-4 flex items-center gap-4 border-bdr shadow-sm">
-              <div
+            <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">
+              <span
                 className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center font-bold text-[14px]',
-                  stats.lastAccuracy >= 90
-                    ? 'bg-green-100 text-green-600'
-                    : stats.lastAccuracy >= 70
-                      ? 'bg-amber-100 text-amber-600'
-                      : 'bg-red-100 text-red-600'
+                  'text-[15px] font-bold',
+                  stats.lastAccuracy >= 90 ? 'text-green-600' : stats.lastAccuracy >= 70 ? 'text-amber-600' : 'text-red-500'
                 )}
               >
                 {stats.lastAccuracy}%
-              </div>
-              <div>
-                <div className="text-[14px] font-bold text-ink leading-none">
-                  {t('dashboard.lastAccuracy', 'Last Accuracy')}
-                </div>
-                <div className="eyebrow text-[8px] mt-1">
-                  {t('dashboard.reviewPerformance', 'Review performance')}
-                </div>
-              </div>
+              </span>
+              <div className="text-[10px] text-muted leading-none">{t('dashboard.accuracy', 'accuracy')}</div>
             </div>
           )}
+          <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">
+            <Brain className="w-4 h-4 text-blue" />
+            <div>
+              <span className="text-[14px] font-bold text-ink leading-none">{knownCount}</span>
+              <div className="text-[10px] text-muted leading-none mt-0.5">{t('vocab.known', 'known')}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Quick Actions */}
+        <div className="grid grid-cols-4 gap-2 mt-4 md:hidden">
+          {[
+            { icon: BookOpen, label: t('nav.library', 'Library'), to: '/app/library', color: 'text-blue bg-blue/10' },
+            { icon: Brain, label: t('nav.review', 'Review'), to: '/app/review', color: 'text-purple-600 bg-purple-50' },
+            { icon: PlusCircle, label: t('nav.import', 'Import'), to: '/app/import', color: 'text-emerald-600 bg-emerald-50' },
+            { icon: MessageCircle, label: t('nav.tutor', 'Tutor'), to: '/app/tutor', color: 'text-rose-500 bg-rose-50' },
+          ].map(({ icon: Icon, label, to, color }) => (
+            <button
+              key={to}
+              onClick={() => navigate(to)}
+              className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-parch2 border border-bdr active:scale-95 transition-transform"
+            >
+              <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', color)}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-semibold text-ink3 leading-tight text-center">{label}</span>
+            </button>
+          ))}
         </div>
       </header>
 

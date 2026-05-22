@@ -729,9 +729,9 @@ export const Library = () => {
 
       {/* ── Content ──────────────────────────────────────────────────── */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 pb-20">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="card p-6 min-h-[240px] animate-pulse">
+            <div key={i} className="card p-4 md:p-6 min-h-[180px] md:min-h-[240px] animate-pulse">
               <div className="h-6 bg-parch3 rounded w-3/4 mb-3" />
               <div className="h-4 bg-parch3 rounded w-1/2 mb-6" />
               <div className="flex gap-1.5 mb-4">
@@ -774,7 +774,7 @@ export const Library = () => {
                   {colTexts.length}
                 </span>
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                 {colTexts.map((text, i) => (
                   <motion.div
                     key={text.id}
@@ -783,24 +783,24 @@ export const Library = () => {
                     transition={{ delay: i * 0.03, duration: 0.3 }}
                     onClick={() => navigate(`/app/reader/${text.id}`)}
                     className={cn(
-                      'card p-6 flex flex-col justify-between cursor-pointer group hover:border-blue/30 transition-all min-h-[250px] relative overflow-hidden',
+                      'card p-4 md:p-6 flex flex-col justify-between cursor-pointer group hover:border-blue/30 transition-all min-h-[200px] md:min-h-[250px] relative overflow-hidden active:scale-[0.98]',
                       text.sourceType === 'import' && 'border-blue/10 bg-blue/[0.01]'
                     )}
                   >
                     <div>
-                      <h4 className="text-[18px] font-serif font-medium text-ink leading-snug mb-1">
+                      <h4 className="text-[15px] md:text-[18px] font-serif font-medium text-ink leading-snug mb-1 line-clamp-2">
                         {text.title}
                       </h4>
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="text-[10px] text-ink3 uppercase tracking-[0.1em] font-bold">
+                      <div className="flex items-center gap-1.5 mb-3 md:mb-4 flex-wrap">
+                        <span className="text-[9px] md:text-[10px] text-ink3 uppercase tracking-[0.1em] font-bold truncate max-w-[80px]">
                           {text.author}
                         </span>
                         <span className="opacity-30 text-[10px]">•</span>
-                        <span className="text-[10px] text-blue uppercase tracking-widest font-bold">
+                        <span className="text-[9px] md:text-[10px] text-blue uppercase tracking-widest font-bold">
                           {getLanguageDisplayName(text.language)}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 mb-5 text-[11px] text-ink3">
+                      <div className="hidden md:grid grid-cols-2 gap-2 mb-5 text-[11px] text-ink3">
                         <div className="flex items-center gap-1.5">
                           <CalendarDays className="w-3.5 h-3.5 text-muted shrink-0" />
                           <span className="truncate">
@@ -826,7 +826,7 @@ export const Library = () => {
                           </span>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5 mb-5">
+                      <div className="flex flex-wrap gap-1.5 mb-3 md:mb-5">
                         {text.percentKnown !== undefined && (
                           <CoverageBadge percent={text.percentKnown} size="sm" />
                         )}
@@ -845,46 +845,48 @@ export const Library = () => {
                             {t('library.badgeInProgress', 'In Progress')}
                           </span>
                         )}
-                        {[
-                          {
-                            key: 'morphology' as const,
-                            label: t('library.toolMorphology', 'Morphology'),
-                            icon: Languages,
-                            active: text.availableTools.morphology,
-                          },
-                          {
-                            key: 'translation' as const,
-                            label: t('library.toolTranslation', 'Translation'),
-                            icon: BookOpen,
-                            active: text.availableTools.translation,
-                          },
-                          {
-                            key: 'audio' as const,
-                            label: t('library.toolAudio', 'Audio'),
-                            icon: Volume2,
-                            active: text.availableTools.audio,
-                          },
-                          {
-                            key: 'syntax' as const,
-                            label: t('library.toolSyntax', 'Syntax'),
-                            icon: GitBranch,
-                            active: text.availableTools.syntax,
-                          },
-                        ].map((tool) => (
-                          <span
-                            key={tool.key}
-                            className={cn(
-                              'inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider',
-                              tool.active
-                                ? 'bg-blue/5 text-blue border-blue/20'
-                                : 'bg-white text-muted border-bdr/40 opacity-60'
-                            )}
-                          >
-                            <tool.icon className="w-3 h-3" /> {tool.label}
-                          </span>
-                        ))}
+                        <span className="hidden md:contents">
+                          {[
+                            {
+                              key: 'morphology' as const,
+                              label: t('library.toolMorphology', 'Morphology'),
+                              icon: Languages,
+                              active: text.availableTools.morphology,
+                            },
+                            {
+                              key: 'translation' as const,
+                              label: t('library.toolTranslation', 'Translation'),
+                              icon: BookOpen,
+                              active: text.availableTools.translation,
+                            },
+                            {
+                              key: 'audio' as const,
+                              label: t('library.toolAudio', 'Audio'),
+                              icon: Volume2,
+                              active: text.availableTools.audio,
+                            },
+                            {
+                              key: 'syntax' as const,
+                              label: t('library.toolSyntax', 'Syntax'),
+                              icon: GitBranch,
+                              active: text.availableTools.syntax,
+                            },
+                          ].map((tool) => (
+                            <span
+                              key={tool.key}
+                              className={cn(
+                                'inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider',
+                                tool.active
+                                  ? 'bg-blue/5 text-blue border-blue/20'
+                                  : 'bg-white text-muted border-bdr/40 opacity-60'
+                              )}
+                            >
+                              <tool.icon className="w-3 h-3" /> {tool.label}
+                            </span>
+                          ))}
+                        </span>
                       </div>
-                      <div className="flex h-1 gap-0.5 mb-6 opacity-40 group-hover:opacity-100 transition-opacity">
+                      <div className="flex h-1 gap-0.5 mb-3 md:mb-6 opacity-40 group-hover:opacity-100 transition-opacity">
                         <div
                           className="bg-blue h-full"
                           style={{ width: `${Math.max(text.percentKnown || 0, 1)}%` }}
