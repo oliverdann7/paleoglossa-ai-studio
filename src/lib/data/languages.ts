@@ -33,6 +33,7 @@ export interface Language {
   supportsTTS: boolean;
   supportsPronunciationGuide: boolean;
   supportsAiAnalysis?: boolean;
+  hasScriptLearning?: boolean;
   audioProvider?: string;
   reconstructionNote?: string;
   color?: string;
@@ -255,6 +256,7 @@ export const LANGUAGES: Language[] = [
     supportsTTS: false,
     supportsPronunciationGuide: true,
     supportsAiAnalysis: true,
+    hasScriptLearning: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: '#9333EA',
@@ -311,6 +313,7 @@ export const LANGUAGES: Language[] = [
     supportsTTS: false,
     supportsPronunciationGuide: true,
     supportsAiAnalysis: true,
+    hasScriptLearning: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: '#B45309',
@@ -338,6 +341,7 @@ export const LANGUAGES: Language[] = [
     supportsTTS: false,
     supportsPronunciationGuide: true,
     supportsAiAnalysis: true,
+    hasScriptLearning: true,
     audioProvider: undefined,
     reconstructionNote: undefined,
     color: '#78716C',
@@ -366,6 +370,7 @@ export const LANGUAGES: Language[] = [
     supportsTTS: false,
     supportsPronunciationGuide: true,
     supportsAiAnalysis: true,
+    hasScriptLearning: true,
     audioProvider: undefined,
     reconstructionNote: 'Ugaritic is fully deciphered. Texts shown in native script with Latin transliteration.',
     color: '#0E7490',

@@ -4249,6 +4249,19 @@ import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS
 import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
 import { ALL_LATIN_CLASSICS_SECTIONS, LAT_HORACE_ODES_1_1, LAT_HORACE_ODES_1_9, LAT_HORACE_ODES_1_11, LAT_LIVY_PRAEF, LAT_LIVY_1_1, LAT_SALLUST_CAT, LAT_TACITUS_ANN } from "./corpus/latin-classics.js";
 import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOPHOCLES_ANT, GRC_PLUTARCH_ALEX, GRC_LUCIAN_CHARON } from "./corpus/greek-classics.js";
+import { ALL_GREEK_NT_EXTENDED_SECTIONS } from "./corpus/greek-nt-extended.js";
+import { ALL_GREEK_CLASSICS_EXTENDED_SECTIONS } from "./corpus/greek-classics-extended.js";
+import { ALL_LATIN_EXTENDED_SECTIONS } from "./corpus/latin-extended.js";
+import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION, GRC_KOINE_VOCAB_SECTION, LAT_VOCAB_SECTION, TEXT_VOCAB_HEB, HEB_VOCAB_SECTION, TEXT_VOCAB_SYR, SYR_VOCAB_SECTION, TEXT_VOCAB_COP, COP_VOCAB_SECTION, TEXT_VOCAB_ARC, ARC_VOCAB_SECTION, TEXT_VOCAB_AKK, AKK_VOCAB_SECTION, TEXT_VOCAB_HIT, HIT_VOCAB_SECTION, TEXT_VOCAB_UGA, UGA_VOCAB_SECTION, TEXT_VOCAB_SAN, SAN_VOCAB_SECTION, TEXT_VOCAB_EGY, EGY_VOCAB_SECTION } from "./corpus/vocabulary-texts.js";
+import { ALL_HEBREW_EXTENDED_2_SECTIONS } from "./corpus/hebrew-extended-2.js";
+import { ALL_SYRIAC_EXTENDED_SECTIONS } from "./corpus/syriac-extended.js";
+import { ALL_COPTIC_EXTENDED_SECTIONS } from "./corpus/coptic-extended.js";
+import { ALL_ARAMAIC_EXTENDED_SECTIONS } from "./corpus/aramaic-extended.js";
+import { ALL_AKKADIAN_EXTENDED_SECTIONS } from "./corpus/akkadian-extended.js";
+import { ALL_HITTITE_EXTENDED_SECTIONS } from "./corpus/hittite-extended.js";
+import { ALL_UGARITIC_EXTENDED_SECTIONS } from "./corpus/ugaritic-extended.js";
+import { ALL_SANSKRIT_EXTENDED_SECTIONS } from "./corpus/sanskrit-extended.js";
+import { ALL_EGYPTIAN_EXTENDED_SECTIONS } from "./corpus/egyptian-extended.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -4356,6 +4369,19 @@ function getAllEnhancedTexts() {
       TEXT_SOPHOCLES,
       TEXT_PLUTARCH,
       TEXT_LUCIAN,
+      // Greco-Roman extended
+      TEXT_VOCAB_GRC,
+      TEXT_VOCAB_GRC_KOINE,
+      TEXT_VOCAB_LAT,
+      TEXT_VOCAB_HEB,
+      TEXT_VOCAB_SYR,
+      TEXT_VOCAB_COP,
+      TEXT_VOCAB_ARC,
+      TEXT_VOCAB_AKK,
+      TEXT_VOCAB_HIT,
+      TEXT_VOCAB_UGA,
+      TEXT_VOCAB_SAN,
+      TEXT_VOCAB_EGY,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -4393,6 +4419,30 @@ function getLemmaIndex() {
     ...ALL_HEBREW_BEGINNER_SECTIONS,
     ...ALL_LATIN_CLASSICS_SECTIONS,
     ...ALL_GREEK_CLASSICS_SECTIONS,
+    ...ALL_GREEK_NT_EXTENDED_SECTIONS,
+    ...ALL_GREEK_CLASSICS_EXTENDED_SECTIONS,
+    ...ALL_LATIN_EXTENDED_SECTIONS,
+    ...ALL_HEBREW_EXTENDED_2_SECTIONS,
+    ...ALL_SYRIAC_EXTENDED_SECTIONS,
+    ...ALL_COPTIC_EXTENDED_SECTIONS,
+    ...ALL_ARAMAIC_EXTENDED_SECTIONS,
+    ...ALL_AKKADIAN_EXTENDED_SECTIONS,
+    ...ALL_HITTITE_EXTENDED_SECTIONS,
+    ...ALL_UGARITIC_EXTENDED_SECTIONS,
+    ...ALL_SANSKRIT_EXTENDED_SECTIONS,
+    ...ALL_EGYPTIAN_EXTENDED_SECTIONS,
+    GRC_VOCAB_SECTION,
+    GRC_KOINE_VOCAB_SECTION,
+    LAT_VOCAB_SECTION,
+    HEB_VOCAB_SECTION,
+    SYR_VOCAB_SECTION,
+    COP_VOCAB_SECTION,
+    ARC_VOCAB_SECTION,
+    AKK_VOCAB_SECTION,
+    HIT_VOCAB_SECTION,
+    UGA_VOCAB_SECTION,
+    SAN_VOCAB_SECTION,
+    EGY_VOCAB_SECTION,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
@@ -4525,6 +4575,42 @@ export const CorpusDB = {
     if (expandedMatch) return expandedMatch;
     const treebankMatch = ALL_TREEBANK_SECTIONS.find(s => s.id === sectionId);
     if (treebankMatch) return treebankMatch;
+    const greekNtMatch = ALL_GREEK_NT_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (greekNtMatch) return greekNtMatch;
+    const greekClassicsExtMatch = ALL_GREEK_CLASSICS_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (greekClassicsExtMatch) return greekClassicsExtMatch;
+    const latinExtMatch = ALL_LATIN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (latinExtMatch) return latinExtMatch;
+    const hebrewExt2Match = ALL_HEBREW_EXTENDED_2_SECTIONS.find(s => s.id === sectionId);
+    if (hebrewExt2Match) return hebrewExt2Match;
+    const syriacExtMatch = ALL_SYRIAC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (syriacExtMatch) return syriacExtMatch;
+    const copticExtMatch = ALL_COPTIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (copticExtMatch) return copticExtMatch;
+    const aramaicExtMatch = ALL_ARAMAIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (aramaicExtMatch) return aramaicExtMatch;
+    if (sectionId === "grc-voc-1") return GRC_VOCAB_SECTION;
+    if (sectionId === "grc-koine-voc-1") return GRC_KOINE_VOCAB_SECTION;
+    if (sectionId === "lat-voc-1") return LAT_VOCAB_SECTION;
+    if (sectionId === "heb-voc-1") return HEB_VOCAB_SECTION;
+    if (sectionId === "syr-voc-1") return SYR_VOCAB_SECTION;
+    if (sectionId === "cop-voc-1") return COP_VOCAB_SECTION;
+    if (sectionId === "arc-voc-1") return ARC_VOCAB_SECTION;
+    const akkExtMatch = ALL_AKKADIAN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (akkExtMatch) return akkExtMatch;
+    const hitExtMatch = ALL_HITTITE_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (hitExtMatch) return hitExtMatch;
+    const ugaExtMatch = ALL_UGARITIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (ugaExtMatch) return ugaExtMatch;
+    if (sectionId === "akk-voc-1") return AKK_VOCAB_SECTION;
+    if (sectionId === "hit-voc-1") return HIT_VOCAB_SECTION;
+    if (sectionId === "uga-voc-1") return UGA_VOCAB_SECTION;
+    const sanskritExtMatch = ALL_SANSKRIT_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (sanskritExtMatch) return sanskritExtMatch;
+    const egyptianExtMatch = ALL_EGYPTIAN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (egyptianExtMatch) return egyptianExtMatch;
+    if (sectionId === "san-voc-1") return SAN_VOCAB_SECTION;
+    if (sectionId === "egy-voc-1") return EGY_VOCAB_SECTION;
     
     if (import.meta.env.DEV) {
       const mockMatch = getMockSections().find(s => s.id === sectionId);

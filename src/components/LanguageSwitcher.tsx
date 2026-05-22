@@ -34,6 +34,12 @@ export function LanguageSwitcher() {
     return null;
   }
 
+  // Hide the switcher for users who only have one language — nothing to switch between.
+  const accessibleLanguages = availableLanguages.filter((l) => canAccessLanguage(l.id));
+  if (accessibleLanguages.length <= 1 && subscription.currentPlan !== 'full_all') {
+    return null;
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
