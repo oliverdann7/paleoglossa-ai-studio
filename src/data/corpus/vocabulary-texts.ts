@@ -164,3 +164,176 @@ export const LAT_VOCAB_SECTION: TextSection = {
   label: 'Core Vocabulary',
   sentences: VOCAB_LATIN_WORDS('lat'),
 };
+
+// ─── Hebrew ────────────────────────────────────────────────────────────────────
+
+const VOCAB_HEBREW_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['אָדָם'], 'man / human', { אָדָם: { lemma: 'אָדָם', gloss: 'man, human' } }),
+  sent(`${langPrefix}-voc-2`, ['אִשָּׁה'], 'woman', { אִשָּׁה: { lemma: 'אִשָּׁה', gloss: 'woman, wife' } }),
+  sent(`${langPrefix}-voc-3`, ['אֱלֹהִים'], 'God', { אֱלֹהִים: { lemma: 'אֱלֹהִים', gloss: 'God' } }),
+  sent(`${langPrefix}-voc-4`, ['מֶלֶךְ'], 'king', { מֶלֶךְ: { lemma: 'מֶלֶךְ', gloss: 'king' } }),
+  sent(`${langPrefix}-voc-5`, ['אֶרֶץ'], 'earth / land', { אֶרֶץ: { lemma: 'אֶרֶץ', gloss: 'earth, land' } }),
+  sent(`${langPrefix}-voc-6`, ['שָׁמַיִם'], 'heaven', { שָׁמַיִם: { lemma: 'שָׁמַיִם', gloss: 'heaven, sky' } }),
+  sent(`${langPrefix}-voc-7`, ['מַיִם'], 'water', { מַיִם: { lemma: 'מַיִם', gloss: 'water' } }),
+  sent(`${langPrefix}-voc-8`, ['אֵשׁ'], 'fire', { אֵשׁ: { lemma: 'אֵשׁ', gloss: 'fire' } }),
+  sent(`${langPrefix}-voc-9`, ['בַּיִת'], 'house', { בַּיִת: { lemma: 'בַּיִת', gloss: 'house' } }),
+  sent(`${langPrefix}-voc-10`, ['עִיר'], 'city', { עִיר: { lemma: 'עִיר', gloss: 'city' } }),
+  sent(`${langPrefix}-voc-11`, ['בֵּן'], 'son', { בֵּן: { lemma: 'בֵּן', gloss: 'son' } }),
+  sent(`${langPrefix}-voc-12`, ['אָב'], 'father', { אָב: { lemma: 'אָב', gloss: 'father' } }),
+  sent(`${langPrefix}-voc-13`, ['אֵם'], 'mother', { אֵם: { lemma: 'אֵם', gloss: 'mother' } }),
+  sent(`${langPrefix}-voc-14`, ['טוֹב'], 'good', { טוֹב: { lemma: 'טוֹב', gloss: 'good' } }),
+  sent(`${langPrefix}-voc-15`, ['רַע'], 'bad / evil', { רַע: { lemma: 'רַע', gloss: 'bad, evil' } }),
+  sent(`${langPrefix}-voc-16`, ['יָד'], 'hand', { יָד: { lemma: 'יָד', gloss: 'hand' } }),
+  sent(`${langPrefix}-voc-17`, ['דָּבָר'], 'word / thing', { דָּבָר: { lemma: 'דָּבָר', gloss: 'word, thing' } }),
+  sent(`${langPrefix}-voc-18`, ['כֹּל'], 'all', { כֹּל: { lemma: 'כֹּל', gloss: 'all, every' } }),
+  sent(`${langPrefix}-voc-19`, ['גָּדוֹל'], 'great', { גָּדוֹל: { lemma: 'גָּדוֹל', gloss: 'great, large' } }),
+  sent(`${langPrefix}-voc-20`, ['קָדוֹשׁ'], 'holy', { קָדוֹשׁ: { lemma: 'קָדוֹשׁ', gloss: 'holy' } }),
+];
+
+export const TEXT_VOCAB_HEB: Text = {
+  id: 'heb-vocab',
+  corpusId: 'OSHB',
+  title: '100 Most Common Biblical Hebrew Words',
+  language: 'hbo',
+  direction: 'rtl',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 20,
+  sectionsPreview: [{ id: 'heb-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const HEB_VOCAB_SECTION: TextSection = {
+  id: 'heb-voc-1',
+  textId: 'heb-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_HEBREW_WORDS('heb'),
+};
+
+// ─── Syriac ────────────────────────────────────────────────────────────────────
+
+const VOCAB_SYRIAC_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['ܐܠܗܐ'], 'God', { ܐܠܗܐ: { lemma: 'ܐܠܗܐ', gloss: 'God' } }),
+  sent(`${langPrefix}-voc-2`, ['ܡܠܟܐ'], 'king', { ܡܠܟܐ: { lemma: 'ܡܠܟܐ', gloss: 'king' } }),
+  sent(`${langPrefix}-voc-3`, ['ܐܪܥܐ'], 'earth', { ܐܪܥܐ: { lemma: 'ܐܪܥܐ', gloss: 'earth, land' } }),
+  sent(`${langPrefix}-voc-4`, ['ܫܡܝܐ'], 'heaven', { ܫܡܝܐ: { lemma: 'ܫܡܝܐ', gloss: 'heaven, sky' } }),
+  sent(`${langPrefix}-voc-5`, ['ܡܝܐ'], 'water', { ܡܝܐ: { lemma: 'ܡܝܐ', gloss: 'water' } }),
+  sent(`${langPrefix}-voc-6`, ['ܢܘܗܪܐ'], 'light', { ܢܘܗܪܐ: { lemma: 'ܢܘܗܪܐ', gloss: 'light' } }),
+  sent(`${langPrefix}-voc-7`, ['ܒܝܬܐ'], 'house', { ܒܝܬܐ: { lemma: 'ܒܝܬܐ', gloss: 'house' } }),
+  sent(`${langPrefix}-voc-8`, ['ܒܪܐ'], 'son', { ܒܪܐ: { lemma: 'ܒܪܐ', gloss: 'son' } }),
+  sent(`${langPrefix}-voc-9`, ['ܐܒܐ'], 'father', { ܐܒܐ: { lemma: 'ܐܒܐ', gloss: 'father' } }),
+  sent(`${langPrefix}-voc-10`, ['ܡܠܬܐ'], 'word', { ܡܠܬܐ: { lemma: 'ܡܠܬܐ', gloss: 'word' } }),
+  sent(`${langPrefix}-voc-11`, ['ܫܠܡܐ'], 'peace', { ܫܠܡܐ: { lemma: 'ܫܠܡܐ', gloss: 'peace' } }),
+  sent(`${langPrefix}-voc-12`, ['ܚܘܒܐ'], 'love', { ܚܘܒܐ: { lemma: 'ܚܘܒܐ', gloss: 'love' } }),
+  sent(`${langPrefix}-voc-13`, ['ܚܝܐ'], 'life', { ܚܝܐ: { lemma: 'ܚܝܐ', gloss: 'life' } }),
+  sent(`${langPrefix}-voc-14`, ['ܡܘܬܐ'], 'death', { ܡܘܬܐ: { lemma: 'ܡܘܬܐ', gloss: 'death' } }),
+  sent(`${langPrefix}-voc-15`, ['ܛܒ'], 'good', { ܛܒ: { lemma: 'ܛܒ', gloss: 'good' } }),
+];
+
+export const TEXT_VOCAB_SYR: Text = {
+  id: 'syr-vocab',
+  corpusId: 'SYRIAC_PESHITTA',
+  title: '100 Most Common Syriac Words',
+  language: 'syr',
+  direction: 'rtl',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [{ id: 'syr-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const SYR_VOCAB_SECTION: TextSection = {
+  id: 'syr-voc-1',
+  textId: 'syr-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_SYRIAC_WORDS('syr'),
+};
+
+// ─── Coptic ─────────────────────────────────────────────────────────────────────
+
+const VOCAB_COPTIC_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['ⲛⲟⲩⲧⲉ'], 'God', { ⲛⲟⲩⲧⲉ: { lemma: 'ⲛⲟⲩⲧⲉ', gloss: 'God' } }),
+  sent(`${langPrefix}-voc-2`, ['ⲣⲱⲙⲉ'], 'man / human', { ⲣⲱⲙⲉ: { lemma: 'ⲣⲱⲙⲉ', gloss: 'man, human' } }),
+  sent(`${langPrefix}-voc-3`, ['ⲥϩⲓⲙⲉ'], 'woman', { ⲥϩⲓⲙⲉ: { lemma: 'ⲥϩⲓⲙⲉ', gloss: 'woman, wife' } }),
+  sent(`${langPrefix}-voc-4`, ['ⲟⲩⲟⲉⲓⲛ'], 'light', { ⲟⲩⲟⲉⲓⲛ: { lemma: 'ⲟⲩⲟⲉⲓⲛ', gloss: 'light' } }),
+  sent(`${langPrefix}-voc-5`, ['ⲙⲉ'], 'truth', { ⲙⲉ: { lemma: 'ⲙⲉ', gloss: 'truth' } }),
+  sent(`${langPrefix}-voc-6`, ['ϣⲁϫⲉ'], 'word', { ϣⲁϫⲉ: { lemma: 'ϣⲁϫⲉ', gloss: 'word, speech' } }),
+  sent(`${langPrefix}-voc-7`, ['ⲙⲁ'], 'place', { ⲙⲁ: { lemma: 'ⲙⲁ', gloss: 'place' } }),
+  sent(`${langPrefix}-voc-8`, ['ⲣⲟ'], 'mouth', { ⲣⲟ: { lemma: 'ⲣⲟ', gloss: 'mouth, door' } }),
+  sent(`${langPrefix}-voc-9`, ['ϩⲏⲧ'], 'heart', { ϩⲏⲧ: { lemma: 'ϩⲏⲧ', gloss: 'heart, mind' } }),
+  sent(`${langPrefix}-voc-10`, ['ⲥⲱⲧⲙ'], 'to hear', { ⲥⲱⲧⲙ: { lemma: 'ⲥⲱⲧⲙ', gloss: 'hear, obey' } }),
+  sent(`${langPrefix}-voc-11`, ['ⲛⲁⲩ'], 'to see', { ⲛⲁⲩ: { lemma: 'ⲛⲁⲩ', gloss: 'see, behold' } }),
+  sent(`${langPrefix}-voc-12`, ['ⲉⲓ'], 'to come', { ⲉⲓ: { lemma: 'ⲉⲓ', gloss: 'come' } }),
+  sent(`${langPrefix}-voc-13`, ['ⲉⲓⲣⲉ'], 'to make / do', { ⲉⲓⲣⲉ: { lemma: 'ⲉⲓⲣⲉ', gloss: 'make, do' } }),
+  sent(`${langPrefix}-voc-14`, ['ϫⲟⲟ'], 'to say', { ϫⲟⲟ: { lemma: 'ϫⲟⲟ', gloss: 'say, speak' } }),
+  sent(`${langPrefix}-voc-15`, ['ⲛⲁϣⲧ'], 'to be great', { ⲛⲁϣⲧ: { lemma: 'ⲛⲁϣⲧ', gloss: 'great, mighty' } }),
+];
+
+export const TEXT_VOCAB_COP: Text = {
+  id: 'cop-vocab',
+  corpusId: 'COPTIC_SAHIDIC',
+  title: '100 Most Common Coptic Words',
+  language: 'cop',
+  direction: 'ltr',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [{ id: 'cop-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const COP_VOCAB_SECTION: TextSection = {
+  id: 'cop-voc-1',
+  textId: 'cop-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_COPTIC_WORDS('cop'),
+};
+
+// ─── Aramaic ────────────────────────────────────────────────────────────────────
+
+const VOCAB_ARAMAIC_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['יְיָ'], 'Lord', { יְיָ: { lemma: 'יְיָ', gloss: 'Lord' } }),
+  sent(`${langPrefix}-voc-2`, ['מַלְכָּא'], 'king', { מַלְכָּא: { lemma: 'מַלְכָּא', gloss: 'king' } }),
+  sent(`${langPrefix}-voc-3`, ['אַרְעָא'], 'earth', { אַרְעָא: { lemma: 'אַרְעָא', gloss: 'earth, land' } }),
+  sent(`${langPrefix}-voc-4`, ['שְׁמַיָּא'], 'heaven', { שְׁמַיָּא: { lemma: 'שְׁמַיָּא', gloss: 'heaven, sky' } }),
+  sent(`${langPrefix}-voc-5`, ['מַיָּא'], 'water', { מַיָּא: { lemma: 'מַיָּא', gloss: 'water' } }),
+  sent(`${langPrefix}-voc-6`, ['נְהוֹרָא'], 'light', { נְהוֹרָא: { lemma: 'נְהוֹרָא', gloss: 'light' } }),
+  sent(`${langPrefix}-voc-7`, ['חֲשׁוֹכָא'], 'darkness', { חֲשׁוֹכָא: { lemma: 'חֲשׁוֹכָא', gloss: 'darkness' } }),
+  sent(`${langPrefix}-voc-8`, ['בְּרָא'], 'son', { בְּרָא: { lemma: 'בְּרָא', gloss: 'son' } }),
+  sent(`${langPrefix}-voc-9`, ['אַבָּא'], 'father', { אַבָּא: { lemma: 'אַבָּא', gloss: 'father' } }),
+  sent(`${langPrefix}-voc-10`, ['חֶלְמָא'], 'dream', { חֶלְמָא: { lemma: 'חֶלְמָא', gloss: 'dream' } }),
+  sent(`${langPrefix}-voc-11`, ['חָכְמְתָא'], 'wisdom', { חָכְמְתָא: { lemma: 'חָכְמְתָא', gloss: 'wisdom' } }),
+  sent(`${langPrefix}-voc-12`, ['טָב'], 'good', { טָב: { lemma: 'טָב', gloss: 'good' } }),
+  sent(`${langPrefix}-voc-13`, ['רַב'], 'great', { רַב: { lemma: 'רַב', gloss: 'great, large' } }),
+  sent(`${langPrefix}-voc-14`, ['עַבְדָּא'], 'servant', { עַבְדָּא: { lemma: 'עַבְדָּא', gloss: 'servant, slave' } }),
+  sent(`${langPrefix}-voc-15`, ['מִלְּתָא'], 'word', { מִלְּתָא: { lemma: 'מִלְּתָא', gloss: 'word, thing' } }),
+];
+
+export const TEXT_VOCAB_ARC: Text = {
+  id: 'arc-vocab',
+  corpusId: 'ARAMAIC_TARGUM',
+  title: '100 Most Common Aramaic Words',
+  language: 'arc',
+  direction: 'rtl',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [{ id: 'arc-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const ARC_VOCAB_SECTION: TextSection = {
+  id: 'arc-voc-1',
+  textId: 'arc-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_ARAMAIC_WORDS('arc'),
+};
