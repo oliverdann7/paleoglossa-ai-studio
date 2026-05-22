@@ -206,7 +206,7 @@ export const Vocabulary = () => {
       if (!saved && !limitToastShown.current) {
         limitToastShown.current = true;
         addToast(
-          `You've reached the ${vocabLimit.limit}-word limit for your free language. Upgrade to track more words.`,
+          `You've reached the ${vocabLimit.limit}-word save limit for this language. Upgrade for unlimited saves.`,
           'info'
         );
         // Allow showing the toast again after a cooldown.

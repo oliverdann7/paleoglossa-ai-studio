@@ -64,6 +64,11 @@ export async function apiFetch<T = any>(url: string, options: ApiFetchOptions = 
     headers['Authorization'] = 'Bearer ' + token;
   }
 
+  const userGeminiKey = localStorage.getItem('user_gemini_api_key');
+  if (userGeminiKey) {
+    headers['X-Gemini-Api-Key'] = userGeminiKey;
+  }
+
   const res = await fetch(getApiUrl(url), {
     ...fetchOptions,
     headers,

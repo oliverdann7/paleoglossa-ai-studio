@@ -13,6 +13,9 @@ firebase-applet-config.json
 .vercel
 .ratelimit.json
 
+# Capacitor asset generation source (generated from public/app-store-icon-1024.png)
+assets/
+
 # Native signing / provisioning — never commit
 *.p12
 *.cer

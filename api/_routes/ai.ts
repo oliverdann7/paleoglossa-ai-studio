@@ -20,6 +20,12 @@ import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 
+function resolveGeminiApiKey(req: { headers: Record<string, string | string[] | undefined> }): string | undefined {
+  const userKey = req.headers['x-gemini-api-key'];
+  if (userKey && typeof userKey === 'string' && userKey.trim()) return userKey.trim();
+  return process.env.GEMINI_API_KEY;
+}
+
 const MAX_TEXT_LENGTH = 100000;
 const MAX_TEXT_LENGTH_HUMAN = '100,000';
 
@@ -123,7 +129,7 @@ router.post('/api/ai/analyze', optionalAuth as any, async (req: AuthenticatedReq
 
     const langName = getLanguageName(languageId);
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = resolveGeminiApiKey(req);
     let geminiAttempted = false;
     let aiWarnings: string[] = [];
 
@@ -265,7 +271,7 @@ router.post('/api/ai/ocr', async (req: any, res: any) => {
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = resolveGeminiApiKey(req);
     if (!apiKey) {
       return res.status(503).json({
         error: 'OCR is unavailable: GEMINI_API_KEY is not configured on the server.',
@@ -363,7 +369,7 @@ router.post('/api/ai/translate', async (req: any, res: any) => {
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = resolveGeminiApiKey(req);
     if (!apiKey) {
       return res.status(200).json({
         text: sentence,
@@ -449,7 +455,7 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = resolveGeminiApiKey(req);
     if (!apiKey) {
       return res
         .status(200)
@@ -567,7 +573,7 @@ router.post('/api/ai/pronunciation', async (req: any, res: any) => {
     }
 
     const note = LANGUAGE_RECONSTRUCTION_NOTES[languageId] || null;
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = resolveGeminiApiKey(req);
     const langName = getLanguageName(languageId);
 
     if (!apiKey) {
@@ -708,7 +714,7 @@ router.post('/api/ai/metadata', async (req: any, res: any) => {
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = resolveGeminiApiKey(req);
     if (!apiKey) {
       return res.status(200).json({
         difficulty: 'unknown',
@@ -792,7 +798,7 @@ router.post('/api/ai/quiz', async (req: any, res: any) => {
         .json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = resolveGeminiApiKey(req);
     if (!apiKey) {
       return res.status(200).json({
         question: '',
@@ -882,7 +888,7 @@ router.post('/api/ai/syntax', async (req: any, res: any) => {
         .json({ error: 'languageId and sentence are required', code: 'INVALID_INPUT' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = resolveGeminiApiKey(req);
     if (!apiKey) {
       return res.status(200).json({
         tokens: [],
@@ -985,7 +991,7 @@ router.post(
 
       const uid = userId;
       const planId = await lookupUserPlan(uid);
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = resolveGeminiApiKey(req);
 
       if (apiKey && uid) {
         const quota = await checkAndIncrementUsage(uid, planId, 'tutor', languageId.length);
@@ -1079,7 +1085,7 @@ router.post(
       });
 
       const planId = await lookupUserPlan(userId);
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = resolveGeminiApiKey(req);
 
       if (apiKey && userId) {
         const quota = await checkAndIncrementUsage(userId, planId, 'tutor', message.length);
@@ -1280,7 +1286,7 @@ router.post(
         });
       }
 
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = resolveGeminiApiKey(req);
       if (!apiKey) {
         return res.status(200).json({
           parsing: [],
@@ -1386,7 +1392,7 @@ router.post(
 
       const count = Math.min(Math.max(Number(questionCount) || 5, 2), 10);
 
-      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+      const apiKey = resolveGeminiApiKey(req) || process.env.GOOGLE_AI_API_KEY;
       if (!apiKey)
         return res.status(500).json({ error: 'AI service not configured', code: 'CONFIG_ERROR' });
 

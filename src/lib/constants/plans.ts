@@ -1,10 +1,11 @@
 export type PlanId = 'free' | 'basic_1' | 'duo_2' | 'full_all';
 
 /**
- * Maximum number of tracked vocabulary words allowed on the free plan,
- * per language. Words in states NEW and IGNORED are excluded from this count.
+ * Maximum number of tracked vocabulary words allowed per language on the free plan
+ * (or for non-unlocked languages on paid plans).
+ * Words in states NEW and IGNORED are excluded from this count.
  */
-export const FREE_LANGUAGE_WORD_LIMIT = 200;
+export const FREE_LANGUAGE_WORD_LIMIT = 25;
 
 /**
  * Returns true for word states that count against the vocabulary limit.
@@ -17,10 +18,37 @@ export function isTrackedWordState(state: unknown): boolean {
 }
 
 /**
- * Returns true if the given plan enforces a per-language vocabulary word limit.
+ * Returns true if the given plan has any per-language vocabulary limit
+ * (i.e., at least some languages are capped). Full Pack has no limits.
  */
 export function hasVocabLimit(planId: PlanId): boolean {
-  return planId === 'free';
+  return planId !== 'full_all';
+}
+
+/**
+ * Returns true if a specific language has been unlocked for unlimited vocabulary
+ * on the given plan (i.e., no word cap applies to that language).
+ */
+export function isLanguageUnlocked(
+  planId: PlanId,
+  unlockedLanguageIds: string[],
+  languageId: string
+): boolean {
+  if (planId === 'full_all') return true;
+  if (planId === 'free') return false;
+  return unlockedLanguageIds.includes(languageId);
+}
+
+/**
+ * Returns true if a vocabulary word limit is enforced for the given language
+ * on the given plan. All languages are accessible; only the save cap is enforced.
+ */
+export function hasVocabLimitForLanguage(
+  planId: PlanId,
+  unlockedLanguageIds: string[],
+  languageId: string
+): boolean {
+  return !isLanguageUnlocked(planId, unlockedLanguageIds, languageId);
 }
 
 export type SubscriptionStatus = 'free' | 'trialing' | 'active' | 'past_due' | 'canceled';
@@ -32,6 +60,12 @@ export interface Plan {
   name: string;
   monthlyPriceUsd: number;
   yearlyPriceUsd?: number;
+  /**
+   * Number of languages the user can unlock for unlimited vocabulary saves.
+   * 0 = free plan (all languages capped at FREE_LANGUAGE_WORD_LIMIT words each).
+   * 'all' = Full Pack (all languages unlimited).
+   * All plans provide access to every language — this only governs the save cap.
+   */
   languageLimit: number | 'all';
   importLimit: number | 'all';
   aiAnalysisLimit: number | 'all';
@@ -46,13 +80,14 @@ export const PLANS: Plan[] = [
     id: 'free',
     name: 'Free',
     monthlyPriceUsd: 0,
-    languageLimit: 1,
+    languageLimit: 0,
     importLimit: 5,
     aiAnalysisLimit: 20,
     aiLimited: true,
     features: [
-      'Access to curated texts in 1 language',
-      'Basic spaced repetition (up to 20 words/day)',
+      'Access to curated texts in all languages',
+      'Save up to 25 words per language',
+      'Basic spaced repetition',
       'Standard dictionary definitions',
     ],
   },
@@ -66,8 +101,9 @@ export const PLANS: Plan[] = [
     aiAnalysisLimit: 200,
     aiLimited: true,
     features: [
-      'Access to all curated texts in 1 language',
-      'Unlimited spaced repetition',
+      'Access to all curated texts in all languages',
+      'Unlimited vocabulary saves in 1 language of your choice',
+      '25-word cap remains on all other languages',
       'Import your own texts (up to 50)',
       'AI morphology & gloss analysis',
       'Standard support',
@@ -83,8 +119,8 @@ export const PLANS: Plan[] = [
     aiAnalysisLimit: 1000,
     aiLimited: true,
     features: [
-      'Access to all curated texts in 2 languages',
-      'Unlimited spaced repetition',
+      'Access to all curated texts in all languages',
+      'Unlimited vocabulary saves in 2 languages of your choice',
       'Import your own texts (up to 200)',
       'AI morphology & gloss analysis',
       'Public library sharing',
@@ -104,7 +140,7 @@ export const PLANS: Plan[] = [
     aiLimited: false,
     features: [
       'Access to all curated texts in all 11 languages',
-      'Unlimited spaced repetition',
+      'Unlimited vocabulary saves in every language',
       'Unlimited text imports',
       'Unlimited AI morphology & gloss analysis',
       'Public library sharing & forking',
@@ -123,30 +159,27 @@ export function getLanguageLimit(planId: PlanId): number | 'all' {
   return getPlanById(planId).languageLimit;
 }
 
+/**
+ * Returns true if the user can unlock one more language for unlimited vocabulary
+ * (i.e., they have a remaining paid language slot).
+ */
 export function canAddLanguage(planId: PlanId, selectedLanguageIds: string[]): boolean {
   const limit = getLanguageLimit(planId);
   if (limit === 'all') return true;
   return selectedLanguageIds.length < limit;
 }
 
-export function canAccessLanguage(
-  planId: PlanId,
-  languageId: string,
-  selectedLanguageIds: string[]
-): boolean {
-  const limit = getLanguageLimit(planId);
-  if (limit === 'all') return true;
-  return selectedLanguageIds.includes(languageId);
-}
-
-export function getLockedLanguages(planId: PlanId, selectedLanguageIds: string[]): string[] {
-  const limit = getLanguageLimit(planId);
-  if (limit === 'all') return [];
-  return selectedLanguageIds.length >= limit ? [] : selectedLanguageIds;
+/**
+ * All plans can access all languages. Language access is no longer gated by plan.
+ * Only vocabulary save limits differ between plans.
+ * @deprecated Use isLanguageUnlocked to check vocabulary save limits.
+ */
+export function canAccessLanguage(): boolean {
+  return true;
 }
 
 export function getRemainingLanguageSlots(planId: PlanId, selectedLanguageIds: string[]): number {
   const limit = getLanguageLimit(planId);
   if (limit === 'all') return Infinity;
-  return Math.max(0, limit - selectedLanguageIds.length);
+  return Math.max(0, (limit as number) - selectedLanguageIds.length);
 }

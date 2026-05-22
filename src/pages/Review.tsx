@@ -705,31 +705,31 @@ export const Review = () => {
             <div className="grid grid-cols-4 gap-2">
               <button
                 onClick={() => handleRate('AGAIN')}
-                className="py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-0.5"
+                className="py-4 md:py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.again', 'Again')}</span>
-                <span className="text-[10px] opacity-60">1</span>
+                <span className="text-[10px] opacity-60 hidden md:block">1</span>
               </button>
               <button
                 onClick={() => handleRate('HARD')}
-                className="py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-0.5"
+                className="py-4 md:py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.hard', 'Hard')}</span>
-                <span className="text-[10px] opacity-60">2</span>
+                <span className="text-[10px] opacity-60 hidden md:block">2</span>
               </button>
               <button
                 onClick={() => handleRate('GOOD')}
-                className="py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-0.5"
+                className="py-4 md:py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.good', 'Good')}</span>
-                <span className="text-[10px] opacity-60">3</span>
+                <span className="text-[10px] opacity-60 hidden md:block">3</span>
               </button>
               <button
                 onClick={() => handleRate('EASY')}
-                className="py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-0.5"
+                className="py-4 md:py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.easy', 'Easy')}</span>
-                <span className="text-[10px] opacity-60">4</span>
+                <span className="text-[10px] opacity-60 hidden md:block">4</span>
               </button>
             </div>
           </div>

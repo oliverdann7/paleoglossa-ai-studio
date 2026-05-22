@@ -3,7 +3,11 @@ import {
   Camera,
   Check,
   Download,
+  Eye,
+  EyeOff,
+  ExternalLink,
   Globe,
+  Key,
   Languages,
   RefreshCcw,
   Settings as SettingsIcon,
@@ -28,8 +32,8 @@ import { setErrorReportingEnabled } from '../lib/sentry.js';
 
 export const Settings = () => {
   const { settings, updateSettings } = useSettings();
-  const { exportData, stats, vocabLimit } = useKnowledge();
-  const { subscription, setFreeLanguage, setDesiredSecondLanguage, canAccessLanguage } = useSubscription();
+  const { exportData, stats } = useKnowledge();
+  const { subscription, setDesiredSecondLanguage } = useSubscription();
   const allLanguages = getAvailableLanguages();
   const { user, profile, refreshProfile } = useAuth();
 
@@ -52,8 +56,25 @@ export const Settings = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Language slot state ──────────────────────────────────────────────────
-  const [showFreeLangPicker, setShowFreeLangPicker] = useState(false);
   const [showDesiredPicker, setShowDesiredPicker] = useState(false);
+
+  // ── Gemini API key (stored in localStorage only — never synced to Firestore) ─
+  const [geminiApiKey, setGeminiApiKey] = useState(() =>
+    localStorage.getItem('user_gemini_api_key') ?? ''
+  );
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKeySaved, setApiKeySaved] = useState(false);
+
+  const handleSaveApiKey = () => {
+    const trimmed = geminiApiKey.trim();
+    if (trimmed) {
+      localStorage.setItem('user_gemini_api_key', trimmed);
+    } else {
+      localStorage.removeItem('user_gemini_api_key');
+    }
+    setApiKeySaved(true);
+    setTimeout(() => setApiKeySaved(false), 2000);
+  };
 
   // ── Other state ──────────────────────────────────────────────────────────
   const freezesTotal = stats?.freezesTotal ?? 2;
@@ -250,107 +271,26 @@ export const Settings = () => {
           </h3>
 
           <div className="space-y-3">
-            {/* Free language slot */}
-            {subscription.selectedLanguageIds[0] ? (
-              <div className="p-4 rounded-xl bg-parch2/60 border border-bdr">
-                <div className="flex items-center gap-4">
-                  <span className="text-[22px]">{getLanguageIcon(subscription.selectedLanguageIds[0])}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-bold text-[14px] text-ink">
-                        {getLanguageDisplayName(subscription.selectedLanguageIds[0]) || subscription.selectedLanguageIds[0]}
-                      </span>
-                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Free
-                      </span>
-                    </div>
-                    {vocabLimit.isEnabled && (
-                      <>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] text-muted">Vocabulary tracked</span>
-                          <span className={cn(
-                            'text-[11px] font-bold',
-                            vocabLimit.isFull ? 'text-red-500' : vocabLimit.count >= vocabLimit.limit * 0.8 ? 'text-amber' : 'text-ink2'
-                          )}>
-                            {vocabLimit.count}/{vocabLimit.limit}
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full bg-parch3 rounded-full overflow-hidden">
-                          <div
-                            className={cn(
-                              'h-full rounded-full transition-all',
-                              vocabLimit.isFull ? 'bg-red-400' : vocabLimit.count >= vocabLimit.limit * 0.8 ? 'bg-amber' : 'bg-blue'
-                            )}
-                            style={{ width: `${Math.min(100, (vocabLimit.count / vocabLimit.limit) * 100)}%` }}
-                          />
-                        </div>
-                        {vocabLimit.isFull && (
-                          <p className="text-[11px] text-red-500 mt-1">
-                            Limit reached — upgrade to track more words.
-                          </p>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  {subscription.currentPlan === 'free' && (
-                    <button
-                      onClick={() => setShowFreeLangPicker((v) => !v)}
-                      className="text-[11px] text-blue font-semibold hover:underline shrink-0 flex items-center gap-1"
-                    >
-                      Change <ChevronDown className={cn('w-3 h-3 transition-transform', showFreeLangPicker && 'rotate-180')} />
-                    </button>
-                  )}
-                </div>
-                {/* Free language picker */}
-                {showFreeLangPicker && subscription.currentPlan === 'free' && (
-                  <div className="mt-3 pt-3 border-t border-bdr/40">
-                    <p className="text-[11px] text-muted mb-2">
-                      Choose your free language. Your vocabulary count resets for the new language.
-                    </p>
-                    <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
-                      {allLanguages.map((lang) => (
-                        <button
-                          key={lang.id}
-                          onClick={() => {
-                            setFreeLanguage(lang.id);
-                            setShowFreeLangPicker(false);
-                          }}
-                          className={cn(
-                            'flex items-center gap-2 px-3 py-2 rounded-lg text-left text-[12px] transition-all',
-                            lang.id === subscription.selectedLanguageIds[0]
-                              ? 'bg-blue/10 text-blue font-bold'
-                              : 'bg-white border border-bdr/40 text-ink2 hover:border-blue/30'
-                          )}
-                        >
-                          <span>{getLanguageIcon(lang.id)}</span>
-                          <span className="truncate">{lang.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* No free language chosen yet */
-              <div className="p-4 rounded-xl border border-dashed border-blue/30 bg-blue/5">
-                <p className="text-[13px] text-ink2 mb-2">No language selected yet. Choose your free language:</p>
-                <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
-                  {allLanguages.map((lang) => (
-                    <button
-                      key={lang.id}
-                      onClick={() => setFreeLanguage(lang.id)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-[12px] bg-white border border-bdr/40 text-ink2 hover:border-blue/30 transition-all"
-                    >
-                      <span>{getLanguageIcon(lang.id)}</span>
-                      <span className="truncate">{lang.name}</span>
-                    </button>
-                  ))}
-                </div>
+            {/* Free plan: general cap notice */}
+            {subscription.currentPlan === 'free' && (
+              <div className="p-4 rounded-xl bg-blue/5 border border-blue/20">
+                <p className="text-[13px] text-ink2 font-medium mb-1">
+                  Free plan — all languages available
+                </p>
+                <p className="text-[11px] text-muted">
+                  You can read any language, but only <strong>25 words per language</strong> can be saved. Upgrade to unlock unlimited saves in one or more languages.
+                </p>
+                <a
+                  href="/app/subscription"
+                  className="mt-3 inline-block text-[11px] font-bold text-white bg-blue px-3 py-1.5 rounded-lg hover:bg-blue/80 transition-colors"
+                >
+                  View plans →
+                </a>
               </div>
             )}
 
-            {/* Additional language slots (paid plans) */}
-            {subscription.selectedLanguageIds.slice(1).map((langId) => (
+            {/* Unlocked languages (paid plans) */}
+            {subscription.selectedLanguageIds.map((langId) => (
               <div key={langId} className="flex items-center gap-4 p-4 rounded-xl bg-parch2/60 border border-bdr">
                 <span className="text-[22px]">{getLanguageIcon(langId)}</span>
                 <div className="flex-1 min-w-0">
@@ -358,20 +298,20 @@ export const Settings = () => {
                     <span className="font-bold text-[14px] text-ink">
                       {getLanguageDisplayName(langId) || langId}
                     </span>
-                    <span className="text-[9px] font-bold text-blue bg-blue/10 px-1.5 py-0.5 rounded">
-                      Paid
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                      Unlimited
                     </span>
                   </div>
-                  <span className="text-[11px] text-muted">Unlimited vocabulary tracking</span>
+                  <span className="text-[11px] text-muted">Unlimited vocabulary saves</span>
                 </div>
               </div>
             ))}
 
-            {/* Desired second language (free plan only) */}
-            {subscription.currentPlan === 'free' && (
+            {/* Save-for-upgrade: pre-select language before subscribing */}
+            {subscription.currentPlan !== 'full_all' && (
               <div className="p-4 rounded-xl border border-dashed border-bdr">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[13px] font-semibold text-ink">Desired Second Language</span>
+                  <span className="text-[13px] font-semibold text-ink">Pre-select language to unlock</span>
                   {subscription.desiredSecondLanguageId && (
                     <button
                       onClick={() => setDesiredSecondLanguage(undefined)}
@@ -388,12 +328,12 @@ export const Settings = () => {
                       {getLanguageDisplayName(subscription.desiredSecondLanguageId) || subscription.desiredSecondLanguageId}
                     </span>
                     <span className="text-[9px] bg-amber/10 text-amber-700 px-1.5 py-0.5 rounded font-bold">
-                      Saved for Duo upgrade
+                      Saved for upgrade
                     </span>
                   </div>
                 ) : (
                   <p className="text-[11px] text-muted mb-2">
-                    Pick the language you want unlocked when you upgrade to Duo.
+                    Choose the language you want unlimited saves for when you upgrade.
                   </p>
                 )}
                 <button
@@ -406,7 +346,7 @@ export const Settings = () => {
                 {showDesiredPicker && (
                   <div className="mt-2 grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
                     {allLanguages
-                      .filter((l) => !canAccessLanguage(l.id))
+                      .filter((l) => !subscription.selectedLanguageIds.includes(l.id))
                       .map((lang) => (
                         <button
                           key={lang.id}
@@ -936,6 +876,92 @@ export const Settings = () => {
                 </button>
               </div>
             </div>
+          )}
+        </section>
+
+        {/* ── AI / Gemini API Key ────────────────────────────────────────── */}
+        <section className="card p-8">
+          <h3 className="font-serif text-[20px] text-ink mb-2 pb-4 border-b border-bdr flex items-center gap-2">
+            <Key className="w-5 h-5 text-muted" />
+            {t('settings.aiApiKey', 'AI API Key')}
+          </h3>
+          <p className="text-[13px] text-muted mb-5 leading-relaxed">
+            {t(
+              'settings.aiApiKeyDesc',
+              'Paleoglossa uses Google Gemini for AI-powered features (word analysis, tutor, OCR). If AI features are unavailable, you can provide your own free Gemini API key.'
+            )}
+          </p>
+
+          <div className="bg-blue/5 border border-blue/20 rounded-xl p-4 mb-6">
+            <p className="text-[13px] font-semibold text-ink mb-2">
+              {t('settings.howToGetKey', 'How to get a free Gemini API key:')}
+            </p>
+            <ol className="list-decimal list-inside text-[13px] text-muted space-y-1.5">
+              <li>
+                {t('settings.apiStep1', 'Go to')}{' '}
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue underline inline-flex items-center gap-1 hover:text-blue/80"
+                >
+                  Google AI Studio
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </li>
+              <li>{t('settings.apiStep2', 'Sign in with your Google account')}</li>
+              <li>{t('settings.apiStep3', 'Click "Create API Key" and copy it')}</li>
+              <li>{t('settings.apiStep4', 'Paste it in the field below and save')}</li>
+            </ol>
+            <p className="text-[12px] text-muted mt-3 italic">
+              {t(
+                'settings.apiKeyPrivacy',
+                'Your key is stored only on this device and never sent to our servers — it is used directly from your browser.'
+              )}
+            </p>
+          </div>
+
+          <div className="flex gap-2 items-stretch">
+            <div className="relative flex-1">
+              <input
+                type={showApiKey ? 'text' : 'password'}
+                value={geminiApiKey}
+                onChange={(e) => setGeminiApiKey(e.target.value)}
+                placeholder={t('settings.apiKeyPlaceholder', 'AIza...')}
+                className="w-full px-4 py-3 pr-12 rounded-xl border border-bdr bg-white text-ink text-[14px] font-mono focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
+              >
+                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <button
+              onClick={handleSaveApiKey}
+              className="px-5 py-3 rounded-xl bg-blue text-white text-[14px] font-semibold hover:bg-blue/90 transition-colors flex items-center gap-2 shrink-0"
+            >
+              {apiKeySaved ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  {t('settings.saved', 'Saved')}
+                </>
+              ) : (
+                t('settings.save', 'Save')
+              )}
+            </button>
+          </div>
+          {geminiApiKey && (
+            <button
+              onClick={() => {
+                setGeminiApiKey('');
+                localStorage.removeItem('user_gemini_api_key');
+              }}
+              className="mt-3 text-[12px] text-red-500 hover:text-red-700 transition-colors"
+            >
+              {t('settings.removeApiKey', 'Remove saved key')}
+            </button>
           )}
         </section>
 

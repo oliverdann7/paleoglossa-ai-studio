@@ -1,26 +1,10 @@
-import { Navigate } from 'react-router-dom';
-import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
-import { Loader2 } from 'lucide-react';
-
 interface Props {
-  languageId: string;
+  languageId?: string;
   children: React.ReactNode;
 }
 
-export function LanguageGuard({ languageId, children }: Props) {
-  const { canAccessLanguage, isLoaded } = useSubscription();
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-parch">
-        <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
-      </div>
-    );
-  }
-
-  if (!canAccessLanguage(languageId)) {
-    return <Navigate to="/app/subscription" state={{ locked: languageId }} replace />;
-  }
-
+// All languages are accessible on every plan — no redirect needed.
+// The only difference between plans is how many words can be saved per language.
+export function LanguageGuard({ children }: Props) {
   return <>{children}</>;
 }
