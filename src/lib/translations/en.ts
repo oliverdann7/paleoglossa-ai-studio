@@ -106,6 +106,7 @@ export const en = {
     'reader.definitionUnavailable': 'No definition available.',
     'reader.derivedFromMetadata': 'Derived from token metadata',
     'reader.wiktionarySource': 'Wiktionary · CC BY-SA',
+    'reader.stepBibleSource': 'STEPBible · CC BY 4.0',
     'reader.attributionRequired': 'Attribution required',
     'reader.morphologyMissing': 'Morphological parsing is not available for this token yet.',
     'reader.toggleTranslit': 'Translit',

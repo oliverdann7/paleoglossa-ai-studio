@@ -17,6 +17,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"api/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"api/**/*.ts\"",
     "ingest": "tsx scripts/ingest.ts",
+    "build:lexicons": "node scripts/build-stepbible.mjs",
     "config:check": "tsx scripts/check-production-config.ts all",
     "config:check:web": "tsx scripts/check-production-config.ts web",
     "config:check:native": "tsx scripts/check-production-config.ts native",

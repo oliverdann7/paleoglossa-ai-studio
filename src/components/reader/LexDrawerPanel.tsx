@@ -30,6 +30,11 @@ import {
   summarizeWiktionary,
   type WiktionaryLookupResult,
 } from '@/lib/services/wiktionaryService';
+import {
+  lookupStepBible,
+  summarizeStepBible,
+  type StepBibleLookupResult,
+} from '@/lib/services/stepBibleService';
 import { ParadigmModal } from './ParadigmModal.js';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
@@ -183,6 +188,9 @@ export const LexDrawerPanel = ({
   const [wiktionaryResult, setWiktionaryResult] = useState<WiktionaryLookupResult | null>(null);
   const [isWiktionaryLoading, setIsWiktionaryLoading] = useState(false);
   const wiktionaryLemmaRef = useRef<string | null>(null);
+  const [stepBibleResult, setStepBibleResult] = useState<StepBibleLookupResult | null>(null);
+  const [isStepBibleLoading, setIsStepBibleLoading] = useState(false);
+  const stepBibleLemmaRef = useRef<string | null>(null);
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -318,7 +326,7 @@ export const LexDrawerPanel = ({
     return entry?.frequency ?? null;
   }, [selectedWord, textLanguageId]);
 
-  // Reset AI / Wiktionary state whenever the selected word changes.
+  // Reset AI / Wiktionary / STEPBible state whenever the selected word changes.
   useEffect(() => {
     setAiFallbackGloss(null); // eslint-disable-line react-hooks/set-state-in-effect
     setIsAiFallbackLoading(false);
@@ -326,12 +334,37 @@ export const LexDrawerPanel = ({
     setWiktionaryResult(null);
     setIsWiktionaryLoading(false);
     wiktionaryLemmaRef.current = null;
+    setStepBibleResult(null);
+    setIsStepBibleLoading(false);
+    stepBibleLemmaRef.current = null;
   }, [selectedWord?.lemma]);
 
-  // Hit Wiktionary first when no local lexicon entry exists — it's free,
+  // For Hebrew and Greek, hit the STEPBible lexicon first — high-quality
+  // lemma-keyed lexicographer-authored definitions, bundled as JSON.
+  useEffect(() => {
+    if (!selectedWord || definitionLookup) return;
+    if (stepBibleLemmaRef.current === selectedWord.lemma) return;
+    if (textLanguageId !== 'hbo' && textLanguageId !== 'grc' && textLanguageId !== 'grc-koine') {
+      return;
+    }
+    const currentLemma = selectedWord.lemma;
+    stepBibleLemmaRef.current = currentLemma;
+    setIsStepBibleLoading(true); // eslint-disable-line react-hooks/set-state-in-effect
+    (async () => {
+      const result = await lookupStepBible(currentLemma, textLanguageId);
+      if (stepBibleLemmaRef.current !== currentLemma) return;
+      setStepBibleResult(result);
+      setIsStepBibleLoading(false);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
+
+  // Hit Wiktionary when STEPBible doesn't apply or has no entry — free,
   // CORS-enabled, and covers every language in the corpus.
   useEffect(() => {
     if (!selectedWord || definitionLookup) return;
+    if (isStepBibleLoading) return;
+    if (stepBibleResult) return;
     if (wiktionaryLemmaRef.current === selectedWord.lemma) return;
     const currentLemma = selectedWord.lemma;
     wiktionaryLemmaRef.current = currentLemma;
@@ -343,16 +376,16 @@ export const LexDrawerPanel = ({
       setIsWiktionaryLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
+  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId, isStepBibleLoading, !!stepBibleResult]);
 
   // Automatically fetch a short AI gloss when no lexicon definition is available
   // AND Wiktionary returned nothing. Retries once silently before exposing
   // failure to the UI — the meaning panel must never present a dead end.
   useEffect(() => {
     if (!selectedWord || definitionLookup) return;
-    // Wait until Wiktionary has reported success or failure before falling back to AI.
-    if (isWiktionaryLoading) return;
-    if (wiktionaryResult) return;
+    // Wait until STEPBible + Wiktionary have reported before falling back to AI.
+    if (isStepBibleLoading || isWiktionaryLoading) return;
+    if (stepBibleResult || wiktionaryResult) return;
     if (aiFallbackLemmaRef.current === selectedWord.lemma) return;
     const currentLemma = selectedWord.lemma;
     aiFallbackLemmaRef.current = currentLemma;
@@ -396,7 +429,7 @@ export const LexDrawerPanel = ({
       setIsAiFallbackLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId, isWiktionaryLoading, !!wiktionaryResult]);
+  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId, isWiktionaryLoading, !!wiktionaryResult, isStepBibleLoading, !!stepBibleResult]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
@@ -524,6 +557,34 @@ export const LexDrawerPanel = ({
                     </>
                   );
                 }
+                if (stepBibleResult) {
+                  const headline = summarizeStepBible(stepBibleResult);
+                  const extras = stepBibleResult.entries.slice(0, 3);
+                  return (
+                    <>
+                      <div className="text-ink">{headline}</div>
+                      {extras.length > 1 && (
+                        <ol className="mt-2 ml-5 list-decimal text-[15px] text-ink2 space-y-1">
+                          {extras.slice(1).map((e, i) => (
+                            <li key={i}>
+                              <span className="font-medium">{e.lemma}</span>
+                              {e.gloss && <span> — {e.gloss}</span>}
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                      <a
+                        href={stepBibleResult.attribution.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-2 text-[11px] text-muted hover:text-blue transition-colors"
+                      >
+                        {t('reader.stepBibleSource', 'STEPBible · CC BY 4.0')}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </>
+                  );
+                }
                 if (wiktionaryResult) {
                   const headline = summarizeWiktionary(wiktionaryResult);
                   const extra = wiktionaryResult.entries[0]?.definitions.slice(1, 3) || [];
@@ -549,7 +610,7 @@ export const LexDrawerPanel = ({
                     </>
                   );
                 }
-                if (isWiktionaryLoading || isAiFallbackLoading) {
+                if (isStepBibleLoading || isWiktionaryLoading || isAiFallbackLoading) {
                   return (
                     <span className="text-muted italic text-[16px] inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin inline-block" />

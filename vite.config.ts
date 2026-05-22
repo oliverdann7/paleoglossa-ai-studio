@@ -65,7 +65,22 @@ export default defineConfig(({mode}) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+          // Exclude bulky lexicon JSON files from precache — they are
+          // runtime-cached on first lookup instead (see CacheFirst rule below).
+          globIgnores: ['**/lexicons/*.json'],
           runtimeCaching: [
+            {
+              urlPattern: /\/lexicons\/.+\.json$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'lexicons-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
               handler: 'CacheFirst',
