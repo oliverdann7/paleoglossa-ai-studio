@@ -337,3 +337,129 @@ export const ARC_VOCAB_SECTION: TextSection = {
   label: 'Core Vocabulary',
   sentences: VOCAB_ARAMAIC_WORDS('arc'),
 };
+
+// ─── Akkadian ──────────────────────────────────────────────────────────────────
+
+const VOCAB_AKKADIAN_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['šarrum'], 'king', { šarrum: { lemma: 'šarrum', gloss: 'king' } }),
+  sent(`${langPrefix}-voc-2`, ['awīlum'], 'man', { awīlum: { lemma: 'awīlum', gloss: 'man' } }),
+  sent(`${langPrefix}-voc-3`, ['ilum'], 'god', { ilum: { lemma: 'ilum', gloss: 'god' } }),
+  sent(`${langPrefix}-voc-4`, ['bītum'], 'house', { bītum: { lemma: 'bītum', gloss: 'house, temple' } }),
+  sent(`${langPrefix}-voc-5`, ['mātum'], 'land', { mātum: { lemma: 'mātum', gloss: 'land, country' } }),
+  sent(`${langPrefix}-voc-6`, ['ālum'], 'city', { ālum: { lemma: 'ālum', gloss: 'city' } }),
+  sent(`${langPrefix}-voc-7`, ['šamû'], 'heaven', { šamû: { lemma: 'šamû', gloss: 'heaven, sky' } }),
+  sent(`${langPrefix}-voc-8`, ['mû'], 'water', { mû: { lemma: 'mû', gloss: 'water' } }),
+  sent(`${langPrefix}-voc-9`, ['išātum'], 'fire', { išātum: { lemma: 'išātum', gloss: 'fire' } }),
+  sent(`${langPrefix}-voc-10`, ['mārum'], 'son', { mārum: { lemma: 'mārum', gloss: 'son' } }),
+  sent(`${langPrefix}-voc-11`, ['ṣīḫum'], 'laughter', { ṣīḫum: { lemma: 'ṣīḫum', gloss: 'laughter' } }),
+  sent(`${langPrefix}-voc-12`, ['ṭābum'], 'good', { ṭābum: { lemma: 'ṭābum', gloss: 'good' } }),
+  sent(`${langPrefix}-voc-13`, ['rabûm'], 'great', { rabûm: { lemma: 'rabûm', gloss: 'great, large' } }),
+  sent(`${langPrefix}-voc-14`, ['qabûm'], 'to speak', { qabûm: { lemma: 'qabûm', gloss: 'speak, say' } }),
+  sent(`${langPrefix}-voc-15`, ['alākum'], 'to go', { alākum: { lemma: 'alākum', gloss: 'go, come' } }),
+];
+
+export const TEXT_VOCAB_AKK: Text = {
+  id: 'akk-vocab',
+  corpusId: 'AKKADIAN_GILGAMESH',
+  title: '100 Most Common Akkadian Words',
+  language: 'akk',
+  direction: 'ltr',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [{ id: 'akk-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const AKK_VOCAB_SECTION: TextSection = {
+  id: 'akk-voc-1',
+  textId: 'akk-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_AKKADIAN_WORDS('akk'),
+};
+
+// ─── Hittite ────────────────────────────────────────────────────────────────────
+
+const VOCAB_HITTITE_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['LUGAL'], 'king', { LUGAL: { lemma: 'LUGAL', gloss: 'king' } }),
+  sent(`${langPrefix}-voc-2`, ['LÚKÚR'], 'enemy', { LÚKÚR: { lemma: 'LÚKÚR', gloss: 'enemy' } }),
+  sent(`${langPrefix}-voc-3`, ['KUR'], 'land', { KUR: { lemma: 'KUR', gloss: 'land, country' } }),
+  sent(`${langPrefix}-voc-4`, ['URU'], 'city', { URU: { lemma: 'URU', gloss: 'city' } }),
+  sent(`${langPrefix}-voc-5`, ['ÉRINMEŠ'], 'troops', { ÉRINMEŠ: { lemma: 'ÉRINMEŠ', gloss: 'troops, army' } }),
+  sent(`${langPrefix}-voc-6`, ['DINGIR'], 'god', { DINGIR: { lemma: 'DINGIR', gloss: 'god' } }),
+  sent(`${langPrefix}-voc-7`, ['dUTU'], 'sun', { dUTU: { lemma: 'dUTU', gloss: 'sun, day' } }),
+  sent(`${langPrefix}-voc-8`, ['MU'], 'year', { MU: { lemma: 'MU', gloss: 'year' } }),
+  sent(`${langPrefix}-voc-9`, ['LUGAL.GAL'], 'great king', { 'LUGAL.GAL': { lemma: 'LUGAL.GAL', gloss: 'great king' } }),
+  sent(`${langPrefix}-voc-10`, ['mān'], 'if / when', { mān: { lemma: 'mān', gloss: 'if, when' } }),
+  sent(`${langPrefix}-voc-11`, ['nu'], 'and / then', { nu: { lemma: 'nu', gloss: 'and, then' } }),
+  sent(`${langPrefix}-voc-12`, ['pa-'], 'to go', { 'pa-': { lemma: 'pa-', gloss: 'to go' } }),
+  sent(`${langPrefix}-voc-13`, ['uwa-'], 'to come', { 'uwa-': { lemma: 'uwa-', gloss: 'to come' } }),
+  sent(`${langPrefix}-voc-14`, ['ḫar-'], 'to have', { 'ḫar-': { lemma: 'ḫar-', gloss: 'to have, hold' } }),
+  sent(`${langPrefix}-voc-15`, ['ak-'], 'to die', { 'ak-': { lemma: 'ak-', gloss: 'to die' } }),
+];
+
+export const TEXT_VOCAB_HIT: Text = {
+  id: 'hit-vocab',
+  corpusId: 'HITTITE_ANNALS',
+  title: '100 Most Common Hittite Words',
+  language: 'hit',
+  direction: 'ltr',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [{ id: 'hit-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const HIT_VOCAB_SECTION: TextSection = {
+  id: 'hit-voc-1',
+  textId: 'hit-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_HITTITE_WORDS('hit'),
+};
+
+// ─── Ugaritic ───────────────────────────────────────────────────────────────────
+
+const VOCAB_UGARITIC_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['𐎁𐎓𐎍'], 'Baal / lord', { '𐎁𐎓𐎍': { lemma: '𐎁𐎓𐎍', gloss: 'Baal, lord, master' } }),
+  sent(`${langPrefix}-voc-2`, ['𐎛𐎍'], 'El / god', { '𐎛𐎍': { lemma: '𐎛𐎍', gloss: 'El, god' } }),
+  sent(`${langPrefix}-voc-3`, ['𐎎𐎍𐎋'], 'king', { '𐎎𐎍𐎋': { lemma: '𐎎𐎍𐎋', gloss: 'king' } }),
+  sent(`${langPrefix}-voc-4`, ['𐎁𐎐'], 'son', { '𐎁𐎐': { lemma: '𐎁𐎐', gloss: 'son' } }),
+  sent(`${langPrefix}-voc-5`, ['𐎃𐎐'], 'to be gracious', { '𐎃𐎐': { lemma: '𐎃𐎐', gloss: 'to be gracious' } }),
+  sent(`${langPrefix}-voc-6`, ['𐎖𐎍'], 'voice', { '𐎖𐎍': { lemma: '𐎖𐎍', gloss: 'voice, sound' } }),
+  sent(`${langPrefix}-voc-7`, ['𐎂𐎁𐎗'], 'man', { '𐎂𐎁𐎗': { lemma: '𐎂𐎁𐎗', gloss: 'man, warrior' } }),
+  sent(`${langPrefix}-voc-8`, ['𐎋𐎒𐎀'], 'throne', { '𐎋𐎒𐎀': { lemma: '𐎋𐎒𐎀', gloss: 'throne, seat' } }),
+  sent(`${langPrefix}-voc-9`, ['𐎜𐎄𐎐'], 'ear', { '𐎜𐎄𐎐': { lemma: '𐎜𐎄𐎐', gloss: 'ear' } }),
+  sent(`${langPrefix}-voc-10`, ['𐎊𐎄'], 'hand', { '𐎊𐎄': { lemma: '𐎊𐎄', gloss: 'hand' } }),
+  sent(`${langPrefix}-voc-11`, ['𐎌𐎁𐎓'], 'seven', { '𐎌𐎁𐎓': { lemma: '𐎌𐎁𐎓', gloss: 'seven' } }),
+  sent(`${langPrefix}-voc-12`, ['𐎋𐎁𐎄'], 'liver / honor', { '𐎋𐎁𐎄': { lemma: '𐎋𐎁𐎄', gloss: 'liver, honor, weighty' } }),
+  sent(`${langPrefix}-voc-13`, ['𐎎𐎅'], 'what?', { '𐎎𐎅': { lemma: '𐎎𐎅', gloss: 'what?' } }),
+  sent(`${langPrefix}-voc-14`, ['𐎌𐎐𐎀'], 'to hate', { '𐎌𐎐𐎀': { lemma: '𐎌𐎐𐎀', gloss: 'to hate' } }),
+  sent(`${langPrefix}-voc-15`, ['𐎂𐎗'], 'to attack', { '𐎂𐎗': { lemma: '𐎂𐎗', gloss: 'to attack, fight' } }),
+];
+
+export const TEXT_VOCAB_UGA: Text = {
+  id: 'uga-vocab',
+  corpusId: '',
+  title: '100 Most Common Ugaritic Words',
+  language: 'uga',
+  direction: 'ltr',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [{ id: 'uga-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const UGA_VOCAB_SECTION: TextSection = {
+  id: 'uga-voc-1',
+  textId: 'uga-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_UGARITIC_WORDS('uga'),
+};
