@@ -173,6 +173,19 @@ export class AIClient {
     return data.explanation;
   }
 
+  /**
+   * Returns a SHORT dictionary-style gloss (2–8 words) for the Meaning panel.
+   * Use this for the auto-fallback in LexDrawerPanel — NOT the full `explainWord`.
+   */
+  static async getWordGloss(languageId: string, word: string, lemma: string): Promise<string> {
+    const data = await this.request(
+      'explain',
+      { languageId, word, lemma, type: 'gloss' },
+      ExplainResponseSchema
+    );
+    return data.explanation;
+  }
+
   static async explainPhrase(languageId: string, phrase: string): Promise<string> {
     const data = await this.request(
       'explain',

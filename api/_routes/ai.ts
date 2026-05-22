@@ -421,9 +421,9 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
         .json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
     }
 
-    if (!type || !['word', 'phrase', 'paradigm'].includes(type)) {
+    if (!type || !['word', 'phrase', 'paradigm', 'gloss'].includes(type)) {
       return res.status(400).json({
-        error: 'type must be one of: word, phrase, paradigm',
+        error: 'type must be one of: word, phrase, paradigm, gloss',
         code: 'INVALID_INPUT',
         field: 'type',
       });
@@ -439,7 +439,8 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
 
     if (
       type !== 'phrase' &&
-      (!word || typeof word !== 'string' || !lemma || typeof lemma !== 'string')
+      (!word || typeof word !== 'string' || !lemma || typeof lemma !== 'string') &&
+      type !== 'gloss'
     ) {
       return res.status(400).json({
         error: 'word and lemma are required for type=word or type=paradigm',
@@ -486,6 +487,17 @@ Return a concise but thorough philological explanation. Include:
 4. USAGE NOTE — brief context or literary reference if known
 
 Keep the response focused and learner-friendly. Use plain text with clear section headers (no markdown). If you are uncertain about any element, note it with [brackets].
+`;
+    } else if (type === 'gloss') {
+      // Short dictionary-style gloss for the Meaning panel — no prose, no sections.
+      prompt = `You are a ${langName} lexicographer. Give a SHORT English gloss for the ${langName} word "${word}" (lemma: "${lemma}").
+
+Rules:
+- Return ONLY a short gloss — 2 to 8 words maximum.
+- Format: "primary meaning; secondary meaning (if any)"
+- Examples: "to do, make, create" / "love, desire, affection" / "city-state, community"
+- No part-of-speech labels, no numbered lists, no explanation, no markdown.
+- If you cannot identify the word, reply: "unknown word".
 `;
     } else {
       prompt = `You are a philologist specializing in ${langName}. Analyze the word "${word}" (lemma: "${lemma}") in ${langName}.
