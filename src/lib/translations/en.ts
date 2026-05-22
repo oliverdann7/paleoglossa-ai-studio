@@ -104,6 +104,7 @@ export const en = {
     'reader.finishedText': "You've finished this text.",
     'reader.importMoreText': 'Import More Text',
     'reader.definitionUnavailable': 'No definition available.',
+    'reader.derivedFromMetadata': 'Derived from token metadata',
     'reader.attributionRequired': 'Attribution required',
     'reader.morphologyMissing': 'Morphological parsing is not available for this token yet.',
     'reader.toggleTranslit': 'Translit',

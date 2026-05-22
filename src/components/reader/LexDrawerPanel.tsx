@@ -28,6 +28,7 @@ import { AIClient } from '@/lib/services/aiClient';
 import { ParadigmModal } from './ParadigmModal.js';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
+import { getLanguageDisplayName } from '@/lib/constants/languages';
 import {
   findDictionaryEntry,
   getDefinitionWithFallbacks,
@@ -173,7 +174,6 @@ export const LexDrawerPanel = ({
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
   const [aiFallbackGloss, setAiFallbackGloss] = useState<string | null>(null);
   const [isAiFallbackLoading, setIsAiFallbackLoading] = useState(false);
-  const [aiFallbackFailed, setAiFallbackFailed] = useState(false);
   const aiFallbackLemmaRef = useRef<string | null>(null);
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
@@ -211,6 +211,46 @@ export const LexDrawerPanel = ({
     });
   }, [selectedWord, sourceInfo?.name, textLanguageId]);
 
+  /**
+   * A description built from the token's own metadata (lemma, transliteration,
+   * morphology, language). Always non-empty — used as the last-resort meaning
+   * so the panel never shows "No definition available".
+   */
+  const descriptiveFallback = useMemo(() => {
+    if (!selectedWord) return '';
+    const langName = getLanguageDisplayName(textLanguageId) || textLanguageId;
+    const lemma = selectedWord.lemma || selectedWord.text || '';
+    const surface = selectedWord.text || selectedWord.surface || '';
+    const translit = selectedWord.transliteration || '';
+    const morphology = selectedWord.morphology || {};
+    const pos = (morphology.partOfSpeech || '').toLowerCase();
+
+    const parts: string[] = [];
+    if (lemma && surface && lemma !== surface) {
+      parts.push(`${langName} word (lemma: ${lemma}`);
+      if (translit) parts.push(`, transliterated ${translit}`);
+      parts.push(').');
+    } else {
+      parts.push(`${langName} word${translit ? ` — transliterated ${translit}` : ''}.`);
+    }
+
+    if (pos && pos !== 'unknown') {
+      parts.push(` Identified as a ${pos}.`);
+    }
+
+    const morphDetails: string[] = [];
+    for (const key of ['tense', 'voice', 'mood', 'case', 'number', 'gender', 'person', 'state', 'stem'] as const) {
+      const v = (morphology as Record<string, unknown>)[key];
+      if (typeof v === 'string' && v && v !== 'unknown') morphDetails.push(`${key}: ${v}`);
+    }
+    if (morphDetails.length > 0) {
+      parts.push(` Morphology — ${morphDetails.join(', ')}.`);
+    }
+
+    parts.push(' Full dictionary entry unavailable for this lemma yet — open the dictionary, request a fresh AI lookup, or save your own gloss below.');
+    return parts.join('').trim();
+  }, [selectedWord, textLanguageId]);
+
   const handleAiWordExplain = async (useAsGloss: boolean = false) => {
     if (isAiWordLoading || !selectedWord) return;
     setIsAiWordLoading(true);
@@ -227,7 +267,6 @@ export const LexDrawerPanel = ({
           selectedWord.lemma
         );
         setAiFallbackGloss(gloss);
-        setAiFallbackFailed(false);
       } else {
         // Full philological explanation for the AI Insights section
         const explanation = await AIClient.explainWord(
@@ -240,8 +279,8 @@ export const LexDrawerPanel = ({
     } catch (error) {
       console.error(error);
       if (useAsGloss) {
-        // Don't pollute the gloss field with an error string — just mark as failed
-        setAiFallbackFailed(true);
+        // Leave aiFallbackGloss null so the descriptive fallback renders.
+        setAiFallbackGloss(null);
       } else {
         setAiWordInsight(t('reader.failedInsights', 'Failed to fetch insights.'));
       }
@@ -275,40 +314,55 @@ export const LexDrawerPanel = ({
   useEffect(() => {
     setAiFallbackGloss(null); // eslint-disable-line react-hooks/set-state-in-effect
     setIsAiFallbackLoading(false);
-    setAiFallbackFailed(false);
     aiFallbackLemmaRef.current = null;
   }, [selectedWord?.lemma]);
 
   // Automatically fetch a short AI gloss when no lexicon definition is available.
+  // Retries once silently before exposing failure to the UI — the meaning panel
+  // must never present a dead end.
   useEffect(() => {
     if (!selectedWord || definitionLookup) return;
-    // Guard: only attempt once per lemma to avoid repeated calls.
     if (aiFallbackLemmaRef.current === selectedWord.lemma) return;
     const currentLemma = selectedWord.lemma;
     aiFallbackLemmaRef.current = currentLemma;
     setIsAiFallbackLoading(true);
+
+    const isUsefulGloss = (g: string | null | undefined): g is string => {
+      if (!g) return false;
+      const cleaned = g.trim().toLowerCase();
+      if (!cleaned) return false;
+      // Reject the prompt's own "I don't know" sentinels.
+      if (cleaned === 'unknown word' || cleaned === 'unknown' || cleaned.startsWith('unknown word')) return false;
+      if (cleaned.startsWith('no explanation') || cleaned.startsWith('failed to')) return false;
+      return true;
+    };
+
     (async () => {
-      try {
-        // Use the short-gloss endpoint so the Meaning panel shows "to do, make"
-        // rather than a multi-paragraph philological analysis.
-        const gloss = await AIClient.getWordGloss(
-          textLanguageId,
-          selectedWord.text,
-          selectedWord.lemma
-        );
-        if (aiFallbackLemmaRef.current === currentLemma && gloss) {
-          setAiFallbackGloss(gloss);
-        }
-      } catch (error) {
-        console.error('AI gloss fallback failed:', error);
-        if (aiFallbackLemmaRef.current === currentLemma) {
-          setAiFallbackFailed(true);
-        }
-      } finally {
-        if (aiFallbackLemmaRef.current === currentLemma) {
-          setIsAiFallbackLoading(false);
+      const MAX_ATTEMPTS = 2;
+      let lastGloss: string | null = null;
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        if (aiFallbackLemmaRef.current !== currentLemma) return;
+        try {
+          const gloss = await AIClient.getWordGloss(
+            textLanguageId,
+            selectedWord.text,
+            selectedWord.lemma
+          );
+          if (isUsefulGloss(gloss)) {
+            lastGloss = gloss;
+            break;
+          }
+        } catch (error) {
+          console.error(`AI gloss fallback attempt ${attempt + 1} failed:`, error);
         }
       }
+      if (aiFallbackLemmaRef.current !== currentLemma) return;
+      if (lastGloss) {
+        setAiFallbackGloss(lastGloss);
+      }
+      // If no useful gloss, leave aiFallbackGloss null — the meaning panel
+      // renders the descriptive fallback derived from token metadata instead.
+      setIsAiFallbackLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
@@ -457,27 +511,27 @@ export const LexDrawerPanel = ({
                     </>
                   );
                 }
-                // AI failed — show retry button rather than a dead-end message
+                // AI didn't return a useful gloss — show a description built from
+                // the word's own metadata so the panel always carries meaning.
                 return (
                   <div>
-                    <span className="text-muted italic text-[16px]">
-                      {t('reader.definitionUnavailable', 'No definition found.')}
+                    <span className="block text-ink text-[16px] leading-snug">
+                      {descriptiveFallback}
+                    </span>
+                    <span className="block text-[11px] text-muted font-normal mt-2">
+                      {t('reader.derivedFromMetadata', 'Derived from token metadata')}
                     </span>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         onClick={() => {
-                          // Reset guard so the auto-fetch can retry
                           aiFallbackLemmaRef.current = null;
-                          setAiFallbackFailed(false);
                           setAiFallbackGloss(null);
                           handleAiWordExplain(true);
                         }}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue/8 border border-blue/20 text-[12px] font-medium text-blue hover:bg-blue/15 transition-colors"
                       >
                         <Sparkles className="w-3 h-3" />
-                        {aiFallbackFailed
-                          ? t('reader.retryAi', 'Retry AI definition')
-                          : t('reader.askAiForDef', 'Ask AI for a definition')}
+                        {t('reader.retryAi', 'Retry AI definition')}
                       </button>
                       <Link
                         to={getDictionaryPath(selectedWord.lemma, textLanguageId)}
