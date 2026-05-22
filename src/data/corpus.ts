@@ -3870,7 +3870,7 @@ import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOP
 import { ALL_GREEK_NT_EXTENDED_SECTIONS } from "./corpus/greek-nt-extended.js";
 import { ALL_GREEK_CLASSICS_EXTENDED_SECTIONS } from "./corpus/greek-classics-extended.js";
 import { ALL_LATIN_EXTENDED_SECTIONS } from "./corpus/latin-extended.js";
-import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION, GRC_KOINE_VOCAB_SECTION, LAT_VOCAB_SECTION, TEXT_VOCAB_HEB, HEB_VOCAB_SECTION, TEXT_VOCAB_SYR, SYR_VOCAB_SECTION, TEXT_VOCAB_COP, COP_VOCAB_SECTION, TEXT_VOCAB_ARC, ARC_VOCAB_SECTION, TEXT_VOCAB_AKK, AKK_VOCAB_SECTION, TEXT_VOCAB_HIT, HIT_VOCAB_SECTION, TEXT_VOCAB_UGA, UGA_VOCAB_SECTION } from "./corpus/vocabulary-texts.js";
+import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION, GRC_KOINE_VOCAB_SECTION, LAT_VOCAB_SECTION, TEXT_VOCAB_HEB, HEB_VOCAB_SECTION, TEXT_VOCAB_SYR, SYR_VOCAB_SECTION, TEXT_VOCAB_COP, COP_VOCAB_SECTION, TEXT_VOCAB_ARC, ARC_VOCAB_SECTION, TEXT_VOCAB_AKK, AKK_VOCAB_SECTION, TEXT_VOCAB_HIT, HIT_VOCAB_SECTION, TEXT_VOCAB_UGA, UGA_VOCAB_SECTION, TEXT_VOCAB_SAN, SAN_VOCAB_SECTION, TEXT_VOCAB_EGY, EGY_VOCAB_SECTION } from "./corpus/vocabulary-texts.js";
 import { ALL_HEBREW_EXTENDED_2_SECTIONS } from "./corpus/hebrew-extended-2.js";
 import { ALL_SYRIAC_EXTENDED_SECTIONS } from "./corpus/syriac-extended.js";
 import { ALL_COPTIC_EXTENDED_SECTIONS } from "./corpus/coptic-extended.js";
@@ -3878,6 +3878,8 @@ import { ALL_ARAMAIC_EXTENDED_SECTIONS } from "./corpus/aramaic-extended.js";
 import { ALL_AKKADIAN_EXTENDED_SECTIONS } from "./corpus/akkadian-extended.js";
 import { ALL_HITTITE_EXTENDED_SECTIONS } from "./corpus/hittite-extended.js";
 import { ALL_UGARITIC_EXTENDED_SECTIONS } from "./corpus/ugaritic-extended.js";
+import { ALL_SANSKRIT_EXTENDED_SECTIONS } from "./corpus/sanskrit-extended.js";
+import { ALL_EGYPTIAN_EXTENDED_SECTIONS } from "./corpus/egyptian-extended.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -3995,6 +3997,8 @@ function getAllEnhancedTexts() {
       TEXT_VOCAB_AKK,
       TEXT_VOCAB_HIT,
       TEXT_VOCAB_UGA,
+      TEXT_VOCAB_SAN,
+      TEXT_VOCAB_EGY,
       ...(import.meta.env.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
@@ -4042,6 +4046,8 @@ function getLemmaIndex() {
     ...ALL_AKKADIAN_EXTENDED_SECTIONS,
     ...ALL_HITTITE_EXTENDED_SECTIONS,
     ...ALL_UGARITIC_EXTENDED_SECTIONS,
+    ...ALL_SANSKRIT_EXTENDED_SECTIONS,
+    ...ALL_EGYPTIAN_EXTENDED_SECTIONS,
     GRC_VOCAB_SECTION,
     GRC_KOINE_VOCAB_SECTION,
     LAT_VOCAB_SECTION,
@@ -4052,6 +4058,8 @@ function getLemmaIndex() {
     AKK_VOCAB_SECTION,
     HIT_VOCAB_SECTION,
     UGA_VOCAB_SECTION,
+    SAN_VOCAB_SECTION,
+    EGY_VOCAB_SECTION,
     ...(import.meta.env.DEV ? getMockSections() : [])
   ];
   for (const section of allSections) {
@@ -4206,6 +4214,12 @@ export const CorpusDB = {
     if (sectionId === "akk-voc-1") return AKK_VOCAB_SECTION;
     if (sectionId === "hit-voc-1") return HIT_VOCAB_SECTION;
     if (sectionId === "uga-voc-1") return UGA_VOCAB_SECTION;
+    const sanskritExtMatch = ALL_SANSKRIT_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (sanskritExtMatch) return sanskritExtMatch;
+    const egyptianExtMatch = ALL_EGYPTIAN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
+    if (egyptianExtMatch) return egyptianExtMatch;
+    if (sectionId === "san-voc-1") return SAN_VOCAB_SECTION;
+    if (sectionId === "egy-voc-1") return EGY_VOCAB_SECTION;
     
     if (import.meta.env.DEV) {
       const mockMatch = getMockSections().find(s => s.id === sectionId);

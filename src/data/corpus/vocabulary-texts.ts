@@ -463,3 +463,87 @@ export const UGA_VOCAB_SECTION: TextSection = {
   label: 'Core Vocabulary',
   sentences: VOCAB_UGARITIC_WORDS('uga'),
 };
+
+// ─── Sanskrit ───────────────────────────────────────────────────────────────────
+
+const VOCAB_SANSKRIT_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['धर्म'], 'dharma / duty', { धर्म: { lemma: 'धर्म', gloss: 'dharma, law, duty' } }),
+  sent(`${langPrefix}-voc-2`, ['कर्म'], 'action / karma', { कर्म: { lemma: 'कर्म', gloss: 'action, karma' } }),
+  sent(`${langPrefix}-voc-3`, ['अर्थ'], 'wealth / meaning', { अर्थ: { lemma: 'अर्थ', gloss: 'wealth, purpose, meaning' } }),
+  sent(`${langPrefix}-voc-4`, ['मोक्ष'], 'liberation', { मोक्ष: { lemma: 'मोक्ष', gloss: 'liberation, release' } }),
+  sent(`${langPrefix}-voc-5`, ['आत्मन्'], 'self / soul', { आत्मन्: { lemma: 'आत्मन्', gloss: 'self, soul, atman' } }),
+  sent(`${langPrefix}-voc-6`, ['ब्रह्मन्'], 'Brahman', { ब्रह्मन्: { lemma: 'ब्रह्मन्', gloss: 'Brahman, ultimate reality' } }),
+  sent(`${langPrefix}-voc-7`, ['देव'], 'god', { देव: { lemma: 'देव', gloss: 'god, deity' } }),
+  sent(`${langPrefix}-voc-8`, ['मनुष्य'], 'human', { मनुष्य: { lemma: 'मनुष्य', gloss: 'human, man' } }),
+  sent(`${langPrefix}-voc-9`, ['राजन्'], 'king', { राजन्: { lemma: 'राजन्', gloss: 'king' } }),
+  sent(`${langPrefix}-voc-10`, ['गुरु'], 'teacher', { गुरु: { lemma: 'गुरु', gloss: 'teacher, guru, heavy' } }),
+  sent(`${langPrefix}-voc-11`, ['शिष्य'], 'disciple', { शिष्य: { lemma: 'शिष्य', gloss: 'disciple, student' } }),
+  sent(`${langPrefix}-voc-12`, ['प्रेमन्'], 'love', { प्रेमन्: { lemma: 'प्रेमन्', gloss: 'love' } }),
+  sent(`${langPrefix}-voc-13`, ['ज्ञान'], 'knowledge', { ज्ञान: { lemma: 'ज्ञान', gloss: 'knowledge, wisdom' } }),
+  sent(`${langPrefix}-voc-14`, ['शान्ति'], 'peace', { शान्ति: { lemma: 'शान्ति', gloss: 'peace, tranquility' } }),
+  sent(`${langPrefix}-voc-15`, ['सत्य'], 'truth', { सत्य: { lemma: 'सत्य', gloss: 'truth' } }),
+];
+
+export const TEXT_VOCAB_SAN: Text = {
+  id: 'san-vocab',
+  corpusId: 'SANSKRIT_MAHABHARATA',
+  title: '100 Most Common Sanskrit Words',
+  language: 'san',
+  direction: 'ltr',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [{ id: 'san-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const SAN_VOCAB_SECTION: TextSection = {
+  id: 'san-voc-1',
+  textId: 'san-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_SANSKRIT_WORDS('san'),
+};
+
+// ─── Egyptian ───────────────────────────────────────────────────────────────────
+
+const VOCAB_EGYPTIAN_WORDS = (langPrefix: string) => [
+  sent(`${langPrefix}-voc-1`, ['nṯr'], 'god', { nṯr: { lemma: 'nṯr', gloss: 'god' } }),
+  sent(`${langPrefix}-voc-2`, ['rmṯ'], 'people', { rmṯ: { lemma: 'rmṯ', gloss: 'people, mankind' } }),
+  sent(`${langPrefix}-voc-3`, ['pr'], 'house', { pr: { lemma: 'pr', gloss: 'house, temple, domain' } }),
+  sent(`${langPrefix}-voc-4`, ['tȝ'], 'land', { tȝ: { lemma: 'tȝ', gloss: 'land, earth' } }),
+  sent(`${langPrefix}-voc-5`, ['ḥr'], 'face / upon', { ḥr: { lemma: 'ḥr', gloss: 'face, upon' } }),
+  sent(`${langPrefix}-voc-6`, ['ỉb'], 'heart', { ỉb: { lemma: 'ỉb', gloss: 'heart, mind' } }),
+  sent(`${langPrefix}-voc-7`, ['r'], 'mouth', { r: { lemma: 'r', gloss: 'mouth, speech' } }),
+  sent(`${langPrefix}-voc-8`, ['nfr'], 'good / beautiful', { nfr: { lemma: 'nfr', gloss: 'good, beautiful, perfect' } }),
+  sent(`${langPrefix}-voc-9`, ['ˁnḫ'], 'life / live', { 'ˁnḫ': { lemma: 'ˁnḫ', gloss: 'life, to live' } }),
+  sent(`${langPrefix}-voc-10`, ['mȝˁt'], 'truth / order', { mȝˁt: { lemma: 'mȝˁt', gloss: 'truth, justice, Maat' } }),
+  sent(`${langPrefix}-voc-11`, ['ỉr'], 'to make / do', { ỉr: { lemma: 'ỉr', gloss: 'to make, to do' } }),
+  sent(`${langPrefix}-voc-12`, ['ḏd'], 'to say', { ḏd: { lemma: 'ḏd', gloss: 'to say, speak' } }),
+  sent(`${langPrefix}-voc-13`, ['m'], 'in / from / as', { m: { lemma: 'm', gloss: 'in, from, as, with' } }),
+  sent(`${langPrefix}-voc-14`, ['n'], 'to / for / of', { n: { lemma: 'n', gloss: 'to, for, of, belonging to' } }),
+  sent(`${langPrefix}-voc-15`, ['ỉw'], 'and / while', { ỉw: { lemma: 'ỉw', gloss: 'and, while, (auxiliary)' } }),
+];
+
+export const TEXT_VOCAB_EGY: Text = {
+  id: 'egy-vocab',
+  corpusId: 'EGYPTIAN_TEXTS',
+  title: '100 Most Common Egyptian Words',
+  language: 'egy',
+  direction: 'ltr',
+  level: 'A0',
+  corpusType: 'vocabulary',
+  hasTranslation: true,
+  isSample: false,
+  sentenceCount: 15,
+  sectionsPreview: [{ id: 'egy-voc-1', label: 'Core Vocabulary' }],
+};
+
+export const EGY_VOCAB_SECTION: TextSection = {
+  id: 'egy-voc-1',
+  textId: 'egy-vocab',
+  sequence: 1,
+  label: 'Core Vocabulary',
+  sentences: VOCAB_EGYPTIAN_WORDS('egy'),
+};
