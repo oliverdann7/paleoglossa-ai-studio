@@ -64,12 +64,29 @@ const MobileNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
   <Link
     to={to}
     className={cn(
-      'flex flex-col items-center gap-1 p-2 flex-1 transition-all duration-150',
+      'flex flex-col items-center gap-0.5 py-1 px-1 flex-1 transition-all duration-150 min-h-[52px] justify-center',
       isActive ? 'text-blue' : 'text-muted hover:text-ink3'
     )}
   >
-    <Icon className={cn('w-5 h-5', isActive && 'fill-bluexl')} strokeWidth={isActive ? 2 : 1.5} />
-    <span className="text-[10px] font-medium font-sans">{label}</span>
+    <div
+      className={cn(
+        'flex items-center justify-center w-12 h-7 rounded-full transition-all duration-200',
+        isActive ? 'bg-blue/12' : ''
+      )}
+    >
+      <Icon
+        className={cn('w-5 h-5 transition-transform duration-200', isActive && 'scale-110')}
+        strokeWidth={isActive ? 2.2 : 1.5}
+      />
+    </div>
+    <span
+      className={cn(
+        'text-[10px] font-sans transition-all duration-150 leading-none',
+        isActive ? 'font-bold' : 'font-medium'
+      )}
+    >
+      {label}
+    </span>
   </Link>
 );
 
