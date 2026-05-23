@@ -27,6 +27,48 @@ export const DICTIONARY_SOURCES: Record<string, DictionarySource> = {
     licenseName: 'Public Domain',
     url: 'https://archives.nd.edu/whitakers/words.htm',
   },
+  'syr-lexicon': {
+    id: 'syr-lexicon',
+    name: 'Syriac Lexicon',
+    licenseName: 'Public Domain',
+    url: 'https://sedra.bethmardutho.org/',
+  },
+  'coptic-lexicon': {
+    id: 'coptic-lexicon',
+    name: 'Crum\'s Coptic Dictionary',
+    licenseName: 'Public Domain',
+    url: 'https://coptic-dictionary.org/',
+  },
+  'jastrow': {
+    id: 'jastrow',
+    name: 'Jastrow\'s Dictionary of the Targumim',
+    licenseName: 'Public Domain',
+    url: 'https://www.tyndalearchive.com/',
+  },
+  'cad': {
+    id: 'cad',
+    name: 'Chicago Assyrian Dictionary',
+    licenseName: 'Public Domain',
+    url: 'https://oi.uchicago.edu/research/publications/assyrian-dictionary-oriental-institute-university-chicago-cad',
+  },
+  'monier-williams': {
+    id: 'monier-williams',
+    name: 'Monier-Williams Sanskrit Dictionary',
+    licenseName: 'Public Domain',
+    url: 'https://www.sanskrit-lexicon.uni-koeln.de/monier/',
+  },
+  'hittite-lexicon': {
+    id: 'hittite-lexicon',
+    name: 'Hittite Etymological Dictionary',
+    licenseName: 'Public Domain',
+    url: 'https://www.ediana.gwi.uni-muenchen.de/',
+  },
+  'faulkner': {
+    id: 'faulkner',
+    name: 'Faulkner\'s Middle Egyptian Dictionary',
+    licenseName: 'Public Domain',
+    url: 'https://www.egyptologyforum.org/',
+  },
 };
 
 // Extended dictionary with common words from the corpus
@@ -3899,6 +3941,53 @@ export const DICTIONARY: Record<string, DictionaryEntry> = {
   'grc:βίος': { id: 'grc:βίος', lemma: 'βίος', languageId: 'grc-class', language: 'Ancient Greek', transliteration: 'bios', partOfSpeech: 'noun', shortGloss: 'life, way of life, livelihood', fullDefinition: 'Life; a way of life; livelihood, means of living.', semanticDomain: ['existence'], relatedForms: ['βίου', 'βίον', 'βίῳ', 'βίοι'], corpusExamples: [], source: DICTIONARY_SOURCES['liddell-scott'], dictionaries: [DICTIONARY_SOURCES['liddell-scott']], frequency: 8 },
   'grc:ἔργον': { id: 'grc:ἔργον', lemma: 'ἔργον', languageId: 'grc-class', language: 'Ancient Greek', transliteration: 'ergon', partOfSpeech: 'noun', shortGloss: 'work, deed, action', fullDefinition: 'A work, deed, action; the result of labor; a task.', semanticDomain: ['activity', 'creation'], relatedForms: ['ἔργου', 'ἔργον', 'ἔργῳ', 'ἔργα'], corpusExamples: [], source: DICTIONARY_SOURCES['liddell-scott'], dictionaries: [DICTIONARY_SOURCES['liddell-scott']], frequency: 10 },
   'grc:χρόνος': { id: 'grc:χρόνος', lemma: 'χρόνος', languageId: 'grc-class', language: 'Ancient Greek', transliteration: 'chronos', partOfSpeech: 'noun', shortGloss: 'time, period, duration', fullDefinition: 'Time; a period of time; duration; a moment.', semanticDomain: ['time'], relatedForms: ['χρόνου', 'χρόνον', 'χρόνῳ', 'χρόνοι'], corpusExamples: [], source: DICTIONARY_SOURCES['liddell-scott'], dictionaries: [DICTIONARY_SOURCES['liddell-scott']], frequency: 9 },
+
+  // ============ SYRIAC (syr) ============
+  'syr:ܐܠܗܐ': { id: 'syr:ܐܠܗܐ', lemma: 'ܐܠܗܐ', languageId: 'syr', language: 'Syriac', transliteration: 'Alaha', partOfSpeech: 'noun', shortGloss: 'God', fullDefinition: 'God, the Supreme Being in Syriac Christian tradition.', semanticDomain: ['theology'], relatedForms: ['ܐܠܗ', 'ܐܠܗܬܐ'], corpusExamples: [], source: DICTIONARY_SOURCES['syr-lexicon'], dictionaries: [DICTIONARY_SOURCES['syr-lexicon']], frequency: 10 },
+  'syr:ܡܠܬܐ': { id: 'syr:ܡܠܬܐ', lemma: 'ܡܠܬܐ', languageId: 'syr', language: 'Syriac', transliteration: 'Meltha', partOfSpeech: 'noun', shortGloss: 'word', fullDefinition: 'Word, speech, utterance; the divine Logos.', semanticDomain: ['language', 'theology'], relatedForms: ['ܡܠܐ', 'ܡܠܬ'], corpusExamples: [], source: DICTIONARY_SOURCES['syr-lexicon'], dictionaries: [DICTIONARY_SOURCES['syr-lexicon']], frequency: 9 },
+  'syr:ܢܘܗܪܐ': { id: 'syr:ܢܘܗܪܐ', lemma: 'ܢܘܗܪܐ', languageId: 'syr', language: 'Syriac', transliteration: 'Nuhra', partOfSpeech: 'noun', shortGloss: 'light', fullDefinition: 'Light, illumination; spiritual enlightenment.', semanticDomain: ['physics', 'theology'], relatedForms: ['ܢܗܪ'], corpusExamples: [], source: DICTIONARY_SOURCES['syr-lexicon'], dictionaries: [DICTIONARY_SOURCES['syr-lexicon']], frequency: 8 },
+  'syr:ܫܡܝܐ': { id: 'syr:ܫܡܝܐ', lemma: 'ܫܡܝܐ', languageId: 'syr', language: 'Syriac', transliteration: 'Shmaya', partOfSpeech: 'noun', shortGloss: 'heaven', fullDefinition: 'Heaven, sky; the celestial realm.', semanticDomain: ['cosmology', 'theology'], relatedForms: ['ܫܡܝ'], corpusExamples: [], source: DICTIONARY_SOURCES['syr-lexicon'], dictionaries: [DICTIONARY_SOURCES['syr-lexicon']], frequency: 8 },
+  'syr:ܐܪܥܐ': { id: 'syr:ܐܪܥܐ', lemma: 'ܐܪܥܐ', languageId: 'syr', language: 'Syriac', transliteration: 'Ar\'a', partOfSpeech: 'noun', shortGloss: 'earth', fullDefinition: 'Earth, land, ground.', semanticDomain: ['cosmology', 'geography'], relatedForms: ['ܐܪܥ'], corpusExamples: [], source: DICTIONARY_SOURCES['syr-lexicon'], dictionaries: [DICTIONARY_SOURCES['syr-lexicon']], frequency: 8 },
+
+  // ============ COPTIC (cop) ============
+  'cop:ⲛⲟⲩⲧⲉ': { id: 'cop:ⲛⲟⲩⲧⲉ', lemma: 'ⲛⲟⲩⲧⲉ', languageId: 'cop', language: 'Coptic', transliteration: 'noute', partOfSpeech: 'noun', shortGloss: 'God', fullDefinition: 'God; the Supreme Being in Coptic Christian tradition.', semanticDomain: ['theology'], relatedForms: ['ⲡⲛⲟⲩⲧⲉ'], corpusExamples: [], source: DICTIONARY_SOURCES['coptic-lexicon'], dictionaries: [DICTIONARY_SOURCES['coptic-lexicon']], frequency: 10 },
+  'cop:ⲟⲩⲟⲉⲓⲛ': { id: 'cop:ⲟⲩⲟⲉⲓⲛ', lemma: 'ⲟⲩⲟⲉⲓⲛ', languageId: 'cop', language: 'Coptic', transliteration: 'ouoein', partOfSpeech: 'noun', shortGloss: 'light', fullDefinition: 'Light; illumination, brightness.', semanticDomain: ['physics'], relatedForms: [], corpusExamples: [], source: DICTIONARY_SOURCES['coptic-lexicon'], dictionaries: [DICTIONARY_SOURCES['coptic-lexicon']], frequency: 8 },
+  'cop:ϣⲁϫⲉ': { id: 'cop:ϣⲁϫⲉ', lemma: 'ϣⲁϫⲉ', languageId: 'cop', language: 'Coptic', transliteration: 'shaje', partOfSpeech: 'noun', shortGloss: 'word', fullDefinition: 'Word, speech, matter, thing.', semanticDomain: ['language'], relatedForms: ['ⲡϣⲁϫⲉ', 'ⲛϣⲁϫⲉ'], corpusExamples: [], source: DICTIONARY_SOURCES['coptic-lexicon'], dictionaries: [DICTIONARY_SOURCES['coptic-lexicon']], frequency: 8 },
+  'cop:ⲉⲓⲱⲧ': { id: 'cop:ⲉⲓⲱⲧ', lemma: 'ⲉⲓⲱⲧ', languageId: 'cop', language: 'Coptic', transliteration: 'eiōt', partOfSpeech: 'noun', shortGloss: 'father', fullDefinition: 'Father; parent; God the Father.', semanticDomain: ['family', 'theology'], relatedForms: ['ⲡⲉⲓⲱⲧ', 'ⲉⲓⲟϯ'], corpusExamples: [], source: DICTIONARY_SOURCES['coptic-lexicon'], dictionaries: [DICTIONARY_SOURCES['coptic-lexicon']], frequency: 7 },
+  'cop:ⲙⲉ': { id: 'cop:ⲙⲉ', lemma: 'ⲙⲉ', languageId: 'cop', language: 'Coptic', transliteration: 'me', partOfSpeech: 'noun', shortGloss: 'truth', fullDefinition: 'Truth, reality; righteousness.', semanticDomain: ['ethics'], relatedForms: ['ⲟⲩⲙⲉ'], corpusExamples: [], source: DICTIONARY_SOURCES['coptic-lexicon'], dictionaries: [DICTIONARY_SOURCES['coptic-lexicon']], frequency: 7 },
+
+  // ============ ARAMAIC (arc) ============
+  'arc:אֲמַר': { id: 'arc:אֲמַר', lemma: 'אֲמַר', languageId: 'arc', language: 'Aramaic', transliteration: 'amar', partOfSpeech: 'verb', shortGloss: 'said, spoke', fullDefinition: 'Said, spoke, declared; to say, to speak.', semanticDomain: ['communication'], relatedForms: ['וַאֲמַר', 'וַיֹּאמֶר', 'אֵמַר'], corpusExamples: [], source: DICTIONARY_SOURCES['jastrow'], dictionaries: [DICTIONARY_SOURCES['jastrow']], frequency: 10 },
+  'arc:מֶלֶךְ': { id: 'arc:מֶלֶךְ', lemma: 'מֶלֶךְ', languageId: 'arc', language: 'Aramaic', transliteration: 'melekh', partOfSpeech: 'noun', shortGloss: 'king', fullDefinition: 'King, ruler, sovereign.', semanticDomain: ['government'], relatedForms: ['מַלְכָּא', 'מַלְכוּ'], corpusExamples: [], source: DICTIONARY_SOURCES['jastrow'], dictionaries: [DICTIONARY_SOURCES['jastrow']], frequency: 9 },
+  'arc:חֵלֶם': { id: 'arc:חֵלֶם', lemma: 'חֵלֶם', languageId: 'arc', language: 'Aramaic', transliteration: 'khelēm', partOfSpeech: 'noun', shortGloss: 'dream', fullDefinition: 'Dream; prophetic vision in sleep.', semanticDomain: ['cognition', 'religion'], relatedForms: ['חֲלַם', 'חֶלְמָא'], corpusExamples: [], source: DICTIONARY_SOURCES['jastrow'], dictionaries: [DICTIONARY_SOURCES['jastrow']], frequency: 8 },
+  'arc:נְהוֹר': { id: 'arc:נְהוֹר', lemma: 'נְהוֹר', languageId: 'arc', language: 'Aramaic', transliteration: 'nehōr', partOfSpeech: 'noun', shortGloss: 'light', fullDefinition: 'Light; daylight; illumination.', semanticDomain: ['physics'], relatedForms: ['נְהוֹרָא', 'נַהֲרָא'], corpusExamples: [], source: DICTIONARY_SOURCES['jastrow'], dictionaries: [DICTIONARY_SOURCES['jastrow']], frequency: 7 },
+  'arc:יְיָ': { id: 'arc:יְיָ', lemma: 'יְיָ', languageId: 'arc', language: 'Aramaic', transliteration: 'Yahweh', partOfSpeech: 'noun', shortGloss: 'Lord', fullDefinition: 'The Lord; the Tetragrammaton; God.', semanticDomain: ['theology'], relatedForms: ['יְהֹוָה'], corpusExamples: [], source: DICTIONARY_SOURCES['jastrow'], dictionaries: [DICTIONARY_SOURCES['jastrow']], frequency: 10 },
+
+  // ============ AKKADIAN (akk) ============
+  'akk:ina': { id: 'akk:ina', lemma: 'ina', languageId: 'akk', language: 'Akkadian', transliteration: 'ina', partOfSpeech: 'preposition', shortGloss: 'in, on, from', fullDefinition: 'In, on, by means of, from; used as a preposition of location or instrument.', semanticDomain: ['grammar'], relatedForms: [], corpusExamples: [], source: DICTIONARY_SOURCES['cad'], dictionaries: [DICTIONARY_SOURCES['cad']], frequency: 10 },
+  'akk:ana': { id: 'akk:ana', lemma: 'ana', languageId: 'akk', language: 'Akkadian', transliteration: 'ana', partOfSpeech: 'preposition', shortGloss: 'to, for', fullDefinition: 'To, towards, for; marking direction, purpose, or dative relationship.', semanticDomain: ['grammar'], relatedForms: [], corpusExamples: [], source: DICTIONARY_SOURCES['cad'], dictionaries: [DICTIONARY_SOURCES['cad']], frequency: 10 },
+  'akk:ša': { id: 'akk:ša', lemma: 'ša', languageId: 'akk', language: 'Akkadian', transliteration: 'ša', partOfSpeech: 'particle', shortGloss: 'of, which', fullDefinition: 'Of, belonging to; relative pronoun (who, which, that).', semanticDomain: ['grammar'], relatedForms: [], corpusExamples: [], source: DICTIONARY_SOURCES['cad'], dictionaries: [DICTIONARY_SOURCES['cad']], frequency: 10 },
+  'akk:šarru': { id: 'akk:šarru', lemma: 'šarru', languageId: 'akk', language: 'Akkadian', transliteration: 'šarru', partOfSpeech: 'noun', shortGloss: 'king', fullDefinition: 'King, sovereign, ruler.', semanticDomain: ['government'], relatedForms: ['šar', 'šarratu', 'šarrūtu'], corpusExamples: [], source: DICTIONARY_SOURCES['cad'], dictionaries: [DICTIONARY_SOURCES['cad']], frequency: 9 },
+  'akk:mātu': { id: 'akk:mātu', lemma: 'mātu', languageId: 'akk', language: 'Akkadian', transliteration: 'mātu', partOfSpeech: 'noun', shortGloss: 'land', fullDefinition: 'Land, country, territory; the land of a city or state.', semanticDomain: ['geography'], relatedForms: ['māt', 'māti'], corpusExamples: [], source: DICTIONARY_SOURCES['cad'], dictionaries: [DICTIONARY_SOURCES['cad']], frequency: 9 },
+
+  // ============ SANSKRIT (san) ============
+  'san:तद्': { id: 'san:तद्', lemma: 'तद्', languageId: 'san', language: 'Sanskrit', transliteration: 'tad', partOfSpeech: 'pronoun', shortGloss: 'he, she, it, that', fullDefinition: 'He, she, it, that; the demonstrative pronoun.', semanticDomain: ['grammar'], relatedForms: ['तं', 'तेन', 'ते', 'तस्मै'], corpusExamples: [], source: DICTIONARY_SOURCES['monier-williams'], dictionaries: [DICTIONARY_SOURCES['monier-williams']], frequency: 10 },
+  'san:कर्मन्': { id: 'san:कर्मन्', lemma: 'कर्मन्', languageId: 'san', language: 'Sanskrit', transliteration: 'karman', partOfSpeech: 'noun', shortGloss: 'action, deed', fullDefinition: 'Action, deed, work; religious duty; fate (karma).', semanticDomain: ['religion', 'ethics'], relatedForms: ['कर्म', 'कर्मणि', 'कर्मणाम्'], corpusExamples: [], source: DICTIONARY_SOURCES['monier-williams'], dictionaries: [DICTIONARY_SOURCES['monier-williams']], frequency: 10 },
+  'san:बुद्धि': { id: 'san:बुद्धि', lemma: 'बुद्धि', languageId: 'san', language: 'Sanskrit', transliteration: 'buddhi', partOfSpeech: 'noun', shortGloss: 'intellect, wisdom', fullDefinition: 'Intellect, intelligence, wisdom, discernment; the faculty of understanding.', semanticDomain: ['cognition'], relatedForms: ['बुद्धिम्', 'बुद्ध्या'], corpusExamples: [], source: DICTIONARY_SOURCES['monier-williams'], dictionaries: [DICTIONARY_SOURCES['monier-williams']], frequency: 9 },
+  'san:धर्म': { id: 'san:धर्म', lemma: 'धर्म', languageId: 'san', language: 'Sanskrit', transliteration: 'dharma', partOfSpeech: 'noun', shortGloss: 'righteousness, law', fullDefinition: 'Righteousness, duty, law; the ethical and religious obligations of a person.', semanticDomain: ['religion', 'ethics'], relatedForms: ['धर्मम्', 'धर्मेण'], corpusExamples: [], source: DICTIONARY_SOURCES['monier-williams'], dictionaries: [DICTIONARY_SOURCES['monier-williams']], frequency: 9 },
+
+  // ============ HITTITE (hit) ============
+  'hit:nu': { id: 'hit:nu', lemma: 'nu', languageId: 'hit', language: 'Hittite', transliteration: 'nu', partOfSpeech: 'conjunction', shortGloss: 'and, now', fullDefinition: 'And, now, then; a connective particle joining clauses.', semanticDomain: ['grammar'], relatedForms: [], corpusExamples: [], source: DICTIONARY_SOURCES['hittite-lexicon'], dictionaries: [DICTIONARY_SOURCES['hittite-lexicon']], frequency: 10 },
+  'hit:KUR': { id: 'hit:KUR', lemma: 'KUR', languageId: 'hit', language: 'Hittite', transliteration: 'KUR', partOfSpeech: 'noun', shortGloss: 'land, country', fullDefinition: 'Land, country, territory; a geographical or political entity.', semanticDomain: ['geography'], relatedForms: ['KUR-e'], corpusExamples: [], source: DICTIONARY_SOURCES['hittite-lexicon'], dictionaries: [DICTIONARY_SOURCES['hittite-lexicon']], frequency: 9 },
+  'hit:LÚKÚR': { id: 'hit:LÚKÚR', lemma: 'LÚKÚR', languageId: 'hit', language: 'Hittite', transliteration: 'LUKUR', partOfSpeech: 'noun', shortGloss: 'enemy', fullDefinition: 'Enemy; hostile foreign force.', semanticDomain: ['military'], relatedForms: [], corpusExamples: [], source: DICTIONARY_SOURCES['hittite-lexicon'], dictionaries: [DICTIONARY_SOURCES['hittite-lexicon']], frequency: 8 },
+  'hit:pai-': { id: 'hit:pai-', lemma: 'pai-', languageId: 'hit', language: 'Hittite', transliteration: 'pai-', partOfSpeech: 'verb', shortGloss: 'to go', fullDefinition: 'To go, proceed; to march (said of troops or the king).', semanticDomain: ['motion'], relatedForms: ['pa-iš', 'pa-a-un'], corpusExamples: [], source: DICTIONARY_SOURCES['hittite-lexicon'], dictionaries: [DICTIONARY_SOURCES['hittite-lexicon']], frequency: 8 },
+  'hit:eš-': { id: 'hit:eš-', lemma: 'eš-', languageId: 'hit', language: 'Hittite', transliteration: 'eš-', partOfSpeech: 'verb', shortGloss: 'to be, to exist', fullDefinition: 'To be, to exist; to be present.', semanticDomain: ['grammar'], relatedForms: ['e-šu-un', 'e-eš-ta'], corpusExamples: [], source: DICTIONARY_SOURCES['hittite-lexicon'], dictionaries: [DICTIONARY_SOURCES['hittite-lexicon']], frequency: 9 },
+
+  // ============ EGYPTIAN (egy) ============
+  'egy:nfr': { id: 'egy:nfr', lemma: 'nfr', languageId: 'egy', language: 'Egyptian', transliteration: 'nfr', partOfSpeech: 'adjective', shortGloss: 'good, beautiful', fullDefinition: 'Good, beautiful, perfect; a fundamental ethical and aesthetic concept in Egyptian thought.', semanticDomain: ['quality', 'ethics'], relatedForms: ['nfrw', 'nfrt'], corpusExamples: [], source: DICTIONARY_SOURCES['faulkner'], dictionaries: [DICTIONARY_SOURCES['faulkner']], frequency: 9 },
+  'egy:jb': { id: 'egy:jb', lemma: 'jb', languageId: 'egy', language: 'Egyptian', transliteration: 'ib', partOfSpeech: 'noun', shortGloss: 'heart', fullDefinition: 'Heart; mind, will, intention; the seat of thought and emotion.', semanticDomain: ['body', 'cognition'], relatedForms: ['jby'], corpusExamples: [], source: DICTIONARY_SOURCES['faulkner'], dictionaries: [DICTIONARY_SOURCES['faulkner']], frequency: 8 },
+  'egy:pr': { id: 'egy:pr', lemma: 'pr', languageId: 'egy', language: 'Egyptian', transliteration: 'pr', partOfSpeech: 'noun', shortGloss: 'house', fullDefinition: 'House, household, estate; temple.', semanticDomain: ['dwelling'], relatedForms: ['prw'], corpusExamples: [], source: DICTIONARY_SOURCES['faulkner'], dictionaries: [DICTIONARY_SOURCES['faulkner']], frequency: 8 },
+  'egy:mȝˁt': { id: 'egy:mȝˁt', lemma: 'mȝˁt', languageId: 'egy', language: 'Egyptian', transliteration: 'maat', partOfSpeech: 'noun', shortGloss: 'truth, justice', fullDefinition: 'Truth, justice, cosmic order (Maat); the fundamental principle of Egyptian society and religion.', semanticDomain: ['ethics', 'theology'], relatedForms: ['mȝˁ'], corpusExamples: [], source: DICTIONARY_SOURCES['faulkner'], dictionaries: [DICTIONARY_SOURCES['faulkner']], frequency: 8 },
 };
 
 // Helper to get a dictionary entry by lemma and languageId
