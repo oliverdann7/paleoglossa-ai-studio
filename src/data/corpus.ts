@@ -156,7 +156,7 @@ export const PATRISTIC_CORPUS: Corpus = {
 export const SYRIAC_CORPUS: Corpus = {
   id: "SYRIAC_PESHITTA",
   title: "Syriac Peshitta",
-  description: "The Syriac Bible",
+  description: "The Syriac Bible — Peshitta John 1 and Genesis 1",
   language: "syr",
   sourceAttributionId: "project-gutenberg",
   licenseSummary: "Public Domain",
@@ -166,7 +166,7 @@ export const SYRIAC_CORPUS: Corpus = {
 export const COPTIC_CORPUS: Corpus = {
   id: "COPTIC_SAHIDIC",
   title: "Sahidic Coptic New Testament",
-  description: "Coptic New Testament",
+  description: "Coptic New Testament — Sahidic John 1 and Gospel of Thomas",
   language: "cop",
   sourceAttributionId: "project-gutenberg",
   licenseSummary: "Public Domain",
@@ -176,7 +176,7 @@ export const COPTIC_CORPUS: Corpus = {
 export const ARAMAIC_CORPUS: Corpus = {
   id: "ARAMAIC_TARGUM",
   title: "Aramaic Targum",
-  description: "Aramaic Targum of the Hebrew Bible",
+  description: "Aramaic Targum of the Hebrew Bible — Targum Onkelos Genesis 1 and Daniel 2",
   language: "arc",
   sourceAttributionId: "project-gutenberg",
   licenseSummary: "Public Domain",
@@ -186,7 +186,7 @@ export const ARAMAIC_CORPUS: Corpus = {
 export const AKKADIAN_CORPUS: Corpus = {
   id: "AKKADIAN_GILGAMESH",
   title: "Epic of Gilgamesh",
-  description: "Standard Babylonian Epic of Gilgamesh (Transliteration)",
+  description: "Standard Babylonian Epic of Gilgamesh (Transliteration) and Code of Hammurabi",
   language: "akk",
   sourceAttributionId: "project-gutenberg",
   licenseSummary: "Public Domain",
@@ -196,7 +196,7 @@ export const AKKADIAN_CORPUS: Corpus = {
 export const SANSKRIT_CORPUS: Corpus = {
   id: "SANSKRIT_MAHABHARATA",
   title: "Mahabharata",
-  description: "The Mahabharata in Sanskrit",
+  description: "The Mahabharata in Sanskrit — Bhagavad Gita and Hitopadesa",
   language: "san",
   sourceAttributionId: "project-gutenberg",
   licenseSummary: "Public Domain",
@@ -207,7 +207,7 @@ export const SANSKRIT_CORPUS: Corpus = {
 export const HITTITE_CORPUS: Corpus = {
   id: "HITTITE_ANNALS",
   title: "Annals of Mursili II",
-  description: "The extensive ten-year annals documenting the early reign of Mursili II",
+  description: "The extensive ten-year annals documenting the early reign of Mursili II, plus plague prayers",
   language: "hit",
   sourceAttributionId: "project-gutenberg",
   licenseSummary: "Public Domain",
@@ -218,7 +218,7 @@ export const HITTITE_CORPUS: Corpus = {
 export const EGYPTIAN_CORPUS: Corpus = {
   id: "EGYPTIAN_TEXTS",
   title: "Egyptian Hieroglyphs",
-  description: "Classic Middle Egyptian texts",
+  description: "Classic Middle Egyptian texts — Maxims of Ptahhotep and Tale of Sinuhe",
   language: "egy",
   sourceAttributionId: "project-gutenberg",
   licenseSummary: "Public Domain",
@@ -379,11 +379,12 @@ export const TEXT_SYRIAC_JOHN: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 16,
+  sentenceCount: 20,
   sectionsPreview: [
     { id: "Syr-Jn-1-1", label: "John 1:1" },
     { id: "Syr-Jn-1-2", label: "John 1:1-5" },
     { id: "Syr-Jn-1-3", label: "John 1:6-18" },
+    { id: "Syr-Jn-2", label: "John 1:6-14 — The Word Became Flesh" },
   ],
 };
 
@@ -402,11 +403,12 @@ export const TEXT_COPTIC_JOHN: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 16,
+  sentenceCount: 20,
   sectionsPreview: [
     { id: "Cop-Jn-1-1", label: "John 1:1" },
     { id: "Cop-Jn-1-2", label: "John 1:1-5" },
     { id: "Cop-Jn-1-3", label: "John 1:6-18" },
+    { id: "Cop-Jn-2", label: "John 1:6-14 — The True Light" },
   ],
 };
 
@@ -425,12 +427,13 @@ export const TEXT_ARAMAIC_GENESIS: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 15,
+  sentenceCount: 18,
   sectionsPreview: [
     { id: "Arc-Gen-1-1", label: "Genesis 1:1" },
     { id: "Arc-Gen-1-2", label: "Genesis 1:1-5" },
     { id: "Arc-Gen-1-3", label: "Genesis 1:6-18" },
     { id: "Arc-Gen-1-4", label: "Genesis 1:19-31" },
+    { id: "Arc-Gen-2", label: "Genesis 1:3-5 — Let There Be Light" },
   ],
 };
 
@@ -449,11 +452,12 @@ export const TEXT_AKKADIAN_GILGAMESH: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 11,
+  sentenceCount: 14,
   sectionsPreview: [
     { id: "Akk-Gilg-1-1", label: "Tablet I (Opening)" },
     { id: "Akk-Gilg-1-2", label: "Tablet I (continued)" },
     { id: "Akk-Gilg-1-3", label: "Tablet I (more)" },
+    { id: "Akk-Gilg-2", label: "Tablet II — The Coming of Enkidu" },
   ],
 };
 
@@ -472,12 +476,14 @@ export const TEXT_SANSKRIT_GITA: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 21,
+  sentenceCount: 27,
   sectionsPreview: [
     { id: "San-Gita-1-1", label: "Bhagavad Gita 1.1" },
     { id: "San-Gita-1-2", label: "Bhagavad Gita 1.2-6" },
     { id: "San-Gita-1-3", label: "Bhagavad Gita 1.7-1.26" },
     { id: "San-Gita-1-4", label: "Bhagavad Gita 1.27-1.47" },
+    { id: "San-Gita-2", label: "Chapter 2.1-10 — Arjuna's Grief" },
+    { id: "San-Gita-3", label: "Chapter 3.1-5 — The Yoga of Action" },
   ],
 };
 
@@ -496,11 +502,12 @@ export const TEXT_HITTITE_ANNALS: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 11,
+  sentenceCount: 15,
   sectionsPreview: [
     { id: "Hit-Annals-1-1", label: "Year 1 (Opening)" },
     { id: "Hit-Annals-1-2", label: "Year 1 (continued)" },
     { id: "Hit-Annals-1-3", label: "Years 2-5" },
+    { id: "Hit-Annals-2", label: "Year 2 — Campaigns in the North" },
   ],
 };
 
@@ -519,11 +526,13 @@ export const TEXT_EGYPTIAN_PTAHHOTEP: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 11,
+  sentenceCount: 17,
   sectionsPreview: [
     { id: "Egy-Ptah-1-1", label: "Maxim 1 (Opening)" },
     { id: "Egy-Ptah-1-2", label: "Maxim 1 (continued)" },
     { id: "Egy-Ptah-1-3", label: "Maxim 1 (more)" },
+    { id: "Egy-Ptah-2", label: "Maxims 3-5 — On Pride and Speech" },
+    { id: "Egy-Ptah-3", label: "Maxims 6-9 — On Greed and Generosity" },
   ],
 };
 
@@ -1470,6 +1479,160 @@ export const TEXT_LUCIAN: Text = {
   sentenceCount: 9,
   sectionsPreview: [
     { id: "Lucian-Char-1", label: "Sections 1–8 — Charon surveys the world of the living" },
+  ],
+};
+
+// ─── Syriac Genesis ─────────────────────────────────────────────────────────
+export const TEXT_SYRIAC_GENESIS: Text = {
+  id: "Syr-Gen",
+  corpusId: "SYRIAC_PESHITTA",
+  title: "ܒܪܝܬܐ",
+  canonicalRef: "Genesis 1:1–5",
+  author: "Moses (Peshitta)",
+  language: "syr",
+  direction: "rtl",
+  level: "A2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 3,
+  sectionsPreview: [
+    { id: "Syr-Gen-1", label: "Genesis 1:1–5 — Creation" },
+  ],
+};
+
+// ─── Coptic Gospel of Thomas ─────────────────────────────────────────────────
+export const TEXT_COPTIC_THOMAS: Text = {
+  id: "Cop-Thom",
+  corpusId: "COPTIC_SAHIDIC",
+  title: "ⲡⲉⲩⲁⲅⲅⲉⲗⲓⲟⲛ ⲡⲕⲁⲧⲁ ⲑⲱⲙⲁⲥ",
+  canonicalRef: "Logion 1–4",
+  author: "Didymus Judas Thomas",
+  language: "cop",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "Cop-Thom-1", label: "Logion 1–4 — The Hidden Sayings" },
+  ],
+};
+
+// ─── Aramaic Daniel ──────────────────────────────────────────────────────────
+export const TEXT_ARAMAIC_DANIEL: Text = {
+  id: "Arc-Dan",
+  corpusId: "ARAMAIC_TARGUM",
+  title: "דָּנִיֵּאל",
+  canonicalRef: "Daniel 2:1–5",
+  author: "Daniel",
+  language: "arc",
+  direction: "rtl",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 3,
+  sectionsPreview: [
+    { id: "Arc-Dan-1", label: "Daniel 2:1–5 — Nebuchadnezzar's Dream" },
+  ],
+};
+
+// ─── Akkadian Code of Hammurabi ──────────────────────────────────────────────
+export const TEXT_AKKADIAN_HAMMURABI: Text = {
+  id: "Akk-Ham",
+  corpusId: "AKKADIAN_GILGAMESH",
+  title: "Codex Hammurabi",
+  canonicalRef: "Prologue",
+  author: "Hammurabi",
+  language: "akk",
+  direction: "ltr",
+  level: "B2",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 3,
+  sectionsPreview: [
+    { id: "Akk-Ham-1", label: "Prologue — Anum and Enlil" },
+  ],
+};
+
+// ─── Sanskrit Hitopadesa ─────────────────────────────────────────────────────
+export const TEXT_SANSKRIT_HITOPADESA: Text = {
+  id: "San-Hito",
+  corpusId: "SANSKRIT_MAHABHARATA",
+  title: "हितोपदेशः",
+  canonicalRef: "Mitralabha — The Winning of Friends",
+  author: "Narayana",
+  language: "san",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 3,
+  sectionsPreview: [
+    { id: "San-Hito-1", label: "Mitralabha — The Winning of Friends" },
+  ],
+};
+
+// ─── Hittite Plague Prayer ────────────────────────────────────────────────────
+export const TEXT_HITTITE_PRAYER: Text = {
+  id: "Hit-Prayer",
+  corpusId: "HITTITE_ANNALS",
+  title: "Plague Prayer of Mursili II",
+  canonicalRef: "CTH 378",
+  author: "Mursili II",
+  language: "hit",
+  direction: "ltr",
+  level: "C1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 5,
+  sectionsPreview: [
+    { id: "Hit-Prayer-1", label: "Opening — The Plague in Hatti" },
+  ],
+};
+
+// ─── Egyptian Tale of Sinuhe ──────────────────────────────────────────────────
+export const TEXT_EGYPTIAN_SINUHE: Text = {
+  id: "Egy-Sin",
+  corpusId: "EGYPTIAN_TEXTS",
+  title: "The Tale of Sinuhe",
+  canonicalRef: "Beginning of the Tale",
+  author: "Anonymous",
+  language: "egy",
+  direction: "ltr",
+  level: "B1",
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "Egy-Sin-1", label: "The Beginning of the Tale" },
   ],
 };
 
@@ -3941,6 +4104,14 @@ function getAllEnhancedTexts() {
       TEXT_SANSKRIT_GITA,
       TEXT_HITTITE_ANNALS,
       TEXT_EGYPTIAN_PTAHHOTEP,
+      // Extended texts for sample-only languages
+      TEXT_SYRIAC_GENESIS,
+      TEXT_COPTIC_THOMAS,
+      TEXT_ARAMAIC_DANIEL,
+      TEXT_AKKADIAN_HAMMURABI,
+      TEXT_SANSKRIT_HITOPADESA,
+      TEXT_HITTITE_PRAYER,
+      TEXT_EGYPTIAN_SINUHE,
       TEXT_ANABASIS,
       TEXT_ILIAD,
       TEXT_ODYSSEY,
