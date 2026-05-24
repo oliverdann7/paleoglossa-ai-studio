@@ -137,6 +137,21 @@ describe('computeAnalysisQuality', () => {
     expect(result.morphologyCoverage).toBe(0);
   });
 
+  it('rejects pos unknown as morphology coverage', () => {
+    const result = computeAnalysisQuality(
+      [
+        {
+          tokens: [
+            { type: 'word', gloss: 'test', pos: 'unknown', confidence: 0.5 },
+            { type: 'word', gloss: 'test2', morphology: { pos: 'noun' } },
+          ],
+        },
+      ],
+      'analyzed'
+    );
+    expect(result.morphologyCoverage).toBe(50);
+  });
+
   it('excludes non-word tokens from coverage calculation', () => {
     const result = computeAnalysisQuality(
       [

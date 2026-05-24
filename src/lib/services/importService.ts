@@ -35,6 +35,7 @@ const IMPORTS_CACHE_TTL = 5 * 60_000;
 export class ImportService {
   static async getImports(userId: string | null): Promise<ImportedText[]> {
     if (!userId) {
+      ImportService.dedupeImportsById();
       const saved = localStorage.getItem(STORAGE_KEY);
       return saved ? JSON.parse(saved) : [];
     }
@@ -82,9 +83,10 @@ export class ImportService {
 
   static async getImport(userId: string | null, importId: string): Promise<ImportedText | null> {
     if (!userId) {
+      ImportService.dedupeImportsById();
       const saved = localStorage.getItem(STORAGE_KEY);
-      const imports = saved ? JSON.parse(saved) : [];
-      return imports.find((i: any) => i.id === importId) || null;
+      const imports: ImportedText[] = saved ? JSON.parse(saved) : [];
+      return imports.find((i) => i.id === importId) || null;
     }
 
     try {

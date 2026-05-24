@@ -15,7 +15,7 @@ interface TokenLike {
 }
 
 function tokenHasPos(t: TokenLike): boolean {
-  if (t.pos && t.pos.trim().length > 0) return true;
+  if (t.pos && t.pos.trim().length > 0 && t.pos !== 'unknown') return true;
   if (t.morphology) {
     if (typeof t.morphology === 'string') return t.morphology.trim().length > 0;
     const m = t.morphology;
