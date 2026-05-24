@@ -48,6 +48,7 @@ import { useNotebook } from '@/lib/hooks/useNotebook';
 import { normalizeLemmaKey } from '@/lib/utils/lemmaUtils';
 import { frequencyTier } from '@/lib/utils/frequencyTier';
 import { isUsefulGloss } from '@/lib/utils/lexicalHelper';
+import { getSourceTrust, type SourceTrustInfo } from '@/lib/utils/sourceTrust';
 import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
 
 interface LemmaSentenceToken {
@@ -149,6 +150,15 @@ const LABEL_TO_CATEGORY: Record<string, string> = {
   Logogram: 'other',
   'Raw parsing': 'other',
 };
+
+function SourceBadge({ trust }: { trust: SourceTrustInfo }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-bdr/40 bg-parch/60 px-2 py-0.5 text-[10px] font-medium leading-none">
+      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: trust.dotColor }} />
+      <span className={cn(trust.textColor)}>{trust.label}</span>
+    </span>
+  );
+}
 
 const CATEGORY_DOT_COLORS: Record<string, string> = {
   case: '#3B82F6',
@@ -608,12 +618,10 @@ export const LexDrawerPanel = ({
                 if (definitionLookup) {
                   return (
                     <>
-                      {definitionLookup.definition}
-                      {definitionLookup.source === GLOSS_SOURCES.USER_GLOSS && (
-                        <span className="block text-[11px] text-muted font-normal mt-1">
-                          {t('reader.yourGlossLabel', 'Your Gloss')}
-                        </span>
-                      )}
+                      <div>{definitionLookup.definition}</div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <SourceBadge trust={getSourceTrust(definitionLookup.source)} />
+                      </div>
                     </>
                   );
                 }
@@ -630,15 +638,18 @@ export const LexDrawerPanel = ({
                           ))}
                         </ol>
                       )}
-                      <a
-                        href={wiktionaryResult.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 mt-2 text-[11px] text-muted hover:text-blue transition-colors"
-                      >
-                        {t('reader.wiktionarySource', 'Wiktionary · CC BY-SA')}
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
+                      <div className="mt-2 flex items-center gap-2">
+                        <SourceBadge trust={getSourceTrust('wiktionary')} />
+                        <a
+                          href={wiktionaryResult.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-muted hover:text-blue transition-colors flex items-center gap-0.5"
+                        >
+                          CC BY-SA
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     </>
                   );
                 }
@@ -653,10 +664,10 @@ export const LexDrawerPanel = ({
                 if (aiFallbackGloss) {
                   return (
                     <>
-                      {aiFallbackGloss}
-                      <span className="block text-[11px] text-muted font-normal mt-1">
-                        {t('reader.aiSuggestion', 'AI suggestion')}
-                      </span>
+                      <div>{aiFallbackGloss}</div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <SourceBadge trust={getSourceTrust('ai_fallback')} />
+                      </div>
                     </>
                   );
                 }
@@ -667,9 +678,9 @@ export const LexDrawerPanel = ({
                     <span className="block text-ink text-[16px] leading-snug">
                       {descriptiveFallback}
                     </span>
-                    <span className="block text-[11px] text-muted font-normal mt-2">
-                      {t('reader.derivedFromMetadata', 'Derived from token metadata')}
-                    </span>
+                    <div className="mt-2 flex items-center gap-2">
+                      <SourceBadge trust={getSourceTrust('metadata')} />
+                    </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         onClick={() => {
