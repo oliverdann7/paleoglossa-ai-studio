@@ -35,6 +35,7 @@ const IMPORTS_CACHE_TTL = 5 * 60_000;
 export class ImportService {
   static async getImports(userId: string | null): Promise<ImportedText[]> {
     if (!userId) {
+      ImportService.dedupeImportsById();
       const saved = localStorage.getItem(STORAGE_KEY);
       return saved ? JSON.parse(saved) : [];
     }
@@ -82,9 +83,10 @@ export class ImportService {
 
   static async getImport(userId: string | null, importId: string): Promise<ImportedText | null> {
     if (!userId) {
+      ImportService.dedupeImportsById();
       const saved = localStorage.getItem(STORAGE_KEY);
-      const imports = saved ? JSON.parse(saved) : [];
-      return imports.find((i: any) => i.id === importId) || null;
+      const imports: ImportedText[] = saved ? JSON.parse(saved) : [];
+      return imports.find((i) => i.id === importId) || null;
     }
 
     try {
@@ -228,6 +230,32 @@ export class ImportService {
       } as ImportedText;
     } catch {
       return null;
+    }
+  }
+
+  /** Deduplicate localStorage imports by ID, keeping the latest occurrence of each. */
+  static dedupeImportsById(): void {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const imports: ImportedText[] = JSON.parse(saved);
+    const seen = new Map<string, number>();
+    const deduped: ImportedText[] = [];
+    for (const imp of imports) {
+      const id = imp.id;
+      if (!id) {
+        deduped.push(imp);
+        continue;
+      }
+      const existing = seen.get(id);
+      if (existing !== undefined) {
+        deduped[existing] = imp;
+      } else {
+        seen.set(id, deduped.length);
+        deduped.push(imp);
+      }
+    }
+    if (deduped.length !== imports.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped));
     }
   }
 

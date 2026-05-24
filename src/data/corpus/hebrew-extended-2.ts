@@ -1,36 +1,96 @@
-/**
- * Hebrew Extended Corpus 2 — Book of Ruth (Westminster Leningrad Codex, public domain)
- *
- * The Book of Ruth in four chapters. Beginner-friendly Hebrew narrative,
- * familiar storyline, repetitive vocabulary. Hebrew text from the WLC.
- * English translation adapted from public-domain sources (ESV-style register).
- */
+import type { TextSection } from '../../types/corpus.js';
+import { sentLex } from '../../lib/utils/lexicalHelper.js';
 
-import type { TextSection, Sentence } from '../../types/corpus.js';
-
-function sent(id: string, words: string[], translation: string): Sentence {
-  return {
-    id,
-    tokens: words.map((w, i) => {
-      const clean = w.replace(/^[\s.,;:!?()"«»—–׃]+|[\s.,;:!?()"«»—–׃]+$/g, '');
-      const punctAfter = w.slice(clean.length) || ' ';
-      const normalized = clean.normalize('NFD').replace(/[֑-ׇ]/g, '').toLowerCase();
-      return {
-        id: `${id}-t${i}`,
-        surface: w,
-        normalized,
-        lemma: normalized,
-        gloss: '',
-        morphology: { partOfSpeech: 'unknown' },
-        punctBefore: '',
-        punctAfter: punctAfter.trim() ? punctAfter + ' ' : ' ',
-      };
-    }),
-    translation,
-  };
-}
-
-// ─── Ruth 1 — Naomi, Ruth, and Orpah ─────────────────────────────────────────
+const HEB_RUTH_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: string }> = {
+  // Common words
+  נָעֳמִי: { lemma: 'נָעֳמִי', gloss: 'Naomi', partOfSpeech: 'noun' },
+  רוּת: { lemma: 'רוּת', gloss: 'Ruth', partOfSpeech: 'noun' },
+  עָרְפָּה: { lemma: 'עָרְפָּה', gloss: 'Orpah', partOfSpeech: 'noun' },
+  בֹּעַז: { lemma: 'בֹּעַז', gloss: 'Boaz', partOfSpeech: 'noun' },
+  אֱלִימֶלֶךְ: { lemma: 'אֱלִימֶלֶךְ', gloss: 'Elimelech', partOfSpeech: 'noun' },
+  מַחְלוֹן: { lemma: 'מַחְלוֹן', gloss: 'Mahlon', partOfSpeech: 'noun' },
+  כִלְיוֹן: { lemma: 'כִּלְיוֹן', gloss: 'Chilion', partOfSpeech: 'noun' },
+  יְהוָה: { lemma: 'יְהוָה', gloss: 'LORD', partOfSpeech: 'noun' },
+  לֶחֶם: { lemma: 'לֶחֶם', gloss: 'bread', partOfSpeech: 'noun' },
+  בֵּית: { lemma: 'בַּיִת', gloss: 'house of', partOfSpeech: 'noun' },
+  לְבֵית: { lemma: 'בַּיִת', gloss: 'to the house of', partOfSpeech: 'noun' },
+  אִישׁ: { lemma: 'אִישׁ', gloss: 'man', partOfSpeech: 'noun' },
+  אִשָּׁה: { lemma: 'אִשָּׁה', gloss: 'woman, wife', partOfSpeech: 'noun' },
+  הָאִשָּׁה: { lemma: 'אִשָּׁה', gloss: 'the woman', partOfSpeech: 'noun' },
+  נָשִׁים: { lemma: 'אִשָּׁה', gloss: 'women', partOfSpeech: 'noun' },
+  שָׂדֶה: { lemma: 'שָׂדֶה', gloss: 'field', partOfSpeech: 'noun' },
+  בִּשְׂדֵי: { lemma: 'שָׂדֶה', gloss: 'in the fields of', partOfSpeech: 'noun' },
+  מִשְּׂדֵי: { lemma: 'שָׂדֶה', gloss: 'from the fields of', partOfSpeech: 'noun' },
+  בַּשָּׂדֶה: { lemma: 'שָׂדֶה', gloss: 'in the field', partOfSpeech: 'noun' },
+  'שְׂדֵי-מוֹאָב': { lemma: 'שְׂדֵה מוֹאָב', gloss: 'fields of Moab', partOfSpeech: 'noun' },
+  מוֹאָב: { lemma: 'מוֹאָב', gloss: 'Moab', partOfSpeech: 'noun' },
+  מֹאֲבִיּוֹת: { lemma: 'מוֹאָבִי', gloss: 'Moabite (women)', partOfSpeech: 'adjective' },
+  יְהוּדָה: { lemma: 'יְהוּדָה', gloss: 'Judah', partOfSpeech: 'noun' },
+  אֱלֹהִים: { lemma: 'אֱלֹהִים', gloss: 'God', partOfSpeech: 'noun' },
+  שָׁנִים: { lemma: 'שָׁנָה', gloss: 'years', partOfSpeech: 'noun' },
+  בָנָיו: { lemma: 'בֵּן', gloss: 'his sons', partOfSpeech: 'noun' },
+  שְׁנֵי: { lemma: 'שְׁנַיִם', gloss: 'two', partOfSpeech: 'adjective' },
+  וּשְׁנֵי: { lemma: 'שְׁנַיִם', gloss: 'and two', partOfSpeech: 'adjective' },
+  גֹאֵל: { lemma: 'גָּאַל', gloss: 'redeemer', partOfSpeech: 'noun' },
+  רָעָב: { lemma: 'רָעָב', gloss: 'famine', partOfSpeech: 'noun' },
+  אֶרֶץ: { lemma: 'אֶרֶץ', gloss: 'land', partOfSpeech: 'noun' },
+  חֶסֶד: { lemma: 'חֶסֶד', gloss: 'kindness, steadfast love', partOfSpeech: 'noun' },
+  מָנוֹחַ: { lemma: 'מָנוֹחַ', gloss: 'rest', partOfSpeech: 'noun' },
+  // Verbs
+  וַיְהִי: { lemma: 'היה', gloss: 'and it was', partOfSpeech: 'verb' },
+  'וַיִּהְיוּ-שָׁם': { lemma: 'היה', gloss: 'and they were there', partOfSpeech: 'verb' },
+  וַתִּשָּׁאֵר: { lemma: 'שׁאר', gloss: 'and she was left', partOfSpeech: 'verb' },
+  וַתָּקָם: { lemma: 'קום', gloss: 'and she arose', partOfSpeech: 'verb' },
+  וַתָּשָׁב: { lemma: 'שׁוב', gloss: 'and she returned', partOfSpeech: 'verb' },
+  וַיֵּלֶךְ: { lemma: 'הלך', gloss: 'and he went', partOfSpeech: 'verb' },
+  וַתֵּצֵא: { lemma: 'יצא', gloss: 'and she went out', partOfSpeech: 'verb' },
+  וַתֵּלַכְנָה: { lemma: 'הלך', gloss: 'and they went', partOfSpeech: 'verb' },
+  וַתֹּאמֶר: { lemma: 'אמר', gloss: 'and she said', partOfSpeech: 'verb' },
+  'וַתֹּאמַרְנָה-לָּהּ': { lemma: 'אמר', gloss: 'and they said to her', partOfSpeech: 'verb' },
+  וַיֹּאמֶר: { lemma: 'אמר', gloss: 'and he said', partOfSpeech: 'verb' },
+  וַתִּשַּׁק: { lemma: 'נשׁק', gloss: 'and she kissed', partOfSpeech: 'verb' },
+  וַתִּשֶּׂאנָה: { lemma: 'נשׂא', gloss: 'and they lifted', partOfSpeech: 'verb' },
+  וַתִּבְכֶּינָה: { lemma: 'בכה', gloss: 'and they wept', partOfSpeech: 'verb' },
+  שָׁמְעָה: { lemma: 'שׁמע', gloss: 'she heard', partOfSpeech: 'verb' },
+  נָשׁוּב: { lemma: 'שׁוב', gloss: 'we will return', partOfSpeech: 'verb' },
+  דָּבְקָה: { lemma: 'דבק', gloss: 'she clung', partOfSpeech: 'verb' },
+  וַיִּשְׂאוּ: { lemma: 'נשׂא', gloss: 'they took', partOfSpeech: 'verb' },
+  וַיֵּשְׁבוּ: { lemma: 'ישׁב', gloss: 'they lived/dwelt', partOfSpeech: 'verb' },
+  וַיָּמָת: { lemma: 'מות', gloss: 'and he died', partOfSpeech: 'verb' },
+  וַיָּמוּתוּ: { lemma: 'מות', gloss: 'and they died', partOfSpeech: 'verb' },
+  שֹּׁבְנָה: { lemma: 'שׁוב', gloss: 'return (fpl)', partOfSpeech: 'verb' },
+  לֵכְנָה: { lemma: 'הלך', gloss: 'go (fpl)', partOfSpeech: 'verb' },
+  יִתֵּן: { lemma: 'נתן', gloss: 'may he give', partOfSpeech: 'verb' },
+  יַעַשׂ: { lemma: 'עשׂה', gloss: 'may he do', partOfSpeech: 'verb' },
+  עֲשִׂיתֶם: { lemma: 'עשׂה', gloss: 'you have done', partOfSpeech: 'verb' },
+  וּמְצֶאןָ: { lemma: 'מצא', gloss: 'and may you find', partOfSpeech: 'verb' },
+  תֵּלְכִי: { lemma: 'הלך', gloss: 'you go', partOfSpeech: 'verb' },
+  אֵלֵךְ: { lemma: 'הלך', gloss: 'I will go', partOfSpeech: 'verb' },
+  תָּלִינִי: { lemma: 'לין', gloss: 'you lodge', partOfSpeech: 'verb' },
+  אָלִין: { lemma: 'לין', gloss: 'I will lodge', partOfSpeech: 'verb' },
+  תָּמוּתִי: { lemma: 'מות', gloss: 'you die', partOfSpeech: 'verb' },
+  אָמוּת: { lemma: 'מות', gloss: 'I will die', partOfSpeech: 'verb' },
+  אֶקָּבֵר: { lemma: 'קבר', gloss: 'I will be buried', partOfSpeech: 'verb' },
+  יַפְרִיד: { lemma: 'פרד', gloss: 'separates', partOfSpeech: 'verb' },
+  שָׁמַעַתְּ: { lemma: 'שׁמע', gloss: 'you have heard', partOfSpeech: 'verb' },
+  תִדְבָּקִין: { lemma: 'דבק', gloss: 'you shall cling', partOfSpeech: 'verb' },
+  'אֲבַקֶּשׁ-לָךְ': { lemma: 'בקשׁ', gloss: 'I seek for you', partOfSpeech: 'verb' },
+  לִלְקֹט: { lemma: 'לקט', gloss: 'to glean', partOfSpeech: 'verb' },
+  וַתְּלַקֵּט: { lemma: 'לקט', gloss: 'and she gleaned', partOfSpeech: 'verb' },
+  וַתָּבוֹא: { lemma: 'בוא', gloss: 'and she came', partOfSpeech: 'verb' },
+  וַתֵּלֶךְ: { lemma: 'הלך', gloss: 'and she went', partOfSpeech: 'verb' },
+  לָשֶׁבֶת: { lemma: 'ישׁב', gloss: 'to sit', partOfSpeech: 'verb' },
+  // Particles
+  לֹא: { lemma: 'לֹא', gloss: 'not', partOfSpeech: 'adverb' },
+  וְלֹא: { lemma: 'לֹא', gloss: 'and not', partOfSpeech: 'adverb' },
+  כִּי: { lemma: 'כִּי', gloss: 'that, because, for', partOfSpeech: 'conjunction' },
+  אֲשֶׁר: { lemma: 'אֲשֶׁר', gloss: 'that, which', partOfSpeech: 'conjunction' },
+  אֶל: { lemma: 'אֶל', gloss: 'to, toward', partOfSpeech: 'preposition' },
+  שָׁם: { lemma: 'שָׁם', gloss: 'there', partOfSpeech: 'adverb' },
+  בָּאָרֶץ: { lemma: 'אֶרֶץ', gloss: 'in the land', partOfSpeech: 'noun' },
+  אֶת: { lemma: 'אֵת', gloss: '(dir. obj. marker)', partOfSpeech: 'particle' },
+  גַּם: { lemma: 'גַּם', gloss: 'also, even', partOfSpeech: 'adverb' },
+};
 
 export const HEB_RUTH_1: TextSection = {
   id: 'Heb-Ruth-1',
@@ -38,11 +98,108 @@ export const HEB_RUTH_1: TextSection = {
   sequence: 1,
   label: 'רוּת א:א-ה — Ruth 1:1-5 — Famine and Death in Moab',
   sentences: [
-    sent('Heb-Ruth-1-1', ['וַיְהִי', 'בִּימֵי', 'שְׁפֹט', 'הַשֹּׁפְטִים', 'וַיְהִי', 'רָעָב', 'בָּאָרֶץ', 'וַיֵּלֶךְ', 'אִישׁ', 'מִבֵּית', 'לֶחֶם', 'יְהוּדָה', 'לָגוּר', 'בִּשְׂדֵי', 'מוֹאָב', 'הוּא', 'וְאִשְׁתּוֹ', 'וּשְׁנֵי', 'בָנָיו׃'], 'In the days when the judges ruled, there was a famine in the land, and a man of Bethlehem in Judah went to sojourn in the country of Moab, he and his wife and his two sons.'),
-    sent('Heb-Ruth-1-2', ['וְשֵׁם', 'הָאִישׁ', 'אֱלִימֶלֶךְ', 'וְשֵׁם', 'אִשְׁתּוֹ', 'נָעֳמִי', 'וְשֵׁם', 'שְׁנֵי-בָנָיו', 'מַחְלוֹן', 'וְכִלְיוֹן', 'אֶפְרָתִים', 'מִבֵּית', 'לֶחֶם', 'יְהוּדָה', 'וַיָּבֹאוּ', 'שְׂדֵי-מוֹאָב', 'וַיִּהְיוּ-שָׁם׃'], 'The name of the man was Elimelech and the name of his wife Naomi, and the names of his two sons were Mahlon and Chilion. They were Ephrathites from Bethlehem in Judah, and they went into the country of Moab and remained there.'),
-    sent('Heb-Ruth-1-3', ['וַיָּמָת', 'אֱלִימֶלֶךְ', 'אִישׁ', 'נָעֳמִי', 'וַתִּשָּׁאֵר', 'הִיא', 'וּשְׁנֵי', 'בָנֶיהָ׃'], 'But Elimelech, the husband of Naomi, died, and she was left with her two sons.'),
-    sent('Heb-Ruth-1-4', ['וַיִּשְׂאוּ', 'לָהֶם', 'נָשִׁים', 'מֹאֲבִיּוֹת', 'שֵׁם', 'הָאַחַת', 'עָרְפָּה', 'וְשֵׁם', 'הַשֵּׁנִית', 'רוּת', 'וַיֵּשְׁבוּ', 'שָׁם', 'כְּעֶשֶׂר', 'שָׁנִים׃'], 'These took Moabite wives; the name of the one was Orpah and the name of the other Ruth. They lived there about ten years.'),
-    sent('Heb-Ruth-1-5', ['וַיָּמוּתוּ', 'גַם-שְׁנֵיהֶם', 'מַחְלוֹן', 'וְכִלְיוֹן', 'וַתִּשָּׁאֵר', 'הָאִשָּׁה', 'מִשְּׁנֵי', 'יְלָדֶיהָ', 'וּמֵאִישָׁהּ׃'], 'And both Mahlon and Chilion died, so that the woman was left without her two sons and her husband.'),
+    sentLex(
+      'Heb-Ruth-1-1',
+      [
+        'וַיְהִי',
+        'בִּימֵי',
+        'שְׁפֹט',
+        'הַשֹּׁפְטִים',
+        'וַיְהִי',
+        'רָעָב',
+        'בָּאָרֶץ',
+        'וַיֵּלֶךְ',
+        'אִישׁ',
+        'מִבֵּית',
+        'לֶחֶם',
+        'יְהוּדָה',
+        'לָגוּר',
+        'בִּשְׂדֵי',
+        'מוֹאָב',
+        'הוּא',
+        'וְאִשְׁתּוֹ',
+        'וּשְׁנֵי',
+        'בָנָיו׃',
+      ],
+      'In the days when the judges ruled, there was a famine in the land, and a man of Bethlehem in Judah went to sojourn in the country of Moab, he and his wife and his two sons.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-1-2',
+      [
+        'וְשֵׁם',
+        'הָאִישׁ',
+        'אֱלִימֶלֶךְ',
+        'וְשֵׁם',
+        'אִשְׁתּוֹ',
+        'נָעֳמִי',
+        'וְשֵׁם',
+        'שְׁנֵי-בָנָיו',
+        'מַחְלוֹן',
+        'וְכִלְיוֹן',
+        'אֶפְרָתִים',
+        'מִבֵּית',
+        'לֶחֶם',
+        'יְהוּדָה',
+        'וַיָּבֹאוּ',
+        'שְׂדֵי-מוֹאָב',
+        'וַיִּהְיוּ-שָׁם׃',
+      ],
+      'The name of the man was Elimelech and the name of his wife Naomi, and the names of his two sons were Mahlon and Chilion. They were Ephrathites from Bethlehem in Judah, and they went into the country of Moab and remained there.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-1-3',
+      [
+        'וַיָּמָת',
+        'אֱלִימֶלֶךְ',
+        'אִישׁ',
+        'נָעֳמִי',
+        'וַתִּשָּׁאֵר',
+        'הִיא',
+        'וּשְׁנֵי',
+        'בָנֶיהָ׃',
+      ],
+      'But Elimelech, the husband of Naomi, died, and she was left with her two sons.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-1-4',
+      [
+        'וַיִּשְׂאוּ',
+        'לָהֶם',
+        'נָשִׁים',
+        'מֹאֲבִיּוֹת',
+        'שֵׁם',
+        'הָאַחַת',
+        'עָרְפָּה',
+        'וְשֵׁם',
+        'הַשֵּׁנִית',
+        'רוּת',
+        'וַיֵּשְׁבוּ',
+        'שָׁם',
+        'כְּעֶשֶׂר',
+        'שָׁנִים׃',
+      ],
+      'These took Moabite wives; the name of the one was Orpah and the name of the other Ruth. They lived there about ten years.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-1-5',
+      [
+        'וַיָּמוּתוּ',
+        'גַם-שְׁנֵיהֶם',
+        'מַחְלוֹן',
+        'וְכִלְיוֹן',
+        'וַתִּשָּׁאֵר',
+        'הָאִשָּׁה',
+        'מִשְּׁנֵי',
+        'יְלָדֶיהָ',
+        'וּמֵאִישָׁהּ׃',
+      ],
+      'And both Mahlon and Chilion died, so that the woman was left without her two sons and her husband.',
+      HEB_RUTH_LEXICON
+    ),
   ],
 };
 
@@ -52,12 +209,104 @@ export const HEB_RUTH_2: TextSection = {
   sequence: 2,
   label: 'רוּת א:ו-יד — Ruth 1:6-14 — Naomi Returns',
   sentences: [
-    sent('Heb-Ruth-2-1', ['וַתָּקָם', 'הִיא', 'וְכַלֹּתֶיהָ', 'וַתָּשָׁב', 'מִשְּׂדֵי', 'מוֹאָב', 'כִּי', 'שָׁמְעָה', 'בִּשְׂדֵה', 'מוֹאָב', 'כִּי-פָקַד', 'יְהוָה', 'אֶת-עַמּוֹ', 'לָתֵת', 'לָהֶם', 'לָחֶם׃'], 'Then she arose with her daughters-in-law to return from the country of Moab, for she had heard in the fields of Moab that the LORD had visited his people and given them food.'),
-    sent('Heb-Ruth-2-2', ['וַתֵּצֵא', 'מִן-הַמָּקוֹם', 'אֲשֶׁר', 'הָיְתָה-שָּׁמָּה', 'וּשְׁתֵּי', 'כַלֹּתֶיהָ', 'עִמָּהּ', 'וַתֵּלַכְנָה', 'בַדֶּרֶךְ', 'לָשׁוּב', 'אֶל-אֶרֶץ', 'יְהוּדָה׃'], 'So she set out from the place where she was, with her two daughters-in-law, and they went on the way to return to the land of Judah.'),
-    sent('Heb-Ruth-2-3', ['וַתֹּאמֶר', 'נָעֳמִי', 'לִשְׁתֵּי', 'כַלֹּתֶיהָ', 'לֵכְנָה', 'שֹּׁבְנָה', 'אִשָּׁה', 'לְבֵית', 'אִמָּהּ', 'יַעַשׂ', 'יְהוָה', 'עִמָּכֶם', 'חֶסֶד', 'כַּאֲשֶׁר', 'עֲשִׂיתֶם', 'עִם-הַמֵּתִים', 'וְעִמָּדִי׃'], 'But Naomi said to her two daughters-in-law: Go, return each of you to her mother’s house. May the LORD deal kindly with you, as you have dealt with the dead and with me.'),
-    sent('Heb-Ruth-2-4', ['יִתֵּן', 'יְהוָה', 'לָכֶם', 'וּמְצֶאןָ', 'מְנוּחָה', 'אִשָּׁה', 'בֵּית', 'אִישָׁהּ', 'וַתִּשַּׁק', 'לָהֶן', 'וַתִּשֶּׂאנָה', 'קוֹלָן', 'וַתִּבְכֶּינָה׃'], 'May the LORD grant that you may find rest, each in the house of her husband. Then she kissed them, and they lifted up their voices and wept.'),
-    sent('Heb-Ruth-2-5', ['וַתֹּאמַרְנָה-לָּהּ', 'כִּי-אִתָּךְ', 'נָשׁוּב', 'לְעַמֵּךְ׃'], 'And they said to her, No, we will return with you to your people.'),
-    sent('Heb-Ruth-2-6', ['וַתִּשַּׂק', 'עָרְפָּה', 'לַחֲמוֹתָהּ', 'וְרוּת', 'דָּבְקָה', 'בָּהּ׃'], 'Then Orpah kissed her mother-in-law, but Ruth clung to her.'),
+    sentLex(
+      'Heb-Ruth-2-1',
+      [
+        'וַתָּקָם',
+        'הִיא',
+        'וְכַלֹּתֶיהָ',
+        'וַתָּשָׁב',
+        'מִשְּׂדֵי',
+        'מוֹאָב',
+        'כִּי',
+        'שָׁמְעָה',
+        'בִּשְׂדֵה',
+        'מוֹאָב',
+        'כִּי-פָקַד',
+        'יְהוָה',
+        'אֶת-עַמּוֹ',
+        'לָתֵת',
+        'לָהֶם',
+        'לָחֶם׃',
+      ],
+      'Then she arose with her daughters-in-law to return from the country of Moab, for she had heard in the fields of Moab that the LORD had visited his people and given them food.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-2-2',
+      [
+        'וַתֵּצֵא',
+        'מִן-הַמָּקוֹם',
+        'אֲשֶׁר',
+        'הָיְתָה-שָּׁמָּה',
+        'וּשְׁתֵּי',
+        'כַלֹּתֶיהָ',
+        'עִמָּהּ',
+        'וַתֵּלַכְנָה',
+        'בַדֶּרֶךְ',
+        'לָשׁוּב',
+        'אֶל-אֶרֶץ',
+        'יְהוּדָה׃',
+      ],
+      'So she set out from the place where she was, with her two daughters-in-law, and they went on the way to return to the land of Judah.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-2-3',
+      [
+        'וַתֹּאמֶר',
+        'נָעֳמִי',
+        'לִשְׁתֵּי',
+        'כַלֹּתֶיהָ',
+        'לֵכְנָה',
+        'שֹּׁבְנָה',
+        'אִשָּׁה',
+        'לְבֵית',
+        'אִמָּהּ',
+        'יַעַשׂ',
+        'יְהוָה',
+        'עִמָּכֶם',
+        'חֶסֶד',
+        'כַּאֲשֶׁר',
+        'עֲשִׂיתֶם',
+        'עִם-הַמֵּתִים',
+        'וְעִמָּדִי׃',
+      ],
+      "But Naomi said to her two daughters-in-law: Go, return each of you to her mother's house. May the LORD deal kindly with you, as you have dealt with the dead and with me.",
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-2-4',
+      [
+        'יִתֵּן',
+        'יְהוָה',
+        'לָכֶם',
+        'וּמְצֶאןָ',
+        'מְנוּחָה',
+        'אִשָּׁה',
+        'בֵּית',
+        'אִישָׁהּ',
+        'וַתִּשַּׁק',
+        'לָהֶן',
+        'וַתִּשֶּׂאנָה',
+        'קוֹלָן',
+        'וַתִּבְכֶּינָה׃',
+      ],
+      'May the LORD grant that you may find rest, each in the house of her husband. Then she kissed them, and they lifted up their voices and wept.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-2-5',
+      ['וַתֹּאמַרְנָה-לָּהּ', 'כִּי-אִתָּךְ', 'נָשׁוּב', 'לְעַמֵּךְ׃'],
+      'And they said to her, No, we will return with you to your people.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-2-6',
+      ['וַתִּשַּׂק', 'עָרְפָּה', 'לַחֲמוֹתָהּ', 'וְרוּת', 'דָּבְקָה', 'בָּהּ׃'],
+      'Then Orpah kissed her mother-in-law, but Ruth clung to her.',
+      HEB_RUTH_LEXICON
+    ),
   ],
 };
 
@@ -67,11 +316,47 @@ export const HEB_RUTH_3: TextSection = {
   sequence: 3,
   label: 'רוּת א:טז-יז — Ruth 1:16-17 — Where You Go, I Will Go',
   sentences: [
-    sent('Heb-Ruth-3-1', ['וַתֹּאמֶר', 'רוּת', 'אַל-תִּפְגְּעִי-בִי', 'לְעָזְבֵךְ', 'לָשׁוּב', 'מֵאַחֲרָיִךְ'], 'But Ruth said: Do not urge me to leave you or to return from following you.'),
-    sent('Heb-Ruth-3-2', ['כִּי', 'אֶל-אֲשֶׁר', 'תֵּלְכִי', 'אֵלֵךְ', 'וּבַאֲשֶׁר', 'תָּלִינִי', 'אָלִין'], 'For where you go I will go, and where you lodge I will lodge.'),
-    sent('Heb-Ruth-3-3', ['עַמֵּךְ', 'עַמִּי', 'וֵאלֹהַיִךְ', 'אֱלֹהָי׃'], 'Your people shall be my people, and your God my God.'),
-    sent('Heb-Ruth-3-4', ['בַּאֲשֶׁר', 'תָּמוּתִי', 'אָמוּת', 'וְשָׁם', 'אֶקָּבֵר'], 'Where you die I will die, and there will I be buried.'),
-    sent('Heb-Ruth-3-5', ['יַעֲשֶׂה', 'יְהוָה', 'לִי', 'וְכֹה', 'יֹסִיף', 'כִּי', 'הַמָּוֶת', 'יַפְרִיד', 'בֵּינִי', 'וּבֵינֵךְ׃'], 'May the LORD do so to me and more also if anything but death parts me from you.'),
+    sentLex(
+      'Heb-Ruth-3-1',
+      ['וַתֹּאמֶר', 'רוּת', 'אַל-תִּפְגְּעִי-בִי', 'לְעָזְבֵךְ', 'לָשׁוּב', 'מֵאַחֲרָיִךְ'],
+      'But Ruth said: Do not urge me to leave you or to return from following you.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-3-2',
+      ['כִּי', 'אֶל-אֲשֶׁר', 'תֵּלְכִי', 'אֵלֵךְ', 'וּבַאֲשֶׁר', 'תָּלִינִי', 'אָלִין'],
+      'For where you go I will go, and where you lodge I will lodge.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-3-3',
+      ['עַמֵּךְ', 'עַמִּי', 'וֵאלֹהַיִךְ', 'אֱלֹהָי׃'],
+      'Your people shall be my people, and your God my God.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-3-4',
+      ['בַּאֲשֶׁר', 'תָּמוּתִי', 'אָמוּת', 'וְשָׁם', 'אֶקָּבֵר'],
+      'Where you die I will die, and there will I be buried.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-3-5',
+      [
+        'יַעֲשֶׂה',
+        'יְהוָה',
+        'לִי',
+        'וְכֹה',
+        'יֹסִיף',
+        'כִּי',
+        'הַמָּוֶת',
+        'יַפְרִיד',
+        'בֵּינִי',
+        'וּבֵינֵךְ׃',
+      ],
+      'May the LORD do so to me and more also if anything but death parts me from you.',
+      HEB_RUTH_LEXICON
+    ),
   ],
 };
 
@@ -81,12 +366,98 @@ export const HEB_RUTH_4: TextSection = {
   sequence: 4,
   label: 'רוּת ב — Ruth 2 — Ruth Meets Boaz',
   sentences: [
-    sent('Heb-Ruth-4-1', ['וּלְנָעֳמִי', 'מוֹדָע', 'לְאִישָׁהּ', 'אִישׁ', 'גִּבּוֹר', 'חַיִל', 'מִמִּשְׁפַּחַת', 'אֱלִימֶלֶךְ', 'וּשְׁמוֹ', 'בֹּעַז׃'], 'Now Naomi had a relative of her husband’s, a worthy man of the clan of Elimelech, whose name was Boaz.'),
-    sent('Heb-Ruth-4-2', ['וַתֹּאמֶר', 'רוּת', 'הַמּוֹאֲבִיָּה', 'אֶל-נָעֳמִי', 'אֵלְכָה-נָּא', 'הַשָּׂדֶה', 'וַאֲלַקֳטָה', 'בַשִּׁבֳּלִים׃'], 'And Ruth the Moabite said to Naomi: Let me go to the field and glean among the ears of grain.'),
-    sent('Heb-Ruth-4-3', ['וַתֵּלֶךְ', 'וַתָּבוֹא', 'וַתְּלַקֵּט', 'בַּשָּׂדֶה', 'אַחֲרֵי', 'הַקֹּצְרִים', 'וַיִּקֶר', 'מִקְרֶהָ', 'חֶלְקַת', 'הַשָּׂדֶה', 'לְבֹעַז׃'], 'So she went out and gleaned in the field after the reapers, and she happened to come to the part of the field belonging to Boaz.'),
-    sent('Heb-Ruth-4-4', ['וְהִנֵּה-בֹעַז', 'בָּא', 'מִבֵּית', 'לֶחֶם', 'וַיֹּאמֶר', 'לַקּוֹצְרִים', 'יְהוָה', 'עִמָּכֶם', 'וַיֹּאמְרוּ', 'לוֹ', 'יְבָרֶכְךָ', 'יְהוָה׃'], 'And behold, Boaz came from Bethlehem and said to the reapers: The LORD be with you! And they answered, The LORD bless you.'),
-    sent('Heb-Ruth-4-5', ['וַיֹּאמֶר', 'בֹּעַז', 'אֶל-רוּת', 'הֲלוֹא', 'שָׁמַעַתְּ', 'בִּתִּי', 'אַל-תֵּלְכִי', 'לִלְקֹט', 'בְּשָׂדֶה', 'אַחֵר'], 'Then Boaz said to Ruth: Now, listen, my daughter, do not go to glean in another field.'),
-    sent('Heb-Ruth-4-6', ['וְכֹה', 'תִדְבָּקִין', 'עִם-נַעֲרֹתָי׃'], 'But keep close to my young women.'),
+    sentLex(
+      'Heb-Ruth-4-1',
+      [
+        'וּלְנָעֳמִי',
+        'מוֹדָע',
+        'לְאִישָׁהּ',
+        'אִישׁ',
+        'גִּבּוֹר',
+        'חַיִל',
+        'מִמִּשְׁפַּחַת',
+        'אֱלִימֶלֶךְ',
+        'וּשְׁמוֹ',
+        'בֹּעַז׃',
+      ],
+      "Now Naomi had a relative of her husband's, a worthy man of the clan of Elimelech, whose name was Boaz.",
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-4-2',
+      [
+        'וַתֹּאמֶר',
+        'רוּת',
+        'הַמּוֹאֲבִיָּה',
+        'אֶל-נָעֳמִי',
+        'אֵלְכָה-נָּא',
+        'הַשָּׂדֶה',
+        'וַאֲלַקֳטָה',
+        'בַשִּׁבֳּלִים׃',
+      ],
+      'And Ruth the Moabite said to Naomi: Let me go to the field and glean among the ears of grain.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-4-3',
+      [
+        'וַתֵּלֶךְ',
+        'וַתָּבוֹא',
+        'וַתְּלַקֵּט',
+        'בַּשָּׂדֶה',
+        'אַחֲרֵי',
+        'הַקֹּצְרִים',
+        'וַיִּקֶר',
+        'מִקְרֶהָ',
+        'חֶלְקַת',
+        'הַשָּׂדֶה',
+        'לְבֹעַז׃',
+      ],
+      'So she went out and gleaned in the field after the reapers, and she happened to come to the part of the field belonging to Boaz.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-4-4',
+      [
+        'וְהִנֵּה-בֹעַז',
+        'בָּא',
+        'מִבֵּית',
+        'לֶחֶם',
+        'וַיֹּאמֶר',
+        'לַקּוֹצְרִים',
+        'יְהוָה',
+        'עִמָּכֶם',
+        'וַיֹּאמְרוּ',
+        'לוֹ',
+        'יְבָרֶכְךָ',
+        'יְהוָה׃',
+      ],
+      'And behold, Boaz came from Bethlehem and said to the reapers: The LORD be with you! And they answered, The LORD bless you.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-4-5',
+      [
+        'וַיֹּאמֶר',
+        'בֹּעַז',
+        'אֶל-רוּת',
+        'הֲלוֹא',
+        'שָׁמַעַתְּ',
+        'בִּתִּי',
+        'אַל-תֵּלְכִי',
+        'לִלְקֹט',
+        'בְּשָׂדֶה',
+        'אַחֵר',
+      ],
+      'Then Boaz said to Ruth: Now, listen, my daughter, do not go to glean in another field.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-4-6',
+      ['וְכֹה', 'תִדְבָּקִין', 'עִם-נַעֲרֹתָי׃'],
+      'But keep close to my young women.',
+      HEB_RUTH_LEXICON
+    ),
   ],
 };
 
@@ -96,10 +467,69 @@ export const HEB_RUTH_5: TextSection = {
   sequence: 5,
   label: 'רוּת ג — Ruth 3 — At the Threshing Floor',
   sentences: [
-    sent('Heb-Ruth-5-1', ['וַתֹּאמֶר', 'לָהּ', 'נָעֳמִי', 'חֲמוֹתָהּ', 'בִּתִּי', 'הֲלֹא', 'אֲבַקֶּשׁ-לָךְ', 'מָנוֹחַ', 'אֲשֶׁר', 'יִיטַב-לָךְ׃'], 'Then Naomi her mother-in-law said to her: My daughter, should I not seek rest for you, that it may be well with you?'),
-    sent('Heb-Ruth-5-2', ['וַתֵּרֶד', 'הַגֹּרֶן', 'וַתַּעַשׂ', 'כְּכֹל', 'אֲשֶׁר-צִוַּתָּה', 'חֲמוֹתָהּ׃'], 'So she went down to the threshing floor and did just as her mother-in-law had commanded her.'),
-    sent('Heb-Ruth-5-3', ['וַיֹּאכַל', 'בֹּעַז', 'וַיֵּשְׁתְּ', 'וַיִּיטַב', 'לִבּוֹ', 'וַיָּבֹא', 'לִשְׁכַּב', 'בִּקְצֵה', 'הָעֲרֵמָה', 'וַתָּבֹא', 'בַלָּט', 'וַתְּגַל', 'מַרְגְּלֹתָיו', 'וַתִּשְׁכָּב׃'], 'And when Boaz had eaten and drunk, and his heart was merry, he went to lie down at the end of the heap of grain. Then she came softly and uncovered his feet and lay down.'),
-    sent('Heb-Ruth-5-4', ['וַיֹּאמֶר', 'מִי-אָתְּ', 'וַתֹּאמֶר', 'אָנֹכִי', 'רוּת', 'אֲמָתֶךָ', 'וּפָרַשְׂתָּ', 'כְנָפֶךָ', 'עַל-אֲמָתְךָ', 'כִּי', 'גֹאֵל', 'אָתָּה׃'], 'He said: Who are you? And she answered: I am Ruth, your servant. Spread your wings over your servant, for you are a redeemer.'),
+    sentLex(
+      'Heb-Ruth-5-1',
+      [
+        'וַתֹּאמֶר',
+        'לָהּ',
+        'נָעֳמִי',
+        'חֲמוֹתָהּ',
+        'בִּתִּי',
+        'הֲלֹא',
+        'אֲבַקֶּשׁ-לָךְ',
+        'מָנוֹחַ',
+        'אֲשֶׁר',
+        'יִיטַב-לָךְ׃',
+      ],
+      'Then Naomi her mother-in-law said to her: My daughter, should I not seek rest for you, that it may be well with you?',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-5-2',
+      ['וַתֵּרֶד', 'הַגֹּרֶן', 'וַתַּעַשׂ', 'כְּכֹל', 'אֲשֶׁר-צִוַּתָּה', 'חֲמוֹתָהּ׃'],
+      'So she went down to the threshing floor and did just as her mother-in-law had commanded her.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-5-3',
+      [
+        'וַיֹּאכַל',
+        'בֹּעַז',
+        'וַיֵּשְׁתְּ',
+        'וַיִּיטַב',
+        'לִבּוֹ',
+        'וַיָּבֹא',
+        'לִשְׁכַּב',
+        'בִּקְצֵה',
+        'הָעֲרֵמָה',
+        'וַתָּבֹא',
+        'בַלָּט',
+        'וַתְּגַל',
+        'מַרְגְּלֹתָיו',
+        'וַתִּשְׁכָּב׃',
+      ],
+      'And when Boaz had eaten and drunk, and his heart was merry, he went to lie down at the end of the heap of grain. Then she came softly and uncovered his feet and lay down.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-5-4',
+      [
+        'וַיֹּאמֶר',
+        'מִי-אָתְּ',
+        'וַתֹּאמֶר',
+        'אָנֹכִי',
+        'רוּת',
+        'אֲמָתֶךָ',
+        'וּפָרַשְׂתָּ',
+        'כְנָפֶךָ',
+        'עַל-אֲמָתְךָ',
+        'כִּי',
+        'גֹאֵל',
+        'אָתָּה׃',
+      ],
+      'He said: Who are you? And she answered: I am Ruth, your servant. Spread your wings over your servant, for you are a redeemer.',
+      HEB_RUTH_LEXICON
+    ),
   ],
 };
 
@@ -109,10 +539,79 @@ export const HEB_RUTH_6: TextSection = {
   sequence: 6,
   label: 'רוּת ד:יג-יז — Ruth 4:13-17 — The Redemption and the Son',
   sentences: [
-    sent('Heb-Ruth-6-1', ['וַיִּקַּח', 'בֹּעַז', 'אֶת-רוּת', 'וַתְּהִי-לוֹ', 'לְאִשָּׁה', 'וַיָּבֹא', 'אֵלֶיהָ', 'וַיִּתֵּן', 'יְהוָה', 'לָהּ', 'הֵרָיוֹן', 'וַתֵּלֶד', 'בֵּן׃'], 'So Boaz took Ruth, and she became his wife. And he went in to her, and the LORD gave her conception, and she bore a son.'),
-    sent('Heb-Ruth-6-2', ['וַתֹּאמַרְנָה', 'הַנָּשִׁים', 'אֶל-נָעֳמִי', 'בָּרוּךְ', 'יְהוָה', 'אֲשֶׁר', 'לֹא', 'הִשְׁבִּית', 'לָךְ', 'גֹּאֵל', 'הַיּוֹם׃'], 'Then the women said to Naomi: Blessed be the LORD, who has not left you this day without a redeemer.'),
-    sent('Heb-Ruth-6-3', ['וַתִּקַּח', 'נָעֳמִי', 'אֶת-הַיֶּלֶד', 'וַתְּשִׁתֵהוּ', 'בְחֵיקָהּ', 'וַתְּהִי-לוֹ', 'לְאֹמֶנֶת׃'], 'Then Naomi took the child and laid him on her lap and became his nurse.'),
-    sent('Heb-Ruth-6-4', ['וַתִּקְרֶאנָה', 'לוֹ', 'הַשְּׁכֵנוֹת', 'שֵׁם', 'לֵאמֹר', 'יֻלַּד-בֵּן', 'לְנָעֳמִי', 'וַתִּקְרֶאנָה', 'שְׁמוֹ', 'עוֹבֵד', 'הוּא', 'אֲבִי-יִשַׁי', 'אֲבִי', 'דָוִד׃'], 'And the women of the neighborhood gave him a name, saying: A son has been born to Naomi. They named him Obed. He was the father of Jesse, the father of David.'),
+    sentLex(
+      'Heb-Ruth-6-1',
+      [
+        'וַיִּקַּח',
+        'בֹּעַז',
+        'אֶת-רוּת',
+        'וַתְּהִי-לוֹ',
+        'לְאִשָּׁה',
+        'וַיָּבֹא',
+        'אֵלֶיהָ',
+        'וַיִּתֵּן',
+        'יְהוָה',
+        'לָהּ',
+        'הֵרָיוֹן',
+        'וַתֵּלֶד',
+        'בֵּן׃',
+      ],
+      'So Boaz took Ruth, and she became his wife. And he went in to her, and the LORD gave her conception, and she bore a son.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-6-2',
+      [
+        'וַתֹּאמַרְנָה',
+        'הַנָּשִׁים',
+        'אֶל-נָעֳמִי',
+        'בָּרוּךְ',
+        'יְהוָה',
+        'אֲשֶׁר',
+        'לֹא',
+        'הִשְׁבִּית',
+        'לָךְ',
+        'גֹּאֵל',
+        'הַיּוֹם׃',
+      ],
+      'Then the women said to Naomi: Blessed be the LORD, who has not left you this day without a redeemer.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-6-3',
+      [
+        'וַתִּקַּח',
+        'נָעֳמִי',
+        'אֶת-הַיֶּלֶד',
+        'וַתְּשִׁתֵהוּ',
+        'בְחֵיקָהּ',
+        'וַתְּהִי-לוֹ',
+        'לְאֹמֶנֶת׃',
+      ],
+      'Then Naomi took the child and laid him on her lap and became his nurse.',
+      HEB_RUTH_LEXICON
+    ),
+    sentLex(
+      'Heb-Ruth-6-4',
+      [
+        'וַתִּקְרֶאנָה',
+        'לוֹ',
+        'הַשְּׁכֵנוֹת',
+        'שֵׁם',
+        'לֵאמֹר',
+        'יֻלַּד-בֵּן',
+        'לְנָעֳמִי',
+        'וַתִּקְרֶאנָה',
+        'שְׁמוֹ',
+        'עוֹבֵד',
+        'הוּא',
+        'אֲבִי-יִשַׁי',
+        'אֲבִי',
+        'דָוִד׃',
+      ],
+      'And the women of the neighborhood gave him a name, saying: A son has been born to Naomi. They named him Obed. He was the father of Jesse, the father of David.',
+      HEB_RUTH_LEXICON
+    ),
   ],
 };
 

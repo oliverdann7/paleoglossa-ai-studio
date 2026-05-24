@@ -152,13 +152,62 @@ describe('demo/guest mode — userId null', () => {
     });
 
     it('getImports reads from localStorage, not Firestore', async () => {
-      localStorage.setItem(
-        'paleoglossa_imports',
-        JSON.stringify([{ id: 'imp1', title: 'Iliad' }])
-      );
+      localStorage.setItem('paleoglossa_imports', JSON.stringify([{ id: 'imp1', title: 'Iliad' }]));
       const result = await ImportService.getImports(null);
       expect(result.length).toBe(1);
       expect(mockGetDocs).not.toHaveBeenCalled();
+    });
+
+    it('dedupeImportsById removes duplicate IDs, keeping latest', async () => {
+      localStorage.setItem(
+        'paleoglossa_imports',
+        JSON.stringify([
+          { id: 'a', title: 'old' },
+          { id: 'b', title: 'keep' },
+          { id: 'a', title: 'new' },
+        ])
+      );
+      ImportService.dedupeImportsById();
+      const stored = JSON.parse(localStorage.getItem('paleoglossa_imports')!);
+      expect(stored.length).toBe(2);
+      expect(stored.find((i: any) => i.id === 'a')!.title).toBe('new');
+      expect(stored.find((i: any) => i.id === 'b')!.title).toBe('keep');
+    });
+
+    it('getImports calls dedupeImportsById for guest users', async () => {
+      localStorage.setItem(
+        'paleoglossa_imports',
+        JSON.stringify([
+          { id: 'x', title: 'first' },
+          { id: 'x', title: 'second' },
+        ])
+      );
+      const result = await ImportService.getImports(null);
+      expect(result.length).toBe(1);
+      expect(result[0].title).toBe('second');
+    });
+
+    it('getImport calls dedupeImportsById for guest users', async () => {
+      localStorage.setItem(
+        'paleoglossa_imports',
+        JSON.stringify([
+          { id: 'y', title: 'old' },
+          { id: 'y', title: 'latest' },
+        ])
+      );
+      const result = await ImportService.getImport(null, 'y');
+      expect(result).not.toBeNull();
+      expect(result!.title).toBe('latest');
+    });
+
+    it('dedupeImportsById keeps entries without id', () => {
+      localStorage.setItem(
+        'paleoglossa_imports',
+        JSON.stringify([{ title: 'no-id' }, { id: 'z', title: 'with-id' }])
+      );
+      ImportService.dedupeImportsById();
+      const stored = JSON.parse(localStorage.getItem('paleoglossa_imports')!);
+      expect(stored.length).toBe(2);
     });
   });
 
@@ -250,11 +299,7 @@ describe('authenticated mode — correct Firestore paths', () => {
         rawContent: 'raw text content here',
       });
 
-      expect(mockDoc).toHaveBeenCalledWith(
-        expect.anything(),
-        'users/user1/imports',
-        'imp42'
-      );
+      expect(mockDoc).toHaveBeenCalledWith(expect.anything(), 'users/user1/imports', 'imp42');
       expect(mockSetDoc).toHaveBeenCalledTimes(1);
 
       const [, payload] = mockSetDoc.mock.calls[0];
