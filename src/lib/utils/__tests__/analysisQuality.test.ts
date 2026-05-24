@@ -82,6 +82,61 @@ describe('computeAnalysisQuality', () => {
     expect(result.morphologyCoverage).toBe(0);
   });
 
+  it('detects morphology in partOfSpeech field on morphology object', () => {
+    const result = computeAnalysisQuality(
+      [
+        {
+          tokens: [
+            { type: 'word', gloss: 'love', morphology: { partOfSpeech: 'noun' }, confidence: 0.95 },
+            { type: 'word', gloss: 'run', morphology: { partOfSpeech: 'verb' }, confidence: 0.9 },
+          ],
+        },
+      ],
+      'analyzed'
+    );
+    expect(result.level).toBe('full');
+    expect(result.morphologyCoverage).toBe(100);
+  });
+
+  it('detects morphology via pos field on morphology object', () => {
+    const result = computeAnalysisQuality(
+      [
+        {
+          tokens: [{ type: 'word', gloss: 'tree', morphology: { pos: 'noun' } }],
+        },
+      ],
+      'analyzed'
+    );
+    expect(result.morphologyCoverage).toBe(100);
+  });
+
+  it('does not count unknown partOfSpeech as morphology coverage', () => {
+    const result = computeAnalysisQuality(
+      [
+        {
+          tokens: [
+            { type: 'word', gloss: 'word', morphology: { partOfSpeech: 'unknown' } },
+            { type: 'word', gloss: 'another', morphology: { partOfSpeech: 'noun' } },
+          ],
+        },
+      ],
+      'analyzed'
+    );
+    expect(result.morphologyCoverage).toBe(50);
+  });
+
+  it('ignores empty morphology string', () => {
+    const result = computeAnalysisQuality(
+      [
+        {
+          tokens: [{ type: 'word', gloss: 'test', morphology: '', pos: '' }],
+        },
+      ],
+      'analyzed'
+    );
+    expect(result.morphologyCoverage).toBe(0);
+  });
+
   it('excludes non-word tokens from coverage calculation', () => {
     const result = computeAnalysisQuality(
       [

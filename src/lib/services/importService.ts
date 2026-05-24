@@ -231,6 +231,32 @@ export class ImportService {
     }
   }
 
+  /** Deduplicate localStorage imports by ID, keeping the latest occurrence of each. */
+  static dedupeImportsById(): void {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const imports: ImportedText[] = JSON.parse(saved);
+    const seen = new Map<string, number>();
+    const deduped: ImportedText[] = [];
+    for (const imp of imports) {
+      const id = imp.id;
+      if (!id) {
+        deduped.push(imp);
+        continue;
+      }
+      const existing = seen.get(id);
+      if (existing !== undefined) {
+        deduped[existing] = imp;
+      } else {
+        seen.set(id, deduped.length);
+        deduped.push(imp);
+      }
+    }
+    if (deduped.length !== imports.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped));
+    }
+  }
+
   // ==================== Public Library ====================
 
   static async sharePublic(userId: string, importId: string): Promise<boolean> {

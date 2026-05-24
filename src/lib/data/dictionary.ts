@@ -233,6 +233,8 @@ export const getGlobalDictionary = () => {
             for (const t of sentence.tokens) {
               if (t.lemma && !dict[t.lemma]) {
                 dict[t.lemma] = { ...t, language: text.language, _source: 'text' };
+              } else if (t.lemma && t.gloss && dict[t.lemma] && !dict[t.lemma].gloss) {
+                dict[t.lemma] = { ...t, language: text.language, _source: 'text' };
               }
             }
           }

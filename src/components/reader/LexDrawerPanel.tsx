@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -46,6 +46,7 @@ import { getGrammarReference } from '@/lib/grammar/references';
 import { useNotebook } from '@/lib/hooks/useNotebook';
 import { normalizeLemmaKey } from '@/lib/utils/lemmaUtils';
 import { frequencyTier } from '@/lib/utils/frequencyTier';
+import { isUsefulGloss } from '@/lib/utils/lexicalHelper';
 import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
 
 interface LemmaSentenceToken {
@@ -68,7 +69,12 @@ interface LexDrawerPanelProps {
   selectedWord: any;
   setSelectedWord: (w: any) => void;
   knowledge: KnowledgeMap;
-  setWordState: (lemma: string, state: WordState, languageId: string, context?: string) => boolean | void;
+  setWordState: (
+    lemma: string,
+    state: WordState,
+    languageId: string,
+    context?: string
+  ) => boolean | void;
   setWordNote: (lemma: string, notes: string) => void;
   updateGloss: (lemma: string, gloss: string, languageId: string) => void;
   getWordInfo: (lemma: string) => WordInfo;
@@ -85,7 +91,10 @@ interface LexDrawerPanelProps {
 const getDictionaryPath = (lemma: string, langId: string) =>
   `/app/dictionary/${encodeURIComponent(langId)}/${encodeURIComponent(lemma)}`;
 
-interface ExternalDictLink { label: string; url: string }
+interface ExternalDictLink {
+  label: string;
+  url: string;
+}
 function getExternalDictLinks(lemma: string, langId: string): ExternalDictLink[] {
   if (!lemma) return [];
   const enc = encodeURIComponent(lemma);
@@ -106,12 +115,13 @@ function getExternalDictLinks(lemma: string, langId: string): ExternalDictLink[]
   }
   if (hebLangs.has(langId)) {
     return [
-      { label: 'Blue Letter Bible', url: `https://www.blueletterbible.org/lexicon/h${enc}/kjv/wlc/0-1/` },
+      {
+        label: 'Blue Letter Bible',
+        url: `https://www.blueletterbible.org/lexicon/h${enc}/kjv/wlc/0-1/`,
+      },
     ];
   }
-  return [
-    { label: 'Wiktionary', url: `https://en.wiktionary.org/wiki/${enc}` },
-  ];
+  return [{ label: 'Wiktionary', url: `https://en.wiktionary.org/wiki/${enc}` }];
 }
 
 const LABEL_TO_CATEGORY: Record<string, string> = {
@@ -279,7 +289,17 @@ export const LexDrawerPanel = ({
     }
 
     const morphDetails: string[] = [];
-    for (const key of ['tense', 'voice', 'mood', 'case', 'number', 'gender', 'person', 'state', 'stem'] as const) {
+    for (const key of [
+      'tense',
+      'voice',
+      'mood',
+      'case',
+      'number',
+      'gender',
+      'person',
+      'state',
+      'stem',
+    ] as const) {
       const v = (morphology as Record<string, unknown>)[key];
       if (typeof v === 'string' && v && v !== 'unknown') morphDetails.push(`${key}: ${v}`);
     }
@@ -287,7 +307,9 @@ export const LexDrawerPanel = ({
       parts.push(` Morphology — ${morphDetails.join(', ')}.`);
     }
 
-    parts.push(' Full dictionary entry unavailable for this lemma yet — open the dictionary, request a fresh AI lookup, or save your own gloss below.');
+    parts.push(
+      ' Full dictionary entry unavailable for this lemma yet — open the dictionary, request a fresh AI lookup, or save your own gloss below.'
+    );
     return parts.join('').trim();
   }, [selectedWord, textLanguageId]);
 
@@ -301,12 +323,12 @@ export const LexDrawerPanel = ({
     try {
       if (useAsGloss) {
         // Short-gloss request for the Meaning panel
-        const gloss = await AIClient.getWordGloss(
+        const glossResult = await AIClient.getWordGloss(
           textLanguageId,
           selectedWord.text,
           selectedWord.lemma
         );
-        setAiFallbackGloss(gloss);
+        setAiFallbackGloss(isUsefulGloss(glossResult) ? glossResult : null);
       } else {
         // Full philological explanation for the AI Insights section
         const explanation = await AIClient.explainWord(
@@ -377,19 +399,6 @@ export const LexDrawerPanel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
 
-  const isUsefulGloss = useCallback((g: string | null | undefined): g is string => {
-    if (!g) return false;
-    const cleaned = g.trim().toLowerCase();
-    if (!cleaned) return false;
-    if (cleaned === 'unknown word' || cleaned === 'unknown' || cleaned.startsWith('unknown word')) return false;
-    if (cleaned.startsWith('no explanation') || cleaned.startsWith('failed to')) return false;
-    if (cleaned.startsWith('ai explanation not available')) return false;
-    if (cleaned.startsWith('gemini api key not configured')) return false;
-    if (cleaned.startsWith('ai service error')) return false;
-    if (cleaned === 'request timed out') return false;
-    return true;
-  }, []);
-
   // Automatically fetch a short AI gloss when no lexicon definition is available
   // AND Wiktionary returned nothing. Retries once silently before exposing
   // failure to the UI — the meaning panel must never present a dead end.
@@ -441,7 +450,14 @@ export const LexDrawerPanel = ({
       setIsAiFallbackLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId, isWiktionaryLoading, !!wiktionaryResult, isUsefulGloss]);
+  }, [
+    selectedWord?.lemma,
+    !!definitionLookup,
+    textLanguageId,
+    isWiktionaryLoading,
+    !!wiktionaryResult,
+    isUsefulGloss,
+  ]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
@@ -515,32 +531,43 @@ export const LexDrawerPanel = ({
               <span className="text-[18px] font-serif text-blue font-semibold tracking-wide">
                 From '<bdi className={isHebrewFont ? 'font-hebrew' : ''}>{selectedWord.lemma}</bdi>'
               </span>
-              {wordFrequency !== null && wordFrequency > 0 && (() => {
-                const tier = frequencyTier(wordFrequency);
-                return (
-                  <span className={cn('text-[11px] font-sans font-semibold px-2 py-0.5 rounded-full', tier.color)}>
-                    {tier.label} · {wordFrequency.toLocaleString()}×
-                  </span>
-                );
-              })()}
-              {wordInfo?.srs?.nextReview && (() => {
-                const due = new Date(wordInfo.srs.nextReview as string);
-                const now = new Date();
-                const diffDays = Math.round((due.getTime() - now.getTime()) / 86400000);
-                const label = diffDays <= 0
-                  ? 'Due for review'
-                  : diffDays === 1
-                    ? 'Review tomorrow'
-                    : `Review in ${diffDays} days`;
-                return (
-                  <span className={cn(
-                    'text-[11px] font-sans font-medium px-2 py-0.5 rounded-full',
-                    diffDays <= 0 ? 'bg-amber/10 text-amber' : 'bg-parch3 text-ink3'
-                  )}>
-                    {label}
-                  </span>
-                );
-              })()}
+              {wordFrequency !== null &&
+                wordFrequency > 0 &&
+                (() => {
+                  const tier = frequencyTier(wordFrequency);
+                  return (
+                    <span
+                      className={cn(
+                        'text-[11px] font-sans font-semibold px-2 py-0.5 rounded-full',
+                        tier.color
+                      )}
+                    >
+                      {tier.label} · {wordFrequency.toLocaleString()}×
+                    </span>
+                  );
+                })()}
+              {wordInfo?.srs?.nextReview &&
+                (() => {
+                  const due = new Date(wordInfo.srs.nextReview as string);
+                  const now = new Date();
+                  const diffDays = Math.round((due.getTime() - now.getTime()) / 86400000);
+                  const label =
+                    diffDays <= 0
+                      ? 'Due for review'
+                      : diffDays === 1
+                        ? 'Review tomorrow'
+                        : `Review in ${diffDays} days`;
+                  return (
+                    <span
+                      className={cn(
+                        'text-[11px] font-sans font-medium px-2 py-0.5 rounded-full',
+                        diffDays <= 0 ? 'bg-amber/10 text-amber' : 'bg-parch3 text-ink3'
+                      )}
+                    >
+                      {label}
+                    </span>
+                  );
+                })()}
             </div>
           </div>
 
@@ -548,7 +575,8 @@ export const LexDrawerPanel = ({
             <div className="mb-5 p-3 bg-amber/8 border border-amber/20 rounded-xl flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-amber shrink-0 mt-0.5" />
               <p className="text-[12px] text-ink3 leading-relaxed">
-                Raw text only — meanings and morphology are limited. Run AI analysis to complete this lesson.
+                Raw text only — meanings and morphology are limited. Run AI analysis to complete
+                this lesson.
               </p>
             </div>
           )}
@@ -1047,29 +1075,30 @@ export const LexDrawerPanel = ({
           )}
 
           {/* External scholarly resources */}
-          {selectedWord.lemma && (() => {
-            const links = getExternalDictLinks(selectedWord.lemma, textLanguageId);
-            if (links.length === 0) return null;
-            return (
-              <div className="mt-4 pt-4 border-t border-bdr/30">
-                <div className="eyebrow mb-3 text-ink3">External Resources</div>
-                <div className="flex flex-wrap gap-2">
-                  {links.map((l) => (
-                    <a
-                      key={l.label}
-                      href={l.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-bdr text-[12px] font-medium text-ink3 hover:text-blue hover:border-blue/40 transition-colors"
-                    >
-                      {l.label}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  ))}
+          {selectedWord.lemma &&
+            (() => {
+              const links = getExternalDictLinks(selectedWord.lemma, textLanguageId);
+              if (links.length === 0) return null;
+              return (
+                <div className="mt-4 pt-4 border-t border-bdr/30">
+                  <div className="eyebrow mb-3 text-ink3">External Resources</div>
+                  <div className="flex flex-wrap gap-2">
+                    {links.map((l) => (
+                      <a
+                        key={l.label}
+                        href={l.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-bdr text-[12px] font-medium text-ink3 hover:text-blue hover:border-blue/40 transition-colors"
+                      >
+                        {l.label}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
 
           {/* Example sentences */}
           {exampleSentences.length > 0 && (
