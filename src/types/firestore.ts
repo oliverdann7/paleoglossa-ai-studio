@@ -97,6 +97,14 @@ export interface ImportedText {
   originalPublicTextId?: string;
   /** SHA-256 hex of rawContent for duplicate detection */
   contentHash?: string;
+  /** Structured quality metadata about linguistic analysis */
+  analysisQuality?: {
+    level: 'full' | 'partial' | 'raw';
+    glossCoverage: number;
+    morphologyCoverage: number;
+    averageConfidence?: number | null;
+    warnings?: string[];
+  };
   /** Errors encountered during processing */
   errorLog?: string[];
   /** Number of AI analysis retry attempts */

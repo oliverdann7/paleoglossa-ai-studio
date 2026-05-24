@@ -407,7 +407,9 @@ export const Reader = () => {
                 tok.transliteration ||
                 getTransliteration(tok.text, text.languageId || '', tok.normalized),
               gloss: tok.gloss || undefined,
-              morphology: tok.pos || '',
+              pos: tok.pos || undefined,
+              morphology: tok.morphology || tok.pos || '',
+              confidence: tok.confidence ?? undefined,
               punctBefore: '',
               punctAfter:
                 tok.type === 'whitespace'
