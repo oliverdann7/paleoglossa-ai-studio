@@ -28,6 +28,12 @@ export interface ReviewItem {
   notes?: string;
   status: string;
   srs: SRSState & { fsrsStability?: number; fsrsDifficulty?: number };
+  surface?: string;
+  morphology?: string;
+  transliteration?: string;
+  textId?: string;
+  sentenceIndex?: number;
+  sentenceTranslation?: string;
 }
 
 export interface ReviewLogEntry {
@@ -97,6 +103,12 @@ export class ReviewService {
               fsrsStability: data.fsrsStability ?? undefined,
               fsrsDifficulty: data.fsrsDifficulty ?? undefined,
             },
+            surface: data.surface,
+            morphology: data.morphology,
+            transliteration: data.transliteration,
+            textId: data.textId,
+            sentenceIndex: data.sentenceIndex,
+            sentenceTranslation: data.sentenceTranslation,
           });
         }
       });

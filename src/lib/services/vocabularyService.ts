@@ -15,6 +15,7 @@ import { normalizeTimestamp } from '../utils.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
 import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
 import { reportPersistenceError } from '../errors/persistenceReporter.js';
+import { ReadingContext, READING_CONTEXT_FIELDS } from '../review/readingContext.js';
 
 export type { SRSData };
 
@@ -28,6 +29,12 @@ export interface WordInfo {
   languageId?: string;
   encounterCount?: number;
   lastSeenAt?: string;
+  surface?: string;
+  morphology?: string;
+  transliteration?: string;
+  textId?: string;
+  sentenceIndex?: number;
+  sentenceTranslation?: string;
 }
 
 export type KnowledgeMap = Record<string, WordInfo>;
@@ -264,6 +271,12 @@ export class VocabularyService {
           languageId: data.languageId,
           encounterCount: data.encounterCount ?? 0,
           lastSeenAt: normalizeTimestamp(data.lastSeenAt) || undefined,
+          surface: data.surface,
+          morphology: data.morphology,
+          transliteration: data.transliteration,
+          textId: data.textId,
+          sentenceIndex: data.sentenceIndex,
+          sentenceTranslation: data.sentenceTranslation,
         };
 
         const existing = map[mapKey];
@@ -301,7 +314,8 @@ export class VocabularyService {
     term: string,
     state: WordState,
     languageId: string = 'unknown',
-    srs?: SRSData
+    srs?: SRSData,
+    extra?: Partial<ReadingContext>
   ) {
     if (!userId) {
       // Local fallback
@@ -313,6 +327,11 @@ export class VocabularyService {
         srs: srs || map[term]?.srs,
         languageId,
       };
+      if (extra) {
+        for (const key of READING_CONTEXT_FIELDS) {
+          if (extra[key] !== undefined) (map[term] as any)[key] = extra[key];
+        }
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
       return;
     }
@@ -333,6 +352,12 @@ export class VocabularyService {
       payload.ease = srs.ease;
       payload.step = srs.step;
       payload.lastReviewed = srs.lastReviewed;
+    }
+
+    if (extra) {
+      for (const key of READING_CONTEXT_FIELDS) {
+        if (extra[key] !== undefined) payload[key] = extra[key];
+      }
     }
 
     enqueueVocabWrite(userId, termId, payload, true);

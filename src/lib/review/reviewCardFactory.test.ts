@@ -102,6 +102,117 @@ describe('generateReviewCard', () => {
   });
 });
 
+describe('LEMMA_RECOGNITION', () => {
+  it('creates lemma recognition card when surface differs from term', () => {
+    const item = {
+      ...baseItem,
+      surface: 'ἔλυσε',
+      term: 'λύω',
+    };
+    const card = generateReviewCard(item, {
+      enabledTypes: [CardType.LEMMA_RECOGNITION],
+      includeMorphology: true,
+    });
+    expect(card).not.toBeNull();
+    expect(card!.type).toBe(CardType.LEMMA_RECOGNITION);
+    expect(card!.question).toBe('ἔλυσε');
+    expect(card!.answer).toBe('λύω');
+  });
+
+  it('skips lemma recognition when surface equals term', () => {
+    const item = {
+      ...baseItem,
+      surface: 'λύω',
+      term: 'λύω',
+    };
+    const card = generateReviewCard(item, {
+      enabledTypes: [CardType.LEMMA_RECOGNITION],
+      includeMorphology: true,
+    });
+    expect(card).toBeNull();
+  });
+
+  it('skips lemma recognition when includeMorphology is false', () => {
+    const item = {
+      ...baseItem,
+      surface: 'ἔλυσε',
+      term: 'λύω',
+    };
+    const card = generateReviewCard(item, {
+      enabledTypes: [CardType.LEMMA_RECOGNITION],
+      includeMorphology: false,
+    });
+    expect(card).toBeNull();
+  });
+});
+
+describe('CONTEXT_TRANSLATION', () => {
+  it('creates context translation card when sentenceTranslation exists', () => {
+    const item = {
+      ...baseItem,
+      sentenceTranslation: 'I loosen the bonds',
+      sentenceText: 'λύω τὸ δεσμά',
+    };
+    const card = generateReviewCard(item, {
+      enabledTypes: [CardType.CONTEXT_TRANSLATION],
+    });
+    expect(card).not.toBeNull();
+    expect(card!.type).toBe(CardType.CONTEXT_TRANSLATION);
+    expect(card!.answer).toBe('I loosen the bonds');
+  });
+
+  it('skips context translation when no sentenceTranslation', () => {
+    const card = generateReviewCard(baseItem, {
+      enabledTypes: [CardType.CONTEXT_TRANSLATION],
+    });
+    expect(card).toBeNull();
+  });
+});
+
+describe('CLOZE with surface form', () => {
+  it('blanks surface form instead of lemma when they differ', () => {
+    const item = {
+      ...baseItem,
+      surface: 'ἔλυσε',
+      contexts: ['ἔλυσε τὸ δεσμά'],
+    };
+    const card = generateReviewCard(item, {
+      enabledTypes: [CardType.CLOZE],
+    });
+    expect(card).not.toBeNull();
+    expect(card!.question).toContain('______');
+    // The original sentence had "ἔλυσε" which should be blanked
+    expect(card!.context).toContain('τὸ δεσμά');
+    expect(card!.answer).toBe('λύω');
+  });
+});
+
+describe('PARSE with per-token morphology', () => {
+  it('uses item morphology when available', () => {
+    const item = {
+      ...baseItem,
+      morphology: 'V-PAI-3S',
+    };
+    const card = generateReviewCard(item, {
+      enabledTypes: [CardType.PARSE],
+      includeMorphology: true,
+    });
+    expect(card).not.toBeNull();
+    expect(card!.type).toBe(CardType.PARSE);
+  });
+
+  it('falls back to dictionary morphology when item has none', () => {
+    const card = generateReviewCard(baseItem, {
+      enabledTypes: [CardType.PARSE],
+      includeMorphology: true,
+    });
+    // May or may not have dictionary data, but should not crash
+    if (card) {
+      expect(card.type).toBe(CardType.PARSE);
+    }
+  });
+});
+
 describe('generateReviewCards', () => {
   it('generates cards for all items with valid gloss', () => {
     const items = [

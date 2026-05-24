@@ -9,6 +9,7 @@ import {
 import { STORAGE_KEYS } from '../constants/storage.js';
 import { useAuth } from './useAuth.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
+import type { ReadingContext } from '../review/readingContext.js';
 
 // Stable singleton returned for any lemma not yet in the vocabulary.
 // Avoids creating a new object on every getWordInfo call for unknown words,
@@ -71,7 +72,7 @@ export const useVocabulary = () => {
   }, [userId]);
 
   const setWordState = useCallback(
-    (lemma: string, state: WordState, languageId: string = 'unknown', context?: string) => {
+    (lemma: string, state: WordState, languageId: string = 'unknown', context?: string, extra?: Partial<ReadingContext>) => {
       const normKey = normalizeLemmaKey(lemma);
       const current = knowledgeRef.current[normKey];
 
@@ -95,10 +96,18 @@ export const useVocabulary = () => {
           info.contexts = [...(info.contexts || []), context].slice(-5);
         }
         if (initialSrs) info.srs = initialSrs;
+        if (extra) {
+          if (extra.surface) info.surface = extra.surface;
+          if (extra.morphology) info.morphology = extra.morphology;
+          if (extra.transliteration) info.transliteration = extra.transliteration;
+          if (extra.textId) info.textId = extra.textId;
+          if (extra.sentenceIndex !== undefined) info.sentenceIndex = extra.sentenceIndex;
+          if (extra.sentenceTranslation) info.sentenceTranslation = extra.sentenceTranslation;
+        }
         return { ...prev, [normKey]: info };
       });
       bumpVersion();
-      VocabularyService.setWordState(userId, lemma, state, languageId, initialSrs);
+      VocabularyService.setWordState(userId, lemma, state, languageId, initialSrs, extra);
     },
     [userId, bumpVersion]
   );

@@ -8,6 +8,7 @@ import { useSettings } from '../lib/hooks/useSettings.js';
 import { useReaderState } from '../lib/contexts/ReaderContext.js';
 import { WordState } from '../lib/constants/wordStates.js';
 import type { ReaderToken, ReaderSentence, ReaderChapter } from '../types/reader.js';
+import type { ReadingContext } from '../lib/review/readingContext.js';
 import { ReaderTutorial } from '../components/reader/ReaderTutorial.js';
 import { LexDrawerPanel } from '../components/reader/LexDrawerPanel.js';
 import { SentenceAnalysisPanel } from '../components/reader/SentenceAnalysisPanel.js';
@@ -159,8 +160,8 @@ export const Reader = () => {
   // Returns true when the save was accepted/queued, false when blocked by the limit.
   // Pass this to child components (LexDrawerPanel) instead of the raw setWordState.
   const setWordStateWithFeedback = useCallback(
-    (lemma: string, state: WordState, languageId: string, context?: string): boolean => {
-      const saved = setWordState(lemma, state, languageId, context);
+    (lemma: string, state: WordState, languageId: string, context?: string, extra?: Partial<ReadingContext>): boolean => {
+      const saved = setWordState(lemma, state, languageId, context, extra);
       if (!saved) {
         addToast(
           `You've reached the ${vocabLimit.limit}-word save limit for this language. Upgrade for unlimited saves.`,
