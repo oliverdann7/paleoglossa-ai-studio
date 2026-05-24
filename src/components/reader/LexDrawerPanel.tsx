@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   Check,
   ExternalLink,
+  AlertCircle,
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { ScholarAnnotations } from './ScholarAnnotations.js';
@@ -77,7 +78,7 @@ interface LexDrawerPanelProps {
   textLanguageId: string;
   exampleSentences: LemmaSentenceEntry[];
   playTTS: (text: string, lang: string) => void;
-  text?: { corpusId?: string; language?: string; id?: string };
+  text?: { corpusId?: string; language?: string; id?: string; analysisStatus?: string };
   currentSentenceIndex?: number;
 }
 
@@ -174,6 +175,8 @@ export const LexDrawerPanel = ({
   const { settings } = useSettings();
   const { user } = useAuth();
 
+  const AI_GLOSS_CACHE_KEY = 'paleoglossa_ai_gloss_cache';
+
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
@@ -183,6 +186,35 @@ export const LexDrawerPanel = ({
   const [wiktionaryResult, setWiktionaryResult] = useState<WiktionaryLookupResult | null>(null);
   const [isWiktionaryLoading, setIsWiktionaryLoading] = useState(false);
   const wiktionaryLemmaRef = useRef<string | null>(null);
+
+  const getCachedAiGloss = (key: string): string | null => {
+    try {
+      const raw = localStorage.getItem(AI_GLOSS_CACHE_KEY);
+      if (!raw) return null;
+      const cache = JSON.parse(raw) as Record<string, string>;
+      return cache[key] ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  const setCachedAiGloss = (key: string, gloss: string) => {
+    try {
+      const raw = localStorage.getItem(AI_GLOSS_CACHE_KEY);
+      const cache: Record<string, string> = raw ? JSON.parse(raw) : {};
+      cache[key] = gloss;
+      // Keep only the 200 most recent entries to avoid unbounded growth
+      const entries = Object.entries(cache);
+      if (entries.length > 200) {
+        const pruned = Object.fromEntries(entries.slice(-200));
+        localStorage.setItem(AI_GLOSS_CACHE_KEY, JSON.stringify(pruned));
+      } else {
+        localStorage.setItem(AI_GLOSS_CACHE_KEY, JSON.stringify(cache));
+      }
+    } catch {
+      // Cache full or unavailable — ignore
+    }
+  };
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -345,28 +377,40 @@ export const LexDrawerPanel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
 
+  const isUsefulGloss = useCallback((g: string | null | undefined): g is string => {
+    if (!g) return false;
+    const cleaned = g.trim().toLowerCase();
+    if (!cleaned) return false;
+    if (cleaned === 'unknown word' || cleaned === 'unknown' || cleaned.startsWith('unknown word')) return false;
+    if (cleaned.startsWith('no explanation') || cleaned.startsWith('failed to')) return false;
+    if (cleaned.startsWith('ai explanation not available')) return false;
+    if (cleaned.startsWith('gemini api key not configured')) return false;
+    if (cleaned.startsWith('ai service error')) return false;
+    if (cleaned === 'request timed out') return false;
+    return true;
+  }, []);
+
   // Automatically fetch a short AI gloss when no lexicon definition is available
   // AND Wiktionary returned nothing. Retries once silently before exposing
   // failure to the UI — the meaning panel must never present a dead end.
   useEffect(() => {
     if (!selectedWord || definitionLookup) return;
-    // Wait until Wiktionary has reported success or failure before falling back to AI.
     if (isWiktionaryLoading) return;
     if (wiktionaryResult) return;
     if (aiFallbackLemmaRef.current === selectedWord.lemma) return;
     const currentLemma = selectedWord.lemma;
     aiFallbackLemmaRef.current = currentLemma;
-    setIsAiFallbackLoading(true);
 
-    const isUsefulGloss = (g: string | null | undefined): g is string => {
-      if (!g) return false;
-      const cleaned = g.trim().toLowerCase();
-      if (!cleaned) return false;
-      // Reject the prompt's own "I don't know" sentinels.
-      if (cleaned === 'unknown word' || cleaned === 'unknown' || cleaned.startsWith('unknown word')) return false;
-      if (cleaned.startsWith('no explanation') || cleaned.startsWith('failed to')) return false;
-      return true;
-    };
+    // Check local cache before hitting the API
+    const cacheKey = `${textLanguageId}:${currentLemma}`;
+    const cached = getCachedAiGloss(cacheKey);
+    if (cached && isUsefulGloss(cached)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAiFallbackGloss(cached);
+      return;
+    }
+
+    setIsAiFallbackLoading(true);
 
     (async () => {
       const MAX_ATTEMPTS = 2;
@@ -381,6 +425,7 @@ export const LexDrawerPanel = ({
           );
           if (isUsefulGloss(gloss)) {
             lastGloss = gloss;
+            setCachedAiGloss(cacheKey, gloss);
             break;
           }
         } catch (error) {
@@ -396,7 +441,7 @@ export const LexDrawerPanel = ({
       setIsAiFallbackLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId, isWiktionaryLoading, !!wiktionaryResult]);
+  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId, isWiktionaryLoading, !!wiktionaryResult, isUsefulGloss]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
@@ -498,6 +543,15 @@ export const LexDrawerPanel = ({
               })()}
             </div>
           </div>
+
+          {(text?.analysisStatus === 'raw' || text?.analysisStatus === 'needs_ai') && (
+            <div className="mb-5 p-3 bg-amber/8 border border-amber/20 rounded-xl flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-amber shrink-0 mt-0.5" />
+              <p className="text-[12px] text-ink3 leading-relaxed">
+                Raw text only — meanings and morphology are limited. Run AI analysis to complete this lesson.
+              </p>
+            </div>
+          )}
 
           <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-panel">
             <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">

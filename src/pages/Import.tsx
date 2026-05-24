@@ -27,6 +27,7 @@ import { LANGUAGES } from '../lib/constants/languages.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { normalizeLemmaKey } from '../lib/utils/lemmaUtils.js';
+import { computeAnalysisQuality } from '../lib/utils/analysisQuality.js';
 
 export const Import = () => {
   const navigate = useNavigate();
@@ -294,6 +295,7 @@ export const Import = () => {
     const stats = calculateStats(sentences!);
     const finalStatus =
       analysisStatus === 'analyzed' ? ('complete' as const) : ('partial' as const);
+    const analysisQuality = computeAnalysisQuality(sentences!, analysisStatus);
 
     if (userId) {
       await ImportService.updateImport(userId, importId, {
@@ -301,12 +303,13 @@ export const Import = () => {
         stats,
         status: finalStatus,
         analysisStatus,
+        analysisQuality,
         errorLog: errorLog.length > 0 ? errorLog : undefined,
         retryCount: retryCount > 0 ? retryCount : undefined,
       });
     }
 
-    return { sentences: sentences!, stats, status: finalStatus, analysisStatus, errorLog };
+    return { sentences: sentences!, stats, status: finalStatus, analysisStatus, analysisQuality, errorLog };
   };
 
   const handleProcess = async (forceImport = false) => {
@@ -386,7 +389,7 @@ export const Import = () => {
     setProcessingStep(t('import.linguisticAnalysis', 'Linguistic analysis...'));
 
     try {
-      const { sentences, stats, status, analysisStatus, errorLog } = await runAIAnalysis(
+      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } = await runAIAnalysis(
         text,
         importId,
         user?.uid || null
@@ -400,6 +403,7 @@ export const Import = () => {
         stats,
         status,
         analysisStatus,
+        analysisQuality,
         updatedAt: new Date().toISOString(),
       };
 
@@ -427,14 +431,14 @@ export const Import = () => {
         status: 'processing',
         errorLog: [],
       });
-      const { sentences, stats, status, analysisStatus, errorLog } = await runAIAnalysis(
+      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } = await runAIAnalysis(
         importItem.rawContent,
         importItem.id,
         user.uid
       );
       setImportHistory((prev) =>
         prev.map((i) =>
-          i.id === importItem.id ? { ...i, sentences, stats, status, analysisStatus, errorLog } : i
+          i.id === importItem.id ? { ...i, sentences, stats, status, analysisStatus, analysisQuality, errorLog } : i
         )
       );
     } catch (err: any) {

@@ -145,8 +145,13 @@ export class ImportService {
 
     if (!userId) {
       const saved = localStorage.getItem(STORAGE_KEY);
-      const imports = saved ? JSON.parse(saved) : [];
-      imports.push(payload);
+      const imports: ImportedText[] = saved ? JSON.parse(saved) : [];
+      const existingIndex = imports.findIndex((i) => i.id === importId);
+      if (existingIndex >= 0) {
+        imports[existingIndex] = payload as ImportedText;
+      } else {
+        imports.push(payload as ImportedText);
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(imports));
       return;
     }
