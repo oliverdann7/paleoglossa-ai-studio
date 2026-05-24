@@ -32,6 +32,12 @@ describe('generateReviewCard', () => {
     expect(card).toBeNull();
   });
 
+  it('returns null when no gloss is available (even for CLOZE or PARSE)', () => {
+    const item = { ...baseItem, userGloss: undefined };
+    const card = generateReviewCard(item, { enabledTypes: [CardType.CLOZE, CardType.PARSE] });
+    expect(card).toBeNull();
+  });
+
   it('skips FORM_TO_MEANING when gloss is Definition missing', () => {
     const item = { ...baseItem, userGloss: 'Definition missing', contexts: [] };
     const card = generateReviewCard(item, { enabledTypes: [CardType.FORM_TO_MEANING] });
@@ -82,6 +88,17 @@ describe('generateReviewCard', () => {
   it('preserves languageId in the card', () => {
     const card = generateReviewCard(baseItem, { enabledTypes: [CardType.FORM_TO_MEANING] });
     expect(card!.languageId).toBe('grc');
+  });
+
+  it('uses userGloss over token/dictionary gloss', () => {
+    const item = {
+      ...baseItem,
+      userGloss: 'my custom translation',
+      tokenGloss: 'dictionary definition',
+    };
+    const card = generateReviewCard(item, { enabledTypes: [CardType.FORM_TO_MEANING] });
+    expect(card).not.toBeNull();
+    expect(card!.answer).toBe('my custom translation');
   });
 });
 

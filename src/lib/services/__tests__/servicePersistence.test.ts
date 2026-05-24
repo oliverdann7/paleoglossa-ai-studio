@@ -128,6 +128,29 @@ describe('demo/guest mode — userId null', () => {
       expect(mockGetDocs).not.toHaveBeenCalled();
     });
 
+    it('updateGloss writes to localStorage, not Firestore', async () => {
+      localStorage.setItem(
+        'paleoglossa_knowledge',
+        JSON.stringify({ λόγος: { state: 'SEEN', languageId: 'grc' } })
+      );
+      await VocabularyService.updateGloss(null, 'λόγος', 'word', 'grc');
+
+      const stored = JSON.parse(localStorage.getItem('paleoglossa_knowledge') ?? '{}');
+      expect(stored['λόγος'].userGloss).toBe('word');
+      expect(stored['λόγος'].state).toBe('SEEN');
+      expect(mockBatchSet).not.toHaveBeenCalled();
+      expect(mockBatchCommit).not.toHaveBeenCalled();
+    });
+
+    it('updateGloss creates new entry if none exists for guest', async () => {
+      localStorage.removeItem('paleoglossa_knowledge');
+      await VocabularyService.updateGloss(null, 'νέος', 'new', 'grc');
+
+      const stored = JSON.parse(localStorage.getItem('paleoglossa_knowledge') ?? '{}');
+      expect(stored['νέος'].userGloss).toBe('new');
+      expect(stored['νέος'].languageId).toBe('grc');
+    });
+
     it('returns empty map when localStorage is empty', async () => {
       const result = await VocabularyService.getVocabulary(null);
       expect(result).toEqual({});

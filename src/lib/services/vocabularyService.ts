@@ -363,7 +363,17 @@ export class VocabularyService {
     gloss: string,
     languageId: string = 'unknown'
   ) {
-    if (!userId) return;
+    if (!userId) {
+      const ls = localStorage.getItem(STORAGE_KEY);
+      const map = ls ? JSON.parse(ls) : {};
+      map[term] = {
+        ...(map[term] || {}),
+        userGloss: gloss,
+        languageId,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+      return;
+    }
     const termId = getTermId(term, languageId);
     enqueueVocabWrite(
       userId,

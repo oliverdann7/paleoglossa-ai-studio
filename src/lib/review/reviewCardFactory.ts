@@ -75,6 +75,9 @@ export function generateReviewCard(
   const morph = opts.includeMorphology ? getMorphology(term) : undefined;
   const translit = getTransliteration(term);
 
+  // If no gloss is available, skip entirely — avoids weak "Definition missing" cards.
+  if (!gloss) return null;
+
   // Build list of possible card types
   const candidates: CardType[] = [];
 
