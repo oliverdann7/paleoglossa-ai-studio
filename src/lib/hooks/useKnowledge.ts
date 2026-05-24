@@ -10,6 +10,7 @@ import { useVocabLimit } from './useVocabLimit.js';
 import { isTrackedWordState } from '../constants/plans.js';
 import { usePublishVocabLimit } from '../contexts/VocabLimitContext.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
+import type { ReadingContext } from '../review/readingContext.js';
 
 export const useKnowledge = (languageId?: string) => {
   const vocab = useVocabulary();
@@ -61,7 +62,8 @@ export const useKnowledge = (languageId?: string) => {
       lemma: string,
       state: WordState,
       langId: string = 'unknown',
-      context?: string
+      context?: string,
+      extra?: Partial<ReadingContext>
     ): boolean => {
       const previousState = vocab.getWordInfo(lemma).state;
 
@@ -85,7 +87,7 @@ export const useKnowledge = (languageId?: string) => {
         return false;
       }
 
-      vocab.setWordState(lemma, state, langId, context);
+      vocab.setWordState(lemma, state, langId, context, extra);
       if (state === WordState.KNOWN && previousState !== WordState.KNOWN) {
         statsHook.updateStatsState((s) => ({ ...s, totalKnown: s.totalKnown + 1 }));
       } else if (state !== WordState.KNOWN && previousState === WordState.KNOWN) {

@@ -50,6 +50,8 @@ import { frequencyTier } from '@/lib/utils/frequencyTier';
 import { isUsefulGloss } from '@/lib/utils/lexicalHelper';
 import { getSourceTrust, type SourceTrustInfo } from '@/lib/utils/sourceTrust';
 import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
+import type { ReadingContext } from '@/lib/review/readingContext';
+import { buildReadingContext } from '@/lib/review/readingContext';
 
 interface LemmaSentenceToken {
   lemma?: string;
@@ -75,7 +77,8 @@ interface LexDrawerPanelProps {
     lemma: string,
     state: WordState,
     languageId: string,
-    context?: string
+    context?: string,
+    extra?: Partial<ReadingContext>
   ) => boolean | void;
   setWordNote: (lemma: string, notes: string) => void;
   updateGloss: (lemma: string, gloss: string, languageId: string) => void;
@@ -756,11 +759,13 @@ export const LexDrawerPanel = ({
                   <button
                     key={state}
                     onClick={() => {
+                      const extra = buildReadingContext(selectedWord, text);
                       const saved = setWordState(
                         selectedWord.lemma,
                         state,
                         textLanguageId,
-                        selectedWord.sentenceText
+                        selectedWord.sentenceText,
+                        extra
                       );
                       if (saved !== false) setSelectedWord(null);
                     }}
@@ -800,11 +805,13 @@ export const LexDrawerPanel = ({
               <button
                 onClick={() => {
                   if (reviewAdded) return;
+                  const extra = buildReadingContext(selectedWord, text);
                   const saved = setWordState(
                     selectedWord.lemma,
                     WordState.LEARNING,
                     textLanguageId,
-                    selectedWord.sentenceText
+                    selectedWord.sentenceText,
+                    extra
                   );
                   if (saved !== false) {
                     if (!wordInfo?.userGloss && definitionLookup?.definition) {

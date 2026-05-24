@@ -26,6 +26,8 @@ const DEFAULT_SETTINGS: ReviewSettings = {
     CardType.MEANING_TO_FORM,
     CardType.CLOZE,
     CardType.PARSE,
+    CardType.LEMMA_RECOGNITION,
+    CardType.CONTEXT_TRANSLATION,
   ],
   maxCards: 30,
   includeMorphology: true,
@@ -187,6 +189,12 @@ export const Review = () => {
                 contexts: info.contexts,
                 status: info.state,
                 srs,
+                surface: info.surface,
+                morphology: info.morphology,
+                transliteration: info.transliteration,
+                textId: info.textId,
+                sentenceIndex: info.sentenceIndex,
+                sentenceTranslation: info.sentenceTranslation,
               };
             });
           if (textFilter) {
@@ -332,12 +340,16 @@ export const Review = () => {
       CardType.MEANING_TO_FORM,
       CardType.CLOZE,
       CardType.PARSE,
+      CardType.LEMMA_RECOGNITION,
+      CardType.CONTEXT_TRANSLATION,
     ];
     const typeLabels: Record<string, string> = {
       FORM_TO_MEANING: t('review.formToMeaning', 'Form → Meaning'),
       MEANING_TO_FORM: t('review.meaningToForm', 'Meaning → Form'),
       CLOZE: t('review.cloze', 'Cloze Context'),
       PARSE: t('review.parsing', 'Parsing'),
+      LEMMA_RECOGNITION: t('review.lemmaRecognition', 'Lemma Recognition'),
+      CONTEXT_TRANSLATION: t('review.contextTranslation', 'Context Translation'),
     };
 
     return (
@@ -647,7 +659,11 @@ export const Review = () => {
                   ? t('review.clozeShort', 'Cloze')
                   : currentCard.type === 'PARSE'
                     ? t('review.parsingShort', 'Parsing')
-                    : currentCard.type}
+                    : currentCard.type === 'LEMMA_RECOGNITION'
+                      ? t('review.lemmaRecognitionShort', 'Lemma')
+                      : currentCard.type === 'CONTEXT_TRANSLATION'
+                        ? t('review.contextTranslationShort', 'Translation')
+                        : currentCard.type}
           </span>
           {currentCard.transliteration && (
             <span className="text-[11px] text-muted italic">{currentCard.transliteration}</span>
