@@ -50,6 +50,7 @@ export interface ImportedToken {
   transliteration?: string;
   gloss?: string;
   pos?: string;
+  morphology?: Record<string, string>;
   confidence?: number;
   aiGenerated?: boolean;
 }

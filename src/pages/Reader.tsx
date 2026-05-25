@@ -115,8 +115,21 @@ export const Reader = () => {
             text: tok.surface,
             lemma: tok.lemma,
             gloss: tok.gloss,
-            morphology: typeof tok.morphology === 'string' ? tok.morphology : (tok.morphology?.partOfSpeech || undefined),
-            translit: tok.transliteration || getTransliteration(tok.surface, localText.languageId || '', tok.normalized),
+            morphology:
+              typeof tok.morphology === 'string'
+                ? tok.morphology
+                : tok.morphology?.partOfSpeech || undefined,
+            morphologyRaw:
+              typeof tok.morphology === 'object' && tok.morphology !== null
+                ? Object.fromEntries(
+                    Object.entries(tok.morphology).filter(
+                      ([, v]) => typeof v === 'string' && v && v !== 'unknown'
+                    )
+                  )
+                : undefined,
+            translit:
+              tok.transliteration ||
+              getTransliteration(tok.surface, localText.languageId || '', tok.normalized),
             punctBefore: tok.punctBefore || '',
             punctAfter: tok.punctAfter !== undefined ? tok.punctAfter : ' ',
           })),
@@ -125,7 +138,10 @@ export const Reader = () => {
           id: section.id,
           title: section.label,
           sentences,
-          translation: sentences.map((s) => s.translation).filter(Boolean).join(' '),
+          translation: sentences
+            .map((s) => s.translation)
+            .filter(Boolean)
+            .join(' '),
         });
       }
       if (!cancelled) {
@@ -133,7 +149,9 @@ export const Reader = () => {
       }
     };
     loadSections();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [localText]);
 
   const text = localText;
@@ -160,7 +178,13 @@ export const Reader = () => {
   // Returns true when the save was accepted/queued, false when blocked by the limit.
   // Pass this to child components (LexDrawerPanel) instead of the raw setWordState.
   const setWordStateWithFeedback = useCallback(
-    (lemma: string, state: WordState, languageId: string, context?: string, extra?: Partial<ReadingContext>): boolean => {
+    (
+      lemma: string,
+      state: WordState,
+      languageId: string,
+      context?: string,
+      extra?: Partial<ReadingContext>
+    ): boolean => {
       const saved = setWordState(lemma, state, languageId, context, extra);
       if (!saved) {
         addToast(
@@ -249,7 +273,6 @@ export const Reader = () => {
 
   const onAskTutor = () =>
     navigate(`/app/tutor?textId=${textId || ''}&sentenceIndex=${currentSentenceIndex || 0}`);
-
 
   // Refs for progress saving to avoid re-renders
   const scrollProgressRef = useRef(0);
@@ -368,7 +391,10 @@ export const Reader = () => {
             text: t.surface,
             lemma: t.lemma,
             gloss: t.gloss,
-            morphology: typeof t.morphology === 'string' ? t.morphology : (t.morphology?.partOfSpeech || undefined),
+            morphology:
+              typeof t.morphology === 'string'
+                ? t.morphology
+                : t.morphology?.partOfSpeech || undefined,
             translit:
               t.transliteration ||
               getTransliteration(t.surface, realText?.language || '', t.normalized),
@@ -409,7 +435,18 @@ export const Reader = () => {
                 getTransliteration(tok.text, text.languageId || '', tok.normalized),
               gloss: tok.gloss || undefined,
               pos: tok.pos || undefined,
-              morphology: tok.morphology || tok.pos || '',
+              morphology:
+                typeof tok.morphology === 'object' && tok.morphology !== null
+                  ? (tok.morphology.partOfSpeech || tok.pos || '')
+                  : tok.morphology || tok.pos || '',
+              morphologyRaw:
+                typeof tok.morphology === 'object' && tok.morphology !== null
+                  ? Object.fromEntries(
+                      Object.entries(tok.morphology).filter(
+                        ([, v]) => typeof v === 'string' && v && v !== 'unknown'
+                      )
+                    )
+                  : undefined,
               confidence: tok.confidence ?? undefined,
               punctBefore: '',
               punctAfter:
@@ -797,13 +834,34 @@ export const Reader = () => {
             );
           }
         };
-        if (e.key === '1') { trySetState(WordState.LEARNING); return; }
-        if (e.key === '2') { trySetState(WordState.FAMILIAR); return; }
-        if (e.key === '3') { trySetState(WordState.KNOWN); return; }
-        if (e.key === '4') { trySetState(WordState.IGNORED); return; }
-        if (e.key === 'k' || e.key === 'K') { trySetState(WordState.KNOWN); return; }
-        if (e.key === 'l' || e.key === 'L') { trySetState(WordState.LEARNING); return; }
-        if (e.key === 'i' || e.key === 'I') { trySetState(WordState.IGNORED); return; }
+        if (e.key === '1') {
+          trySetState(WordState.LEARNING);
+          return;
+        }
+        if (e.key === '2') {
+          trySetState(WordState.FAMILIAR);
+          return;
+        }
+        if (e.key === '3') {
+          trySetState(WordState.KNOWN);
+          return;
+        }
+        if (e.key === '4') {
+          trySetState(WordState.IGNORED);
+          return;
+        }
+        if (e.key === 'k' || e.key === 'K') {
+          trySetState(WordState.KNOWN);
+          return;
+        }
+        if (e.key === 'l' || e.key === 'L') {
+          trySetState(WordState.LEARNING);
+          return;
+        }
+        if (e.key === 'i' || e.key === 'I') {
+          trySetState(WordState.IGNORED);
+          return;
+        }
         if (e.key === 'Escape') {
           setSelectedWord(null);
           return;
@@ -906,12 +964,9 @@ export const Reader = () => {
     [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex]
   );
 
-  const handleWordContextMenu = useCallback(
-    (token: ReaderToken, x: number, y: number) => {
-      setContextMenu({ token, x, y });
-    },
-    []
-  );
+  const handleWordContextMenu = useCallback((token: ReaderToken, x: number, y: number) => {
+    setContextMenu({ token, x, y });
+  }, []);
 
   const handleAnalyzeSentence = useCallback((sentence: { text: string; id: string }) => {
     setSelectedWord(null);
@@ -1258,8 +1313,15 @@ export const Reader = () => {
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(textStr);
             const langMap: Record<string, string> = {
-              grc: 'el-GR', 'grc-koine': 'el-GR', hbo: 'he-IL', lat: 'it-IT',
-              syr: 'ar-SA', arc: 'ar-SA', cop: 'el-GR', akk: 'ar-SA', san: 'hi-IN',
+              grc: 'el-GR',
+              'grc-koine': 'el-GR',
+              hbo: 'he-IL',
+              lat: 'it-IT',
+              syr: 'ar-SA',
+              arc: 'ar-SA',
+              cop: 'el-GR',
+              akk: 'ar-SA',
+              san: 'hi-IN',
             };
             u.lang = langMap[lang] || 'en-US';
             u.rate = 0.9;
@@ -1300,7 +1362,9 @@ export const Reader = () => {
             }
           }}
           onOpenDictionary={(lemma) => {
-            navigate(`/app/lemma/${encodeURIComponent(currentLanguageId)}/${encodeURIComponent(lemma)}`);
+            navigate(
+              `/app/lemma/${encodeURIComponent(currentLanguageId)}/${encodeURIComponent(lemma)}`
+            );
           }}
           onClose={() => setContextMenu(null)}
         />

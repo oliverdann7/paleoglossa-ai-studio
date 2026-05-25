@@ -7,23 +7,34 @@ export const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
   grc: `Language: Ancient Greek (Attic/Ionic/Koine).
 Script: Greek alphabet. Lemmatize to standard dictionary form (e.g. λύω for verbs).
 Note: Distinguish between final sigma (ς) and medial sigma (σ). Identify common
-contractions (crasis, elision). Provide accurate gloss for classical meanings.`,
+contractions (crasis, elision). Provide accurate gloss for classical meanings.
+For morphology: provide case/number/gender for nouns and adjectives; for verbs
+provide tense, voice, mood, person, number, and aspect (perfective/imperfective/stative)
+when identifiable.`,
 
   'grc-koine': `Language: Koine Greek (Biblical/Hellenistic).
 Script: Greek alphabet. Similar to Ancient Greek but note semantic shifts in
 Biblical context (e.g. ἀγάπη = love). Handle itacism in transliteration
-(e.g. η = i, ει = i). Lemmatize to standard NT Greek forms.`,
+(e.g. η = i, ει = i). Lemmatize to standard NT Greek forms.
+For morphology: provide case/number/gender for nouns and adjectives; for verbs
+provide tense, voice, mood, person, number, and aspect (perfective/imperfective/stative)
+when identifiable.`,
 
   hbo: `Language: Biblical Hebrew (Tiberian pointing).
 Script: Hebrew alphabet (right-to-left). Include niqqud (vowel points) as written.
 Provide semantic gloss based on Tanakh usage. Note: verbal stems (Qal, Niphal,
 Piel, Pual, Hiphil, Hophal, Hithpael) should be reflected in the lemma where
-possible. Transliterate using SBL Academic style (e.g. א = ', ב = b/v).`,
+possible. Transliterate using SBL Academic style (e.g. א = ', ב = b/v).
+For morphology: provide stem/binyan, aspect, person, number, gender, and state
+when identifiable. Include the Hebrew root (usually 3 consonants) when known.`,
 
   lat: `Language: Latin (Classical/Ecclesiastical).
 Script: Latin alphabet. Lemmatize to standard dictionary form (e.g. amo for verbs,
 first principal part). Note macrons for long vowels where evident. Distinguish
-between classical and ecclesiastical pronunciation in transliteration.`,
+between classical and ecclesiastical pronunciation in transliteration.
+For morphology: provide case/number/gender for nouns and adjectives; for verbs
+provide tense, voice, mood, person, number, and conjugation when identifiable.
+Include declension number for nouns (1st, 2nd, 3rd, 4th, 5th) when known.`,
 
   syr: `Language: Syriac (Classical Syriac / Edessan).
 Script: Syriac alphabet (Estrangela/Serto, right-to-left). Handle Syriac-specific
@@ -176,6 +187,22 @@ export interface SentenceAnalysisResult {
     gloss: string;
     pos: string;
     morphology: string;
+    morphologyDetails?: {
+      case?: string;
+      number?: string;
+      gender?: string;
+      person?: string;
+      tense?: string;
+      aspect?: string;
+      voice?: string;
+      mood?: string;
+      stem?: string;
+      binyan?: string;
+      state?: string;
+      conjugation?: string;
+      declension?: string;
+      root?: string;
+    };
     notes: string;
   }>;
   syntax: {
@@ -223,7 +250,22 @@ Return ONLY valid JSON with this exact structure — no markdown, no explanation
       "lemma": "dictionary form",
       "gloss": "brief English meaning",
       "pos": "part of speech",
-      "morphology": "case/tense/mood/voice/number/person/gender as applicable",
+      "morphology": "case/tense/mood/voice/number/person/gender as applicable (compact string)",
+      "morphologyDetails": {
+        "case": "nominative/accusative/etc. (omit if unknown)",
+        "number": "singular/plural/dual (omit if unknown)",
+        "gender": "masculine/feminine/neuter (omit if unknown)",
+        "person": "1st/2nd/3rd (omit if unknown)",
+        "tense": "present/imperfect/future/aorist/perfect/pluperfect (omit if unknown)",
+        "aspect": "perfective/imperfective/stative (omit if unknown, Greek/Hebrew verbs)",
+        "voice": "active/passive/middle (omit if unknown)",
+        "mood": "indicative/subjunctive/imperative/optative/infinitive/participle (omit if unknown)",
+        "stem": "qal/niphal/piel/pual/hiphil/hophal/hithpael (Hebrew only, omit if unknown)",
+        "state": "absolute/construct (Semitic languages only, omit if unknown)",
+        "conjugation": "1st/2nd/3rd/4th (Latin verbs only, omit if unknown)",
+        "declension": "1st/2nd/3rd/4th/5th (Latin nouns only, omit if unknown)",
+        "root": "the consonantal root (Hebrew/Semitic only, omit if unknown)"
+      },
       "notes": "any notable features or irregularities (empty string if none)"
     }
   ],
@@ -242,7 +284,7 @@ Return ONLY valid JSON with this exact structure — no markdown, no explanation
   "translations": ["a literal translation", "a natural English rendering"]
 }
 
-Include every word token in parsing (skip punctuation). Be precise with morphology.`;
+Include every word token in parsing (skip punctuation). Be precise with morphology — provide morphologyDetails whenever possible, omitting fields that are not applicable.`;
 }
 
 export interface CourseQuizQuestion {
@@ -309,6 +351,20 @@ export const BASE_JSON_SCHEMA = `{
           "transliteration": "...",
           "gloss": "...",
           "pos": "...",
+          "morphology": {
+            "case": "...",
+            "number": "...",
+            "gender": "...",
+            "person": "...",
+            "tense": "...",
+            "aspect": "...",
+            "voice": "...",
+            "mood": "...",
+            "stem": "...",
+            "state": "...",
+            "conjugation": "...",
+            "declension": "..."
+          },
           "confidence": 0.95
         }
       ],
