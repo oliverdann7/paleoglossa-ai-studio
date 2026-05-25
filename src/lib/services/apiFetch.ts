@@ -82,7 +82,8 @@ export async function apiFetch<T = any>(url: string, options: ApiFetchOptions = 
     } catch {
       parsed = null;
     }
-    const message = parsed?.error || parsed?.message || STATUS_MESSAGES[res.status] || 'Request failed';
+    const message =
+      parsed?.error || parsed?.message || STATUS_MESSAGES[res.status] || 'Request failed';
     throw new ApiError(message, res.status, parsed);
   }
 

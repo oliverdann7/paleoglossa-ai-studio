@@ -87,7 +87,14 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
     const cacheKey = `${languageId}::${text}`;
     const cached = ttsCache.get(cacheKey);
     if (cached) {
-      return res.status(200).json({ audioUrl: cached, supported: true, cached: true, provider: `Google Cloud Text-to-Speech (${langConfig.note})` });
+      return res
+        .status(200)
+        .json({
+          audioUrl: cached,
+          supported: true,
+          cached: true,
+          provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
+        });
     }
 
     const requestBody = {

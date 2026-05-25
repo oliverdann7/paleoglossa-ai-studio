@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft, UserPlus, UserCheck, Users } from 'lucide-react';
+import {
+  BookOpen,
+  Flame,
+  GraduationCap,
+  Globe,
+  Lock,
+  Settings,
+  ArrowLeft,
+  UserPlus,
+  UserCheck,
+  Users,
+} from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import {
   fetchOwnProfile,
@@ -93,9 +104,7 @@ export const ProfilePage = () => {
     if (!userId || followLoading || !user) return;
     setFollowLoading(true);
     try {
-      const result = isFollowing
-        ? await unfollowScholar(userId)
-        : await followScholar(userId);
+      const result = isFollowing ? await unfollowScholar(userId) : await followScholar(userId);
       setIsFollowing(result.isFollowing);
       setFollowerCount(result.followerCount);
       setFollowingCount(result.followingCount);
@@ -221,9 +230,13 @@ export const ProfilePage = () => {
               )}
             >
               {isFollowing ? (
-                <><UserCheck className="w-3.5 h-3.5" /> Following</>
+                <>
+                  <UserCheck className="w-3.5 h-3.5" /> Following
+                </>
               ) : (
-                <><UserPlus className="w-3.5 h-3.5" /> Follow</>
+                <>
+                  <UserPlus className="w-3.5 h-3.5" /> Follow
+                </>
               )}
             </button>
           )}

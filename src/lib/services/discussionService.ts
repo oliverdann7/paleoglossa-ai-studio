@@ -61,9 +61,8 @@ export const DiscussionService = {
   },
 
   async deleteComment(discussionId: string, commentId: string) {
-    return apiFetch<{ ok: boolean }>(
-      `/api/discussions/${discussionId}/comments/${commentId}`,
-      { method: 'DELETE' }
-    );
+    return apiFetch<{ ok: boolean }>(`/api/discussions/${discussionId}/comments/${commentId}`, {
+      method: 'DELETE',
+    });
   },
 };

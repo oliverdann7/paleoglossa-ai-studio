@@ -39,7 +39,16 @@ const SORT_LABELS: Record<SortKey, string> = {
   frequency: 'Corpus frequency',
 };
 
-const RTL_LANGS = new Set(['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'Hebrew', 'egy']);
+const RTL_LANGS = new Set([
+  'hbo',
+  'Biblical Hebrew',
+  'arc',
+  'Aramaic',
+  'syr',
+  'Syriac',
+  'Hebrew',
+  'egy',
+]);
 
 function exportToCSV(
   words: {
@@ -53,9 +62,25 @@ function exportToCSV(
   }[],
   filename: string
 ) {
-  const header = ['Term', 'Definition', 'Transliteration', 'Language', 'Status', 'Encounters', 'Next Review'];
+  const header = [
+    'Term',
+    'Definition',
+    'Transliteration',
+    'Language',
+    'Status',
+    'Encounters',
+    'Next Review',
+  ];
   const rows = words.map((w) =>
-    [w.term, w.definition, w.translit, w.language, w.status, String(w.encounterCount), w.nextReview ? new Date(w.nextReview).toLocaleDateString() : '']
+    [
+      w.term,
+      w.definition,
+      w.translit,
+      w.language,
+      w.status,
+      String(w.encounterCount),
+      w.nextReview ? new Date(w.nextReview).toLocaleDateString() : '',
+    ]
       .map((v) => `"${v.replace(/"/g, '""')}"`)
       .join(',')
   );
@@ -146,12 +171,17 @@ export const Vocabulary = () => {
         return state !== WordState.NEW;
       })
       .map(([lemma, info]) => {
-        const wordInfo = typeof info === 'object' ? (info as WordInfo) : ({ state: info } as unknown as WordInfo);
-        const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview as any) : new Date();
+        const wordInfo =
+          typeof info === 'object' ? (info as WordInfo) : ({ state: info } as unknown as WordInfo);
+        const nextReview = wordInfo.srs?.nextReview
+          ? new Date(wordInfo.srs.nextReview as any)
+          : new Date();
         const tokenInfo = getTokenInfo(lemma);
         const definition = wordInfo.userGloss || tokenInfo?.gloss || '';
         const langId = wordInfo.languageId || tokenInfo?.language || '';
-        const langDisplay = langId ? getLanguageDisplayName(langId) || langId : getLanguageDisplayName('grc') || 'Greek';
+        const langDisplay = langId
+          ? getLanguageDisplayName(langId) || langId
+          : getLanguageDisplayName('grc') || 'Greek';
 
         return {
           id: lemma,
@@ -186,8 +216,11 @@ export const Vocabulary = () => {
 
   // Fetch frequency index for the selected language
   useEffect(() => {
-    const langId = selectedLang === 'all' ? (availableLanguages[0]?.id || 'grc') : selectedLang;
-    apiFetch<{ lemma: string; rank: number; frequency: number }[]>(`/api/lemma-frequency/${encodeURIComponent(langId)}`, { skipAuth: true })
+    const langId = selectedLang === 'all' ? availableLanguages[0]?.id || 'grc' : selectedLang;
+    apiFetch<{ lemma: string; rank: number; frequency: number }[]>(
+      `/api/lemma-frequency/${encodeURIComponent(langId)}`,
+      { skipAuth: true }
+    )
       .then((data) => {
         const map: Record<string, number> = {};
         for (const entry of data) map[entry.lemma] = entry.rank;
@@ -220,7 +253,10 @@ export const Vocabulary = () => {
 
   const filteredWords = useMemo(() => {
     return allWords
-      .filter((w) => selectedLang === 'all' || w.languageId === selectedLang || w.language === selectedLang)
+      .filter(
+        (w) =>
+          selectedLang === 'all' || w.languageId === selectedLang || w.language === selectedLang
+      )
       .filter((w) => {
         if (activeFilter === 'Due') return w.isDue && w.status !== 'Seen';
         if (activeFilter !== 'All') return w.status === activeFilter;
@@ -233,10 +269,14 @@ export const Vocabulary = () => {
       })
       .sort((a, b) => {
         switch (sortKey) {
-          case 'alpha': return a.term.localeCompare(b.term);
-          case 'encounters': return b.encounterCount - a.encounterCount;
-          case 'added': return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
-          case 'frequency': return (a.frequencyRank || 99999) - (b.frequencyRank || 99999);
+          case 'alpha':
+            return a.term.localeCompare(b.term);
+          case 'encounters':
+            return b.encounterCount - a.encounterCount;
+          case 'added':
+            return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
+          case 'frequency':
+            return (a.frequencyRank || 99999) - (b.frequencyRank || 99999);
           case 'due':
           default:
             return new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime();
@@ -245,7 +285,10 @@ export const Vocabulary = () => {
   }, [allWords, selectedLang, activeFilter, searchQuery, sortKey]);
 
   const stats = useMemo(() => {
-    const base = selectedLang === 'all' ? allWords : allWords.filter((w) => w.languageId === selectedLang || w.language === selectedLang);
+    const base =
+      selectedLang === 'all'
+        ? allWords
+        : allWords.filter((w) => w.languageId === selectedLang || w.language === selectedLang);
     return {
       due: base.filter((w) => w.isDue && w.status !== 'Seen').length,
       known: base.filter((w) => w.status === 'Known' || w.status === 'Familiar').length,
@@ -284,7 +327,9 @@ export const Vocabulary = () => {
             {t('vocab.title', 'Vocabulary')}
           </h2>
           <p className="font-body text-[15px] italic text-ink2">
-            {t('vocab.personalCollection', `Your personal collection of {{count}} tracked words`, { count: allWords.length })}
+            {t('vocab.personalCollection', `Your personal collection of {{count}} tracked words`, {
+              count: allWords.length,
+            })}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -303,23 +348,33 @@ export const Vocabulary = () => {
               <div className="absolute right-0 top-full mt-1 w-48 bg-parch border border-bdr rounded-xl shadow-lg z-20 overflow-hidden">
                 <button
                   onClick={() => {
-                    exportToCSV(filteredWords, `vocabulary-${selectedLang}-${new Date().toISOString().slice(0, 10)}.csv`);
+                    exportToCSV(
+                      filteredWords,
+                      `vocabulary-${selectedLang}-${new Date().toISOString().slice(0, 10)}.csv`
+                    );
                     setShowExportMenu(false);
                   }}
                   className="w-full text-left px-4 py-3 text-[13px] font-medium text-ink hover:bg-parch2 transition-colors"
                 >
                   CSV (.csv)
-                  <span className="block text-[11px] text-ink3 font-normal">Spreadsheet / Excel</span>
+                  <span className="block text-[11px] text-ink3 font-normal">
+                    Spreadsheet / Excel
+                  </span>
                 </button>
                 <button
                   onClick={() => {
-                    exportToAnki(filteredWords, `vocabulary-${selectedLang}-${new Date().toISOString().slice(0, 10)}.txt`);
+                    exportToAnki(
+                      filteredWords,
+                      `vocabulary-${selectedLang}-${new Date().toISOString().slice(0, 10)}.txt`
+                    );
                     setShowExportMenu(false);
                   }}
                   className="w-full text-left px-4 py-3 text-[13px] font-medium text-ink hover:bg-parch2 transition-colors border-t border-bdr"
                 >
                   Anki deck (.txt)
-                  <span className="block text-[11px] text-ink3 font-normal">Import via File › Import</span>
+                  <span className="block text-[11px] text-ink3 font-normal">
+                    Import via File › Import
+                  </span>
                 </button>
               </div>
             )}
@@ -335,28 +390,36 @@ export const Vocabulary = () => {
         <div className="card p-5 border-blue/20 bg-blue/5">
           <div className="flex items-center gap-2 mb-2 opacity-70">
             <Brain className="w-4 h-4 text-blue" />
-            <h4 className="text-[11px] uppercase tracking-widest font-bold text-blue">{t('vocab.reviewsDue', 'Due')}</h4>
+            <h4 className="text-[11px] uppercase tracking-widest font-bold text-blue">
+              {t('vocab.reviewsDue', 'Due')}
+            </h4>
           </div>
           <div className="text-[32px] font-serif leading-none text-ink">{stats.due}</div>
         </div>
         <div className="card p-5 border-emerald-500/20 bg-emerald-500/5">
           <div className="flex items-center gap-2 mb-2 opacity-70">
             <GraduationCap className="w-4 h-4 text-emerald-600" />
-            <h4 className="text-[11px] uppercase tracking-widest font-bold text-emerald-600">{t('vocab.known', 'Known')}</h4>
+            <h4 className="text-[11px] uppercase tracking-widest font-bold text-emerald-600">
+              {t('vocab.known', 'Known')}
+            </h4>
           </div>
           <div className="text-[32px] font-serif leading-none text-ink">{stats.known}</div>
         </div>
         <div className="card p-5 border-amber/20 bg-amber/5">
           <div className="flex items-center gap-2 mb-2 opacity-70">
             <TrendingUp className="w-4 h-4 text-amber" />
-            <h4 className="text-[11px] uppercase tracking-widest font-bold text-amber">{t('vocab.learning', 'Learning')}</h4>
+            <h4 className="text-[11px] uppercase tracking-widest font-bold text-amber">
+              {t('vocab.learning', 'Learning')}
+            </h4>
           </div>
           <div className="text-[32px] font-serif leading-none text-ink">{stats.learning}</div>
         </div>
         <div className="card p-5 border-bdr/40">
           <div className="flex items-center gap-2 mb-2 opacity-70">
             <BookOpen className="w-4 h-4 text-ink3" />
-            <h4 className="text-[11px] uppercase tracking-widest font-bold text-ink3">{t('vocab.total', 'Total')}</h4>
+            <h4 className="text-[11px] uppercase tracking-widest font-bold text-ink3">
+              {t('vocab.total', 'Total')}
+            </h4>
           </div>
           <div className="text-[32px] font-serif leading-none text-ink">{stats.total}</div>
         </div>
@@ -410,7 +473,9 @@ export const Vocabulary = () => {
                 )}
               >
                 {t(`vocab.${filter.toLowerCase()}`, filter)}
-                {filter === 'Due' && stats.due > 0 && <span className="ml-1 opacity-70">({stats.due})</span>}
+                {filter === 'Due' && stats.due > 0 && (
+                  <span className="ml-1 opacity-70">({stats.due})</span>
+                )}
               </button>
             ))}
           </div>
@@ -449,7 +514,10 @@ export const Vocabulary = () => {
                     {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
                       <button
                         key={key}
-                        onClick={() => { setSortKey(key); setShowSortMenu(false); }}
+                        onClick={() => {
+                          setSortKey(key);
+                          setShowSortMenu(false);
+                        }}
                         className={cn(
                           'w-full text-left px-4 py-2 text-[13px] hover:bg-parch2 transition-colors',
                           sortKey === key ? 'font-bold text-blue' : 'text-ink3'
@@ -490,7 +558,9 @@ export const Vocabulary = () => {
                     {word.term}
                   </div>
                   {word.translit && (
-                    <div className="font-mono text-[11px] italic text-muted mt-0.5">{word.translit}</div>
+                    <div className="font-mono text-[11px] italic text-muted mt-0.5">
+                      {word.translit}
+                    </div>
                   )}
                 </div>
 
@@ -500,14 +570,24 @@ export const Vocabulary = () => {
                       {word.language}
                     </span>
                     {word.frequencyRank > 0 && (
-                      <span className="font-mono text-[9px] text-muted border border-bdr/40 px-1.5 py-0.5 rounded bg-parch/50" title="Corpus frequency rank">
+                      <span
+                        className="font-mono text-[9px] text-muted border border-bdr/40 px-1.5 py-0.5 rounded bg-parch/50"
+                        title="Corpus frequency rank"
+                      >
                         #{word.frequencyRank}
                       </span>
                     )}
                     {word.status !== 'Seen' && (
-                      <span className={cn('text-[10px] font-bold flex items-center gap-1 uppercase tracking-wider', word.isDue ? 'text-amber' : 'text-emerald-600/70')}>
+                      <span
+                        className={cn(
+                          'text-[10px] font-bold flex items-center gap-1 uppercase tracking-wider',
+                          word.isDue ? 'text-amber' : 'text-emerald-600/70'
+                        )}
+                      >
                         <History className="w-3 h-3" />
-                        {word.isDue ? t('vocab.dueNow', 'Due Now') : new Date(word.nextReview).toLocaleDateString()}
+                        {word.isDue
+                          ? t('vocab.dueNow', 'Due Now')
+                          : new Date(word.nextReview).toLocaleDateString()}
                       </span>
                     )}
                   </div>
@@ -539,7 +619,11 @@ export const Vocabulary = () => {
 
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={() => navigate(`/app/dictionary/${encodeURIComponent(word.languageId || 'grc')}/${encodeURIComponent(word.term)}`)}
+                    onClick={() =>
+                      navigate(
+                        `/app/dictionary/${encodeURIComponent(word.languageId || 'grc')}/${encodeURIComponent(word.term)}`
+                      )
+                    }
                     className="p-1.5 rounded text-muted hover:text-blue hover:bg-blue/5 transition-colors"
                     title={t('vocab.openDictionary', 'Open dictionary')}
                   >
@@ -559,9 +643,14 @@ export const Vocabulary = () => {
         ) : (
           <div className="card p-12 text-center border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
             <Brain className="w-12 h-12 text-muted mb-4 opacity-50" />
-            <h3 className="font-serif text-[24px] text-ink mb-2">{t('vocab.noWordsFound', 'No Words Found')}</h3>
+            <h3 className="font-serif text-[24px] text-ink mb-2">
+              {t('vocab.noWordsFound', 'No Words Found')}
+            </h3>
             <p className="text-ink3 max-w-sm mx-auto mb-6">
-              {t('vocab.noWordsFoundDesc', 'Read texts or import vocabulary to begin building your personal lexicon.')}
+              {t(
+                'vocab.noWordsFoundDesc',
+                'Read texts or import vocabulary to begin building your personal lexicon.'
+              )}
             </p>
           </div>
         )}
@@ -576,7 +665,10 @@ export const Vocabulary = () => {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <span className="text-[13px] font-bold text-muted">
-              {t('vocab.pageOf', 'Page {{current}} of {{total}}', { current: currentPage + 1, total: totalPages })}
+              {t('vocab.pageOf', 'Page {{current}} of {{total}}', {
+                current: currentPage + 1,
+                total: totalPages,
+              })}
               <span className="font-normal ml-2">({filteredWords.length} words)</span>
             </span>
             <button

@@ -25,9 +25,7 @@ export function VocabLimitProvider({ children }: { children: ReactNode }) {
   const [info, setInfo] = useState<VocabLimitInfo>(DEFAULT_INFO);
   const publish = useCallback((next: VocabLimitInfo) => setInfo(next), []);
   return (
-    <VocabLimitContext.Provider value={{ info, publish }}>
-      {children}
-    </VocabLimitContext.Provider>
+    <VocabLimitContext.Provider value={{ info, publish }}>{children}</VocabLimitContext.Provider>
   );
 }
 

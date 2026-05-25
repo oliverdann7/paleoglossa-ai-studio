@@ -103,10 +103,12 @@ export function LanguageSwitcher() {
                       {/* Per-language vocab progress bar for capped languages */}
                       {!unlocked ? (
                         <div className="mt-0.5">
-                          <span className={cn(
-                            'text-[9px] font-bold',
-                            isFull ? 'text-red-500' : 'text-muted'
-                          )}>
+                          <span
+                            className={cn(
+                              'text-[9px] font-bold',
+                              isFull ? 'text-red-500' : 'text-muted'
+                            )}
+                          >
                             {count}/{limit} words saved
                           </span>
                           <div className="h-1 w-full bg-parch3 rounded-full overflow-hidden mt-0.5">
@@ -124,10 +126,12 @@ export function LanguageSwitcher() {
                           </div>
                         </div>
                       ) : (
-                        <div className={cn(
-                          'text-[10px] uppercase tracking-wider',
-                          isActive ? 'text-blue/70' : 'text-muted'
-                        )}>
+                        <div
+                          className={cn(
+                            'text-[10px] uppercase tracking-wider',
+                            isActive ? 'text-blue/70' : 'text-muted'
+                          )}
+                        >
                           {lang.corpusStatus === 'available'
                             ? 'Available'
                             : lang.corpusStatus === 'partial'

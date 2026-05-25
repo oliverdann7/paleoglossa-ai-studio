@@ -427,7 +427,10 @@ export const Library = () => {
             {t('library.beginnerHub', 'Beginner Hub')}
           </div>
           <div className="text-xs text-muted truncate">
-            {t('library.beginnerHubDesc', 'Start here — beginner texts and script-learning tools for all languages')}
+            {t(
+              'library.beginnerHubDesc',
+              'Start here — beginner texts and script-learning tools for all languages'
+            )}
           </div>
         </div>
         <ChevronRight className="w-5 h-5 text-muted group-hover:text-blue transition-colors shrink-0" />

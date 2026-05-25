@@ -584,7 +584,11 @@ export function ReadingPane({
                   {!showParallel && isActivePageMode && (
                     <button
                       onClick={() => toggleSentenceTranslation(sentence)}
-                      title={revealedTranslations.has(sentence.id) ? 'Hide translation' : 'Show translation'}
+                      title={
+                        revealedTranslations.has(sentence.id)
+                          ? 'Hide translation'
+                          : 'Show translation'
+                      }
                       className={cn(
                         'inline-flex items-center justify-center align-middle w-5 h-5 rounded-sm ml-0.5 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity',
                         revealedTranslations.has(sentence.id)
@@ -609,7 +613,9 @@ export function ReadingPane({
                       {aiTranslations[sentence.id] ||
                         sentence.translation ||
                         sentence.parallel ||
-                        (translatingId === sentence.id ? '…' : t('reader.noTranslation', 'No translation available'))}
+                        (translatingId === sentence.id
+                          ? '…'
+                          : t('reader.noTranslation', 'No translation available'))}
                     </span>
                   )}
                 </span>

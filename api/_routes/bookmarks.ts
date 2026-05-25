@@ -42,7 +42,9 @@ router.post('/api/bookmarks', requireAuth as any, async (req: any, res: any) => 
   };
 
   if (!textId || !sentenceText || sentenceIndex == null || !languageId) {
-    return res.status(400).json({ error: 'textId, sentenceText, sentenceIndex, and languageId are required' });
+    return res
+      .status(400)
+      .json({ error: 'textId, sentenceText, sentenceIndex, and languageId are required' });
   }
 
   try {

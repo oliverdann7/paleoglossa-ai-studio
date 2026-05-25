@@ -20,7 +20,9 @@ import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 
-function resolveGeminiApiKey(req: { headers: Record<string, string | string[] | undefined> }): string | undefined {
+function resolveGeminiApiKey(req: {
+  headers: Record<string, string | string[] | undefined>;
+}): string | undefined {
   const userKey = req.headers['x-gemini-api-key'];
   if (userKey && typeof userKey === 'string' && userKey.trim()) return userKey.trim();
   return process.env.GEMINI_API_KEY;

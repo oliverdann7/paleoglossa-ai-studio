@@ -192,9 +192,7 @@ export class StatsService {
       }
     }
     if (failures.length > 0) {
-      throw new Error(
-        `Reading progress migration failed for: ${failures.join(', ')}`
-      );
+      throw new Error(`Reading progress migration failed for: ${failures.join(', ')}`);
     }
     return count;
   }

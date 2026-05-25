@@ -228,7 +228,8 @@ export const pt = {
     'sub.paymentSuccess': 'Pagamento bem-sucedido! Seu plano foi ativado.',
     'sub.paymentCanceled': 'Pagamento cancelado. Nenhuma alteração foi feita.',
     'sub.currentPlan': 'Plano {{name}}',
-    'sub.choosePlan': 'Todos os idiomas abertos em cada plano. Atualize para salvamentos ilimitados.',
+    'sub.choosePlan':
+      'Todos os idiomas abertos em cada plano. Atualize para salvamentos ilimitados.',
     'sub.saveYearly': 'Economize ~17%',
     'sub.recommended': 'Recomendado',
     'sub.redirecting': 'Redirecionando...',
@@ -473,8 +474,7 @@ export const pt = {
     'grammar.corpusExamples': 'Encontrado no corpus',
     'grammar.readInContext': 'Ler no contexto',
     'grammar.pathwayEmpty': 'Nenhuma etapa encontrada na trilha.',
-    'grammar.pathwayFooter':
-      'Siga a trilha para uma introdução estruturada à gramática clássica.',
+    'grammar.pathwayFooter': 'Siga a trilha para uma introdução estruturada à gramática clássica.',
     'grammar.comingSoon':
       'Navegador de conceitos gramaticais com gráficos de dependência, exemplos do corpus e integração SRS — em breve.',
     'grammar.experimental':

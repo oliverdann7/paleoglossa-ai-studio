@@ -342,7 +342,8 @@ export const es = {
     'sub.paymentSuccess': '¡Pago exitoso! Tu plan ha sido activado.',
     'sub.paymentCanceled': 'El pago fue cancelado. No se realizaron cambios.',
     'sub.currentPlan': 'Plan {{name}}',
-    'sub.choosePlan': 'Todos los idiomas abiertos en cada plan. Actualiza para guardados ilimitados.',
+    'sub.choosePlan':
+      'Todos los idiomas abiertos en cada plan. Actualiza para guardados ilimitados.',
     'sub.saveYearly': 'Ahorra ~17%',
     'sub.recommended': 'Recomendado',
     'sub.redirecting': 'Redirigiendo...',

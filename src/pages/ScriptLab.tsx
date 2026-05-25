@@ -92,7 +92,9 @@ export const ScriptLab = () => {
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> {t('common.back', 'Back')}
         </button>
-        <h1 className="text-2xl font-serif">{t('scriptLab.notFound', 'Script lab not available for this language')}</h1>
+        <h1 className="text-2xl font-serif">
+          {t('scriptLab.notFound', 'Script lab not available for this language')}
+        </h1>
       </div>
     );
   }
@@ -176,9 +178,7 @@ export const ScriptLab = () => {
               >
                 <div className="text-2xl mb-1">{sign.unicode || sign.transliteration}</div>
                 <div className="text-xs font-mono text-muted">{sign.transliteration}</div>
-                {sign.phonetic && (
-                  <div className="text-[10px] text-muted">{sign.phonetic}</div>
-                )}
+                {sign.phonetic && <div className="text-[10px] text-muted">{sign.phonetic}</div>}
                 {sign.gardinerNumber && (
                   <div className="text-[10px] text-muted mt-1">Gardiner {sign.gardinerNumber}</div>
                 )}
@@ -284,7 +284,10 @@ export const ScriptLab = () => {
             {t('scriptLab.startReading', 'Start Reading')}
           </h2>
           <p className="text-sm text-muted mb-6">
-            {t('scriptLab.readDesc', 'Beginner texts are available for this language. Open them in the Reader to practice reading with glosses and translations.')}
+            {t(
+              'scriptLab.readDesc',
+              'Beginner texts are available for this language. Open them in the Reader to practice reading with glosses and translations.'
+            )}
           </p>
           <Link
             to={`/app/language/${langId}`}

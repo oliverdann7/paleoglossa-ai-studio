@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Globe, Play, GitFork, BookOpen, Languages, Filter, Star, TrendingUp } from 'lucide-react';
+import {
+  Search,
+  Globe,
+  Play,
+  GitFork,
+  BookOpen,
+  Languages,
+  Filter,
+  Star,
+  TrendingUp,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImportService, ImportedText } from '../lib/services/importService.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -40,12 +50,18 @@ function computeKnownPct(text: ImportedText, knownSet: Set<string>): number {
 
 function KnownBadge({ pct }: { pct: number }) {
   const color =
-    pct >= 80 ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30'
-    : pct >= 50 ? 'bg-blue/10 text-blue border-blue/30'
-    : pct >= 20 ? 'bg-amber/10 text-amber border-amber/30'
-    : 'bg-ink3/10 text-ink3 border-ink3/20';
+    pct >= 80
+      ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30'
+      : pct >= 50
+        ? 'bg-blue/10 text-blue border-blue/30'
+        : pct >= 20
+          ? 'bg-amber/10 text-amber border-amber/30'
+          : 'bg-ink3/10 text-ink3 border-ink3/20';
   return (
-    <span className={cn('px-1.5 py-0.5 rounded-md border text-[10px] font-bold', color)} title="% of words you already know">
+    <span
+      className={cn('px-1.5 py-0.5 rounded-md border text-[10px] font-bold', color)}
+      title="% of words you already know"
+    >
       {pct}% known
     </span>
   );
@@ -185,7 +201,9 @@ export function Discover() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [addToast]);
 
   const handleRead = useCallback(
@@ -272,9 +290,7 @@ export function Discover() {
       <div className="flex items-center gap-3">
         <Globe className="w-6 h-6 text-gold shrink-0" />
         <div>
-          <h1 className="text-xl font-bold text-ink">
-            {t('discover.title', 'Discover')}
-          </h1>
+          <h1 className="text-xl font-bold text-ink">{t('discover.title', 'Discover')}</h1>
           <p className="text-sm text-muted">
             {t('discover.subtitle', 'Browse texts shared by the Paleoglossa community')}
           </p>
@@ -364,9 +380,7 @@ export function Discover() {
           <Globe className="w-12 h-12 text-muted/40" />
           {texts.length === 0 ? (
             <>
-              <p className="font-medium text-ink2">
-                {t('discover.empty', 'No public texts yet')}
-              </p>
+              <p className="font-medium text-ink2">{t('discover.empty', 'No public texts yet')}</p>
               <p className="text-sm text-muted max-w-xs">
                 {t(
                   'discover.emptyHint',

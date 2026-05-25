@@ -68,16 +68,28 @@ const POS_LABELS: Record<string, string> = {
 
 const PERSON_LABELS: Record<string, string> = { '1': '1st', '2': '2nd', '3': '3rd' };
 const TENSE_LABELS: Record<string, string> = {
-  P: 'present', I: 'imperfect', F: 'future',
-  A: 'aorist', X: 'perfect', Y: 'pluperfect',
+  P: 'present',
+  I: 'imperfect',
+  F: 'future',
+  A: 'aorist',
+  X: 'perfect',
+  Y: 'pluperfect',
 };
 const VOICE_LABELS: Record<string, string> = { A: 'active', M: 'middle', P: 'passive' };
 const MOOD_LABELS: Record<string, string> = {
-  I: 'indicative', D: 'imperative', S: 'subjunctive',
-  O: 'optative', N: 'infinitive', P: 'participle',
+  I: 'indicative',
+  D: 'imperative',
+  S: 'subjunctive',
+  O: 'optative',
+  N: 'infinitive',
+  P: 'participle',
 };
 const CASE_LABELS: Record<string, string> = {
-  N: 'nominative', G: 'genitive', D: 'dative', A: 'accusative', V: 'vocative',
+  N: 'nominative',
+  G: 'genitive',
+  D: 'dative',
+  A: 'accusative',
+  V: 'vocative',
 };
 const GENDER_LABELS: Record<string, string> = { M: 'masculine', F: 'feminine', N: 'neuter' };
 const NUMBER_LABELS: Record<string, string> = { S: 'singular', P: 'plural' };
@@ -108,8 +120,7 @@ function splitPunct(textRaw: string): { surface: string; punctAfter: string } {
   return { surface: textRaw.slice(0, -m[1].length), punctAfter: m[1] + ' ' };
 }
 
-const MORPHGNT_BASE =
-  'https://raw.githubusercontent.com/morphgnt/sblgnt/master';
+const MORPHGNT_BASE = 'https://raw.githubusercontent.com/morphgnt/sblgnt/master';
 
 // ── Adapter ───────────────────────────────────────────────────────────────────
 

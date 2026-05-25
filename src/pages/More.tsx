@@ -77,7 +77,11 @@ export const More = () => {
 
       <div className="px-4 pt-5 pb-8 max-w-lg mx-auto">
         <Section title={t('more.study', 'Study')}>
-          <MoreCard icon={Sparkles} label={t('nav.beginnerHub', 'Beginner Hub')} to="/app/beginner-hub" />
+          <MoreCard
+            icon={Sparkles}
+            label={t('nav.beginnerHub', 'Beginner Hub')}
+            to="/app/beginner-hub"
+          />
           <MoreCard icon={Search} label={t('nav.search', 'Search')} to="/app/search" />
           <MoreCard
             icon={BookText}
@@ -93,7 +97,11 @@ export const More = () => {
         <Section title={t('more.personal', 'Personal')}>
           <MoreCard icon={FileText} label={t('nav.notes', 'Notes')} to="/app/notes" />
           <MoreCard icon={BookMarked} label={t('nav.notebooks', 'Notebooks')} to="/app/notebooks" />
-          <MoreCard icon={BookMarked} label={t('nav.bookmarks', 'Saved Sentences')} to="/app/bookmarks" />
+          <MoreCard
+            icon={BookMarked}
+            label={t('nav.bookmarks', 'Saved Sentences')}
+            to="/app/bookmarks"
+          />
           <MoreCard
             icon={BarChart3}
             label={t('nav.statistics', 'Statistics')}

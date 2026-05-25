@@ -40,7 +40,9 @@ describe('saveErrorBouncer', () => {
     reportBouncedError('vocabulary', new Error('First failure'));
     const result = reportBouncedError('vocabulary', new Error('Second failure'));
     expect(result.suppressed).toBe(true);
-    expect(result.info.userMessage).toBe('Sync pending — your changes are saved locally and will retry.');
+    expect(result.info.userMessage).toBe(
+      'Sync pending — your changes are saved locally and will retry.'
+    );
   });
 
   it('classifies error code in bounce result', () => {

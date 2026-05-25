@@ -26,14 +26,18 @@ router.get('/api/discussions', async (req: any, res: any) => {
   const { textId, sentenceIndex, tokenIndex } = req.query as Record<string, string | undefined>;
 
   if (!textId || sentenceIndex == null) {
-    return res.status(400).json({ error: 'textId and sentenceIndex are required', code: 'INVALID_INPUT' });
+    return res
+      .status(400)
+      .json({ error: 'textId and sentenceIndex are required', code: 'INVALID_INPUT' });
   }
 
   const adminDb = getAdminDb();
-  if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  if (!adminDb)
+    return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
   try {
-    let query: any = adminDb.collection('textDiscussions')
+    let query: any = adminDb
+      .collection('textDiscussions')
       .where('textId', '==', textId)
       .where('sentenceIndex', '==', Number(sentenceIndex));
 
@@ -54,60 +58,60 @@ router.get('/api/discussions', async (req: any, res: any) => {
 
 // ─── POST create/get thread ───────────────────────────────────────────────────
 
-router.post(
-  '/api/discussions',
-  requireAuth as any,
-  async (req: AuthenticatedRequest, res: any) => {
-    const { textId, languageId, sentenceIndex, tokenIndex, wordText, lemma, sentenceExcerpt } =
-      req.body;
+router.post('/api/discussions', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const { textId, languageId, sentenceIndex, tokenIndex, wordText, lemma, sentenceExcerpt } =
+    req.body;
 
-    if (!textId || sentenceIndex == null) {
-      return res.status(400).json({ error: 'textId and sentenceIndex are required', code: 'INVALID_INPUT' });
-    }
-
-    const adminDb = getAdminDb();
-    if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
-
-    const docId = threadDocId(textId, Number(sentenceIndex), tokenIndex);
-    const ref = adminDb.collection('textDiscussions').doc(docId);
-
-    try {
-      const { FieldValue } = await import('firebase-admin/firestore');
-      const existing = await ref.get();
-
-      if (existing.exists) {
-        return res.status(200).json({ id: existing.id, ...existing.data() });
-      }
-
-      const now = FieldValue.serverTimestamp();
-      const thread = {
-        textId,
-        languageId: languageId || null,
-        sentenceIndex: Number(sentenceIndex),
-        tokenIndex: tokenIndex != null ? Number(tokenIndex) : null,
-        wordText: wordText || null,
-        lemma: lemma || null,
-        sentenceExcerpt: sentenceExcerpt || null,
-        commentCount: 0,
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      await ref.set(thread);
-      return res.status(200).json({ id: docId, ...thread });
-    } catch (e: any) {
-      console.error('[discussions] Error creating thread:', e.message);
-      res.status(500).json({ error: 'Failed to create discussion', code: 'INTERNAL_ERROR' });
-    }
+  if (!textId || sentenceIndex == null) {
+    return res
+      .status(400)
+      .json({ error: 'textId and sentenceIndex are required', code: 'INVALID_INPUT' });
   }
-);
+
+  const adminDb = getAdminDb();
+  if (!adminDb)
+    return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+  const docId = threadDocId(textId, Number(sentenceIndex), tokenIndex);
+  const ref = adminDb.collection('textDiscussions').doc(docId);
+
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    const existing = await ref.get();
+
+    if (existing.exists) {
+      return res.status(200).json({ id: existing.id, ...existing.data() });
+    }
+
+    const now = FieldValue.serverTimestamp();
+    const thread = {
+      textId,
+      languageId: languageId || null,
+      sentenceIndex: Number(sentenceIndex),
+      tokenIndex: tokenIndex != null ? Number(tokenIndex) : null,
+      wordText: wordText || null,
+      lemma: lemma || null,
+      sentenceExcerpt: sentenceExcerpt || null,
+      commentCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await ref.set(thread);
+    return res.status(200).json({ id: docId, ...thread });
+  } catch (e: any) {
+    console.error('[discussions] Error creating thread:', e.message);
+    res.status(500).json({ error: 'Failed to create discussion', code: 'INTERNAL_ERROR' });
+  }
+});
 
 // ─── GET comments ─────────────────────────────────────────────────────────────
 
 router.get('/api/discussions/:discussionId/comments', async (req: any, res: any) => {
   const discussionId = req.params.discussionId as string;
   const adminDb = getAdminDb();
-  if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  if (!adminDb)
+    return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
   try {
     const snap = await adminDb
@@ -151,11 +155,14 @@ router.post(
       return res.status(400).json({ error: 'body is required', code: 'INVALID_INPUT' });
     }
     if (body.length > 2000) {
-      return res.status(400).json({ error: 'Comment exceeds 2000 characters', code: 'INVALID_INPUT' });
+      return res
+        .status(400)
+        .json({ error: 'Comment exceeds 2000 characters', code: 'INVALID_INPUT' });
     }
 
     const adminDb = getAdminDb();
-    if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    if (!adminDb)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
     try {
       const { FieldValue } = await import('firebase-admin/firestore');
@@ -211,7 +218,8 @@ router.post(
     const uid = req.user!.uid;
 
     const adminDb = getAdminDb();
-    if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    if (!adminDb)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
     try {
       const { FieldValue } = await import('firebase-admin/firestore');
@@ -222,7 +230,8 @@ router.post(
         .doc(commentId);
 
       const snap = await commentRef.get();
-      if (!snap.exists) return res.status(404).json({ error: 'Comment not found', code: 'NOT_FOUND' });
+      if (!snap.exists)
+        return res.status(404).json({ error: 'Comment not found', code: 'NOT_FOUND' });
 
       const data = snap.data()!;
       const upvotedBy: string[] = data.upvotedBy || [];
@@ -259,7 +268,8 @@ router.delete(
     const uid = req.user!.uid;
 
     const adminDb = getAdminDb();
-    if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    if (!adminDb)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
     try {
       const { FieldValue } = await import('firebase-admin/firestore');
@@ -270,7 +280,8 @@ router.delete(
         .doc(commentId);
 
       const snap = await commentRef.get();
-      if (!snap.exists) return res.status(404).json({ error: 'Comment not found', code: 'NOT_FOUND' });
+      if (!snap.exists)
+        return res.status(404).json({ error: 'Comment not found', code: 'NOT_FOUND' });
 
       const data = snap.data()!;
       if (data.authorUid !== uid) {
@@ -278,10 +289,13 @@ router.delete(
       }
 
       await commentRef.delete();
-      await adminDb.collection('textDiscussions').doc(discussionId).update({
-        commentCount: FieldValue.increment(-1),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
+      await adminDb
+        .collection('textDiscussions')
+        .doc(discussionId)
+        .update({
+          commentCount: FieldValue.increment(-1),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
 
       res.status(200).json({ ok: true });
     } catch (e: any) {

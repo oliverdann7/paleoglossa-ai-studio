@@ -9,7 +9,9 @@ export interface ChallengeCompletion {
 
 export const ChallengeService = {
   async getCompletions(): Promise<ChallengeCompletion[]> {
-    const data = await apiFetch<{ completions: ChallengeCompletion[] }>('/api/challenges/completions');
+    const data = await apiFetch<{ completions: ChallengeCompletion[] }>(
+      '/api/challenges/completions'
+    );
     return data?.completions ?? [];
   },
 

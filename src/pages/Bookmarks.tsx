@@ -8,7 +8,11 @@ import { getLanguageDisplayName } from '../lib/constants/languages.js';
 
 function formatDate(dateStr: string) {
   try {
-    return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(dateStr).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   } catch {
     return '';
   }
@@ -84,15 +88,16 @@ export const Bookmarks = () => {
         </div>
       )}
 
-      {error && (
-        <div className="text-red-600 text-[14px] py-4">{error}</div>
-      )}
+      {error && <div className="text-red-600 text-[14px] py-4">{error}</div>}
 
       {!loading && !error && bookmarks.length === 0 && (
         <div className="text-center py-16">
           <Bookmark className="w-10 h-10 text-muted mx-auto mb-3" strokeWidth={1.5} />
           <p className="text-[15px] text-muted font-body italic">
-            {t('bookmarks.empty', "No bookmarks yet. While reading, hover over a sentence and click the bookmark icon to save it here.")}
+            {t(
+              'bookmarks.empty',
+              'No bookmarks yet. While reading, hover over a sentence and click the bookmark icon to save it here.'
+            )}
           </p>
         </div>
       )}
@@ -107,9 +112,7 @@ export const Bookmarks = () => {
                     {bm.sentenceText}
                   </p>
                   <div className="flex items-center gap-3 flex-wrap text-[12px] text-ink3">
-                    {bm.textTitle && (
-                      <span className="font-medium">{bm.textTitle}</span>
-                    )}
+                    {bm.textTitle && <span className="font-medium">{bm.textTitle}</span>}
                     {bm.textTitle && <span>·</span>}
                     <span>{getLanguageDisplayName(bm.languageId) || bm.languageId}</span>
                     {bm.createdAt && (
@@ -141,9 +144,11 @@ export const Bookmarks = () => {
                     title="Remove bookmark"
                     className="p-2 text-muted hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-40"
                   >
-                    {deletingId === bm.id
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <Trash2 className="w-4 h-4" />}
+                    {deletingId === bm.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>

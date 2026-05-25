@@ -302,7 +302,16 @@ export const Review = () => {
       setIsRevealed(false);
       setCardStartTime(Date.now());
     },
-    [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS, sessionResults, recordReviewSession]
+    [
+      queue,
+      currentCardIndex,
+      cardStartTime,
+      isDemoMode,
+      user,
+      updateWordSRS,
+      sessionResults,
+      recordReviewSession,
+    ]
   );
 
   const handleReveal = () => setIsRevealed(true);

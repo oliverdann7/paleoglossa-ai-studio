@@ -19,7 +19,13 @@ function makeState(overrides: Partial<FSRSState> = {}): FSRSState {
 function reviewedDaysAgo(days: number, base?: Partial<FSRSState>): FSRSState {
   const past = new Date(NOW);
   past.setDate(past.getDate() - days);
-  return makeState({ ...base, lastReviewed: past.toISOString(), repetitions: 1, stability: 10, difficulty: 5 });
+  return makeState({
+    ...base,
+    lastReviewed: past.toISOString(),
+    repetitions: 1,
+    stability: 10,
+    difficulty: 5,
+  });
 }
 
 describe('FSRS-5 algorithm', () => {
@@ -93,7 +99,12 @@ describe('FSRS-5 algorithm', () => {
     });
 
     it('interval caps at 365 days', () => {
-      const state = makeState({ stability: 10000, repetitions: 100, difficulty: 1, lastReviewed: new Date(NOW.getTime() - 365 * 86400000).toISOString() });
+      const state = makeState({
+        stability: 10000,
+        repetitions: 100,
+        difficulty: 1,
+        lastReviewed: new Date(NOW.getTime() - 365 * 86400000).toISOString(),
+      });
       const next = calculateFSRS('easy', state, NOW);
       expect(next.interval).toBeLessThanOrEqual(365);
     });

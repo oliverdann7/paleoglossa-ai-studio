@@ -74,8 +74,7 @@ export const useKnowledge = (languageId?: string) => {
       //   3. The word is currently NOT tracked (NEW or IGNORED)
       //   4. The new state IS tracked (SEEN/LEARNING/FAMILIAR/KNOWN)
       //   5. The limit has been reached
-      const isNewTracked =
-        !isTrackedWordState(previousState) && isTrackedWordState(state);
+      const isNewTracked = !isTrackedWordState(previousState) && isTrackedWordState(state);
       if (
         isNewTracked &&
         vocabLimit.isEnabled &&

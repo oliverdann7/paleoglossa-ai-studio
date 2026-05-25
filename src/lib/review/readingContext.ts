@@ -16,9 +16,7 @@ export const READING_CONTEXT_FIELDS = [
   'sentenceTranslation',
 ] as const;
 
-export function sanitizeReadingExtra(
-  extra: Partial<ReadingContext>
-): Record<string, unknown> {
+export function sanitizeReadingExtra(extra: Partial<ReadingContext>): Record<string, unknown> {
   const payload: Record<string, unknown> = {};
   for (const key of READING_CONTEXT_FIELDS) {
     if (extra[key] !== undefined) {

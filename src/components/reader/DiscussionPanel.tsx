@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { MessageSquare, ThumbsUp, Send, Loader2, Trash2, ChevronDown, ChevronUp, CornerDownRight } from 'lucide-react';
+import {
+  MessageSquare,
+  ThumbsUp,
+  Send,
+  Loader2,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  CornerDownRight,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../../lib/hooks/useAuth.js';
@@ -20,10 +29,7 @@ interface Props {
 
 function formatCommentDate(createdAt: unknown): string {
   try {
-    const d =
-      typeof createdAt === 'string'
-        ? new Date(createdAt)
-        : (createdAt as any)?.toDate?.();
+    const d = typeof createdAt === 'string' ? new Date(createdAt) : (createdAt as any)?.toDate?.();
     if (!d) return '';
     const diff = Date.now() - d.getTime();
     if (diff < 60_000) return 'just now';
@@ -199,11 +205,7 @@ export function DiscussionPanel({
     setError(null);
     try {
       const threadId = await ensureThread();
-      const comment = await DiscussionService.postComment(
-        threadId,
-        body,
-        replyTo?.id
-      );
+      const comment = await DiscussionService.postComment(threadId, body, replyTo?.id);
       setComments((prev) => [...prev, comment]);
       setDraft('');
       setReplyTo(null);
@@ -323,17 +325,29 @@ export function DiscussionPanel({
               {replyTo && (
                 <div className="flex items-center justify-between px-3 py-1.5 bg-blue/5 border border-blue/20 rounded-t-lg text-[11px] text-blue">
                   <span>
-                    {t('discussion.replyingTo', 'Replying to')} <strong>{replyTo.displayName}</strong>
+                    {t('discussion.replyingTo', 'Replying to')}{' '}
+                    <strong>{replyTo.displayName}</strong>
                   </span>
-                  <button onClick={() => { setReplyTo(null); setDraft(''); }} className="hover:text-blue/70">✕</button>
+                  <button
+                    onClick={() => {
+                      setReplyTo(null);
+                      setDraft('');
+                    }}
+                    className="hover:text-blue/70"
+                  >
+                    ✕
+                  </button>
                 </div>
               )}
 
               {/* Composer */}
-              {error && (
-                <p className="text-[11px] text-red-500 mb-1.5 px-1">{error}</p>
-              )}
-              <div className={cn('flex gap-2 items-end', replyTo && 'border border-blue/20 rounded-b-lg border-t-0 p-2 bg-blue/5')}>
+              {error && <p className="text-[11px] text-red-500 mb-1.5 px-1">{error}</p>}
+              <div
+                className={cn(
+                  'flex gap-2 items-end',
+                  replyTo && 'border border-blue/20 rounded-b-lg border-t-0 p-2 bg-blue/5'
+                )}
+              >
                 <textarea
                   ref={textareaRef}
                   rows={2}
@@ -369,9 +383,7 @@ export function DiscussionPanel({
                   )}
                 </button>
               </div>
-              {user && (
-                <p className="text-[10px] text-muted mt-1 text-right">⌘↵ to post</p>
-              )}
+              {user && <p className="text-[10px] text-muted mt-1 text-right">⌘↵ to post</p>}
             </>
           )}
         </div>

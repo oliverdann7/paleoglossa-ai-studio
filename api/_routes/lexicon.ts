@@ -102,7 +102,10 @@ router.get('/api/lemmas/:language/:lemma/forms', (req: any, res: any) => {
 
     const texts = CorpusDB.getTexts() as any[];
 
-    const formsMap = new Map<string, { surface: string; features: Record<string, string>; count: number }>();
+    const formsMap = new Map<
+      string,
+      { surface: string; features: Record<string, string>; count: number }
+    >();
 
     for (const text of texts) {
       const textLang = (text as any).languageId || (text as any).language || '';
@@ -297,8 +300,10 @@ router.get('/api/lemma-frequency/:lang', (req: any, res: any) => {
 
     const limitParam = req.query.limit;
     const offsetParam = req.query.offset;
-    const limit = limitParam && typeof limitParam === 'string' ? Math.min(parseInt(limitParam, 10), 2000) : 500;
-    const offset = offsetParam && typeof offsetParam === 'string' ? Math.max(parseInt(offsetParam, 10), 0) : 0;
+    const limit =
+      limitParam && typeof limitParam === 'string' ? Math.min(parseInt(limitParam, 10), 2000) : 500;
+    const offset =
+      offsetParam && typeof offsetParam === 'string' ? Math.max(parseInt(offsetParam, 10), 0) : 0;
 
     const all = getDictionaryEntries();
     const forLang = all.filter((e) => e.languageId === lang);

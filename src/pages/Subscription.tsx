@@ -22,16 +22,29 @@ import { features } from '../lib/features.js';
 const PLAN_FEATURE_KEYS: Record<string, string[]> = {
   free: ['plans.free.feat1', 'plans.free.feat2', 'plans.free.feat3', 'plans.free.feat4'],
   basic_1: [
-    'plans.basic.feat1', 'plans.basic.feat2', 'plans.basic.feat3',
-    'plans.basic.feat4', 'plans.basic.feat5', 'plans.basic.feat6',
+    'plans.basic.feat1',
+    'plans.basic.feat2',
+    'plans.basic.feat3',
+    'plans.basic.feat4',
+    'plans.basic.feat5',
+    'plans.basic.feat6',
   ],
   duo_2: [
-    'plans.duo.feat1', 'plans.duo.feat2', 'plans.duo.feat3',
-    'plans.duo.feat4', 'plans.duo.feat5', 'plans.duo.feat6',
+    'plans.duo.feat1',
+    'plans.duo.feat2',
+    'plans.duo.feat3',
+    'plans.duo.feat4',
+    'plans.duo.feat5',
+    'plans.duo.feat6',
   ],
   full_all: [
-    'plans.full.feat1', 'plans.full.feat2', 'plans.full.feat3',
-    'plans.full.feat4', 'plans.full.feat5', 'plans.full.feat6', 'plans.full.feat7',
+    'plans.full.feat1',
+    'plans.full.feat2',
+    'plans.full.feat3',
+    'plans.full.feat4',
+    'plans.full.feat5',
+    'plans.full.feat6',
+    'plans.full.feat7',
   ],
 };
 
@@ -71,7 +84,9 @@ export const Subscription = () => {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      setCheckoutError(msg || t('sub.checkoutFailed', 'Could not start checkout. Please try again.'));
+      setCheckoutError(
+        msg || t('sub.checkoutFailed', 'Could not start checkout. Please try again.')
+      );
     } finally {
       setLoadingPlan(null);
     }
@@ -188,7 +203,10 @@ export const Subscription = () => {
               </div>
 
               <div className="space-y-3 mb-6 flex-1">
-                {(PLAN_FEATURE_KEYS[plan.id] ?? plan.features.map((_, i) => `${plan.id}.feat${i + 1}`)).map((key, i) => (
+                {(
+                  PLAN_FEATURE_KEYS[plan.id] ??
+                  plan.features.map((_, i) => `${plan.id}.feat${i + 1}`)
+                ).map((key, i) => (
                   <div key={i} className="flex items-start gap-2.5">
                     <Check
                       className={cn(
@@ -269,7 +287,10 @@ export const Subscription = () => {
             ? t('sub.includesAll')
             : currentPlan.languageLimit === 0
               ? t('sub.noUnlockedLangs', 'Upgrade to choose a language for unlimited saves.')
-              : t('sub.unlockSlotLabel', { count: currentPlan.languageLimit, defaultValue: `Select up to ${currentPlan.languageLimit} language(s) for unlimited saves.` })}
+              : t('sub.unlockSlotLabel', {
+                  count: currentPlan.languageLimit,
+                  defaultValue: `Select up to ${currentPlan.languageLimit} language(s) for unlimited saves.`,
+                })}
         </p>
 
         {currentPlan.languageLimit !== 0 && (

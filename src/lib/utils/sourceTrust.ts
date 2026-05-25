@@ -26,7 +26,7 @@ const TRUST_MAP: Record<string, SourceTrustInfo> = {
   static_dictionary: {
     label: 'Dictionary',
     trust: 'high',
-    description: 'Entry from a reference lexicon (Strong\'s, LSJ, etc.)',
+    description: "Entry from a reference lexicon (Strong's, LSJ, etc.)",
     dotColor: '#3B82F6',
     textColor: 'text-blue-700',
   },
@@ -82,11 +82,13 @@ const TRUST_MAP: Record<string, SourceTrustInfo> = {
 };
 
 export function getSourceTrust(source: string): SourceTrustInfo {
-  return TRUST_MAP[source] ?? {
-    label: 'Unknown',
-    trust: 'unknown' as SourceTrustLevel,
-    description: 'Source could not be determined',
-    dotColor: '#9CA3AF',
-    textColor: 'text-gray-400',
-  };
+  return (
+    TRUST_MAP[source] ?? {
+      label: 'Unknown',
+      trust: 'unknown' as SourceTrustLevel,
+      description: 'Source could not be determined',
+      dotColor: '#9CA3AF',
+      textColor: 'text-gray-400',
+    }
+  );
 }

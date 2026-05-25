@@ -30,7 +30,12 @@ export const AnnotationService = {
     return data.annotations ?? [];
   },
 
-  async create(lemma: string, wordText: string, languageId: string, gloss: string): Promise<TokenAnnotation> {
+  async create(
+    lemma: string,
+    wordText: string,
+    languageId: string,
+    gloss: string
+  ): Promise<TokenAnnotation> {
     const headers = await authHeaders();
     const res = await fetch('/api/annotations', {
       method: 'POST',

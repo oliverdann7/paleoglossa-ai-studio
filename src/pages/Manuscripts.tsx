@@ -139,11 +139,7 @@ function ImageViewer({ imageUrl, title }: { imageUrl: string; title: string }) {
         )}
       >
         <span className="text-[12px] text-muted flex-1 truncate">{title}</span>
-        <button
-          onClick={() => zoom(0.25)}
-          className="p-1 hover:bg-bdr/20 rounded"
-          title="Zoom in"
-        >
+        <button onClick={() => zoom(0.25)} className="p-1 hover:bg-bdr/20 rounded" title="Zoom in">
           <Plus className="w-3.5 h-3.5" />
         </button>
         <button
@@ -164,7 +160,11 @@ function ImageViewer({ imageUrl, title }: { imageUrl: string; title: string }) {
           className="p-1 hover:bg-bdr/20 rounded ml-1"
           title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
         >
-          {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          {fullscreen ? (
+            <Minimize2 className="w-3.5 h-3.5" />
+          ) : (
+            <Maximize2 className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
 
@@ -360,7 +360,12 @@ function IIIFViewer({ manifestUrl, title }: { manifestUrl: string; title: string
           </button>
         </div>
       )}
-      <div className={cn('flex flex-col flex-1 min-h-0', pages.length > 1 && 'border border-bdr/40 rounded-b-lg border-t-0 overflow-hidden')}>
+      <div
+        className={cn(
+          'flex flex-col flex-1 min-h-0',
+          pages.length > 1 && 'border border-bdr/40 rounded-b-lg border-t-0 overflow-hidden'
+        )}
+      >
         <ImageViewer imageUrl={current.url} title={`${title} — ${current.label}`} />
       </div>
     </div>
@@ -423,8 +428,7 @@ function ManuscriptForm({
   const [tagInput, setTagInput] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const set = (key: keyof FormData, value: string) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  const set = (key: keyof FormData, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
   const addTag = () => {
     const tag = tagInput.trim();
@@ -442,7 +446,9 @@ function ManuscriptForm({
       <div className="bg-parch w-full max-w-2xl rounded-xl shadow-2xl border border-bdr/60 m-4">
         <div className="flex items-center justify-between px-6 py-4 border-b border-bdr/40">
           <h3 className="text-[18px] font-bold text-ink font-sans">
-            {initial.title ? t('manuscripts.edit', 'Edit Manuscript') : t('manuscripts.new', 'New Manuscript')}
+            {initial.title
+              ? t('manuscripts.edit', 'Edit Manuscript')
+              : t('manuscripts.new', 'New Manuscript')}
           </h3>
           <button onClick={onClose} className="p-1.5 hover:bg-bdr/20 rounded">
             <X className="w-4 h-4 text-muted" />
@@ -458,7 +464,10 @@ function ManuscriptForm({
               autoFocus
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
-              placeholder={t('manuscripts.form.titlePlaceholder', 'e.g. Chester Beatty P46 — Romans 1')}
+              placeholder={t(
+                'manuscripts.form.titlePlaceholder',
+                'e.g. Chester Beatty P46 — Romans 1'
+              )}
               className="w-full px-3 py-2 bg-parch2 border border-bdr/60 rounded-lg text-[14px] text-ink focus:outline-none focus:border-blue/60"
             />
           </div>
@@ -501,7 +510,10 @@ function ManuscriptForm({
             <input
               value={form.source}
               onChange={(e) => set('source', e.target.value)}
-              placeholder={t('manuscripts.form.sourcePlaceholder', 'e.g. Codex Sinaiticus, fol. 38r')}
+              placeholder={t(
+                'manuscripts.form.sourcePlaceholder',
+                'e.g. Codex Sinaiticus, fol. 38r'
+              )}
               className="w-full px-3 py-2 bg-parch2 border border-bdr/60 rounded-lg text-[14px] text-ink focus:outline-none focus:border-blue/60"
             />
           </div>
@@ -563,7 +575,9 @@ function ManuscriptForm({
             onClick={() => setShowAdvanced((a) => !a)}
             className="flex items-center gap-1.5 text-[12px] text-muted hover:text-ink transition-colors"
           >
-            <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', showAdvanced && 'rotate-180')} />
+            <ChevronDown
+              className={cn('w-3.5 h-3.5 transition-transform', showAdvanced && 'rotate-180')}
+            />
             {t('manuscripts.form.advanced', 'Advanced')}
           </button>
 
@@ -577,7 +591,10 @@ function ManuscriptForm({
                   value={form.description}
                   onChange={(e) => set('description', e.target.value)}
                   rows={3}
-                  placeholder={t('manuscripts.form.descriptionPlaceholder', 'Scholarly notes, context, bibliography…')}
+                  placeholder={t(
+                    'manuscripts.form.descriptionPlaceholder',
+                    'Scholarly notes, context, bibliography…'
+                  )}
                   className="w-full px-3 py-2 bg-parch2 border border-bdr/60 rounded-lg text-[13px] text-ink focus:outline-none focus:border-blue/60 resize-y"
                 />
               </div>
@@ -649,13 +666,7 @@ function ManuscriptForm({
 
 // ─── Manuscript card ──────────────────────────────────────────────────────────
 
-function ManuscriptCard({
-  manuscript,
-  onClick,
-}: {
-  manuscript: Manuscript;
-  onClick: () => void;
-}) {
+function ManuscriptCard({ manuscript, onClick }: { manuscript: Manuscript; onClick: () => void }) {
   const lang = LANGUAGES.find((l) => l.id === manuscript.languageId);
 
   return (
@@ -700,9 +711,7 @@ function ManuscriptCard({
               {lang.name}
             </span>
           )}
-          {manuscript.date && (
-            <span className="text-[11px] text-muted">{manuscript.date}</span>
-          )}
+          {manuscript.date && <span className="text-[11px] text-muted">{manuscript.date}</span>}
         </div>
         {manuscript.source && (
           <p className="text-[12px] text-ink3 italic line-clamp-1">{manuscript.source}</p>

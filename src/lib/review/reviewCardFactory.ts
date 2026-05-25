@@ -86,9 +86,7 @@ export function generateReviewCard(
   const morph = opts.includeMorphology ? getMorphology(term) : undefined;
   const translit = getTransliteration(term);
   const surface = getSurface(term, item);
-  const contextMorph = opts.includeMorphology
-    ? getContextMorphology(item, languageId)
-    : undefined;
+  const contextMorph = opts.includeMorphology ? getContextMorphology(item, languageId) : undefined;
 
   // If no gloss is available, skip entirely — avoids weak "Definition missing" cards.
   if (!gloss) return null;
@@ -179,8 +177,7 @@ export function generateReviewCard(
 
     case CardType.CONTEXT_TRANSLATION: {
       const ctxForTranslation =
-        item.sentenceText ||
-        (contexts.length > 0 ? contexts[0] : undefined);
+        item.sentenceText || (contexts.length > 0 ? contexts[0] : undefined);
       context = ctxForTranslation;
       question = ctxForTranslation || '(sentence)';
       answer = item.sentenceTranslation!;

@@ -72,7 +72,13 @@ export const useVocabulary = () => {
   }, [userId]);
 
   const setWordState = useCallback(
-    (lemma: string, state: WordState, languageId: string = 'unknown', context?: string, extra?: Partial<ReadingContext>) => {
+    (
+      lemma: string,
+      state: WordState,
+      languageId: string = 'unknown',
+      context?: string,
+      extra?: Partial<ReadingContext>
+    ) => {
       const normKey = normalizeLemmaKey(lemma);
       const current = knowledgeRef.current[normKey];
 

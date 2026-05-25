@@ -122,7 +122,11 @@ export function ScholarAnnotations({ lemma, wordText, languageId, currentUserId 
             <span className="text-[10px] text-muted">{draft.length}/400</span>
             <div className="flex gap-2">
               <button
-                onClick={() => { setShowForm(false); setDraft(''); setError(null); }}
+                onClick={() => {
+                  setShowForm(false);
+                  setDraft('');
+                  setError(null);
+                }}
                 className="px-3 py-1 text-[11px] font-bold text-muted hover:text-ink transition-colors"
               >
                 Cancel
@@ -153,9 +157,7 @@ export function ScholarAnnotations({ lemma, wordText, languageId, currentUserId 
       ) : (
         <div className="space-y-3">
           {annotations.map((ann) => {
-            const voted = currentUserId
-              ? (ann.upvotedBy || []).includes(currentUserId)
-              : false;
+            const voted = currentUserId ? (ann.upvotedBy || []).includes(currentUserId) : false;
             return (
               <div key={ann.id} className="p-3 bg-parch/40 rounded-xl border border-bdr/20">
                 <p className="text-[13px] font-serif text-ink leading-snug mb-2">{ann.gloss}</p>

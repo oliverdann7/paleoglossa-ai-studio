@@ -1,7 +1,16 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronRight, Brain, Library, Sparkles, BookMarked, BookOpen, PlusCircle, MessageCircle } from 'lucide-react';
+import {
+  ChevronRight,
+  Brain,
+  Library,
+  Sparkles,
+  BookMarked,
+  BookOpen,
+  PlusCircle,
+  MessageCircle,
+} from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { CorpusDB } from '../data/corpus.js';
 import { getLangForLemma } from '../lib/data/dictionary.js';
@@ -174,8 +183,12 @@ export const Dashboard = () => {
               <div className="card bg-amberxl/30 border-amber/20 px-4 py-3 flex items-center gap-3 shadow-sm">
                 <span className="text-xl">🔥</span>
                 <div>
-                  <div className="text-xl font-serif font-bold text-amber leading-none">{stats.streak}</div>
-                  <div className="eyebrow text-amber/60 text-[8px] mt-0.5">{t('dashboard.dayStreak', 'Day Streak')}</div>
+                  <div className="text-xl font-serif font-bold text-amber leading-none">
+                    {stats.streak}
+                  </div>
+                  <div className="eyebrow text-amber/60 text-[8px] mt-0.5">
+                    {t('dashboard.dayStreak', 'Day Streak')}
+                  </div>
                 </div>
               </div>
             )}
@@ -185,7 +198,9 @@ export const Dashboard = () => {
                 <div className="text-[13px] font-bold text-ink leading-none">
                   {stats.readToday.toLocaleString()} / {dailyGoal.toLocaleString()}
                 </div>
-                <div className="eyebrow text-[8px] mt-0.5">{t('dashboard.wordsReadToday', 'Words read today')}</div>
+                <div className="eyebrow text-[8px] mt-0.5">
+                  {t('dashboard.wordsReadToday', 'Words read today')}
+                </div>
               </div>
             </div>
             {stats.lastAccuracy !== undefined && stats.lastAccuracy > 0 && (
@@ -203,8 +218,12 @@ export const Dashboard = () => {
                   {stats.lastAccuracy}%
                 </div>
                 <div>
-                  <div className="text-[13px] font-bold text-ink leading-none">{t('dashboard.lastAccuracy', 'Last Accuracy')}</div>
-                  <div className="eyebrow text-[8px] mt-0.5">{t('dashboard.reviewPerformance', 'Review performance')}</div>
+                  <div className="text-[13px] font-bold text-ink leading-none">
+                    {t('dashboard.lastAccuracy', 'Last Accuracy')}
+                  </div>
+                  <div className="eyebrow text-[8px] mt-0.5">
+                    {t('dashboard.reviewPerformance', 'Review performance')}
+                  </div>
                 </div>
               </div>
             )}
@@ -217,8 +236,12 @@ export const Dashboard = () => {
             <div className="shrink-0 flex items-center gap-2 bg-amber/10 border border-amber/20 rounded-xl px-3 py-2">
               <span className="text-base">🔥</span>
               <div>
-                <span className="text-[15px] font-bold text-amber leading-none">{stats.streak}</span>
-                <span className="text-[10px] text-amber/60 ml-1">{t('dashboard.days', 'days')}</span>
+                <span className="text-[15px] font-bold text-amber leading-none">
+                  {stats.streak}
+                </span>
+                <span className="text-[10px] text-amber/60 ml-1">
+                  {t('dashboard.days', 'days')}
+                </span>
               </div>
             </div>
           )}
@@ -228,7 +251,9 @@ export const Dashboard = () => {
               <span className="text-[14px] font-bold text-ink leading-none">
                 {stats.readToday} / {dailyGoal}
               </span>
-              <div className="text-[10px] text-muted leading-none mt-0.5">{t('dashboard.wordsToday', 'words today')}</div>
+              <div className="text-[10px] text-muted leading-none mt-0.5">
+                {t('dashboard.wordsToday', 'words today')}
+              </div>
             </div>
           </div>
           {stats.lastAccuracy !== undefined && stats.lastAccuracy > 0 && (
@@ -236,19 +261,27 @@ export const Dashboard = () => {
               <span
                 className={cn(
                   'text-[15px] font-bold',
-                  stats.lastAccuracy >= 90 ? 'text-green-600' : stats.lastAccuracy >= 70 ? 'text-amber-600' : 'text-red-500'
+                  stats.lastAccuracy >= 90
+                    ? 'text-green-600'
+                    : stats.lastAccuracy >= 70
+                      ? 'text-amber-600'
+                      : 'text-red-500'
                 )}
               >
                 {stats.lastAccuracy}%
               </span>
-              <div className="text-[10px] text-muted leading-none">{t('dashboard.accuracy', 'accuracy')}</div>
+              <div className="text-[10px] text-muted leading-none">
+                {t('dashboard.accuracy', 'accuracy')}
+              </div>
             </div>
           )}
           <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">
             <Brain className="w-4 h-4 text-blue" />
             <div>
               <span className="text-[14px] font-bold text-ink leading-none">{knownCount}</span>
-              <div className="text-[10px] text-muted leading-none mt-0.5">{t('vocab.known', 'known')}</div>
+              <div className="text-[10px] text-muted leading-none mt-0.5">
+                {t('vocab.known', 'known')}
+              </div>
             </div>
           </div>
         </div>
@@ -256,10 +289,30 @@ export const Dashboard = () => {
         {/* Mobile Quick Actions */}
         <div className="grid grid-cols-4 gap-2 mt-4 md:hidden">
           {[
-            { icon: BookOpen, label: t('nav.library', 'Library'), to: '/app/library', color: 'text-blue bg-blue/10' },
-            { icon: Brain, label: t('nav.review', 'Review'), to: '/app/review', color: 'text-purple-600 bg-purple-50' },
-            { icon: PlusCircle, label: t('nav.import', 'Import'), to: '/app/import', color: 'text-emerald-600 bg-emerald-50' },
-            { icon: MessageCircle, label: t('nav.tutor', 'Tutor'), to: '/app/tutor', color: 'text-rose-500 bg-rose-50' },
+            {
+              icon: BookOpen,
+              label: t('nav.library', 'Library'),
+              to: '/app/library',
+              color: 'text-blue bg-blue/10',
+            },
+            {
+              icon: Brain,
+              label: t('nav.review', 'Review'),
+              to: '/app/review',
+              color: 'text-purple-600 bg-purple-50',
+            },
+            {
+              icon: PlusCircle,
+              label: t('nav.import', 'Import'),
+              to: '/app/import',
+              color: 'text-emerald-600 bg-emerald-50',
+            },
+            {
+              icon: MessageCircle,
+              label: t('nav.tutor', 'Tutor'),
+              to: '/app/tutor',
+              color: 'text-rose-500 bg-rose-50',
+            },
           ].map(({ icon: Icon, label, to, color }) => (
             <button
               key={to}
@@ -269,7 +322,9 @@ export const Dashboard = () => {
               <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', color)}>
                 <Icon className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-semibold text-ink3 leading-tight text-center">{label}</span>
+              <span className="text-[10px] font-semibold text-ink3 leading-tight text-center">
+                {label}
+              </span>
             </button>
           ))}
         </div>

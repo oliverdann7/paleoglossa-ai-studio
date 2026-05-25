@@ -24,7 +24,11 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
-import { CourseService, CourseWithMeta, CourseRosterMember } from '../lib/services/courseService.js';
+import {
+  CourseService,
+  CourseWithMeta,
+  CourseRosterMember,
+} from '../lib/services/courseService.js';
 import { CourseTextAssignment } from '../types/modules.js';
 import { LANGUAGES, getLanguageById, getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
@@ -885,15 +889,16 @@ function CourseDetail({
                       {roster
                         .filter((m) => m.role !== 'teacher')
                         .map((member) => {
-                          const textPcts = sortedTexts.map(
-                            (t) => member.progress[t.textId] ?? 0
-                          );
+                          const textPcts = sortedTexts.map((t) => member.progress[t.textId] ?? 0);
                           const overall =
                             textPcts.length > 0
                               ? Math.round(textPcts.reduce((a, b) => a + b, 0) / textPcts.length)
                               : 0;
                           return (
-                            <tr key={member.userId} className="border-b border-bdr/50 last:border-0">
+                            <tr
+                              key={member.userId}
+                              className="border-b border-bdr/50 last:border-0"
+                            >
                               <td className="px-4 py-3">
                                 <div className="font-medium text-ink truncate max-w-[140px]">
                                   {member.displayName}

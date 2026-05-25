@@ -12,21 +12,21 @@ const W: readonly number[] = [
   1.18385, // w1  — initial stability for Hard
   3.17305, // w2  — initial stability for Good
   15.6905, // w3  — initial stability for Easy
-  7.1949,  // w4  — initial difficulty offset
-  0.5345,  // w5  — difficulty scaling exponent
-  1.4604,  // w6  — difficulty change per rating step
-  0.0046,  // w7  — mean-reversion weight
+  7.1949, // w4  — initial difficulty offset
+  0.5345, // w5  — difficulty scaling exponent
+  1.4604, // w6  — difficulty change per rating step
+  0.0046, // w7  — mean-reversion weight
   1.54575, // w8  — stability growth exponent (ln base)
-  0.1192,  // w9  — stability decay exponent
+  0.1192, // w9  — stability decay exponent
   1.01925, // w10 — retrievability influence on growth
-  1.9395,  // w11 — stability after forget multiplier
-  0.11,    // w12 — difficulty penalty on relearning
+  1.9395, // w11 — stability after forget multiplier
+  0.11, // w12 — difficulty penalty on relearning
   0.29605, // w13 — interval influence on relearning
-  2.2698,  // w14 — retrievability influence on relearning
-  0.2315,  // w15 — Hard penalty on stability growth
-  2.9898,  // w16 — Easy bonus on stability growth
-  0.51,    // w17 — short-term stability modifier
-  0.0,     // w18 — reserved
+  2.2698, // w14 — retrievability influence on relearning
+  0.2315, // w15 — Hard penalty on stability growth
+  2.9898, // w16 — Easy bonus on stability growth
+  0.51, // w17 — short-term stability modifier
+  0.0, // w18 — reserved
 ];
 
 /** Desired retention rate (90 %). Drives interval calculation. */
@@ -39,9 +39,9 @@ const FACTOR = 19 / 81; // ≈ 0.2346
 // ─── Public types ─────────────────────────────────────────────────────────────
 
 export interface FSRSState {
-  stability: number;   // S — estimated memory stability (days)
-  difficulty: number;  // D — card difficulty [1, 10]
-  interval: number;    // scheduled interval in days
+  stability: number; // S — estimated memory stability (days)
+  difficulty: number; // D — card difficulty [1, 10]
+  interval: number; // scheduled interval in days
   dueDate: Date;
   repetitions: number; // total successful reviews
   // Legacy fields kept for SM-2 compatibility in reviewService.ts
@@ -96,12 +96,7 @@ function stabilityAfterRecall(D: number, S: number, R: number, r: number): numbe
 
 /** Stability after a lapse (Again rating). */
 function stabilityAfterForgetting(D: number, S: number, R: number): number {
-  return (
-    W[11] *
-    Math.pow(D, -W[12]) *
-    (Math.pow(S + 1, W[13]) - 1) *
-    Math.exp(W[14] * (1 - R))
-  );
+  return W[11] * Math.pow(D, -W[12]) * (Math.pow(S + 1, W[13]) - 1) * Math.exp(W[14] * (1 - R));
 }
 
 /** Next interval in days targeting DESIRED_RETENTION. */
@@ -222,9 +217,13 @@ function formatInterval(days: number): string {
 
 export function getEaseDescription(rating: FSRRating): string {
   switch (rating) {
-    case 'again': return 'Again (< 1m)';
-    case 'hard':  return 'Hard (shorter)';
-    case 'good':  return 'Good';
-    case 'easy':  return 'Easy (longer)';
+    case 'again':
+      return 'Again (< 1m)';
+    case 'hard':
+      return 'Hard (shorter)';
+    case 'good':
+      return 'Good';
+    case 'easy':
+      return 'Easy (longer)';
   }
 }

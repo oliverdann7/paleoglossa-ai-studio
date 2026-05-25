@@ -309,7 +309,14 @@ export const Import = () => {
       });
     }
 
-    return { sentences: sentences!, stats, status: finalStatus, analysisStatus, analysisQuality, errorLog };
+    return {
+      sentences: sentences!,
+      stats,
+      status: finalStatus,
+      analysisStatus,
+      analysisQuality,
+      errorLog,
+    };
   };
 
   const handleProcess = async (forceImport = false) => {
@@ -389,11 +396,8 @@ export const Import = () => {
     setProcessingStep(t('import.linguisticAnalysis', 'Linguistic analysis...'));
 
     try {
-      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } = await runAIAnalysis(
-        text,
-        importId,
-        user?.uid || null
-      );
+      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } =
+        await runAIAnalysis(text, importId, user?.uid || null);
 
       if (errorLog.length > 0) setAnalysisError(errorLog[errorLog.length - 1]);
 
@@ -431,14 +435,13 @@ export const Import = () => {
         status: 'processing',
         errorLog: [],
       });
-      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } = await runAIAnalysis(
-        importItem.rawContent,
-        importItem.id,
-        user.uid
-      );
+      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } =
+        await runAIAnalysis(importItem.rawContent, importItem.id, user.uid);
       setImportHistory((prev) =>
         prev.map((i) =>
-          i.id === importItem.id ? { ...i, sentences, stats, status, analysisStatus, analysisQuality, errorLog } : i
+          i.id === importItem.id
+            ? { ...i, sentences, stats, status, analysisStatus, analysisQuality, errorLog }
+            : i
         )
       );
     } catch (err: any) {

@@ -175,60 +175,86 @@ describe('setWordState block conditions', () => {
     isEnabled: boolean;
     isFull: boolean;
   }): boolean {
-    const isNewTracked = !isTrackedWordState(opts.previousState) && isTrackedWordState(opts.nextState);
-    return (
-      isNewTracked &&
-      opts.isEnabled &&
-      opts.langId === opts.freeLangId &&
-      opts.isFull
-    );
+    const isNewTracked =
+      !isTrackedWordState(opts.previousState) && isTrackedWordState(opts.nextState);
+    return isNewTracked && opts.isEnabled && opts.langId === opts.freeLangId && opts.isFull;
   }
 
   it('blocks NEW → LEARNING when limit is full', () => {
-    expect(wouldBlock({
-      previousState: 'NEW', nextState: 'LEARNING',
-      langId: 'grc', freeLangId: 'grc',
-      isEnabled: true, isFull: true,
-    })).toBe(true);
+    expect(
+      wouldBlock({
+        previousState: 'NEW',
+        nextState: 'LEARNING',
+        langId: 'grc',
+        freeLangId: 'grc',
+        isEnabled: true,
+        isFull: true,
+      })
+    ).toBe(true);
   });
 
   it('does not block LEARNING → KNOWN (already tracked)', () => {
-    expect(wouldBlock({
-      previousState: 'LEARNING', nextState: 'KNOWN',
-      langId: 'grc', freeLangId: 'grc',
-      isEnabled: true, isFull: true,
-    })).toBe(false);
+    expect(
+      wouldBlock({
+        previousState: 'LEARNING',
+        nextState: 'KNOWN',
+        langId: 'grc',
+        freeLangId: 'grc',
+        isEnabled: true,
+        isFull: true,
+      })
+    ).toBe(false);
   });
 
   it('does not block for non-free language', () => {
-    expect(wouldBlock({
-      previousState: 'NEW', nextState: 'KNOWN',
-      langId: 'lat', freeLangId: 'grc',
-      isEnabled: true, isFull: true,
-    })).toBe(false);
+    expect(
+      wouldBlock({
+        previousState: 'NEW',
+        nextState: 'KNOWN',
+        langId: 'lat',
+        freeLangId: 'grc',
+        isEnabled: true,
+        isFull: true,
+      })
+    ).toBe(false);
   });
 
   it('does not block when limit is not enabled (paid plan)', () => {
-    expect(wouldBlock({
-      previousState: 'NEW', nextState: 'KNOWN',
-      langId: 'grc', freeLangId: 'grc',
-      isEnabled: false, isFull: true,
-    })).toBe(false);
+    expect(
+      wouldBlock({
+        previousState: 'NEW',
+        nextState: 'KNOWN',
+        langId: 'grc',
+        freeLangId: 'grc',
+        isEnabled: false,
+        isFull: true,
+      })
+    ).toBe(false);
   });
 
   it('does not block when limit is not yet full', () => {
-    expect(wouldBlock({
-      previousState: 'NEW', nextState: 'KNOWN',
-      langId: 'grc', freeLangId: 'grc',
-      isEnabled: true, isFull: false,
-    })).toBe(false);
+    expect(
+      wouldBlock({
+        previousState: 'NEW',
+        nextState: 'KNOWN',
+        langId: 'grc',
+        freeLangId: 'grc',
+        isEnabled: true,
+        isFull: false,
+      })
+    ).toBe(false);
   });
 
   it('blocks NEW → IGNORED? No — IGNORED is not tracked', () => {
-    expect(wouldBlock({
-      previousState: 'NEW', nextState: 'IGNORED',
-      langId: 'grc', freeLangId: 'grc',
-      isEnabled: true, isFull: true,
-    })).toBe(false);
+    expect(
+      wouldBlock({
+        previousState: 'NEW',
+        nextState: 'IGNORED',
+        langId: 'grc',
+        freeLangId: 'grc',
+        isEnabled: true,
+        isFull: true,
+      })
+    ).toBe(false);
   });
 });

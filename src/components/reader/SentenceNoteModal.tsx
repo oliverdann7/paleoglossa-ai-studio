@@ -66,7 +66,9 @@ export function SentenceNoteModal({
   return (
     <div
       className="fixed inset-0 z-[9990] flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="w-full max-w-md bg-parch rounded-xl shadow-2xl border border-bdr flex flex-col gap-0 overflow-hidden">
         {/* Header */}

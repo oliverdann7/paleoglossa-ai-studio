@@ -139,7 +139,12 @@ function PathwayList() {
                         <span className="text-[15px] font-serif font-bold text-ink">
                           {pathway.title}
                         </span>
-                        <span className={cn('text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border', LEVEL_BADGE[pathway.level])}>
+                        <span
+                          className={cn(
+                            'text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border',
+                            LEVEL_BADGE[pathway.level]
+                          )}
+                        >
                           {pathway.level}
                         </span>
                       </div>
@@ -153,7 +158,9 @@ function PathwayList() {
                     </span>
                     <span>{total} steps</span>
                     {done > 0 && (
-                      <span className="text-blue font-bold">{done}/{total} done</span>
+                      <span className="text-blue font-bold">
+                        {done}/{total} done
+                      </span>
                     )}
                   </div>
                   <div className="h-1.5 bg-parch3 rounded-full overflow-hidden">
@@ -193,10 +200,13 @@ function PathwayDetail({ pathwayId }: { pathwayId: string }) {
       .finally(() => setLoading(false));
   }, [pathwayId]);
 
-  const handleToggle = useCallback((conceptId: string) => {
-    const next = toggleStep(pathwayId, conceptId);
-    setCompleted([...next]);
-  }, [pathwayId]);
+  const handleToggle = useCallback(
+    (conceptId: string) => {
+      const next = toggleStep(pathwayId, conceptId);
+      setCompleted([...next]);
+    },
+    [pathwayId]
+  );
 
   if (loading) {
     return (
@@ -236,21 +246,33 @@ function PathwayDetail({ pathwayId }: { pathwayId: string }) {
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h1 className="text-[26px] font-serif font-light text-ink">{pathway.title}</h1>
-            <span className={cn('text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border', LEVEL_BADGE[pathway.level])}>
+            <span
+              className={cn(
+                'text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border',
+                LEVEL_BADGE[pathway.level]
+              )}
+            >
               {pathway.level}
             </span>
           </div>
           <p className="text-[14px] text-muted font-body italic mb-3">{pathway.description}</p>
           <div className="flex items-center gap-4 text-[12px] text-muted">
-            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> ~{pathway.estimatedHours}h</span>
-            <span className="font-bold text-blue">{doneCount}/{totalCount} steps complete</span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" /> ~{pathway.estimatedHours}h
+            </span>
+            <span className="font-bold text-blue">
+              {doneCount}/{totalCount} steps complete
+            </span>
           </div>
         </div>
       </div>
 
       {/* Progress bar */}
       <div className="h-2 bg-parch3 rounded-full overflow-hidden mb-8">
-        <div className="h-full bg-blue rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+        <div
+          className="h-full bg-blue rounded-full transition-all duration-700"
+          style={{ width: `${pct}%` }}
+        />
       </div>
 
       {/* Steps */}
@@ -260,10 +282,7 @@ function PathwayDetail({ pathwayId }: { pathwayId: string }) {
           return (
             <div
               key={s.step}
-              className={cn(
-                'card p-5 transition-all',
-                isDone && 'border-green-200 bg-green-50/30'
-              )}
+              className={cn('card p-5 transition-all', isDone && 'border-green-200 bg-green-50/30')}
             >
               <div className="flex items-start gap-4">
                 <button
@@ -360,7 +379,10 @@ function PathwayDetail({ pathwayId }: { pathwayId: string }) {
         <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-2xl text-center">
           <p className="text-2xl mb-2">🎉</p>
           <p className="text-[16px] font-serif font-bold text-green-700">Pathway Complete!</p>
-          <p className="text-[13px] text-green-600 mt-1">You've finished {pathway.title}. Keep reading in the Library to reinforce these concepts.</p>
+          <p className="text-[13px] text-green-600 mt-1">
+            You've finished {pathway.title}. Keep reading in the Library to reinforce these
+            concepts.
+          </p>
           <Link
             to="/app/library"
             className="mt-4 inline-flex items-center gap-2 px-5 py-2 bg-green-600 text-white text-[13px] font-bold rounded-lg hover:bg-green-700 transition-colors"
@@ -389,7 +411,8 @@ export function GrammarPathways() {
             </h1>
           </div>
           <p className="font-body text-[15px] italic text-ink2">
-            Structured curricula linking grammar concepts to real corpus texts. Work through steps in order and track your progress.
+            Structured curricula linking grammar concepts to real corpus texts. Work through steps
+            in order and track your progress.
           </p>
         </header>
       )}

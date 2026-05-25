@@ -14,11 +14,14 @@ router.get('/api/annotations', async (req: any, res: any) => {
   const { lemma, languageId } = req.query as Record<string, string | undefined>;
 
   if (!lemma || !languageId) {
-    return res.status(400).json({ error: 'lemma and languageId are required', code: 'INVALID_INPUT' });
+    return res
+      .status(400)
+      .json({ error: 'lemma and languageId are required', code: 'INVALID_INPUT' });
   }
 
   const adminDb = getAdminDb();
-  if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+  if (!adminDb)
+    return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
   try {
     const snap = await adminDb
@@ -40,66 +43,69 @@ router.get('/api/annotations', async (req: any, res: any) => {
 
 // ─── POST create annotation ───────────────────────────────────────────────────
 
-router.post(
-  '/api/annotations',
-  requireAuth as any,
-  async (req: AuthenticatedRequest, res: any) => {
-    const { lemma, wordText, languageId, gloss } = req.body;
+router.post('/api/annotations', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const { lemma, wordText, languageId, gloss } = req.body;
 
-    if (!lemma || !languageId || !gloss) {
-      return res.status(400).json({ error: 'lemma, languageId, and gloss are required', code: 'INVALID_INPUT' });
-    }
-    if (typeof gloss !== 'string' || gloss.trim().length === 0) {
-      return res.status(400).json({ error: 'gloss must be a non-empty string', code: 'INVALID_INPUT' });
-    }
-    if (gloss.length > MAX_ANNOTATION_LEN) {
-      return res.status(400).json({ error: `gloss must be ≤${MAX_ANNOTATION_LEN} characters`, code: 'INVALID_INPUT' });
-    }
-
-    const adminDb = getAdminDb();
-    if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
-
-    const user = req.user!;
-    const authorName = (user as any).name || (user as any).displayName || 'Scholar';
-    const authorAvatarUrl = (user as any).picture || (user as any).photoURL || null;
-
-    try {
-      const { FieldValue } = await import('firebase-admin/firestore');
-
-      // Prevent duplicate annotations by the same user on the same lemma
-      const existing = await adminDb
-        .collection('tokenAnnotations')
-        .where('lemma', '==', lemma)
-        .where('languageId', '==', languageId)
-        .where('authorUid', '==', user.uid)
-        .limit(1)
-        .get();
-
-      if (!existing.empty) {
-        return res.status(409).json({ error: 'You already annotated this word', code: 'DUPLICATE' });
-      }
-
-      const ref = adminDb.collection('tokenAnnotations').doc();
-      const doc = {
-        lemma,
-        wordText: wordText || lemma,
-        languageId,
-        gloss: gloss.trim(),
-        authorUid: user.uid,
-        authorName,
-        authorAvatarUrl,
-        upvotes: 0,
-        upvotedBy: [],
-        createdAt: FieldValue.serverTimestamp(),
-      };
-      await ref.set(doc);
-      res.status(200).json({ id: ref.id, ...doc, createdAt: new Date().toISOString() });
-    } catch (e: any) {
-      console.error('[annotations] Error creating:', e.message);
-      res.status(500).json({ error: 'Failed to create annotation', code: 'INTERNAL_ERROR' });
-    }
+  if (!lemma || !languageId || !gloss) {
+    return res
+      .status(400)
+      .json({ error: 'lemma, languageId, and gloss are required', code: 'INVALID_INPUT' });
   }
-);
+  if (typeof gloss !== 'string' || gloss.trim().length === 0) {
+    return res
+      .status(400)
+      .json({ error: 'gloss must be a non-empty string', code: 'INVALID_INPUT' });
+  }
+  if (gloss.length > MAX_ANNOTATION_LEN) {
+    return res
+      .status(400)
+      .json({ error: `gloss must be ≤${MAX_ANNOTATION_LEN} characters`, code: 'INVALID_INPUT' });
+  }
+
+  const adminDb = getAdminDb();
+  if (!adminDb)
+    return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+  const user = req.user!;
+  const authorName = (user as any).name || (user as any).displayName || 'Scholar';
+  const authorAvatarUrl = (user as any).picture || (user as any).photoURL || null;
+
+  try {
+    const { FieldValue } = await import('firebase-admin/firestore');
+
+    // Prevent duplicate annotations by the same user on the same lemma
+    const existing = await adminDb
+      .collection('tokenAnnotations')
+      .where('lemma', '==', lemma)
+      .where('languageId', '==', languageId)
+      .where('authorUid', '==', user.uid)
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      return res.status(409).json({ error: 'You already annotated this word', code: 'DUPLICATE' });
+    }
+
+    const ref = adminDb.collection('tokenAnnotations').doc();
+    const doc = {
+      lemma,
+      wordText: wordText || lemma,
+      languageId,
+      gloss: gloss.trim(),
+      authorUid: user.uid,
+      authorName,
+      authorAvatarUrl,
+      upvotes: 0,
+      upvotedBy: [],
+      createdAt: FieldValue.serverTimestamp(),
+    };
+    await ref.set(doc);
+    res.status(200).json({ id: ref.id, ...doc, createdAt: new Date().toISOString() });
+  } catch (e: any) {
+    console.error('[annotations] Error creating:', e.message);
+    res.status(500).json({ error: 'Failed to create annotation', code: 'INTERNAL_ERROR' });
+  }
+});
 
 // ─── DELETE own annotation ────────────────────────────────────────────────────
 
@@ -109,7 +115,8 @@ router.delete(
   async (req: AuthenticatedRequest, res: any) => {
     const annotationId = req.params.id as string;
     const adminDb = getAdminDb();
-    if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    if (!adminDb)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
     try {
       const ref = adminDb.collection('tokenAnnotations').doc(annotationId);
@@ -135,7 +142,8 @@ router.post(
   async (req: AuthenticatedRequest, res: any) => {
     const annotationId = req.params.id as string;
     const adminDb = getAdminDb();
-    if (!adminDb) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    if (!adminDb)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
 
     try {
       const { FieldValue } = await import('firebase-admin/firestore');

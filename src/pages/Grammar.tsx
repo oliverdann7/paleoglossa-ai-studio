@@ -261,8 +261,12 @@ function MorphologyQuiz({ concept }: { concept: Concept }) {
                           : 'border-bdr text-muted opacity-60'
                   )}
                 >
-                  {revealed && isCorrect && <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />}
-                  {revealed && isSelected && !isCorrect && <XCircle className="w-4 h-4 shrink-0 text-red-500" />}
+                  {revealed && isCorrect && (
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  )}
+                  {revealed && isSelected && !isCorrect && (
+                    <XCircle className="w-4 h-4 shrink-0 text-red-500" />
+                  )}
                   <span>{choice}</span>
                 </button>
               );
@@ -595,7 +599,9 @@ function PathwayView({
             <div className="space-y-2">
               {levelSteps.map((step) => {
                 const concept = conceptById.get(step.conceptId);
-                const Icon = concept ? (CATEGORY_ICONS[concept.category] ?? GraduationCap) : GraduationCap;
+                const Icon = concept
+                  ? (CATEGORY_ICONS[concept.category] ?? GraduationCap)
+                  : GraduationCap;
                 return (
                   <button
                     key={step.step}
@@ -634,7 +640,10 @@ function PathwayView({
         );
       })}
       <p className="text-center text-muted text-[12px] italic pt-2">
-        {t('grammar.pathwayFooter', 'Follow the pathway for a structured introduction to classical grammar.')}
+        {t(
+          'grammar.pathwayFooter',
+          'Follow the pathway for a structured introduction to classical grammar.'
+        )}
       </p>
     </div>
   );
@@ -763,126 +772,128 @@ export const Grammar = () => {
             <GraduationCap className="w-3.5 h-3.5" />
             Pathways
           </Link>
-        <div className="flex items-center gap-1 bg-parch2 border border-bdr/60 rounded-lg p-1 shrink-0">
-          <button
-            onClick={() => setView('browse')}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors',
-              view === 'browse' ? 'bg-white text-blue shadow-sm' : 'text-muted hover:text-ink'
-            )}
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            {t('grammar.browse', 'Browse')}
-          </button>
-          <button
-            onClick={() => setView('pathway')}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors',
-              view === 'pathway' ? 'bg-white text-blue shadow-sm' : 'text-muted hover:text-ink'
-            )}
-          >
-            <ListOrdered className="w-3.5 h-3.5" />
-            {t('grammar.pathway', 'Pathway')}
-          </button>
-        </div>
+          <div className="flex items-center gap-1 bg-parch2 border border-bdr/60 rounded-lg p-1 shrink-0">
+            <button
+              onClick={() => setView('browse')}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors',
+                view === 'browse' ? 'bg-white text-blue shadow-sm' : 'text-muted hover:text-ink'
+              )}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              {t('grammar.browse', 'Browse')}
+            </button>
+            <button
+              onClick={() => setView('pathway')}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors',
+                view === 'pathway' ? 'bg-white text-blue shadow-sm' : 'text-muted hover:text-ink'
+              )}
+            >
+              <ListOrdered className="w-3.5 h-3.5" />
+              {t('grammar.pathway', 'Pathway')}
+            </button>
+          </div>
         </div>
       </header>
 
-      {view === 'pathway' && (
-        <PathwayView concepts={concepts} onSelectConcept={selectConcept} />
-      )}
+      {view === 'pathway' && <PathwayView concepts={concepts} onSelectConcept={selectConcept} />}
 
       {view === 'pathway' ? null : (
-      <>
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t('grammar.search', 'Search concepts…')}
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-bdr rounded-xl text-[14px] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all"
-        />
-      </div>
+        <>
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('grammar.search', 'Search concepts…')}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-bdr rounded-xl text-[14px] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all"
+            />
+          </div>
 
-      {/* Language tabs */}
-      <div className="flex flex-wrap gap-2 mb-3">
-        <FilterPill active={activeLang === 'all'} onClick={() => setActiveLang('all')}>
-          All Languages
-        </FilterPill>
-        {languages.map((lang) => (
-          <FilterPill key={lang} active={activeLang === lang} onClick={() => setActiveLang(lang)}>
-            {LANG_LABELS[lang] || lang}
-          </FilterPill>
-        ))}
-      </div>
+          {/* Language tabs */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <FilterPill active={activeLang === 'all'} onClick={() => setActiveLang('all')}>
+              All Languages
+            </FilterPill>
+            {languages.map((lang) => (
+              <FilterPill
+                key={lang}
+                active={activeLang === lang}
+                onClick={() => setActiveLang(lang)}
+              >
+                {LANG_LABELS[lang] || lang}
+              </FilterPill>
+            ))}
+          </div>
 
-      {/* Category tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        <FilterPill
-          active={activeCategory === 'all'}
-          onClick={() => setActiveCategory('all')}
-          variant="secondary"
-        >
-          All Categories
-        </FilterPill>
-        {categories.map((cat) => {
-          const Icon = CATEGORY_ICONS[cat] ?? GraduationCap;
-          return (
+          {/* Category tabs */}
+          <div className="flex flex-wrap gap-2 mb-6">
             <FilterPill
-              key={cat}
-              active={activeCategory === cat}
-              onClick={() => setActiveCategory(cat)}
+              active={activeCategory === 'all'}
+              onClick={() => setActiveCategory('all')}
               variant="secondary"
             >
-              <Icon className="w-3 h-3" /> {CATEGORY_LABELS[cat] || cat}
+              All Categories
             </FilterPill>
-          );
-        })}
-      </div>
+            {categories.map((cat) => {
+              const Icon = CATEGORY_ICONS[cat] ?? GraduationCap;
+              return (
+                <FilterPill
+                  key={cat}
+                  active={activeCategory === cat}
+                  onClick={() => setActiveCategory(cat)}
+                  variant="secondary"
+                >
+                  <Icon className="w-3 h-3" /> {CATEGORY_LABELS[cat] || cat}
+                </FilterPill>
+              );
+            })}
+          </div>
 
-      {filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted text-[14px]">
-          <GraduationCap className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p>{t('grammar.noResults', 'No concepts match your search.')}</p>
-        </div>
-      ) : grouped ? (
-        // Grouped by category view (default)
-        <div className="space-y-8">
-          {Array.from(grouped.entries()).map(([cat, items]) => {
-            const Icon = CATEGORY_ICONS[cat] ?? GraduationCap;
-            return (
-              <section key={cat}>
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon className="w-4 h-4 text-muted" />
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted">
-                    {CATEGORY_LABELS[cat] || cat}
-                  </h3>
-                  <span className="text-[10px] text-muted/60 font-bold">({items.length})</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {items.map((c) => (
-                    <ConceptCard key={c.id} concept={c} onClick={() => selectConcept(c)} />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
-        </div>
-      ) : (
-        // Flat filtered view
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filtered.map((c) => (
-            <ConceptCard key={c.id} concept={c} onClick={() => selectConcept(c)} />
-          ))}
-        </div>
-      )}
+          {filtered.length === 0 ? (
+            <div className="text-center py-16 text-muted text-[14px]">
+              <GraduationCap className="w-10 h-10 mx-auto mb-3 opacity-40" />
+              <p>{t('grammar.noResults', 'No concepts match your search.')}</p>
+            </div>
+          ) : grouped ? (
+            // Grouped by category view (default)
+            <div className="space-y-8">
+              {Array.from(grouped.entries()).map(([cat, items]) => {
+                const Icon = CATEGORY_ICONS[cat] ?? GraduationCap;
+                return (
+                  <section key={cat}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon className="w-4 h-4 text-muted" />
+                      <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                        {CATEGORY_LABELS[cat] || cat}
+                      </h3>
+                      <span className="text-[10px] text-muted/60 font-bold">({items.length})</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {items.map((c) => (
+                        <ConceptCard key={c.id} concept={c} onClick={() => selectConcept(c)} />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          ) : (
+            // Flat filtered view
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {filtered.map((c) => (
+                <ConceptCard key={c.id} concept={c} onClick={() => selectConcept(c)} />
+              ))}
+            </div>
+          )}
 
-      <p className="text-center text-muted text-[12px] mt-10 italic">
-        {t('grammar.footer', 'More concepts will be added as the corpus grows.')}
-      </p>
-      </>
+          <p className="text-center text-muted text-[12px] mt-10 italic">
+            {t('grammar.footer', 'More concepts will be added as the corpus grows.')}
+          </p>
+        </>
       )}
     </div>
   );

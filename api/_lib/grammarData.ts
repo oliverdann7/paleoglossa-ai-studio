@@ -921,7 +921,8 @@ export const NAMED_PATHWAYS: NamedPathway[] = [
   {
     id: 'koine-greek-beginner',
     title: 'Koine Greek: From Zero',
-    description: 'Master the essentials of Koine Greek through the Gospel of John — cases, declensions, the article, and core verb forms.',
+    description:
+      'Master the essentials of Koine Greek through the Gospel of John — cases, declensions, the article, and core verb forms.',
     languageId: 'grc-koine',
     icon: '🏛️',
     level: 'beginner',
@@ -937,7 +938,8 @@ export const NAMED_PATHWAYS: NamedPathway[] = [
   {
     id: 'koine-greek-intermediate',
     title: 'Koine Greek: Verb Mastery',
-    description: 'Deepen your Greek with tense, aspect, the aorist, perfect, and the four moods — essential for reading the New Testament fluently.',
+    description:
+      'Deepen your Greek with tense, aspect, the aorist, perfect, and the four moods — essential for reading the New Testament fluently.',
     languageId: 'grc-koine',
     icon: '⚗️',
     level: 'intermediate',
@@ -953,7 +955,8 @@ export const NAMED_PATHWAYS: NamedPathway[] = [
   {
     id: 'classical-greek-epic',
     title: 'Classical Greek: Epic & History',
-    description: 'Read Homer and Xenophon. Focuses on cases, tense/aspect, and participles as used in Attic and Homeric dialect.',
+    description:
+      'Read Homer and Xenophon. Focuses on cases, tense/aspect, and participles as used in Attic and Homeric dialect.',
     languageId: 'grc',
     icon: '⚔️',
     level: 'intermediate',
@@ -970,20 +973,26 @@ export const NAMED_PATHWAYS: NamedPathway[] = [
   {
     id: 'latin-beginner',
     title: 'Latin Foundations',
-    description: 'Start reading Vergil and Cicero. Covers the five declensions and core verb conjugations.',
+    description:
+      'Start reading Vergil and Cicero. Covers the five declensions and core verb conjugations.',
     languageId: 'lat',
     icon: '🦅',
     level: 'beginner',
     estimatedHours: 10,
     steps: [
       { step: 1, conceptId: 'latin-declensions', recommendedTextIds: ['Aeneid-1'] },
-      { step: 2, conceptId: 'latin-verb-conjugations', recommendedTextIds: ['Aeneid-1', 'Cic-Catilina-1'] },
+      {
+        step: 2,
+        conceptId: 'latin-verb-conjugations',
+        recommendedTextIds: ['Aeneid-1', 'Cic-Catilina-1'],
+      },
     ],
   },
   {
     id: 'biblical-hebrew-beginner',
     title: 'Biblical Hebrew: First Steps',
-    description: 'Begin reading Genesis and Psalms with a focus on the Qal stem and foundational verb patterns.',
+    description:
+      'Begin reading Genesis and Psalms with a focus on the Qal stem and foundational verb patterns.',
     languageId: 'hbo',
     icon: '📜',
     level: 'beginner',

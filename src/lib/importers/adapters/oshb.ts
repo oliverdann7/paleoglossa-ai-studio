@@ -53,8 +53,7 @@ const OT_BOOKS: { title: string; shortId: string; file: string }[] = [
   { title: 'Malachi', shortId: 'Mal', file: 'Mal' },
 ];
 
-const OSHB_BASE =
-  'https://raw.githubusercontent.com/openscriptures/morphhb/master/wlc';
+const OSHB_BASE = 'https://raw.githubusercontent.com/openscriptures/morphhb/master/wlc';
 
 // ── Morphology parsing ────────────────────────────────────────────────────────
 // OSHB morph code: [H|A][POS][...] where POS-specific codes follow
@@ -62,32 +61,59 @@ const OSHB_BASE =
 // We parse the rightmost (base word) segment for core morphology.
 
 const POS_LABELS: Record<string, string> = {
-  N: 'noun', V: 'verb', A: 'adjective', P: 'pronoun',
-  R: 'preposition', C: 'conjunction', D: 'adverb',
-  T: 'particle', I: 'interjection',
+  N: 'noun',
+  V: 'verb',
+  A: 'adjective',
+  P: 'pronoun',
+  R: 'preposition',
+  C: 'conjunction',
+  D: 'adverb',
+  T: 'particle',
+  I: 'interjection',
 };
 
 const VERB_STEM_LABELS: Record<string, string> = {
-  q: 'Qal', N: 'Niphal', p: 'Piel', P: 'Pual',
-  h: 'Hiphil', H: 'Hophal', t: 'Hithpael',
-  D: 'Poel', o: 'Polel', O: 'Polal', r: 'Hithpolel',
-  m: 'Pealal', z: 'Qal passive', u: 'Hophal',
+  q: 'Qal',
+  N: 'Niphal',
+  p: 'Piel',
+  P: 'Pual',
+  h: 'Hiphil',
+  H: 'Hophal',
+  t: 'Hithpael',
+  D: 'Poel',
+  o: 'Polel',
+  O: 'Polal',
+  r: 'Hithpolel',
+  m: 'Pealal',
+  z: 'Qal passive',
+  u: 'Hophal',
 };
 
 const VERB_CONJ_LABELS: Record<string, string> = {
-  p: 'perfect', i: 'imperfect', w: 'wayyiqtol', j: 'jussive',
-  c: 'cohortative', v: 'imperative', r: 'participle active',
-  s: 'participle passive', a: 'infinitive absolute', n: 'infinitive construct',
+  p: 'perfect',
+  i: 'imperfect',
+  w: 'wayyiqtol',
+  j: 'jussive',
+  c: 'cohortative',
+  v: 'imperative',
+  r: 'participle active',
+  s: 'participle passive',
+  a: 'infinitive absolute',
+  n: 'infinitive construct',
 };
 
 const PERSON_LABELS: Record<string, string> = { '1': '1st', '2': '2nd', '3': '3rd' };
 const GENDER_LABELS: Record<string, string> = { m: 'masculine', f: 'feminine', b: 'common' };
 const NUMBER_LABELS: Record<string, string> = { s: 'singular', p: 'plural', d: 'dual' };
 const STATE_LABELS: Record<string, string> = {
-  a: 'absolute', c: 'construct', d: 'determinate',
+  a: 'absolute',
+  c: 'construct',
+  d: 'determinate',
 };
 const NOUN_GENDER_LABELS: Record<string, string> = {
-  m: 'masculine', f: 'feminine', b: 'common',
+  m: 'masculine',
+  f: 'feminine',
+  b: 'common',
 };
 
 function parseMorphCode(rawMorph: string): NormalizedMorphology {
@@ -172,8 +198,7 @@ function parseVerseContent(verseXml: string): ParsedToken[] {
   const tokens: ParsedToken[] = [];
   // Match <w> elements and <seg> elements interleaved
   // Using a state machine over the verse content
-  const pattern =
-    /<w([^>]*)>([^<]*)<\/w>|<seg\s+type="([^"]+)"[^>]*>([^<]*)<\/seg>/g;
+  const pattern = /<w([^>]*)>([^<]*)<\/w>|<seg\s+type="([^"]+)"[^>]*>([^<]*)<\/seg>/g;
 
   let match: RegExpExecArray | null;
   let pendingMaqqef = false;

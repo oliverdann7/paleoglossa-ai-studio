@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Loader2, BookOpen, Network, Sparkles, Globe, Languages, MessageSquare } from 'lucide-react';
+import {
+  X,
+  Loader2,
+  BookOpen,
+  Network,
+  Sparkles,
+  Globe,
+  Languages,
+  MessageSquare,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getApiUrl } from '../../lib/services/apiBaseUrl.js';
 import { DependencyTree } from './DependencyTree.js';
@@ -75,7 +84,15 @@ function posColor(pos: string): string {
   return 'bg-gray-100 text-gray-700';
 }
 
-export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl = false, textId, sentenceIndex }: Props) {
+export function SentenceAnalysisPanel({
+  sentence,
+  language,
+  mode,
+  onClose,
+  isRtl = false,
+  textId,
+  sentenceIndex,
+}: Props) {
   const [activeTab, setActiveTab] = useState<TabId>('parsing');
   const [analysis, setAnalysis] = useState<SentenceAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
@@ -367,7 +384,13 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
                         {' · '}
                         <span className="text-muted">{depTokens[selectedDepIndex]?.relation}</span>
                         {depTokens[selectedDepIndex]?.head >= 0 && (
-                          <> → <strong className="font-mono">{depTokens[depTokens[selectedDepIndex].head]?.form}</strong></>
+                          <>
+                            {' '}
+                            →{' '}
+                            <strong className="font-mono">
+                              {depTokens[depTokens[selectedDepIndex].head]?.form}
+                            </strong>
+                          </>
                         )}
                       </div>
                     )}

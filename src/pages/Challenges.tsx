@@ -22,21 +22,105 @@ interface ChallengeDef {
 }
 
 const CHALLENGES: ChallengeDef[] = [
-  { id: 'weekly-100', title: 'Novice Reader', desc: 'Read 100 words this week', metric: 'weeklyWords', target: 100, icon: '📖', tier: 'bronze' },
-  { id: 'weekly-500', title: 'Diligent Scholar', desc: 'Read 500 words this week', metric: 'weeklyWords', target: 500, icon: '📚', tier: 'silver' },
-  { id: 'weekly-2000', title: 'Voracious Reader', desc: 'Read 2,000 words this week', metric: 'weeklyWords', target: 2000, icon: '🏆', tier: 'gold' },
-  { id: 'streak-7', title: 'Week of Study', desc: 'Maintain a 7-day streak', metric: 'streak', target: 7, icon: '🔥', tier: 'bronze' },
-  { id: 'streak-30', title: 'Monthly Devotion', desc: 'Maintain a 30-day streak', metric: 'streak', target: 30, icon: '🌟', tier: 'silver' },
-  { id: 'streak-100', title: 'Century Scholar', desc: 'Maintain a 100-day streak', metric: 'streak', target: 100, icon: '💎', tier: 'gold' },
-  { id: 'vocab-100', title: 'Growing Lexicon', desc: 'Know 100 words by heart', metric: 'totalKnown', target: 100, icon: '🗝️', tier: 'bronze' },
-  { id: 'vocab-500', title: 'Rich Vocabulary', desc: 'Know 500 words by heart', metric: 'totalKnown', target: 500, icon: '🏛️', tier: 'silver' },
-  { id: 'vocab-2000', title: 'Lexical Mastery', desc: 'Know 2,000 words by heart', metric: 'totalKnown', target: 2000, icon: '🎓', tier: 'gold' },
+  {
+    id: 'weekly-100',
+    title: 'Novice Reader',
+    desc: 'Read 100 words this week',
+    metric: 'weeklyWords',
+    target: 100,
+    icon: '📖',
+    tier: 'bronze',
+  },
+  {
+    id: 'weekly-500',
+    title: 'Diligent Scholar',
+    desc: 'Read 500 words this week',
+    metric: 'weeklyWords',
+    target: 500,
+    icon: '📚',
+    tier: 'silver',
+  },
+  {
+    id: 'weekly-2000',
+    title: 'Voracious Reader',
+    desc: 'Read 2,000 words this week',
+    metric: 'weeklyWords',
+    target: 2000,
+    icon: '🏆',
+    tier: 'gold',
+  },
+  {
+    id: 'streak-7',
+    title: 'Week of Study',
+    desc: 'Maintain a 7-day streak',
+    metric: 'streak',
+    target: 7,
+    icon: '🔥',
+    tier: 'bronze',
+  },
+  {
+    id: 'streak-30',
+    title: 'Monthly Devotion',
+    desc: 'Maintain a 30-day streak',
+    metric: 'streak',
+    target: 30,
+    icon: '🌟',
+    tier: 'silver',
+  },
+  {
+    id: 'streak-100',
+    title: 'Century Scholar',
+    desc: 'Maintain a 100-day streak',
+    metric: 'streak',
+    target: 100,
+    icon: '💎',
+    tier: 'gold',
+  },
+  {
+    id: 'vocab-100',
+    title: 'Growing Lexicon',
+    desc: 'Know 100 words by heart',
+    metric: 'totalKnown',
+    target: 100,
+    icon: '🗝️',
+    tier: 'bronze',
+  },
+  {
+    id: 'vocab-500',
+    title: 'Rich Vocabulary',
+    desc: 'Know 500 words by heart',
+    metric: 'totalKnown',
+    target: 500,
+    icon: '🏛️',
+    tier: 'silver',
+  },
+  {
+    id: 'vocab-2000',
+    title: 'Lexical Mastery',
+    desc: 'Know 2,000 words by heart',
+    metric: 'totalKnown',
+    target: 2000,
+    icon: '🎓',
+    tier: 'gold',
+  },
 ];
 
 const TIER_STYLES: Record<string, { badge: string; bar: string; ring: string }> = {
-  bronze: { badge: 'bg-amber-100 text-amber-700 border-amber-200', bar: 'bg-amber-400', ring: 'ring-amber-200' },
-  silver: { badge: 'bg-slate-100 text-slate-600 border-slate-200', bar: 'bg-slate-400', ring: 'ring-slate-200' },
-  gold:   { badge: 'bg-yellow-50 text-yellow-700 border-yellow-200', bar: 'bg-yellow-400', ring: 'ring-yellow-200' },
+  bronze: {
+    badge: 'bg-amber-100 text-amber-700 border-amber-200',
+    bar: 'bg-amber-400',
+    ring: 'ring-amber-200',
+  },
+  silver: {
+    badge: 'bg-slate-100 text-slate-600 border-slate-200',
+    bar: 'bg-slate-400',
+    ring: 'ring-slate-200',
+  },
+  gold: {
+    badge: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    bar: 'bg-yellow-400',
+    ring: 'ring-yellow-200',
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -76,10 +160,7 @@ function ChallengeCard({
 
   return (
     <div
-      className={cn(
-        'card p-5 flex flex-col gap-3 transition-all',
-        done && `ring-2 ${styles.ring}`
-      )}
+      className={cn('card p-5 flex flex-col gap-3 transition-all', done && `ring-2 ${styles.ring}`)}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -91,7 +172,12 @@ function ChallengeCard({
             <div className="text-[11px] text-muted mt-0.5">{challenge.desc}</div>
           </div>
         </div>
-        <span className={cn('text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border shrink-0', styles.badge)}>
+        <span
+          className={cn(
+            'text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border shrink-0',
+            styles.badge
+          )}
+        >
           {challenge.tier}
         </span>
       </div>
@@ -101,8 +187,14 @@ function ChallengeCard({
             {value.toLocaleString()} / {challenge.target.toLocaleString()}
           </span>
           {done ? (
-            <span className="text-green-600 flex items-center gap-1" title={completedAt ? `Achieved ${new Date(completedAt).toLocaleDateString()}` : undefined}>
-              <Star className="w-3 h-3 fill-current" /> {completedAt ? new Date(completedAt).toLocaleDateString() : 'Complete!'}
+            <span
+              className="text-green-600 flex items-center gap-1"
+              title={
+                completedAt ? `Achieved ${new Date(completedAt).toLocaleDateString()}` : undefined
+              }
+            >
+              <Star className="w-3 h-3 fill-current" />{' '}
+              {completedAt ? new Date(completedAt).toLocaleDateString() : 'Complete!'}
             </span>
           ) : (
             <span className="text-muted">{pct}%</span>
@@ -110,7 +202,10 @@ function ChallengeCard({
         </div>
         <div className="h-2 bg-parch3 rounded-full overflow-hidden">
           <div
-            className={cn('h-full rounded-full transition-all duration-700', done ? 'bg-green-500' : styles.bar)}
+            className={cn(
+              'h-full rounded-full transition-all duration-700',
+              done ? 'bg-green-500' : styles.bar
+            )}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -134,7 +229,8 @@ function LeaderRow({
   metric: LeaderMetric;
   isCurrentUser: boolean;
 }) {
-  const value = metric === 'streak' ? (scholar.stats?.streak ?? 0) : (scholar.stats?.totalKnown ?? 0);
+  const value =
+    metric === 'streak' ? (scholar.stats?.streak ?? 0) : (scholar.stats?.totalKnown ?? 0);
   const initials = (scholar.displayName || '?')
     .split(' ')
     .map((n) => n[0])
@@ -143,7 +239,13 @@ function LeaderRow({
     .slice(0, 2);
 
   const rankStyle =
-    rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-600' : 'text-muted';
+    rank === 1
+      ? 'text-yellow-500'
+      : rank === 2
+        ? 'text-slate-400'
+        : rank === 3
+          ? 'text-amber-600'
+          : 'text-muted';
 
   return (
     <Link
@@ -157,7 +259,11 @@ function LeaderRow({
         {rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : rank}
       </span>
       {scholar.avatarUrl ? (
-        <img src={scholar.avatarUrl} alt={scholar.displayName} className="w-9 h-9 rounded-full object-cover border border-bdr shrink-0" />
+        <img
+          src={scholar.avatarUrl}
+          alt={scholar.displayName}
+          className="w-9 h-9 rounded-full object-cover border border-bdr shrink-0"
+        />
       ) : (
         <div className="w-9 h-9 rounded-full bg-blue/10 border border-bdr flex items-center justify-center shrink-0">
           <span className="text-[13px] font-bold text-blue">{initials}</span>
@@ -179,7 +285,9 @@ function LeaderRow({
             <span className="flex items-center gap-0.5 justify-end">
               <Flame className="w-3 h-3 text-amber-500" /> days
             </span>
-          ) : 'words'}
+          ) : (
+            'words'
+          )}
         </div>
       </div>
     </Link>

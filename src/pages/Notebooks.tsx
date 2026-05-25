@@ -105,9 +105,7 @@ export const Notebooks = () => {
           >
             Create
           </button>
-          {createError && (
-            <p className="text-[12px] text-ruby mt-1">{createError}</p>
-          )}
+          {createError && <p className="text-[12px] text-ruby mt-1">{createError}</p>}
         </div>
       )}
 

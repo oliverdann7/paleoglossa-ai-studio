@@ -25,7 +25,10 @@ router.get('/api/corpus', async (req: any, res: any) => {
 
   // Static corpus
   const all = CorpusDB.getTexts();
-  const filtered = lang && typeof lang === 'string' ? all.filter((text) => (text as any).languageId === lang || (text as any).language === lang) : all;
+  const filtered =
+    lang && typeof lang === 'string'
+      ? all.filter((text) => (text as any).languageId === lang || (text as any).language === lang)
+      : all;
 
   const staticItems: CorpusTextListItem[] = filtered.map((text) => ({
     id: text.id,

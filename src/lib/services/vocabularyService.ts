@@ -203,7 +203,6 @@ if (typeof window !== 'undefined') {
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
-
 export class VocabularyService {
   /**
    * Flush all pending vocabulary writes to Firestore immediately.

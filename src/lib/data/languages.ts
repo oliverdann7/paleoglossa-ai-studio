@@ -372,7 +372,8 @@ export const LANGUAGES: Language[] = [
     supportsAiAnalysis: true,
     hasScriptLearning: true,
     audioProvider: undefined,
-    reconstructionNote: 'Ugaritic is fully deciphered. Texts shown in native script with Latin transliteration.',
+    reconstructionNote:
+      'Ugaritic is fully deciphered. Texts shown in native script with Latin transliteration.',
     color: '#0E7490',
     tokenizationHints: { wordBoundaries: 'whitespace' },
     dictionaryHints: { dictionaries: [], hasCorpusGlosses: false },

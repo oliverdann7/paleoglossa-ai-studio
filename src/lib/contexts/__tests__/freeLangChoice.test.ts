@@ -19,10 +19,7 @@ function applySetFreeLanguage(prev: Subscription, languageId: string): Subscript
 }
 
 /** Replicates the setDesiredSecondLanguage reducer. */
-function applySetDesiredSecond(
-  prev: Subscription,
-  languageId: string | undefined
-): Subscription {
+function applySetDesiredSecond(prev: Subscription, languageId: string | undefined): Subscription {
   return { ...prev, desiredSecondLanguageId: languageId };
 }
 

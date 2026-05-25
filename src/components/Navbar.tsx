@@ -60,7 +60,6 @@ const DesktopNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
   </Link>
 );
 
-
 const MobileNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
   <Link
     to={to}

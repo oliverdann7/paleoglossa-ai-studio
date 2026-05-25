@@ -1,9 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Search, BookOpen, Flame, ExternalLink, AlertCircle, UserPlus, UserCheck } from 'lucide-react';
+import {
+  Users,
+  Search,
+  BookOpen,
+  Flame,
+  ExternalLink,
+  AlertCircle,
+  UserPlus,
+  UserCheck,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/hooks/useAuth.js';
-import { fetchCommunityScholars, followScholar, unfollowScholar } from '../lib/services/communityService.js';
+import {
+  fetchCommunityScholars,
+  followScholar,
+  unfollowScholar,
+} from '../lib/services/communityService.js';
 import { cn } from '@/lib/utils';
 import type { PublicScholar } from '../types/social.js';
 
@@ -147,9 +160,13 @@ function ScholarCard({
             )}
           >
             {following ? (
-              <><UserCheck className="w-3 h-3" /> {t('community.following', 'Following')}</>
+              <>
+                <UserCheck className="w-3 h-3" /> {t('community.following', 'Following')}
+              </>
             ) : (
-              <><UserPlus className="w-3 h-3" /> {t('community.follow', 'Follow')}</>
+              <>
+                <UserPlus className="w-3 h-3" /> {t('community.follow', 'Follow')}
+              </>
             )}
           </button>
         )}

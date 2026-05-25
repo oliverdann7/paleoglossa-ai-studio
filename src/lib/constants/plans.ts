@@ -12,9 +12,7 @@ export const FREE_LANGUAGE_WORD_LIMIT = 25;
  * NEW and IGNORED words do NOT count — only actively-studied words do.
  */
 export function isTrackedWordState(state: unknown): boolean {
-  return (
-    state === 'SEEN' || state === 'LEARNING' || state === 'FAMILIAR' || state === 'KNOWN'
-  );
+  return state === 'SEEN' || state === 'LEARNING' || state === 'FAMILIAR' || state === 'KNOWN';
 }
 
 /**

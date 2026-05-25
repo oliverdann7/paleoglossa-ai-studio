@@ -50,9 +50,7 @@ describe('migration safety — services throw on failure, discardDemoData is not
     const key = STORAGE_KEYS.IMPORTS;
     localStorage.setItem(key, JSON.stringify([{ id: '1', title: 'Demo text', sentences: [] }]));
 
-    vi.spyOn(ImportService, 'saveImport').mockRejectedValueOnce(
-      new Error('Firestore unavailable')
-    );
+    vi.spyOn(ImportService, 'saveImport').mockRejectedValueOnce(new Error('Firestore unavailable'));
 
     await expect(ImportService.migrateLocalStorage('user1')).rejects.toThrow();
     expect(localStorage.getItem(key)).not.toBeNull();
@@ -80,9 +78,7 @@ describe('migration safety — services throw on failure, discardDemoData is not
     const key = STORAGE_KEYS.STATS;
     localStorage.setItem(key, JSON.stringify({ totalKnown: 5 }));
 
-    vi.spyOn(StatsService, 'updateStats').mockRejectedValueOnce(
-      new Error('Firestore unavailable')
-    );
+    vi.spyOn(StatsService, 'updateStats').mockRejectedValueOnce(new Error('Firestore unavailable'));
 
     await expect(StatsService.migrateLocalStorage('user1')).rejects.toThrow();
     expect(localStorage.getItem(key)).not.toBeNull();

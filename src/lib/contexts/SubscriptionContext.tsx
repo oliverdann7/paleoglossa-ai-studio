@@ -179,17 +179,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     [persistLanguages]
   );
 
-  const setDesiredSecondLanguage = useCallback(
-    (languageId: string | undefined) => {
-      if (languageId) {
-        localStorage.setItem(DESIRED_SECOND_LANG_KEY, languageId);
-      } else {
-        localStorage.removeItem(DESIRED_SECOND_LANG_KEY);
-      }
-      setSubscription((prev) => ({ ...prev, desiredSecondLanguageId: languageId }));
-    },
-    []
-  );
+  const setDesiredSecondLanguage = useCallback((languageId: string | undefined) => {
+    if (languageId) {
+      localStorage.setItem(DESIRED_SECOND_LANG_KEY, languageId);
+    } else {
+      localStorage.removeItem(DESIRED_SECOND_LANG_KEY);
+    }
+    setSubscription((prev) => ({ ...prev, desiredSecondLanguageId: languageId }));
+  }, []);
 
   const toggleLanguage = useCallback(
     (languageId: string) => {
@@ -222,14 +219,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     return false;
   }, [isAdmin, isOnTrial]);
 
-  const checkAccess = useCallback(
-    (): boolean => {
-      // All languages are accessible on every plan. The difference between plans
-      // is only how many words can be saved per language (vocab save limit).
-      return true;
-    },
-    []
-  );
+  const checkAccess = useCallback((): boolean => {
+    // All languages are accessible on every plan. The difference between plans
+    // is only how many words can be saved per language (vocab save limit).
+    return true;
+  }, []);
 
   const checkCanAdd = useCallback((): boolean => {
     if (hasTrialAccess()) return true;
