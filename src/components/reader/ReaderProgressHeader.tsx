@@ -67,7 +67,7 @@ export function ReaderProgressHeader({
       </div>
 
       <div className="flex items-center gap-4">
-        {text && <TextQualityBadge text={text} sourceType={sourceType} showDetails />}
+        {text && <TextQualityBadge text={text} sourceType={sourceType} showDetails showAction />}
         <div className="flex items-center gap-2">
           <span className="hidden md:inline text-[11px] font-bold text-ink3 uppercase tracking-tight">
             Goal
