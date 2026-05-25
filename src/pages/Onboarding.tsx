@@ -1,145 +1,118 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
+import { useSettings } from '../lib/hooks/useSettings.js';
+import { OnboardingProfile } from '../types/firestore.js';
 
 const languages = [
-  {
-    id: 'hieroglyphs',
-    glyph: '𓊹',
-    labelKey: 'egy',
-    descKey: 'onboarding.egyptianDesc',
-    font: 'font-sans',
-  },
-  {
-    id: 'akkadian',
-    glyph: '𒀀',
-    labelKey: 'akk',
-    descKey: 'onboarding.akkadianDesc',
-    font: 'font-sans',
-  },
-  {
-    id: 'sanskrit',
-    glyph: 'ॐ',
-    labelKey: 'san',
-    descKey: 'onboarding.sanskritDesc',
-    font: 'font-sans',
-  },
-  {
-    id: 'greek',
-    glyph: 'Ω',
-    labelKey: 'grc',
-    descKey: 'onboarding.ancientGreekDesc',
-    font: 'font-greek',
-  },
-  {
-    id: 'koine',
-    glyph: 'Α',
-    labelKey: 'grc-koine',
-    descKey: 'onboarding.koineDesc',
-    font: 'font-greek',
-  },
-  {
-    id: 'hebrew',
-    glyph: 'א',
-    labelKey: 'hbo',
-    descKey: 'onboarding.hebrewDesc',
-    font: 'font-hebrew',
-  },
-  {
-    id: 'aramaic',
-    glyph: 'ש',
-    labelKey: 'arc',
-    descKey: 'onboarding.aramaicDesc',
-    font: 'font-hebrew',
-  },
-  {
-    id: 'latin',
-    glyph: 'L',
-    labelKey: 'lat',
-    descKey: 'onboarding.latinDesc',
-    font: 'font-serif',
-  },
-  {
-    id: 'syriac',
-    glyph: 'ܐ',
-    labelKey: 'syr',
-    descKey: 'onboarding.syriacDesc',
-    font: 'font-hebrew',
-  },
-  {
-    id: 'coptic',
-    glyph: 'ⲁ',
-    labelKey: 'cop',
-    descKey: 'onboarding.copticDesc',
-    font: 'font-greek',
-  },
-  {
-    id: 'hittite',
-    glyph: '𒀭',
-    labelKey: 'hit',
-    descKey: 'onboarding.hittiteDesc',
-    font: 'font-sans',
-  },
+  { id: 'greek', glyph: 'Ω', labelKey: 'grc', descKey: 'onboarding.ancientGreekDesc', font: 'font-greek' },
+  { id: 'hebrew', glyph: 'א', labelKey: 'hbo', descKey: 'onboarding.hebrewDesc', font: 'font-hebrew' },
+  { id: 'latin', glyph: 'L', labelKey: 'lat', descKey: 'onboarding.latinDesc', font: 'font-serif' },
 ];
+
+const LanguageStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => void }) => {
+  const { t } = useTranslation();
+  return (
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
+      <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseLanguage', 'Choose your primary language')}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {languages.map((lang) => (
+          <button key={lang.id} onClick={() => onNext({ languageId: lang.labelKey })} className="p-4 border rounded-xl hover:bg-parch3 transition-all flex flex-col items-center">
+            <span className={`${lang.font} text-2xl`}>{lang.glyph}</span> {t(`languageNames.${lang.labelKey}`, lang.labelKey)}
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+const LevelStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => void }) => {
+  const { t } = useTranslation();
+  const levels = ['absolute-beginner', 'knows-alphabet', 'intermediate', 'advanced'];
+  return (
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
+      <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseLevel', 'Experience level')}</h2>
+      <div className="space-y-4">
+        {levels.map((level) => (
+          <button key={level} onClick={() => onNext({ level: level as any })} className="w-full p-4 border rounded-xl hover:bg-parch3 transition-all text-left">
+            {t(`onboarding.level.${level}`, level)}
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+const GoalStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => void }) => {
+  const { t } = useTranslation();
+  const goals = ['biblical', 'classical', 'research', 'vocab', 'grammar'];
+  return (
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
+      <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseGoal', 'What is your primary goal?')}</h2>
+      <div className="space-y-4">
+        {goals.map((goal) => (
+          <button key={goal} onClick={() => onNext({ goal: goal as any })} className="w-full p-4 border rounded-xl hover:bg-parch3 transition-all text-left">
+            {t(`onboarding.goal.${goal}`, goal)}
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+const CommitmentStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => void }) => {
+  const { t } = useTranslation();
+  const commitments = [5, 10, 20, 60];
+  return (
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
+      <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseCommitment', 'Daily study time?')}</h2>
+      <div className="grid grid-cols-2 gap-4">
+        {commitments.map((c) => (
+          <button key={c} onClick={() => onNext({ dailyCommitment: c })} className="p-4 border rounded-xl hover:bg-parch3 transition-all">
+            {c} {t('onboarding.minutes', 'minutes')}
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
 
 export const Onboarding = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { setFreeLanguage } = useSubscription();
-  const onComplete = (langId: string) => {
-    setFreeLanguage(langId);
-    navigate('/app');
+  const { updateSettings } = useSettings();
+  const [step, setStep] = useState<number>(0);
+  const [profile, setProfile] = useState<OnboardingProfile>({
+    completed: false,
+    languageId: 'grc',
+    level: 'absolute-beginner',
+    goal: 'biblical',
+    dailyCommitment: 15,
+  });
+
+  const handleNext = async (data: Partial<OnboardingProfile>) => {
+    const updatedProfile = { ...profile, ...data };
+    if (step === 3) {
+      updatedProfile.completed = true;
+      setFreeLanguage(updatedProfile.languageId);
+      await updateSettings({ onboardingProfile: updatedProfile });
+      navigate('/app');
+    } else {
+      setProfile(updatedProfile);
+      setStep(step + 1);
+    }
   };
+
   return (
     <div className="min-h-screen bg-parch text-ink flex items-center justify-center p-6 md:p-12 font-sans paper-texture">
-      <div className="max-w-6xl w-full py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <div className="w-12 h-12 border border-ink rounded-lg flex items-center justify-center mx-auto mb-6">
-            <span className="font-serif text-2xl font-bold">P</span>
-          </div>
-          <h2 className="text-[40px] font-serif font-light tracking-tight mb-4 text-ink leading-none">
-            {t('onboarding.title', 'Choose your corpus.')}
-          </h2>
-          <p className="font-body text-[16px] italic text-ink2 max-w-lg mx-auto">
-            {t(
-              'onboarding.subtitle',
-              'Select your primary language of interest to begin your study of classical antiquity.'
-            )}
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {languages.map((lang, i) => (
-            <motion.button
-              key={lang.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => onComplete(lang.labelKey)}
-              className="card p-6 flex items-start gap-5 hover:border-blue/30 transition-colors text-left group"
-            >
-              <div
-                className={`w-14 h-14 bg-parch3 border border-bdr rounded flex items-center justify-center text-[26px] text-ink group-hover:text-blue transition-colors flex-shrink-0 ${lang.font}`}
-              >
-                {lang.glyph}
-              </div>
-              <div>
-                <h3 className="font-serif text-[17px] font-medium mb-1.5 text-ink leading-tight">
-                  {t(`languageNames.${lang.labelKey}`, 'Language')}
-                </h3>
-                <p className="font-body italic text-[13px] text-ink2 leading-relaxed">
-                  {t(lang.descKey, 'Description...')}
-                </p>
-              </div>
-            </motion.button>
-          ))}
-        </div>
-      </div>
+      <AnimatePresence mode="wait">
+        {step === 0 && <LanguageStep key="lang" onNext={handleNext} />}
+        {step === 1 && <LevelStep key="level" onNext={handleNext} />}
+        {step === 2 && <GoalStep key="goal" onNext={handleNext} />}
+        {step === 3 && <CommitmentStep key="commit" onNext={handleNext} />}
+      </AnimatePresence>
     </div>
   );
 };

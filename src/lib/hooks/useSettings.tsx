@@ -16,6 +16,13 @@ export interface Settings {
   interlinearMode: boolean;
   swipePageMovesToKnown: boolean;
   activeDictionaries: string[];
+  onboardingProfile?: {
+    completed: boolean;
+    languageId: string;
+    level: 'absolute-beginner' | 'knows-alphabet' | 'intermediate' | 'advanced';
+    goal: 'biblical' | 'classical' | 'research' | 'vocab' | 'grammar';
+    dailyCommitment: number;
+  };
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -33,6 +40,13 @@ const DEFAULT_SETTINGS: Settings = {
   interlinearMode: false,
   swipePageMovesToKnown: true,
   activeDictionaries: ['strongs-greek', 'strongs-hebrew', 'liddell-scott', 'whitakers-words'],
+  onboardingProfile: {
+    completed: false,
+    languageId: 'grc',
+    level: 'absolute-beginner',
+    goal: 'biblical',
+    dailyCommitment: 15,
+  },
 };
 
 export const useSettings = () => {

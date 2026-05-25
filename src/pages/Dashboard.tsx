@@ -51,6 +51,31 @@ export const Dashboard = () => {
     useKnowledge(activeLanguageId);
   const langStats = useLanguageStats(knowledge);
   const { t } = useTranslation();
+  
+  const isOnboardingComplete = settings.onboardingProfile?.completed;
+
+  // Personalized Recommendation
+  const recommendedNextStep = useMemo(() => {
+    if (!isOnboardingComplete) return null;
+    const profile = settings.onboardingProfile!;
+    
+    if (profile.level === 'absolute-beginner') return {
+      title: 'Beginner Path',
+      desc: 'Start with the basics.',
+      to: '/app/beginner-hub'
+    };
+    if (profile.goal === 'biblical') return {
+      title: 'Biblical Texts',
+      desc: 'Explore foundational texts.',
+      to: '/app/library'
+    };
+    return {
+      title: 'Explore Library',
+      desc: 'Continue your journey.',
+      to: '/app/library'
+    };
+  }, [isOnboardingComplete, settings.onboardingProfile]);
+  
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const [progressLoaded, setProgressLoaded] = useState(false);
   const hour = new Date().getHours();
@@ -152,6 +177,26 @@ export const Dashboard = () => {
   return (
     <div className="p-6 md:p-12 max-w-6xl mx-auto font-sans min-h-screen">
       <header className="mb-8 md:mb-10">
+        {/* Onboarding CTA */}
+        {!isOnboardingComplete && (
+          <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex items-center justify-between">
+            <div>
+              <h3 className="font-serif text-[18px] text-ink">{t('dashboard.completeOnboarding', 'Complete your learning path')}</h3>
+              <p className="text-[14px] text-ink3">{t('dashboard.completeOnboardingDesc', 'Tailor your experience to your level and goals.')}</p>
+            </div>
+            <button onClick={() => navigate('/onboarding')} className="btn-primary">{t('common.getStarted', 'Get Started')}</button>
+          </div>
+        )}
+        {/* Personalized Recommendation */}
+        {recommendedNextStep && (
+          <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex items-center justify-between">
+            <div>
+              <h3 className="font-serif text-[18px] text-ink">{recommendedNextStep.title}</h3>
+              <p className="text-[14px] text-ink3">{recommendedNextStep.desc}</p>
+            </div>
+            <button onClick={() => navigate(recommendedNextStep.to)} className="btn-primary">{t('common.getStarted', 'Get Started')}</button>
+          </div>
+        )}
         {/* Greeting row */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="min-w-0">

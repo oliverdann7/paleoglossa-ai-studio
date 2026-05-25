@@ -114,6 +114,14 @@ export interface ImportedText {
   originalFilename?: string;
 }
 
+export interface OnboardingProfile {
+  completed: boolean;
+  languageId: string;
+  level: 'absolute-beginner' | 'knows-alphabet' | 'intermediate' | 'advanced';
+  goal: 'biblical' | 'classical' | 'research' | 'vocab' | 'grammar';
+  dailyCommitment: number;
+}
+
 export interface UserSettings {
   theme: 'parchment' | 'sepia' | 'dark';
   fontSize: number;
@@ -129,6 +137,7 @@ export interface UserSettings {
   uiLanguage: string;
   swipePageMovesToKnown?: boolean;
   activeDictionaries?: string[];
+  onboardingProfile?: OnboardingProfile;
 }
 
 export interface ReviewLog {
