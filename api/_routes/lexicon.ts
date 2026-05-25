@@ -14,10 +14,43 @@ import {
 } from '../../src/lib/data/dictionaryDB.js';
 import { CorpusDB } from '../../src/data/corpus.js';
 import { findParadigm, listParadigms } from '../_lib/paradigmData.js';
+import { getCacheEntry, upsertCacheEntry } from '../_lib/lexicalCache.js';
 
 const router = Router();
 
-// ─── Lemmas ──────────────────────────────────────────────────────────────────
+// ─── Lexical Cache ────────────────────────────────────────────────────────────
+
+router.get('/api/lexical-cache/:language/:lemma/:type', async (req: any, res: any) => {
+  try {
+    const { language, lemma, type } = req.params;
+    if (!['short-gloss', 'word-explanation'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid type', code: 'INVALID_INPUT' });
+    }
+    const entry = await getCacheEntry(language, lemma, type as any);
+    if (entry) {
+      res.status(200).json(entry);
+    } else {
+      res.status(404).json({ error: 'Not found', code: 'NOT_FOUND' });
+    }
+  } catch (err: any) {
+    console.error('[lexical-cache] GET Error:', err.message);
+    res.status(500).json({ error: 'Failed to get cache', code: 'INTERNAL_ERROR' });
+  }
+});
+
+router.post('/api/lexical-cache', async (req: any, res: any) => {
+  try {
+    const { languageId, lemma, surface, type, value } = req.body;
+    if (!languageId || !lemma || !type || !value) {
+      return res.status(400).json({ error: 'Missing required fields', code: 'INVALID_INPUT' });
+    }
+    await upsertCacheEntry(languageId, lemma, surface, type, value);
+    res.status(200).json({ success: true });
+  } catch (err: any) {
+    console.error('[lexical-cache] POST Error:', err.message);
+    res.status(500).json({ error: 'Failed to upsert cache', code: 'INTERNAL_ERROR' });
+  }
+});
 
 router.get('/api/lemmas/:language/:lemma', (req: any, res: any) => {
   try {

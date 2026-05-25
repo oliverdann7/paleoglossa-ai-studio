@@ -65,6 +65,13 @@ const TRUST_MAP: Record<string, SourceTrustInfo> = {
     dotColor: '#D97706',
     textColor: 'text-amber-700',
   },
+  ai_cached: {
+    label: 'AI cached',
+    trust: 'low',
+    description: 'Cached AI suggestion — verify before relying on it',
+    dotColor: '#D97706',
+    textColor: 'text-amber-700',
+  },
   metadata: {
     label: 'Token metadata',
     trust: 'low',
