@@ -23,6 +23,12 @@ import {
   Globe,
   Lock,
   Bug,
+  BarChart3,
+  Sparkles,
+  Download,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 import { apiFetch } from '../../lib/services/apiFetch.js';
 import { useTranslation } from 'react-i18next';
@@ -84,7 +90,7 @@ interface AdminCourse {
   updatedAt: string | null;
 }
 
-type Tab = 'overview' | 'users' | 'reports' | 'activity' | 'courses';
+type Tab = 'overview' | 'users' | 'reports' | 'activity' | 'courses' | 'corpus-quality';
 
 const PLANS = [
   { id: 'free', label: 'Free' },
@@ -92,6 +98,44 @@ const PLANS = [
   { id: 'duo_2', label: 'Duo' },
   { id: 'full_all', label: 'Full Access' },
 ];
+
+// ─── Corpus Quality types ─────────────────────────────────────────────────────
+
+interface CorpusQualityMetrics {
+  texts: number;
+  sections: number;
+  sentences: number;
+  tokens: number;
+  tokensWithGloss: number;
+  tokensWithPos: number;
+  tokensWithLemma: number;
+  tokensWithMorphBeyondPos: number;
+  unknownPosTokens: number;
+}
+
+interface LanguageQualityReport {
+  language: string;
+  metrics: CorpusQualityMetrics;
+  glossCoverage: number;
+  posCoverage: number;
+  lemmaCoverage: number;
+  morphCoverage: number;
+  status: 'good' | 'needs_work' | 'poor';
+  topMissingLemmas: { lemma: string; count: number }[];
+}
+
+interface CorpusQualityReport {
+  generatedAt: string;
+  totalLanguages: number;
+  totalTexts: number;
+  totalTokens: number;
+  totalSections: number;
+  totalSentences: number;
+  languages: LanguageQualityReport[];
+  topMissingLemmas: { lemma: string; count: number; language: string }[];
+  topProblemLanguages: LanguageQualityReport[];
+  needsAttention: LanguageQualityReport[];
+}
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
@@ -740,6 +784,330 @@ function CoursesTab({
   );
 }
 
+// ─── Corpus Quality tab ───────────────────────────────────────────────────────
+
+function QualityBadge({ status }: { status: 'good' | 'needs_work' | 'poor' }) {
+  const styles: Record<string, string> = {
+    good: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    needs_work: 'bg-amber-50 text-amber-700 border-amber-200',
+    poor: 'bg-red-50 text-red-600 border-red-200',
+  };
+  const labels: Record<string, string> = {
+    good: 'Good',
+    needs_work: 'Needs Work',
+    poor: 'Poor',
+  };
+  const icons: Record<string, React.ElementType> = {
+    good: CheckCircle2,
+    needs_work: AlertTriangle,
+    poor: XCircle,
+  };
+  const Icon = icons[status];
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border',
+        styles[status]
+      )}
+    >
+      <Icon className="w-3 h-3" /> {labels[status]}
+    </span>
+  );
+}
+
+function CorpusQualityTab({
+  data,
+  loading,
+}: {
+  data: CorpusQualityReport | null;
+  loading: boolean;
+}) {
+  const [langFilter, setLangFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortKey, setSortKey] = useState<'gloss' | 'pos' | 'morph'>('gloss');
+
+  const exportJson = useCallback(() => {
+    if (!data) return;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `corpus-quality-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [data]);
+
+  const exportMarkdown = useCallback(() => {
+    if (!data) return;
+    let md = `# Corpus Quality Report\n\n`;
+    md += `Generated at: ${data.generatedAt}\n\n`;
+    md += `## Summary\n\n`;
+    md += `| Language | Texts | Tokens | Gloss % | POS % | Lemma % | Morph % | Status |\n`;
+    md += `|---|---|---|---|---|---|---|---|\n`;
+    for (const lang of data.languages) {
+      md += `| ${lang.language} | ${lang.metrics.texts} | ${lang.metrics.tokens} | ${lang.glossCoverage}% | ${lang.posCoverage}% | ${lang.lemmaCoverage}% | ${lang.morphCoverage}% | ${lang.status} |\n`;
+    }
+    md += `\n## Needs Attention\n\n`;
+    for (const lang of data.needsAttention) {
+      md += `- ${lang.language} (${lang.status}) — Gloss: ${lang.glossCoverage}%, POS: ${lang.posCoverage}%, Morph: ${lang.morphCoverage}%\n`;
+    }
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `corpus-quality-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [data]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-blue" />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="card p-12 text-center">
+        <BarChart3 className="w-8 h-8 text-muted mx-auto mb-3" />
+        <p className="text-muted text-sm">Could not load corpus quality data.</p>
+      </div>
+    );
+  }
+
+  const langOptions = Array.from(new Set(data.languages.map((l) => l.language))).sort();
+
+  let filtered = data.languages.filter((l) => {
+    if (langFilter !== 'all' && l.language !== langFilter) return false;
+    if (statusFilter !== 'all' && l.status !== statusFilter) return false;
+    return true;
+  });
+
+  filtered = [...filtered].sort((a, b) => {
+    const aVal = sortKey === 'gloss' ? a.glossCoverage : sortKey === 'pos' ? a.posCoverage : a.morphCoverage;
+    const bVal = sortKey === 'gloss' ? b.glossCoverage : sortKey === 'pos' ? b.posCoverage : b.morphCoverage;
+    return aVal - bVal;
+  });
+
+  return (
+    <div className="space-y-8">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="card p-4 flex flex-col gap-1">
+          <BarChart3 className="w-4 h-4 text-blue" />
+          <div className="text-[22px] font-bold text-ink leading-none">{data.totalLanguages}</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">Languages</div>
+        </div>
+        <div className="card p-4 flex flex-col gap-1">
+          <BookOpen className="w-4 h-4 text-amber-500" />
+          <div className="text-[22px] font-bold text-ink leading-none">{data.totalTexts}</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">Texts</div>
+        </div>
+        <div className="card p-4 flex flex-col gap-1">
+          <FileText className="w-4 h-4 text-purple-500" />
+          <div className="text-[22px] font-bold text-ink leading-none">{data.totalSections}</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">Sections</div>
+        </div>
+        <div className="card p-4 flex flex-col gap-1">
+          <FileText className="w-4 h-4 text-emerald-500" />
+          <div className="text-[22px] font-bold text-ink leading-none">{data.totalSentences}</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">Sentences</div>
+        </div>
+        <div className="card p-4 flex flex-col gap-1">
+          <FileText className="w-4 h-4 text-blue" />
+          <div className="text-[22px] font-bold text-ink leading-none">
+            {data.totalTokens.toLocaleString()}
+          </div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">Tokens</div>
+        </div>
+      </div>
+
+      {/* Filters & Actions */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Language filter */}
+          <div className="relative">
+            <select
+              value={langFilter}
+              onChange={(e) => setLangFilter(e.target.value)}
+              className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-bdr bg-parch2 text-sm text-ink focus:outline-none focus:border-blue cursor-pointer"
+            >
+              <option value="all">All languages</option>
+              {langOptions.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted pointer-events-none" />
+          </div>
+
+          {/* Status filter */}
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-bdr bg-parch2 text-sm text-ink focus:outline-none focus:border-blue cursor-pointer"
+            >
+              <option value="all">All statuses</option>
+              <option value="good">Good</option>
+              <option value="needs_work">Needs Work</option>
+              <option value="poor">Poor</option>
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted pointer-events-none" />
+          </div>
+
+          {/* Sort */}
+          <div className="relative">
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as 'gloss' | 'pos' | 'morph')}
+              className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-bdr bg-parch2 text-sm text-ink focus:outline-none focus:border-blue cursor-pointer"
+            >
+              <option value="gloss">Sort by Gloss %</option>
+              <option value="pos">Sort by POS %</option>
+              <option value="morph">Sort by Morph %</option>
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Export */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={exportJson}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-bdr hover:bg-parch3 text-[13px] font-medium text-ink3 transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" /> Download JSON
+          </button>
+          <button
+            onClick={exportMarkdown}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-bdr hover:bg-parch3 text-[13px] font-medium text-ink3 transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" /> Download MD
+          </button>
+        </div>
+      </div>
+
+      {/* Per-language table */}
+      <div className="card overflow-hidden">
+        <div className="p-4 border-b border-bdr flex items-center justify-between">
+          <h3 className="font-bold text-ink">
+            Languages ({filtered.length}/{data.languages.length})
+          </h3>
+          <span className="text-[11px] text-muted">
+            Sorted by {sortKey === 'gloss' ? 'gloss' : sortKey === 'pos' ? 'POS' : 'morph'} coverage (asc)
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="border-b border-bdr bg-parch2">
+                <th className="text-left px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Language</th>
+                <th className="text-right px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Texts</th>
+                <th className="text-right px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Tokens</th>
+                <th className="text-right px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Gloss %</th>
+                <th className="text-right px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">POS %</th>
+                <th className="text-right px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Lemma %</th>
+                <th className="text-right px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Morph %</th>
+                <th className="text-center px-4 py-3 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted text-sm">
+                    No languages match current filters.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((lang, i) => (
+                  <tr
+                    key={lang.language}
+                    className={cn(
+                      'border-b border-bdr/40 hover:bg-parch2/60 transition-colors',
+                      i % 2 === 0 ? '' : 'bg-parch/30'
+                    )}
+                  >
+                    <td className="px-4 py-3 font-medium text-ink">{lang.language}</td>
+                    <td className="px-4 py-3 text-right text-ink2">{lang.metrics.texts}</td>
+                    <td className="px-4 py-3 text-right text-ink2">{lang.metrics.tokens.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right font-mono">{lang.glossCoverage}%</td>
+                    <td className="px-4 py-3 text-right font-mono">{lang.posCoverage}%</td>
+                    <td className="px-4 py-3 text-right font-mono">{lang.lemmaCoverage}%</td>
+                    <td className="px-4 py-3 text-right font-mono">{lang.morphCoverage}%</td>
+                    <td className="px-4 py-3 text-center">
+                      <QualityBadge status={lang.status} />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Needs Attention */}
+      {data.needsAttention.length > 0 && (
+        <div className="card p-6">
+          <h3 className="text-[15px] font-bold text-ink flex items-center gap-2 mb-4">
+            <AlertTriangle className="w-4 h-4 text-amber-500" /> Needs Attention
+          </h3>
+          <div className="space-y-2">
+            {data.needsAttention.map((lang) => (
+              <div
+                key={lang.language}
+                className="flex items-center justify-between p-3 bg-parch2 rounded-xl"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-ink text-[13px]">{lang.language}</span>
+                  <QualityBadge status={lang.status} />
+                </div>
+                <div className="flex items-center gap-4 text-[12px] text-ink2">
+                  <span>Gloss: {lang.glossCoverage}%</span>
+                  <span>POS: {lang.posCoverage}%</span>
+                  <span>Morph: {lang.morphCoverage}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Top missing lemmas */}
+      {data.topMissingLemmas.length > 0 && (
+        <div className="card p-6">
+          <h3 className="text-[15px] font-bold text-ink flex items-center gap-2 mb-4">
+            <Sparkles className="w-4 h-4 text-purple-500" /> Top Missing Lemma/POS
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="border-b border-bdr">
+                  <th className="text-left px-3 py-2 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Lemma</th>
+                  <th className="text-right px-3 py-2 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Count</th>
+                  <th className="text-left px-3 py-2 font-semibold text-ink3 text-[11px] uppercase tracking-wider">Language</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.topMissingLemmas.map((m, i) => (
+                  <tr key={`${m.language}-${m.lemma}`} className={cn('border-b border-bdr/40', i % 2 === 0 ? '' : 'bg-parch/30')}>
+                    <td className="px-3 py-2 font-mono text-ink">{m.lemma}</td>
+                    <td className="px-3 py-2 text-right text-ink2">{m.count}</td>
+                    <td className="px-3 py-2 text-ink2">{m.language}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export const AdminDashboard = () => {
@@ -755,6 +1123,8 @@ export const AdminDashboard = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
   const [coursesLoading, setCoursesLoading] = useState(false);
+  const [corpusQualityData, setCorpusQualityData] = useState<CorpusQualityReport | null>(null);
+  const [corpusQualityLoading, setCorpusQualityLoading] = useState(false);
 
   const loadOverview = useCallback(async () => {
     const [ov, rp] = await Promise.all([
@@ -774,6 +1144,18 @@ export const AdminDashboard = () => {
       setUsers([]);
     } finally {
       setUsersLoading(false);
+    }
+  }, []);
+
+  const loadCorpusQuality = useCallback(async () => {
+    setCorpusQualityLoading(true);
+    try {
+      const data = await apiFetch<CorpusQualityReport>('/api/admin/corpus-quality');
+      setCorpusQualityData(data);
+    } catch {
+      setCorpusQualityData(null);
+    } finally {
+      setCorpusQualityLoading(false);
     }
   }, []);
 
@@ -842,11 +1224,20 @@ export const AdminDashboard = () => {
     }
   }, [tab, courses.length, loadCourses]);
 
+  useEffect(() => {
+    if (tab === 'corpus-quality' && !corpusQualityData) {
+      (async () => {
+        await loadCorpusQuality();
+      })();
+    }
+  }, [tab, corpusQualityData, loadCorpusQuality]);
+
   const handleRefresh = () => {
     loadOverview();
     if (tab === 'users') loadUsers();
     if (tab === 'activity') loadActivities();
     if (tab === 'courses') loadCourses();
+    if (tab === 'corpus-quality') loadCorpusQuality();
   };
 
   if (isLoading) {
@@ -875,6 +1266,7 @@ export const AdminDashboard = () => {
     { id: 'courses', label: 'Courses', icon: BookOpen },
     { id: 'activity', label: 'Activity', icon: Activity },
     { id: 'reports', label: 'Reports', icon: Flag, badge: overview?.openReports || undefined },
+    { id: 'corpus-quality', label: 'Corpus Quality', icon: BarChart3 },
   ];
 
   return (
@@ -949,6 +1341,9 @@ export const AdminDashboard = () => {
       {tab === 'reports' && <ReportsTab reports={reports} onRefresh={() => loadOverview()} />}
       {tab === 'courses' && (
         <CoursesTab courses={courses} loading={coursesLoading} onRefresh={loadCourses} />
+      )}
+      {tab === 'corpus-quality' && (
+        <CorpusQualityTab data={corpusQualityData} loading={corpusQualityLoading} />
       )}
     </div>
   );

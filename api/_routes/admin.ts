@@ -3,6 +3,7 @@ import { requireAuth } from '../_lib/auth.js';
 import { getAdminDb, getAdminAuth } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 import type { Timestamp } from 'firebase-admin/firestore';
+import { calculateCorpusQuality } from '../../src/lib/corpus-quality/calculateCorpusQuality.js';
 
 const router = Router();
 
@@ -518,6 +519,23 @@ router.get(
 
     res.status(200).json(result);
   }
+);
+
+// ─── Admin corpus quality ─────────────────────────────────────────────────────
+
+router.get(
+  '/api/admin/corpus-quality',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    try {
+      const report = calculateCorpusQuality();
+      res.status(200).json(report);
+    } catch (e: any) {
+      console.error('[admin/corpus-quality] Error:', e.message);
+      res.status(500).json({ error: 'Failed to compute corpus quality', code: 'INTERNAL_ERROR' });
+    }
+  },
 );
 
 export default router;
