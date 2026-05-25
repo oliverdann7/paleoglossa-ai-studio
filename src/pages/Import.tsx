@@ -14,6 +14,7 @@ import {
   Globe2,
   AlertCircle,
 } from 'lucide-react';
+import { TextQualityBadge } from '../components/ui/TextQualityBadge.js';
 import { cn } from '@/lib/utils';
 import { ImportService, ImportedText, computeContentHash } from '../lib/services/importService.js';
 import { AIClient } from '../lib/services/aiClient.js';
@@ -965,15 +966,25 @@ export const Import = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="card overflow-hidden"
         >
-          <div className="bg-green-50 p-12 text-center border-b border-green-100">
-            <div className="w-20 h-20 bg-white shadow-sm border border-green-200 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10" />
+            <div className="bg-green-50 p-12 text-center border-b border-green-100">
+              <div className="w-20 h-20 bg-white shadow-sm border border-green-200 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-10 h-10" />
+              </div>
+              <h3 className="text-[28px] font-serif font-bold text-ink mb-1">
+                {t('import.complete', 'Processing Complete')}
+              </h3>
+              <p className="text-green-700 font-bold text-[14px] flex items-center justify-center gap-2">
+                {result.title}
+                <TextQualityBadge
+                  text={{
+                    isComplete: result.status === 'complete',
+                    analysisStatus: result.analysisStatus,
+                    analysisQuality: result.analysisQuality,
+                  }}
+                  className="ml-2"
+                />
+              </p>
             </div>
-            <h3 className="text-[28px] font-serif font-bold text-ink mb-1">
-              {t('import.complete', 'Processing Complete')}
-            </h3>
-            <p className="text-green-700 font-bold text-[14px]">{result.title}</p>
-          </div>
 
           <div className="p-10">
             {analysisError && (

@@ -2,7 +2,7 @@ export interface AnalysisQuality {
   level: 'full' | 'partial' | 'raw';
   glossCoverage: number;
   morphologyCoverage: number;
-  averageConfidence: number | null;
+  averageConfidence?: number | null;
   warnings?: string[];
 }
 
