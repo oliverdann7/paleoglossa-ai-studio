@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Camera,
   Check,
@@ -31,6 +32,7 @@ import { optInAnalytics, optOutAnalytics } from '../lib/analytics.js';
 import { setErrorReportingEnabled } from '../lib/sentry.js';
 
 export const Settings = () => {
+  const navigate = useNavigate();
   const { settings, updateSettings } = useSettings();
   const { exportData, stats } = useKnowledge();
   const { subscription, setDesiredSecondLanguage } = useSubscription();
@@ -567,6 +569,25 @@ export const Settings = () => {
               <option value="tr">Türkçe</option>
             </select>
           </div>
+        </section>
+
+        {/* ── Onboarding ────────────────────────────────────────────────── */}
+        <section className="card p-8">
+          <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr">
+            {t('settings.onboarding', 'Onboarding')}
+          </h3>
+          <p className="text-[13px] text-muted mb-6">
+            {t('settings.onboardingDesc', 'Restart the initial onboarding flow to update your learning path.')}
+          </p>
+          <button
+            onClick={() => {
+              updateSettings({ onboardingProfile: { ...settings.onboardingProfile, completed: false } as any });
+              navigate('/onboarding');
+            }}
+            className="btn-secondary px-6 py-3 font-bold"
+          >
+            {t('settings.restartOnboarding', 'Restart Onboarding')}
+          </button>
         </section>
 
         {/* ── Reading Goals ──────────────────────────────────────────────── */}

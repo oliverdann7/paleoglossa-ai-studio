@@ -22,6 +22,13 @@ const DEFAULT_SETTINGS: UserSettings = {
   uiLanguage: 'en',
   swipePageMovesToKnown: true,
   activeDictionaries: ['strongs-greek', 'strongs-hebrew', 'liddell-scott', 'whitakers-words'],
+  onboardingProfile: {
+    completed: false,
+    languageId: 'grc',
+    level: 'absolute-beginner',
+    goal: 'biblical',
+    dailyCommitment: 15,
+  },
 };
 
 export class SettingsService {
