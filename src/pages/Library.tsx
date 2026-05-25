@@ -801,6 +801,7 @@ export const Library = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03, duration: 0.3 }}
                     onClick={() => navigate(`/app/reader/${text.id}`)}
+                    data-testid="text-card"
                     className={cn(
                       'card p-4 md:p-6 flex flex-col justify-between cursor-pointer group hover:border-blue/30 transition-all min-h-[200px] md:min-h-[250px] relative overflow-hidden active:scale-[0.98]',
                       text.sourceType === 'import' && 'border-blue/10 bg-blue/[0.01]'
