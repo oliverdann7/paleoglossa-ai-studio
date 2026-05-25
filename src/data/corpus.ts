@@ -4459,7 +4459,7 @@ function getAllEnhancedTexts() {
       TEXT_VOCAB_UGA,
       TEXT_VOCAB_SAN,
       TEXT_VOCAB_EGY,
-      ...(import.meta.env.DEV ? getMockTexts() : [])
+      ...(typeof import.meta !== 'undefined' && import.meta.env?.DEV ? getMockTexts() : [])
     ].map(enhanceText);
   }
   return _textsCache;
@@ -4689,7 +4689,7 @@ export const CorpusDB = {
     if (sectionId === "san-voc-1") return SAN_VOCAB_SECTION;
     if (sectionId === "egy-voc-1") return EGY_VOCAB_SECTION;
     
-    if (import.meta.env.DEV) {
+    if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
       const mockMatch = getMockSections().find(s => s.id === sectionId);
       if (mockMatch) return mockMatch;
     }
