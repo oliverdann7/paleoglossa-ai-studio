@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"api/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"api/**/*.ts\"",
+    "audit:corpus": "tsx scripts/audit-corpus-quality.ts",
     "ingest": "tsx scripts/ingest.ts",
     "config:check": "tsx scripts/check-production-config.ts all",
     "config:check:web": "tsx scripts/check-production-config.ts web",
