@@ -982,6 +982,7 @@ export const Import = () => {
                     analysisQuality: result.analysisQuality,
                   }}
                   className="ml-2"
+                  showAction
                 />
               </p>
             </div>
