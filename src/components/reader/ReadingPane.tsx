@@ -241,6 +241,7 @@ const ReaderToken = memo(function ReaderToken({
     <span className="inline">
       {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
       <span
+        data-testid="word-token"
         onClick={() => onWordClick(token, sentenceText, sentenceIndex)}
         onContextMenu={handleContextMenu}
         onTouchStart={handleTouchStart}

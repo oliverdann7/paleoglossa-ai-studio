@@ -519,6 +519,7 @@ export const LexDrawerPanel = ({
         initial={{ y: '100%', opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
+        data-testid="lex-drawer"
         className="md:!translate-y-0 fixed md:relative bottom-0 left-0 w-full md:w-[380px] h-[65vh] md:h-full bg-[#FEFAF4] border-t md:border-t-0 md:border-l border-bdr flex flex-col shrink-0 z-50 md:z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-[-10px_0_40px_rgba(35,20,10,0.04)] rounded-t-3xl md:rounded-none"
       >
         <div className="h-14 border-b border-bdr flex items-center justify-between px-4 bg-[#FEFAF4] shrink-0 rounded-t-3xl md:rounded-none">
@@ -724,10 +725,12 @@ export const LexDrawerPanel = ({
                   </span>
                 )}
               </div>
-              <input
-                type="text"
-                className="w-full bg-white border border-bdr/50 rounded-lg px-3 py-2 text-sm focus:border-blue outline-none"
-                placeholder={t('reader.yourGlossPlaceholder', 'Enter your own gloss...')}
+                <input
+                  type="text"
+                  data-testid="gloss-input"
+                  className="w-full bg-white border border-bdr/50 rounded-lg px-3 py-2 text-sm focus:border-blue outline-none"
+                  placeholder={t('reader.yourGlossPlaceholder', 'Enter your own gloss...')}
+
                 value={wordInfo?.userGloss || ''}
                 onChange={(e) => {
                   updateGloss(selectedWord.lemma, e.target.value, textLanguageId);
@@ -763,6 +766,7 @@ export const LexDrawerPanel = ({
                 return (
                   <button
                     key={state}
+                    data-testid={`state-button-${state}`}
                     onClick={() => {
                       const extra = buildReadingContext(selectedWord, text);
                       const saved = setWordState(

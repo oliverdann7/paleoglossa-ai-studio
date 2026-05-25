@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { enableDemoMode } from './helpers/demoMode';
 
 /**
  * Smoke journey: Library → Reader → mark word as Seen
@@ -9,9 +10,7 @@ import { test, expect } from '@playwright/test';
  */
 test('library → reader → mark word', async ({ page }) => {
   // Enable demo mode before any navigation so AuthGuard lets us through
-  await page.addInitScript(() => {
-    localStorage.setItem('paleoglossa_demo_mode', 'true');
-  });
+  await enableDemoMode(page);
 
   // ── Step 1: Library loads ────────────────────────────────────────────────
   await page.goto('/app/library');
@@ -39,14 +38,16 @@ test('library → reader → mark word', async ({ page }) => {
   await firstWord.click();
 
   // The LexDrawer panel shows "Your Knowledge" when a word is selected
-  await expect(page.getByText('Your Knowledge')).toBeVisible({ timeout: 5_000 });
+  const lexDrawer = page.getByTestId('lex-drawer');
+  await expect(lexDrawer.getByText('Your Knowledge')).toBeVisible({ timeout: 10_000 });
 
   // ── Step 5: Mark word as Seen ────────────────────────────────────────────
-  // State buttons render their label text (uppercase via CSS, DOM text is "Seen")
-  const seenButton = page.getByRole('button', { name: /^seen$/i });
-  await expect(seenButton).toBeVisible({ timeout: 3_000 });
+  // State buttons render their label text
+  const seenButton = page.getByTestId('state-button-SEEN');
+  await expect(seenButton).toBeVisible({ timeout: 10_000 });
   await seenButton.click();
 
   // After marking, the button should become visually active (scale-105 class applied)
-  await expect(seenButton).toHaveClass(/scale-105/, { timeout: 3_000 });
+  await page.waitForSelector('[data-testid="state-button-SEEN"].scale-105', { timeout: 10_000 });
 });
+
