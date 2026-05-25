@@ -163,7 +163,7 @@ export const Reader = () => {
     markPageAsSeen,
     stats,
     addReadWords,
-    incrementReadingTime,
+  // incrementReadingTime,
     setWordNote,
     incrementEncounter,
     updateGloss,
@@ -1059,12 +1059,13 @@ export const Reader = () => {
         className="flex-1 flex flex-col relative z-20 overflow-hidden"
         style={!isOnline ? { paddingTop: 28 } : undefined}
       >
-        <ReaderProgressHeader
-          readToday={stats?.readToday || 0}
-          dailyGoalWords={settings.dailyGoalWords}
-          onBack={onBack}
-          onMinuteElapsed={() => incrementReadingTime(1)}
-        />
+      <ReaderProgressHeader
+        readToday={stats.readToday}
+        dailyGoalWords={settings.dailyGoalWords}
+        onBack={() => navigate('/app/library')}
+        text={text}
+        sourceType={text?.sourceType === 'import' ? 'paste' : undefined}
+      />
 
         <ReaderToolbar
           chapters={chapters}

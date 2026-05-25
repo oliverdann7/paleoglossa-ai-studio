@@ -1,13 +1,24 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { ProgressRing } from './ProgressRing.js';
+import { TextQualityBadge } from '../ui/TextQualityBadge.js';
 
 interface Props {
   readToday: number;
   dailyGoalWords: number;
   onBack: () => void;
   onMinuteElapsed?: () => void;
+  text?: {
+    isComplete?: boolean;
+    hasMorphology?: boolean;
+    sourceStatus?: string;
+    isSample?: boolean;
+    analysisStatus?: string;
+    analysisQuality?: any;
+  };
+  sourceType?: 'paste' | 'file' | 'url' | 'image' | 'pdf';
 }
+// ... (rest of the file update)
 
 function formatTime(sec: number) {
   return `${Math.floor(sec / 60)} min`;
@@ -18,6 +29,8 @@ export function ReaderProgressHeader({
   dailyGoalWords,
   onBack,
   onMinuteElapsed,
+  text,
+  sourceType,
 }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const onMinuteElapsedRef = useRef(onMinuteElapsed);
@@ -54,6 +67,7 @@ export function ReaderProgressHeader({
       </div>
 
       <div className="flex items-center gap-4">
+        {text && <TextQualityBadge text={text} sourceType={sourceType} showDetails />}
         <div className="flex items-center gap-2">
           <span className="hidden md:inline text-[11px] font-bold text-ink3 uppercase tracking-tight">
             Goal
