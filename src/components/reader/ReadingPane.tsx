@@ -249,7 +249,7 @@ const ReaderToken = memo(function ReaderToken({
         onTouchCancel={handleTouchEnd}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={onWordLeave}
-        className="cursor-pointer px-1 rounded-sm inline-flex flex-col items-center align-top leading-none"
+        className="cursor-pointer px-1.5 md:px-1 rounded-sm inline-flex flex-col items-center align-top leading-none min-h-[28px] md:min-h-0"
         style={tokenStyle}
       >
         <bdi className="leading-tight mb-1">{token.text}</bdi>
