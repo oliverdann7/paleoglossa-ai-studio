@@ -23,9 +23,13 @@ export interface Morphology {
   number?: string;
   gender?: string;
   degree?: string;
-  state?: string; // Aramaic/Hebrew
-  stem?: string; // Hebrew binyan
-  root?: string; // foreign root
+  state?: string;
+  stem?: string;
+  root?: string;
+  aspect?: string;
+  binyan?: string;
+  conjugation?: string;
+  declension?: string;
 }
 
 export interface Lemma {

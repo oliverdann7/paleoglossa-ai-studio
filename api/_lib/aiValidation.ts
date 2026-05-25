@@ -1,5 +1,26 @@
 import { z } from 'zod';
 
+const MorphologySchema = z
+  .object({
+    partOfSpeech: z.string().optional(),
+    person: z.string().optional(),
+    tense: z.string().optional(),
+    aspect: z.string().optional(),
+    voice: z.string().optional(),
+    mood: z.string().optional(),
+    case: z.string().optional(),
+    number: z.string().optional(),
+    gender: z.string().optional(),
+    degree: z.string().optional(),
+    state: z.string().optional(),
+    stem: z.string().optional(),
+    binyan: z.string().optional(),
+    root: z.string().optional(),
+    conjugation: z.string().optional(),
+    declension: z.string().optional(),
+  })
+  .optional();
+
 const TokenSchema = z.object({
   text: z.string().min(1),
   lemma: z.string().nullable(),
@@ -8,6 +29,7 @@ const TokenSchema = z.object({
   transliteration: z.string().nullable(),
   gloss: z.string().nullable(),
   pos: z.string().nullable(),
+  morphology: MorphologySchema,
   confidence: z.number().min(0).max(1).nullable(),
 });
 
@@ -28,6 +50,7 @@ export type ValidatedToken = {
   transliteration: string | null;
   gloss: string | null;
   pos: string | null;
+  morphology?: Record<string, string> | null;
   confidence: number | null;
 };
 export type ValidatedSentence = { tokens: ValidatedToken[]; translation: string | null };

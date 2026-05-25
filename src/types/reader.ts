@@ -10,6 +10,7 @@ export interface ReaderToken {
   lemma: string;
   gloss?: string;
   morphology?: string;
+  morphologyRaw?: Record<string, string>;
   translit?: string;
   punctBefore?: string;
   punctAfter?: string;

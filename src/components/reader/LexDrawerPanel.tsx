@@ -135,6 +135,7 @@ const LABEL_TO_CATEGORY: Record<string, string> = {
   Gender: 'gender',
   Person: 'person',
   Tense: 'tense',
+  Aspect: 'tense',
   Voice: 'voice',
   Mood: 'mood',
   Degree: 'degree',
@@ -142,7 +143,7 @@ const LABEL_TO_CATEGORY: Record<string, string> = {
   Stem: 'stem',
   Binyan: 'stem',
   Root: 'root',
-  Aspect: 'tense',
+  Declension: 'stem',
   Conjugation: 'stem',
   Pattern: 'stem',
   Construct: 'state',
@@ -157,7 +158,10 @@ const LABEL_TO_CATEGORY: Record<string, string> = {
 function SourceBadge({ trust }: { trust: SourceTrustInfo }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-bdr/40 bg-parch/60 px-2 py-0.5 text-[10px] font-medium leading-none">
-      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: trust.dotColor }} />
+      <span
+        className="w-1.5 h-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: trust.dotColor }}
+      />
       <span className={cn(trust.textColor)}>{trust.label}</span>
     </span>
   );
@@ -273,7 +277,8 @@ export const LexDrawerPanel = ({
 
   const morphologyDisplay = useMemo(() => {
     if (!selectedWord) return null;
-    return MorphologyService.formatMorphologyForDisplay(textLanguageId, selectedWord.morphology, {
+    const morphData = selectedWord.morphologyRaw || selectedWord.morphology;
+    return MorphologyService.formatMorphologyForDisplay(textLanguageId, morphData, {
       source: sourceInfo?.name || selectedWord.source,
       confidence: selectedWord.confidence,
     });
@@ -290,7 +295,7 @@ export const LexDrawerPanel = ({
     const lemma = selectedWord.lemma || selectedWord.text || '';
     const surface = selectedWord.text || selectedWord.surface || '';
     const translit = selectedWord.transliteration || '';
-    const morphology = selectedWord.morphology || {};
+    const morphology = selectedWord.morphologyRaw || selectedWord.morphology || {};
     const pos = (morphology.partOfSpeech || '').toLowerCase();
 
     const parts: string[] = [];
@@ -815,11 +820,7 @@ export const LexDrawerPanel = ({
                   );
                   if (saved !== false) {
                     if (!wordInfo?.userGloss && definitionLookup?.definition) {
-                      updateGloss(
-                        selectedWord.lemma,
-                        definitionLookup.definition,
-                        textLanguageId
-                      );
+                      updateGloss(selectedWord.lemma, definitionLookup.definition, textLanguageId);
                     }
                     setReviewAdded(true);
                     setTimeout(() => {
@@ -830,9 +831,7 @@ export const LexDrawerPanel = ({
                 }}
                 className={cn(
                   'w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all active:scale-[0.98]',
-                  reviewAdded
-                    ? 'bg-green-600 text-white'
-                    : 'bg-blue text-white'
+                  reviewAdded ? 'bg-green-600 text-white' : 'bg-blue text-white'
                 )}
               >
                 {reviewAdded ? (

@@ -14,6 +14,11 @@ export class AIError extends Error {
 
 // ── Response schemas ─────────────────────────────────────────────────────
 
+const TokenMorphologySchema = z
+  .record(z.string(), z.string())
+  .optional()
+  .nullable();
+
 const SentenceAnalysisSchema = z.object({
   sentences: z.array(
     z.object({
@@ -26,6 +31,7 @@ const SentenceAnalysisSchema = z.object({
           transliteration: z.string().optional().nullable(),
           gloss: z.string().optional().nullable(),
           pos: z.string().optional().nullable(),
+          morphology: TokenMorphologySchema,
           confidence: z.number().optional().nullable(),
         })
       ),

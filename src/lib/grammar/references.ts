@@ -204,6 +204,26 @@ const EXPLANATIONS: TagMap = {
   comparative: { tag: 'comparative', short: 'Comparison between two items', category: 'degree' },
   superlative: { tag: 'superlative', short: 'Highest degree of comparison', category: 'degree' },
 
+  // ── Aspects ──
+  perfective: {
+    tag: 'perfective',
+    short: 'Completed action viewed as a whole',
+    category: 'tense',
+    long: 'The perfective aspect presents an action as a completed whole, without reference to its internal structure.',
+  },
+  imperfective: {
+    tag: 'imperfective',
+    short: 'Ongoing or repeated action',
+    category: 'tense',
+    long: 'The imperfective aspect presents an action as ongoing, repeated, or in progress, without focus on completion.',
+  },
+  stative: {
+    tag: 'stative',
+    short: 'State or condition',
+    category: 'tense',
+    long: 'The stative aspect expresses a state or condition resulting from a completed action.',
+  },
+
   // ── Verbal Stems (Semitic) ──
   qal: {
     tag: 'qal',
@@ -211,12 +231,39 @@ const EXPLANATIONS: TagMap = {
     category: 'stem',
     long: 'Qal (קַל) is the simplest and most common verbal stem in Biblical Hebrew, expressing the basic meaning of the root.',
   },
+  paal: {
+    tag: 'paal',
+    short: 'Simple active stem (equivalent to Qal)',
+    category: 'stem',
+  },
   niphal: { tag: 'niphal', short: 'Passive or reflexive stem', category: 'stem' },
   piel: { tag: 'piel', short: 'Intensive active stem', category: 'stem' },
   pual: { tag: 'pual', short: 'Intensive passive stem', category: 'stem' },
   hiphil: { tag: 'hiphil', short: 'Causative active stem', category: 'stem' },
   hophal: { tag: 'hophal', short: 'Causative passive stem', category: 'stem' },
   hithpael: { tag: 'hithpael', short: 'Reflexive or reciprocal stem', category: 'stem' },
+  hitpael: {
+    tag: 'hitpael',
+    short: 'Reflexive or reciprocal stem (alternate spelling)',
+    category: 'stem',
+  },
+
+  // ── Declensions ──
+  '1st': { tag: '1st', short: 'First declension / conjugation', category: 'stem' },
+  '2nd': { tag: '2nd', short: 'Second declension / conjugation', category: 'stem' },
+  '3rd': { tag: '3rd', short: 'Third declension / conjugation', category: 'stem' },
+  '4th': { tag: '4th', short: 'Fourth declension / conjugation', category: 'stem' },
+  '5th': { tag: '5th', short: 'Fifth declension', category: 'stem' },
+  '1st-2nd': {
+    tag: '1st-2nd',
+    short: 'First/second declension pattern (e.g. Latin bonus-a-um)',
+    category: 'stem',
+  },
+  '3rd-3rd': {
+    tag: '3rd-3rd',
+    short: 'Third declension (both stems)',
+    category: 'stem',
+  },
 
   // ── States (Semitic) ──
   absolute: { tag: 'absolute', short: 'Unbound (absolute) state of a noun', category: 'state' },
@@ -227,6 +274,7 @@ const EXPLANATIONS: TagMap = {
     long: 'The construct state is a noun form linked to a following genitive noun to express possession or a close relationship.',
   },
   emphatic: { tag: 'emphatic', short: 'Emphatic or determined state', category: 'state' },
+  determined: { tag: 'determined', short: 'Determined / definite state', category: 'state' },
 };
 
 export function getGrammarReference(tag: string): TagExplanation | null {
@@ -265,7 +313,7 @@ function getLanguageCategories(languageId: string): string[] {
     case 'lat':
       return [...base, 'case', 'gender', 'tense', 'voice', 'mood', 'degree'];
     case 'hbo':
-      return [...base, 'gender', 'state', 'stem', 'tense'];
+      return [...base, 'gender', 'state', 'stem', 'tense', 'voice'];
     case 'syr':
     case 'arc':
       return [...base, 'gender', 'state'];
