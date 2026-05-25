@@ -33,6 +33,7 @@ import { STORAGE_KEYS } from '../lib/constants/storage.js';
 import { OfflineService } from '../lib/services/offlineService.js';
 import { useOnlineStatus } from '../lib/hooks/useOnlineStatus.js';
 import { BookmarkService } from '../lib/services/bookmarkService.js';
+import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
 export const Reader = () => {
   const { textId } = useParams();
@@ -617,6 +618,25 @@ export const Reader = () => {
     ].includes(text?.language || '');
   const currentLanguageId = text?.language || text?.languageId || 'unknown';
 
+  // Track reader opened when text + chapters are first available
+  const prevTrackedTextRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!textId || !text || chapters.length === 0) return;
+    if (prevTrackedTextRef.current === textId) return;
+    prevTrackedTextRef.current = textId;
+    const allTokens = chapters.flatMap((ch) => ch.sentences).flatMap((s) => s.tokens || []);
+    const contentTokens = allTokens.filter((t) => t.type !== 'punctuation' && t.type !== 'whitespace');
+    trackEvent(ANALYTICS_EVENTS.READER_OPENED, {
+      languageId: currentLanguageId,
+      textId,
+      sourceKind: sourceKind as string,
+      analysisStatus: (text as any)?.analysisStatus || undefined,
+      wordCount: contentTokens.length,
+      knownPercent,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textId, text, chapters]);
+
   const exampleSentences = useMemo(() => {
     if (!selectedWord) return [];
     const currentSentenceId = chapter?.sentences?.[currentSentenceIndex]?.id;
@@ -960,8 +980,16 @@ export const Reader = () => {
       incrementEncounter(token.lemma, currentLanguageId);
       setWordContext(token.lemma, sentenceText, currentLanguageId);
       if (readingMode === 'page') setSentenceIndex(sentenceIndex);
+      trackEvent(ANALYTICS_EVENTS.WORD_CLICKED, {
+        languageId: currentLanguageId,
+        lemmaLength: token.lemma?.length || token.text?.length || 0,
+        hasGloss: !!token.gloss,
+        hasMorphology: !!token.morphology || !!token.morphologyRaw,
+        currentState: getWordInfo(token.lemma || token.text).state,
+        textId,
+      });
     },
-    [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex]
+    [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex, getWordInfo, textId]
   );
 
   const handleWordContextMenu = useCallback((token: ReaderToken, x: number, y: number) => {

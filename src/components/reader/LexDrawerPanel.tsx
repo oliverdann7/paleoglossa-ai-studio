@@ -52,6 +52,7 @@ import { getSourceTrust, type SourceTrustInfo } from '@/lib/utils/sourceTrust';
 import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
 import type { ReadingContext } from '@/lib/review/readingContext';
 import { buildReadingContext } from '@/lib/review/readingContext';
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 
 interface LemmaSentenceToken {
   lemma?: string;
@@ -324,7 +325,8 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
           selectedWord.text,
           selectedWord.lemma
         );
-        if (isUsefulGloss(glossResult)) {
+        const success = isUsefulGloss(glossResult);
+        if (success) {
           setAiFallbackGloss(glossResult);
           // Persist to server cache
           await fetch('/api/lexical-cache', {
@@ -339,6 +341,11 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
             }),
           });
         }
+        trackEvent(ANALYTICS_EVENTS.AI_GLOSS_GENERATED, {
+          languageId: textLanguageId,
+          generationType: 'short-gloss',
+          success,
+        });
       } else {
         // Full philological explanation for the AI Insights section
         const explanation = await AIClient.explainWord(
@@ -415,7 +422,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     if (isCacheLoading || cacheEntry) return;
 
     const currentLemma = selectedWord.lemma;
-    
+
     let isCancelled = false;
     const fetchData = async () => {
       setIsCacheLoading(true);
@@ -426,10 +433,23 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
           const entry = await response.json();
           if (!isCancelled) {
             setCacheEntry(entry);
+            trackEvent(ANALYTICS_EVENTS.AI_GLOSS_CACHE_HIT, {
+              languageId: textLanguageId,
+              cacheType: 'short-gloss',
+            });
           }
+          if (!isCancelled) setIsCacheLoading(false);
+          return;
         }
       } catch (e) {
         console.error('[LexDrawerPanel] Cache fetch failed:', e);
+      }
+
+      if (!isCancelled) {
+        trackEvent(ANALYTICS_EVENTS.AI_GLOSS_CACHE_MISS, {
+          languageId: textLanguageId,
+          cacheType: 'short-gloss',
+        });
       }
 
       if (!isCancelled) setIsCacheLoading(false);
@@ -700,6 +720,12 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
                 onChange={(e) => {
                   updateGloss(selectedWord.lemma, e.target.value, textLanguageId);
                   setGlossSaved(true);
+                  trackEvent(ANALYTICS_EVENTS.WORD_GLOSS_SAVED, {
+                    languageId: textLanguageId,
+                    lemmaLength: selectedWord.lemma?.length || 0,
+                    glossLength: e.target.value.length,
+                    textId: text?.id,
+                  });
                   if (glossTimerRef.current) clearTimeout(glossTimerRef.current);
                   glossTimerRef.current = window.setTimeout(() => setGlossSaved(false), 2000);
                 }}
@@ -896,6 +922,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
                     data-testid={`state-button-${state}`}
                     onClick={() => {
                       const extra = buildReadingContext(selectedWord, text);
+                      const fromState = wordInfo?.state;
                       const saved = setWordState(
                         selectedWord.lemma,
                         state,
@@ -903,7 +930,16 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
                         selectedWord.sentenceText,
                         extra
                       );
-                      if (saved !== false) setSelectedWord(null);
+                      if (saved !== false) {
+                        trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
+                          languageId: textLanguageId,
+                          fromState,
+                          toState: state,
+                          lemmaLength: selectedWord.lemma?.length || 0,
+                          textId: text?.id,
+                        });
+                        setSelectedWord(null);
+                      }
                     }}
                     className={cn(
                       'flex-1 min-w-[70px] py-2 md:py-3 rounded-xl border flex flex-col items-center gap-1 transition-all',
@@ -939,27 +975,35 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
 
             <div className="mt-4">
               <button
-                onClick={() => {
-                  if (reviewAdded) return;
-                  const extra = buildReadingContext(selectedWord, text);
-                  const saved = setWordState(
-                    selectedWord.lemma,
-                    WordState.LEARNING,
-                    textLanguageId,
-                    selectedWord.sentenceText,
-                    extra
-                  );
-                  if (saved !== false) {
-                    if (!wordInfo?.userGloss && definitionLookup?.definition) {
-                      updateGloss(selectedWord.lemma, definitionLookup.definition, textLanguageId);
+                  onClick={() => {
+                    if (reviewAdded) return;
+                    const extra = buildReadingContext(selectedWord, text);
+                    const fromState = wordInfo?.state;
+                    const saved = setWordState(
+                      selectedWord.lemma,
+                      WordState.LEARNING,
+                      textLanguageId,
+                      selectedWord.sentenceText,
+                      extra
+                    );
+                    if (saved !== false) {
+                      trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
+                        languageId: textLanguageId,
+                        fromState,
+                        toState: WordState.LEARNING,
+                        lemmaLength: selectedWord.lemma?.length || 0,
+                        textId: text?.id,
+                      });
+                      if (!wordInfo?.userGloss && definitionLookup?.definition) {
+                        updateGloss(selectedWord.lemma, definitionLookup.definition, textLanguageId);
+                      }
+                      setReviewAdded(true);
+                      setTimeout(() => {
+                        setReviewAdded(false);
+                        setSelectedWord(null);
+                      }, 1800);
                     }
-                    setReviewAdded(true);
-                    setTimeout(() => {
-                      setReviewAdded(false);
-                      setSelectedWord(null);
-                    }, 1800);
-                  }
-                }}
+                  }}
                 className={cn(
                   'w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all active:scale-[0.98]',
                   reviewAdded ? 'bg-green-600 text-white' : 'bg-blue text-white'
