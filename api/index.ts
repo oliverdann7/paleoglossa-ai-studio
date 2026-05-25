@@ -1,4 +1,5 @@
 import express from 'express';
+import { correlationIdMiddleware } from './_lib/observability.js';
 import aiRouter from './_routes/ai.js';
 import audioRouter from './_routes/audio.js';
 import authRouter from './_routes/auth.js';
@@ -37,6 +38,8 @@ app.use((req: any, _res: any, next: any) => {
     next();
   }
 });
+
+app.use(correlationIdMiddleware);
 
 app.use(express.json({ limit: '20mb' }));
 

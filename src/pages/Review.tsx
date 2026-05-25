@@ -13,6 +13,7 @@ import { CardType, ReviewCard, generateReviewCards } from '../lib/review/reviewC
 import { useTranslation } from 'react-i18next';
 import type { WordInfo } from '../lib/services/vocabularyService.js';
 import { Timestamp } from 'firebase/firestore';
+import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
 interface ReviewSettings {
   enabledTypes: CardType[];
@@ -96,6 +97,8 @@ export const Review = () => {
   // Settings
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState<ReviewSettings>(loadSettings);
+
+  const sessionStartRef = useRef<number>(0);
 
   // Analytics
   const [reviewSummary, setReviewSummary] = useState<{
@@ -218,7 +221,13 @@ export const Review = () => {
 
   const handleStart = () => {
     setIsStarted(true);
+    sessionStartRef.current = Date.now();
     setCardStartTime(Date.now());
+    trackEvent(ANALYTICS_EVENTS.REVIEW_STARTED, {
+      languageId: activeLanguageId,
+      cardCount: queue.length,
+      textFilterActive,
+    });
   };
 
   const onBack = () => navigate('/app');
@@ -294,6 +303,13 @@ export const Review = () => {
         const correct = finalResults.filter((r) => r.rating !== 'AGAIN').length;
         const acc = finalResults.length > 0 ? correct / finalResults.length : 0;
         recordReviewSession(Math.round(acc * 100));
+        trackEvent(ANALYTICS_EVENTS.REVIEW_COMPLETED, {
+          languageId: activeLanguageId,
+          cardsReviewed: finalResults.length,
+          correctCount: correct,
+          accuracyPercent: Math.round(acc * 100),
+          durationMs: Date.now() - sessionStartRef.current,
+        });
         setIsFinished(true);
         return;
       }
@@ -302,7 +318,7 @@ export const Review = () => {
       setIsRevealed(false);
       setCardStartTime(Date.now());
     },
-    [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS, sessionResults, recordReviewSession]
+    [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS, sessionResults, recordReviewSession, activeLanguageId]
   );
 
   const handleReveal = () => setIsRevealed(true);

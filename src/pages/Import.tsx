@@ -29,6 +29,7 @@ import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { normalizeLemmaKey } from '../lib/utils/lemmaUtils.js';
 import { computeAnalysisQuality } from '../lib/utils/analysisQuality.js';
+import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
 export const Import = () => {
   const navigate = useNavigate();
@@ -313,6 +314,15 @@ export const Import = () => {
     return { sentences: sentences!, stats, status: finalStatus, analysisStatus, analysisQuality, errorLog };
   };
 
+  const sourceTypeMap: Record<string, ImportedText['sourceType']> = {
+    paste: 'paste',
+    file: 'file',
+    url: 'url',
+    ocr: 'image',
+  };
+
+  const importStartTimeRef = useRef(0);
+
   const handleProcess = async (forceImport = false) => {
     if (!text.trim()) return;
 
@@ -324,6 +334,12 @@ export const Import = () => {
     }
 
     setIsProcessing(true);
+    importStartTimeRef.current = Date.now();
+    const eventSourceType = sourceTypeMap[activeTab] || 'paste';
+    trackEvent(ANALYTICS_EVENTS.IMPORT_STARTED, {
+      languageId,
+      sourceType: eventSourceType,
+    });
     setProcessingStep(t('import.checkingDuplicate', 'Checking for duplicates...'));
     setAnalysisError(null);
     setDuplicateImport(null);
@@ -343,13 +359,6 @@ export const Import = () => {
         // Hash check failed — proceed anyway
       }
     }
-
-    const sourceTypeMap: Record<string, ImportedText['sourceType']> = {
-      paste: 'paste',
-      file: 'file',
-      url: 'url',
-      ocr: 'image',
-    };
 
     const importId = `imp_${Date.now()}`;
     let contentHash: string | undefined;
@@ -414,6 +423,14 @@ export const Import = () => {
       }
 
       refreshImports();
+      trackEvent(ANALYTICS_EVENTS.IMPORT_COMPLETED, {
+        languageId,
+        sourceType: finalImport.sourceType,
+        totalWords: finalImport.stats.totalWords,
+        uniqueWords: finalImport.stats.uniqueWords,
+        analysisStatus: finalImport.analysisStatus,
+        durationMs: Date.now() - importStartTimeRef.current,
+      });
       setResult(finalImport);
     } catch (err: any) {
       console.error('Import processing failed:', err);
