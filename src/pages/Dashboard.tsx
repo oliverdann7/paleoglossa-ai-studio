@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ChevronRight, Brain, Library, Sparkles, BookMarked, BookOpen, PlusCircle, MessageCircle } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { CorpusDB } from '../data/corpus.js';
 import { getLangForLemma } from '../lib/data/dictionary.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
@@ -20,7 +19,7 @@ import {
 } from '../lib/constants/wordStates.js';
 import { ProgressRing } from '../components/reader/ProgressRing.js';
 import { DashboardSkeleton } from '../components/Skeleton.js';
-
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useStreakNotifications } from '../lib/hooks/useStreakNotifications.js';
