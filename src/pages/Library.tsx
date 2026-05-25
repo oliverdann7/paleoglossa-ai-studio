@@ -855,6 +855,7 @@ export const Library = () => {
                             hasMorphology: text.availableTools.morphology,
                             sourceStatus: text.sourceStatus,
                             isSample: text.isSample,
+                            analysisStatus: text.analysisStatus,
                           }}
                           sourceType={text.sourceType === 'import' ? 'paste' : undefined}
                         />

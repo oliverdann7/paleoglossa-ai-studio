@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { getTextQuality } from '../../lib/utils/textQuality';
+import { AnalysisQuality } from '../../lib/utils/analysisQuality';
 
 interface TextQualityBadgeProps {
   text: {
@@ -7,6 +8,8 @@ interface TextQualityBadgeProps {
     hasMorphology?: boolean;
     sourceStatus?: string;
     isSample?: boolean;
+    analysisStatus?: string;
+    analysisQuality?: AnalysisQuality;
   };
   sourceType?: 'paste' | 'file' | 'url' | 'image' | 'pdf';
   className?: string;

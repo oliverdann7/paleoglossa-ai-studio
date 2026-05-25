@@ -19,4 +19,28 @@ describe('getTextQuality', () => {
     const status = getTextQuality(text);
     expect(status.quality).toBe('raw');
   });
+
+  it('identifies analyzed texts', () => {
+    const text = { analysisStatus: 'analyzed', analysisQuality: { level: 'full' } as any };
+    const status = getTextQuality(text);
+    expect(status.quality).toBe('analyzed');
+  });
+
+  it('identifies partial analysis', () => {
+    const text = { analysisStatus: 'analyzed', analysisQuality: { level: 'partial' } as any };
+    const status = getTextQuality(text);
+    expect(status.quality).toBe('partial');
+  });
+
+  it('identifies needs_ai texts', () => {
+    const text = { analysisStatus: 'needs_ai' };
+    const status = getTextQuality(text);
+    expect(status.quality).toBe('needs_ai');
+  });
+
+  it('identifies sample texts', () => {
+    const text = { isSample: true };
+    const status = getTextQuality(text);
+    expect(status.quality).toBe('sample');
+  });
 });
