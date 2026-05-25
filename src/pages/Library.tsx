@@ -36,6 +36,7 @@ import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { ImportService } from '../lib/services/importService.js';
 import { CorpusDB } from '../data/corpus.js';
 import { CoverageBadge } from '../components/library/CoverageBadge.js';
+import { TextQualityBadge } from '../components/ui/TextQualityBadge.js';
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
 
@@ -848,21 +849,15 @@ export const Library = () => {
                         {text.percentKnown !== undefined && (
                           <CoverageBadge percent={text.percentKnown} size="sm" />
                         )}
-                        {text.isSample && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-amber/5 text-amber border-amber/20">
-                            {t('library.badgeSample', 'Sample')}
-                          </span>
-                        )}
-                        {text.sourceStatus === 'complete' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-green/5 text-green border-green/20">
-                            {t('library.badgeComplete', 'Complete')}
-                          </span>
-                        )}
-                        {text.sourceStatus === 'partial' && !text.isSample && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-bold uppercase tracking-wider bg-blue/5 text-blue border-blue/20">
-                            {t('library.badgeInProgress', 'In Progress')}
-                          </span>
-                        )}
+                        <TextQualityBadge
+                          text={{
+                            isComplete: text.sourceStatus === 'complete',
+                            hasMorphology: text.availableTools.morphology,
+                            sourceStatus: text.sourceStatus,
+                            isSample: text.isSample,
+                          }}
+                          sourceType={text.sourceType === 'import' ? 'paste' : undefined}
+                        />
                         <span className="hidden md:contents">
                           {[
                             {
