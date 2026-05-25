@@ -1,5 +1,6 @@
 import { CorpusDB } from '../src/data/corpus.js';
 import fs from 'fs';
+import path from 'path';
 
 // Helper to check if a value is meaningful
 const isMeaningful = (val: any) => val !== undefined && val !== null && val !== '' && val !== 'unknown';
@@ -73,24 +74,44 @@ allTexts.forEach(text => {
   });
 });
 
-// Print top 5 missing lemmas per language
-console.log('\nTop 5 missing POS lemmas:');
+// Reporting
+const reportsDir = 'reports';
+if (!fs.existsSync(reportsDir)) {
+  fs.mkdirSync(reportsDir, { recursive: true });
+}
+
+// JSON Report
+const jsonReport = {
+  generatedAt: new Date().toISOString(),
+  metrics: langMetrics,
+};
+fs.writeFileSync(path.join(reportsDir, 'corpus-quality.json'), JSON.stringify(jsonReport, null, 2));
+
+// Markdown Report
+let mdReport = `# Corpus Quality Report\n\nGenerated at: ${jsonReport.generatedAt}\n\n`;
+mdReport += `## Summary\n\n| Language | Texts | Tokens | Gloss % | POS % | Morph % |\n|---|---|---|---|---|---|\n`;
+Object.entries(langMetrics).forEach(([lang, m]) => {
+  mdReport += `| ${lang} | ${m.texts} | ${m.tokens} | ${m.tokens ? Math.round((m.tokensWithGloss / m.tokens) * 100) : 0}% | ${m.tokens ? Math.round((m.tokensWithPos / m.tokens) * 100) : 0}% | ${m.tokens ? Math.round((m.tokensWithMorphBeyondPos / m.tokens) * 100) : 0}% |\n`;
+});
+mdReport += `\n## Top missing POS lemmas\n\n`;
 Object.entries(langMetrics).forEach(([lang, m]) => {
   const sorted = Object.entries(m.missingLemmas).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  console.log(`${lang}:`, sorted.map(([l, c]) => `${l} (${c})`).join(', '));
+  mdReport += `### ${lang}\n${sorted.map(([l, c]) => `- ${l} (${c})`).join('\n')}\n\n`;
 });
+fs.writeFileSync(path.join(reportsDir, 'corpus-quality.md'), mdReport);
 
-// Update console.table
-console.table(Object.entries(langMetrics).map(([lang, m]) => ({
-  Language: lang,
-  Texts: m.texts,
-  Sentences: m.sentences,
-  Tokens: m.tokens,
-  'Unknown POS': m.unknownPosTokens,
-  'Gloss %': m.tokens ? Math.round((m.tokensWithGloss / m.tokens) * 100) : 0,
-  'POS %': m.tokens ? Math.round((m.tokensWithPos / m.tokens) * 100) : 0,
-  'Morph %': m.tokens ? Math.round((m.tokensWithMorphBeyondPos / m.tokens) * 100) : 0,
-})));
+console.log('Reports saved to reports/');
 
-fs.writeFileSync('reports/corpus-quality.json', JSON.stringify(langMetrics, null, 2));
-console.log('Report saved to reports/corpus-quality.json');
+// Check mode
+if (process.argv.includes('--check')) {
+  let hasFailure = false;
+  Object.entries(langMetrics).forEach(([lang, m]) => {
+    if (m.tokens === 0) {
+      console.error(`Language ${lang} has 0 tokens.`);
+      hasFailure = true;
+    }
+    // Thresholds: minimal sanity check (e.g., > 0% if tokens > 0)
+    // Add real thresholds here later if needed
+  });
+  if (hasFailure) process.exit(1);
+}
