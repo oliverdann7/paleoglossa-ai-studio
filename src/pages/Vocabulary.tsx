@@ -188,11 +188,17 @@ export const Vocabulary = () => {
   useEffect(() => {
     let stale = false;
     const langId = selectedLang === 'all' ? (availableLanguages[0]?.id || 'grc') : selectedLang;
-    apiFetch<{ lemma: string; rank: number; frequency: number }[]>(`/api/lemma-frequency/${encodeURIComponent(langId)}`, { skipAuth: true })
+    apiFetch<{ entries: { lemma: string; frequency: number }[] }>(
+      `/api/lemma-frequency/${encodeURIComponent(langId)}?limit=2000`,
+      { skipAuth: true }
+    )
       .then((data) => {
         if (stale) return;
         const map: Record<string, number> = {};
-        for (const entry of data) map[entry.lemma] = entry.rank;
+        // entries are sorted by frequency desc; index + 1 = frequency rank
+        (data.entries ?? []).forEach((entry, i) => {
+          map[entry.lemma] = i + 1;
+        });
         setFreqMap(map);
       })
       .catch(() => {});

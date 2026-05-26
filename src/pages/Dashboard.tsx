@@ -34,6 +34,8 @@ import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useStreakNotifications } from '../lib/hooks/useStreakNotifications.js';
 import { StudyPlanWidget } from '../components/StudyPlanWidget.js';
 import { pickDashboardRecommendation } from '../lib/services/recommendationService.js';
+import { StudyHeatmap } from '../components/StudyHeatmap.js';
+import { VocabFrequencyGoals } from '../components/VocabFrequencyGoals.js';
 
 const RTL_LANGS = new Set([
   'hbo',
@@ -668,64 +670,91 @@ export const Dashboard = () => {
           );
         })()}
 
-      {/* Vocabulary Growth — last 30 days from stats history */}
-      {hasAnyActivity &&
-        stats.history &&
-        stats.history.length > 1 &&
-        (() => {
-          const chartData = [...stats.history].slice(-30).map((h) => ({
-            date: h.date.slice(5), // MM-DD
-            known: h.knownWords ?? 0,
-          }));
-          return (
-            <div className="mb-14">
-              <h3 className="eyebrow mb-6 font-bold text-ink3">
-                {t('dashboard.vocabGrowth', 'Vocabulary Growth')}
-              </h3>
+      {/* Progress — activity heatmap + vocabulary growth chart + frequency goals */}
+      {hasAnyActivity && (
+        <div className="mb-14">
+          <h3 className="eyebrow mb-6 font-bold text-ink3">
+            {t('dashboard.progress', 'Progress')}
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 items-start">
+            {/* Left: activity heatmap + vocab growth chart stacked */}
+            <div className="space-y-4">
               <div className="card p-6">
-                <ResponsiveContainer width="100%" height={160}>
-                  <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="knownGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 10, fill: 'var(--color-ink3, #6b7280)' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 10, fill: 'var(--color-ink3, #6b7280)' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        fontSize: 11,
-                        borderRadius: 8,
-                        border: '1px solid var(--color-bdr, #e5e7eb)',
-                        background: 'var(--color-parch, #faf9f6)',
-                      }}
-                      labelStyle={{ fontWeight: 700 }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="known"
-                      name={t('vocab.known', 'Known')}
-                      stroke="#3B82F6"
-                      strokeWidth={2}
-                      fill="url(#knownGrad)"
-                      dot={false}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <p className="text-[11px] font-bold text-ink3 uppercase tracking-widest mb-4">
+                  {t('dashboard.studyActivity', 'Study Activity')}
+                </p>
+                <StudyHeatmap history={stats.history ?? []} />
               </div>
+
+              {stats.history && stats.history.length > 1 && (() => {
+                const chartData = [...stats.history].slice(-30).map((h) => ({
+                  date: h.date.slice(5),
+                  known: h.knownWords ?? 0,
+                }));
+                return (
+                  <div className="card p-6">
+                    <p className="text-[11px] font-bold text-ink3 uppercase tracking-widest mb-4">
+                      {t('dashboard.vocabGrowth', 'Vocabulary Growth')}
+                    </p>
+                    <ResponsiveContainer width="100%" height={130}>
+                      <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="knownGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 10, fill: 'var(--color-ink3, #6b7280)' }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 10, fill: 'var(--color-ink3, #6b7280)' }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            fontSize: 11,
+                            borderRadius: 8,
+                            border: '1px solid var(--color-bdr, #e5e7eb)',
+                            background: 'var(--color-parch, #faf9f6)',
+                          }}
+                          labelStyle={{ fontWeight: 700 }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="known"
+                          name={t('vocab.known', 'Known')}
+                          stroke="#3B82F6"
+                          strokeWidth={2}
+                          fill="url(#knownGrad)"
+                          dot={false}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                );
+              })()}
             </div>
-          );
-        })()}
+
+            {/* Right: vocabulary frequency goals */}
+            {activeLanguageId && activeLanguageId !== 'all' && (
+              <div className="card p-6 lg:w-72 xl:w-80 shrink-0">
+                <p className="text-[11px] font-bold text-ink3 uppercase tracking-widest mb-5">
+                  {t('dashboard.freqGoals', 'Frequency Goals')} ·{' '}
+                  <span className="normal-case font-normal">
+                    {getLanguageDisplayName(activeLanguageId)}
+                  </span>
+                </p>
+                <VocabFrequencyGoals knowledge={knowledge} languageId={activeLanguageId} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* New-user onboarding grid — show when no activity at all */}
       {!hasAnyActivity && progressLoaded && (
