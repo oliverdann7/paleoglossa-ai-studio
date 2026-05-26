@@ -1,7 +1,16 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronRight, Brain, Library, Sparkles, BookMarked, BookOpen, PlusCircle, MessageCircle } from 'lucide-react';
+import {
+  ChevronRight,
+  Brain,
+  Library,
+  Sparkles,
+  BookMarked,
+  BookOpen,
+  PlusCircle,
+  MessageCircle,
+} from 'lucide-react';
 import { CorpusDB } from '../data/corpus.js';
 import { getLangForLemma } from '../lib/data/dictionary.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
@@ -23,6 +32,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useStreakNotifications } from '../lib/hooks/useStreakNotifications.js';
+import { StudyPlanWidget } from '../components/StudyPlanWidget.js';
 
 const RTL_LANGS = new Set([
   'hbo',
@@ -51,31 +61,33 @@ export const Dashboard = () => {
     useKnowledge(activeLanguageId);
   const langStats = useLanguageStats(knowledge);
   const { t } = useTranslation();
-  
+
   const isOnboardingComplete = settings.onboardingProfile?.completed;
 
   // Personalized Recommendation
   const recommendedNextStep = useMemo(() => {
     if (!isOnboardingComplete) return null;
     const profile = settings.onboardingProfile!;
-    
-    if (profile.level === 'absolute-beginner') return {
-      title: 'Beginner Path',
-      desc: 'Start with the basics.',
-      to: '/app/beginner-hub'
-    };
-    if (profile.goal === 'biblical') return {
-      title: 'Biblical Texts',
-      desc: 'Explore foundational texts.',
-      to: '/app/library'
-    };
+
+    if (profile.level === 'absolute-beginner')
+      return {
+        title: 'Beginner Path',
+        desc: 'Start with the basics.',
+        to: '/app/beginner-hub',
+      };
+    if (profile.goal === 'biblical')
+      return {
+        title: 'Biblical Texts',
+        desc: 'Explore foundational texts.',
+        to: '/app/library',
+      };
     return {
       title: 'Explore Library',
       desc: 'Continue your journey.',
-      to: '/app/library'
+      to: '/app/library',
     };
   }, [isOnboardingComplete, settings.onboardingProfile]);
-  
+
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const [progressLoaded, setProgressLoaded] = useState(false);
   const hour = new Date().getHours();
@@ -169,6 +181,22 @@ export const Dashboard = () => {
     return null;
   }, [readingProgress, userImports]);
 
+  // Suggest a text the user hasn't started, from the active language
+  const suggestedText = useMemo(() => {
+    const builtInTexts = CorpusDB.getTexts();
+    const startedIds = new Set(readingProgress.map((p: any) => p.textId));
+    const candidates = builtInTexts.filter(
+      (t) => t.language === activeLanguageId && !startedIds.has(t.id)
+    );
+    // Prefer beginner-level texts first
+    const sorted = candidates.sort((a, b) => {
+      const levelOrder = (l: string | undefined) =>
+        l === 'A1' ? 0 : l === 'A2' ? 1 : l === 'B1' ? 2 : l === 'B2' ? 3 : 4;
+      return levelOrder(a.level) - levelOrder(b.level);
+    });
+    return sorted[0] || null;
+  }, [readingProgress, activeLanguageId]);
+
   const dailyGoal = settings.dailyGoalWords > 0 ? settings.dailyGoalWords : 500;
   const dailyProgress = Math.min(1, stats.readToday / dailyGoal);
 
@@ -181,10 +209,19 @@ export const Dashboard = () => {
         {!isOnboardingComplete && (
           <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex items-center justify-between">
             <div>
-              <h3 className="font-serif text-[18px] text-ink">{t('dashboard.completeOnboarding', 'Complete your learning path')}</h3>
-              <p className="text-[14px] text-ink3">{t('dashboard.completeOnboardingDesc', 'Tailor your experience to your level and goals.')}</p>
+              <h3 className="font-serif text-[18px] text-ink">
+                {t('dashboard.completeOnboarding', 'Complete your learning path')}
+              </h3>
+              <p className="text-[14px] text-ink3">
+                {t(
+                  'dashboard.completeOnboardingDesc',
+                  'Tailor your experience to your level and goals.'
+                )}
+              </p>
             </div>
-            <button onClick={() => navigate('/onboarding')} className="btn-primary">{t('common.getStarted', 'Get Started')}</button>
+            <button onClick={() => navigate('/onboarding')} className="btn-primary">
+              {t('common.getStarted', 'Get Started')}
+            </button>
           </div>
         )}
         {/* Personalized Recommendation */}
@@ -194,7 +231,9 @@ export const Dashboard = () => {
               <h3 className="font-serif text-[18px] text-ink">{recommendedNextStep.title}</h3>
               <p className="text-[14px] text-ink3">{recommendedNextStep.desc}</p>
             </div>
-            <button onClick={() => navigate(recommendedNextStep.to)} className="btn-primary">{t('common.getStarted', 'Get Started')}</button>
+            <button onClick={() => navigate(recommendedNextStep.to)} className="btn-primary">
+              {t('common.getStarted', 'Get Started')}
+            </button>
           </div>
         )}
         {/* Greeting row */}
@@ -218,8 +257,12 @@ export const Dashboard = () => {
               <div className="card bg-amberxl/30 border-amber/20 px-4 py-3 flex items-center gap-3 shadow-sm">
                 <span className="text-xl">🔥</span>
                 <div>
-                  <div className="text-xl font-serif font-bold text-amber leading-none">{stats.streak}</div>
-                  <div className="eyebrow text-amber/60 text-[8px] mt-0.5">{t('dashboard.dayStreak', 'Day Streak')}</div>
+                  <div className="text-xl font-serif font-bold text-amber leading-none">
+                    {stats.streak}
+                  </div>
+                  <div className="eyebrow text-amber/60 text-[8px] mt-0.5">
+                    {t('dashboard.dayStreak', 'Day Streak')}
+                  </div>
                 </div>
               </div>
             )}
@@ -229,7 +272,9 @@ export const Dashboard = () => {
                 <div className="text-[13px] font-bold text-ink leading-none">
                   {stats.readToday.toLocaleString()} / {dailyGoal.toLocaleString()}
                 </div>
-                <div className="eyebrow text-[8px] mt-0.5">{t('dashboard.wordsReadToday', 'Words read today')}</div>
+                <div className="eyebrow text-[8px] mt-0.5">
+                  {t('dashboard.wordsReadToday', 'Words read today')}
+                </div>
               </div>
             </div>
             {stats.lastAccuracy !== undefined && stats.lastAccuracy > 0 && (
@@ -247,8 +292,12 @@ export const Dashboard = () => {
                   {stats.lastAccuracy}%
                 </div>
                 <div>
-                  <div className="text-[13px] font-bold text-ink leading-none">{t('dashboard.lastAccuracy', 'Last Accuracy')}</div>
-                  <div className="eyebrow text-[8px] mt-0.5">{t('dashboard.reviewPerformance', 'Review performance')}</div>
+                  <div className="text-[13px] font-bold text-ink leading-none">
+                    {t('dashboard.lastAccuracy', 'Last Accuracy')}
+                  </div>
+                  <div className="eyebrow text-[8px] mt-0.5">
+                    {t('dashboard.reviewPerformance', 'Review performance')}
+                  </div>
                 </div>
               </div>
             )}
@@ -261,8 +310,12 @@ export const Dashboard = () => {
             <div className="shrink-0 flex items-center gap-2 bg-amber/10 border border-amber/20 rounded-xl px-3 py-2">
               <span className="text-base">🔥</span>
               <div>
-                <span className="text-[15px] font-bold text-amber leading-none">{stats.streak}</span>
-                <span className="text-[10px] text-amber/60 ml-1">{t('dashboard.days', 'days')}</span>
+                <span className="text-[15px] font-bold text-amber leading-none">
+                  {stats.streak}
+                </span>
+                <span className="text-[10px] text-amber/60 ml-1">
+                  {t('dashboard.days', 'days')}
+                </span>
               </div>
             </div>
           )}
@@ -272,7 +325,9 @@ export const Dashboard = () => {
               <span className="text-[14px] font-bold text-ink leading-none">
                 {stats.readToday} / {dailyGoal}
               </span>
-              <div className="text-[10px] text-muted leading-none mt-0.5">{t('dashboard.wordsToday', 'words today')}</div>
+              <div className="text-[10px] text-muted leading-none mt-0.5">
+                {t('dashboard.wordsToday', 'words today')}
+              </div>
             </div>
           </div>
           {stats.lastAccuracy !== undefined && stats.lastAccuracy > 0 && (
@@ -280,19 +335,27 @@ export const Dashboard = () => {
               <span
                 className={cn(
                   'text-[15px] font-bold',
-                  stats.lastAccuracy >= 90 ? 'text-green-600' : stats.lastAccuracy >= 70 ? 'text-amber-600' : 'text-red-500'
+                  stats.lastAccuracy >= 90
+                    ? 'text-green-600'
+                    : stats.lastAccuracy >= 70
+                      ? 'text-amber-600'
+                      : 'text-red-500'
                 )}
               >
                 {stats.lastAccuracy}%
               </span>
-              <div className="text-[10px] text-muted leading-none">{t('dashboard.accuracy', 'accuracy')}</div>
+              <div className="text-[10px] text-muted leading-none">
+                {t('dashboard.accuracy', 'accuracy')}
+              </div>
             </div>
           )}
           <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">
             <Brain className="w-4 h-4 text-blue" />
             <div>
               <span className="text-[14px] font-bold text-ink leading-none">{knownCount}</span>
-              <div className="text-[10px] text-muted leading-none mt-0.5">{t('vocab.known', 'known')}</div>
+              <div className="text-[10px] text-muted leading-none mt-0.5">
+                {t('vocab.known', 'known')}
+              </div>
             </div>
           </div>
         </div>
@@ -300,10 +363,30 @@ export const Dashboard = () => {
         {/* Mobile Quick Actions */}
         <div className="grid grid-cols-4 gap-2 mt-4 md:hidden">
           {[
-            { icon: BookOpen, label: t('nav.library', 'Library'), to: '/app/library', color: 'text-blue bg-blue/10' },
-            { icon: Brain, label: t('nav.review', 'Review'), to: '/app/review', color: 'text-purple-600 bg-purple-50' },
-            { icon: PlusCircle, label: t('nav.import', 'Import'), to: '/app/import', color: 'text-emerald-600 bg-emerald-50' },
-            { icon: MessageCircle, label: t('nav.tutor', 'Tutor'), to: '/app/tutor', color: 'text-rose-500 bg-rose-50' },
+            {
+              icon: BookOpen,
+              label: t('nav.library', 'Library'),
+              to: '/app/library',
+              color: 'text-blue bg-blue/10',
+            },
+            {
+              icon: Brain,
+              label: t('nav.review', 'Review'),
+              to: '/app/review',
+              color: 'text-purple-600 bg-purple-50',
+            },
+            {
+              icon: PlusCircle,
+              label: t('nav.import', 'Import'),
+              to: '/app/import',
+              color: 'text-emerald-600 bg-emerald-50',
+            },
+            {
+              icon: MessageCircle,
+              label: t('nav.tutor', 'Tutor'),
+              to: '/app/tutor',
+              color: 'text-rose-500 bg-rose-50',
+            },
           ].map(({ icon: Icon, label, to, color }) => (
             <button
               key={to}
@@ -313,11 +396,25 @@ export const Dashboard = () => {
               <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', color)}>
                 <Icon className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-semibold text-ink3 leading-tight text-center">{label}</span>
+              <span className="text-[10px] font-semibold text-ink3 leading-tight text-center">
+                {label}
+              </span>
             </button>
           ))}
         </div>
       </header>
+
+      {/* ── Today's Study Plan ─────────────────────────────────────── */}
+      {hasAnyActivity && (
+        <StudyPlanWidget
+          reviewCount={reviewCount}
+          wordsReadToday={stats.readToday}
+          dailyGoal={dailyGoal}
+          streak={stats.streak}
+          continueText={continueText}
+          recommendedText={suggestedText}
+        />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
         {/* Review Hero */}
