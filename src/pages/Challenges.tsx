@@ -201,22 +201,27 @@ export function Challenges() {
   const recordedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
+    let stale = false;
     fetchCommunityScholars()
-      .then(setScholars)
-      .catch(() => setScholars([]))
-      .finally(() => setLoadingScholars(false));
+      .then((data) => { if (!stale) setScholars(data); })
+      .catch(() => { if (!stale) setScholars([]); })
+      .finally(() => { if (!stale) setLoadingScholars(false); });
+    return () => { stale = true; };
   }, []);
 
   useEffect(() => {
     if (!user) return;
+    let stale = false;
     ChallengeService.getCompletions()
       .then((completions) => {
+        if (stale) return;
         const map: Record<string, string> = {};
         for (const c of completions) map[c.challengeId] = c.completedAt;
         setCompletionMap(map);
         for (const id of Object.keys(map)) recordedRef.current.add(id);
       })
       .catch(() => {});
+    return () => { stale = true; };
   }, [user]);
 
   const userMetrics = useMemo(
