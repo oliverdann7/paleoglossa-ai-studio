@@ -9,12 +9,19 @@ import { AKKADIAN_SIGNS } from '../data/scripts/akkadian-signs.js';
 import { EGYPTIAN_SIGNS } from '../data/scripts/egyptian-signs.js';
 import { HITTITE_SIGNS } from '../data/scripts/hittite-signs.js';
 import { UGARITIC_SIGNS } from '../data/scripts/ugaritic-signs.js';
+import { GREEK_LETTERS } from '../data/scripts/greek-letters.js';
+import { HEBREW_LETTERS } from '../data/scripts/hebrew-letters.js';
+import { LATIN_SCRIPT } from '../data/scripts/latin-script.js';
 
 const SIGN_MAP: Record<string, ScriptSign[]> = {
   akk: AKKADIAN_SIGNS,
   egy: EGYPTIAN_SIGNS,
   hit: HITTITE_SIGNS,
   uga: UGARITIC_SIGNS,
+  grc: GREEK_LETTERS,
+  'grc-koine': GREEK_LETTERS,
+  hbo: HEBREW_LETTERS,
+  lat: LATIN_SCRIPT,
 };
 
 type Tab = 'signs' | 'practice' | 'read';
