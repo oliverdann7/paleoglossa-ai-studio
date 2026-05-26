@@ -33,6 +33,10 @@ import {
   summarizeWiktionary,
   type WiktionaryLookupResult,
 } from '@/lib/services/wiktionaryService';
+import {
+  lookupLexicon,
+  type LexiconLookupResult,
+} from '@/lib/services/lexiconService';
 import { ParadigmModal } from './ParadigmModal.js';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
@@ -214,6 +218,9 @@ export const LexDrawerPanel = memo(({
   const [wiktionaryResult, setWiktionaryResult] = useState<WiktionaryLookupResult | null>(null);
   const [isWiktionaryLoading, setIsWiktionaryLoading] = useState(false);
   const wiktionaryLemmaRef = useRef<string | null>(null);
+  const [lexiconResult, setLexiconResult] = useState<LexiconLookupResult | null>(null);
+  const [isLexiconLoading, setIsLexiconLoading] = useState(false);
+  const lexiconLemmaRef = useRef<string | null>(null);
   const [isCacheLoading, setIsCacheLoading] = useState(false);
   const [cacheEntry, setCacheEntry] = useState<CacheEntry | null>(null);
 
@@ -305,9 +312,6 @@ export const LexDrawerPanel = memo(({
       parts.push(` Morphology — ${morphDetails.join(', ')}.`);
     }
 
-    parts.push(
-      ' Full dictionary entry unavailable for this lemma yet — open the dictionary, request a fresh AI lookup, or save your own gloss below.'
-    );
     return parts.join('').trim();
   }, [selectedWord, langId]);
 
@@ -377,6 +381,9 @@ export const LexDrawerPanel = memo(({
     setWiktionaryResult(null);
     setIsWiktionaryLoading(false);
     wiktionaryLemmaRef.current = null;
+    setLexiconResult(null);
+    setIsLexiconLoading(false);
+    lexiconLemmaRef.current = null;
     setCacheEntry(null);
     setIsCacheLoading(false);
   }, [selectedWord?.lemma]);
@@ -398,9 +405,26 @@ export const LexDrawerPanel = memo(({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord?.lemma, !!definitionLookup, langId]);
 
-  // Try the server-side gloss cache if no local or Wiktionary definition is available.
+  // After Wiktionary finishes with no result, try Logeion (Greek/Latin) or Sefaria (Hebrew).
   useEffect(() => {
     if (!selectedWord || definitionLookup || wiktionaryResult) return;
+    if (isWiktionaryLoading) return; // wait for wiktionary to finish
+    if (lexiconLemmaRef.current === selectedWord.lemma) return;
+    const currentLemma = selectedWord.lemma;
+    lexiconLemmaRef.current = currentLemma;
+    setIsLexiconLoading(true);
+    (async () => {
+      const result = await lookupLexicon(currentLemma, langId);
+      if (lexiconLemmaRef.current !== currentLemma) return;
+      setLexiconResult(result);
+      setIsLexiconLoading(false);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWord?.lemma, !!definitionLookup, !!wiktionaryResult, isWiktionaryLoading, langId]);
+
+  // Automatically fetch from server cache or AI if no lexicon definition is available
+  useEffect(() => {
+    if (!selectedWord || definitionLookup || wiktionaryResult || lexiconResult) return;
     if (isCacheLoading || cacheEntry) return;
 
     const currentLemma = selectedWord.lemma;
@@ -420,7 +444,7 @@ export const LexDrawerPanel = memo(({
     })();
 
     return () => { isCancelled = true; };
-  }, [selectedWord, definitionLookup, wiktionaryResult, langId, isCacheLoading, cacheEntry]);
+  }, [selectedWord, definitionLookup, wiktionaryResult, lexiconResult, langId, isCacheLoading, cacheEntry]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
@@ -609,7 +633,28 @@ export const LexDrawerPanel = memo(({
                     </>
                   );
                 }
-                if (isWiktionaryLoading || isCacheLoading) {
+                if (lexiconResult) {
+                  return (
+                    <>
+                      <div className="text-ink">{lexiconResult.definition}</div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <SourceBadge trust={getSourceTrust(lexiconResult.source)} />
+                        {lexiconResult.sourceUrl && (
+                          <a
+                            href={lexiconResult.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-muted hover:text-blue transition-colors flex items-center gap-0.5"
+                          >
+                            {lexiconResult.sourceLabel}
+                            <ExternalLink className="w-3 h-3 ml-0.5" />
+                          </a>
+                        )}
+                      </div>
+                    </>
+                  );
+                }
+                if (isWiktionaryLoading || isLexiconLoading || isCacheLoading) {
                   return (
                     <span className="text-muted italic text-[16px] inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin inline-block" />
@@ -629,16 +674,17 @@ export const LexDrawerPanel = memo(({
                     </>
                   );
                 }
-                // AI didn't return a useful gloss — show a description built from
-                // the word's own metadata so the panel always carries meaning.
+                // No definition found — show compact metadata and action buttons.
                 return (
                   <div>
-                    <span className="block text-ink text-[16px] leading-snug">
-                      {descriptiveFallback}
+                    {descriptiveFallback && (
+                      <span className="block text-ink2 text-[14px] leading-snug mb-2">
+                        {descriptiveFallback}
+                      </span>
+                    )}
+                    <span className="block text-muted text-[13px] italic mb-2">
+                      {t('reader.noDefinitionFound', 'No definition found in local lexicons.')}
                     </span>
-                    <div className="mt-2 flex items-center gap-2">
-                      <SourceBadge trust={getSourceTrust('metadata')} />
-                    </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         onClick={() => { setAiFallbackGloss(null); handleFetchGloss(); }}

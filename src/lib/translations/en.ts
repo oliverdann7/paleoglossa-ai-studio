@@ -44,6 +44,9 @@ export const en = {
     'dashboard.noVocab': 'No vocabulary saved yet. Start reading to build your lexicon.',
     'dashboard.items': 'items',
     'dashboard.complete': 'complete',
+    'dashboard.progress': 'Progress',
+    'dashboard.studyActivity': 'Study Activity',
+    'dashboard.freqGoals': 'Frequency Goals',
 
     'library.title': 'Library',
     'library.search': 'Search texts...',
