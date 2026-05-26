@@ -33,6 +33,7 @@ import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useStreakNotifications } from '../lib/hooks/useStreakNotifications.js';
 import { StudyPlanWidget } from '../components/StudyPlanWidget.js';
+import { pickDashboardRecommendation } from '../lib/services/recommendationService.js';
 
 const RTL_LANGS = new Set([
   'hbo',
@@ -181,21 +182,36 @@ export const Dashboard = () => {
     return null;
   }, [readingProgress, userImports]);
 
-  // Suggest a text the user hasn't started, from the active language
   const suggestedText = useMemo(() => {
     const builtInTexts = CorpusDB.getTexts();
     const startedIds = new Set(readingProgress.map((p: any) => p.textId));
+
+    const smart = pickDashboardRecommendation(
+      builtInTexts,
+      knowledge,
+      activeLanguageId,
+      startedIds,
+      (text) => {
+        const sections =
+          text.sectionsPreview?.map((p) => CorpusDB.getSection(p.id)).filter(Boolean) || [];
+        return sections.flatMap(
+          (s: any) => s?.sentences?.flatMap((sent: any) => sent.tokens || []) || []
+        );
+      }
+    );
+    if (smart) return smart;
+
+    // Fallback: first unstarted text in active language sorted by level
     const candidates = builtInTexts.filter(
       (t) => t.language === activeLanguageId && !startedIds.has(t.id)
     );
-    // Prefer beginner-level texts first
     const sorted = candidates.sort((a, b) => {
       const levelOrder = (l: string | undefined) =>
         l === 'A1' ? 0 : l === 'A2' ? 1 : l === 'B1' ? 2 : l === 'B2' ? 3 : 4;
       return levelOrder(a.level) - levelOrder(b.level);
     });
-    return sorted[0] || null;
-  }, [readingProgress, activeLanguageId]);
+    return sorted[0] ? { id: sorted[0].id, title: sorted[0].title } : null;
+  }, [readingProgress, activeLanguageId, knowledge]);
 
   const dailyGoal = settings.dailyGoalWords > 0 ? settings.dailyGoalWords : 500;
   const dailyProgress = Math.min(1, stats.readToday / dailyGoal);

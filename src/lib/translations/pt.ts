@@ -844,5 +844,18 @@ export const pt = {
     'plans.full.feat5': 'Compartilhamento e fork de biblioteca',
     'plans.full.feat6': 'Todos os recursos experimentais (Tutor, Gramática, Sintaxe, etc.)',
     'plans.full.feat7': 'Suporte prioritário',
+
+    'rec.title': 'Recomendado para Você',
+    'rec.known': 'conhecido',
+    'rec.newWords': 'novas',
+    'rec.labelEasy': 'Leitura fácil',
+    'rec.labelJustRight': 'Ideal',
+    'rec.labelStretch': 'Desafie-se',
+    'rec.labelChallenging': 'Desafiador',
+    'rec.sweetSpot': '{{count}} palavras novas no seu nível',
+    'rec.reinforce': 'Reforce o que você sabe',
+    'rec.newGenre': 'Explore {{genre}}',
+    'rec.newWords_reason': '{{count}} palavras novas para aprender',
+    'rec.expand': 'Expanda seu vocabulário',
   },
 };
