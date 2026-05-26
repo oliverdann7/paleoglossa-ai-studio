@@ -457,7 +457,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     };
     fetchData();
     return () => { isCancelled = true; };
-  }, [selectedWord?.lemma, definitionLookup, wiktionaryResult, textLanguageId, isCacheLoading, cacheEntry]);
+  }, [selectedWord, definitionLookup, wiktionaryResult, textLanguageId, isCacheLoading, cacheEntry]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
