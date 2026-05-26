@@ -192,6 +192,38 @@ export class AIClient {
     return data.explanation;
   }
 
+  static async fetchCachedGloss(
+    languageId: string,
+    lemma: string
+  ): Promise<{ value: string } | null> {
+    try {
+      const response = await fetch(
+        `/api/lexical-cache/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}/short-gloss`
+      );
+      if (!response.ok) return null;
+      return (await response.json()) as { value: string };
+    } catch {
+      return null;
+    }
+  }
+
+  static async saveGlossToCache(
+    languageId: string,
+    lemma: string,
+    surface: string,
+    value: string
+  ): Promise<void> {
+    try {
+      await fetch('/api/lexical-cache', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ languageId, lemma, surface, type: 'short-gloss', value }),
+      });
+    } catch {
+      // Non-critical — cache persistence failure is silent
+    }
+  }
+
   static async explainPhrase(languageId: string, phrase: string): Promise<string> {
     const data = await this.request(
       'explain',
