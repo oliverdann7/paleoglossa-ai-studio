@@ -1,8 +1,9 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Shuffle, Check, X, BookOpen } from 'lucide-react';
 import { getLanguageById } from '../lib/constants/languages.js';
+import { recordMilestone } from '../lib/hooks/useBeginnerProgress.js';
 import type { ScriptSign } from '../types/scripts.js';
 import { AKKADIAN_SIGNS } from '../data/scripts/akkadian-signs.js';
 import { EGYPTIAN_SIGNS } from '../data/scripts/egyptian-signs.js';
@@ -32,6 +33,10 @@ export const ScriptLab = () => {
 
   const language = getLanguageById(langId || '');
   const signs = langId ? SIGN_MAP[langId] : undefined;
+
+  useEffect(() => {
+    if (langId) recordMilestone(langId, 'scriptOpened');
+  }, [langId]);
 
   const filteredSigns = useMemo(() => {
     if (!signs) return [];

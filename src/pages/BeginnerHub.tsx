@@ -19,16 +19,44 @@ import { GUIDED_TIERS } from '../lib/constants/beginnerPaths.js';
 import type { GuidedTier } from '../lib/constants/beginnerPaths.js';
 import { useBeginnerProgress } from '../lib/hooks/useBeginnerProgress.js';
 import type { BeginnerMilestone } from '../lib/hooks/useBeginnerProgress.js';
+import { useSettings } from '../lib/hooks/useSettings.js';
+
+const LEVEL_TO_TIER: Record<
+  'absolute-beginner' | 'knows-alphabet' | 'intermediate' | 'advanced',
+  string
+> = {
+  'absolute-beginner': 'know-nothing',
+  'knows-alphabet': 'know-alphabet',
+  intermediate: 'read-slowly',
+  advanced: 'academic',
+};
 
 export const BeginnerHub = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getProgress, markMilestone } = useBeginnerProgress();
+  const { settings } = useSettings();
 
+  // User-chosen overrides (null = fall back to onboarding-derived defaults).
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [expandedLang, setExpandedLang] = useState<string | null>(null);
 
   const languages = useMemo(() => getAvailableLanguages(), []);
+
+  const onboarding = settings.onboardingProfile;
+  const preselectedTierId =
+    onboarding && onboarding.level ? LEVEL_TO_TIER[onboarding.level] : null;
+  const preselectedLangId = onboarding?.languageId || null;
+
+  // Effective values: user choice wins; otherwise derived from onboarding.
+  // For expandedLang an empty string means "user explicitly collapsed".
+  const effectiveTier = selectedTier ?? preselectedTierId;
+  const effectiveExpandedLang =
+    expandedLang === null ? preselectedLangId : expandedLang || null;
+  const showOnboardingHint =
+    selectedTier === null &&
+    expandedLang === null &&
+    (preselectedTierId !== null || preselectedLangId !== null);
 
   const textsByLanguage = useMemo(() => {
     const all = CorpusDB.getTexts();
@@ -41,8 +69,8 @@ export const BeginnerHub = () => {
   }, []);
 
   const tier = useMemo(
-    () => GUIDED_TIERS.find((t) => t.id === selectedTier) || GUIDED_TIERS[0],
-    [selectedTier]
+    () => GUIDED_TIERS.find((t) => t.id === effectiveTier) || GUIDED_TIERS[0],
+    [effectiveTier]
   );
 
   const hasMatchingText = (langId: string): string | null => {
@@ -98,18 +126,27 @@ export const BeginnerHub = () => {
           transition={{ delay: 0.1 }}
           className="mb-10"
         >
-          <h2 className="text-sm font-bold text-ink2 uppercase tracking-widest mb-4">
-            {t('beginnerHub.whatIsYourLevel', 'What is your experience level?')}
-          </h2>
+          <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
+            <h2 className="text-sm font-bold text-ink2 uppercase tracking-widest">
+              {t('beginnerHub.whatIsYourLevel', 'What is your experience level?')}
+            </h2>
+            {showOnboardingHint && (
+              <span className="text-[11px] text-muted">
+                {t(
+                  'beginnerHub.setFromOnboarding',
+                  'Set from your onboarding — change anytime'
+                )}
+              </span>
+            )}
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {GUIDED_TIERS.map((tierOption) => {
-              const isActive = selectedTier === tierOption.id;
+              const isActive = effectiveTier === tierOption.id;
               return (
                 <button
                   key={tierOption.id}
                   onClick={() => {
                     setSelectedTier(tierOption.id);
-                    setExpandedLang(null);
                   }}
                   className={cn(
                     'text-left p-4 rounded-xl border transition-all',
@@ -150,7 +187,7 @@ export const BeginnerHub = () => {
                 progress.firstWordSaved,
                 progress.firstReviewCompleted,
               ].filter(Boolean).length;
-              const isExpanded = expandedLang === lang.id;
+              const isExpanded = effectiveExpandedLang === lang.id;
 
               return (
                 <div
@@ -162,7 +199,7 @@ export const BeginnerHub = () => {
                 >
                   {/* Language header / card */}
                   <button
-                    onClick={() => setExpandedLang(isExpanded ? null : lang.id)}
+                    onClick={() => setExpandedLang(isExpanded ? '' : lang.id)}
                     className="w-full text-left p-5 flex items-start gap-4"
                   >
                     <span className="w-12 h-12 bg-parch2 rounded-xl flex items-center justify-center text-2xl shrink-0">

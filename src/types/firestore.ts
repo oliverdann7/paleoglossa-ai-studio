@@ -122,6 +122,18 @@ export interface OnboardingProfile {
   dailyCommitment: number;
 }
 
+/**
+ * Per-language beginner-hub milestone state.
+ * Path: users/{userId}/beginnerProgress/{languageId}
+ */
+export interface BeginnerProgressDoc {
+  scriptOpened: boolean;
+  firstTextOpened: boolean;
+  firstWordSaved: boolean;
+  firstReviewCompleted: boolean;
+  updatedAt?: Timestamp;
+}
+
 export interface UserSettings {
   theme: 'parchment' | 'sepia' | 'dark';
   fontSize: number;

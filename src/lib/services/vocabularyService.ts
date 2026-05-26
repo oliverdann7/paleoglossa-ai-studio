@@ -9,6 +9,7 @@ import {
   arrayUnion,
 } from 'firebase/firestore';
 import { WordState, normalizeWordState } from '../constants/wordStates.js';
+import { recordMilestone } from '../hooks/useBeginnerProgress.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
 import { SRSData } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
@@ -317,6 +318,9 @@ export class VocabularyService {
     srs?: SRSData,
     extra?: Partial<ReadingContext>
   ) {
+    if (state !== WordState.NEW && languageId && languageId !== 'unknown') {
+      recordMilestone(languageId, 'firstWordSaved');
+    }
     if (!userId) {
       // Local fallback
       const ls = localStorage.getItem(STORAGE_KEY);

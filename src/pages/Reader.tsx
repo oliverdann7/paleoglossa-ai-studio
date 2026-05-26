@@ -33,6 +33,7 @@ import { STORAGE_KEYS } from '../lib/constants/storage.js';
 import { OfflineService } from '../lib/services/offlineService.js';
 import { useOnlineStatus } from '../lib/hooks/useOnlineStatus.js';
 import { BookmarkService } from '../lib/services/bookmarkService.js';
+import { recordMilestone } from '../lib/hooks/useBeginnerProgress.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
 export const Reader = () => {
@@ -271,6 +272,12 @@ export const Reader = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textId]);
+
+  // Record the firstTextOpened beginner-hub milestone once the language is known.
+  useEffect(() => {
+    const langId = localText?.languageId || localText?.language;
+    if (langId) recordMilestone(langId, 'firstTextOpened');
+  }, [localText?.languageId, localText?.language]);
 
   const onAskTutor = () =>
     navigate(`/app/tutor?textId=${textId || ''}&sentenceIndex=${currentSentenceIndex || 0}`);

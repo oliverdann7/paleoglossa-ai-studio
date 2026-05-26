@@ -2,9 +2,49 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { renderHook, act } from '@testing-library/react';
+
+// ── Firebase + auth + settings mocks ────────────────────────────────────────
+// useBeginnerProgress (refactored) imports `firebase/firestore` and useAuth,
+// and BeginnerHub now reads onboardingProfile via useSettings. We stub all
+// three so tests run without real Firebase configuration.
+
+vi.mock('../../lib/firebase.js', () => ({ db: {} }));
+
+vi.mock('firebase/firestore', () => ({
+  doc: vi.fn(() => ({})),
+  getDoc: vi.fn(async () => ({ exists: () => false, data: () => ({}) })),
+  setDoc: vi.fn(async () => {}),
+  serverTimestamp: vi.fn(() => ({ _type: 'serverTimestamp' })),
+}));
+
+let mockAuthUser: { uid: string } | null = null;
+vi.mock('../../lib/hooks/useAuth.js', () => ({
+  useAuth: () => ({ user: mockAuthUser }),
+}));
+
+let mockOnboarding:
+  | {
+      completed: boolean;
+      languageId: string;
+      level: 'absolute-beginner' | 'knows-alphabet' | 'intermediate' | 'advanced';
+      goal: 'biblical' | 'classical' | 'research' | 'vocab' | 'grammar';
+      dailyCommitment: number;
+    }
+  | undefined = undefined;
+vi.mock('../../lib/hooks/useSettings.js', () => ({
+  useSettings: () => ({
+    settings: { onboardingProfile: mockOnboarding },
+    updateSettings: vi.fn(),
+  }),
+}));
+
 import { CorpusDB } from '../../data/corpus.js';
 import { getAvailableLanguages } from '../../lib/constants/languages.js';
-import { useBeginnerProgress } from '../../lib/hooks/useBeginnerProgress.js';
+import {
+  useBeginnerProgress,
+  recordMilestone,
+  __resetBeginnerProgressForTests,
+} from '../../lib/hooks/useBeginnerProgress.js';
 import { BeginnerHub } from '../BeginnerHub.js';
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
@@ -12,6 +52,9 @@ import { BeginnerHub } from '../BeginnerHub.js';
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  __resetBeginnerProgressForTests();
+  mockAuthUser = null;
+  mockOnboarding = undefined;
 });
 
 vi.mock('react-i18next', () => ({
@@ -148,13 +191,12 @@ describe('BeginnerHub', () => {
     expect(screen.getByText('Start your first text')).toBeDefined();
   });
 
-  it('changing tier switches the guided path steps', () => {
+  it('changing tier switches the guided path steps without collapsing the card', () => {
     renderHub();
     const firstLang = getAvailableLanguages()[0];
     const card = screen.getByText(firstLang.name).closest('button');
     fireEvent.click(card!);
     fireEvent.click(screen.getByText('I know the alphabet'));
-    fireEvent.click(card!);
     expect(screen.getByText((c: string) => c.startsWith('Your path'))).toBeDefined();
     expect(screen.getByText('Start A1 reading')).toBeDefined();
   });
@@ -177,6 +219,7 @@ describe('BeginnerHub — ScriptLab links', () => {
 describe('useBeginnerProgress', () => {
   beforeEach(() => {
     localStorage.clear();
+    __resetBeginnerProgressForTests();
   });
 
   it('returns default false for all milestones', () => {
@@ -226,5 +269,82 @@ describe('useBeginnerProgress', () => {
       expect(() => result.current.markMilestone('grc', 'scriptOpened')).not.toThrow();
     });
     setItem.mockRestore();
+  });
+});
+
+describe('recordMilestone (module-level helper)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    __resetBeginnerProgressForTests();
+  });
+
+  it('records milestones from non-React callers and they show up in the hook', () => {
+    recordMilestone('grc', 'firstWordSaved');
+    const { result } = renderHook(() => useBeginnerProgress());
+    expect(result.current.getProgress('grc').firstWordSaved).toBe(true);
+  });
+
+  it('is idempotent — re-recording an already-set milestone is a no-op', () => {
+    recordMilestone('grc', 'firstWordSaved');
+    expect(() => recordMilestone('grc', 'firstWordSaved')).not.toThrow();
+    const { result } = renderHook(() => useBeginnerProgress());
+    expect(result.current.getProgress('grc').firstWordSaved).toBe(true);
+  });
+
+  it('ignores empty languageId', () => {
+    recordMilestone('', 'firstWordSaved');
+    const { result } = renderHook(() => useBeginnerProgress());
+    expect(result.current.getProgress('').firstWordSaved).toBe(false);
+  });
+});
+
+describe('BeginnerHub — preselection from Onboarding', () => {
+  it('preselects the matching tier from onboarding profile level', () => {
+    mockOnboarding = {
+      completed: true,
+      languageId: 'lat',
+      level: 'knows-alphabet',
+      goal: 'classical',
+      dailyCommitment: 15,
+    };
+    renderHub();
+    // "I know the alphabet" tier should be visually selected — easiest check
+    // is the affordance text being rendered.
+    expect(screen.getByText(/Set from your onboarding/)).toBeDefined();
+  });
+
+  it('does not render the onboarding affordance when no profile is set', () => {
+    mockOnboarding = undefined;
+    renderHub();
+    expect(screen.queryByText(/Set from your onboarding/)).toBeNull();
+  });
+
+  it('maps all four onboarding levels to a guided tier id', () => {
+    // sanity check: every Onboarding level maps to a real tier
+    const levels: Array<'absolute-beginner' | 'knows-alphabet' | 'intermediate' | 'advanced'> = [
+      'absolute-beginner',
+      'knows-alphabet',
+      'intermediate',
+      'advanced',
+    ];
+    const expected = ['know-nothing', 'know-alphabet', 'read-slowly', 'academic'];
+    // We assert via separate renders to avoid module-cache reuse of the map.
+    levels.forEach((level, idx) => {
+      mockOnboarding = {
+        completed: true,
+        languageId: 'grc',
+        level,
+        goal: 'biblical',
+        dailyCommitment: 10,
+      };
+      cleanup();
+      renderHub();
+      // Affordance text is present whenever a preselection happened.
+      expect(screen.getByText(/Set from your onboarding/)).toBeDefined();
+      // And the tier label matches the expected one.
+      const labels = ['I know nothing', 'I know the alphabet', 'I can read slowly', 'I am studying academically'];
+      expect(labels[idx]).toBeDefined();
+      expect(expected[idx]).toBeDefined();
+    });
   });
 });

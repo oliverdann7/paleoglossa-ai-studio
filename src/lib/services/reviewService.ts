@@ -15,6 +15,7 @@ import { calculateFSRS, FSRSState, FSRRating } from '../srs/fsrs.js';
 import { WordState } from '../constants/wordStates.js';
 import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
 import { reportPersistenceError } from '../errors/persistenceReporter.js';
+import { recordMilestone } from '../hooks/useBeginnerProgress.js';
 
 // Toggle to use FSRS algorithm
 const USE_FSRS = true;
@@ -225,6 +226,11 @@ export class ReviewService {
         dataPreservedLocally: false,
       });
       throw e;
+    }
+
+    const milestoneLang = metadata?.languageId || item.languageId;
+    if (milestoneLang && milestoneLang !== 'unknown') {
+      recordMilestone(milestoneLang, 'firstReviewCompleted');
     }
 
     return nextState;
