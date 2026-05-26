@@ -287,6 +287,140 @@ router.get('/api/tokens/:language/:token', (req: any, res: any) => {
   }
 });
 
+// ─── External Lexicon Lookup (Logeion · Sefaria) ─────────────────────────────
+// Server-side proxy so we avoid CORS and can cache/rate-limit in one place.
+// Supported languages: grc, grc-koine, lat → Logeion (LSJ / Lewis & Short)
+//                      hbo                → Sefaria (BDB)
+
+function stripTags(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+router.get('/api/lexicon-lookup/:language/:lemma', async (req: any, res: any) => {
+  const { language, lemma } = req.params;
+  if (!lemma || !language) {
+    return res.status(400).json({ error: 'language and lemma are required', code: 'INVALID_INPUT' });
+  }
+
+  const isGreek = language === 'grc' || language === 'grc-koine';
+  const isLatin = language === 'lat';
+  const isHebrew = language === 'hbo';
+
+  // ── Greek / Latin via Logeion ──────────────────────────────────────────────
+  if (isGreek || isLatin) {
+    try {
+      const url = `https://logeion.uchicago.edu/lexical/info/${encodeURIComponent(lemma)}`;
+      const response = await fetch(url, {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'Paleoglossa/1.0 (ancient-language learning; paleoglossa.com)',
+        },
+        signal: AbortSignal.timeout(6000),
+      });
+
+      if (!response.ok) {
+        return res.status(404).json({ error: 'Not found in Logeion', code: 'NOT_FOUND' });
+      }
+
+      const data: Record<string, any[]> = await response.json();
+
+      // Priority order: LSJ > middleLiddell for Greek; ls > logeion for Latin
+      const candidateKeys = isLatin
+        ? ['ls', 'logeion']
+        : ['lsj', 'middleLiddell', 'logeion'];
+
+      const sourceLabels: Record<string, string> = {
+        lsj: 'Liddell-Scott-Jones',
+        middleLiddell: 'Middle Liddell',
+        ls: 'Lewis & Short',
+        logeion: 'Logeion',
+      };
+
+      for (const key of candidateKeys) {
+        const entries = data[key];
+        if (!Array.isArray(entries) || entries.length === 0) continue;
+        const entry = entries[0];
+        const raw = entry?.data?.short || entry?.data?.long || entry?.content || '';
+        const text = typeof raw === 'string' ? stripTags(raw) : '';
+        if (!text) continue;
+        return res.status(200).json({
+          lemma,
+          language,
+          definition: text,
+          source: `logeion-${key}`,
+          sourceLabel: sourceLabels[key] ?? 'Logeion',
+          sourceUrl: `https://logeion.uchicago.edu/${encodeURIComponent(lemma)}`,
+        });
+      }
+      return res.status(404).json({ error: 'No usable definition in Logeion response', code: 'NOT_FOUND' });
+    } catch (err: any) {
+      console.error('[lexicon-lookup] Logeion error:', err.message);
+      return res.status(502).json({ error: 'Logeion request failed', code: 'UPSTREAM_ERROR' });
+    }
+  }
+
+  // ── Biblical Hebrew via Sefaria ────────────────────────────────────────────
+  if (isHebrew) {
+    try {
+      const url = `https://www.sefaria.org/api/lexicon/lookup/${encodeURIComponent(lemma)}`;
+      const response = await fetch(url, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(6000),
+      });
+
+      if (!response.ok) {
+        return res.status(404).json({ error: 'Not found in Sefaria', code: 'NOT_FOUND' });
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        return res.status(404).json({ error: 'No Sefaria entries', code: 'NOT_FOUND' });
+      }
+
+      const entry = data[0];
+      const content = entry?.content ?? [];
+      let definition = '';
+
+      for (const block of content) {
+        if (block?.en) { definition = block.en; break; }
+        if (Array.isArray(block?.senses)) {
+          const senseDefs = block.senses
+            .map((s: any) => s?.definition || s?.en || '')
+            .filter(Boolean);
+          if (senseDefs.length) { definition = senseDefs.join('; '); break; }
+        }
+      }
+
+      if (!definition) {
+        return res.status(404).json({ error: 'Empty Sefaria entry', code: 'NOT_FOUND' });
+      }
+
+      return res.status(200).json({
+        lemma,
+        language,
+        definition: stripTags(definition),
+        source: 'sefaria-bdb',
+        sourceLabel: entry?.parent_lexicon ?? 'Hebrew Lexicon (Sefaria)',
+        sourceUrl: `https://www.sefaria.org/search#lexicon/${encodeURIComponent(lemma)}`,
+      });
+    } catch (err: any) {
+      console.error('[lexicon-lookup] Sefaria error:', err.message);
+      return res.status(502).json({ error: 'Sefaria request failed', code: 'UPSTREAM_ERROR' });
+    }
+  }
+
+  return res.status(400).json({ error: 'Language not supported for lexicon lookup', code: 'UNSUPPORTED_LANGUAGE' });
+});
+
 // ─── Dictionary ───────────────────────────────────────────────────────────────
 
 router.get('/api/dictionary', (_req: any, res: any) => {
