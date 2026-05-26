@@ -23,8 +23,7 @@ export const LatinCorpusAdapter: ContentSourceAdapter = {
     return '';
   },
 
-  async normalize(raw: any, metadata: any) {
-    console.log('Normalizing raw data', !!raw);
+  async normalize(_raw: any, metadata: any) {
     return {
       text: {
         id: metadata?.id || 'lat-1',

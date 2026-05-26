@@ -92,11 +92,13 @@ function PathwayList() {
   const [progress] = useState(loadProgress);
 
   useEffect(() => {
+    let stale = false;
     fetch(getApiUrl('/api/grammar/pathways'))
       .then((r) => r.json())
-      .then((data) => setPathways(Array.isArray(data) ? data : []))
-      .catch(() => setPathways([]))
-      .finally(() => setLoading(false));
+      .then((data) => { if (!stale) setPathways(Array.isArray(data) ? data : []); })
+      .catch(() => { if (!stale) setPathways([]); })
+      .finally(() => { if (!stale) setLoading(false); });
+    return () => { stale = true; };
   }, []);
 
   if (loading) {
@@ -186,11 +188,13 @@ function PathwayDetail({ pathwayId }: { pathwayId: string }) {
   }, [pathwayId]);
 
   useEffect(() => {
+    let stale = false;
     fetch(getApiUrl(`/api/grammar/pathways/${encodeURIComponent(pathwayId)}`))
       .then((r) => r.json())
-      .then((data) => setPathway(data))
-      .catch(() => setPathway(null))
-      .finally(() => setLoading(false));
+      .then((data) => { if (!stale) setPathway(data); })
+      .catch(() => { if (!stale) setPathway(null); })
+      .finally(() => { if (!stale) setLoading(false); });
+    return () => { stale = true; };
   }, [pathwayId]);
 
   const handleToggle = useCallback((conceptId: string) => {

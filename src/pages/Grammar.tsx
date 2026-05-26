@@ -557,10 +557,12 @@ function PathwayView({
   const [steps, setSteps] = useState<PathwayStep[]>([]);
 
   useEffect(() => {
+    let stale = false;
     fetch(getApiUrl('/api/grammar/pathway'))
       .then((r) => r.json())
-      .then((data) => setSteps(Array.isArray(data) ? data : []))
-      .catch(() => setSteps([]));
+      .then((data) => { if (!stale) setSteps(Array.isArray(data) ? data : []); })
+      .catch(() => { if (!stale) setSteps([]); });
+    return () => { stale = true; };
   }, []);
 
   if (steps.length === 0) {
@@ -662,13 +664,16 @@ export const Grammar = () => {
   }, [activeLanguageId]);
 
   useEffect(() => {
+    let stale = false;
     fetch(getApiUrl('/api/grammar/concepts'))
       .then((r) => r.json())
       .then((data) => {
+        if (stale) return;
         setConcepts(data);
         setIsLoading(false);
       })
-      .catch(() => setIsLoading(false));
+      .catch(() => { if (!stale) setIsLoading(false); });
+    return () => { stale = true; };
   }, []);
 
   const selectConcept = (concept: Concept) => {

@@ -186,14 +186,17 @@ export const Vocabulary = () => {
 
   // Fetch frequency index for the selected language
   useEffect(() => {
+    let stale = false;
     const langId = selectedLang === 'all' ? (availableLanguages[0]?.id || 'grc') : selectedLang;
     apiFetch<{ lemma: string; rank: number; frequency: number }[]>(`/api/lemma-frequency/${encodeURIComponent(langId)}`, { skipAuth: true })
       .then((data) => {
+        if (stale) return;
         const map: Record<string, number> = {};
         for (const entry of data) map[entry.lemma] = entry.rank;
         setFreqMap(map);
       })
       .catch(() => {});
+    return () => { stale = true; };
   }, [selectedLang, availableLanguages]);
 
   const handleDelete = (id: string) => setWordState(id, WordState.NEW);
