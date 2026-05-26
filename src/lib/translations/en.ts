@@ -814,5 +814,18 @@ export const en = {
     'plans.full.feat5': 'Public library sharing & forking',
     'plans.full.feat6': 'All experimental features (Tutor, Grammar, Syntax, etc.)',
     'plans.full.feat7': 'Priority support',
+
+    'rec.title': 'Recommended for You',
+    'rec.known': 'known',
+    'rec.newWords': 'new',
+    'rec.labelEasy': 'Easy read',
+    'rec.labelJustRight': 'Just right',
+    'rec.labelStretch': 'Stretch yourself',
+    'rec.labelChallenging': 'Challenging',
+    'rec.sweetSpot': '{{count}} new words at your level',
+    'rec.reinforce': 'Reinforce what you know',
+    'rec.newGenre': 'Explore {{genre}}',
+    'rec.newWords_reason': '{{count}} new words to learn',
+    'rec.expand': 'Expand your vocabulary',
   },
 };

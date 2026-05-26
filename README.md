@@ -48,13 +48,13 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | Cloud sync (Firestore) + demo migration | ✅ |
 | Admin Firebase debug page | ✅ |
 | Public Discover / community text library | ✅ |
-| Vocabulary frequency & difficulty scores | ✅ |
+| Smart text recommendations (i+1 sweet spot, difficulty labels, reasons) | ✅ |
 | Reader notes & context-menu actions | ✅ |
 | Pronunciation / AudioLab (TTS playback) | ✅ |
-| User recording upload | 🚧 |
+| Syntax / dependency treebank viewer | ✅ |
+| Manuscript / epigraphy lab (image pan/zoom + IIIF) | ✅ |
 | Classroom / course builder | 🚧 |
-| Syntax / dependency treebank | 🚧 |
-| Manuscript / epigraphy lab | 🚧 |
+| User recording upload | 🚧 |
 
 ## API Routes
 
@@ -71,11 +71,11 @@ Routes are modularized under `api/_routes/`. Some require a Gemini API key and F
 | `/api/grammar/concepts` | GET | ✅ | Grammar concepts & pathways |
 | `/api/search` | POST | ✅ | Multi-source corpus search |
 | `/api/notebooks`, `/api/notes` | GET/POST/DELETE | ✅ | Research notebook CRUD |
-| `/api/syntax/...` | GET | 🚧 | Syntax treebank (partial) |
-| `/api/audio/tts` | POST | 🚧 | TTS metadata (no audio stream yet) |
+| `/api/syntax/...` | GET | ✅ | Syntax treebank (AI-generated trees) |
+| `/api/audio/tts` | POST | ✅ | TTS generation with server-side cache |
 | `/api/audio/recordings` | POST | 🚧 | User recording upload (infrastructure not yet in place) |
-| `/api/manuscripts` | GET | 🚧 | Manuscript metadata (placeholder) |
-| `/api/courses` | GET/POST | 🚧 | Classroom management (models exist; detail views incomplete) |
+| `/api/manuscripts` | GET/POST/PATCH/DELETE | ✅ | Manuscript CRUD (image viewer, IIIF manifest support) |
+| `/api/courses` | GET/POST | 🚧 | Classroom management (page exists; teacher roles incomplete) |
 
 ## Corpus Status
 

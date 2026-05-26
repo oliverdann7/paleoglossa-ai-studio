@@ -737,5 +737,18 @@ export const es = {
     'plans.full.feat5': 'Compartir y bifurcar la biblioteca',
     'plans.full.feat6': 'Todas las funciones experimentales (Tutor, Gramática, Sintaxis, etc.)',
     'plans.full.feat7': 'Soporte prioritario',
+
+    'rec.title': 'Recomendado para Ti',
+    'rec.known': 'conocido',
+    'rec.newWords': 'nuevas',
+    'rec.labelEasy': 'Lectura fácil',
+    'rec.labelJustRight': 'Ideal',
+    'rec.labelStretch': 'Supérate',
+    'rec.labelChallenging': 'Desafiante',
+    'rec.sweetSpot': '{{count}} palabras nuevas a tu nivel',
+    'rec.reinforce': 'Refuerza lo que ya sabes',
+    'rec.newGenre': 'Explorar {{genre}}',
+    'rec.newWords_reason': '{{count}} palabras nuevas para aprender',
+    'rec.expand': 'Amplía tu vocabulario',
   },
 };

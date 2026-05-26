@@ -731,5 +731,18 @@ export const de = {
     'plans.full.feat5': 'Öffentliche Bibliotheksteilung & Forking',
     'plans.full.feat6': 'Alle experimentellen Funktionen (Tutor, Grammatik, Syntax usw.)',
     'plans.full.feat7': 'Prioritäts-Support',
+
+    'rec.title': 'Empfohlen für Sie',
+    'rec.known': 'bekannt',
+    'rec.newWords': 'neu',
+    'rec.labelEasy': 'Leichte Lektüre',
+    'rec.labelJustRight': 'Genau richtig',
+    'rec.labelStretch': 'Fordern Sie sich',
+    'rec.labelChallenging': 'Anspruchsvoll',
+    'rec.sweetSpot': '{{count}} neue Wörter auf Ihrem Niveau',
+    'rec.reinforce': 'Festigen Sie, was Sie wissen',
+    'rec.newGenre': '{{genre}} erkunden',
+    'rec.newWords_reason': '{{count}} neue Wörter zu lernen',
+    'rec.expand': 'Erweitern Sie Ihren Wortschatz',
   },
 };

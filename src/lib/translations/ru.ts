@@ -726,5 +726,18 @@ export const ru = {
     'plans.full.feat5': 'Публичный доступ и форк библиотеки',
     'plans.full.feat6': 'Все экспериментальные функции (Репетитор, Грамматика, Синтаксис и др.)',
     'plans.full.feat7': 'Приоритетная поддержка',
+
+    'rec.title': 'Рекомендовано для Вас',
+    'rec.known': 'известно',
+    'rec.newWords': 'новых',
+    'rec.labelEasy': 'Лёгкое чтение',
+    'rec.labelJustRight': 'Самое то',
+    'rec.labelStretch': 'Бросьте вызов себе',
+    'rec.labelChallenging': 'Сложный',
+    'rec.sweetSpot': '{{count}} новых слов по вашему уровню',
+    'rec.reinforce': 'Закрепите известное',
+    'rec.newGenre': 'Исследовать {{genre}}',
+    'rec.newWords_reason': '{{count}} новых слов для изучения',
+    'rec.expand': 'Расширьте словарный запас',
   },
 };

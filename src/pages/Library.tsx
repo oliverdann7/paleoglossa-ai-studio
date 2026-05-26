@@ -334,9 +334,23 @@ export const Library = () => {
       .slice(0, 4);
   }, [readingProgress, textsWithCoverage]);
 
+  const recentGenres = useMemo(() => {
+    const genres: string[] = [];
+    for (const p of readingProgress.slice(0, 5)) {
+      const tx = textsWithCoverage.find((t) => t.id === p.textId);
+      if (tx?.genre) genres.push(tx.genre);
+    }
+    return genres;
+  }, [readingProgress, textsWithCoverage]);
+
   const recommendations = useMemo(
-    () => computeRecommendations(textsWithCoverage, knowledge),
-    [textsWithCoverage, knowledge]
+    () =>
+      computeRecommendations(textsWithCoverage, knowledge, {
+        activeLanguageId,
+        readingProgress,
+        recentGenres,
+      }),
+    [textsWithCoverage, knowledge, activeLanguageId, readingProgress, recentGenres]
   );
 
   const getCefrClass = (level: string) => {
