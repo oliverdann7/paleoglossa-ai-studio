@@ -15,6 +15,7 @@ import {
   CheckCircle,
   ExternalLink,
   AlertCircle,
+  X,
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { ScholarAnnotations } from './ScholarAnnotations.js';
@@ -53,30 +54,28 @@ import { normalizeLemmaKey } from '@/lib/utils/lemmaUtils';
 import { frequencyTier } from '@/lib/utils/frequencyTier';
 import { isUsefulGloss } from '@/lib/utils/lexicalHelper';
 import { getSourceTrust, type SourceTrustInfo } from '@/lib/utils/sourceTrust';
+import type { ReaderToken } from '@/types/reader';
 import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
 import type { ReadingContext } from '@/lib/review/readingContext';
 import { buildReadingContext } from '@/lib/review/readingContext';
 import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 
-interface LemmaSentenceToken {
-  lemma?: string;
-  surface?: string;
-  punctBefore?: string;
-  punctAfter?: string;
-}
+type SelectedWord = ReaderToken & { sentenceText?: string; sentenceIndex?: number };
 
 interface LemmaSentenceEntry {
   sentence: {
-    tokens: LemmaSentenceToken[];
+    tokens: (Pick<ReaderToken, 'lemma' | 'punctBefore' | 'punctAfter'> & { surface?: string })[];
     translation?: string;
   };
   sectionId: string;
   textId: string;
 }
 
+type CacheEntry = { value: string };
+
 interface LexDrawerPanelProps {
-  selectedWord: any;
-  setSelectedWord: (w: any) => void;
+  selectedWord: SelectedWord | null;
+  setSelectedWord: (w: SelectedWord | null) => void;
   knowledge: KnowledgeMap;
   setWordState: (
     lemma: string,
@@ -187,7 +186,7 @@ const CATEGORY_DOT_COLORS: Record<string, string> = {
   other: '#9CA3AF',
 };
 
-export const LexDrawerPanel = /*#__PURE__*/ memo(({
+export const LexDrawerPanel = memo(({
   selectedWord,
   setSelectedWord,
   knowledge,
@@ -208,13 +207,14 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
   const { settings } = useSettings();
   const { user } = useAuth();
 
+  // Single source of truth for the language identifier used throughout this panel.
+  const langId = text?.language || textLanguageId;
+
   const [isAiWordLoading, setIsAiWordLoading] = useState(false);
   const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
   const [isParadigmOpen, setIsParadigmOpen] = useState(false);
 
   const [aiFallbackGloss, setAiFallbackGloss] = useState<string | null>(null);
-  const [isAiFallbackLoading, setIsAiFallbackLoading] = useState(false);
-  const aiFallbackLemmaRef = useRef<string | null>(null);
   const [wiktionaryResult, setWiktionaryResult] = useState<WiktionaryLookupResult | null>(null);
   const [isWiktionaryLoading, setIsWiktionaryLoading] = useState(false);
   const wiktionaryLemmaRef = useRef<string | null>(null);
@@ -222,7 +222,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
   const [isLexiconLoading, setIsLexiconLoading] = useState(false);
   const lexiconLemmaRef = useRef<string | null>(null);
   const [isCacheLoading, setIsCacheLoading] = useState(false);
-  const [cacheEntry, setCacheEntry] = useState<any | null>(null);
+  const [cacheEntry, setCacheEntry] = useState<CacheEntry | null>(null);
 
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
@@ -234,6 +234,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
   const [reviewAdded, setReviewAdded] = useState(false);
   const [glossSaved, setGlossSaved] = useState(false);
   const glossTimerRef = useRef<number>(0);
+  const noteSavedTimerRef = useRef<number>(0);
 
   // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
   const wordInfo = useMemo(
@@ -259,11 +260,11 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
   const morphologyDisplay = useMemo(() => {
     if (!selectedWord) return null;
     const morphData = selectedWord.morphologyRaw || selectedWord.morphology;
-    return MorphologyService.formatMorphologyForDisplay(textLanguageId, morphData, {
-      source: sourceInfo?.name || selectedWord.source,
+    return MorphologyService.formatMorphologyForDisplay(langId, morphData, {
+      source: sourceInfo?.name,
       confidence: selectedWord.confidence,
     });
-  }, [selectedWord, sourceInfo?.name, textLanguageId]);
+  }, [selectedWord, sourceInfo?.name, langId]);
 
   /**
    * A description built from the token's own metadata (lemma, transliteration,
@@ -272,12 +273,12 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
    */
   const descriptiveFallback = useMemo(() => {
     if (!selectedWord) return '';
-    const langName = getLanguageDisplayName(textLanguageId) || textLanguageId;
+    const langName = getLanguageDisplayName(langId) || langId;
     const lemma = selectedWord.lemma || selectedWord.text || '';
-    const surface = selectedWord.text || selectedWord.surface || '';
-    const translit = selectedWord.transliteration || '';
-    const morphology = selectedWord.morphologyRaw || selectedWord.morphology || {};
-    const pos = (morphology.partOfSpeech || '').toLowerCase();
+    const surface = selectedWord.text || '';
+    const translit = selectedWord.translit || '';
+    const morphology: Record<string, unknown> = selectedWord.morphologyRaw ?? {};
+    const pos = ((morphology.partOfSpeech as string) || '').toLowerCase();
 
     const parts: string[] = [];
     if (lemma && surface && lemma !== surface) {
@@ -304,7 +305,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
       'state',
       'stem',
     ] as const) {
-      const v = (morphology as Record<string, unknown>)[key];
+      const v = morphology[key];
       if (typeof v === 'string' && v && v !== 'unknown') morphDetails.push(`${key}: ${v}`);
     }
     if (morphDetails.length > 0) {
@@ -312,61 +313,42 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     }
 
     return parts.join('').trim();
-  }, [selectedWord, textLanguageId]);
+  }, [selectedWord, langId]);
 
-  const handleAiWordExplain = async (useAsGloss: boolean = false) => {
+  const handleFetchGloss = async () => {
     if (isAiWordLoading || !selectedWord) return;
     setIsAiWordLoading(true);
-    if (!useAsGloss) {
-      setAiWordInsight('');
-    }
-
     try {
-      if (useAsGloss) {
-        // Short-gloss request for the Meaning panel
-        const glossResult = await AIClient.getWordGloss(
-          textLanguageId,
-          selectedWord.text,
-          selectedWord.lemma
-        );
-        const success = isUsefulGloss(glossResult);
-        if (success) {
-          setAiFallbackGloss(glossResult);
-          // Persist to server cache
-          await fetch('/api/lexical-cache', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              languageId: textLanguageId,
-              lemma: selectedWord.lemma,
-              surface: selectedWord.text,
-              type: 'short-gloss',
-              value: glossResult,
-            }),
-          });
-        }
-        trackEvent(ANALYTICS_EVENTS.AI_GLOSS_GENERATED, {
-          languageId: textLanguageId,
-          generationType: 'short-gloss',
-          success,
-        });
-      } else {
-        // Full philological explanation for the AI Insights section
-        const explanation = await AIClient.explainWord(
-          textLanguageId,
-          selectedWord.text,
-          selectedWord.lemma
-        );
-        setAiWordInsight(explanation);
+      const glossResult = await AIClient.getWordGloss(langId, selectedWord.text, selectedWord.lemma);
+      const success = isUsefulGloss(glossResult);
+      if (success) {
+        setAiFallbackGloss(glossResult);
+        await AIClient.saveGlossToCache(langId, selectedWord.lemma, selectedWord.text, glossResult);
       }
+      trackEvent(ANALYTICS_EVENTS.AI_GLOSS_GENERATED, {
+        languageId: langId,
+        generationType: 'short-gloss',
+        success,
+      });
     } catch (error) {
       console.error(error);
-      if (useAsGloss) {
-        // Leave aiFallbackGloss null so the descriptive fallback renders.
-        setAiFallbackGloss(null);
-      } else {
-        setAiWordInsight(t('reader.failedInsights', 'Failed to fetch insights.'));
-      }
+      // Leave aiFallbackGloss null so the descriptive fallback renders.
+      setAiFallbackGloss(null);
+    } finally {
+      setIsAiWordLoading(false);
+    }
+  };
+
+  const handleFetchExplanation = async () => {
+    if (isAiWordLoading || !selectedWord) return;
+    setIsAiWordLoading(true);
+    setAiWordInsight('');
+    try {
+      const explanation = await AIClient.explainWord(langId, selectedWord.text, selectedWord.lemma);
+      setAiWordInsight(explanation);
+    } catch (error) {
+      console.error(error);
+      setAiWordInsight(t('reader.failedInsights', 'Failed to fetch insights.'));
     } finally {
       setIsAiWordLoading(false);
     }
@@ -378,32 +360,32 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     if (userGloss) {
       return { definition: userGloss, source: GLOSS_SOURCES.USER_GLOSS } as LookupResult;
     }
-    const dictResult = getDefinitionWithFallbacks(selectedWord.lemma, textLanguageId);
+    const dictResult = getDefinitionWithFallbacks(selectedWord.lemma, langId);
     if (dictResult) return dictResult;
     if (selectedWord.gloss) {
       return { definition: selectedWord.gloss, source: GLOSS_SOURCES.TOKEN_GLOSS } as LookupResult;
     }
     return null;
-  }, [selectedWord, wordInfo?.userGloss, textLanguageId]);
+  }, [selectedWord, wordInfo?.userGloss, langId]);
 
   const wordFrequency = useMemo(() => {
     const lemma = selectedWord?.lemma;
     if (!lemma) return null;
-    const entry = findDictionaryEntry(lemma, textLanguageId);
+    const entry = findDictionaryEntry(lemma, langId);
     return entry?.frequency ?? null;
-  }, [selectedWord, textLanguageId]);
+  }, [selectedWord, langId]);
 
-  // Reset AI / Wiktionary state whenever the selected word changes.
+  // Reset AI / Wiktionary / cache state whenever the selected word changes.
   useEffect(() => {
     setAiFallbackGloss(null); // eslint-disable-line react-hooks/set-state-in-effect
-    setIsAiFallbackLoading(false);
-    aiFallbackLemmaRef.current = null;
     setWiktionaryResult(null);
     setIsWiktionaryLoading(false);
     wiktionaryLemmaRef.current = null;
     setLexiconResult(null);
     setIsLexiconLoading(false);
     lexiconLemmaRef.current = null;
+    setCacheEntry(null);
+    setIsCacheLoading(false);
   }, [selectedWord?.lemma]);
 
   // Hit Wiktionary first when no local lexicon entry exists — it's free,
@@ -415,13 +397,13 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     wiktionaryLemmaRef.current = currentLemma;
     setIsWiktionaryLoading(true);
     (async () => {
-      const result = await lookupWiktionary(currentLemma, textLanguageId);
+      const result = await lookupWiktionary(currentLemma, langId);
       if (wiktionaryLemmaRef.current !== currentLemma) return;
       setWiktionaryResult(result);
       setIsWiktionaryLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, !!definitionLookup, textLanguageId]);
+  }, [selectedWord?.lemma, !!definitionLookup, langId]);
 
   // After Wiktionary finishes with no result, try Logeion (Greek/Latin) or Sefaria (Hebrew).
   useEffect(() => {
@@ -432,13 +414,13 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     lexiconLemmaRef.current = currentLemma;
     setIsLexiconLoading(true);
     (async () => {
-      const result = await lookupLexicon(currentLemma, textLanguageId);
+      const result = await lookupLexicon(currentLemma, langId);
       if (lexiconLemmaRef.current !== currentLemma) return;
       setLexiconResult(result);
       setIsLexiconLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWord?.lemma, !!definitionLookup, !!wiktionaryResult, isWiktionaryLoading, textLanguageId]);
+  }, [selectedWord?.lemma, !!definitionLookup, !!wiktionaryResult, isWiktionaryLoading, langId]);
 
   // Automatically fetch from server cache or AI if no lexicon definition is available
   useEffect(() => {
@@ -446,42 +428,23 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     if (isCacheLoading || cacheEntry) return;
 
     const currentLemma = selectedWord.lemma;
-
     let isCancelled = false;
-    const fetchData = async () => {
+
+    (async () => {
       setIsCacheLoading(true);
-      // 1. Try server cache
-      try {
-        const response = await fetch(`/api/lexical-cache/${textLanguageId}/${currentLemma}/short-gloss`);
-        if (response.ok) {
-          const entry = await response.json();
-          if (!isCancelled) {
-            setCacheEntry(entry);
-            trackEvent(ANALYTICS_EVENTS.AI_GLOSS_CACHE_HIT, {
-              languageId: textLanguageId,
-              cacheType: 'short-gloss',
-            });
-          }
-          if (!isCancelled) setIsCacheLoading(false);
-          return;
-        }
-      } catch (e) {
-        console.error('[LexDrawerPanel] Cache fetch failed:', e);
+      const entry = await AIClient.fetchCachedGloss(langId, currentLemma);
+      if (isCancelled) return;
+      if (entry) {
+        setCacheEntry(entry);
+        trackEvent(ANALYTICS_EVENTS.AI_GLOSS_CACHE_HIT, { languageId: langId, cacheType: 'short-gloss' });
+      } else {
+        trackEvent(ANALYTICS_EVENTS.AI_GLOSS_CACHE_MISS, { languageId: langId, cacheType: 'short-gloss' });
       }
+      setIsCacheLoading(false);
+    })();
 
-      if (!isCancelled) {
-        trackEvent(ANALYTICS_EVENTS.AI_GLOSS_CACHE_MISS, {
-          languageId: textLanguageId,
-          cacheType: 'short-gloss',
-        });
-      }
-
-      if (!isCancelled) setIsCacheLoading(false);
-      // ... (AI logic omitted for brevity in thought, will be in edit)
-    };
-    fetchData();
     return () => { isCancelled = true; };
-  }, [selectedWord, definitionLookup, wiktionaryResult, lexiconResult, textLanguageId, isCacheLoading, cacheEntry]);
+  }, [selectedWord, definitionLookup, wiktionaryResult, lexiconResult, langId, isCacheLoading, cacheEntry]);
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
@@ -500,7 +463,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     if (!trimmed) return;
     await saveNote({
       content: trimmed,
-      languageId: textLanguageId,
+      languageId: langId,
       textId: text?.id,
       token: selectedWord?.text,
       lemma: selectedWord?.lemma,
@@ -509,7 +472,8 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
     });
     setResearchNoteInput('');
     setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2500);
+    if (noteSavedTimerRef.current) clearTimeout(noteSavedTimerRef.current);
+    noteSavedTimerRef.current = window.setTimeout(() => setNoteSaved(false), 2500);
   };
 
   if (!selectedWord) return <AnimatePresence />;
@@ -535,7 +499,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
             aria-label="Close word analysis"
             className="text-muted hover:text-ink p-2 rounded-full hover:bg-parch border border-transparent"
           >
-            ✕
+            <X className="w-4 h-4" aria-hidden />
           </button>
         </div>
 
@@ -622,7 +586,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
             <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
               <span>{t('reader.meaning', 'Meaning')}</span>
               <Link
-                to={getDictionaryPath(selectedWord.lemma, textLanguageId)}
+                to={getDictionaryPath(selectedWord.lemma, langId)}
                 className="inline-flex items-center gap-1 hover:text-ink transition-colors"
               >
                 <BookOpen className="w-3" />
@@ -690,7 +654,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
                     </>
                   );
                 }
-                if (isWiktionaryLoading || isLexiconLoading || isAiFallbackLoading) {
+                if (isWiktionaryLoading || isLexiconLoading || isCacheLoading) {
                   return (
                     <span className="text-muted italic text-[16px] inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin inline-block" />
@@ -705,7 +669,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
                     <>
                       <div>{content}</div>
                       <div className="mt-2 flex items-center gap-2">
-                        <SourceBadge trust={getSourceTrust(source as any)} />
+                        <SourceBadge trust={getSourceTrust(source)} />
                       </div>
                     </>
                   );
@@ -723,18 +687,14 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
                     </span>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
-                        onClick={() => {
-                          aiFallbackLemmaRef.current = null;
-                          setAiFallbackGloss(null);
-                          handleAiWordExplain(true);
-                        }}
+                        onClick={() => { setAiFallbackGloss(null); handleFetchGloss(); }}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue/8 border border-blue/20 text-[12px] font-medium text-blue hover:bg-blue/15 transition-colors"
                       >
                         <Sparkles className="w-3 h-3" />
                         {t('reader.retryAi', 'Retry AI definition')}
                       </button>
                       <Link
-                        to={getDictionaryPath(selectedWord.lemma, textLanguageId)}
+                        to={getDictionaryPath(selectedWord.lemma, langId)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-parch border border-bdr/40 text-[12px] font-medium text-ink3 hover:text-blue hover:border-blue/30 transition-colors"
                       >
                         <BookOpen className="w-3 h-3" />
@@ -764,10 +724,10 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
 
                 value={wordInfo?.userGloss || ''}
                 onChange={(e) => {
-                  updateGloss(selectedWord.lemma, e.target.value, textLanguageId);
+                  updateGloss(selectedWord.lemma, e.target.value, langId);
                   setGlossSaved(true);
                   trackEvent(ANALYTICS_EVENTS.WORD_GLOSS_SAVED, {
-                    languageId: textLanguageId,
+                    languageId: langId,
                     lemmaLength: selectedWord.lemma?.length || 0,
                     glossLength: e.target.value.length,
                     textId: text?.id,
@@ -781,7 +741,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
 
           {/* Data Source — compact */}
           {sourceInfo && (() => {
-            const entry = findDictionaryEntry(selectedWord.lemma, textLanguageId);
+            const entry = findDictionaryEntry(selectedWord.lemma, langId);
             const visibleDicts = entry?.dictionaries
               ? entry.dictionaries.filter(
                   (d) => !settings.activeDictionaries || settings.activeDictionaries.length === 0 || settings.activeDictionaries.includes(d.id)
@@ -972,13 +932,13 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
                       const saved = setWordState(
                         selectedWord.lemma,
                         state,
-                        textLanguageId,
+                        langId,
                         selectedWord.sentenceText,
                         extra
                       );
                       if (saved !== false) {
                         trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
-                          languageId: textLanguageId,
+                          languageId: langId,
                           fromState,
                           toState: state,
                           lemmaLength: selectedWord.lemma?.length || 0,
@@ -1028,20 +988,20 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
                     const saved = setWordState(
                       selectedWord.lemma,
                       WordState.LEARNING,
-                      textLanguageId,
+                      langId,
                       selectedWord.sentenceText,
                       extra
                     );
                     if (saved !== false) {
                       trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
-                        languageId: textLanguageId,
+                        languageId: langId,
                         fromState,
                         toState: WordState.LEARNING,
                         lemmaLength: selectedWord.lemma?.length || 0,
                         textId: text?.id,
                       });
                       if (!wordInfo?.userGloss && definitionLookup?.definition) {
-                        updateGloss(selectedWord.lemma, definitionLookup.definition, textLanguageId);
+                        updateGloss(selectedWord.lemma, definitionLookup.definition, langId);
                       }
                       setReviewAdded(true);
                       setTimeout(() => {
@@ -1088,7 +1048,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
 
           {!aiWordInsight && !isAiWordLoading && (
             <button
-              onClick={() => handleAiWordExplain()}
+              onClick={handleFetchExplanation}
               className="w-full mb-10 py-3 border border-blue/20 bg-blue/5 rounded-xl font-bold text-blue text-sm flex items-center justify-center gap-2 hover:bg-blue/10 transition-colors"
             >
               <Sparkles className="w-4 h-4" />
@@ -1165,11 +1125,11 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
           </div>
 
           {/* Scholar Annotations */}
-          {selectedWord?.lemma && (text?.language || textLanguageId) && (
+          {selectedWord?.lemma && (
             <ScholarAnnotations
               lemma={selectedWord.lemma}
               wordText={selectedWord.text || selectedWord.lemma}
-              languageId={text?.language || textLanguageId}
+              languageId={langId}
               currentUserId={user?.uid ?? null}
             />
           )}
@@ -1178,7 +1138,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
           {text?.id && (
             <DiscussionPanel
               textId={text.id}
-              languageId={text.language || textLanguageId}
+              languageId={langId}
               sentenceIndex={selectedWord.sentenceIndex ?? currentSentenceIndex ?? 0}
               wordText={selectedWord.text}
               lemma={selectedWord.lemma}
@@ -1189,7 +1149,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
           {/* External scholarly resources */}
           {selectedWord.lemma &&
             (() => {
-              const links = getExternalDictLinks(selectedWord.lemma, textLanguageId);
+              const links = getExternalDictLinks(selectedWord.lemma, langId);
               if (links.length === 0) return null;
               return (
                 <div className="mt-4 pt-4 border-t border-bdr/30">
@@ -1264,7 +1224,7 @@ export const LexDrawerPanel = /*#__PURE__*/ memo(({
         isOpen={isParadigmOpen}
         onClose={() => setIsParadigmOpen(false)}
         lemma={selectedWord.lemma}
-        languageId={textLanguageId}
+        languageId={langId}
         word={selectedWord.text}
       />
     </AnimatePresence>
