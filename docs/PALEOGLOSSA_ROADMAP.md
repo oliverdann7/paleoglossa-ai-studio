@@ -59,12 +59,13 @@
 | Lexicon integration | ⚠️ Partial | External dictionary links + lemma lookup; no paradigm browser |
 | Grammar pathways | ⚠️ Partial | Grammar reference page and concepts exist; no interactive curriculum |
 | Corpus search | ✅ Complete | Multi-source lemma + full-text search (`Search.tsx`) |
-| Syntax/treebank viewer | 🚧 Stub | UI scaffold in `Syntax.tsx`; no treebank data wired |
+| Syntax/treebank viewer | ✅ Functional | AI-generated dependency trees per sentence (`Syntax.tsx`) |
 | AI philology tutor | ✅ Complete | Conversational tutor with chat history (`Tutor.tsx`) |
 | Research notebook | ✅ Complete | Per-user notebooks with Firestore sync (`Notebooks.tsx`) |
-| Manuscript/epigraphy lab | 🚧 Stub | Placeholder only; gated in nav with "Coming Soon" |
-| Audio/pronunciation lab | ✅ Functional | TTS testing + pronunciation guides (`AudioLab.tsx`) |
-| Classroom/course builder | 🚧 Partial | Models + card UI exist; detail views incomplete; gated in nav with "Coming Soon" |
+| Manuscript/epigraphy lab | ✅ Functional | Image pan/zoom viewer + IIIF manifest support (`Manuscripts.tsx`, 1092 lines) |
+| Audio/pronunciation lab | ✅ Functional | TTS with server-side cache + pronunciation guides (`AudioLab.tsx`) |
+| Classroom/course builder | 🚧 Partial | Models + full page exist (`Courses.tsx`, 1256 lines); teacher roles + student enrollment incomplete |
+| Smart text recommendations | ✅ Complete | Multi-signal scoring, difficulty labels, reasons; unified Dashboard + Library (`recommendationService.ts`) |
 | Morphology browser | ⚠️ Partial | Token-level tags, no browse/search |
 | Parallel text alignment | ⚠️ Partial | Sentence-level parallel, not word-aligned |
 
@@ -774,7 +775,18 @@ The items below are the highest-impact gaps not yet covered by the phase plan ab
 
 | Priority | Item | Status |
 |----------|------|--------|
-| Medium | LingQ-style reading loop — seamless click → mark → continue without panel friction | ⬜ Not started |
-| Medium | Public Discover / community text library — browse and fork public imported texts | ⬜ Not started |
-| Medium | Vocabulary frequency and difficulty recommendations | ⬜ Not started |
-| Low | Social/community roadmap — follow readers, share notebooks, leaderboard | ⬜ Not started |
+| Medium | LingQ-style reading loop — seamless click → mark → continue without panel friction | ✅ Complete — PR #200 |
+| Medium | Public Discover / community text library — browse and fork public imported texts | ✅ Complete — `Discover.tsx` |
+| Medium | Vocabulary frequency and difficulty recommendations | ✅ Complete — PR #220 |
+| Low | Social/community roadmap — follow readers, share notebooks, leaderboard | ✅ Complete — scholar profiles, challenges, leaderboard |
+
+### Smart Recommendations — PR #220 (merged 2026-05-26)
+
+| Priority | Item | Status |
+|----------|------|--------|
+| Medium | Multi-signal recommendation engine in `recommendationService.ts` — coverage sweet spot (i+1 @ ~90%), reading history exclusion, genre diversity, morphology preference | ✅ Complete |
+| Medium | Personalized difficulty labels — "Easy read", "Just right", "Stretch yourself", "Challenging" per text | ✅ Complete |
+| Medium | Recommendation reasons — "{{n}} new words at your level", "Explore {{genre}}", "Reinforce what you know" | ✅ Complete |
+| Medium | Richer `RecommendationRail` cards — difficulty label, language badge, new-word count, reason, coverage bar | ✅ Complete |
+| Medium | Unified Dashboard recommendation — replaces ad-hoc level-sort with vocabulary-aware scoring + fallback | ✅ Complete |
+| Low | 10 unit tests for the recommendation service | ✅ Complete |
