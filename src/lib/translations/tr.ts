@@ -788,5 +788,18 @@ export const tr = {
     'plans.full.feat5': "Genel kütüphane paylaşımı ve fork'lama",
     'plans.full.feat6': 'Tüm deneysel özellikler (Özel Öğretmen, Dilbilgisi, Sözdizimi vb.)',
     'plans.full.feat7': 'Öncelikli destek',
+
+    'rec.title': 'Sizin İçin Önerilen',
+    'rec.known': 'bilinen',
+    'rec.newWords': 'yeni',
+    'rec.labelEasy': 'Kolay okuma',
+    'rec.labelJustRight': 'Tam seviyeniz',
+    'rec.labelStretch': 'Kendinizi zorlayın',
+    'rec.labelChallenging': 'Zorlu',
+    'rec.sweetSpot': 'Seviyenizde {{count}} yeni kelime',
+    'rec.reinforce': 'Bildiklerinizi pekiştirin',
+    'rec.newGenre': '{{genre}} keşfedin',
+    'rec.newWords_reason': 'Öğrenilecek {{count}} yeni kelime',
+    'rec.expand': 'Kelime dağarcığınızı genişletin',
   },
 };

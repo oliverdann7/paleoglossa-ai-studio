@@ -707,5 +707,18 @@ export const zh = {
     'plans.full.feat5': '公共图书馆共享与复刻',
     'plans.full.feat6': '所有实验性功能（辅导、语法、句法等）',
     'plans.full.feat7': '优先支持',
+
+    'rec.title': '为您推荐',
+    'rec.known': '已知',
+    'rec.newWords': '新词',
+    'rec.labelEasy': '轻松阅读',
+    'rec.labelJustRight': '恰到好处',
+    'rec.labelStretch': '挑战自我',
+    'rec.labelChallenging': '有难度',
+    'rec.sweetSpot': '{{count}} 个适合您水平的新词',
+    'rec.reinforce': '巩固已学内容',
+    'rec.newGenre': '探索{{genre}}',
+    'rec.newWords_reason': '{{count}} 个新词待学习',
+    'rec.expand': '扩大您的词汇量',
   },
 };

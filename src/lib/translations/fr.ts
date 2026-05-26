@@ -732,5 +732,18 @@ export const fr = {
     'plans.full.feat5': 'Partage et fork de bibliothèque',
     'plans.full.feat6': 'Toutes les fonctionnalités expérimentales (Tuteur, Grammaire, Syntaxe, etc.)',
     'plans.full.feat7': 'Support prioritaire',
+
+    'rec.title': 'Recommandé pour Vous',
+    'rec.known': 'connu',
+    'rec.newWords': 'nouveaux',
+    'rec.labelEasy': 'Lecture facile',
+    'rec.labelJustRight': 'Parfait pour vous',
+    'rec.labelStretch': 'Dépassez-vous',
+    'rec.labelChallenging': 'Difficile',
+    'rec.sweetSpot': '{{count}} nouveaux mots à votre niveau',
+    'rec.reinforce': 'Renforcez vos acquis',
+    'rec.newGenre': 'Explorer {{genre}}',
+    'rec.newWords_reason': '{{count}} nouveaux mots à apprendre',
+    'rec.expand': 'Enrichissez votre vocabulaire',
   },
 };
