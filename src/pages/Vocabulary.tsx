@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { apiFetch } from '../lib/services/apiFetch.js';
 import { useToast } from '../lib/hooks/useToast.js';
+import { ReviewForecast } from '../components/ReviewForecast.js';
 
 const PAGE_SIZE = 50;
 
@@ -370,6 +371,9 @@ export const Vocabulary = () => {
           <div className="text-[32px] font-serif leading-none text-ink">{stats.total}</div>
         </div>
       </div>
+
+      {/* Review forecast */}
+      <ReviewForecast knowledge={knowledge} className="mb-8" />
 
       {/* Language tabs */}
       {availableLanguages.length > 1 && (

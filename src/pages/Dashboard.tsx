@@ -36,6 +36,7 @@ import { StudyPlanWidget } from '../components/StudyPlanWidget.js';
 import { pickDashboardRecommendation } from '../lib/services/recommendationService.js';
 import { StudyHeatmap } from '../components/StudyHeatmap.js';
 import { VocabFrequencyGoals } from '../components/VocabFrequencyGoals.js';
+import { ReviewForecast } from '../components/ReviewForecast.js';
 
 const RTL_LANGS = new Set([
   'hbo',
@@ -738,6 +739,9 @@ export const Dashboard = () => {
                   </div>
                 );
               })()}
+
+              {/* Review forecast — 7-day bar chart */}
+              <ReviewForecast knowledge={knowledge} />
             </div>
 
             {/* Right: vocabulary frequency goals */}
