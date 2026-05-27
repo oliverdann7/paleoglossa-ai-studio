@@ -20,6 +20,7 @@ import type { GuidedTier } from '../lib/constants/beginnerPaths.js';
 import { useBeginnerProgress } from '../lib/hooks/useBeginnerProgress.js';
 import type { BeginnerMilestone } from '../lib/hooks/useBeginnerProgress.js';
 import { useSettings } from '../lib/hooks/useSettings.js';
+import { DailyPath } from '../components/beginner/DailyPath.js';
 
 const LEVEL_TO_TIER: Record<
   'absolute-beginner' | 'knows-alphabet' | 'intermediate' | 'advanced',
@@ -118,6 +119,9 @@ export const BeginnerHub = () => {
             )}
           </p>
         </motion.div>
+
+        {/* Daily path — personalized Today panel (only shown when onboarding is complete) */}
+        <DailyPath className="mb-8" />
 
         {/* Tier selector */}
         <motion.div
