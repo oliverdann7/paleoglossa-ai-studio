@@ -68,6 +68,7 @@
     "react-router-dom": "^7.15.0",
     "recharts": "^3.8.1",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.12.4",
     "stripe": "^22.1.1",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.4.3"

@@ -81,6 +81,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
             setStats(initStats);
             setProfile({ displayName: u.displayName || '', isPublic: false });
+            // Send welcome email (fire-and-forget)
+            u.getIdToken().then((token) =>
+              fetch(getApiUrl('/api/auth/welcome-email'), {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ displayName: u.displayName || '' }),
+              }).catch(() => {})
+            );
           } else {
             const d = snap.data();
             setStats(d.stats as UserStats);
