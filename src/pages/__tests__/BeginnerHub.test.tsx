@@ -76,6 +76,9 @@ vi.mock('lucide-react', () => {
     'ChevronRight',
     'Library',
     'Languages',
+    'Layers',
+    'CalendarDays',
+    'CheckCircle',
   ];
   icons.forEach((n) => (all[n] = Icn));
   return all;
