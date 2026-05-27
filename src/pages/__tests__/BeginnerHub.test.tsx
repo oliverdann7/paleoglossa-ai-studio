@@ -10,6 +10,13 @@ import { renderHook, act } from '@testing-library/react';
 
 vi.mock('../../lib/firebase.js', () => ({ db: {} }));
 
+// Stub DailyPath so its own hook chain (useKnowledge → useVocabLimit →
+// SubscriptionContext) doesn't fire during BeginnerHub tests. DailyPath has
+// its own unit tests in dailyPathService.test.ts.
+vi.mock('../../components/beginner/DailyPath.js', () => ({
+  DailyPath: () => null,
+}));
+
 vi.mock('firebase/firestore', () => ({
   doc: vi.fn(() => ({})),
   getDoc: vi.fn(async () => ({ exists: () => false, data: () => ({}) })),
