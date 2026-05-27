@@ -12,6 +12,10 @@ import { UGARITIC_SIGNS } from '../data/scripts/ugaritic-signs.js';
 import { GREEK_LETTERS } from '../data/scripts/greek-letters.js';
 import { HEBREW_LETTERS } from '../data/scripts/hebrew-letters.js';
 import { LATIN_SCRIPT } from '../data/scripts/latin-script.js';
+import { SYRIAC_LETTERS } from '../data/scripts/syriac-letters.js';
+import { COPTIC_LETTERS } from '../data/scripts/coptic-letters.js';
+import { ARAMAIC_LETTERS } from '../data/scripts/aramaic-letters.js';
+import { SANSKRIT_LETTERS } from '../data/scripts/sanskrit-letters.js';
 
 const SIGN_MAP: Record<string, ScriptSign[]> = {
   akk: AKKADIAN_SIGNS,
@@ -22,6 +26,10 @@ const SIGN_MAP: Record<string, ScriptSign[]> = {
   'grc-koine': GREEK_LETTERS,
   hbo: HEBREW_LETTERS,
   lat: LATIN_SCRIPT,
+  syr: SYRIAC_LETTERS,
+  cop: COPTIC_LETTERS,
+  arc: ARAMAIC_LETTERS,
+  san: SANSKRIT_LETTERS,
 };
 
 type Tab = 'signs' | 'practice' | 'read';
