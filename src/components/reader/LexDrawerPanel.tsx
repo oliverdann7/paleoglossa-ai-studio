@@ -732,6 +732,10 @@ export const LexDrawerPanel = memo(({
                     glossLength: e.target.value.length,
                     textId: text?.id,
                   });
+                  if (!localStorage.getItem('paleoglossa_first_word')) {
+                    localStorage.setItem('paleoglossa_first_word', '1');
+                    trackEvent(ANALYTICS_EVENTS.FIRST_WORD_SAVED, { languageId: langId });
+                  }
                   if (glossTimerRef.current) clearTimeout(glossTimerRef.current);
                   glossTimerRef.current = window.setTimeout(() => setGlossSaved(false), 2000);
                 }}

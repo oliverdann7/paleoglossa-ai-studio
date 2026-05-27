@@ -641,6 +641,10 @@ export const Reader = () => {
       wordCount: contentTokens.length,
       knownPercent,
     });
+    if (!localStorage.getItem('paleoglossa_first_text')) {
+      localStorage.setItem('paleoglossa_first_text', '1');
+      trackEvent(ANALYTICS_EVENTS.FIRST_TEXT_OPENED, { languageId: currentLanguageId, textId });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textId, text, chapters]);
 

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { useSettings } from '../lib/hooks/useSettings.js';
 import { OnboardingProfile } from '../types/firestore.js';
+import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
 const languages = [
   { id: 'greek', glyph: 'Ω', labelKey: 'grc', descKey: 'onboarding.ancientGreekDesc', font: 'font-greek' },
@@ -98,6 +99,11 @@ export const Onboarding = () => {
       updatedProfile.completed = true;
       setFreeLanguage(updatedProfile.languageId);
       await updateSettings({ onboardingProfile: updatedProfile });
+      trackEvent(ANALYTICS_EVENTS.ONBOARDING_COMPLETED, {
+        languageId: updatedProfile.languageId,
+        level: updatedProfile.level,
+        goal: updatedProfile.goal,
+      });
       navigate('/app');
     } else {
       setProfile(updatedProfile);
