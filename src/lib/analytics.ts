@@ -4,6 +4,14 @@ import { privacyService } from './services/privacyService.js';
 // ─── Event Names ───────────────────────────────────────────────────────────────
 
 export const ANALYTICS_EVENTS = {
+  // Funnel events
+  SIGNUP_COMPLETED: 'signup_completed',
+  ONBOARDING_COMPLETED: 'onboarding_completed',
+  CHECKOUT_STARTED: 'checkout_started',
+  CHECKOUT_COMPLETED: 'checkout_completed',
+  FIRST_TEXT_OPENED: 'first_text_opened',
+  FIRST_WORD_SAVED: 'first_word_saved',
+  // Reader events
   READER_OPENED: 'reader_opened',
   WORD_CLICKED: 'word_clicked',
   WORD_GLOSS_SAVED: 'word_gloss_saved',
@@ -164,16 +172,14 @@ export function initAnalytics() {
   const host = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com';
   if (!key) return;
 
+  const hasConsent = privacyService.isAnalyticsEnabled();
   posthog.init(key, {
     api_host: host,
-    capture_pageview: true,
-    capture_pageleave: true,
+    capture_pageview: hasConsent,
+    capture_pageleave: hasConsent,
     persistence: 'localStorage',
+    opt_out_capturing_by_default: !hasConsent,
   });
-
-  if (!privacyService.isAnalyticsEnabled()) {
-    posthog.opt_out_capturing();
-  }
 }
 
 // ─── Safe tracked events ──────────────────────────────────────────────────────

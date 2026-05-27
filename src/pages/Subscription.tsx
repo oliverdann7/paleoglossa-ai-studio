@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Check,
   Sparkles,
@@ -10,6 +10,7 @@ import {
   Infinity as InfinityIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { PLANS, getPlanById } from '../lib/constants/plans.js';
 import { LANGUAGES, getLanguageIcon } from '../lib/constants/languages.js';
@@ -54,6 +55,12 @@ export const Subscription = () => {
   const isNative = isCapacitor() && !features.isMobilePurchaseEnabled();
   const currentPlan = getPlanById(subscription.currentPlan);
   const success = searchParams.get('success');
+
+  useEffect(() => {
+    if (success === 'true') {
+      trackEvent(ANALYTICS_EVENTS.CHECKOUT_COMPLETED, { planId: subscription.currentPlan });
+    }
+  }, [success, subscription.currentPlan]);
   const canceled = searchParams.get('canceled');
 
   const handleChoosePlan = async (planId: string) => {
@@ -64,6 +71,7 @@ export const Subscription = () => {
 
     setLoadingPlan(planId);
     setCheckoutError(null);
+    trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { planId, billingCycle });
     try {
       const url = await createCheckoutSession(planId as any, billingCycle);
       if (url) {

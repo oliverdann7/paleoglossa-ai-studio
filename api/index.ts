@@ -1,5 +1,8 @@
 import express from 'express';
+import { initServerSentry, captureServerException } from './_lib/sentry.js';
 import { correlationIdMiddleware } from './_lib/observability.js';
+
+initServerSentry();
 import aiRouter from './_routes/ai.js';
 import audioRouter from './_routes/audio.js';
 import authRouter from './_routes/auth.js';
@@ -76,6 +79,13 @@ app.use(discussionsRouter);
 app.use(bookmarksRouter);
 app.use(annotationsRouter);
 app.use(challengesRouter);
+
+// Global error handler — report to Sentry before returning 500
+app.use((err: any, _req: any, res: any, next: any) => {
+  captureServerException(err);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 export const expressApp = app;
 export default function handler(req: any, res: any) {

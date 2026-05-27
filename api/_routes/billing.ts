@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireAuth } from '../_lib/auth.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
+import { sendPaymentReceiptEmail, sendPaymentFailedEmail } from '../_lib/email.js';
 
 const router = Router();
 
@@ -231,6 +232,16 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
             },
             { merge: true }
           );
+
+          // Send payment receipt email
+          const customerEmail = session.customer_email || session.customer_details?.email;
+          if (customerEmail) {
+            const planLabel = PLANS_BY_PRICE[session.metadata?.priceId || '']?.name || planId;
+            const amount = session.amount_total
+              ? `$${(session.amount_total / 100).toFixed(2)}`
+              : '';
+            sendPaymentReceiptEmail(customerEmail, planLabel, amount).catch(() => {});
+          }
         }
         break;
       }
@@ -275,6 +286,15 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
           }
         } catch (e) {
           console.error('Failed to update user subscription from webhook:', e);
+        }
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        const failedEmail = invoice.customer_email;
+        if (failedEmail) {
+          sendPaymentFailedEmail(failedEmail).catch(() => {});
         }
         break;
       }

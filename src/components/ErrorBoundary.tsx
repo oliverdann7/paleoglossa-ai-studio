@@ -1,4 +1,5 @@
 import { Component, ReactNode } from 'react';
+import * as Sentry from '@sentry/react';
 import { RefreshCw } from 'lucide-react';
 
 interface Props {
@@ -34,9 +35,12 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('ErrorBoundary caught:', error, info);
+    if (!isChunkLoadError(error.message)) {
+      Sentry.captureException(error, {
+        contexts: { react: { componentStack: info.componentStack ?? '' } },
+      });
+    }
 
-    // Auto-reload once on chunk/module load failures (stale deploy cache).
-    // Session flag prevents infinite reload loops.
     if (isChunkLoadError(error.message)) {
       const alreadyReloaded = sessionStorage.getItem('chunk-error-reload');
       if (!alreadyReloaded) {

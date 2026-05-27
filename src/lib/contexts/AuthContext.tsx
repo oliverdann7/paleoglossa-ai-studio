@@ -4,7 +4,7 @@ import type { User } from 'firebase/auth';
 import { auth, db } from '../firebase.js';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { AuthContext, UserProfile, UserStats } from './AuthContextInstance.js';
-import { identifyAnalytics, resetAnalytics } from '../analytics.js';
+import { identifyAnalytics, resetAnalytics, trackEvent, ANALYTICS_EVENTS } from '../analytics.js';
 import { getApiUrl } from '../services/apiBaseUrl.js';
 import { handleRedirectResult } from '../services/authService.js';
 
@@ -81,6 +81,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
             setStats(initStats);
             setProfile({ displayName: u.displayName || '', isPublic: false });
+            trackEvent(ANALYTICS_EVENTS.SIGNUP_COMPLETED);
+            // Send welcome email (fire-and-forget)
+            u.getIdToken().then((token) =>
+              fetch(getApiUrl('/api/auth/welcome-email'), {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ displayName: u.displayName || '' }),
+              }).catch(() => {})
+            );
           } else {
             const d = snap.data();
             setStats(d.stats as UserStats);

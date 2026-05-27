@@ -14,6 +14,9 @@ const Terms = lazy(() =>
 const Support = lazy(() =>
   import('./pages/legal/Support.js').then((module) => ({ default: module.Support }))
 );
+const Refund = lazy(() =>
+  import('./pages/legal/Refund.js').then((module) => ({ default: module.Refund }))
+);
 const DeleteAccount = lazy(() =>
   import('./pages/DeleteAccount.js').then((module) => ({ default: module.DeleteAccount }))
 );
@@ -146,6 +149,7 @@ export default function App() {
           <Route path="/pricing" element={<Subscription />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/refund" element={<Refund />} />
           <Route path="/support" element={<Support />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
           <Route path="/account-deletion" element={<DeleteAccount />} />

@@ -118,6 +118,16 @@ function checkWeb(): void {
       severity: 'warning',
       consequence: 'Product analytics is disabled.',
     },
+    {
+      name: 'RESEND_API_KEY',
+      severity: 'warning',
+      consequence: 'Transactional email is disabled — no welcome, receipt, or failed-payment emails.',
+    },
+    {
+      name: 'SENTRY_DSN',
+      severity: 'warning',
+      consequence: 'Server-side error monitoring is disabled — API errors will not be reported to Sentry.',
+    },
   ];
 
   web.forEach(check);
