@@ -11,6 +11,7 @@ const languages = [
   { id: 'greek', glyph: 'Ω', labelKey: 'grc', descKey: 'onboarding.ancientGreekDesc', font: 'font-greek' },
   { id: 'hebrew', glyph: 'א', labelKey: 'hbo', descKey: 'onboarding.hebrewDesc', font: 'font-hebrew' },
   { id: 'latin', glyph: 'L', labelKey: 'lat', descKey: 'onboarding.latinDesc', font: 'font-serif' },
+  { id: 'syriac', glyph: 'ܐ', labelKey: 'syr', descKey: 'onboarding.syriacDesc', font: 'font-syriac' },
 ];
 
 const LanguageStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => void }) => {
@@ -18,7 +19,7 @@ const LanguageStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) =
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
       <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseLanguage', 'Choose your primary language')}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {languages.map((lang) => (
           <button key={lang.id} onClick={() => onNext({ languageId: lang.labelKey })} className="p-4 border rounded-xl hover:bg-parch3 transition-all flex flex-col items-center">
             <span className={`${lang.font} text-2xl`}>{lang.glyph}</span> {t(`languageNames.${lang.labelKey}`, lang.labelKey)}

@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, GraduationCap, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, GraduationCap, Sparkles, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '../components/PaleoIcon.js';
+import { PLANS } from '../lib/constants/plans.js';
 
 const BOOKS = [
   {
@@ -153,7 +154,7 @@ export const Landing = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  const onEnter = () => navigate('/auth/login');
+  const onEnter = () => navigate('/auth/signup');
 
   const onDemoMode = () => {
     localStorage.setItem('paleoglossa_demo_mode', 'true');
@@ -231,13 +232,19 @@ export const Landing = () => {
                   onClick={onEnter}
                   className="btn-primary px-8 py-4 text-lg flex items-center gap-2 group"
                 >
-                  {t('landing.openTexts', 'Open texts')}
+                  {t('landing.getStarted', 'Get started free')}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button onClick={onDemoMode} className="btn-secondary px-8">
                   {t('landing.tryDemo', 'Try Demo')}
                 </button>
               </div>
+              <p className="text-sm text-muted mt-3">
+                {t('landing.alreadyHaveAccount', 'Already have an account?')}{' '}
+                <a href="/auth/login" className="text-blue hover:underline font-medium">
+                  {t('landing.signIn', 'Sign in')}
+                </a>
+              </p>
             </motion.div>
           </div>
 
@@ -289,6 +296,54 @@ export const Landing = () => {
             </motion.div>
           ))}
         </section>
+        {/* Pricing */}
+        <section className="mt-32 pt-20 border-t border-bdr/50">
+          <h3 className="text-3xl font-serif text-center text-ink mb-4">
+            {t('landing.pricingTitle', 'Simple, transparent pricing')}
+          </h3>
+          <p className="text-center text-ink2 text-[15px] mb-12 max-w-lg mx-auto">
+            {t('landing.pricingSubtitle', 'Start free. Upgrade when you need unlimited vocabulary saves and full AI analysis.')}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {PLANS.map((plan) => (
+              <div
+                key={plan.id}
+                className={`card p-6 flex flex-col ${plan.recommended ? 'ring-2 ring-blue relative' : ''}`}
+              >
+                {plan.badge && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue text-white text-xs font-bold px-3 py-1 rounded-full">
+                    {plan.badge}
+                  </span>
+                )}
+                <h4 className="text-lg font-bold text-ink">{plan.name}</h4>
+                <div className="mt-2 mb-4">
+                  {plan.monthlyPriceUsd === 0 ? (
+                    <span className="text-3xl font-serif font-bold text-ink">Free</span>
+                  ) : (
+                    <>
+                      <span className="text-3xl font-serif font-bold text-ink">${plan.monthlyPriceUsd}</span>
+                      <span className="text-ink2 text-sm">/mo</span>
+                    </>
+                  )}
+                </div>
+                <ul className="flex-1 space-y-2 mb-6">
+                  {plan.features.slice(0, 4).map((f, i) => (
+                    <li key={i} className="text-ink2 text-[13px] flex items-start gap-2">
+                      <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => plan.id === 'free' ? onEnter() : navigate('/pricing')}
+                  className={plan.recommended ? 'btn-primary w-full' : 'btn-secondary w-full'}
+                >
+                  {plan.id === 'free' ? t('landing.startFree', 'Start free') : t('landing.seePlans', 'Choose plan')}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
 
       <footer className="py-8 border-t border-bdr flex flex-col md:flex-row justify-center items-center text-[10px] font-mono uppercase tracking-widest text-muted gap-4">
@@ -299,6 +354,9 @@ export const Landing = () => {
           </a>
           <a href="/terms" className="hover:text-ink transition-colors">
             Terms
+          </a>
+          <a href="/refund" className="hover:text-ink transition-colors">
+            Refund
           </a>
           <a href="/support" className="hover:text-ink transition-colors">
             Support
