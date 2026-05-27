@@ -164,16 +164,14 @@ export function initAnalytics() {
   const host = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com';
   if (!key) return;
 
+  const hasConsent = privacyService.isAnalyticsEnabled();
   posthog.init(key, {
     api_host: host,
-    capture_pageview: true,
-    capture_pageleave: true,
+    capture_pageview: hasConsent,
+    capture_pageleave: hasConsent,
     persistence: 'localStorage',
+    opt_out_capturing_by_default: !hasConsent,
   });
-
-  if (!privacyService.isAnalyticsEnabled()) {
-    posthog.opt_out_capturing();
-  }
 }
 
 // ─── Safe tracked events ──────────────────────────────────────────────────────
