@@ -4,7 +4,19 @@ export interface ScriptSign {
   image?: string;
   transliteration: string;
   phonetic?: string;
-  type: 'uniliteral' | 'biliteral' | 'triliteral' | 'logogram' | 'determinative' | 'syllabic';
+  type:
+    | 'uniliteral'
+    | 'biliteral'
+    | 'triliteral'
+    | 'logogram'
+    | 'determinative'
+    | 'syllabic'
+    | 'consonant'
+    | 'vowel'
+    | 'mater'
+    | 'diacritic'
+    | 'letter'
+    | 'convention';
   exampleWord?: string;
   exampleGloss?: string;
   gardinerNumber?: string;

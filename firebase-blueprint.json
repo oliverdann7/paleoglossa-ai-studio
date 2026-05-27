@@ -62,6 +62,18 @@
         "timestamp": { "type": "string" }
       },
       "required": ["vocabItemId", "rating", "timestamp"]
+    },
+    "BeginnerProgress": {
+      "title": "Beginner Progress",
+      "description": "Per-language milestone progress for the Beginner Hub.",
+      "type": "object",
+      "properties": {
+        "scriptOpened": { "type": "boolean" },
+        "firstTextOpened": { "type": "boolean" },
+        "firstWordSaved": { "type": "boolean" },
+        "firstReviewCompleted": { "type": "boolean" },
+        "updatedAt": { "type": "string", "description": "serverTimestamp" }
+      }
     }
   },
   "firestore": {
@@ -80,6 +92,10 @@
     "users/{userId}/reviewLogs/{logId}": {
       "schema": { "$ref": "#/entities/ReviewLog" },
       "description": "History of SRS reviews."
+    },
+    "users/{userId}/beginnerProgress/{languageId}": {
+      "schema": { "$ref": "#/entities/BeginnerProgress" },
+      "description": "Per-language beginner-hub milestone state."
     },
     "texts/{textId}": {
       "schema": { "$ref": "#/entities/ImportedText" },

@@ -1,19 +1,27 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Shuffle, Check, X, BookOpen } from 'lucide-react';
 import { getLanguageById } from '../lib/constants/languages.js';
+import { recordMilestone } from '../lib/hooks/useBeginnerProgress.js';
 import type { ScriptSign } from '../types/scripts.js';
 import { AKKADIAN_SIGNS } from '../data/scripts/akkadian-signs.js';
 import { EGYPTIAN_SIGNS } from '../data/scripts/egyptian-signs.js';
 import { HITTITE_SIGNS } from '../data/scripts/hittite-signs.js';
 import { UGARITIC_SIGNS } from '../data/scripts/ugaritic-signs.js';
+import { GREEK_LETTERS } from '../data/scripts/greek-letters.js';
+import { HEBREW_LETTERS } from '../data/scripts/hebrew-letters.js';
+import { LATIN_SCRIPT } from '../data/scripts/latin-script.js';
 
 const SIGN_MAP: Record<string, ScriptSign[]> = {
   akk: AKKADIAN_SIGNS,
   egy: EGYPTIAN_SIGNS,
   hit: HITTITE_SIGNS,
   uga: UGARITIC_SIGNS,
+  grc: GREEK_LETTERS,
+  'grc-koine': GREEK_LETTERS,
+  hbo: HEBREW_LETTERS,
+  lat: LATIN_SCRIPT,
 };
 
 type Tab = 'signs' | 'practice' | 'read';
@@ -32,6 +40,10 @@ export const ScriptLab = () => {
 
   const language = getLanguageById(langId || '');
   const signs = langId ? SIGN_MAP[langId] : undefined;
+
+  useEffect(() => {
+    if (langId) recordMilestone(langId, 'scriptOpened');
+  }, [langId]);
 
   const filteredSigns = useMemo(() => {
     if (!signs) return [];
