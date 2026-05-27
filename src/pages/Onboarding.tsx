@@ -6,6 +6,7 @@ import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { useSettings } from '../lib/hooks/useSettings.js';
 import { OnboardingProfile } from '../types/firestore.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
+import { getLanguageById } from '../lib/data/languages.js';
 
 const languages = [
   { id: 'greek', glyph: 'Ω', labelKey: 'grc', descKey: 'onboarding.ancientGreekDesc', font: 'font-greek' },
@@ -105,7 +106,9 @@ export const Onboarding = () => {
         level: updatedProfile.level,
         goal: updatedProfile.goal,
       });
-      navigate('/app');
+      const lang = getLanguageById(updatedProfile.languageId as any);
+      const startTextId = lang?.recommendedStartTextId;
+      navigate(startTextId ? `/app/reader/${startTextId}` : '/app');
     } else {
       setProfile(updatedProfile);
       setStep(step + 1);
