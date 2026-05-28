@@ -242,6 +242,39 @@ export class AIClient {
     return data.explanation;
   }
 
+  /**
+   * Returns structured morphological data from AI for a single word/form.
+   * The result is a flat Record compatible with MorphologyService.normalizeMorphology.
+   */
+  static async getAIMorphology(
+    languageId: string,
+    word: string,
+    lemma: string
+  ): Promise<Record<string, string>> {
+    const data = await this.request(
+      'explain',
+      { languageId, word, lemma, type: 'morphology' },
+      ExplainResponseSchema
+    );
+    try {
+      // Strip any markdown code fences the model may have included despite instructions
+      const cleaned = data.explanation
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+      const parsed = JSON.parse(cleaned) as Record<string, unknown>;
+      const result: Record<string, string> = {};
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value === 'string' && value && value !== 'null') {
+          result[key] = value;
+        }
+      }
+      return result;
+    } catch {
+      return {};
+    }
+  }
+
   static async scrapeUrl(url: string): Promise<string> {
     const data = await this.request('scrape', { url }, TextResponseSchema);
     return data.text;

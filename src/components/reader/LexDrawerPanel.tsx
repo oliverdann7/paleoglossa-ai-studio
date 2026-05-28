@@ -224,6 +224,9 @@ export const LexDrawerPanel = memo(({
   const [isCacheLoading, setIsCacheLoading] = useState(false);
   const [cacheEntry, setCacheEntry] = useState<CacheEntry | null>(null);
 
+  const [isAiMorphLoading, setIsAiMorphLoading] = useState(false);
+  const [aiMorphResult, setAiMorphResult] = useState<Record<string, string> | null>(null);
+
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tagPopoverPos, setTagPopoverPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -354,6 +357,28 @@ export const LexDrawerPanel = memo(({
     }
   };
 
+  const handleFetchAIMorphology = async () => {
+    if (isAiMorphLoading || !selectedWord) return;
+    setIsAiMorphLoading(true);
+    try {
+      const result = await AIClient.getAIMorphology(langId, selectedWord.text, selectedWord.lemma);
+      setAiMorphResult(Object.keys(result).length > 0 ? result : null);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAiMorphLoading(false);
+    }
+  };
+
+  // Format AI-generated morphology through the same pipeline as corpus morphology
+  const aiMorphologyDisplay = useMemo(() => {
+    if (!aiMorphResult || !selectedWord) return null;
+    return MorphologyService.formatMorphologyForDisplay(langId, aiMorphResult, {
+      source: 'AI Generated',
+      confidence: undefined,
+    });
+  }, [aiMorphResult, selectedWord, langId]);
+
   const definitionLookup = useMemo(() => {
     if (!selectedWord) return null;
     const userGloss = wordInfo?.userGloss;
@@ -386,6 +411,8 @@ export const LexDrawerPanel = memo(({
     lexiconLemmaRef.current = null;
     setCacheEntry(null);
     setIsCacheLoading(false);
+    setAiMorphResult(null);
+    setIsAiMorphLoading(false);
   }, [selectedWord?.lemma]);
 
   // Hit Wiktionary first when no local lexicon entry exists — it's free,
@@ -569,6 +596,135 @@ export const LexDrawerPanel = memo(({
                     </span>
                   );
                 })()}
+            </div>
+          </div>
+
+          {/* Your Knowledge */}
+          <div className="mb-6">
+            <div className="eyebrow mb-3 flex items-center justify-between text-ink">
+              <span>{t('reader.yourKnowledge', 'Your Knowledge')}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                WordState.NEW,
+                WordState.SEEN,
+                WordState.LEARNING,
+                WordState.FAMILIAR,
+                WordState.KNOWN,
+                WordState.IGNORED,
+              ].map((state) => {
+                const normalizedWordState = normalizeWordState(wordInfo?.state);
+                const isActive =
+                  normalizedWordState === state ||
+                  (normalizedWordState === WordState.NEW &&
+                    state === WordState.NEW &&
+                    !knowledge[normalizeLemmaKey(selectedWord.lemma)]);
+
+                return (
+                  <button
+                    key={state}
+                    data-testid={`state-button-${state}`}
+                    onClick={() => {
+                      const extra = buildReadingContext(selectedWord, text);
+                      const fromState = wordInfo?.state;
+                      const saved = setWordState(
+                        selectedWord.lemma,
+                        state,
+                        langId,
+                        selectedWord.sentenceText,
+                        extra
+                      );
+                      if (saved !== false) {
+                        trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
+                          languageId: langId,
+                          fromState,
+                          toState: state,
+                          lemmaLength: selectedWord.lemma?.length || 0,
+                          textId: text?.id,
+                        });
+                        setSelectedWord(null);
+                      }
+                    }}
+                    className={cn(
+                      'flex-1 min-w-[70px] py-2 md:py-3 rounded-xl border flex flex-col items-center gap-1 transition-all',
+                      isActive
+                        ? 'shadow-sm transform scale-105'
+                        : 'bg-white border-bdr/50 hover:bg-parch opacity-60 hover:opacity-100'
+                    )}
+                    style={
+                      isActive
+                        ? {
+                            backgroundColor: safeStateColors(state).bg,
+                            borderColor: safeStateColors(state).border,
+                          }
+                        : {}
+                    }
+                  >
+                    <div
+                      className="w-2.5 h-2.5 rounded-full mb-0.5 border border-black/10"
+                      style={{
+                        backgroundColor:
+                          safeStateColors(state).border === 'transparent'
+                            ? '#EAE5D9'
+                            : safeStateColors(state).border,
+                      }}
+                    />
+                    <span className="text-[8px] font-bold tracking-widest uppercase text-ink">
+                      {t(`vocab.${safeStateLabel(state).toLowerCase()}`, safeStateLabel(state))}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4">
+              <button
+                  onClick={() => {
+                    if (reviewAdded) return;
+                    const extra = buildReadingContext(selectedWord, text);
+                    const fromState = wordInfo?.state;
+                    const saved = setWordState(
+                      selectedWord.lemma,
+                      WordState.LEARNING,
+                      langId,
+                      selectedWord.sentenceText,
+                      extra
+                    );
+                    if (saved !== false) {
+                      trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
+                        languageId: langId,
+                        fromState,
+                        toState: WordState.LEARNING,
+                        lemmaLength: selectedWord.lemma?.length || 0,
+                        textId: text?.id,
+                      });
+                      if (!wordInfo?.userGloss && definitionLookup?.definition) {
+                        updateGloss(selectedWord.lemma, definitionLookup.definition, langId);
+                      }
+                      setReviewAdded(true);
+                      setTimeout(() => {
+                        setReviewAdded(false);
+                        setSelectedWord(null);
+                      }, 1800);
+                    }
+                  }}
+                className={cn(
+                  'w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all active:scale-[0.98]',
+                  reviewAdded ? 'bg-green-600 text-white' : 'bg-blue text-white'
+                )}
+              >
+                {reviewAdded ? (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    {t('reader.addedToReview', 'Added to Review!')}
+                  </>
+                ) : (
+                  <>
+                    <BookMarked className="w-5 h-5" />
+                    {t('reader.addToReview', 'Add to Review')}
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
@@ -793,81 +949,109 @@ export const LexDrawerPanel = memo(({
                 </div>
               </div>
 
-              {morphologyDisplay.missing ? (
-                <div className="p-4 bg-parch/40 border border-dashed border-bdr rounded-xl text-[13px] text-muted">
-                  {t(
-                    'reader.morphologyMissing',
-                    'Morphological parsing is not available for this token yet.'
-                  )}
-                </div>
-              ) : (
-                <>
-                  <div className="mb-4 flex flex-wrap items-center gap-2">
-                    {(() => {
-                      const posEntry = morphologyDisplay.expanded.find(
-                        (e) => e.label === 'Part of speech'
-                      );
-                      return posEntry ? (
-                        <span className="inline-flex items-center px-3 py-1.5 bg-ink/90 text-parch2 rounded-lg text-[11px] font-bold tracking-wider uppercase">
-                          {posEntry.value}
-                        </span>
-                      ) : null;
-                    })()}
-                    <span
-                      className="inline-block px-3 py-1.5 bg-parch3/60 text-ink border border-bdr/60 rounded-full text-[12px] font-medium"
-                      title={morphologyDisplay.expanded
-                        .map(({ value }) => {
-                          const ref = getGrammarReference(value);
-                          return ref ? `${value}: ${ref.short}` : value;
-                        })
-                        .join(' · ')}
-                    >
-                      {morphologyDisplay.compact}
-                    </span>
-                    {morphologyDisplay.source && (
-                      <span className="text-[11px] text-muted bg-white border border-bdr/40 rounded-full px-2.5 py-0.5">
-                        {morphologyDisplay.source}
-                      </span>
-                    )}
-                  </div>
+              {(() => {
+                // Use AI morphology if corpus morph is missing but AI result is available
+                const displayData = morphologyDisplay.missing ? aiMorphologyDisplay : morphologyDisplay;
 
-                  <div className="grid grid-cols-1 gap-1.5">
-                    {morphologyDisplay.expanded
-                      .filter(({ label }) => label !== 'Part of speech')
-                      .map(({ label, value }) => {
-                        const ref = getGrammarReference(value);
-                        const category = ref?.category ?? LABEL_TO_CATEGORY[label] ?? 'other';
-                        const dotColor = CATEGORY_DOT_COLORS[category] ?? '#9CA3AF';
-                        return (
-                          <div
-                            key={label}
-                            className="flex items-center justify-between gap-3 px-3 py-2 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px] relative cursor-default"
-                            onMouseEnter={(e) => {
-                              if (ref) {
-                                setHoveredTag(value);
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setTagPopoverPos({ x: rect.left + rect.width / 2, y: rect.top });
-                              }
-                            }}
-                            onMouseLeave={() => {
-                              setHoveredTag(null);
-                              setTagPopoverPos(null);
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="w-1.5 h-1.5 rounded-full shrink-0"
-                                style={{ backgroundColor: dotColor }}
-                              />
-                              <span className="opacity-60 lowercase">{label}</span>
-                            </div>
-                            <span className="font-bold text-right">{value}</span>
-                          </div>
+                if (morphologyDisplay.missing && !aiMorphologyDisplay) {
+                  // No morphology at all — show button to fetch from AI
+                  return (
+                    <div className="p-4 bg-parch/40 border border-dashed border-bdr rounded-xl">
+                      <p className="text-[13px] text-muted mb-3">
+                        {t(
+                          'reader.morphologyMissing',
+                          'Morphological parsing is not available for this token yet.'
+                        )}
+                      </p>
+                      <button
+                        onClick={handleFetchAIMorphology}
+                        disabled={isAiMorphLoading}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue/8 border border-blue/20 text-[12px] font-medium text-blue hover:bg-blue/15 transition-colors disabled:opacity-50"
+                      >
+                        {isAiMorphLoading ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-3 h-3" />
+                        )}
+                        {isAiMorphLoading
+                          ? t('reader.fetchingMorphology', 'Analyzing…')
+                          : t('reader.getAiMorphology', 'Get AI Morphology')}
+                      </button>
+                    </div>
+                  );
+                }
+
+                if (!displayData || displayData.missing) return null;
+
+                return (
+                  <>
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      {(() => {
+                        const posEntry = displayData.expanded.find(
+                          (e) => e.label === 'Part of speech'
                         );
-                      })}
-                  </div>
-                </>
-              )}
+                        return posEntry ? (
+                          <span className="inline-flex items-center px-3 py-1.5 bg-ink/90 text-parch2 rounded-lg text-[11px] font-bold tracking-wider uppercase">
+                            {posEntry.value}
+                          </span>
+                        ) : null;
+                      })()}
+                      <span
+                        className="inline-block px-3 py-1.5 bg-parch3/60 text-ink border border-bdr/60 rounded-full text-[12px] font-medium"
+                        title={displayData.expanded
+                          .map(({ value }) => {
+                            const ref = getGrammarReference(value);
+                            return ref ? `${value}: ${ref.short}` : value;
+                          })
+                          .join(' · ')}
+                      >
+                        {displayData.compact}
+                      </span>
+                      {displayData.source && (
+                        <span className="text-[11px] text-muted bg-white border border-bdr/40 rounded-full px-2.5 py-0.5">
+                          {displayData.source}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-1.5">
+                      {displayData.expanded
+                        .filter(({ label }) => label !== 'Part of speech')
+                        .map(({ label, value }) => {
+                          const ref = getGrammarReference(value);
+                          const category = ref?.category ?? LABEL_TO_CATEGORY[label] ?? 'other';
+                          const dotColor = CATEGORY_DOT_COLORS[category] ?? '#9CA3AF';
+                          return (
+                            <div
+                              key={label}
+                              className="flex items-center justify-between gap-3 px-3 py-2 bg-parch text-ink2 border border-bdr/50 rounded-lg text-[12px] relative cursor-default"
+                              onMouseEnter={(e) => {
+                                if (ref) {
+                                  setHoveredTag(value);
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setTagPopoverPos({ x: rect.left + rect.width / 2, y: rect.top });
+                                }
+                              }}
+                              onMouseLeave={() => {
+                                setHoveredTag(null);
+                                setTagPopoverPos(null);
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                                  style={{ backgroundColor: dotColor }}
+                                />
+                                <span className="opacity-60 lowercase">{label}</span>
+                              </div>
+                              <span className="font-bold text-right">{value}</span>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </>
+                );
+              })()}
               {hoveredTag &&
                 tagPopoverPos &&
                 (() => {
@@ -904,135 +1088,6 @@ export const LexDrawerPanel = memo(({
               </button>
             </div>
           )}
-
-          {/* Your Knowledge */}
-          <div className="mb-8">
-            <div className="eyebrow mb-3 flex items-center justify-between text-ink">
-              <span>{t('reader.yourKnowledge', 'Your Knowledge')}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {[
-                WordState.NEW,
-                WordState.SEEN,
-                WordState.LEARNING,
-                WordState.FAMILIAR,
-                WordState.KNOWN,
-                WordState.IGNORED,
-              ].map((state) => {
-                const normalizedWordState = normalizeWordState(wordInfo?.state);
-                const isActive =
-                  normalizedWordState === state ||
-                  (normalizedWordState === WordState.NEW &&
-                    state === WordState.NEW &&
-                    !knowledge[normalizeLemmaKey(selectedWord.lemma)]);
-
-                return (
-                  <button
-                    key={state}
-                    data-testid={`state-button-${state}`}
-                    onClick={() => {
-                      const extra = buildReadingContext(selectedWord, text);
-                      const fromState = wordInfo?.state;
-                      const saved = setWordState(
-                        selectedWord.lemma,
-                        state,
-                        langId,
-                        selectedWord.sentenceText,
-                        extra
-                      );
-                      if (saved !== false) {
-                        trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
-                          languageId: langId,
-                          fromState,
-                          toState: state,
-                          lemmaLength: selectedWord.lemma?.length || 0,
-                          textId: text?.id,
-                        });
-                        setSelectedWord(null);
-                      }
-                    }}
-                    className={cn(
-                      'flex-1 min-w-[70px] py-2 md:py-3 rounded-xl border flex flex-col items-center gap-1 transition-all',
-                      isActive
-                        ? 'shadow-sm transform scale-105'
-                        : 'bg-white border-bdr/50 hover:bg-parch opacity-60 hover:opacity-100'
-                    )}
-                    style={
-                      isActive
-                        ? {
-                            backgroundColor: safeStateColors(state).bg,
-                            borderColor: safeStateColors(state).border,
-                          }
-                        : {}
-                    }
-                  >
-                    <div
-                      className="w-2.5 h-2.5 rounded-full mb-0.5 border border-black/10"
-                      style={{
-                        backgroundColor:
-                          safeStateColors(state).border === 'transparent'
-                            ? '#EAE5D9'
-                            : safeStateColors(state).border,
-                      }}
-                    />
-                    <span className="text-[8px] font-bold tracking-widest uppercase text-ink">
-                      {t(`vocab.${safeStateLabel(state).toLowerCase()}`, safeStateLabel(state))}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-4">
-              <button
-                  onClick={() => {
-                    if (reviewAdded) return;
-                    const extra = buildReadingContext(selectedWord, text);
-                    const fromState = wordInfo?.state;
-                    const saved = setWordState(
-                      selectedWord.lemma,
-                      WordState.LEARNING,
-                      langId,
-                      selectedWord.sentenceText,
-                      extra
-                    );
-                    if (saved !== false) {
-                      trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
-                        languageId: langId,
-                        fromState,
-                        toState: WordState.LEARNING,
-                        lemmaLength: selectedWord.lemma?.length || 0,
-                        textId: text?.id,
-                      });
-                      if (!wordInfo?.userGloss && definitionLookup?.definition) {
-                        updateGloss(selectedWord.lemma, definitionLookup.definition, langId);
-                      }
-                      setReviewAdded(true);
-                      setTimeout(() => {
-                        setReviewAdded(false);
-                        setSelectedWord(null);
-                      }, 1800);
-                    }
-                  }}
-                className={cn(
-                  'w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all active:scale-[0.98]',
-                  reviewAdded ? 'bg-green-600 text-white' : 'bg-blue text-white'
-                )}
-              >
-                {reviewAdded ? (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    {t('reader.addedToReview', 'Added to Review!')}
-                  </>
-                ) : (
-                  <>
-                    <BookMarked className="w-5 h-5" />
-                    {t('reader.addToReview', 'Add to Review')}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
 
           {(aiWordInsight || isAiWordLoading) && (
             <div className="mb-10 p-5 rounded-2xl bg-blue/5 border border-blue/10">
