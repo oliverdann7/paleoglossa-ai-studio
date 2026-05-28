@@ -3,6 +3,7 @@ import { initServerSentry, captureServerException } from './_lib/sentry.js';
 import { correlationIdMiddleware } from './_lib/observability.js';
 import { aiRateLimit, apiRateLimit, authRateLimit, importRateLimit } from './_lib/rateLimiter.js';
 import { searchLimiter } from './_lib/rateLimits.js';
+import { logError } from './_lib/errorLog.js';
 
 initServerSentry();
 import aiRouter from './_routes/ai.js';
@@ -98,7 +99,8 @@ app.use(challengesRouter);
 app.use(recommendationsRouter);
 
 // Global error handler — report to Sentry before returning 500
-app.use((err: any, _req: any, res: any, next: any) => {
+app.use((err: any, req: any, res: any, next: any) => {
+  logError(err, { route: req.path, method: req.method, statusCode: 500, userId: req.user?.uid });
   captureServerException(err);
   if (res.headersSent) return next(err);
   res.status(500).json({ error: 'Internal server error' });

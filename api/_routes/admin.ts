@@ -4,6 +4,7 @@ import { getAdminDb, getAdminAuth } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { calculateCorpusQuality } from '../../src/lib/corpus-quality/calculateCorpusQuality.js';
+import { getRecentErrors, getErrorStats, clearErrors } from '../_lib/errorLog.js';
 
 const router = Router();
 
@@ -522,6 +523,31 @@ router.get(
 );
 
 // ─── Admin corpus quality ─────────────────────────────────────────────────────
+
+// ─── Error log ────────────────────────────────────────────────────────────────
+
+router.get(
+  '/api/admin/errors',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    const limit = Math.min(parseInt(String(req.query.limit ?? '100'), 10) || 100, 200);
+    res.status(200).json({
+      stats: getErrorStats(),
+      errors: getRecentErrors(limit),
+    });
+  }
+);
+
+router.delete(
+  '/api/admin/errors',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    clearErrors();
+    res.status(200).json({ ok: true });
+  }
+);
 
 router.get(
   '/api/admin/corpus-quality',
