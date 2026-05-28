@@ -474,21 +474,25 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
     if (type === 'paradigm') {
       prompt = `You are a philologist specializing in ${langName}. Generate a complete paradigm (inflection table) for the word "${word}" (lemma: "${lemma}") in ${langName}.
 
-Return a concise but thorough philological explanation using markdown formatting. Include:
+Return a structured paradigm using **markdown tables**. Include:
 
-## Lemma and Part of Speech
-Identify the lemma, part of speech, and any relevant classification (e.g. declension class, conjugation class).
+## Lemma & Part of Speech
+State the lemma, part of speech, and declension/conjugation class.
 
 ## Paradigm Table
-Organize by person/number/tense or case/number/gender as applicable. Use GitHub-flavored markdown tables with pipe characters (|) and header separator lines (---). **Bold** any irregular forms. Use separate tables for different tense/voice/mood combinations if needed.
+- For **nouns/adjectives**: a table with Case rows × Number columns (Singular, Dual if applicable, Plural). Include all cases used in ${langName}.
+- For **verbs**: tables for key tenses/aspects. Include Person × Number. Show the most important tenses (present, past/perfect, future or equivalent). For Semitic languages, show relevant stems if applicable.
+- Use the **original script** with transliteration in parentheses.
+- **Bold** the endings or affixes that change.
 
 ## Key Notes
-Any irregular forms, phonological shifts, or dialectal variants.
+- Any irregular forms, phonological shifts, or dialectal variants.
+- Stem changes, ablaut, sandhi, or assimilation rules.
 
 ## Usage Note
-Brief context on how this word is used in classical texts.
+Brief context on frequency and usage in classical texts.
 
-Keep the response focused and learner-friendly. If you are uncertain about any form, note it with [uncertain].
+Keep it focused and learner-friendly. If you are uncertain about any form, note it with [uncertain].
 `;
     } else if (type === 'morphology') {
       prompt = `You are a philologist specializing in ${langName}. Analyze the morphological form "${word}" (lemma: "${lemma}") in ${langName}.

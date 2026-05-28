@@ -656,6 +656,314 @@ const HBO_PARADIGMS: ParadigmEntry[] = [
   },
 ];
 
+// ─── Syriac ──────────────────────────────────────────────────────────────────
+
+const SYR_PARADIGMS: ParadigmEntry[] = [
+  {
+    id: 'syr-peal-perfect',
+    label: 'Peal Perfect',
+    language: 'syr',
+    pos: 'verb',
+    endings: [],
+    markdown: `## Peal Perfect — ܟܬܰܒ (kṯaḇ, "he wrote")
+
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 3ms | ܟܬܰ**ܒ** (kṯaḇ) | ܟܬܰ**ܒܘ** (kṯaḇw) |
+| 3fs | ܟܶܬܒܰ**ܬ** (keṯbaṯ) | ܟܬܰ**ܒ̈ܝ** (kṯaḇy) |
+| 2ms | ܟܬܰܒ**ܬ** (kṯaḇt) | ܟܬܰܒ**ܬܘܢ** (kṯaḇtōn) |
+| 2fs | ܟܬܰܒ**ܬܝ** (kṯaḇty) | ܟܬܰܒ**ܬܝܢ** (kṯaḇtēn) |
+| 1cs | ܟܶܬܒ**ܶܬ** (keṯbeṯ) | ܟܬܰܒ**ܢ** (kṯaḇn) |
+
+> **Peal** is the basic active stem in Syriac (equivalent to Hebrew Qal). Perfect expresses completed action.`,
+  },
+  {
+    id: 'syr-peal-imperfect',
+    label: 'Peal Imperfect',
+    language: 'syr',
+    pos: 'verb',
+    endings: [],
+    markdown: `## Peal Imperfect — ܢܶܟܬܘܒ (neḵtōḇ, "he will write")
+
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 3ms | **ܢ**ܶܟܬܘ**ܒ** (neḵtōḇ) | **ܢ**ܶܟܬܒ**ܘܢ** (neḵtḇōn) |
+| 3fs | **ܬ**ܶܟܬܘ**ܒ** (teḵtōḇ) | **ܢ**ܶܟܬܒ**ܢ** (neḵtḇān) |
+| 2ms | **ܬ**ܶܟܬܘ**ܒ** (teḵtōḇ) | **ܬ**ܶܟܬܒ**ܘܢ** (teḵtḇōn) |
+| 2fs | **ܬ**ܶܟܬܒ**ܝܢ** (teḵtḇīn) | **ܬ**ܶܟܬܒ**ܢ** (teḵtḇān) |
+| 1cs | **ܐ**ܶܟܬܘ**ܒ** (eḵtōḇ) | **ܢ**ܶܟܬܘ**ܒ** (neḵtōḇ) |
+
+> The imperfect uses **prefixed** person markers. Syriac has the same prefix system as other Aramaic dialects.`,
+  },
+  {
+    id: 'syr-noun-states',
+    label: 'Noun States (Absolute / Construct / Emphatic)',
+    language: 'syr',
+    pos: 'noun',
+    endings: ['ܐ', 'ܬܐ'],
+    markdown: `## Syriac Noun States — ܡܰܠܟܳܐ (malkā, "king")
+
+| State | Masculine Sg | Masculine Pl | Feminine Sg | Feminine Pl |
+|-------|-------------|-------------|-------------|-------------|
+| **Absolute** | ܡܰܠܶ**ܟ** (maleḵ) | ܡܰܠܟ**ܺܝܢ** (malkīn) | ܡܰܠܟ**ܳܐ** (malkā) | ܡܰܠܟ**ܳܢ** (malkān) |
+| **Construct** | ܡܰܠܶ**ܟ** (maleḵ) | ܡܰܠܟ**ܰܝ** (malkay) | ܡܰܠܟ**ܰܬ** (malkaṯ) | ܡܰܠܟ**ܳܬ** (malkāṯ) |
+| **Emphatic** | ܡܰܠܟ**ܳܐ** (malkā) | ܡܰܠܟ**ܶܐ** (malkē) | ܡܰܠܟ**ܬܳܐ** (malkṯā) | ܡܰܠܟ**ܳܬܳܐ** (malkāṯā) |
+
+> The **emphatic state** (with suffix **-ā**) is the default/definite form in Syriac, unlike Hebrew where the article is prefixed.`,
+  },
+  {
+    id: 'syr-verb-stems',
+    label: 'Verb Stems Overview',
+    language: 'syr',
+    pos: 'verb',
+    endings: [],
+    markdown: `## Syriac Verb Stems (ܒܢܝ̈ܢܐ)
+
+| Stem | Pattern | Voice | Example |
+|------|---------|-------|---------|
+| **Peal** (ܦܥܰܠ) | basic | Simple active | ܟܬܰܒ (kṯaḇ) "wrote" |
+| **Ethpeel** (ܐܶܬܦܥܶܠ) | reflexive/passive | Simple passive | ܐܶܬܟܬܶܒ (eṯkteḇ) "was written" |
+| **Pael** (ܦܰܥܶܠ) | intensive | Intensive active | ܟܰܬܶܒ (katteḇ) "inscribed" |
+| **Ethpaal** (ܐܶܬܦܰܥܰܠ) | intensive passive | Intensive passive | ܐܶܬܟܰܬܰܒ (eṯkattaḇ) "was inscribed" |
+| **Aphel** (ܐܰܦܥܶܠ) | causative | Causative active | ܐܰܟܬܶܒ (aḵteḇ) "caused to write" |
+| **Ettaphal** (ܐܶܬܬܰܦܥܰܠ) | causative passive | Causative passive | ܐܶܬܬܰܟܬܰܒ (ettaḵtaḇ) "was caused to write" |
+| **Saphel** (ܫܰܦܥܶܠ) | rare causative | — | (rare, mostly lexicalized) |
+
+> Syriac stems correspond to Hebrew binyanim: Peal ≈ Qal, Pael ≈ Piel, Aphel ≈ Hiphil.`,
+  },
+];
+
+// ─── Coptic ──────────────────────────────────────────────────────────────────
+
+const COP_PARADIGMS: ParadigmEntry[] = [
+  {
+    id: 'cop-subject-pronouns',
+    label: 'Subject Pronouns & Verbal Prefixes',
+    language: 'cop',
+    pos: 'verb',
+    endings: [],
+    markdown: `## Coptic Subject Pronouns & Verbal Prefixes (Sahidic)
+
+### Independent Pronouns
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | ⲁⲛⲟⲕ (anok) | ⲁⲛⲟⲛ (anon) |
+| 2nd m | ⲛⲧⲟⲕ (ntok) | ⲛⲧⲱⲧⲛ (ntōtn) |
+| 2nd f | ⲛⲧⲟ (nto) | ⲛⲧⲱⲧⲛ (ntōtn) |
+| 3rd m | ⲛⲧⲟϥ (ntof) | ⲛⲧⲟⲟⲩ (ntoou) |
+| 3rd f | ⲛⲧⲟⲥ (ntos) | ⲛⲧⲟⲟⲩ (ntoou) |
+
+### Pronominal Prefixes (Present Tense)
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 1st | ϯ- (ti-) | ⲧⲛ- (tn-) |
+| 2nd m | ⲕ- (k-) | ⲧⲉⲧⲛ- (tetn-) |
+| 2nd f | ⲧⲉ- (te-) | ⲧⲉⲧⲛ- (tetn-) |
+| 3rd m | ϥ- (f-) | ⲥⲉ- (se-) |
+| 3rd f | ⲥ- (s-) | ⲥⲉ- (se-) |
+
+> Coptic verbs conjugate by **prefixing** a subject marker. The verb stem itself does not change.`,
+  },
+  {
+    id: 'cop-tense-patterns',
+    label: 'Tense/Aspect Patterns',
+    language: 'cop',
+    pos: 'verb',
+    endings: [],
+    markdown: `## Coptic Tense/Aspect Patterns (Sahidic)
+
+Using ⲥⲱⲧⲙ (sōtm, "hear") with 3ms subject:
+
+| Pattern | Form | Meaning |
+|---------|------|---------|
+| **Present** | ϥ-ⲥⲱⲧⲙ (f-sōtm) | he hears |
+| **Past** | ⲁ-ϥ-ⲥⲱⲧⲙ (a-f-sōtm) | he heard |
+| **Future** | ϥ-ⲛⲁ-ⲥⲱⲧⲙ (f-na-sōtm) | he will hear |
+| **Habitual** | ϣⲁ-ϥ-ⲥⲱⲧⲙ (sha-f-sōtm) | he (usually) hears |
+| **Negative Present** | ⲛ-ϥ-ⲥⲱⲧⲙ ⲁⲛ (n-f-sōtm an) | he does not hear |
+| **Negative Past** | ⲙⲡ-ϥ-ⲥⲱⲧⲙ (mp-f-sōtm) | he did not hear |
+| **Imperative** | ⲥⲱⲧⲙ (sōtm) | hear! |
+
+> Coptic is **analytic**: tense, aspect, and negation are expressed through particles and prefixes, not verb stem changes.`,
+  },
+  {
+    id: 'cop-noun-articles',
+    label: 'Noun Articles & Possessives',
+    language: 'cop',
+    pos: 'noun',
+    endings: ['ⲡ', 'ⲧ', 'ⲛ'],
+    markdown: `## Coptic Articles & Possessive Prefixes (Sahidic)
+
+### Definite Articles
+| | Masculine | Feminine | Plural |
+|--|-----------|----------|--------|
+| **Article** | ⲡ- (p-) | ⲧ- (t-) | ⲛ- (n-) |
+| **Example** | ⲡ-ⲣⲱⲙⲉ (p-rōme) "the man" | ⲧ-ⲥϩⲓⲙⲉ (t-shime) "the woman" | ⲛ-ⲣⲱⲙⲉ (n-rōme) "the men" |
+
+### Indefinite Articles
+| | Masculine | Feminine | Plural |
+|--|-----------|----------|--------|
+| **Article** | ⲟⲩ- (ou-) | ⲟⲩ- (ou-) | ϩⲉⲛ- (hen-) |
+
+### Possessive Prefixes (e.g. "my/your/his…")
+| Person | Masculine | Feminine | Plural |
+|--------|-----------|----------|--------|
+| 1sg | ⲡⲁ- (pa-) | ⲧⲁ- (ta-) | ⲛⲁ- (na-) |
+| 2ms | ⲡⲉⲕ- (pek-) | ⲧⲉⲕ- (tek-) | ⲛⲉⲕ- (nek-) |
+| 3ms | ⲡⲉϥ- (pef-) | ⲧⲉϥ- (tef-) | ⲛⲉϥ- (nef-) |
+
+> Gender and number are marked on the **article**, not on the noun itself.`,
+  },
+];
+
+// ─── Aramaic ─────────────────────────────────────────────────────────────────
+
+const ARC_PARADIGMS: ParadigmEntry[] = [
+  {
+    id: 'arc-peal-perfect',
+    label: 'Peal Perfect',
+    language: 'arc',
+    pos: 'verb',
+    endings: [],
+    markdown: `## Peal Perfect — כְּתַב (kəṯaḇ, "he wrote")
+
+| Person | Singular | Plural |
+|--------|----------|--------|
+| 3ms | כְּתַ**ב** (kəṯaḇ) | כְּתַ**בוּ** (kəṯaḇū) |
+| 3fs | כִּתְבַ**ת** (kiṯḇaṯ) | כְּתַ**בָה** (kəṯaḇā) |
+| 2ms | כְּתַבְ**תָּ** (kəṯaḇtā) | כְּתַבְ**תּוּן** (kəṯaḇtūn) |
+| 2fs | כְּתַבְ**תִּי** (kəṯaḇtī) | כְּתַבְ**תֵּן** (kəṯaḇtēn) |
+| 1cs | כִּתְבֵ**ת** (kiṯḇēṯ) | כְּתַבְ**נָא** (kəṯaḇnā) |
+
+> Biblical Aramaic Peal is the basic active stem, parallel to Hebrew Qal. Suffixed conjugation (perfect).`,
+  },
+  {
+    id: 'arc-noun-states',
+    label: 'Noun States (Absolute / Construct / Emphatic)',
+    language: 'arc',
+    pos: 'noun',
+    endings: ['א', 'ה'],
+    markdown: `## Aramaic Noun States — מֶלֶךְ (meleḵ, "king")
+
+| State | Singular | Plural |
+|-------|----------|--------|
+| **Absolute** | מֶלֶ**ךְ** (meleḵ) | מַלְכִ**ין** (malḵīn) |
+| **Construct** | מֶלֶ**ךְ** (meleḵ) | מַלְכֵ**י** (malḵē) |
+| **Emphatic** | מַלְכָּ**א** (malkā) | מַלְכַיָּ**א** (malḵayyā) |
+
+> The **emphatic state** (suffix **-א**) is the definite form in Aramaic — it functions like a postposed definite article.`,
+  },
+  {
+    id: 'arc-verb-stems',
+    label: 'Verb Stems Overview',
+    language: 'arc',
+    pos: 'verb',
+    endings: [],
+    markdown: `## Aramaic Verb Stems (Biblical Aramaic)
+
+| Stem | Voice | Example (√כתב) |
+|------|-------|-----------------|
+| **Peal** | Simple active | כְּתַב (kəṯaḇ) "wrote" |
+| **Hithpeel** | Simple reflexive/passive | הִתְכְּתֵב (hiṯkəṯēḇ) "was written" |
+| **Pael** | Intensive active | כַּתֵּב (kattēḇ) "inscribed" |
+| **Hithpaal** | Intensive passive | הִתְכַּתַּב (hiṯkattaḇ) "was inscribed" |
+| **Haphel** | Causative active | הַכְתֵּב (haḵtēḇ) "caused to write" |
+| **Hophal** | Causative passive | הֻכְתַּב (huḵtaḇ) "was caused to write" |
+
+> The Aramaic stem system is closely related to Hebrew and Syriac. Peal ≈ Qal, Pael ≈ Piel, Haphel ≈ Hiphil.`,
+  },
+];
+
+// ─── Sanskrit ────────────────────────────────────────────────────────────────
+
+const SAN_PARADIGMS: ParadigmEntry[] = [
+  {
+    id: 'san-a-stem-masc',
+    label: 'a-stem Masculine (deva-)',
+    language: 'san',
+    pos: 'noun',
+    endings: ['ः', 'स्'],
+    markdown: `## a-stem Masculine — देव (deva, "god")
+
+| Case | Singular | Dual | Plural |
+|------|----------|------|--------|
+| **Nominative** | देव**ः** (devaḥ) | देव**ौ** (devau) | देव**ाः** (devāḥ) |
+| **Accusative** | देव**म्** (devam) | देव**ौ** (devau) | देव**ान्** (devān) |
+| **Instrumental** | देव**ेन** (devena) | देव**ाभ्याम्** (devābhyām) | देव**ैः** (devaiḥ) |
+| **Dative** | देव**ाय** (devāya) | देव**ाभ्याम्** (devābhyām) | देव**ेभ्यः** (devebhyaḥ) |
+| **Ablative** | देव**ात्** (devāt) | देव**ाभ्याम्** (devābhyām) | देव**ेभ्यः** (devebhyaḥ) |
+| **Genitive** | देव**स्य** (devasya) | देव**योः** (devayoḥ) | देव**ानाम्** (devānām) |
+| **Locative** | देव**े** (deve) | देव**योः** (devayoḥ) | देव**ेषु** (deveṣu) |
+| **Vocative** | देव (deva) | देव**ौ** (devau) | देव**ाः** (devāḥ) |
+
+> The **a-stem** is the most common declension class in Sanskrit. Note the 8 cases and 3 numbers (singular, dual, plural).`,
+  },
+  {
+    id: 'san-aa-stem-fem',
+    label: 'ā-stem Feminine (kanyā-)',
+    language: 'san',
+    pos: 'noun',
+    endings: ['ा'],
+    markdown: `## ā-stem Feminine — कन्या (kanyā, "girl")
+
+| Case | Singular | Dual | Plural |
+|------|----------|------|--------|
+| **Nominative** | कन्य**ा** (kanyā) | कन्य**े** (kanye) | कन्य**ाः** (kanyāḥ) |
+| **Accusative** | कन्य**ाम्** (kanyām) | कन्य**े** (kanye) | कन्य**ाः** (kanyāḥ) |
+| **Instrumental** | कन्य**या** (kanyayā) | कन्य**ाभ्याम्** (kanyābhyām) | कन्य**ाभिः** (kanyābhiḥ) |
+| **Dative** | कन्य**ायै** (kanyāyai) | कन्य**ाभ्याम्** (kanyābhyām) | कन्य**ाभ्यः** (kanyābhyaḥ) |
+| **Genitive** | कन्य**ायाः** (kanyāyāḥ) | कन्य**योः** (kanyayoḥ) | कन्य**ानाम्** (kanyānām) |
+| **Locative** | कन्य**ायाम्** (kanyāyām) | कन्य**योः** (kanyayoḥ) | कन्य**ासु** (kanyāsu) |`,
+  },
+  {
+    id: 'san-present-active',
+    label: 'Present Active (bhū class 1)',
+    language: 'san',
+    pos: 'verb',
+    endings: ['ति', 'न्ति'],
+    markdown: `## Present Active Indicative — भू (bhū, "to be") → भवति (bhavati)
+
+### Parasmaipada (Active)
+| Person | Singular | Dual | Plural |
+|--------|----------|------|--------|
+| 3rd | भव**ति** (bhavati) | भव**तः** (bhavataḥ) | भव**न्ति** (bhavanti) |
+| 2nd | भव**सि** (bhavasi) | भव**थः** (bhavathaḥ) | भव**थ** (bhavatha) |
+| 1st | भव**ामि** (bhavāmi) | भव**ावः** (bhavāvaḥ) | भव**ामः** (bhavāmaḥ) |
+
+### Ātmanepada (Middle)
+| Person | Singular | Dual | Plural |
+|--------|----------|------|--------|
+| 3rd | भव**ते** (bhavate) | भव**ेते** (bhavete) | भव**न्ते** (bhavante) |
+| 2nd | भव**से** (bhavase) | भव**ेथे** (bhavethe) | भव**ध्वे** (bhavadhve) |
+| 1st | भव**े** (bhave) | भव**ावहे** (bhavāvahe) | भव**ामहे** (bhavāmahe) |
+
+> Sanskrit has two voices: **Parasmaipada** (active) and **Ātmanepada** (middle). Class 1 verbs add the thematic vowel **-a-** to the root.`,
+  },
+  {
+    id: 'san-verb-classes',
+    label: 'Ten Verb Classes Overview',
+    language: 'san',
+    pos: 'verb',
+    endings: [],
+    markdown: `## Sanskrit Verb Classes (Gaṇa)
+
+| Class | Type | Present Stem | Example |
+|-------|------|-------------|---------|
+| **1** (bhū) | Thematic | root + a | भू → भव- (bhav-) |
+| **2** (ad) | Athematic | root | अद् → अद्- (ad-) |
+| **3** (hu) | Reduplicated | redupl. + root | हु → जुहो- (juho-) |
+| **4** (div) | Thematic | root + ya | दिव् → दीव्य- (dīvy-) |
+| **5** (su) | Athematic | root + nu/no | सु → सुनो- (suno-) |
+| **6** (tud) | Thematic | root + a (accented) | तुद् → तुद- (tuda-) |
+| **7** (rudh) | Athematic | root + na/n | रुध् → रुण/रुन्ध् |
+| **8** (tan) | Athematic | root + u/o | तन् → तनो- (tano-) |
+| **9** (krī) | Athematic | root + nā/nī | क्री → क्रीणा- (krīṇā-) |
+| **10** (cur) | Thematic | root + aya | चुर् → चोरय- (coraya-) |
+
+> **Thematic** classes (1, 4, 6, 10) insert a vowel between stem and ending. **Athematic** classes (2, 3, 5, 7, 8, 9) attach endings directly to the stem.`,
+  },
+];
+
 // ─── Index ────────────────────────────────────────────────────────────────────
 
 const BY_LANGUAGE: Record<string, ParadigmEntry[]> = {
@@ -663,6 +971,10 @@ const BY_LANGUAGE: Record<string, ParadigmEntry[]> = {
   'grc-koine': GRC_PARADIGMS,
   lat: LAT_PARADIGMS,
   hbo: HBO_PARADIGMS,
+  syr: SYR_PARADIGMS,
+  cop: COP_PARADIGMS,
+  arc: ARC_PARADIGMS,
+  san: SAN_PARADIGMS,
 };
 
 export function findParadigm(
