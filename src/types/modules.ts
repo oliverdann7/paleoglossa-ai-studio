@@ -218,6 +218,8 @@ export interface CourseTextAssignment {
   learningObjectives: string;
   /** ISO date string (YYYY-MM-DD). Teacher-set deadline for this text. */
   dueDate?: string;
+  /** Teacher-authored reading guide shown to all enrolled students */
+  teacherNote?: string;
 }
 
 export interface CourseMembership {
