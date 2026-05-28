@@ -33,6 +33,7 @@ import { STORAGE_KEYS } from '../lib/constants/storage.js';
 import { OfflineService } from '../lib/services/offlineService.js';
 import { useOnlineStatus } from '../lib/hooks/useOnlineStatus.js';
 import { BookmarkService } from '../lib/services/bookmarkService.js';
+import { DependencyTree, type DepToken } from '../components/reader/DependencyTree.js';
 import { recordMilestone } from '../lib/hooks/useBeginnerProgress.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
@@ -222,6 +223,8 @@ export const Reader = () => {
     x: number;
     y: number;
   } | null>(null);
+  const [showSyntax, setShowSyntax] = useState(false);
+  const [syntaxTokenIdx, setSyntaxTokenIdx] = useState<number | null>(null);
 
   const {
     state: {
@@ -563,6 +566,26 @@ export const Reader = () => {
     return Math.max(1, Math.round(seconds / 60));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter, knowledgeVersion, getWordInfo]);
+
+  const syntaxDepTokens = useMemo<DepToken[] | null>(() => {
+    if (!showSyntax) return null;
+    const sentence = chapter?.sentences?.[currentSentenceIndex];
+    if (!sentence?.tokens) return null;
+    const hasAnnotations = sentence.tokens.some(
+      (t: any) => t.deprel != null || t.head != null
+    );
+    if (!hasAnnotations) return null;
+    return sentence.tokens
+      .filter((t: ReaderToken) => t.type !== 'punctuation' && t.type !== 'whitespace')
+      .map((t: any, idx: number) => ({
+        index: idx,
+        form: t.text || t.surface || '',
+        lemma: t.lemma || '',
+        pos: t.morphology?.partOfSpeech || t.pos || '',
+        head: t.head ?? -1,
+        relation: t.deprel || 'dep',
+      }));
+  }, [showSyntax, chapter, currentSentenceIndex]);
 
   const handleReviewText = useCallback(() => {
     const lemmas = Array.from(
@@ -1125,6 +1148,9 @@ export const Reader = () => {
           onChangeDisplayMode={setDisplayMode}
           readingTimeMinutes={readingTimeMinutes}
           onReviewText={handleReviewText}
+          showSyntax={showSyntax}
+          onToggleSyntax={() => { setShowSyntax((s) => !s); setSyntaxTokenIdx(null); }}
+          hasSyntax={!!text?.hasSyntax}
         />
         <button
           onClick={onAskTutor}
@@ -1257,6 +1283,33 @@ export const Reader = () => {
           totalChapters={chapters.length}
           sentenceSliceStart={sentenceSliceStart}
         />
+
+        {showSyntax && syntaxDepTokens && syntaxDepTokens.length > 0 && (
+          <div className="border-t border-bdr/40 bg-parch/50 p-4 overflow-x-auto">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[11px] font-bold text-muted uppercase tracking-wider">
+                Dependency Tree
+              </p>
+              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+                {(chapter?.sentences?.[currentSentenceIndex]?.tokens as any)?.[0]?.treebankSource || 'Treebank'} · Human-verified
+              </span>
+            </div>
+            <DependencyTree
+              tokens={syntaxDepTokens}
+              isRTL={isRtl}
+              selectedIndex={syntaxTokenIdx}
+              onTokenClick={(idx) => setSyntaxTokenIdx((prev) => (prev === idx ? null : idx))}
+            />
+          </div>
+        )}
+
+        {showSyntax && !syntaxDepTokens && readingMode === 'page' && (
+          <div className="border-t border-bdr/40 bg-parch/50 px-4 py-3 text-center">
+            <p className="text-[12px] text-muted italic">
+              No treebank annotations for this sentence. AI analysis available on the Syntax page.
+            </p>
+          </div>
+        )}
 
         <ReaderBottomNav
           scrollProgress={scrollProgress}

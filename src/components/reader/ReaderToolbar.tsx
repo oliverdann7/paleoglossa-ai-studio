@@ -8,6 +8,7 @@ import {
   Microscope,
   Columns,
   Brain,
+  GitBranch,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +33,9 @@ interface Props {
   onChangeDisplayMode?: (mode: DisplayMode) => void;
   readingTimeMinutes?: number | null;
   onReviewText?: () => void;
+  showSyntax?: boolean;
+  onToggleSyntax?: () => void;
+  hasSyntax?: boolean;
 }
 
 const DISPLAY_MODES: { id: DisplayMode; label: string; icon: React.ReactNode }[] = [
@@ -61,6 +65,9 @@ export function ReaderToolbar({
   onChangeDisplayMode,
   readingTimeMinutes,
   onReviewText,
+  showSyntax,
+  onToggleSyntax,
+  hasSyntax,
 }: Props) {
   const { t } = useTranslation();
   const isFocus = displayMode === 'focus';
@@ -178,6 +185,18 @@ export function ReaderToolbar({
               >
                 <AlignJustify className="w-3.5 h-3.5" />{' '}
                 {t('reader.toggleInterlinear', 'Interlinear')}
+              </button>
+            )}
+            {hasSyntax && onToggleSyntax && (
+              <button
+                onClick={onToggleSyntax}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors text-[10px] font-bold uppercase tracking-widest hidden md:flex',
+                  showSyntax ? 'bg-blue/10 text-blue' : 'text-muted hover:bg-parch3'
+                )}
+              >
+                <GitBranch className="w-3.5 h-3.5" />{' '}
+                {t('reader.toggleSyntax', 'Syntax')}
               </button>
             )}
           </>
