@@ -181,7 +181,7 @@ export const en = {
     'import.pasteContent': 'Paste Content',
     'import.try': 'Try',
     'import.clickUpload': 'Click to Upload',
-    'import.supports': 'Supports .txt, .pdf, .docx files up to 20MB',
+    'import.supports': 'Supports .txt, .pdf, .docx, .xml (TEI) files up to 20MB',
     'import.articleUrl': 'Article URL',
     'import.urlScraper': 'URL Scraper Beta',
     'import.scraperDesc':
