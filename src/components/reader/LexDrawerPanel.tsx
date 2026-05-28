@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { ScholarAnnotations } from './ScholarAnnotations.js';
+import { CognateLinksSection } from './CognateLinksSection.js';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/hooks/useAuth';
 import {
@@ -1124,6 +1125,9 @@ export const LexDrawerPanel = memo(({
             languageId={langId}
             gloss={selectedWord.gloss}
           />
+
+          {/* Cross-language cognate links */}
+          <CognateLinksSection lemma={selectedWord.lemma} languageId={langId} />
 
           {/* Notes Section */}
           <div className="mb-6">
