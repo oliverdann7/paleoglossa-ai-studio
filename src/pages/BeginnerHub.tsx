@@ -101,7 +101,7 @@ export const BeginnerHub = () => {
           <p className="text-base md:text-lg text-ink2 max-w-3xl leading-relaxed">
             {t(
               'beginnerHub.description',
-              'Choose a language and your experience level. We will guide you step by step — from your first sign to your first review session.'
+              'Select your experience level. We will guide you step by step — from your first sign to your first review session.'
             )}
           </p>
         </motion.div>
