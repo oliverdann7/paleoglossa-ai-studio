@@ -525,10 +525,10 @@ The Reader page should be extended (not rewritten) via:
 - [x] Dictionary page (`/app/dictionary/:languageId/:lemma`) with paradigm tables
 - [x] Lemma lookup in Reader via LexDrawerPanel — click any word for full analysis
 - [x] Smart text recommendations — multi-signal scoring, i+1 coverage, difficulty labels
-- [x] Semantic concept layer: extend `LemmaDoc` with `semanticDomain`, `cognates`, `usageNotes` (PR #246)
-- [x] "Concept" tab in `LexDrawerPanel` — semantic domains, historical usage evolution, cross-corpus occurrences (PR #246)
-- [x] AI-generated concept summaries for theologically rich words (λόγος, תורה, חסד) via Gemini (PR #254)
-- [x] Cross-language cognate linking (e.g. Greek λόγος ↔ Latin verbum) (PR #253)
+- [ ] Semantic concept layer: extend `LemmaDoc` with `semanticDomain`, `cognates`, `usageNotes`
+- [ ] "Concept" tab in `LexDrawerPanel` — semantic domains, historical usage evolution, cross-corpus occurrences
+- [ ] AI-generated concept summaries for theologically rich words (λόγος, תורה, חסד) via Gemini
+- [ ] Cross-language cognate linking (e.g. Greek λόγος ↔ Latin verbum)
 
 **Deliverable:** ✅ Core complete. Users can browse the corpus filtered by language, click a text to read it, click any word to see its full analysis with paradigm tables, and get personalized text recommendations. Semantic concept layer (domains, cognates, usage evolution) remains as a future enhancement.
 
@@ -583,11 +583,11 @@ The Reader page should be extended (not rewritten) via:
 
 ### Phase 5b: Historical Context Panels (1-2 weeks)
 
-- [x] `HistoricalContextPanel` component in `src/components/reader/` (PR #245)
-- [x] AI-generated context via Gemini: geography, period, key figures, cultural background (PR #245)
-- [x] Cached per text section to avoid repeated AI calls (PR #245)
-- [x] Extend `Text` interface with optional `historicalContext` field (period, location, figures, backgroundNote) (PR #245)
-- [x] Toggle in Reader sidebar — non-intrusive, per-section (not per-word) (PR #245)
+- [ ] `HistoricalContextPanel` component in `src/components/reader/`
+- [ ] AI-generated context via Gemini: geography, period, key figures, cultural background
+- [ ] Cached per text section to avoid repeated AI calls
+- [ ] Extend `Text` interface with optional `historicalContext` field (period, location, figures, backgroundNote)
+- [ ] Toggle in Reader sidebar — non-intrusive, per-section (not per-word)
 
 **Deliverable:** A user reading Acts 19 can open a side panel showing Ephesus context, Artemis cult background, and Roman provincial politics — transforming "decoding words" into "understanding the world."
 
@@ -597,15 +597,15 @@ The Reader page should be extended (not rewritten) via:
 - [x] Manuscript viewer: image pan/zoom + IIIF manifest support
 - [ ] Line-level alignment
 - [ ] Critical apparatus display
-- [x] TEI XML import (PR #248)
-- [x] Manuscript browser with filtering (PR #262)
-- [x] Variant apparatus explorer: tap a word in Reader to see variant readings across manuscripts (PR #256)
-- [x] "Variants" tab in `LexDrawerPanel` for inline apparatus display (PR #256)
-- [x] `VariantReading` data: witness, reading, type, scribal tendency explanation (PR #256)
+- [ ] TEI XML import
+- [ ] Manuscript browser with filtering
+- [ ] Variant apparatus explorer: tap a word in Reader to see variant readings across manuscripts
+- [ ] "Variants" tab in `LexDrawerPanel` for inline apparatus display
+- [ ] `VariantReading` data: witness, reading, type, scribal tendency explanation
 - [ ] Data sourcing: start with AI-generated apparatus notes for NT texts; investigate NA28/UBS licensing
-- [x] Textual criticism exercises (gamified): identify earliest reading, spot harmonization, detect scribal errors (PR #259)
-- [x] Exercise generation via Gemini from real apparatus data (PR #259)
-- [x] Integration with XP/achievement system for TC exercise completions (PR #259)
+- [ ] Textual criticism exercises (gamified): identify earliest reading, spot harmonization, detect scribal errors
+- [ ] Exercise generation via Gemini from real apparatus data
+- [ ] Integration with XP/achievement system for TC exercise completions
 
 **Deliverable:** Basic manuscript viewing works. Remaining: line alignment, apparatus, TEI import, variant explorer, and gamified textual criticism exercises.
 
@@ -614,24 +614,24 @@ The Reader page should be extended (not rewritten) via:
 - [x] Course model + page (`Courses.tsx`, 1257 lines)
 - [x] Course creation with text assignment and reading lists
 - [x] Language-scoped course filtering (PR #235)
-- [x] Teacher role via Firebase custom claims (PR #247)
-- [x] Student enrollment flow (PR #258)
-- [x] Assignment tracking with due dates (PR #250)
-- [x] Teacher dashboard: per-student progress, completion rates (PR #260)
-- [x] Fork/clone texts for course-specific annotations (PR #261)
+- [ ] Teacher role via Firebase custom claims
+- [ ] Student enrollment flow
+- [ ] Assignment tracking with due dates
+- [ ] Teacher dashboard: per-student progress, completion rates
+- [ ] Fork/clone texts for course-specific annotations
 
 **Deliverable:** Teachers can create courses, assign texts, and track student progress through the corpus.
 
 ### Phase 8: Production Hardening (ongoing)
 
-- [x] Rate limiting on all API routes (PR #255)
-- [x] Firestore security rules audit and hardening (PR #249)
-- [x] Performance audit: chunk size, image optimization, lazy loading (PR #257)
-- [x] Accessibility audit: ARIA labels, keyboard navigation, screen reader support (PR #252)
-- [x] E2E tests with Playwright for critical flows (auth, reader, review) (PR #251)
-- [x] Error reporting dashboard (PR #263)
-- [ ] Analytics: track feature usage to guide priorities
-- [ ] Documentation: architecture docs, contribution guide, API reference
+- [ ] Rate limiting on all API routes
+- [ ] Firestore security rules audit and hardening
+- [ ] Performance audit: chunk size, image optimization, lazy loading
+- [ ] Accessibility audit: ARIA labels, keyboard navigation, screen reader support
+- [ ] E2E tests with Playwright for critical flows (auth, reader, review)
+- [ ] Error reporting dashboard
+- [x] Analytics: track feature usage to guide priorities (PostHog wired in `src/lib/analytics.ts`; events fired from Reader, LexDrawer, Review, Import, Auth, Subscription)
+- [x] Documentation: architecture docs, contribution guide, API reference (`docs/contributing.md`, `docs/api-reference.md`)
 
 ---
 
