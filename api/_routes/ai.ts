@@ -427,9 +427,9 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
         .json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
     }
 
-    if (!type || !['word', 'phrase', 'paradigm', 'gloss'].includes(type)) {
+    if (!type || !['word', 'phrase', 'paradigm', 'gloss', 'morphology'].includes(type)) {
       return res.status(400).json({
-        error: 'type must be one of: word, phrase, paradigm, gloss',
+        error: 'type must be one of: word, phrase, paradigm, gloss, morphology',
         code: 'INVALID_INPUT',
         field: 'type',
       });
@@ -471,15 +471,46 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
     if (type === 'paradigm') {
       prompt = `You are a philologist specializing in ${langName}. Generate a complete paradigm (inflection table) for the word "${word}" (lemma: "${lemma}") in ${langName}.
 
-Return a concise but thorough philological explanation. Include:
+Return a concise but thorough philological explanation using markdown formatting. Include:
 
-1. LEMMA AND PART OF SPEECH
-2. PARADIGM TABLE — organized by person/number/tense as applicable for this part of speech. Use a simple text table with consistent spacing, not markdown.
-3. KEY NOTES — any irregular forms, phonological shifts, or dialectal variants
-4. USAGE NOTE — brief context on how this word is used in classical texts
+## Lemma and Part of Speech
+Identify the lemma, part of speech, and any relevant classification (e.g. declension class, conjugation class).
 
-Keep the response focused and learner-friendly. Use plain text with clear section headers (no markdown). If you are uncertain about any form, note it with [brackets].
+## Paradigm Table
+Organize by person/number/tense or case/number/gender as applicable. Use GitHub-flavored markdown tables with pipe characters (|) and header separator lines (---). **Bold** any irregular forms. Use separate tables for different tense/voice/mood combinations if needed.
+
+## Key Notes
+Any irregular forms, phonological shifts, or dialectal variants.
+
+## Usage Note
+Brief context on how this word is used in classical texts.
+
+Keep the response focused and learner-friendly. If you are uncertain about any form, note it with [uncertain].
 `;
+    } else if (type === 'morphology') {
+      prompt = `You are a philologist specializing in ${langName}. Analyze the morphological form "${word}" (lemma: "${lemma}") in ${langName}.
+
+Return ONLY valid JSON with this exact structure — no markdown, no code fences, no explanation text before or after:
+{
+  "partOfSpeech": "noun|verb|adjective|adverb|pronoun|preposition|conjunction|particle|interjection|article|numeral",
+  "case": "nominative|genitive|dative|accusative|vocative|ablative|locative|instrumental|null",
+  "number": "singular|plural|dual|null",
+  "gender": "masculine|feminine|neuter|common|null",
+  "person": "1st|2nd|3rd|null",
+  "tense": "present|imperfect|future|aorist|perfect|pluperfect|future perfect|null",
+  "voice": "active|middle|passive|middle-passive|null",
+  "mood": "indicative|subjunctive|optative|imperative|infinitive|participle|null",
+  "state": "absolute|construct|emphatic|null",
+  "stem": "qal|niphal|piel|pual|hiphil|hophal|hithpael|null",
+  "degree": "positive|comparative|superlative|null",
+  "gloss": "brief 2-6 word English meaning"
+}
+
+Rules:
+- Omit any key whose value would be null (except partOfSpeech and gloss which are required).
+- Only include morphological categories relevant to ${langName}.
+- partOfSpeech and gloss are always required.
+- Output raw JSON only. No markdown code blocks, no backticks, no surrounding text.`;
     } else if (type === 'phrase') {
       prompt = `You are a philologist specializing in ${langName}. Analyze the following phrase in ${langName}:
 
