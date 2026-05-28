@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import type { WordInfo } from '../lib/services/vocabularyService.js';
 import { Timestamp } from 'firebase/firestore';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
+import { useXP } from '../lib/hooks/useXP.js';
+import { XP_REWARDS } from '../lib/services/xpService.js';
 
 interface ReviewSettings {
   enabledTypes: CardType[];
@@ -59,6 +61,7 @@ export const Review = () => {
   const { activeLanguageId } = useActiveLanguage();
   const { knowledge, updateWordSRS, recordReviewSession } = useKnowledge(activeLanguageId);
   const { t } = useTranslation();
+  const { awardXP } = useXP();
 
   // Text-specific filter: set when arriving from Reader via "Review This Text"
   const textFilterActive = searchParams.get('filter') === 'text';
@@ -260,6 +263,8 @@ export const Review = () => {
               wasCorrect: rating !== 'AGAIN',
             }
           );
+          // Award XP for completing a review card
+          awardXP(XP_REWARDS.reviewCard).catch(() => {});
         } else {
           const nextReviewDate = new Date();
           let interval = 0;
@@ -318,7 +323,7 @@ export const Review = () => {
       setIsRevealed(false);
       setCardStartTime(Date.now());
     },
-    [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS, sessionResults, recordReviewSession, activeLanguageId]
+    [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS, sessionResults, recordReviewSession, activeLanguageId, awardXP]
   );
 
   const handleReveal = () => setIsRevealed(true);

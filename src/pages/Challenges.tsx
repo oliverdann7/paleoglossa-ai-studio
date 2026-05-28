@@ -8,6 +8,8 @@ import { fetchCommunityScholars } from '../lib/services/communityService.js';
 import { ChallengeService } from '../lib/services/challengeService.js';
 import type { PublicScholar } from '../types/social.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
+import { useXP } from '../lib/hooks/useXP.js';
+import { XP_REWARDS } from '../lib/services/xpService.js';
 
 // ─── Challenge definitions ─────────────────────────────────────────────────
 
@@ -192,6 +194,7 @@ export function Challenges() {
   const { user } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
   const { stats } = useStats(activeLanguageId);
+  const { awardXP } = useXP();
 
   const [scholars, setScholars] = useState<PublicScholar[]>([]);
   const [loadingScholars, setLoadingScholars] = useState(true);
@@ -246,13 +249,18 @@ export function Challenges() {
           recordedRef.current.add(c.id);
           newEntries[c.id] = now;
           ChallengeService.recordCompletion(c.id, c.metric, value).catch(() => {});
+          // Award XP based on challenge tier
+          const tierXP = c.tier === 'gold' ? XP_REWARDS.challengeGold
+            : c.tier === 'silver' ? XP_REWARDS.challengeSilver
+            : XP_REWARDS.challengeBronze;
+          awardXP(tierXP).catch(() => {});
         }
       }
       if (Object.keys(newEntries).length > 0) {
         setCompletionMap((prev) => ({ ...prev, ...newEntries }));
       }
     })();
-  }, [userMetrics, user]);
+  }, [userMetrics, user, awardXP]);
 
   const sortedScholars = useMemo(() => {
     return [...scholars]
