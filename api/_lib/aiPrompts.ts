@@ -100,6 +100,80 @@ export interface TutorContext {
   gloss?: string;
 }
 
+export type TutorMode =
+  | 'beginner'
+  | 'grammar'
+  | 'seminary'
+  | 'scholar'
+  | 'devotional'
+  | 'historical';
+
+export const TUTOR_MODES: Record<TutorMode, { label: string; description: string }> = {
+  beginner: {
+    label: 'Beginner',
+    description: 'Simple explanations with modern analogies',
+  },
+  grammar: {
+    label: 'Grammar',
+    description: 'Morphology, parsing, and syntax focus',
+  },
+  seminary: {
+    label: 'Seminary',
+    description: 'Exegetical insights for ministry preparation',
+  },
+  scholar: {
+    label: 'Scholar',
+    description: 'Philological precision and comparative linguistics',
+  },
+  devotional: {
+    label: 'Devotional',
+    description: 'Contemplative reading and spiritual reflection',
+  },
+  historical: {
+    label: 'Historical',
+    description: 'Cultural background and archaeological context',
+  },
+};
+
+const TUTOR_MODE_INSTRUCTIONS: Record<TutorMode, string> = {
+  beginner: `Tone: patient, encouraging, simple.
+- Use everyday English. Avoid technical grammar terms unless you immediately define them.
+- Give modern-language analogies when explaining grammar concepts.
+- Keep answers to 2-3 short sentences. Use bullet points for clarity.
+- If the student seems confused, offer a simpler rephrasing.`,
+
+  grammar: `Tone: precise, instructional, thorough.
+- Focus on morphological analysis: parsing, principal parts, paradigm placement.
+- Cite specific grammar rules (e.g. "3rd declension, dative plural").
+- Provide the full parsing for verb forms (tense, voice, mood, person, number).
+- Reference paradigm tables and standard grammar conventions.`,
+
+  seminary: `Tone: pastoral, exegetical, theologically informed.
+- Connect grammar to theological meaning — show how the original language shapes interpretation.
+- Reference significant translations (ESV, NASB, NIV) and note translation choices.
+- Highlight theologically significant vocabulary and its semantic range.
+- Provide brief cross-references to parallel passages when relevant.`,
+
+  scholar: `Tone: academic, philologically rigorous, precise.
+- Use standard academic terminology and abbreviations.
+- Reference grammars by name (BDF, Smyth, GKC, Joüon-Muraoka) when relevant.
+- Note text-critical variants if they affect the form being discussed.
+- Compare cognates across related Semitic or Indo-European languages when illuminating.
+- Provide detailed morphological analysis including historical developments.`,
+
+  devotional: `Tone: contemplative, warm, spiritually attentive.
+- Help the student hear the text as a living word, not just an academic exercise.
+- Draw out the beauty of the original language — etymology, word pictures, poetic features.
+- Suggest how a word or phrase might shape prayer or meditation.
+- Keep grammar explanations brief; focus on meaning that moves the heart.`,
+
+  historical: `Tone: vivid, contextual, narrative.
+- Place the text in its historical setting: who wrote it, when, where, why.
+- Reference relevant archaeology, inscriptions, material culture, and daily life.
+- Explain how historical context changes our understanding of the words.
+- Connect the text to broader political, social, and religious currents of its era.`,
+};
+
 /**
  * Builds a grounded system prompt for the AI tutor, including language-specific
  * instructions and any reader context (sentence, selected word, morphology).
@@ -107,12 +181,18 @@ export interface TutorContext {
 export function buildTutorPrompt(
   languageId: string,
   message: string,
-  context?: TutorContext
+  context?: TutorContext,
+  mode?: TutorMode
 ): string {
   const langName = getLanguageName(languageId);
   const langInstructions = LANGUAGE_INSTRUCTIONS[languageId] ?? '';
+  const effectiveMode = mode && TUTOR_MODE_INSTRUCTIONS[mode] ? mode : undefined;
 
   let prompt = `You are a ${langName} tutor helping a student read an ancient text in its original language.\n`;
+
+  if (effectiveMode) {
+    prompt += `\nTutor mode: ${TUTOR_MODES[effectiveMode].label}\n${TUTOR_MODE_INSTRUCTIONS[effectiveMode]}\n`;
+  }
 
   if (langInstructions) {
     prompt += `\nLanguage reference:\n${langInstructions}\n`;
@@ -141,6 +221,39 @@ Rules:
   prompt += `\n\nStudent's question: ${message}`;
   return prompt;
 }
+
+export const MODE_SUGGESTED_QUESTIONS: Record<TutorMode, string[]> = {
+  beginner: [
+    'What does this word mean in simple terms?',
+    'Can you break this sentence down for me?',
+    'What is the basic structure of this sentence?',
+  ],
+  grammar: [
+    'Parse this verb form completely.',
+    'What case is this and why?',
+    'What grammatical construction is this?',
+  ],
+  seminary: [
+    'What is the theological significance of this word?',
+    'How do major translations handle this verse?',
+    'What does the original language reveal here?',
+  ],
+  scholar: [
+    'What are the text-critical issues here?',
+    'Are there cognates in related languages?',
+    'What does the grammar reference say about this form?',
+  ],
+  devotional: [
+    'What beauty lies in the original language here?',
+    'How might this word shape my prayer?',
+    'What picture does this word paint?',
+  ],
+  historical: [
+    'What was happening historically when this was written?',
+    'What archaeological evidence illuminates this passage?',
+    'What was daily life like for the original audience?',
+  ],
+};
 
 export const LANGUAGE_SUGGESTED_QUESTIONS: Record<string, string[]> = {
   grc: [
