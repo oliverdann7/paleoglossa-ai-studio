@@ -105,6 +105,7 @@ export interface Text {
     | 'vocabulary'
     | 'script'
     | 'other';
+  tags?: string[];
   sourceAttributionId?: string;
   hasMorphology?: boolean;
   hasTranslation?: boolean;
