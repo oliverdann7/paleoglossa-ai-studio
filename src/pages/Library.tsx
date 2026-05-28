@@ -40,40 +40,12 @@ import { TextQualityBadge } from '../components/ui/TextQualityBadge.js';
 
 type SortOption = 'comprehensible' | 'newest' | 'shortest' | 'hardest' | 'unknown';
 
-const PERIOD_FILTERS = [
-  'Hellenistic / Roman',
-  'Iron Age',
-  'Augustan',
-  'Late Antique',
-  'Classical',
-  'Archaic',
-  'Ancient Near Eastern',
-  'Classical Sanskrit',
-  'Late Bronze Age',
-  'Middle Egyptian',
-];
-
-const GENRE_FILTERS = [
-  'Gospel',
-  'Narrative',
-  'Epic',
-  'Psalm',
-  'History',
-  'Fable',
-  'Early Christian',
-  'Christian literature',
-  'Biblical prose/poetry',
-  'Royal / literary text',
-  'Wisdom instruction',
-];
-
 const CORPUS_TYPE_FILTERS = [
   'biblical',
   'classical',
   'patristic',
   'inscription',
-  'manuscript',
-  'islamicate',
+  'vocabulary',
   'other',
 ];
 
@@ -238,6 +210,19 @@ export const Library = () => {
     () => rawTexts.map((tx) => ({ ...tx, ...coverageMap.get(tx.id) })),
     [rawTexts, coverageMap]
   );
+
+  // Derive available filter values from actual text metadata
+  const availablePeriods = useMemo(() => {
+    const set = new Set<string>();
+    textsWithCoverage.forEach((t) => { if (t.period) set.add(t.period); });
+    return Array.from(set).sort();
+  }, [textsWithCoverage]);
+
+  const availableGenres = useMemo(() => {
+    const set = new Set<string>();
+    textsWithCoverage.forEach((t) => { if (t.genre) set.add(t.genre); });
+    return Array.from(set).sort();
+  }, [textsWithCoverage]);
 
   // Phase C: filter — pure sync O(texts), no debounce needed
   const filteredTexts = useMemo(() => {
@@ -663,7 +648,7 @@ export const Library = () => {
                   className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none"
                 >
                   <option value="all">{t('library.allPeriods', 'All Periods')}</option>
-                  {PERIOD_FILTERS.map((p) => (
+                  {availablePeriods.map((p) => (
                     <option key={p} value={p}>
                       {p}
                     </option>
@@ -680,7 +665,7 @@ export const Library = () => {
                   className="w-full p-2 text-sm bg-white border border-bdr rounded outline-none"
                 >
                   <option value="all">{t('library.allGenres', 'All Genres')}</option>
-                  {GENRE_FILTERS.map((g) => (
+                  {availableGenres.map((g) => (
                     <option key={g} value={g}>
                       {g}
                     </option>
