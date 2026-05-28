@@ -525,8 +525,12 @@ The Reader page should be extended (not rewritten) via:
 - [x] Dictionary page (`/app/dictionary/:languageId/:lemma`) with paradigm tables
 - [x] Lemma lookup in Reader via LexDrawerPanel — click any word for full analysis
 - [x] Smart text recommendations — multi-signal scoring, i+1 coverage, difficulty labels
+- [ ] Semantic concept layer: extend `LemmaDoc` with `semanticDomain`, `cognates`, `usageNotes`
+- [ ] "Concept" tab in `LexDrawerPanel` — semantic domains, historical usage evolution, cross-corpus occurrences
+- [ ] AI-generated concept summaries for theologically rich words (λόγος, תורה, חסד) via Gemini
+- [ ] Cross-language cognate linking (e.g. Greek λόγος ↔ Latin verbum)
 
-**Deliverable:** ✅ Users can browse the corpus filtered by language, click a text to read it, click any word to see its full analysis with paradigm tables, and get personalized text recommendations.
+**Deliverable:** ✅ Core complete. Users can browse the corpus filtered by language, click a text to read it, click any word to see its full analysis with paradigm tables, and get personalized text recommendations. Semantic concept layer (domains, cognates, usage evolution) remains as a future enhancement.
 
 ### Phase 2: Search & Syntax ✅ Complete
 
@@ -576,6 +580,16 @@ The Reader page should be extended (not rewritten) via:
 
 **Deliverable:** TTS playback and pronunciation guides work. Recording, waveform visualization, and IPA display remain.
 
+### Phase 5b: Historical Context Panels (1-2 weeks)
+
+- [ ] `HistoricalContextPanel` component in `src/components/reader/`
+- [ ] AI-generated context via Gemini: geography, period, key figures, cultural background
+- [ ] Cached per text section to avoid repeated AI calls
+- [ ] Extend `Text` interface with optional `historicalContext` field (period, location, figures, backgroundNote)
+- [ ] Toggle in Reader sidebar — non-intrusive, per-section (not per-word)
+
+**Deliverable:** A user reading Acts 19 can open a side panel showing Ephesus context, Artemis cult background, and Roman provincial politics — transforming "decoding words" into "understanding the world."
+
 ### Phase 6: Manuscript & Epigraphy — Partially Complete
 
 - [x] Manuscript model + page (`Manuscripts.tsx`, 1092 lines)
@@ -584,8 +598,15 @@ The Reader page should be extended (not rewritten) via:
 - [ ] Critical apparatus display
 - [ ] TEI XML import
 - [ ] Manuscript browser with filtering
+- [ ] Variant apparatus explorer: tap a word in Reader to see variant readings across manuscripts
+- [ ] "Variants" tab in `LexDrawerPanel` for inline apparatus display
+- [ ] `VariantReading` data: witness, reading, type, scribal tendency explanation
+- [ ] Data sourcing: start with AI-generated apparatus notes for NT texts; investigate NA28/UBS licensing
+- [ ] Textual criticism exercises (gamified): identify earliest reading, spot harmonization, detect scribal errors
+- [ ] Exercise generation via Gemini from real apparatus data
+- [ ] Integration with XP/achievement system for TC exercise completions
 
-**Deliverable:** Basic manuscript viewing works. Line alignment, apparatus, and TEI import remain.
+**Deliverable:** Basic manuscript viewing works. Remaining: line alignment, apparatus, TEI import, variant explorer, and gamified textual criticism exercises.
 
 ### Phase 7: Classroom & Courses — Partially Complete
 
