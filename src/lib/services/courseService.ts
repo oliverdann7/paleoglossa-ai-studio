@@ -130,6 +130,17 @@ export class CourseService {
     }
   }
 
+  static async removeMember(courseId: string, memberId: string): Promise<boolean> {
+    try {
+      await apiFetch(`/api/courses/${encodeURIComponent(courseId)}/members/${encodeURIComponent(memberId)}`, {
+        method: 'DELETE',
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   static async updateProgress(courseId: string, textId: string, percent: number): Promise<void> {
     try {
       await apiFetch(`/api/courses/${encodeURIComponent(courseId)}/progress`, {

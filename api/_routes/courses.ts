@@ -453,6 +453,48 @@ router.get(
   }
 );
 
+// ─── Remove member (teacher/owner only) ──────────────────────────────────────
+
+router.delete(
+  '/api/courses/:courseId/members/:memberId',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const ownerId = req.user!.uid;
+    const { courseId, memberId } = req.params;
+
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    try {
+      const doc = await adminDb_.doc(`courses/${courseId}`).get();
+      if (!doc.exists)
+        return res.status(404).json({ error: 'Course not found', code: 'NOT_FOUND' });
+      if (doc.data()!.ownerId !== ownerId)
+        return res.status(403).json({ error: 'Access denied', code: 'FORBIDDEN' });
+      if (memberId === ownerId)
+        return res.status(400).json({ error: 'Cannot remove course owner', code: 'INVALID_OPERATION' });
+
+      const { FieldValue } = await import('firebase-admin/firestore');
+      const memberRef = adminDb_.doc(`courses/${courseId}/members/${memberId}`);
+      const memberDoc = await memberRef.get();
+      if (!memberDoc.exists)
+        return res.status(404).json({ error: 'Member not found', code: 'NOT_FOUND' });
+
+      await memberRef.delete();
+      await adminDb_.doc(`courses/${courseId}`).update({ memberCount: FieldValue.increment(-1) });
+      await adminDb_
+        .doc(`users/${memberId}`)
+        .update({ enrolledCourseIds: FieldValue.arrayRemove(courseId) });
+
+      res.status(200).json({ ok: true });
+    } catch (e: any) {
+      console.error('[courses] Error removing member:', e.message);
+      res.status(500).json({ error: 'Failed to remove member', code: 'INTERNAL_ERROR' });
+    }
+  }
+);
+
 // ─── Invite code (teacher) ────────────────────────────────────────────────────
 
 router.post(
@@ -620,6 +662,7 @@ router.post(
     return res.status(200).json({ courseId, title: courseData.title });
   }
 );
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
