@@ -72,8 +72,6 @@ interface LemmaSentenceEntry {
   textId: string;
 }
 
-type CacheEntry = { value: string };
-
 interface LexDrawerPanelProps {
   selectedWord: SelectedWord | null;
   setSelectedWord: (w: SelectedWord | null) => void;
@@ -222,8 +220,6 @@ export const LexDrawerPanel = memo(({
   const [lexiconResult, setLexiconResult] = useState<LexiconLookupResult | null>(null);
   const [isLexiconLoading, setIsLexiconLoading] = useState(false);
   const lexiconLemmaRef = useRef<string | null>(null);
-  const [isCacheLoading, setIsCacheLoading] = useState(false);
-  const [cacheEntry, setCacheEntry] = useState<CacheEntry | null>(null);
 
   const [isAiMorphLoading, setIsAiMorphLoading] = useState(false);
   const [aiMorphResult, setAiMorphResult] = useState<Record<string, string> | null>(null);
@@ -410,8 +406,6 @@ export const LexDrawerPanel = memo(({
     setLexiconResult(null);
     setIsLexiconLoading(false);
     lexiconLemmaRef.current = null;
-    setCacheEntry(null);
-    setIsCacheLoading(false);
     setAiMorphResult(null);
     setIsAiMorphLoading(false);
   }, [selectedWord?.lemma]);
@@ -450,29 +444,7 @@ export const LexDrawerPanel = memo(({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord?.lemma, !!definitionLookup, !!wiktionaryResult, isWiktionaryLoading, langId]);
 
-  // Automatically fetch from server cache or AI if no lexicon definition is available
-  useEffect(() => {
-    if (!selectedWord || definitionLookup || wiktionaryResult || lexiconResult) return;
-    if (isCacheLoading || cacheEntry) return;
-
-    const currentLemma = selectedWord.lemma;
-    let isCancelled = false;
-
-    (async () => {
-      setIsCacheLoading(true);
-      const entry = await AIClient.fetchCachedGloss(langId, currentLemma);
-      if (isCancelled) return;
-      if (entry) {
-        setCacheEntry(entry);
-        trackEvent(ANALYTICS_EVENTS.AI_GLOSS_CACHE_HIT, { languageId: langId, cacheType: 'short-gloss' });
-      } else {
-        trackEvent(ANALYTICS_EVENTS.AI_GLOSS_CACHE_MISS, { languageId: langId, cacheType: 'short-gloss' });
-      }
-      setIsCacheLoading(false);
-    })();
-
-    return () => { isCancelled = true; };
-  }, [selectedWord, definitionLookup, wiktionaryResult, lexiconResult, langId, isCacheLoading, cacheEntry]);
+  // AI gloss is opt-in only — no automatic fetch. User clicks the button.
 
   // Reset research note fields when the selected word changes
   useEffect(() => {
@@ -811,7 +783,7 @@ export const LexDrawerPanel = memo(({
                     </>
                   );
                 }
-                if (isWiktionaryLoading || isLexiconLoading || isCacheLoading) {
+                if (isWiktionaryLoading || isLexiconLoading) {
                   return (
                     <span className="text-muted italic text-[16px] inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin inline-block" />
@@ -819,14 +791,12 @@ export const LexDrawerPanel = memo(({
                     </span>
                   );
                 }
-                if (aiFallbackGloss || cacheEntry) {
-                  const content = cacheEntry ? cacheEntry.value : aiFallbackGloss;
-                  const source = cacheEntry ? 'ai_cached' : 'ai_fallback';
+                if (aiFallbackGloss) {
                   return (
                     <>
-                      <div>{content}</div>
+                      <div>{aiFallbackGloss}</div>
                       <div className="mt-2 flex items-center gap-2">
-                        <SourceBadge trust={getSourceTrust(source)} />
+                        <SourceBadge trust={getSourceTrust('ai_fallback')} />
                       </div>
                     </>
                   );

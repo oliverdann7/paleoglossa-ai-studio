@@ -16,6 +16,13 @@ const TRUST_MAP: Record<string, SourceTrustInfo> = {
     dotColor: '#10B981',
     textColor: 'text-green-700',
   },
+  static_compact: {
+    label: 'Dictionary',
+    trust: 'high',
+    description: 'Static dictionary entry',
+    dotColor: '#3B82F6',
+    textColor: 'text-blue-700',
+  },
   corpus_derived: {
     label: 'Dictionary',
     trust: 'high',

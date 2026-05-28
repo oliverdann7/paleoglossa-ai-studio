@@ -2,6 +2,7 @@ import { ATTRIBUTIONS, CorpusDB } from '../../data/corpus.js';
 import * as tokenArrays from '../../data/tokens.js';
 import { SourceAttribution, Token } from '../../types/corpus.js';
 import { DICTIONARY as STATIC_DICT } from './dictionaryDB.js';
+import { staticLookup } from './dictionaries/index.js';
 
 export interface DictionarySource {
   id: string;
@@ -254,6 +255,7 @@ export const getGlossForLemma = (lemma: string) => {
 
 export const GLOSS_SOURCES = {
   USER_GLOSS: 'user_gloss',
+  STATIC_COMPACT: 'static_compact',
   CORPUS_DERIVED: 'corpus_derived',
   STATIC_DICT: 'static_dictionary',
   CORPUS_GLOBAL: 'corpus_global',
@@ -275,6 +277,10 @@ export const getGlossWithFallbacks = (lemma: string, languageId: string): string
   const normalized = normalizeSearch(lemma);
   const isHebrew = languageId === 'hbo';
   const consonantal = isHebrew ? stripHebrewVowels(lemma) : null;
+
+  // 0. Compact static dictionaries
+  const compactGloss = staticLookup(lemma, languageId);
+  if (compactGloss) return compactGloss;
 
   // 1. Exact match in corpus-derived dictionary entries
   let entry = findDictionaryEntry(lemma, languageId);
@@ -352,6 +358,12 @@ export const getDefinitionWithFallbacks = (
   const normalized = normalizeSearch(lemma);
   const isHebrew = languageId === 'hbo';
   const consonantal = isHebrew ? stripHebrewVowels(lemma) : null;
+
+  // 0. Compact static dictionaries (thousands of entries per language)
+  const compactGloss = staticLookup(lemma, languageId);
+  if (compactGloss) {
+    return { definition: compactGloss, source: GLOSS_SOURCES.STATIC_COMPACT };
+  }
 
   // 1. Exact match in corpus-derived dictionary entries
   let entry = findDictionaryEntry(lemma, languageId);
