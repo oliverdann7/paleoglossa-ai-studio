@@ -63,6 +63,7 @@ import type { ReadingContext } from '@/lib/review/readingContext';
 import { buildReadingContext } from '@/lib/review/readingContext';
 import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 import { SemanticContextSection } from './SemanticContextSection.js';
+import { VariantApparatusSection } from './VariantApparatusSection.js';
 
 type SelectedWord = ReaderToken & { sentenceText?: string; sentenceIndex?: number };
 
@@ -1136,6 +1137,15 @@ export const LexDrawerPanel = memo(({
             languageId={langId}
             gloss={wordInfo?.userGloss || selectedWord.gloss}
             context={selectedWord.sentenceText}
+            aiEnabled={settings?.aiEnabled !== false}
+          />
+
+          {/* Textual Variants */}
+          <VariantApparatusSection
+            lemma={selectedWord.lemma}
+            languageId={langId}
+            wordText={selectedWord.text}
+            sentenceText={selectedWord.sentenceText}
             aiEnabled={settings?.aiEnabled !== false}
           />
 
