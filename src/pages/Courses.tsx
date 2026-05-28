@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Copy,
   Link2,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -211,6 +212,12 @@ function CourseForm({
     );
   };
 
+  const setDueDate = (textId: string, dueDate: string) => {
+    setTexts((prev) =>
+      prev.map((t) => (t.textId === textId ? { ...t, dueDate: dueDate || undefined } : t))
+    );
+  };
+
   const handleSubmit = async () => {
     if (!title.trim()) {
       setError('Title is required');
@@ -333,6 +340,16 @@ function CourseForm({
                   {i + 1}
                 </span>
                 <span className="flex-1 text-ink truncate">{t.learningObjectives || t.textId}</span>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Calendar className="w-3 h-3 text-muted" />
+                  <input
+                    type="date"
+                    value={t.dueDate ?? ''}
+                    onChange={(e) => setDueDate(t.textId, e.target.value)}
+                    title="Due date"
+                    className="text-[11px] text-ink border border-bdr rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue/30 bg-white"
+                  />
+                </div>
                 <button
                   onClick={() => removeText(t.textId)}
                   className="text-muted hover:text-red-500 transition-colors shrink-0"
@@ -389,6 +406,38 @@ function CourseForm({
 }
 
 // ─── Course Detail ────────────────────────────────────────────────────────────
+
+// ─── Due date badge ───────────────────────────────────────────────────────────
+function DueDateBadge({ dueDate, pct }: { dueDate?: string; pct: number }) {
+  if (!dueDate) return null;
+  const now = new Date();
+  const due = new Date(dueDate + 'T23:59:59');
+  const done = pct >= 100;
+  const daysLeft = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (done)
+    return (
+      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 flex items-center gap-0.5 shrink-0">
+        <Check className="w-2.5 h-2.5" /> Done
+      </span>
+    );
+  if (daysLeft < 0)
+    return (
+      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 flex items-center gap-0.5 shrink-0">
+        <Calendar className="w-2.5 h-2.5" /> Overdue
+      </span>
+    );
+  if (daysLeft <= 3)
+    return (
+      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 flex items-center gap-0.5 shrink-0">
+        <Calendar className="w-2.5 h-2.5" /> {daysLeft}d left
+      </span>
+    );
+  return (
+    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-parch3 text-muted flex items-center gap-0.5 shrink-0">
+      <Calendar className="w-2.5 h-2.5" /> Due {dueDate}
+    </span>
+  );
+}
 
 // ─── Difficulty badge ─────────────────────────────────────────────────────────
 function DifficultyBadge({ unknownPct }: { unknownPct: number | null }) {
@@ -785,6 +834,9 @@ function CourseDetail({
                         </span>
                       )}
                       <DifficultyBadge unknownPct={density} />
+                      {(isOwner || isEnrolled) && (
+                        <DueDateBadge dueDate={assignment.dueDate} pct={pct} />
+                      )}
                     </div>
                     {canRead && (
                       <div className="flex items-center gap-2">
@@ -944,7 +996,12 @@ function CourseDetail({
                             key={t.textId}
                             className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider whitespace-nowrap"
                           >
-                            Text {i + 1}
+                            <div>Text {i + 1}</div>
+                            {t.dueDate && (
+                              <div className="text-[9px] font-normal text-muted/70 normal-case tracking-normal">
+                                Due {t.dueDate}
+                              </div>
+                            )}
                           </th>
                         ))}
                         <th className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider">
@@ -956,12 +1013,12 @@ function CourseDetail({
                       {roster
                         .filter((m) => m.role !== 'teacher')
                         .map((member) => {
-                          const textPcts = sortedTexts.map(
+                          const memberPcts = sortedTexts.map(
                             (t) => member.progress[t.textId] ?? 0
                           );
                           const overall =
-                            textPcts.length > 0
-                              ? Math.round(textPcts.reduce((a, b) => a + b, 0) / textPcts.length)
+                            memberPcts.length > 0
+                              ? Math.round(memberPcts.reduce((a, b) => a + b, 0) / memberPcts.length)
                               : 0;
                           return (
                             <tr key={member.userId} className="border-b border-bdr/50 last:border-0">
@@ -975,33 +1032,52 @@ function CourseDetail({
                                   </div>
                                 )}
                               </td>
-                              {textPcts.map((pct, i) => (
-                                <td key={i} className="px-3 py-3 text-center">
-                                  <div className="flex flex-col items-center gap-1">
-                                    <span
-                                      className={cn(
-                                        'font-bold text-[11px]',
-                                        pct === 0
-                                          ? 'text-muted'
-                                          : pct >= 100
-                                            ? 'text-emerald-600'
-                                            : 'text-blue'
-                                      )}
-                                    >
-                                      {pct}%
-                                    </span>
-                                    <div className="w-12 h-1 bg-parch3 rounded-full overflow-hidden">
-                                      <div
+                              {sortedTexts.map((assignment, i) => {
+                                const pct = member.progress[assignment.textId] ?? 0;
+                                const dueDate = assignment.dueDate;
+                                const isLate =
+                                  dueDate &&
+                                  pct < 100 &&
+                                  new Date() > new Date(dueDate + 'T23:59:59');
+                                return (
+                                  <td key={i} className="px-3 py-3 text-center">
+                                    <div className="flex flex-col items-center gap-1">
+                                      <span
                                         className={cn(
-                                          'h-full rounded-full transition-all',
-                                          pct >= 100 ? 'bg-emerald-500' : 'bg-blue'
+                                          'font-bold text-[11px]',
+                                          pct === 0
+                                            ? 'text-muted'
+                                            : pct >= 100
+                                              ? 'text-emerald-600'
+                                              : isLate
+                                                ? 'text-red-500'
+                                                : 'text-blue'
                                         )}
-                                        style={{ width: `${Math.min(pct, 100)}%` }}
-                                      />
+                                      >
+                                        {pct}%
+                                      </span>
+                                      <div className="w-12 h-1 bg-parch3 rounded-full overflow-hidden">
+                                        <div
+                                          className={cn(
+                                            'h-full rounded-full transition-all',
+                                            pct >= 100
+                                              ? 'bg-emerald-500'
+                                              : isLate
+                                                ? 'bg-red-400'
+                                                : 'bg-blue'
+                                          )}
+                                          style={{ width: `${Math.min(pct, 100)}%` }}
+                                        />
+                                      </div>
+                                      {isLate && (
+                                        <span className="text-[8px] text-red-500 font-bold uppercase tracking-wider">
+                                          Late
+                                        </span>
+                                      )}
                                     </div>
-                                  </div>
-                                </td>
-                              ))}
+                                  </td>
+                                );
+                              })}
                               <td className="px-3 py-3 text-center">
                                 <span
                                   className={cn(

@@ -215,6 +215,8 @@ export interface CourseTextAssignment {
   order: number;
   week?: number;
   learningObjectives: string;
+  /** ISO date string (YYYY-MM-DD). Teacher-set deadline for this text. */
+  dueDate?: string;
 }
 
 export interface CourseMembership {
