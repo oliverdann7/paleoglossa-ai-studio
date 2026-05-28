@@ -2,6 +2,7 @@ import express from 'express';
 import { initServerSentry, captureServerException } from './_lib/sentry.js';
 import { correlationIdMiddleware } from './_lib/observability.js';
 import { aiRateLimit, apiRateLimit, authRateLimit, importRateLimit } from './_lib/rateLimiter.js';
+import { searchLimiter } from './_lib/rateLimits.js';
 
 initServerSentry();
 import aiRouter from './_routes/ai.js';
@@ -68,6 +69,8 @@ app.use('/api/ai', aiRateLimit);
 // Import + OCR: very expensive per-request, tight cap
 app.use('/api/ai/analyze', importRateLimit);
 app.use('/api/ai/ocr', importRateLimit);
+// Search endpoints
+app.use('/api/search', searchLimiter);
 // All other API routes: 120 req/min general limit
 app.use('/api', apiRateLimit);
 
