@@ -68,6 +68,7 @@ export const Syntax = () => {
   const [syntaxResult, setSyntaxResult] = useState<SyntaxResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [treebankOnly, setTreebankOnly] = useState(false);
 
   // When the global active language changes, switch to the first text for that language.
   useEffect(() => {
@@ -91,6 +92,16 @@ export const Syntax = () => {
 
   const selectedSentence = selectedSentenceIdx !== null ? sentences[selectedSentenceIdx] : null;
 
+  const sentenceHasTreebank = useCallback(
+    (s: Sentence) => s.tokens.some((t: any) => t.deprel != null || t.head != null),
+    []
+  );
+
+  const filteredTexts = useMemo(() => {
+    if (!treebankOnly) return texts;
+    return texts.filter((t) => t.hasSyntax);
+  }, [texts, treebankOnly]);
+
   const handleTextChange = useCallback((textId: string) => {
     setSelectedTextId(textId);
     setSelectedSentenceIdx(null);
@@ -99,12 +110,35 @@ export const Syntax = () => {
     setError(null);
   }, []);
 
-  const handleSelectSentence = useCallback((idx: number) => {
-    setSelectedSentenceIdx(idx);
-    setSelectedTokenIdx(null);
-    setSyntaxResult(null);
-    setError(null);
-  }, []);
+  const handleSelectSentence = useCallback(
+    (idx: number) => {
+      setSelectedSentenceIdx(idx);
+      setSelectedTokenIdx(null);
+      setError(null);
+
+      const sentence = sentences[idx];
+      if (sentence && sentenceHasTreebank(sentence)) {
+        const depTokens: DepToken[] = sentence.tokens.map((t: any, i: number) => ({
+          index: i,
+          form: t.surface ?? t.text ?? '',
+          lemma: t.lemma ?? '',
+          pos: t.morphology?.partOfSpeech ?? '',
+          head: t.head ?? -1,
+          relation: t.deprel ?? 'dep',
+        }));
+        const treebankSource = (sentence.tokens.find((t: any) => t.treebankSource) as any)?.treebankSource ?? 'corpus';
+        setSyntaxResult({
+          tokens: depTokens,
+          explanation: `Dependency tree from ${treebankSource} treebank. Annotations are human-verified.`,
+          confidence: 1.0,
+          source: `treebank:${treebankSource}`,
+        });
+      } else {
+        setSyntaxResult(null);
+      }
+    },
+    [sentences, sentenceHasTreebank]
+  );
 
   const handleAnalyze = useCallback(async () => {
     if (!selectedSentence || !selectedText) return;
@@ -203,23 +237,39 @@ export const Syntax = () => {
         <aside className="space-y-4">
           {/* Text picker */}
           <div className="card p-4">
-            <label className="text-[11px] font-bold text-muted uppercase tracking-wider block mb-2">
-              Text
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[11px] font-bold text-muted uppercase tracking-wider">
+                Text
+              </label>
+              <button
+                onClick={() => setTreebankOnly(!treebankOnly)}
+                className={cn(
+                  'text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border transition-colors',
+                  treebankOnly
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'text-muted border-bdr/40 hover:border-emerald-200'
+                )}
+              >
+                Treebank only
+              </button>
+            </div>
             <select
               className="w-full text-[13px] bg-transparent text-ink border border-bdr rounded-lg px-3 py-2 focus:outline-none focus:border-blue"
               value={selectedTextId}
               onChange={(e) => handleTextChange(e.target.value)}
             >
-              {texts.map((t) => (
+              {filteredTexts.map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.title}
+                  {t.hasSyntax ? '◆ ' : ''}{t.title}
                 </option>
               ))}
             </select>
             {selectedText && (
               <p className="text-[11px] text-muted mt-1.5 capitalize">
                 {selectedText.language} · {sentences.length} sentences available
+                {selectedText.hasSyntax && (
+                  <span className="text-emerald-600 ml-1">· Treebank</span>
+                )}
               </p>
             )}
           </div>
@@ -251,9 +301,14 @@ export const Syntax = () => {
                           idx === selectedSentenceIdx && 'text-blue'
                         )}
                       />
-                      <span className={cn('line-clamp-2 font-serif', isRTL && 'direction-rtl')}>
+                      <span className={cn('line-clamp-2 font-serif flex-1', isRTL && 'direction-rtl')}>
                         {sentenceSurface(s)}
                       </span>
+                      {sentenceHasTreebank(s) && (
+                        <span className="shrink-0 text-[8px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full mt-0.5">
+                          TB
+                        </span>
+                      )}
                     </button>
                   </li>
                 ))}

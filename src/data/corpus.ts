@@ -253,6 +253,7 @@ export const TEXT_JOHN_1: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
+  hasSyntax: true,
   sourceStatus: 'complete',
   isComplete: true,
   isSample: false,
@@ -324,6 +325,7 @@ export const TEXT_GENESIS: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
+  hasSyntax: true,
   sourceStatus: 'complete',
   isComplete: true,
   isSample: false,
@@ -355,6 +357,7 @@ export const TEXT_AENEID_1: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: false,
+  hasSyntax: true,
   sourceStatus: 'complete',
   isComplete: true,
   isSample: false,
@@ -1834,6 +1837,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "En",
           punctBefore: "",
           punctAfter: " ",
+          head: 1, deprel: "case", treebankSource: "PROIEL",
         },
         {
           id: "jn2",
@@ -1850,6 +1854,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "archē",
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "obl", treebankSource: "PROIEL",
         },
         {
           id: "jn3",
@@ -1868,6 +1873,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "ēn",
           punctBefore: "",
           punctAfter: " ",
+          head: -1, deprel: "root", treebankSource: "PROIEL",
         },
         {
           id: "jn4",
@@ -1884,6 +1890,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "ho",
           punctBefore: "",
           punctAfter: " ",
+          head: 4, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn5",
@@ -1900,6 +1907,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "logos",
           punctBefore: "",
           punctAfter: ", ",
+          head: 2, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn6",
@@ -1911,6 +1919,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "kai",
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "cc", treebankSource: "PROIEL",
         },
         {
           id: "jn7",
@@ -1927,6 +1936,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "ho",
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn8",
@@ -1943,6 +1953,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "logos",
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "conj", treebankSource: "PROIEL",
         },
         {
           id: "jn9",
@@ -1961,6 +1972,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "ēn",
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "cop", treebankSource: "PROIEL",
         },
         {
           id: "jn10",
@@ -1972,6 +1984,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "pros",
           punctBefore: "",
           punctAfter: " ",
+          head: 11, deprel: "case", treebankSource: "PROIEL",
         },
         {
           id: "jn11",
@@ -1988,6 +2001,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "ton",
           punctBefore: "",
           punctAfter: " ",
+          head: 11, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn12",
@@ -2004,6 +2018,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "theon",
           punctBefore: "",
           punctAfter: ", ",
+          head: 7, deprel: "obl", treebankSource: "PROIEL",
         },
         {
           id: "jn13",
@@ -2015,6 +2030,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "kai",
           punctBefore: "",
           punctAfter: " ",
+          head: 16, deprel: "cc", treebankSource: "PROIEL",
         },
         {
           id: "jn14",
@@ -2031,6 +2047,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "theos",
           punctBefore: "",
           punctAfter: " ",
+          head: 16, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn15",
@@ -2049,6 +2066,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "ēn",
           punctBefore: "",
           punctAfter: " ",
+          head: 16, deprel: "cop", treebankSource: "PROIEL",
         },
         {
           id: "jn16",
@@ -2065,6 +2083,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "ho",
           punctBefore: "",
           punctAfter: " ",
+          head: 16, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn17",
@@ -2081,6 +2100,7 @@ export const JOHN_1_1: TextSection = {
           transliteration: "logos",
           punctBefore: "",
           punctAfter: ".",
+          head: 2, deprel: "conj", treebankSource: "PROIEL",
         },
       ],
     },
@@ -2097,6 +2117,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "pronoun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 1, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn19",
@@ -2114,6 +2135,7 @@ export const JOHN_1_1: TextSection = {
           },
           punctBefore: "",
           punctAfter: " ",
+          head: -1, deprel: "root", treebankSource: "PROIEL",
         },
         {
           id: "jn20",
@@ -2124,6 +2146,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "preposition" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "case", treebankSource: "PROIEL",
         },
         {
           id: "jn21",
@@ -2134,6 +2157,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 1, deprel: "obl", treebankSource: "PROIEL",
         },
         {
           id: "jn22",
@@ -2144,6 +2168,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "preposition" },
           punctBefore: "",
           punctAfter: " ",
+          head: 5, deprel: "case", treebankSource: "PROIEL",
         },
         {
           id: "jn23",
@@ -2154,6 +2179,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "article" },
           punctBefore: "",
           punctAfter: " ",
+          head: 5, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn24",
@@ -2164,6 +2190,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: ".",
+          head: 1, deprel: "obl", treebankSource: "PROIEL",
         },
       ],
     },
@@ -2181,6 +2208,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "adjective" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn26",
@@ -2191,6 +2219,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "preposition" },
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "case", treebankSource: "PROIEL",
         },
         {
           id: "jn27",
@@ -2201,6 +2230,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "pronoun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "obl", treebankSource: "PROIEL",
         },
         {
           id: "jn28",
@@ -2211,6 +2241,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: ", ",
+          head: -1, deprel: "root", treebankSource: "PROIEL",
         },
         {
           id: "jn29",
@@ -2221,6 +2252,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "conjunction" },
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "cc", treebankSource: "PROIEL",
         },
         {
           id: "jn30",
@@ -2231,6 +2263,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "preposition" },
           punctBefore: "",
           punctAfter: " ",
+          head: 6, deprel: "case", treebankSource: "PROIEL",
         },
         {
           id: "jn31",
@@ -2241,6 +2274,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "pronoun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "obl", treebankSource: "PROIEL",
         },
         {
           id: "jn32",
@@ -2251,6 +2285,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "conj", treebankSource: "PROIEL",
         },
         {
           id: "jn33",
@@ -2261,6 +2296,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "conjunction" },
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "advmod", treebankSource: "PROIEL",
         },
         {
           id: "jn34",
@@ -2271,6 +2307,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "adjective" },
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn35",
@@ -2281,6 +2318,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "pronoun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 11, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn36",
@@ -2291,6 +2329,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: ".",
+          head: 9, deprel: "acl:relcl", treebankSource: "PROIEL",
         },
       ],
     },
@@ -2308,6 +2347,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "preposition" },
           punctBefore: "",
           punctAfter: " ",
+          head: 1, deprel: "case", treebankSource: "PROIEL",
         },
         {
           id: "jn38",
@@ -2318,6 +2358,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "pronoun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "obl", treebankSource: "PROIEL",
         },
         {
           id: "jn39",
@@ -2328,6 +2369,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn40",
@@ -2338,6 +2380,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: ", ",
+          head: -1, deprel: "root", treebankSource: "PROIEL",
         },
         {
           id: "jn41",
@@ -2348,6 +2391,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "conjunction" },
           punctBefore: "",
           punctAfter: " ",
+          head: 9, deprel: "cc", treebankSource: "PROIEL",
         },
         {
           id: "jn42",
@@ -2358,6 +2402,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "article" },
           punctBefore: "",
           punctAfter: " ",
+          head: 6, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn43",
@@ -2368,6 +2413,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 9, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn44",
@@ -2378,6 +2424,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: " ",
+          head: 9, deprel: "cop", treebankSource: "PROIEL",
         },
         {
           id: "jn45",
@@ -2388,6 +2435,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "article" },
           punctBefore: "",
           punctAfter: " ",
+          head: 9, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn46",
@@ -2398,6 +2446,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "conj", treebankSource: "PROIEL",
         },
         {
           id: "jn47",
@@ -2408,6 +2457,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "article" },
           punctBefore: "",
           punctAfter: " ",
+          head: 11, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn48",
@@ -2418,6 +2468,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: ".",
+          head: 9, deprel: "nmod", treebankSource: "PROIEL",
         },
       ],
     },
@@ -2435,6 +2486,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "conjunction" },
           punctBefore: "",
           punctAfter: " ",
+          head: 6, deprel: "cc", treebankSource: "PROIEL",
         },
         {
           id: "jn50",
@@ -2445,6 +2497,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "article" },
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn51",
@@ -2455,6 +2508,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 6, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn52",
@@ -2465,6 +2519,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "preposition" },
           punctBefore: "",
           punctAfter: " ",
+          head: 5, deprel: "case", treebankSource: "PROIEL",
         },
         {
           id: "jn53",
@@ -2475,6 +2530,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "article" },
           punctBefore: "",
           punctAfter: " ",
+          head: 5, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn54",
@@ -2485,6 +2541,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 6, deprel: "obl", treebankSource: "PROIEL",
         },
         {
           id: "jn55",
@@ -2495,6 +2552,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: ", ",
+          head: -1, deprel: "root", treebankSource: "PROIEL",
         },
         {
           id: "jn56",
@@ -2505,6 +2563,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "conjunction" },
           punctBefore: "",
           punctAfter: " ",
+          head: 12, deprel: "cc", treebankSource: "PROIEL",
         },
         {
           id: "jn57",
@@ -2515,6 +2574,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "article" },
           punctBefore: "",
           punctAfter: " ",
+          head: 9, deprel: "det", treebankSource: "PROIEL",
         },
         {
           id: "jn58",
@@ -2525,6 +2585,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 12, deprel: "nsubj", treebankSource: "PROIEL",
         },
         {
           id: "jn59",
@@ -2535,6 +2596,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "pronoun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 12, deprel: "obj", treebankSource: "PROIEL",
         },
         {
           id: "jn60",
@@ -2545,6 +2607,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "particle" },
           punctBefore: "",
           punctAfter: " ",
+          head: 12, deprel: "advmod", treebankSource: "PROIEL",
         },
         {
           id: "jn61",
@@ -2555,6 +2618,7 @@ export const JOHN_1_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: ".",
+          head: 6, deprel: "conj", treebankSource: "PROIEL",
         },
       ],
     },
@@ -2838,6 +2902,7 @@ export const AENEID_1_1: TextSection = {
           },
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "obj", treebankSource: "PLDT",
         },
         {
           id: "a2",
@@ -2853,6 +2918,7 @@ export const AENEID_1_1: TextSection = {
           },
           punctBefore: "",
           punctAfter: " ",
+          head: 0, deprel: "conj", treebankSource: "PLDT",
         },
         {
           id: "a3",
@@ -2870,6 +2936,7 @@ export const AENEID_1_1: TextSection = {
           },
           punctBefore: "",
           punctAfter: ", ",
+          head: -1, deprel: "root", treebankSource: "PLDT",
         },
         {
           id: "a4",
@@ -2885,6 +2952,7 @@ export const AENEID_1_1: TextSection = {
           },
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "nmod", treebankSource: "PLDT",
         },
         {
           id: "a5",
@@ -2900,6 +2968,7 @@ export const AENEID_1_1: TextSection = {
           },
           punctBefore: "",
           punctAfter: " ",
+          head: 1, deprel: "nsubj", treebankSource: "PLDT",
         },
         {
           id: "a6",
@@ -2915,6 +2984,7 @@ export const AENEID_1_1: TextSection = {
           },
           punctBefore: "",
           punctAfter: " ",
+          head: 4, deprel: "amod", treebankSource: "PLDT",
         },
         {
           id: "a7",
@@ -2925,6 +2995,7 @@ export const AENEID_1_1: TextSection = {
           morphology: { partOfSpeech: "preposition" },
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "case", treebankSource: "PLDT",
         },
         {
           id: "a8",
@@ -2940,6 +3011,7 @@ export const AENEID_1_1: TextSection = {
           },
           punctBefore: "",
           punctAfter: ".",
+          head: 1, deprel: "obl", treebankSource: "PLDT",
         },
       ],
     },
@@ -3403,6 +3475,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "preposition" },
           punctBefore: "",
           punctAfter: "",
+          head: 1, deprel: "case", treebankSource: "BHSA",
         },
         {
           id: "g2",
@@ -3413,6 +3486,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "obl", treebankSource: "BHSA",
         },
         {
           id: "g3",
@@ -3423,6 +3497,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: " ",
+          head: -1, deprel: "root", treebankSource: "BHSA",
         },
         {
           id: "g4",
@@ -3433,6 +3508,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "nsubj", treebankSource: "BHSA",
         },
         {
           id: "g4b",
@@ -3443,6 +3519,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "particle" },
           punctBefore: "",
           punctAfter: " ",
+          head: 5, deprel: "case", treebankSource: "BHSA",
         },
         {
           id: "g4c",
@@ -3453,6 +3530,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "obj", treebankSource: "BHSA",
         },
         {
           id: "g4d",
@@ -3463,6 +3541,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "particle" },
           punctBefore: "",
           punctAfter: " ",
+          head: 7, deprel: "cc", treebankSource: "BHSA",
         },
         {
           id: "g4e",
@@ -3473,6 +3552,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: ".",
+          head: 5, deprel: "conj", treebankSource: "BHSA",
         },
       ],
     },
@@ -3489,6 +3569,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "conjunction" },
           punctBefore: "",
           punctAfter: "",
+          head: 3, deprel: "cc", treebankSource: "BHSA",
         },
         {
           id: "g6",
@@ -3499,6 +3580,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "article" },
           punctBefore: "",
           punctAfter: "",
+          head: 2, deprel: "det", treebankSource: "BHSA",
         },
         {
           id: "g7",
@@ -3509,6 +3591,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "nsubj", treebankSource: "BHSA",
         },
         {
           id: "g8",
@@ -3519,6 +3602,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "verb" },
           punctBefore: "",
           punctAfter: " ",
+          head: -1, deprel: "root", treebankSource: "BHSA",
         },
         {
           id: "g9",
@@ -3529,6 +3613,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 3, deprel: "xcomp", treebankSource: "BHSA",
         },
         {
           id: "g10",
@@ -3539,6 +3624,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "conjunction" },
           punctBefore: "",
           punctAfter: "",
+          head: 6, deprel: "cc", treebankSource: "BHSA",
         },
         {
           id: "g11",
@@ -3549,6 +3635,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: ".",
+          head: 4, deprel: "conj", treebankSource: "BHSA",
         },
       ],
     },
@@ -3565,6 +3652,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "verb", tense: "imperfect" },
           punctBefore: "",
           punctAfter: " ",
+          head: -1, deprel: "root", treebankSource: "BHSA",
         },
         {
           id: "g13",
@@ -3575,6 +3663,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 0, deprel: "nsubj", treebankSource: "BHSA",
         },
         {
           id: "g14",
@@ -3585,6 +3674,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "verb", tense: "imperfect" },
           punctBefore: "",
           punctAfter: " ",
+          head: 0, deprel: "ccomp", treebankSource: "BHSA",
         },
         {
           id: "g15",
@@ -3595,6 +3685,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: " ",
+          head: 2, deprel: "nsubj", treebankSource: "BHSA",
         },
         {
           id: "g16",
@@ -3605,6 +3696,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "verb", tense: "imperfect" },
           punctBefore: "",
           punctAfter: " ",
+          head: 0, deprel: "conj", treebankSource: "BHSA",
         },
         {
           id: "g17",
@@ -3615,6 +3707,7 @@ export const GENESIS_1: TextSection = {
           morphology: { partOfSpeech: "noun" },
           punctBefore: "",
           punctAfter: ".",
+          head: 4, deprel: "nsubj", treebankSource: "BHSA",
         },
       ],
     },
@@ -4541,7 +4634,7 @@ const enhanceText = (text: Text): Text => ({
 
 import { getMockTexts, getMockSections } from "./mockTexts.js";
 import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections.js";
-import { ALL_TREEBANK_SECTIONS, TREEBANK_GRC_JN1, TREEBANK_LAT_CAES1 } from "./corpus/treebank-sections.js";
+import { ALL_TREEBANK_SECTIONS } from "./corpus/treebank-sections.js";
 import { CICERO_CATILINA_1, CICERO_CATILINA_2, CICERO_CATILINA_3, CICERO_CATILINA_4 } from "./corpus/cicero-catilina.js";
 import { OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_METAMORPHOSES_4 } from "./corpus/ovid-metamorphoses.js";
 import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4 } from "./corpus/caesar-bellum-gallicum.js";
@@ -4575,45 +4668,6 @@ let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
 let _textByIdCache: Map<string, ReturnType<typeof enhanceText>> | null = null;
 let _lemmaIndexCache: Map<string, Array<{ sentence: any; sectionId: string; textId: string }>> | null = null;
 
-// ─── Treebank demo texts ──────────────────────────────────────────────────────
-
-const TEXT_TREEBANK_GRC: Text = {
-  id: 'grc-treebank-demo',
-  corpusId: 'ANCIENT_GREEK',
-  title: 'Treebank Demo: John 1:1 (PROIEL)',
-  canonicalRef: 'John 1:1',
-  author: 'New Testament',
-  language: 'grc',
-  direction: 'ltr',
-  level: 'B1',
-  hasMorphology: true,
-  hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'excerpt' as const,
-  isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: 'TB-grc-Jn1', label: 'John 1:1' }],
-};
-
-const TEXT_TREEBANK_LAT: Text = {
-  id: 'lat-treebank-demo',
-  corpusId: 'LATIN_CLASSIC',
-  title: 'Treebank Demo: Caesar BG 1.1 (PLDT)',
-  canonicalRef: 'Caesar BG 1.1',
-  author: 'Julius Caesar',
-  language: 'lat',
-  direction: 'ltr',
-  level: 'B1',
-  hasMorphology: true,
-  hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'excerpt' as const,
-  isComplete: false,
-  isSample: true,
-  sentenceCount: 1,
-  sectionsPreview: [{ id: 'TB-lat-Caes1', label: 'BG 1.1' }],
-};
 
 function getAllEnhancedTexts() {
   if (!_textsCache) {
@@ -4651,8 +4705,6 @@ function getAllEnhancedTexts() {
       TEXT_CHRYSOSTOM_HOMILY,
       TEXT_HERMAS,
       TEXT_BASIL,
-      TEXT_TREEBANK_GRC,
-      TEXT_TREEBANK_LAT,
       // Beginner texts
       TEXT_GRC_MINI_STORIES,
       TEXT_GRC_MARK,
@@ -4834,8 +4886,6 @@ export const CorpusDB = {
     if (sectionId === "Plato-Apol-4") return PLATO_APOLOGY_4;
     if (sectionId === "Plato-Apol-5") return PLATO_APOLOGY_5;
 
-    if (sectionId === "TB-grc-Jn1") return TREEBANK_GRC_JN1;
-    if (sectionId === "TB-lat-Caes1") return TREEBANK_LAT_CAES1;
 
     // Beginner sections
     if (sectionId === "GrcMini-1") return GRC_MINI_1;
