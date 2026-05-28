@@ -60,6 +60,7 @@ import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
 import type { ReadingContext } from '@/lib/review/readingContext';
 import { buildReadingContext } from '@/lib/review/readingContext';
 import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
+import { SemanticContextSection } from './SemanticContextSection.js';
 
 type SelectedWord = ReaderToken & { sentenceText?: string; sentenceIndex?: number };
 
@@ -1117,6 +1118,13 @@ export const LexDrawerPanel = memo(({
               </div>
             </div>
           )}
+          {/* Semantic Context */}
+          <SemanticContextSection
+            lemma={selectedWord.lemma}
+            languageId={langId}
+            gloss={selectedWord.gloss}
+          />
+
           {/* Notes Section */}
           <div className="mb-6">
             <div className="eyebrow mb-3 text-ink">

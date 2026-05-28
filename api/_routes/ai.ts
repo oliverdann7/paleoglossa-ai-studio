@@ -1580,4 +1580,102 @@ Keep each section brief and learner-friendly. Focus on what helps a student read
   }
 });
 
+// In-process cache: `${languageId}:${lemma}` → semantic context
+const _semanticContextCache = new Map<string, { data: SemanticContextResult; cachedAt: number }>();
+const SEMANTIC_CONTEXT_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+interface SemanticCognate {
+  language: string;
+  word: string;
+  meaning: string;
+}
+
+interface SemanticContextResult {
+  semanticDomain: string;
+  cognates: SemanticCognate[];
+  usageNotes: string;
+  historicalEvolution: string;
+}
+
+router.post('/api/ai/semantic-context', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { lemma, languageId, gloss } = req.body;
+
+    if (!lemma || typeof lemma !== 'string') {
+      return res.status(400).json({ error: 'lemma is required', code: 'INVALID_INPUT' });
+    }
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+    }
+
+    const cacheKey = `${languageId}:${lemma}`;
+    const cached = _semanticContextCache.get(cacheKey);
+    if (cached && Date.now() - cached.cachedAt < SEMANTIC_CONTEXT_TTL) {
+      return res.status(200).json(cached.data);
+    }
+
+    const apiKey = resolveGeminiApiKey(req);
+    if (!apiKey) {
+      return res.status(200).json({
+        semanticDomain: '',
+        cognates: [],
+        usageNotes: '',
+        historicalEvolution: '',
+        _unavailable: true,
+      });
+    }
+
+    const langName = getLanguageName(languageId);
+    const glossLine = gloss ? `Gloss: ${gloss}` : '';
+
+    const prompt = `You are a comparative philologist. Provide semantic and etymological context for the following word.
+
+Language: ${langName}
+Lemma: ${lemma}
+${glossLine}
+
+Return ONLY valid JSON with this exact structure — no markdown, no code fences:
+{
+  "semanticDomain": "One primary semantic domain label (e.g. 'Religion & Ritual', 'Military', 'Family', 'Nature', 'Governance', 'Commerce', 'Philosophy', 'Emotion', 'Body', 'Time', 'Space', 'Communication')",
+  "cognates": [
+    { "language": "Language name", "word": "cognate word", "meaning": "brief meaning" }
+  ],
+  "usageNotes": "2-3 sentences on register, typical contexts, and how this word is typically used in classical texts",
+  "historicalEvolution": "2-3 sentences on how the meaning or usage evolved over time, if notable"
+}
+
+Rules:
+- cognates: list 2-4 cognates from related languages (Latin, Greek, Hebrew, Sanskrit, etc. depending on the source language). If none, use empty array.
+- Keep each field concise and learner-friendly.
+- Focus on what helps a student understand this word more deeply.`;
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: { temperature: 0.3, maxOutputTokens: 800 },
+    });
+
+    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
+
+    let parsed: SemanticContextResult;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return res.status(500).json({ error: 'Failed to parse AI response', code: 'PARSE_ERROR' });
+    }
+
+    _semanticContextCache.set(cacheKey, { data: parsed, cachedAt: Date.now() });
+    return res.status(200).json(parsed);
+  } catch (err: any) {
+    console.error('[semantic-context] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch semantic context', code: 'AI_ERROR' });
+  }
+});
+
 export default router;
