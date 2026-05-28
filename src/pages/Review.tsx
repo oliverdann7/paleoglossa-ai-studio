@@ -378,9 +378,10 @@ export const Review = () => {
         <div className="flex items-center gap-3 mb-8">
           <button
             onClick={() => setShowSettings(false)}
+            aria-label={t('review.backToReview', 'Back to review')}
             className="text-muted hover:text-ink transition-colors"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5" aria-hidden />
           </button>
           <h2 className="text-xl font-serif font-bold text-ink">
             {t('review.settingsTitle', 'Review Settings')}
@@ -657,13 +658,20 @@ export const Review = () => {
     <div className="max-w-2xl mx-auto font-sans min-h-screen p-6 md:p-12">
       {/* Progress */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="flex-1 h-2 bg-parch3 rounded-full overflow-hidden">
+        <div
+          role="progressbar"
+          aria-valuenow={currentCardIndex + 1}
+          aria-valuemin={1}
+          aria-valuemax={queue.length}
+          aria-label={t('review.progressLabel', 'Review progress')}
+          className="flex-1 h-2 bg-parch3 rounded-full overflow-hidden"
+        >
           <div
             className="h-full bg-blue rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <span className="text-[12px] font-bold text-muted">
+        <span className="text-[12px] font-bold text-muted" aria-hidden>
           {currentCardIndex + 1}/{queue.length}
         </span>
       </div>
@@ -707,20 +715,22 @@ export const Review = () => {
         )}
 
         {/* Answer */}
-        <AnimatePresence>
-          {isRevealed && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="border-t border-bdr pt-6 mt-6"
-            >
-              <p className="text-[11px] uppercase tracking-widest text-muted font-bold mb-2">
-                {t('review.answer', 'Answer')}
-              </p>
-              <p className="text-[20px] font-serif font-medium text-jade">{currentCard.answer}</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div aria-live="polite" aria-atomic="true">
+          <AnimatePresence>
+            {isRevealed && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="border-t border-bdr pt-6 mt-6"
+              >
+                <p className="text-[11px] uppercase tracking-widest text-muted font-bold mb-2">
+                  {t('review.answer', 'Answer')}
+                </p>
+                <p className="text-[20px] font-serif font-medium text-jade">{currentCard.answer}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Action buttons */}
@@ -742,31 +752,39 @@ export const Review = () => {
             <div className="grid grid-cols-4 gap-2">
               <button
                 onClick={() => handleRate('AGAIN')}
+                aria-label={t('review.rateAgain', 'Again — repeat soon (press 1)')}
+                aria-keyshortcuts="1"
                 className="py-4 md:py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.again', 'Again')}</span>
-                <span className="text-[10px] opacity-60 hidden md:block">1</span>
+                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>1</span>
               </button>
               <button
                 onClick={() => handleRate('HARD')}
+                aria-label={t('review.rateHard', 'Hard — struggled (press 2)')}
+                aria-keyshortcuts="2"
                 className="py-4 md:py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.hard', 'Hard')}</span>
-                <span className="text-[10px] opacity-60 hidden md:block">2</span>
+                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>2</span>
               </button>
               <button
                 onClick={() => handleRate('GOOD')}
+                aria-label={t('review.rateGood', 'Good — recalled correctly (press 3)')}
+                aria-keyshortcuts="3"
                 className="py-4 md:py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.good', 'Good')}</span>
-                <span className="text-[10px] opacity-60 hidden md:block">3</span>
+                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>3</span>
               </button>
               <button
                 onClick={() => handleRate('EASY')}
+                aria-label={t('review.rateEasy', 'Easy — recalled instantly (press 4)')}
+                aria-keyshortcuts="4"
                 className="py-4 md:py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.easy', 'Easy')}</span>
-                <span className="text-[10px] opacity-60 hidden md:block">4</span>
+                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>4</span>
               </button>
             </div>
           </div>
