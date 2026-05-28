@@ -207,6 +207,7 @@ export interface Course {
   languageId: string;
   texts: CourseTextAssignment[];
   isPublic: boolean;
+  inviteCode?: string;
   createdAt: string | Timestamp;
 }
 

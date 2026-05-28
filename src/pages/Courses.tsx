@@ -23,6 +23,7 @@ import {
   Copy,
   Link2,
   Calendar,
+  KeyRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -500,9 +501,11 @@ function CourseDetail({
   const [rosterLoading, setRosterLoading] = useState(false);
 
   // Invite code
-  const [inviteCode, setInviteCode] = useState<string | null>((course as any).joinCode ?? null);
+  const [inviteCode, setInviteCode] = useState<string | null>((course as any).joinCode ?? (course as any).inviteCode ?? null);
   const [inviteCodeLoading, setInviteCodeLoading] = useState(false);
   const [inviteCodeCopied, setInviteCodeCopied] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   const handleGetInviteCode = async () => {
     setInviteCodeLoading(true);
@@ -1103,6 +1106,73 @@ function CourseDetail({
           )}
         </div>
       )}
+
+      {/* ── Invite code (teacher only) ─────────────────────────────────── */}
+      {isOwner && (
+        <div className="mt-6 p-4 bg-parch2 border border-bdr/40 rounded-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <Link2 className="w-3.5 h-3.5 text-muted" />
+            <span className="text-[12px] font-bold text-muted uppercase tracking-wider">
+              Student Invite Code
+            </span>
+          </div>
+          {inviteCode ? (
+            <div className="flex items-center gap-2">
+              <span className="flex-1 font-mono text-[18px] font-bold tracking-widest text-blue bg-white border border-bdr rounded-lg px-4 py-2 text-center">
+                {inviteCode}
+              </span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(inviteCode);
+                  setInviteCopied(true);
+                  setTimeout(() => setInviteCopied(false), 2000);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 border border-bdr rounded-lg text-[12px] font-semibold hover:bg-white transition-colors"
+              >
+                {inviteCopied ? (
+                  <Check className="w-3.5 h-3.5 text-green-600" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+                {inviteCopied ? 'Copied!' : 'Copy'}
+              </button>
+              <button
+                onClick={async () => {
+                  setInviteLoading(true);
+                  const code = await CourseService.generateInviteCode(course.id);
+                  if (code) setInviteCode(code);
+                  setInviteLoading(false);
+                }}
+                disabled={inviteLoading}
+                className="px-3 py-2 border border-bdr rounded-lg text-[12px] font-semibold hover:bg-white transition-colors disabled:opacity-50"
+              >
+                {inviteLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Regenerate'}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={async () => {
+                setInviteLoading(true);
+                const code = await CourseService.generateInviteCode(course.id);
+                if (code) setInviteCode(code);
+                setInviteLoading(false);
+              }}
+              disabled={inviteLoading}
+              className="flex items-center gap-2 px-4 py-2 bg-blue text-white text-[13px] font-semibold rounded-lg hover:bg-blue/90 disabled:opacity-50 transition-colors"
+            >
+              {inviteLoading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Link2 className="w-3.5 h-3.5" />
+              )}
+              Generate Invite Code
+            </button>
+          )}
+          <p className="text-[11px] text-muted/70 mt-2">
+            Share this code with students so they can join privately, even if the course is not public.
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -1227,6 +1297,36 @@ export const Courses = () => {
     setSelectedCourse(fresh ?? selectedCourse);
   };
 
+  // ── Join by invite code ──────────────────────────────────────────────────
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [inviteInput, setInviteInput] = useState('');
+  const [inviteJoining, setInviteJoining] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
+  const handleJoinByInviteCode = async () => {
+    const code = inviteInput.trim().toUpperCase();
+    if (!code || code.length < 4) {
+      setInviteError('Please enter a valid invite code.');
+      return;
+    }
+    setInviteJoining(true);
+    setInviteError(null);
+    const result = await CourseService.joinByInviteCode(code);
+    setInviteJoining(false);
+    if (!result) {
+      setInviteError('Invalid code or course not found.');
+      return;
+    }
+    setShowInviteDialog(false);
+    setInviteInput('');
+    await loadCourses();
+    const fresh = await CourseService.getCourse(result.courseId);
+    if (fresh) {
+      setSelectedCourse(fresh);
+      setView('detail');
+    }
+  };
+
   return (
     <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
       {/* Header */}
@@ -1245,14 +1345,87 @@ export const Courses = () => {
           </div>
         </div>
         {view === 'list' && user && !isDemoMode && (
-          <button
-            onClick={() => setView('create')}
-            className="flex items-center gap-2 px-4 py-2 bg-blue text-white font-bold rounded-xl text-[13px] hover:bg-blue/90 transition-all"
-          >
-            <Plus className="w-4 h-4" /> New List
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowInviteDialog(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-bdr text-ink font-semibold rounded-xl text-[13px] hover:bg-parch2 transition-all"
+              title="Join by invite code"
+            >
+              <KeyRound className="w-4 h-4" /> Join by Code
+            </button>
+            <button
+              onClick={() => setView('create')}
+              className="flex items-center gap-2 px-4 py-2 bg-blue text-white font-bold rounded-xl text-[13px] hover:bg-blue/90 transition-all"
+            >
+              <Plus className="w-4 h-4" /> New List
+            </button>
+          </div>
         )}
       </header>
+
+      {/* Invite code dialog */}
+      <AnimatePresence>
+        {showInviteDialog && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowInviteDialog(false)}
+          >
+            <motion.div
+              className="bg-parch rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-bdr"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="w-5 h-5 text-blue" />
+                  <h3 className="text-[16px] font-bold text-ink">Join by Invite Code</h3>
+                </div>
+                <button
+                  onClick={() => setShowInviteDialog(false)}
+                  className="text-muted hover:text-ink transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-[13px] text-muted mb-4">
+                Enter the 6-character code your teacher shared with you.
+              </p>
+              <input
+                type="text"
+                value={inviteInput}
+                onChange={(e) => {
+                  setInviteInput(e.target.value.toUpperCase().slice(0, 8));
+                  setInviteError(null);
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleJoinByInviteCode()}
+                placeholder="e.g. A3X7P2"
+                className="w-full px-4 py-3 border border-bdr rounded-xl text-[16px] font-mono font-bold uppercase tracking-widest text-center focus:outline-none focus:border-blue bg-white mb-3"
+                autoFocus
+              />
+              {inviteError && (
+                <p className="text-[12px] text-red-500 text-center mb-3">{inviteError}</p>
+              )}
+              <button
+                onClick={handleJoinByInviteCode}
+                disabled={inviteJoining || !inviteInput.trim()}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue text-white font-bold rounded-xl text-[14px] hover:bg-blue/90 disabled:opacity-50 transition-colors"
+              >
+                {inviteJoining ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <UserCheck className="w-4 h-4" />
+                )}
+                Join Reading List
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {/* List view */}
