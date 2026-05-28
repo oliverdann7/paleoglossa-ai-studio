@@ -21,6 +21,7 @@ import {
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { ScholarAnnotations } from './ScholarAnnotations.js';
 import { CognateLinksSection } from './CognateLinksSection.js';
+import { ConceptSummarySection } from './ConceptSummarySection.js';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/hooks/useAuth';
 import {
@@ -1128,6 +1129,15 @@ export const LexDrawerPanel = memo(({
 
           {/* Cross-language cognate links */}
           <CognateLinksSection lemma={selectedWord.lemma} languageId={langId} />
+
+          {/* AI Concept Summary */}
+          <ConceptSummarySection
+            lemma={selectedWord.lemma}
+            languageId={langId}
+            gloss={wordInfo?.userGloss || selectedWord.gloss}
+            context={selectedWord.sentenceText}
+            aiEnabled={settings?.aiEnabled !== false}
+          />
 
           {/* Notes Section */}
           <div className="mb-6">

@@ -16,6 +16,7 @@ export interface Settings {
   interlinearMode: boolean;
   swipePageMovesToKnown: boolean;
   activeDictionaries: string[];
+  aiEnabled: boolean;
   onboardingProfile?: {
     completed: boolean;
     languageId: string;
@@ -40,6 +41,7 @@ const DEFAULT_SETTINGS: Settings = {
   interlinearMode: false,
   swipePageMovesToKnown: true,
   activeDictionaries: ['strongs-greek', 'strongs-hebrew', 'liddell-scott', 'whitakers-words'],
+  aiEnabled: true,
   onboardingProfile: {
     completed: false,
     languageId: 'grc',

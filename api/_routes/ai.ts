@@ -1678,4 +1678,72 @@ Rules:
   }
 });
 
+// ─── Concept Summary ─────────────────────────────────────────────────────────
+// 24-hour in-process cache keyed by "{languageId}:{lemma}"
+const _conceptSummaryCache = new Map<string, { summary: string; cachedAt: number }>();
+const CONCEPT_SUMMARY_TTL = 24 * 60 * 60 * 1000;
+
+router.post('/api/ai/concept-summary', async (req: any, res: any) => {
+  const { languageId, lemma, gloss, context } = req.body ?? {};
+
+  if (!languageId || typeof languageId !== 'string' || !lemma || typeof lemma !== 'string') {
+    return res
+      .status(400)
+      .json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
+  }
+
+  const cacheKey = `${languageId}:${lemma.toLowerCase()}`;
+  const cached = _conceptSummaryCache.get(cacheKey);
+  if (cached && Date.now() - cached.cachedAt < CONCEPT_SUMMARY_TTL) {
+    return res.status(200).json({ summary: cached.summary, cached: true });
+  }
+
+  const apiKey = resolveGeminiApiKey(req);
+  if (!apiKey) {
+    return res.status(200).json({
+      summary: null,
+      unavailable: true,
+      reason: 'Gemini API key not configured.',
+    });
+  }
+
+  try {
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const contextNote = context ? `The word appears in this context: "${context}".` : '';
+    const glossNote = gloss ? ` (gloss: ${gloss})` : '';
+
+    const prompt = `You are a specialist in ancient languages and the history of ideas.
+Write a concise theological, philosophical, or cultural concept summary (2–4 sentences) for the ${langName} word "${lemma}"${glossNote}.
+
+Focus on:
+- Its core meaning and range of usage in antiquity
+- Key theological or philosophical significance (if any)
+- How its meaning evolved or was contested across traditions
+- One striking usage or contrast that illuminates the concept
+
+${contextNote}
+
+Keep the summary informative but accessible. Do not use jargon without explanation. Do not pad. Return ONLY the summary text — no headers, no lists, no markdown.`;
+
+    const model = genAI.models;
+    const result = await model.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    });
+
+    const summary = result.text?.trim() ?? '';
+    if (summary) {
+      _conceptSummaryCache.set(cacheKey, { summary, cachedAt: Date.now() });
+    }
+
+    return res.status(200).json({ summary: summary || null, cached: false });
+  } catch (err: any) {
+    console.error('[concept-summary] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to generate summary', code: 'CONCEPT_ERROR' });
+  }
+});
+
 export default router;
