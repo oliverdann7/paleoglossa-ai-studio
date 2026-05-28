@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, GraduationCap, Sparkles, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { loadLanguage } from '../lib/i18n.js';
 import { PaleoIcon } from '../components/PaleoIcon.js';
 import { PLANS } from '../lib/constants/plans.js';
 
@@ -161,8 +162,9 @@ export const Landing = () => {
     navigate('/app');
   };
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleLanguageChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLang = e.target.value;
+    await loadLanguage(newLang as any);
     i18n.changeLanguage(newLang);
     localStorage.setItem('app_lang', newLang);
   };

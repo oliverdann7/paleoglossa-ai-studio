@@ -21,6 +21,7 @@ import { useSettings } from '../lib/hooks/useSettings.js';
 import { cn } from '@/lib/utils';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useTranslation } from 'react-i18next';
+import { loadLanguage } from '../lib/i18n.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { getLanguageIcon, getLanguageDisplayName, getAvailableLanguages } from '../lib/constants/languages.js';
 import { db } from '../lib/firebase.js';
@@ -85,8 +86,9 @@ export const Settings = () => {
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const { t, i18n } = useTranslation();
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleLanguageChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLang = e.target.value;
+    await loadLanguage(newLang as any);
     i18n.changeLanguage(newLang);
     localStorage.setItem('app_lang', newLang);
   };
