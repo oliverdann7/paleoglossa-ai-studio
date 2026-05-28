@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import Fuse from 'fuse.js';
@@ -16,9 +16,11 @@ import {
   Clock,
   Search,
   Download,
-  Printer,
+  FileDown,
   Eye,
   Code2,
+  Link2,
+  ArrowUpRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -74,6 +76,67 @@ function WikilinkAnchor({ href, children }: { href?: string; children?: React.Re
       {children}
     </a>
   );
+}
+
+function markdownToHtml(md: string): string {
+  return md
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br/>');
+}
+
+function exportNotebookPdf(title: string, notes: Note[]) {
+  const notesSections = notes
+    .map((n) => {
+      const tagHtml =
+        n.tags.length > 0
+          ? `<div class="tags">${n.tags.map((t) => `<span class="tag">${t}</span>`).join(' ')}</div>`
+          : '';
+      const lemmaHtml = n.lemma ? `<div class="lemma">${n.lemma}</div>` : '';
+      const dateHtml = n.updatedAt
+        ? `<div class="date">${new Date(n.updatedAt).toLocaleDateString()}</div>`
+        : '';
+      return `<article>${lemmaHtml}${dateHtml}<div class="content"><p>${markdownToHtml(n.content)}</p></div>${tagHtml}</article>`;
+    })
+    .join('<hr/>');
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"/><title>${title}</title>
+<style>
+  @page { margin: 2cm; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #1a1a1a; max-width: 700px; margin: 0 auto; line-height: 1.6; }
+  h1 { font-size: 24px; border-bottom: 2px solid #1E3D6E; padding-bottom: 8px; color: #1E3D6E; }
+  h2 { font-size: 18px; color: #333; }
+  h3 { font-size: 15px; color: #555; }
+  article { margin: 1.5em 0; }
+  .lemma { font-family: monospace; color: #1E3D6E; font-weight: bold; font-size: 14px; margin-bottom: 4px; }
+  .date { font-size: 11px; color: #999; margin-bottom: 8px; }
+  .content { font-size: 14px; }
+  .content p { margin: 0.5em 0; }
+  code { background: #f5f3ee; padding: 1px 4px; border-radius: 3px; font-size: 13px; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+  .tags { margin-top: 8px; }
+  .tag { display: inline-block; background: #f5f3ee; color: #666; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 10px; margin-right: 4px; }
+  .footer { text-align: center; font-size: 10px; color: #999; margin-top: 3em; border-top: 1px solid #eee; padding-top: 1em; }
+  @media print { body { max-width: 100%; } }
+</style></head><body>
+<h1>${title}</h1>
+<p style="color:#666;font-size:13px;">${notes.length} note${notes.length !== 1 ? 's' : ''} · Exported ${new Date().toLocaleDateString()}</p>
+${notesSections}
+<div class="footer">Exported from Paleoglossa</div>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+    setTimeout(() => win.print(), 300);
+  }
 }
 
 function NoteCard({
@@ -164,18 +227,57 @@ function NoteEditor({
   const [content, setContent] = useState(initial?.content ?? '');
   const [tagInput, setTagInput] = useState(initial?.tags.join(', ') ?? '');
   const [showPreview, setShowPreview] = useState(false);
+  const [showLinkHelper, setShowLinkHelper] = useState(false);
+  const [linkType, setLinkType] = useState<'text' | 'lemma'>('lemma');
+  const [linkTarget, setLinkTarget] = useState('');
+  const [linkLabel, setLinkLabel] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const tags = tagInput
     .split(',')
     .map((t) => t.trim())
     .filter(Boolean);
 
+  const insertLink = () => {
+    if (!linkTarget.trim()) return;
+    const wikilink =
+      linkType === 'text'
+        ? `[[text:${linkTarget.trim()}${linkLabel.trim() ? `|${linkLabel.trim()}` : ''}]]`
+        : `[[${linkTarget.trim()}${linkLabel.trim() ? `|${linkLabel.trim()}` : ''}]]`;
+    const ta = textareaRef.current;
+    if (ta) {
+      const start = ta.selectionStart;
+      const before = content.slice(0, start);
+      const after = content.slice(ta.selectionEnd);
+      setContent(before + wikilink + after);
+    } else {
+      setContent((prev) => prev + wikilink);
+    }
+    setLinkTarget('');
+    setLinkLabel('');
+    setShowLinkHelper(false);
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-4 py-2 border-b border-bdr/30 shrink-0">
-        <span className="text-[11px] font-bold uppercase tracking-widest text-muted">
-          {initial ? 'Edit Note' : 'New Note'}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-muted">
+            {initial ? 'Edit Note' : 'New Note'}
+          </span>
+          {!showPreview && (
+            <button
+              onClick={() => setShowLinkHelper((p) => !p)}
+              className={cn(
+                'flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-colors',
+                showLinkHelper ? 'bg-blue/10 text-blue' : 'text-muted hover:text-ink'
+              )}
+              title="Insert link"
+            >
+              <Link2 className="w-3 h-3" /> Link
+            </button>
+          )}
+        </div>
         <button
           onClick={() => setShowPreview((p) => !p)}
           className={cn(
@@ -196,15 +298,63 @@ function NoteEditor({
             </ReactMarkdown>
           </div>
         ) : (
-          <textarea
-            autoFocus
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder={
-              'Write your note in Markdown...\n\nLink to a word: [[λύω]]\nLink to a text: [[text:textId|Title]]\n\n# Heading\n**bold**, *italic*, `code`'
-            }
-            className="w-full h-full p-4 resize-none font-mono text-[13px] text-ink bg-transparent focus:outline-none leading-relaxed"
-          />
+          <div className="flex flex-col h-full">
+            {showLinkHelper && (
+              <div className="px-4 py-2 border-b border-bdr/20 bg-parch2/50 flex flex-wrap items-center gap-2">
+                <div className="flex rounded-lg border border-bdr/40 overflow-hidden">
+                  <button
+                    onClick={() => setLinkType('lemma')}
+                    className={cn(
+                      'px-2 py-1 text-[10px] font-bold uppercase',
+                      linkType === 'lemma' ? 'bg-blue text-white' : 'bg-white text-muted'
+                    )}
+                  >
+                    Word
+                  </button>
+                  <button
+                    onClick={() => setLinkType('text')}
+                    className={cn(
+                      'px-2 py-1 text-[10px] font-bold uppercase',
+                      linkType === 'text' ? 'bg-blue text-white' : 'bg-white text-muted'
+                    )}
+                  >
+                    Text
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={linkTarget}
+                  onChange={(e) => setLinkTarget(e.target.value)}
+                  placeholder={linkType === 'text' ? 'Text ID (e.g. john-1)' : 'Lemma (e.g. λύω)'}
+                  className="flex-1 min-w-[120px] px-2 py-1 text-[12px] border border-bdr/40 rounded bg-white/70 focus:outline-none focus:border-blue font-mono"
+                />
+                <input
+                  type="text"
+                  value={linkLabel}
+                  onChange={(e) => setLinkLabel(e.target.value)}
+                  placeholder="Label (optional)"
+                  className="w-28 px-2 py-1 text-[12px] border border-bdr/40 rounded bg-white/70 focus:outline-none focus:border-blue"
+                />
+                <button
+                  onClick={insertLink}
+                  disabled={!linkTarget.trim()}
+                  className="px-2 py-1 bg-blue text-white text-[10px] font-bold uppercase rounded disabled:opacity-50"
+                >
+                  Insert
+                </button>
+              </div>
+            )}
+            <textarea
+              ref={textareaRef}
+              autoFocus
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder={
+                'Write your note in Markdown...\n\nLink to a word: [[λύω]]\nLink to a text: [[text:textId|Title]]\n\n# Heading\n**bold**, *italic*, `code`'
+              }
+              className="w-full flex-1 p-4 resize-none font-mono text-[13px] text-ink bg-transparent focus:outline-none leading-relaxed"
+            />
+          </div>
         )}
       </div>
 
@@ -241,7 +391,73 @@ function NoteEditor({
   );
 }
 
-function NoteViewer({ note, onEdit }: { note: Note; onEdit: () => void }) {
+function BacklinksSection({
+  note,
+  allNotes,
+  onSelectNote,
+}: {
+  note: Note;
+  allNotes: Note[];
+  onSelectNote: (note: Note) => void;
+}) {
+  const backlinks = useMemo(() => {
+    const noteIdentifiers: string[] = [];
+    if (note.lemma) noteIdentifiers.push(note.lemma);
+    if (note.textId) noteIdentifiers.push(note.textId);
+
+    if (noteIdentifiers.length === 0) return [];
+
+    return allNotes.filter((other) => {
+      if (other.id === note.id) return false;
+      return noteIdentifiers.some(
+        (ident) =>
+          other.content.includes(`[[${ident}]]`) ||
+          other.content.includes(`[[${ident}|`) ||
+          other.content.includes(`[[text:${ident}]]`) ||
+          other.content.includes(`[[text:${ident}|`)
+      );
+    });
+  }, [note, allNotes]);
+
+  if (backlinks.length === 0) return null;
+
+  return (
+    <div className="mt-6 pt-4 border-t border-bdr/20">
+      <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted mb-2 flex items-center gap-1.5">
+        <ArrowUpRight className="w-3 h-3" />
+        Linked from {backlinks.length} note{backlinks.length !== 1 ? 's' : ''}
+      </h4>
+      <div className="space-y-1">
+        {backlinks.map((bl) => (
+          <button
+            key={bl.id}
+            onClick={() => onSelectNote(bl)}
+            className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue/5 transition-colors group"
+          >
+            <p className="text-[12px] text-ink line-clamp-1 group-hover:text-blue transition-colors">
+              {bl.content.replace(/[#*`[\]]/g, '').slice(0, 80)}
+            </p>
+            {bl.lemma && (
+              <span className="text-[10px] font-mono text-blue">{bl.lemma}</span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NoteViewer({
+  note,
+  onEdit,
+  allNotes,
+  onSelectNote,
+}: {
+  note: Note;
+  onEdit: () => void;
+  allNotes: Note[];
+  onSelectNote: (note: Note) => void;
+}) {
   const relativeTime = note.updatedAt
     ? formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })
     : null;
@@ -275,11 +491,11 @@ function NoteViewer({ note, onEdit }: { note: Note; onEdit: () => void }) {
             <Download className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => window.print()}
-            title="Print / Save as PDF"
+            onClick={() => exportNotebookPdf(note.lemma || 'Note', [note])}
+            title="Export as PDF"
             className="p-1.5 text-muted hover:text-ink rounded transition-colors"
           >
-            <Printer className="w-3.5 h-3.5" />
+            <FileDown className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={onEdit}
@@ -296,6 +512,8 @@ function NoteViewer({ note, onEdit }: { note: Note; onEdit: () => void }) {
             {parseWikilinks(note.content)}
           </ReactMarkdown>
         </div>
+
+        <BacklinksSection note={note} allNotes={allNotes} onSelectNote={onSelectNote} />
       </div>
 
       {note.tags.length > 0 && (
@@ -480,7 +698,14 @@ export const NotebookDetail = () => {
             title="Export as Markdown"
             className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-muted hover:text-ink border border-bdr/40 rounded-lg hover:bg-parch3 transition-colors"
           >
-            <Download className="w-3.5 h-3.5" /> Export
+            <Download className="w-3.5 h-3.5" /> MD
+          </button>
+          <button
+            onClick={() => notebook && exportNotebookPdf(notebook.title, notes)}
+            title="Export as PDF"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-muted hover:text-ink border border-bdr/40 rounded-lg hover:bg-parch3 transition-colors"
+          >
+            <FileDown className="w-3.5 h-3.5" /> PDF
           </button>
           <button
             onClick={startNewNote}
@@ -586,6 +811,12 @@ export const NotebookDetail = () => {
               onEdit={() => {
                 setEditingNote(rightPanelNote);
                 setSelectedNote(null);
+              }}
+              allNotes={notes}
+              onSelectNote={(n) => {
+                setSelectedNote(n);
+                setEditingNote(null);
+                setIsCreating(false);
               }}
             />
           ) : (

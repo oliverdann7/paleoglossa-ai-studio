@@ -27,6 +27,27 @@ const TTS_SUPPORTED_LANGUAGES: Record<string, { code: string; voice: string; not
   syr: { code: 'ar-XA', voice: 'ar-XA-Standard-A', note: 'Syriac (Western tradition)' },
 };
 
+const PRONUNCIATION_MODE_OVERRIDES: Record<string, Record<string, { voice: string; note: string }>> = {
+  grc: {
+    restored: { voice: 'el-GR-Standard-A', note: 'Restored Classical Greek (5th–4th c. BCE)' },
+    erasmian: { voice: 'el-GR-Standard-B', note: 'Erasmian academic pronunciation' },
+    modern: { voice: 'el-GR-Standard-A', note: 'Modern Greek pronunciation' },
+  },
+  'grc-koine': {
+    restored: { voice: 'el-GR-Standard-B', note: 'Reconstructed Koine (1st c. CE)' },
+    erasmian: { voice: 'el-GR-Standard-A', note: 'Erasmian academic pronunciation' },
+    modern: { voice: 'el-GR-Standard-A', note: 'Modern Greek pronunciation' },
+  },
+  lat: {
+    restored: { voice: 'it-IT-Standard-A', note: 'Restored Classical Latin (1st c. BCE)' },
+    modern: { voice: 'it-IT-Standard-B', note: 'Ecclesiastical (Italianate) Latin' },
+  },
+  hbo: {
+    restored: { voice: 'he-IL-Standard-A', note: 'Tiberian (Masoretic) tradition' },
+    modern: { voice: 'he-IL-Standard-B', note: 'Modern Israeli Hebrew pronunciation' },
+  },
+};
+
 const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
   grc: 'Ancient Greek pronunciation is reconstructed. The exact phonetics of the classical period (5th–4th c. BCE) are scholarly approximations based on meter, spelling errors, and comparative linguistics.',
   'grc-koine':
@@ -44,7 +65,7 @@ const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
 
 router.post('/api/audio/tts', async (req: any, res: any) => {
   try {
-    const { languageId, text } = req.body;
+    const { languageId, text, pronunciationMode } = req.body;
 
     if (!languageId) {
       return res.status(400).json({
@@ -73,28 +94,31 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
       });
     }
 
+    const modeOverride = pronunciationMode && PRONUNCIATION_MODE_OVERRIDES[languageId]?.[pronunciationMode];
+    const voice = modeOverride?.voice ?? langConfig.voice;
+    const note = modeOverride?.note ?? langConfig.note;
+
     const apiKey = process.env.GOOGLE_TTS_API_KEY;
     if (!apiKey) {
       return res.status(200).json({
         audioUrl: null,
         supported: false,
         reason: 'Audio playback is not available in this environment.',
-        provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
+        provider: `Google Cloud Text-to-Speech (${note})`,
       });
     }
 
-    // Return cached audio if available
-    const cacheKey = `${languageId}::${text}`;
+    const cacheKey = `${languageId}::${pronunciationMode || 'default'}::${text}`;
     const cached = ttsCache.get(cacheKey);
     if (cached) {
-      return res.status(200).json({ audioUrl: cached, supported: true, cached: true, provider: `Google Cloud Text-to-Speech (${langConfig.note})` });
+      return res.status(200).json({ audioUrl: cached, supported: true, cached: true, provider: `Google Cloud Text-to-Speech (${note})` });
     }
 
     const requestBody = {
       input: { text: text.substring(0, 5000) },
       voice: {
         languageCode: langConfig.code,
-        name: langConfig.voice,
+        name: voice,
       },
       audioConfig: {
         audioEncoding: 'MP3',
@@ -118,7 +142,7 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
         audioUrl: null,
         supported: true,
         reason: 'TTS service temporarily unavailable',
-        provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
+        provider: `Google Cloud Text-to-Speech (${note})`,
       });
     }
 
@@ -130,7 +154,7 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
         audioUrl: null,
         supported: true,
         reason: 'No audio content generated',
-        provider: `Google Cloud Text-to-Speech (${langConfig.note})`,
+        provider: `Google Cloud Text-to-Speech (${note})`,
       });
     }
 

@@ -591,7 +591,7 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
 
 router.post('/api/ai/pronunciation', async (req: any, res: any) => {
   try {
-    const { languageId, text, transliteration } = req.body;
+    const { languageId, text, transliteration, pronunciationMode } = req.body;
 
     if (!languageId || typeof languageId !== 'string') {
       return res.status(400).json({
@@ -627,10 +627,14 @@ router.post('/api/ai/pronunciation', async (req: any, res: any) => {
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });
 
+    const modeInstruction = pronunciationMode && pronunciationMode !== 'default'
+      ? `\nPronunciation system: Use the "${pronunciationMode}" pronunciation tradition specifically.`
+      : '';
+
     const prompt = `You are a historical linguist specializing in ${langName}. Provide a pronunciation guide for this text.
 
 Text: "${text}"
-${transliteration ? `Transliteration: "${transliteration}"` : ''}
+${transliteration ? `Transliteration: "${transliteration}"` : ''}${modeInstruction}
 
 Return ONLY valid JSON with this exact structure — no markdown, no explanation:
 {
