@@ -36,23 +36,27 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | Reading progress, streak, daily goals | ✅ |
 | Parallel text display | ✅ |
 | Transliteration toggles | ✅ |
-| i18n (8 languages) | ✅ |
+| i18n (8 UI languages) | ✅ |
 | Google / Email auth + guest mode | ✅ |
-| Morphology tags per token | ✅ |
-| External dictionary links | ✅ |
-| Corpus search | ✅ |
-| Lemma browser with paradigm tables | ✅ |
-| Grammar pathways & reference | ✅ |
-| AI philology tutor | ✅ |
-| Research notebook | ✅ |
+| Morphology tags + paradigm tables per token | ✅ |
+| Dictionary with Logeion / Sefaria / Wiktionary lookup | ✅ |
+| Corpus search (lemma + full-text) | ✅ |
+| Grammar pathways, prerequisite graph, concept browser | ✅ |
+| AI philology tutor (6 difficulty modes) | ✅ |
+| Research notebooks with Firestore sync | ✅ |
 | Cloud sync (Firestore) + demo migration | ✅ |
-| Admin Firebase debug page | ✅ |
 | Public Discover / community text library | ✅ |
-| Smart text recommendations (i+1 sweet spot, difficulty labels, reasons) | ✅ |
+| Smart text recommendations (i+1, difficulty labels, reasons) | ✅ |
 | Reader notes & context-menu actions | ✅ |
 | Pronunciation / AudioLab (TTS playback) | ✅ |
-| Syntax / dependency treebank viewer | ✅ |
+| Syntax / dependency treebank viewer (AI + PROIEL/Gorman) | ✅ |
 | Manuscript / epigraphy lab (image pan/zoom + IIIF) | ✅ |
+| Beginner Hub with milestones, script primers, daily path | ✅ |
+| XP gamification, challenges, leaderboard | ✅ |
+| Language-scoped content filtering (LingQ-style) | ✅ |
+| 7-day review forecast | ✅ |
+| Study activity heatmap | ✅ |
+| Scholar profiles | ✅ |
 | Classroom / course builder | 🚧 |
 | User recording upload | 🚧 |
 
@@ -63,41 +67,42 @@ Routes are modularized under `api/_routes/`. Some require a Gemini API key and F
 | Route | Method | Status | Description |
 |-------|--------|--------|-------------|
 | `/api/test` | POST | ✅ | Health check |
-| `/api/ai/...` | POST | ✅ | AI: analyze, translate, explain, OCR, tutor chat |
-| `/api/lemmas/:language/:lemma` | GET | ✅ | Lemma lookup |
-| `/api/lemmas` | GET | ✅ | Lemma search |
-| `/api/lemmas/:lemma/paradigm` | GET | 🚧 | Paradigm inflection (stub) |
-| `/api/dictionary` / `/api/dictionary/search` | GET | ✅ | Dictionary search |
-| `/api/grammar/concepts` | GET | ✅ | Grammar concepts & pathways |
+| `/api/ai/...` | POST | ✅ | AI: analyze, translate, explain, OCR, tutor chat, quiz, syntax |
+| `/api/corpus` | GET | ✅ | Corpus text listing and detail |
 | `/api/search` | POST | ✅ | Multi-source corpus search |
-| `/api/notebooks`, `/api/notes` | GET/POST/DELETE | ✅ | Research notebook CRUD |
-| `/api/syntax/...` | GET | ✅ | Syntax treebank (AI-generated trees) |
+| `/api/grammar/concepts` | GET | ✅ | Grammar concepts & pathways |
+| `/api/syntax/...` | GET | ✅ | Syntax treebank (AI + PROIEL/Gorman) |
 | `/api/audio/tts` | POST | ✅ | TTS generation with server-side cache |
-| `/api/audio/recordings` | POST | 🚧 | User recording upload (infrastructure not yet in place) |
-| `/api/manuscripts` | GET/POST/PATCH/DELETE | ✅ | Manuscript CRUD (image viewer, IIIF manifest support) |
-| `/api/courses` | GET/POST | 🚧 | Classroom management (page exists; teacher roles incomplete) |
+| `/api/manuscripts` | GET/POST/PATCH/DELETE | ✅ | Manuscript CRUD (image viewer, IIIF) |
+| `/api/annotations` | GET/POST/DELETE | ✅ | Text annotations |
+| `/api/bookmarks` | GET/POST/PATCH/DELETE | ✅ | User bookmarks |
+| `/api/challenges/completions` | GET/POST | ✅ | XP challenge tracking |
+| `/api/public/texts` | GET/POST | ✅ | Public/community texts |
+| `/api/import/parse` | POST | ✅ | File import parsing |
+| `/api/auth/me` | GET | ✅ | Current user info |
+| `/api/admin/...` | GET/POST/DELETE | ✅ | Admin operations |
+| `/api/courses` | GET/POST | 🚧 | Classroom management (teacher roles incomplete) |
+| `/api/audio/recordings` | POST | 🚧 | User recording upload (stub) |
 
 ## Corpus Status
 
-Texts are marked with their completion status in the app (Sample / In Progress / Complete). Current state:
+The corpus spans 11 languages with 60+ texts decomposed across `src/data/corpus/` (30+ module files). Texts are marked with completion status in the app.
 
-| Text | Language | Status | Morphology | Source |
-|------|----------|--------|------------|--------|
-| John 1 (SBLGNT) | Koine Greek | ✅ Complete | Full (vv. 1-5), Basic (vv. 6-18) | SBLGNT (non-commercial), MorphGNT (CC BY-SA 3.0) |
-| Genesis 1 (OSHB) | Biblical Hebrew | ✅ Complete | Word-by-word tokens | OSHB (CC BY 4.0) |
-| Psalm 23 (OSHB) | Biblical Hebrew | ✅ Complete | Word-by-word tokens | OSHB (CC BY 4.0) |
-| Iliad Book 1 (Perseus) | Ancient Greek | ✅ Complete (ll. 1-611) | Full (ll. 1-7), Basic (ll. 8-611) | Perseus (CC BY-SA 3.0) |
-| Anabasis 1.1 (Perseus) | Ancient Greek | ✅ Complete (Ch 1-9) | Full (§1-3), Basic (§4-9) | Perseus (CC BY-SA 3.0) |
-| Aeneid Book 1 (Perseus) | Latin | ✅ Complete (ll. 1-756) | Full (ll. 1-7), Basic (ll. 8-756) | Perseus (CC BY-SA 3.0) |
-| Aesop's Fables | Ancient Greek | ✅ Partial (13 sent.) | Word-by-word tokens | Perseus (CC BY-SA 3.0) |
-| Odyssey Book 1 | Ancient Greek | ✅ Partial (27 sent.) | Full (ll. 1-5), Basic (ll. 6-444) | Perseus (CC BY-SA 3.0) |
-| Syriac Peshitta John | Syriac | ✅ Partial (16 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
-| Coptic Sahidic John | Coptic | ✅ Partial (16 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
-| Targum Onkelos | Aramaic | ✅ Partial (15 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
-| Gilgamesh Tablet I | Akkadian | ✅ Partial (11 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
-| Bhagavad Gita | Sanskrit | ✅ Partial (21 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
-| Annals of Mursili II | Hittite | ✅ Partial (11 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
-| Maxims of Ptahhotep | Egyptian | ✅ Partial (11 sent.) | Basic tokens | Project Gutenberg (Public Domain) |
+| Language | Texts | Highlights |
+|----------|-------|------------|
+| **Koine Greek** | John (full), Mark, Greek NT extended | SBLGNT + MorphGNT morphology |
+| **Ancient Greek** | Iliad 1, Odyssey 1, Anabasis, Aesop, Plato Apology, mini stories, patristic texts (1 Clement, Didache, Athanasius, etc.), Herodotus, Thucydides, Sophocles, Lucian | Perseus (CC BY-SA 3.0) |
+| **Biblical Hebrew** | Genesis, Psalms 23, beginner texts, extended passages | OSHB (CC BY 4.0) |
+| **Latin** | Aeneid 1, Caesar De Bello Gallico, Cicero In Catilinam, Ovid Metamorphoses, beginner texts, mini stories, Disticha Catonis, Horace, Livy, Sallust, Tacitus | Perseus (CC BY-SA 3.0) |
+| **Septuagint (LXX)** | Genesis, Exodus, Psalms 1/33/50, Isaiah, Proverbs, Jonah | LXX (Public Domain) |
+| **Syriac** | Peshitta John (extended) | Project Gutenberg (Public Domain) |
+| **Coptic** | Sahidic John (extended) | Project Gutenberg (Public Domain) |
+| **Aramaic** | Targum Onkelos Genesis | Project Gutenberg (Public Domain) |
+| **Akkadian** | Gilgamesh (Tablets I, II, VI, X), Code of Hammurabi | Public Domain |
+| **Sanskrit** | Bhagavad Gita / Mahabharata | Project Gutenberg (Public Domain) |
+| **Hittite** | Annals of Mursili II | Public Domain |
+| **Egyptian** | Maxims of Ptahhotep | Public Domain |
+| **Ugaritic** | Baal Cycle (Aliyan Baal) | Public Domain |
 
 ### How to add a full text
 
@@ -139,19 +144,23 @@ api/
 │   ├── grammarData.ts      # Grammar concept data
 │   └── basicAnalyze.ts     # Fallback morphology analysis
 ├── _routes/                # Modular route handlers
-│   ├── ai.ts               # AI analyze, translate, explain, OCR, tutor
-│   ├── lexicon.ts          # Lemma / token / dictionary lookup
-│   ├── grammar.ts          # Grammar concepts & pathways
-│   ├── search.ts           # Multi-source corpus search
-│   ├── notes.ts            # Notebooks & notes CRUD
+│   ├── ai.ts               # AI analyze, translate, explain, OCR, tutor, quiz, syntax
 │   ├── audio.ts            # TTS + recording endpoints
+│   ├── annotations.ts      # Text annotations
+│   ├── bookmarks.ts        # User bookmarks
+│   ├── challenges.ts       # XP challenge completions
+│   ├── corpus.ts           # Corpus text listing/detail
+│   ├── courses.ts          # Classroom management (partial)
+│   ├── grammar.ts          # Grammar concepts & pathways
+│   ├── manuscripts.ts      # Manuscript CRUD + IIIF
+│   ├── parse.ts            # File import parsing
+│   ├── publicTexts.ts      # Public/community texts
+│   ├── search.ts           # Multi-source corpus search
 │   ├── syntax.ts           # Treebank annotations
-│   ├── manuscripts.ts      # Manuscript metadata (stub)
-│   ├── courses.ts          # Classroom management (stub)
 │   ├── auth.ts             # Auth helpers
 │   ├── billing.ts          # Stripe billing
 │   ├── admin.ts            # Admin operations
-│   └── publicTexts.ts      # Public text listing
+│   └── account.ts          # Account deletion
 src/
 ├── App.tsx                  # Router: landing, auth, app pages
 ├── main.tsx                 # Entry point
@@ -160,60 +169,59 @@ src/
 │   ├── AppLayout.tsx        # Authenticated shell (Navbar + Outlet)
 │   ├── Navbar.tsx           # Sidebar (desktop) / tab bar (mobile)
 │   ├── ErrorBoundary.tsx
-│   ├── Skeleton.tsx
 │   ├── ui/                  # Shared UI primitives
-│   │   ├── EmptyState.tsx
-│   │   ├── LoadingState.tsx
-│   │   └── ErrorState.tsx
-│   └── reader/              # Reader sub-components
-│       ├── LexDrawerPanel.tsx    # Word analysis side panel
-│       ├── ReadingPane.tsx       # Token-rendered text area
-│       ├── ReaderToolbar.tsx, ReaderAudioBar.tsx, ...
-│       └── ParadigmModal.tsx
+│   ├── reader/              # Reader sub-components (LexDrawerPanel, ReadingPane, …)
+│   ├── beginner/            # BeginnerHub sub-components
+│   ├── corpus/              # Corpus browser components
+│   ├── courses/             # Course components
+│   └── library/             # Library components (RecommendationRail, CoverageBadge, …)
 ├── pages/
 │   ├── Reader.tsx           # Full-screen reader
-│   ├── Library.tsx          # Corpus + import browser
-│   ├── Dashboard.tsx        # Stats, review queue, continue reading
-│   ├── Review.tsx           # SM-2 flashcard session
+│   ├── Library.tsx          # Corpus browser (language-scoped)
+│   ├── Dashboard.tsx        # Stats, review queue, recommendations
+│   ├── Review.tsx           # FSRS-5 flashcard session
 │   ├── Vocabulary.tsx       # Vocabulary table
-│   ├── Notes.tsx            # Per-word notes
-│   ├── Import.tsx           # Text import pipeline
-│   ├── Settings.tsx         # Preferences
-│   ├── Statistics.tsx       # Charts + progress
-│   ├── Subscription.tsx     # Plan / pricing
-│   ├── Landing.tsx          # Public marketing page
+│   ├── Dictionary.tsx       # Lemma browser + paradigm tables
 │   ├── Search.tsx           # Multi-source corpus search
-│   ├── Grammar.tsx          # Grammar pathways & reference
-│   ├── Tutor.tsx            # AI philology tutor
+│   ├── Grammar.tsx          # Grammar reference
+│   ├── GrammarPathways.tsx  # Tiered grammar progression
+│   ├── Tutor.tsx            # AI philology tutor (6 modes)
+│   ├── Syntax.tsx           # Treebank viewer
 │   ├── Notebooks.tsx        # Research notebooks
-│   ├── Syntax.tsx           # Treebank viewer (in progress)
-│   ├── Manuscripts.tsx      # Manuscript lab (placeholder)
-│   ├── Courses.tsx          # Classroom (placeholder)
-│   ├── AudioLab.tsx         # Pronunciation lab (placeholder)
+│   ├── NotebookDetail.tsx   # Single notebook view
+│   ├── BeginnerHub.tsx      # Onboarding hub (milestones, daily path)
+│   ├── Challenges.tsx       # XP challenges & leaderboard
+│   ├── Statistics.tsx       # Charts + progress + heatmap
+│   ├── AudioLab.tsx         # Pronunciation lab (TTS)
+│   ├── Manuscripts.tsx      # Manuscript lab (IIIF viewer)
+│   ├── Courses.tsx          # Classroom (partial)
+│   ├── Discover.tsx         # Community text library
+│   ├── Import.tsx           # Text import pipeline
+│   ├── Notes.tsx            # Per-word notes
+│   ├── Settings.tsx         # Preferences
+│   ├── Landing.tsx          # Public marketing page
 │   └── auth/                # SignIn, SignUp, ForgotPassword, ResetPassword
-├── store/
-│   └── useStudyStore.ts     # Persistent study state (localStorage)
 ├── lib/
 │   ├── firebase.ts          # Firebase init
 │   ├── i18n.ts              # i18next config
 │   ├── transliterate.ts     # Script transliteration
 │   ├── constants/           # Word states, languages, storage keys
-│   ├── contexts/            # AuthContext, ToastContext
-│   ├── hooks/               # useKnowledge, useVocabulary, useSettings, …
-│   ├── services/            # Vocabulary, Review, Settings, AI, Search, …
+│   ├── contexts/            # AuthContext, ToastContext, ActiveLanguageContext
+│   ├── hooks/               # useKnowledge, useVocabulary, useSettings, useActiveLanguage, …
+│   ├── services/            # 30+ services (AI, vocabulary, search, recommendations, …)
 │   ├── grammar/             # Grammar reference data & tests
 │   ├── importers/           # SBLGNT, OSHB, StepBible, OGL, Latin adapters
 │   ├── srs/                 # FSRS-5 + SM-2 algorithms + tests
-│   └── translations/        # en, es, de, pt, fr, ru, zh + Turkish
+│   └── translations/        # en, es, de, pt, fr, ru, zh, tr
 ├── types/
-│   ├── corpus.ts            # Token, Sentence, Text, Corpus, Morphology
+│   ├── corpus.ts            # Token, Sentence, Text, Corpus, Morphology (canonical)
 │   ├── linguistics.ts       # LinguisticToken, GlossEntry, GrammarReference
 │   ├── firestore.ts         # VocabularyItem, ImportedText, UserSettings, …
-│   ├── library.ts           # (legacy, duplicates corpus.ts)
 │   └── modules.ts           # Grammar, Syntax, Search, Notebook, …
 └── data/
-    ├── corpus.ts            # Corpus texts (SBLGNT, OSHB, Latin, …)
-    ├── chapters.ts, texts.ts, tokens.ts
+    ├── corpus.ts            # Corpus orchestrator (CorpusDB)
+    ├── corpus/              # Per-language/text corpus files (30+ modules)
+    └── tokens.ts            # Token data for dictionary
 ```
 
 ## Getting Started
