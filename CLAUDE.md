@@ -62,11 +62,12 @@ npm run e2e          # playwright test
 - Auth (Google + Email + guest), Firestore sync
 - i18n (8 UI languages), Tailwind parchment/sepia/dark themes
 - Grammar browser, AI philology tutor, research notebooks
+- Audio lab: TTS with waveform, user recording + compare, IPA, pronunciation mode switching
+- Notebook export (Markdown + PDF), cross-text note linking with backlinks
 
 ### Stubs / in-progress — do not claim these are done
 | Feature | File(s) | What's missing |
 |---------|---------|----------------|
-| User recording upload | `api/_routes/audio.ts` | Stub endpoint — infrastructure not yet in place |
 | Syntax treebank | `src/pages/Syntax.tsx`, `api/_routes/syntax.ts` | PROIEL/Gorman/Perseus bulk import not integrated |
 | Grammar prerequisite graph | `src/pages/Grammar.tsx`, `api/_lib/grammarData.ts` | Tiered graph view exists; needs per-concept mastery tracking tied to SRS |
 
