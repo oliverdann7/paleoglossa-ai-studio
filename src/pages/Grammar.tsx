@@ -20,6 +20,7 @@ import {
   ListOrdered,
   LayoutGrid,
   ChevronRight,
+  GitBranch,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -642,6 +643,153 @@ function PathwayView({
   );
 }
 
+// ─── Prerequisite Graph ──────────────────────────────────────────────────────
+
+interface GraphNode {
+  id: string;
+  title: string;
+  category: string;
+  difficulty: string;
+  languageId: string;
+  prerequisites: string[];
+}
+
+interface GraphEdge {
+  from: string;
+  to: string;
+}
+
+function PrerequisiteGraph({
+  onSelectConcept,
+  concepts,
+  activeLang,
+}: {
+  onSelectConcept: (c: Concept) => void;
+  concepts: Concept[];
+  activeLang: string;
+}) {
+  const { t } = useTranslation();
+  const [graph, setGraph] = useState<{ nodes: GraphNode[]; edges: GraphEdge[] } | null>(null);
+
+  useEffect(() => {
+    let stale = false;
+    const langParam = activeLang !== 'all' ? `?lang=${activeLang}` : '';
+    fetch(getApiUrl(`/api/grammar/graph${langParam}`))
+      .then((r) => r.json())
+      .then((data) => {
+        if (!stale) setGraph(data);
+      })
+      .catch(() => {});
+    return () => {
+      stale = true;
+    };
+  }, [activeLang]);
+
+  if (!graph || graph.nodes.length === 0) {
+    return (
+      <div className="py-12 text-center text-muted text-[14px]">
+        {t('grammar.graphEmpty', 'No prerequisite data available for this language.')}
+      </div>
+    );
+  }
+
+  const conceptById = new Map(concepts.map((c) => [c.id, c]));
+  const nodeSet = new Set(graph.nodes.map((n) => n.id));
+  const inDegree = new Map<string, number>();
+  graph.nodes.forEach((n) => inDegree.set(n.id, 0));
+  graph.edges.forEach((e) => {
+    if (nodeSet.has(e.to)) inDegree.set(e.to, (inDegree.get(e.to) || 0) + 1);
+  });
+
+  // Topological sort into tiers
+  const tiers: GraphNode[][] = [];
+  const placed = new Set<string>();
+  const remaining = new Map(graph.nodes.map((n) => [n.id, n]));
+
+  while (remaining.size > 0) {
+    const tier: GraphNode[] = [];
+    for (const [, node] of remaining) {
+      const prereqs = node.prerequisites.filter((p) => nodeSet.has(p));
+      if (prereqs.every((p) => placed.has(p))) {
+        tier.push(node);
+      }
+    }
+    if (tier.length === 0) {
+      // Cycle — just dump remaining
+      tier.push(...remaining.values());
+      remaining.clear();
+    }
+    tier.sort((a, b) => {
+      const catOrder = (a.category < b.category ? -1 : a.category > b.category ? 1 : 0);
+      return catOrder || a.title.localeCompare(b.title);
+    });
+    tiers.push(tier);
+    tier.forEach((n) => {
+      placed.add(n.id);
+      remaining.delete(n.id);
+    });
+  }
+
+  const tierLabels = ['Foundation', 'Core', 'Intermediate', 'Advanced', 'Mastery'];
+
+  return (
+    <div className="space-y-6">
+      {tiers.map((tier, ti) => (
+        <div key={ti}>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-muted">
+              {tierLabels[ti] ?? `Tier ${ti + 1}`}
+            </span>
+            <div className="flex-1 h-px bg-bdr/40" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {tier.map((node) => {
+              const concept = conceptById.get(node.id);
+              const Icon = CATEGORY_ICONS[node.category] ?? GraduationCap;
+              const hasChildren = graph.edges.some((e) => e.from === node.id);
+              return (
+                <button
+                  key={node.id}
+                  onClick={() => concept && onSelectConcept(concept)}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-2 rounded-xl border text-left text-[13px] font-medium transition-all',
+                    concept
+                      ? 'border-bdr/60 bg-parch hover:border-blue/40 hover:shadow-sm cursor-pointer group'
+                      : 'border-bdr/30 bg-parch2/40 cursor-not-allowed opacity-50',
+                    hasChildren && 'border-l-2 border-l-blue/40'
+                  )}
+                >
+                  <Icon className="w-3.5 h-3.5 text-muted group-hover:text-blue shrink-0" />
+                  <span className="truncate max-w-[200px]">{node.title}</span>
+                  <span
+                    className={cn(
+                      'text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0',
+                      DIFFICULTY_STYLES[node.difficulty] ?? 'bg-parch2 text-muted'
+                    )}
+                  >
+                    {node.difficulty.slice(0, 3)}
+                  </span>
+                  {node.prerequisites.length > 0 && (
+                    <span className="text-[10px] text-muted" title={`Requires: ${node.prerequisites.join(', ')}`}>
+                      ← {node.prerequisites.length}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      <p className="text-center text-muted text-[12px] italic pt-2">
+        {t(
+          'grammar.graphFooter',
+          'Concepts are arranged by prerequisite depth. Master earlier tiers before advancing.'
+        )}
+      </p>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export const Grammar = () => {
@@ -655,7 +803,7 @@ export const Grammar = () => {
   // Default to the global active language; 'all' is available as an explicit filter.
   const [activeLang, setActiveLang] = useState<string>(activeLanguageId);
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [view, setView] = useState<'browse' | 'pathway'>('browse');
+  const [view, setView] = useState<'browse' | 'pathway' | 'graph'>('browse');
 
   // Sync the language filter when the global active language changes.
   useEffect(() => {
@@ -789,6 +937,16 @@ export const Grammar = () => {
             <ListOrdered className="w-3.5 h-3.5" />
             {t('grammar.pathway', 'Pathway')}
           </button>
+          <button
+            onClick={() => setView('graph')}
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors',
+              view === 'graph' ? 'bg-white text-blue shadow-sm' : 'text-muted hover:text-ink'
+            )}
+          >
+            <GitBranch className="w-3.5 h-3.5" />
+            {t('grammar.graph', 'Graph')}
+          </button>
         </div>
         </div>
       </header>
@@ -797,7 +955,15 @@ export const Grammar = () => {
         <PathwayView concepts={concepts} onSelectConcept={selectConcept} />
       )}
 
-      {view === 'pathway' ? null : (
+      {view === 'graph' && (
+        <PrerequisiteGraph
+          concepts={concepts}
+          onSelectConcept={selectConcept}
+          activeLang={activeLang}
+        />
+      )}
+
+      {view !== 'browse' ? null : (
       <>
       {/* Search */}
       <div className="relative mb-4">

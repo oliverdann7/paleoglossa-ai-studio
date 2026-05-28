@@ -66,9 +66,9 @@ npm run e2e          # playwright test
 ### Stubs / in-progress — do not claim these are done
 | Feature | File(s) | What's missing |
 |---------|---------|----------------|
-| Paradigm inflection tables | `api/_routes/lexicon.ts` | `/api/lemmas/:lemma/paradigm` returns `[]`; full-paradigm AI generation not wired |
 | User recording upload | `api/_routes/audio.ts` | Stub endpoint — infrastructure not yet in place |
 | Syntax treebank | `src/pages/Syntax.tsx`, `api/_routes/syntax.ts` | PROIEL/Gorman/Perseus bulk import not integrated |
+| Grammar prerequisite graph | `src/pages/Grammar.tsx`, `api/_lib/grammarData.ts` | Tiered graph view exists; needs per-concept mastery tracking tied to SRS |
 
 ---
 

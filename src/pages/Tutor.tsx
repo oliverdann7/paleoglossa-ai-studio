@@ -41,8 +41,10 @@ export const Tutor = () => {
   const [searchParams] = useSearchParams();
   const sessionIdParam = searchParams.get('session');
   const textIdParam = searchParams.get('textId');
+  const promptParam = searchParams.get('prompt');
 
   const [activeSessionId, setActiveSessionId] = useState<string | null>(sessionIdParam);
+  const autoPromptSentRef = useRef(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
@@ -97,6 +99,50 @@ export const Tutor = () => {
     };
     load();
   }, [activeSessionId, user]);
+
+  // Auto-start session and send prompt when navigated with ?prompt=
+  useEffect(() => {
+    if (!promptParam || !user || autoPromptSentRef.current || activeSessionId) return;
+    autoPromptSentRef.current = true;
+    const autoStart = async () => {
+      setIsStarting(true);
+      setShowSessionsList(false);
+      try {
+        const data = await apiFetch<{
+          sessionId: string;
+          greeting: string;
+          suggestedQuestions: string[];
+        }>('/api/ai/tutor/start', {
+          method: 'POST',
+          body: { languageId: activeLanguageId, textId: textIdParam || undefined },
+        });
+        setActiveSessionId(data.sessionId);
+        setMessages([{ role: 'assistant', content: data.greeting }]);
+
+        // Immediately send the prompt as the first user message
+        setMessages((prev) => [...prev, { role: 'user', content: promptParam }]);
+        setIsSending(true);
+        const ctx = textIdParam ? { textId: textIdParam } : undefined;
+        const reply = await apiFetch<{ text: string; warnings?: string[] }>(
+          '/api/ai/tutor/message',
+          {
+            method: 'POST',
+            body: { sessionId: data.sessionId, message: promptParam, context: ctx },
+          }
+        );
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: reply.text, warnings: reply.warnings },
+        ]);
+      } catch (err: any) {
+        setStartError(err.message || 'Could not start a tutor session.');
+      } finally {
+        setIsStarting(false);
+        setIsSending(false);
+      }
+    };
+    autoStart();
+  }, [promptParam, user, activeSessionId, activeLanguageId, textIdParam]);
 
   const handleStartSession = async () => {
     setIsStarting(true);

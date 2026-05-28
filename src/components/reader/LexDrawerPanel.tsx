@@ -15,6 +15,7 @@ import {
   CheckCircle,
   ExternalLink,
   AlertCircle,
+  MessageCircle,
   X,
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
@@ -1049,12 +1050,24 @@ export const LexDrawerPanel = memo(({
           {!aiWordInsight && !isAiWordLoading && (
             <button
               onClick={handleFetchExplanation}
-              className="w-full mb-10 py-3 border border-blue/20 bg-blue/5 rounded-xl font-bold text-blue text-sm flex items-center justify-center gap-2 hover:bg-blue/10 transition-colors"
+              className="w-full mb-4 py-3 border border-blue/20 bg-blue/5 rounded-xl font-bold text-blue text-sm flex items-center justify-center gap-2 hover:bg-blue/10 transition-colors"
             >
               <Sparkles className="w-4 h-4" />
               {t('reader.askAiAboutWord', 'Ask AI About This Word')}
             </button>
           )}
+
+          {/* Discuss with Tutor */}
+          <Link
+            to={`/app/tutor?${new URLSearchParams({
+              ...(text?.id ? { textId: text.id } : {}),
+              prompt: `Explain the word "${selectedWord.text || selectedWord.lemma}" (lemma: ${selectedWord.lemma}) in this context${selectedWord.sentenceText ? `: "${selectedWord.sentenceText}"` : ''}. What is its morphology, why is this form used here, and how does it relate to the sentence's meaning?`,
+            }).toString()}`}
+            className="w-full mb-10 py-3 border border-gold/20 bg-gold/5 rounded-xl font-bold text-gold text-sm flex items-center justify-center gap-2 hover:bg-gold/10 transition-colors"
+          >
+            <MessageCircle className="w-4 h-4" />
+            {t('reader.discussWithTutor', 'Discuss with Tutor')}
+          </Link>
 
           {/* Contextual Examples */}
           {(wordInfo?.contexts?.length ?? 0) > 0 && (
