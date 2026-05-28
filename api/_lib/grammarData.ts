@@ -13,6 +13,7 @@ export interface GrammarConcept {
   };
   relatedMorphKeys: string[];
   lemmaKeys?: string[];
+  prerequisites?: string[];
   status: 'complete' | 'partial';
 }
 
@@ -27,6 +28,7 @@ export const GRAMMAR_CONCEPTS: GrammarConcept[] = [
     languageId: 'grc',
     category: 'nouns',
     difficulty: 'beginner',
+    prerequisites: [],
     explanation: `Ancient Greek has five main cases, each with a range of syntactic functions:
 
 • Nominative — subject of a finite verb
@@ -54,6 +56,7 @@ The case endings vary by declension, gender, and number (singular, dual, plural)
     languageId: 'grc',
     category: 'nouns',
     difficulty: 'beginner',
+    prerequisites: ['greek-cases'],
     explanation: `The first declension includes mostly feminine nouns (and some masculines) with stems in ᾱ or η. In Attic, the long ᾱ of the stem usually appears as η except after ε, ι, or ρ.
 
 Gender: mostly feminine; some masculines (e.g. νεανίας — young man).
@@ -86,6 +89,7 @@ Typical feminine pattern: ἡ χώρᾱ (Doric/Ionic) → ἡ χώρα (Attic).`
     languageId: 'grc',
     category: 'nouns',
     difficulty: 'beginner',
+    prerequisites: ['greek-cases'],
     explanation: `The second declension covers masculine and neuter nouns with o-stems. Masculine nouns end in -ος (nom. sg.); neuter nouns end in -ον. The neuter nominative, accusative, and vocative are always identical.`,
     examples: [
       { surface: 'ὁ λόγος', gloss: 'word (masc. nom. sg.)', translation: 'the word' },
@@ -110,6 +114,7 @@ Typical feminine pattern: ἡ χώρᾱ (Doric/Ionic) → ἡ χώρα (Attic).`
 
   {
     id: 'greek-third-declension',
+    prerequisites: ['greek-first-declension', 'greek-second-declension'],
     title: 'Greek Third Declension (consonant stems)',
     languageId: 'grc',
     category: 'nouns',
@@ -141,6 +146,7 @@ The dative plural always ends in -σι(ν), which often causes consonant changes
     languageId: 'grc',
     category: 'nouns',
     difficulty: 'beginner',
+    prerequisites: ['greek-cases'],
     explanation: `Ancient Greek has a definite article (ὁ, ἡ, τό) that declines for case, number, and gender. Greek has no indefinite article — "a/an" is expressed by the absence of the article or by the indefinite pronoun τις.
 
 The article is also used to substantivize adjectives, participles, and infinitives:
@@ -178,6 +184,7 @@ The article is also used to substantivize adjectives, participles, and infinitiv
     languageId: 'grc',
     category: 'verbs',
     difficulty: 'intermediate',
+    prerequisites: ['greek-present-active'],
     explanation: `Greek verbal morphology encodes both tense (time of action) and aspect (kind of action):
 
 • Present — ongoing action (imperfective aspect, present time)
@@ -202,6 +209,7 @@ The augment (ε- prefix, or vowel lengthening) marks past time in the indicative
 
   {
     id: 'greek-present-active',
+    prerequisites: [],
     title: 'Greek Present Active Indicative',
     languageId: 'grc',
     category: 'verbs',
@@ -233,6 +241,7 @@ The principal parts of a Greek verb: (1) present active indicative 1sg, (2) futu
 
   {
     id: 'greek-aorist-active',
+    prerequisites: ['greek-present-active', 'greek-tense-aspect'],
     title: 'Greek Aorist Active Indicative',
     languageId: 'grc',
     category: 'verbs',
@@ -265,6 +274,7 @@ The augment (ε-) marks past time in the indicative.`,
 
   {
     id: 'greek-perfect-active',
+    prerequisites: ['greek-aorist-active'],
     title: 'Greek Perfect Active Indicative',
     languageId: 'grc',
     category: 'verbs',
@@ -294,6 +304,7 @@ The perfect is often better translated with an English present than a present pe
 
   {
     id: 'greek-participles',
+    prerequisites: ['greek-present-active', 'greek-cases'],
     title: 'Greek Participles',
     languageId: 'grc',
     category: 'verbs',
@@ -323,6 +334,7 @@ Uses:
 
   {
     id: 'greek-infinitive',
+    prerequisites: ['greek-present-active'],
     title: 'Greek Infinitives',
     languageId: 'grc',
     category: 'verbs',
@@ -350,6 +362,7 @@ Key uses:
 
   {
     id: 'greek-moods',
+    prerequisites: ['greek-present-active', 'greek-tense-aspect'],
     title: 'Greek Verbal Moods',
     languageId: 'grc',
     category: 'verbs',
@@ -377,6 +390,7 @@ The distinction between subjunctive and optative often reflects primary vs. seco
 
   {
     id: 'greek-mi-verbs',
+    prerequisites: ['greek-present-active', 'greek-aorist-active'],
     title: 'Greek μι-Verbs',
     languageId: 'grc',
     category: 'verbs',
@@ -418,6 +432,7 @@ They often show ablaut (vowel alternation) in the stem: long vowel in singular, 
 
   {
     id: 'greek-conditions',
+    prerequisites: ['greek-moods'],
     title: 'Greek Conditional Sentences',
     languageId: 'grc',
     category: 'syntax',
@@ -450,6 +465,7 @@ They often show ablaut (vowel alternation) in the stem: long vowel in singular, 
 
   {
     id: 'greek-indirect-discourse',
+    prerequisites: ['greek-moods', 'greek-infinitive', 'greek-participles'],
     title: 'Greek Indirect Discourse',
     languageId: 'grc',
     category: 'syntax',
@@ -481,6 +497,7 @@ They often show ablaut (vowel alternation) in the stem: long vowel in singular, 
 
   {
     id: 'greek-particles',
+    prerequisites: ['greek-cases'],
     title: 'Greek Particles',
     languageId: 'grc',
     category: 'particles',
@@ -513,6 +530,7 @@ Key particles:
 
   {
     id: 'greek-an',
+    prerequisites: ['greek-moods'],
     title: 'The Greek Particle ἄν',
     languageId: 'grc',
     category: 'particles',
@@ -541,6 +559,7 @@ Key particles:
 
   {
     id: 'greek-personal-pronouns',
+    prerequisites: ['greek-cases'],
     title: 'Greek Personal Pronouns',
     languageId: 'grc',
     category: 'pronouns',
@@ -575,6 +594,7 @@ The third-person pronoun αὐτός also serves as an intensifier ("himself/her
 
   {
     id: 'latin-declensions',
+    prerequisites: [],
     title: 'Latin Noun Declensions',
     languageId: 'lat',
     category: 'nouns',
@@ -602,6 +622,7 @@ Latin has six cases: Nominative, Genitive, Dative, Accusative, Ablative, Vocativ
 
   {
     id: 'latin-first-declension',
+    prerequisites: ['latin-declensions'],
     title: 'Latin First Declension (a-stems)',
     languageId: 'lat',
     category: 'nouns',
@@ -634,6 +655,7 @@ The genitive plural ends in -ārum; the dative and ablative plural share -īs.`,
 
   {
     id: 'latin-ablative-uses',
+    prerequisites: ['latin-declensions'],
     title: 'Latin Ablative Case — Major Uses',
     languageId: 'lat',
     category: 'syntax',
@@ -667,6 +689,7 @@ The ablative absolute: a participial phrase with a separate subject in the ablat
 
   {
     id: 'latin-verb-conjugations',
+    prerequisites: [],
     title: 'Latin Verb Conjugations',
     languageId: 'lat',
     category: 'verbs',
@@ -702,6 +725,7 @@ Principal parts: (1) 1sg pres. act. ind., (2) pres. act. inf., (3) 1sg perf. act
 
   {
     id: 'latin-indirect-discourse',
+    prerequisites: ['latin-verb-conjugations', 'latin-subjunctive'],
     title: 'Latin Indirect Discourse (Accusative + Infinitive)',
     languageId: 'lat',
     category: 'syntax',
@@ -725,6 +749,7 @@ Tense of infinitive does not reflect absolute time, only relative time.`,
 
   {
     id: 'latin-subjunctive',
+    prerequisites: ['latin-verb-conjugations'],
     title: 'Latin Subjunctive — Key Uses',
     languageId: 'lat',
     category: 'verbs',
@@ -759,6 +784,7 @@ Dependent (sequence of tenses applies):
 
   {
     id: 'hebrew-stems',
+    prerequisites: [],
     title: 'Hebrew Verbal Stems (Binyanim)',
     languageId: 'hbo',
     category: 'verbs',
@@ -787,6 +813,7 @@ The root consonants carry the core meaning; the stem pattern adds voice and nuan
 
   {
     id: 'hebrew-qal-perfect',
+    prerequisites: ['hebrew-stems'],
     title: 'Hebrew Qal Perfect',
     languageId: 'hbo',
     category: 'verbs',
@@ -822,6 +849,7 @@ The Qal perfect uses suffixed personal endings. The 3rd masculine singular is th
 
   {
     id: 'hebrew-waw-consecutive',
+    prerequisites: ['hebrew-qal-perfect'],
     title: 'Hebrew Waw-Consecutive',
     languageId: 'hbo',
     category: 'syntax',
@@ -847,6 +875,7 @@ This is why the tense system is better described as an aspect system — the ver
 
   {
     id: 'hebrew-definite-article',
+    prerequisites: [],
     title: 'Hebrew Definite Article and Dagesh',
     languageId: 'hbo',
     category: 'morphology',
@@ -874,6 +903,7 @@ Gutturals (א ה ח ע) and ר cannot take dagesh forte; instead, the preceding 
 
   {
     id: 'syriac-verb-forms',
+    prerequisites: [],
     title: 'Syriac Basic Verb Stems',
     languageId: 'syr',
     category: 'verbs',

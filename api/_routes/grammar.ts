@@ -8,6 +8,27 @@ router.get('/api/grammar/concepts', (_req: any, res: any) => {
   res.status(200).json(GRAMMAR_CONCEPTS);
 });
 
+router.get('/api/grammar/graph', (req: any, res: any) => {
+  const lang = (req.query.lang as string) || '';
+  const concepts = lang
+    ? GRAMMAR_CONCEPTS.filter((c) => c.languageId === lang || c.languageId.startsWith(lang))
+    : GRAMMAR_CONCEPTS;
+  const nodes = concepts.map((c) => ({
+    id: c.id,
+    title: c.title,
+    category: c.category,
+    difficulty: c.difficulty,
+    languageId: c.languageId,
+    prerequisites: c.prerequisites ?? [],
+  }));
+  const edges = concepts.flatMap((c) =>
+    (c.prerequisites ?? [])
+      .filter((p) => concepts.some((n) => n.id === p))
+      .map((p) => ({ from: p, to: c.id }))
+  );
+  res.status(200).json({ nodes, edges });
+});
+
 router.get('/api/grammar/concepts/:conceptId', (req: any, res: any) => {
   const concept = GRAMMAR_CONCEPTS.find((c) => c.id === req.params.conceptId);
   if (!concept) return res.status(200).json(null);

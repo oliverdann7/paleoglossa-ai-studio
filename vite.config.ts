@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 import fs from 'fs';
 import {loadEnv, defineConfig} from 'vite';
@@ -111,6 +112,12 @@ export default defineConfig(({mode}) => {
             }
           ]
         }
+      }),
+      mode === 'analyze' && visualizer({
+        filename: 'dist/bundle-report.html',
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
       }),
       {
         name: 'replace-fetch-assignment',

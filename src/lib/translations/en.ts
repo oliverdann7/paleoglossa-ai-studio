@@ -88,6 +88,7 @@ export const en = {
     'reader.dataSource': 'Data Source',
     'reader.aiInsights': 'AI Insights',
     'reader.askAiAboutWord': 'Ask AI About This Word',
+    'reader.discussWithTutor': 'Discuss with Tutor',
     'reader.morphology': 'Morphology',
     'reader.exampleSentences': 'Example Sentences',
     'reader.endOfSection': 'End of this section.',
