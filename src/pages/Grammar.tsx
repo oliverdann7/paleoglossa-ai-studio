@@ -21,10 +21,16 @@ import {
   LayoutGrid,
   ChevronRight,
   GitBranch,
+  Lock,
+  Trophy,
+  Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
+import { useGrammarMastery } from '../lib/hooks/useGrammarMastery.js';
+import { useXP } from '../lib/hooks/useXP.js';
+import { XP_REWARDS } from '../lib/services/xpService.js';
 
 interface Paradigm {
   caption: string;
@@ -51,6 +57,7 @@ interface Concept {
   examples: { surface: string; gloss: string; translation?: string }[];
   paradigm?: Paradigm;
   relatedMorphKeys: string[];
+  prerequisites?: string[];
   corpusSentences?: CorpusSentence[];
   status: string;
 }
@@ -151,7 +158,30 @@ interface QuizQuestion {
   explanation: string;
 }
 
-function MorphologyQuiz({ concept }: { concept: Concept }) {
+const MASTERY_LABELS: Record<number, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  0: { label: 'Not started', color: 'bg-parch2 text-muted', icon: BookOpen },
+  1: { label: 'Studied', color: 'bg-blue/10 text-blue', icon: Eye },
+  2: { label: 'Practicing', color: 'bg-amber/10 text-amber-700', icon: Brain },
+  3: { label: 'Mastered', color: 'bg-emerald-50 text-emerald-700', icon: Trophy },
+};
+
+function MasteryBadge({ level }: { level: 0 | 1 | 2 | 3 }) {
+  const info = MASTERY_LABELS[level];
+  const MIcon = info.icon;
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full',
+        info.color
+      )}
+    >
+      <MIcon className="w-3 h-3" />
+      {info.label}
+    </span>
+  );
+}
+
+function MorphologyQuiz({ concept, onQuizResult }: { concept: Concept; onQuizResult?: (correct: boolean) => void }) {
   const [question, setQuestion] = useState<QuizQuestion | null>(null);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
@@ -197,12 +227,14 @@ function MorphologyQuiz({ concept }: { concept: Concept }) {
     (choice: string) => {
       if (selected !== null || !question) return;
       setSelected(choice);
+      const isCorrect = choice === question.answer;
       setScore((s) => ({
-        correct: s.correct + (choice === question.answer ? 1 : 0),
+        correct: s.correct + (isCorrect ? 1 : 0),
         total: s.total + 1,
       }));
+      onQuizResult?.(isCorrect);
     },
-    [selected, question]
+    [selected, question, onQuizResult]
   );
 
   return (
@@ -302,15 +334,25 @@ function ConceptDetail({
   concept,
   isLoadingCorpus,
   onBack,
+  masteryLevel,
+  onMarkStudied,
+  onQuizResult,
 }: {
   concept: Concept;
   isLoadingCorpus: boolean;
   onBack: () => void;
+  masteryLevel: 0 | 1 | 2 | 3;
+  onMarkStudied: () => void;
+  onQuizResult: (correct: boolean) => void;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const rtl = RTL.has(concept.languageId);
   const Icon = CATEGORY_ICONS[concept.category] ?? GraduationCap;
+
+  useEffect(() => {
+    onMarkStudied();
+  }, [concept.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="p-6 md:p-12 max-w-3xl mx-auto font-sans min-h-screen">
@@ -352,6 +394,7 @@ function ConceptDetail({
             >
               {concept.status}
             </span>
+            <MasteryBadge level={masteryLevel} />
           </div>
         </div>
       </div>
@@ -449,7 +492,7 @@ function ConceptDetail({
         </div>
       )}
 
-      <MorphologyQuiz concept={concept} />
+      <MorphologyQuiz concept={concept} onQuizResult={onQuizResult} />
     </div>
   );
 }
@@ -484,18 +527,27 @@ function FilterPill({
   );
 }
 
-function ConceptCard({ concept, onClick }: { concept: Concept; onClick: () => void }) {
+function ConceptCard({ concept, onClick, masteryLevel, locked }: { concept: Concept; onClick: () => void; masteryLevel: 0 | 1 | 2 | 3; locked: boolean }) {
   const Icon = CATEGORY_ICONS[concept.category] ?? GraduationCap;
   const hasParadigm = Boolean(concept.paradigm);
 
   return (
     <button
-      onClick={onClick}
-      className="card p-5 hover:border-blue/30 hover:shadow-md transition-all text-left group w-full"
+      onClick={locked ? undefined : onClick}
+      className={cn(
+        'card p-5 transition-all text-left group w-full',
+        locked
+          ? 'opacity-50 cursor-not-allowed border-bdr/30'
+          : 'hover:border-blue/30 hover:shadow-md',
+        masteryLevel === 3 && 'border-emerald-200 bg-emerald-50/30'
+      )}
     >
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-lg bg-blue/10 flex items-center justify-center text-blue shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
-          <Icon className="w-4 h-4" />
+        <div className={cn(
+          'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform',
+          locked ? 'bg-parch2 text-muted' : masteryLevel === 3 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue/10 text-blue'
+        )}>
+          {locked ? <Lock className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-[14px] font-bold text-ink mb-0.5 line-clamp-1">{concept.title}</h3>
@@ -517,6 +569,7 @@ function ConceptCard({ concept, onClick }: { concept: Concept; onClick: () => vo
               </span>
             )}
             <span className="text-[10px] text-muted">{concept.examples.length} ex.</span>
+            {!locked && masteryLevel > 0 && <MasteryBadge level={masteryLevel} />}
             {concept.relatedMorphKeys.slice(0, 2).map((k) => (
               <span
                 key={k}
@@ -663,10 +716,14 @@ function PrerequisiteGraph({
   onSelectConcept,
   concepts,
   activeLang,
+  getMasteryLevel,
+  isUnlocked,
 }: {
   onSelectConcept: (c: Concept) => void;
   concepts: Concept[];
   activeLang: string;
+  getMasteryLevel: (id: string) => 0 | 1 | 2 | 3;
+  isUnlocked: (id: string, prereqs: string[]) => boolean;
 }) {
   const { t } = useTranslation();
   const [graph, setGraph] = useState<{ nodes: GraphNode[]; edges: GraphEdge[] } | null>(null);
@@ -732,8 +789,35 @@ function PrerequisiteGraph({
 
   const tierLabels = ['Foundation', 'Core', 'Intermediate', 'Advanced', 'Mastery'];
 
+  const masteredCount = graph.nodes.filter((n) => getMasteryLevel(n.id) >= 3).length;
+  const studiedCount = graph.nodes.filter((n) => getMasteryLevel(n.id) >= 1).length;
+  const totalCount = graph.nodes.length;
+
   return (
     <div className="space-y-6">
+      {totalCount > 0 && (
+        <div className="card p-4 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-emerald-600" />
+            <span className="text-[13px] font-semibold text-ink">
+              {masteredCount}/{totalCount} mastered
+            </span>
+          </div>
+          <div className="flex-1 min-w-[120px] h-2 bg-parch2 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${totalCount > 0 ? (masteredCount / totalCount) * 100 : 0}%`,
+                background: 'linear-gradient(90deg, #10b981, #059669)',
+              }}
+            />
+          </div>
+          <div className="flex items-center gap-3 text-[11px] text-muted">
+            <span>{studiedCount} studied</span>
+            <span>{masteredCount} mastered</span>
+          </div>
+        </div>
+      )}
       {tiers.map((tier, ti) => (
         <div key={ti}>
           <div className="flex items-center gap-3 mb-3">
@@ -747,20 +831,35 @@ function PrerequisiteGraph({
               const concept = conceptById.get(node.id);
               const Icon = CATEGORY_ICONS[node.category] ?? GraduationCap;
               const hasChildren = graph.edges.some((e) => e.from === node.id);
+              const mastery = getMasteryLevel(node.id);
+              const unlocked = isUnlocked(node.id, node.prerequisites);
               return (
                 <button
                   key={node.id}
-                  onClick={() => concept && onSelectConcept(concept)}
+                  onClick={() => concept && unlocked && onSelectConcept(concept)}
                   className={cn(
                     'flex items-center gap-2 px-3 py-2 rounded-xl border text-left text-[13px] font-medium transition-all',
-                    concept
-                      ? 'border-bdr/60 bg-parch hover:border-blue/40 hover:shadow-sm cursor-pointer group'
-                      : 'border-bdr/30 bg-parch2/40 cursor-not-allowed opacity-50',
-                    hasChildren && 'border-l-2 border-l-blue/40'
+                    !unlocked
+                      ? 'border-bdr/30 bg-parch2/40 cursor-not-allowed opacity-50'
+                      : mastery === 3
+                        ? 'border-emerald-200 bg-emerald-50/30 hover:border-emerald-400 hover:shadow-sm cursor-pointer group'
+                        : concept
+                          ? 'border-bdr/60 bg-parch hover:border-blue/40 hover:shadow-sm cursor-pointer group'
+                          : 'border-bdr/30 bg-parch2/40 cursor-not-allowed opacity-50',
+                    hasChildren && unlocked && 'border-l-2 border-l-blue/40'
                   )}
                 >
-                  <Icon className="w-3.5 h-3.5 text-muted group-hover:text-blue shrink-0" />
+                  {!unlocked ? (
+                    <Lock className="w-3.5 h-3.5 text-muted shrink-0" />
+                  ) : mastery === 3 ? (
+                    <Trophy className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  ) : (
+                    <Icon className="w-3.5 h-3.5 text-muted group-hover:text-blue shrink-0" />
+                  )}
                   <span className="truncate max-w-[200px]">{node.title}</span>
+                  {unlocked && mastery > 0 && mastery < 3 && (
+                    <MasteryBadge level={mastery} />
+                  )}
                   <span
                     className={cn(
                       'text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0',
@@ -769,7 +868,7 @@ function PrerequisiteGraph({
                   >
                     {node.difficulty.slice(0, 3)}
                   </span>
-                  {node.prerequisites.length > 0 && (
+                  {node.prerequisites.length > 0 && unlocked && (
                     <span className="text-[10px] text-muted" title={`Requires: ${node.prerequisites.join(', ')}`}>
                       ← {node.prerequisites.length}
                     </span>
@@ -804,6 +903,8 @@ export const Grammar = () => {
   const [activeLang, setActiveLang] = useState<string>(activeLanguageId);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [view, setView] = useState<'browse' | 'pathway' | 'graph'>('browse');
+  const mastery = useGrammarMastery();
+  const { awardXP } = useXP();
 
   // Sync the language filter when the global active language changes.
   useEffect(() => {
@@ -876,6 +977,21 @@ export const Grammar = () => {
     return map;
   }, [filtered, activeCategory, searchQuery]);
 
+  const handleMarkStudied = useCallback(() => {
+    if (selected) mastery.markStudied(selected.id, selected.languageId);
+  }, [selected, mastery]);
+
+  const handleQuizResult = useCallback(
+    async (correct: boolean) => {
+      if (!selected) return;
+      const justMastered = await mastery.recordQuizResult(selected.id, selected.languageId, correct);
+      if (justMastered) {
+        awardXP(XP_REWARDS.grammarConceptMastered).catch(() => {});
+      }
+    },
+    [selected, mastery, awardXP]
+  );
+
   if (isLoading)
     return (
       <div className="p-12 text-center">
@@ -889,6 +1005,9 @@ export const Grammar = () => {
         concept={selected}
         isLoadingCorpus={isLoadingDetail}
         onBack={() => setSelected(null)}
+        masteryLevel={mastery.getMasteryLevel(selected.id)}
+        onMarkStudied={handleMarkStudied}
+        onQuizResult={handleQuizResult}
       />
     );
 
@@ -960,6 +1079,8 @@ export const Grammar = () => {
           concepts={concepts}
           onSelectConcept={selectConcept}
           activeLang={activeLang}
+          getMasteryLevel={mastery.getMasteryLevel}
+          isUnlocked={mastery.isUnlocked}
         />
       )}
 
@@ -1034,7 +1155,13 @@ export const Grammar = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {items.map((c) => (
-                    <ConceptCard key={c.id} concept={c} onClick={() => selectConcept(c)} />
+                    <ConceptCard
+                      key={c.id}
+                      concept={c}
+                      onClick={() => selectConcept(c)}
+                      masteryLevel={mastery.getMasteryLevel(c.id)}
+                      locked={!mastery.isUnlocked(c.id, c.prerequisites ?? [])}
+                    />
                   ))}
                 </div>
               </section>
@@ -1045,7 +1172,13 @@ export const Grammar = () => {
         // Flat filtered view
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filtered.map((c) => (
-            <ConceptCard key={c.id} concept={c} onClick={() => selectConcept(c)} />
+            <ConceptCard
+              key={c.id}
+              concept={c}
+              onClick={() => selectConcept(c)}
+              masteryLevel={mastery.getMasteryLevel(c.id)}
+              locked={!mastery.isUnlocked(c.id, c.prerequisites ?? [])}
+            />
           ))}
         </div>
       )}
