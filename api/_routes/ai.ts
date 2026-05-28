@@ -8,6 +8,9 @@ import {
   buildTutorPrompt,
   LANGUAGE_SUGGESTED_QUESTIONS,
   DEFAULT_SUGGESTED_QUESTIONS,
+  MODE_SUGGESTED_QUESTIONS,
+  TUTOR_MODES,
+  type TutorMode,
   buildSentenceAnalysisPrompt,
   buildCourseQuizPrompt,
   type SentenceAnalysisResult,
@@ -976,12 +979,15 @@ router.post(
   requireAuth as any,
   async (req: AuthenticatedRequest, res: any) => {
     try {
-      const { languageId, textId, sentenceIndex } = req.body;
+      const { languageId, textId, sentenceIndex, mode } = req.body;
       const userId = req.user!.uid;
 
       if (!languageId || typeof languageId !== 'string') {
         return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
       }
+
+      const tutorMode: TutorMode | undefined =
+        mode && mode in TUTOR_MODES ? (mode as TutorMode) : undefined;
 
       const adminDb_ = getAdminDb();
       if (!adminDb_)
@@ -1008,18 +1014,23 @@ router.post(
       const sessionRef = adminDb_.collection('users').doc(userId).collection('tutorSessions').doc();
       const sessionId = sessionRef.id;
 
+      const modeLabel = tutorMode ? ` (${TUTOR_MODES[tutorMode].label})` : '';
       const sessionData: Record<string, any> = {
         languageId,
         textId: textId || null,
         sentenceIndex: sentenceIndex != null ? sentenceIndex : null,
-        title: `${getLanguageName(languageId)} Tutor`,
+        mode: tutorMode || null,
+        title: `${getLanguageName(languageId)} Tutor${modeLabel}`,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       };
       await sessionRef.set(sessionData);
 
+      const modeGreeting = tutorMode
+        ? ` I'm in ${TUTOR_MODES[tutorMode].label} mode — ${TUTOR_MODES[tutorMode].description.toLowerCase()}.`
+        : '';
       const greeting = apiKey
-        ? `I'm your ${getLanguageName(languageId)} tutor. I can help you understand this text — ask about specific words, grammar, or sentence structure.`
+        ? `I'm your ${getLanguageName(languageId)} tutor.${modeGreeting} Ask about specific words, grammar, or sentence structure.`
         : 'Tutor session created. AI assistance requires GEMINI_API_KEY.';
 
       await sessionRef.collection('messages').add({
@@ -1030,8 +1041,9 @@ router.post(
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      const suggestedQuestions =
-        LANGUAGE_SUGGESTED_QUESTIONS[languageId] ?? DEFAULT_SUGGESTED_QUESTIONS;
+      const suggestedQuestions = tutorMode
+        ? MODE_SUGGESTED_QUESTIONS[tutorMode]
+        : (LANGUAGE_SUGGESTED_QUESTIONS[languageId] ?? DEFAULT_SUGGESTED_QUESTIONS);
       res.status(200).json({
         sessionId,
         greeting,
@@ -1122,7 +1134,12 @@ router.post(
         });
       }
 
-      const prompt = buildTutorPrompt(sessionData.languageId || 'grc', message, context);
+      const prompt = buildTutorPrompt(
+        sessionData.languageId || 'grc',
+        message,
+        context,
+        sessionData.mode || undefined
+      );
 
       const { GoogleGenAI } = await import('@google/genai');
       const genAI = new GoogleGenAI({ apiKey });
@@ -1186,6 +1203,7 @@ router.get(
           languageId: data.languageId,
           title: data.title || `${getLanguageName(data.languageId)} Tutor`,
           textId: data.textId || null,
+          mode: data.mode || null,
           createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
           updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
         });
@@ -1239,8 +1257,13 @@ router.get(
         });
       });
 
-      const suggestedQuestions =
-        LANGUAGE_SUGGESTED_QUESTIONS[sessionData.languageId] ?? DEFAULT_SUGGESTED_QUESTIONS;
+      const sessionMode: TutorMode | undefined =
+        sessionData.mode && sessionData.mode in TUTOR_MODES
+          ? (sessionData.mode as TutorMode)
+          : undefined;
+      const suggestedQuestions = sessionMode
+        ? MODE_SUGGESTED_QUESTIONS[sessionMode]
+        : (LANGUAGE_SUGGESTED_QUESTIONS[sessionData.languageId] ?? DEFAULT_SUGGESTED_QUESTIONS);
 
       res.status(200).json({
         session: {
@@ -1248,6 +1271,7 @@ router.get(
           languageId: sessionData.languageId,
           title: sessionData.title || `${getLanguageName(sessionData.languageId)} Tutor`,
           textId: sessionData.textId || null,
+          mode: sessionData.mode || null,
           createdAt: sessionData.createdAt?.toDate?.()?.toISOString() || null,
           updatedAt: sessionData.updatedAt?.toDate?.()?.toISOString() || null,
         },

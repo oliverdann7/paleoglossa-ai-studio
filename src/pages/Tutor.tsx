@@ -9,6 +9,12 @@ import {
   AlertTriangle,
   Plus,
   Clock,
+  GraduationCap,
+  BookText,
+  Church,
+  ScrollText,
+  Heart,
+  Landmark,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -25,11 +31,28 @@ interface Message {
   createdAt?: string;
 }
 
+type TutorMode = 'beginner' | 'grammar' | 'seminary' | 'scholar' | 'devotional' | 'historical';
+
+const TUTOR_MODE_OPTIONS: {
+  id: TutorMode;
+  label: string;
+  description: string;
+  icon: React.ElementType;
+}[] = [
+  { id: 'beginner', label: 'Beginner', description: 'Simple, encouraging explanations', icon: GraduationCap },
+  { id: 'grammar', label: 'Grammar', description: 'Morphology & syntax focus', icon: BookText },
+  { id: 'seminary', label: 'Seminary', description: 'Exegetical & theological', icon: Church },
+  { id: 'scholar', label: 'Scholar', description: 'Philological precision', icon: ScrollText },
+  { id: 'devotional', label: 'Devotional', description: 'Contemplative reading', icon: Heart },
+  { id: 'historical', label: 'Historical', description: 'Cultural & archaeological', icon: Landmark },
+];
+
 interface Session {
   id: string;
   languageId: string;
   title: string;
   textId: string | null;
+  mode: TutorMode | null;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -53,6 +76,7 @@ export const Tutor = () => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
   const [showSessionsList, setShowSessionsList] = useState(!sessionIdParam);
+  const [selectedMode, setSelectedMode] = useState<TutorMode | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -108,7 +132,11 @@ export const Tutor = () => {
         suggestedQuestions: string[];
       }>('/api/ai/tutor/start', {
         method: 'POST',
-        body: { languageId: activeLanguageId, textId: textIdParam || undefined },
+        body: {
+          languageId: activeLanguageId,
+          textId: textIdParam || undefined,
+          mode: selectedMode || undefined,
+        },
       });
       setActiveSessionId(data.sessionId);
       setShowSessionsList(false);
@@ -177,13 +205,50 @@ export const Tutor = () => {
           </button>
         </div>
 
+        {/* Mode selector */}
+        <div className="mb-4">
+          <p className="text-[11px] uppercase tracking-widest font-bold text-muted mb-2">
+            Tutor Mode
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {TUTOR_MODE_OPTIONS.map((m) => {
+              const Icon = m.icon;
+              const active = selectedMode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedMode(active ? null : m.id)}
+                  className={cn(
+                    'p-3 rounded-xl border text-left transition-all',
+                    active
+                      ? 'border-blue bg-blue/10 shadow-sm'
+                      : 'border-bdr hover:border-blue/30 hover:bg-parch2'
+                  )}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon className={cn('w-4 h-4', active ? 'text-blue' : 'text-muted')} />
+                    <span className={cn('text-[13px] font-semibold', active ? 'text-blue' : 'text-ink')}>
+                      {m.label}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted leading-tight">{m.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <button
           onClick={handleStartSession}
           disabled={isStarting}
           className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg mb-6 disabled:opacity-60 flex items-center justify-center gap-2"
         >
           {isStarting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-5 h-5" />}
-          {isStarting ? 'Starting…' : 'New Session'}
+          {isStarting
+            ? 'Starting…'
+            : selectedMode
+              ? `New ${TUTOR_MODE_OPTIONS.find((m) => m.id === selectedMode)?.label} Session`
+              : 'New Session'}
         </button>
 
         {startError && (
@@ -223,7 +288,14 @@ export const Tutor = () => {
               >
                 <MessageCircle className="w-4 h-4 text-blue mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-ink truncate">{s.title}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[14px] font-semibold text-ink truncate">{s.title}</p>
+                    {s.mode && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-blue/10 text-blue rounded-full shrink-0">
+                        {TUTOR_MODE_OPTIONS.find((m) => m.id === s.mode)?.label ?? s.mode}
+                      </span>
+                    )}
+                  </div>
                   {s.updatedAt && (
                     <p className="text-[11px] text-muted mt-0.5 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
