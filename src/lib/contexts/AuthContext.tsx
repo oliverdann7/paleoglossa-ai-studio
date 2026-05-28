@@ -7,6 +7,7 @@ import { AuthContext, UserProfile, UserStats } from './AuthContextInstance.js';
 import { identifyAnalytics, resetAnalytics, trackEvent, ANALYTICS_EVENTS } from '../analytics.js';
 import { getApiUrl } from '../services/apiBaseUrl.js';
 import { handleRedirectResult } from '../services/authService.js';
+import { isCapacitor } from '../platform.js';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -47,8 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [loadProfile]);
 
   useEffect(() => {
-    // Recover any pending signInWithRedirect result (used in Capacitor).
-    handleRedirectResult();
+    // Only recover redirect results in Capacitor where signInWithRedirect is used.
+    if (isCapacitor()) handleRedirectResult();
 
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
@@ -58,6 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: u.email || undefined,
           displayName: u.displayName || undefined,
         });
+
+        // Load profile — this is the only thing blocking the loading spinner.
         try {
           const profileRef = doc(db, 'users', u.uid);
           const snap = await getDoc(profileRef);
@@ -82,7 +85,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setStats(initStats);
             setProfile({ displayName: u.displayName || '', isPublic: false });
             trackEvent(ANALYTICS_EVENTS.SIGNUP_COMPLETED);
-            // Send welcome email (fire-and-forget)
             u.getIdToken().then((token) =>
               fetch(getApiUrl('/api/auth/welcome-email'), {
                 method: 'POST',
@@ -101,33 +103,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               isPublic: d.isPublic ?? false,
             });
           }
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error('Auth profile error', e);
         }
-        let serverAdmin = false;
+
+        // Unblock UI immediately — claims refresh happens in the background.
+        setLoading(false);
+
+        // Read cached claims first (instant, no network).
         try {
-          const token = await u.getIdToken();
-          const resp = await fetch(getApiUrl('/api/admin/refresh-claims'), {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (resp.ok) {
-            const data = await resp.json();
-            serverAdmin = data.admin === true;
-          }
+          const cachedResult = await u.getIdTokenResult(false);
+          setClaimsState(cachedResult.claims as Record<string, unknown>);
         } catch {
           /* non-fatal */
         }
-        try {
-          const result = await u.getIdTokenResult(true);
-          const claimsData = result.claims as Record<string, unknown>;
-          if (serverAdmin) claimsData.admin = true;
-          setClaimsState(claimsData);
-        } catch {
-          setClaimsState(serverAdmin ? { admin: true } : {});
-        }
+
+        // Refresh admin claims in background — does not block rendering.
+        (async () => {
+          let serverAdmin = false;
+          try {
+            const token = await u.getIdToken();
+            const resp = await fetch(getApiUrl('/api/admin/refresh-claims'), {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (resp.ok) {
+              const data = await resp.json();
+              serverAdmin = data.admin === true;
+            }
+          } catch {
+            /* non-fatal */
+          }
+          if (serverAdmin) {
+            try {
+              const result = await u.getIdTokenResult(true);
+              const claimsData = result.claims as Record<string, unknown>;
+              claimsData.admin = true;
+              setClaimsState(claimsData);
+            } catch {
+              setClaimsState((prev) => ({ ...prev, admin: true }));
+            }
+          }
+        })();
+
+        return;
       }
-      if (!u) resetAnalytics();
+      resetAnalytics();
       setLoading(false);
     });
     return () => unsub();
