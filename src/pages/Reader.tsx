@@ -34,6 +34,7 @@ import { OfflineService } from '../lib/services/offlineService.js';
 import { useOnlineStatus } from '../lib/hooks/useOnlineStatus.js';
 import { BookmarkService } from '../lib/services/bookmarkService.js';
 import { DependencyTree, type DepToken } from '../components/reader/DependencyTree.js';
+import { HistoricalContextPanel } from '../components/reader/HistoricalContextPanel.js';
 import { recordMilestone } from '../lib/hooks/useBeginnerProgress.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
@@ -225,6 +226,7 @@ export const Reader = () => {
   } | null>(null);
   const [showSyntax, setShowSyntax] = useState(false);
   const [syntaxTokenIdx, setSyntaxTokenIdx] = useState<number | null>(null);
+  const [showContextPanel, setShowContextPanel] = useState(false);
 
   const {
     state: {
@@ -1153,6 +1155,16 @@ export const Reader = () => {
           hasSyntax={!!text?.hasSyntax}
         />
         <button
+          onClick={() => setShowContextPanel((v) => !v)}
+          className="fixed bottom-56 right-6 z-30 w-12 h-12 bg-parch3 text-ink rounded-full shadow-lg flex items-center justify-center hover:bg-amber-100 transition-all active:scale-95 border border-bdr"
+          title={t('reader.historicalContext', 'Historical Context')}
+        >
+          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M12 6v6l4 2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <button
           onClick={onAskTutor}
           className="fixed bottom-24 right-6 z-30 w-12 h-12 bg-ink text-parch rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all active:scale-95"
           title={t('reader.askTutor', 'Ask Tutor')}
@@ -1426,6 +1438,17 @@ export const Reader = () => {
       )}
 
       <ReaderTutorial currentStep={tutorialStep} onDismiss={dismissTutorial} />
+
+      {showContextPanel && text && (
+        <HistoricalContextPanel
+          textId={textId}
+          title={text.title || ''}
+          languageId={currentLanguageId}
+          author={text.author}
+          period={text.period}
+          onClose={() => setShowContextPanel(false)}
+        />
+      )}
 
       {noteModal && (
         <SentenceNoteModal
