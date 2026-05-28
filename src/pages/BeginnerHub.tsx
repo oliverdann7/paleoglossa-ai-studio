@@ -14,8 +14,9 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils.js';
 import { CorpusDB } from '../data/corpus.js';
-import { getAvailableLanguages, getLanguageIcon } from '../lib/constants/languages.js';
+import { getLanguageIcon, getLanguageById } from '../lib/constants/languages.js';
 import { GUIDED_TIERS } from '../lib/constants/beginnerPaths.js';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import type { GuidedTier } from '../lib/constants/beginnerPaths.js';
 import { useBeginnerProgress } from '../lib/hooks/useBeginnerProgress.js';
 import type { BeginnerMilestone } from '../lib/hooks/useBeginnerProgress.js';
@@ -37,58 +38,43 @@ export const BeginnerHub = () => {
   const { t } = useTranslation();
   const { getProgress, markMilestone } = useBeginnerProgress();
   const { settings } = useSettings();
+  const { activeLanguageId } = useActiveLanguage();
 
   // User-chosen overrides (null = fall back to onboarding-derived defaults).
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
-  const [expandedLang, setExpandedLang] = useState<string | null>(null);
 
-  const languages = useMemo(() => getAvailableLanguages(), []);
+  const activeLang = getLanguageById(activeLanguageId);
 
   const onboarding = settings.onboardingProfile;
   const preselectedTierId =
     onboarding && onboarding.level ? LEVEL_TO_TIER[onboarding.level] : null;
-  const preselectedLangId = onboarding?.languageId || null;
 
-  // Effective values: user choice wins; otherwise derived from onboarding.
-  // For expandedLang an empty string means "user explicitly collapsed".
   const effectiveTier = selectedTier ?? preselectedTierId;
-  const effectiveExpandedLang =
-    expandedLang === null ? preselectedLangId : expandedLang || null;
-  const showOnboardingHint =
-    selectedTier === null &&
-    expandedLang === null &&
-    (preselectedTierId !== null || preselectedLangId !== null);
+  const showOnboardingHint = selectedTier === null && preselectedTierId !== null;
 
-  const textsByLanguage = useMemo(() => {
-    const all = CorpusDB.getTexts();
-    const map: Record<string, typeof all> = {};
-    for (const text of all) {
-      if (!map[text.language]) map[text.language] = [];
-      map[text.language].push(text);
-    }
-    return map;
-  }, []);
+  const textsForLanguage = useMemo(
+    () => CorpusDB.getTextsByLanguage(activeLanguageId),
+    [activeLanguageId]
+  );
 
   const tier = useMemo(
     () => GUIDED_TIERS.find((t) => t.id === effectiveTier) || GUIDED_TIERS[0],
     [effectiveTier]
   );
 
-  const hasMatchingText = (langId: string): string | null => {
-    const texts = textsByLanguage[langId];
-    if (!texts) return null;
-    const recommended = languages.find((l) => l.id === langId)?.recommendedStartTextId;
-    if (recommended && texts.some((t) => t.id === recommended)) return recommended;
-    const beginner = texts.find((t) => t.level === 'A1' || t.level === 'A0');
+  const startTextId = useMemo(() => {
+    if (textsForLanguage.length === 0) return null;
+    const recommended = activeLang?.recommendedStartTextId;
+    if (recommended && textsForLanguage.some((t) => t.id === recommended)) return recommended;
+    const beginner = textsForLanguage.find((t) => t.level === 'A1' || t.level === 'A0');
     if (beginner) return beginner.id;
-    return texts[0]?.id || null;
-  };
+    return textsForLanguage[0]?.id || null;
+  }, [textsForLanguage, activeLang]);
 
-  const hasBeginnerTexts = (langId: string): boolean => {
-    const texts = textsByLanguage[langId];
-    if (!texts) return false;
-    return texts.some((t) => t.level === 'A1' || t.level === 'A2' || t.level === 'A0');
-  };
+  const hasBeginner = useMemo(
+    () => textsForLanguage.some((t) => t.level === 'A1' || t.level === 'A2' || t.level === 'A0'),
+    [textsForLanguage]
+  );
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -173,17 +159,12 @@ export const BeginnerHub = () => {
           </div>
         </motion.div>
 
-        {/* Language grid */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-          <h2 className="text-sm font-bold text-ink2 uppercase tracking-widest mb-4">
-            {t('beginnerHub.chooseLanguage', 'Choose a language')}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
-            {languages.map((lang) => {
+        {/* Active language content */}
+        {activeLang && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+            {(() => {
+              const lang = activeLang;
               const icon = getLanguageIcon(lang.id);
-              const texts = textsByLanguage[lang.id] || [];
-              const startTextId = hasMatchingText(lang.id);
-              const hasBeginner = hasBeginnerTexts(lang.id);
               const progress = getProgress(lang.id);
               const stepsDone = [
                 progress.scriptOpened,
@@ -191,21 +172,11 @@ export const BeginnerHub = () => {
                 progress.firstWordSaved,
                 progress.firstReviewCompleted,
               ].filter(Boolean).length;
-              const isExpanded = effectiveExpandedLang === lang.id;
 
               return (
-                <div
-                  key={lang.id}
-                  className={cn(
-                    'bg-sand rounded-2xl border transition-all',
-                    isExpanded ? 'border-blue shadow-md' : 'border-bdr'
-                  )}
-                >
-                  {/* Language header / card */}
-                  <button
-                    onClick={() => setExpandedLang(isExpanded ? '' : lang.id)}
-                    className="w-full text-left p-5 flex items-start gap-4"
-                  >
+                <div className="bg-sand rounded-2xl border border-blue shadow-md">
+                  {/* Language header */}
+                  <div className="p-5 flex items-start gap-4">
                     <span className="w-12 h-12 bg-parch2 rounded-xl flex items-center justify-center text-2xl shrink-0">
                       {icon || '📜'}
                     </span>
@@ -240,15 +211,9 @@ export const BeginnerHub = () => {
                         )}
                       </div>
                     </div>
-                    <ChevronRight
-                      className={cn(
-                        'w-5 h-5 text-muted shrink-0 mt-1 transition-transform',
-                        isExpanded && 'rotate-90'
-                      )}
-                    />
-                  </button>
+                  </div>
 
-                  {/* Progress bar (collapsed view) */}
+                  {/* Progress bar */}
                   {stepsDone > 0 && (
                     <div className="px-5 pb-3">
                       <div className="flex items-center gap-2">
@@ -265,81 +230,79 @@ export const BeginnerHub = () => {
                     </div>
                   )}
 
-                  {/* Expanded guided path */}
-                  {isExpanded && (
-                    <div className="border-t border-bdr px-5 pb-5 pt-4 space-y-5">
-                      {/* Recommended text */}
-                      {startTextId && (
-                        <Link
-                          to={`/app/reader/${startTextId}`}
-                          onClick={() => markMilestone(lang.id, 'firstTextOpened')}
-                          className="flex items-center gap-3 p-3 bg-blue/5 rounded-xl border border-blue/20 hover:bg-blue/10 transition-colors group"
-                        >
-                          <BookOpen className="w-5 h-5 text-blue shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[12px] font-bold text-blue uppercase tracking-wider">
-                              {t('beginnerHub.recommendedStart', 'Recommended start')}
-                            </div>
-                            <div className="text-sm text-ink font-medium truncate">
-                              {texts.find((t) => t.id === startTextId)?.title || startTextId}
-                            </div>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-blue shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Link>
-                      )}
-
-                      {/* Tier steps */}
-                      <div>
-                        <div className="text-[11px] font-bold text-ink2 uppercase tracking-wider mb-3">
-                          {t('beginnerHub.yourPath', 'Your path')} — {tier.label}
-                        </div>
-                        <div className="space-y-2">
-                          {renderSteps(tier, lang.id, startTextId, progress, markMilestone)}
-                        </div>
-                      </div>
-
-                      {/* Script lab link */}
-                      {lang.hasScriptLearning && (
-                        <Link
-                          to={`/app/language/${lang.id}/script-lab`}
-                          onClick={() => markMilestone(lang.id, 'scriptOpened')}
-                          className="flex items-center gap-3 p-3 bg-sand border border-bdr rounded-xl hover:border-blue/30 transition-colors"
-                        >
-                          <GraduationCap className="w-5 h-5 text-purple-500 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-ink">
-                              {t('beginnerHub.learnScript', 'Learn the {{script}} script', {
-                                script: lang.writingSystem,
-                              })}
-                            </div>
-                            <div className="text-[11px] text-muted">
-                              {t('beginnerHub.learnScriptDesc', 'Practice signs and reading')}
-                            </div>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-muted shrink-0" />
-                        </Link>
-                      )}
-
-                      {/* Language page link */}
+                  {/* Guided path (always expanded) */}
+                  <div className="border-t border-bdr px-5 pb-5 pt-4 space-y-5">
+                    {/* Recommended text */}
+                    {startTextId && (
                       <Link
-                        to={`/app/language/${lang.id}`}
+                        to={`/app/reader/${startTextId}`}
+                        onClick={() => markMilestone(lang.id, 'firstTextOpened')}
+                        className="flex items-center gap-3 p-3 bg-blue/5 rounded-xl border border-blue/20 hover:bg-blue/10 transition-colors group"
+                      >
+                        <BookOpen className="w-5 h-5 text-blue shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[12px] font-bold text-blue uppercase tracking-wider">
+                            {t('beginnerHub.recommendedStart', 'Recommended start')}
+                          </div>
+                          <div className="text-sm text-ink font-medium truncate">
+                            {textsForLanguage.find((t) => t.id === startTextId)?.title || startTextId}
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-blue shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+                    )}
+
+                    {/* Tier steps */}
+                    <div>
+                      <div className="text-[11px] font-bold text-ink2 uppercase tracking-wider mb-3">
+                        {t('beginnerHub.yourPath', 'Your path')} — {tier.label}
+                      </div>
+                      <div className="space-y-2">
+                        {renderSteps(tier, lang.id, startTextId, progress, markMilestone)}
+                      </div>
+                    </div>
+
+                    {/* Script lab link */}
+                    {lang.hasScriptLearning && (
+                      <Link
+                        to={`/app/language/${lang.id}/script-lab`}
+                        onClick={() => markMilestone(lang.id, 'scriptOpened')}
                         className="flex items-center gap-3 p-3 bg-sand border border-bdr rounded-xl hover:border-blue/30 transition-colors"
                       >
-                        <Languages className="w-5 h-5 text-muted shrink-0" />
-                        <div className="text-sm text-ink2">
-                          {t('beginnerHub.browseAllTexts', 'Browse all texts for {{language}}', {
-                            language: lang.name,
-                          })}
+                        <GraduationCap className="w-5 h-5 text-purple-500 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-ink">
+                            {t('beginnerHub.learnScript', 'Learn the {{script}} script', {
+                              script: lang.writingSystem,
+                            })}
+                          </div>
+                          <div className="text-[11px] text-muted">
+                            {t('beginnerHub.learnScriptDesc', 'Practice signs and reading')}
+                          </div>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-muted shrink-0 ml-auto" />
+                        <ChevronRight className="w-4 h-4 text-muted shrink-0" />
                       </Link>
-                    </div>
-                  )}
+                    )}
+
+                    {/* Language page link */}
+                    <Link
+                      to={`/app/language/${lang.id}`}
+                      className="flex items-center gap-3 p-3 bg-sand border border-bdr rounded-xl hover:border-blue/30 transition-colors"
+                    >
+                      <Languages className="w-5 h-5 text-muted shrink-0" />
+                      <div className="text-sm text-ink2">
+                        {t('beginnerHub.browseAllTexts', 'Browse all texts for {{language}}', {
+                          language: lang.name,
+                        })}
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted shrink-0 ml-auto" />
+                    </Link>
+                  </div>
                 </div>
               );
-            })}
-          </div>
-        </motion.div>
+            })()}
+          </motion.div>
+        )}
       </div>
     </div>
   );

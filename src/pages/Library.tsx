@@ -176,6 +176,7 @@ export const Library = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<'library' | 'imports' | 'public'>('library');
   const [sharingId, setSharingId] = useState<string | null>(null);
+  const [showAllLanguages, setShowAllLanguages] = useState(false);
 
   useEffect(() => {
     getAllProgress().then(setReadingProgress);
@@ -273,7 +274,9 @@ export const Library = () => {
     });
   }, [rawTexts, corpusTexts, knowledge]);
 
-  const mainFilters = [{ name: 'All', id: 'all', icon: '📚' }, ...LANGUAGES];
+  const mainFilters = showAllLanguages
+    ? [{ name: 'All', id: 'all', icon: '📚' }, ...LANGUAGES]
+    : LANGUAGES.filter((l) => l.id === activeLanguageId);
 
   const sortedTexts = useMemo(() => {
     let copy = [...filteredTexts];
@@ -433,34 +436,37 @@ export const Library = () => {
         <ChevronRight className="w-5 h-5 text-muted group-hover:text-blue transition-colors shrink-0" />
       </Link>
 
-      {/* ── Language Cards ───────────────────────────────────────────── */}
-      <div className="mb-10">
-        <h3 className="eyebrow mb-4 opacity-50">{t('library.yourLanguages', 'Your Languages')}</h3>
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {langStats.map(({ lang, textCount, importCount, knownWords }) => {
-            const isLocked = !canAccessLanguage(lang.id);
-            return (
-              <LanguageCard
-                key={lang.id}
-                lang={lang}
-                isActive={lang.id === activeLanguageId}
-                isLocked={isLocked}
-                textCount={textCount}
-                importCount={importCount}
-                knownWords={knownWords}
-                onClick={() => {
-                  if (isLocked) {
-                    navigate('/app/subscription');
-                    return;
-                  }
-                  setActiveLanguageId(lang.id);
-                  navigate(`/app/language/${lang.id}`);
-                }}
-              />
-            );
-          })}
+      {/* ── Language Cards (only when browsing all languages) ────────── */}
+      {showAllLanguages && (
+        <div className="mb-10">
+          <h3 className="eyebrow mb-4 opacity-50">{t('library.yourLanguages', 'Your Languages')}</h3>
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {langStats.map(({ lang, textCount, importCount, knownWords }) => {
+              const isLocked = !canAccessLanguage(lang.id);
+              return (
+                <LanguageCard
+                  key={lang.id}
+                  lang={lang}
+                  isActive={lang.id === activeLanguageId}
+                  isLocked={isLocked}
+                  textCount={textCount}
+                  importCount={importCount}
+                  knownWords={knownWords}
+                  onClick={() => {
+                    if (isLocked) {
+                      navigate('/app/subscription');
+                      return;
+                    }
+                    setActiveLanguageId(lang.id);
+                    setShowAllLanguages(false);
+                    setActiveLang(LANGUAGES.find((l) => l.id === lang.id)?.name || 'All');
+                  }}
+                />
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Continue Reading ─────────────────────────────────────────── */}
       {recentTexts.length > 0 && (
@@ -558,7 +564,7 @@ export const Library = () => {
             />
           </div>
           <div className="flex flex-wrap gap-2 flex-1">
-            {mainFilters.slice(0, 5).map((f) => (
+            {mainFilters.map((f) => (
               <button
                 key={f.id}
                 onClick={() => setActiveLang(f.name)}
@@ -573,6 +579,29 @@ export const Library = () => {
                 <span className="hidden sm:inline">{f.name}</span>
               </button>
             ))}
+            <button
+              onClick={() => {
+                const next = !showAllLanguages;
+                setShowAllLanguages(next);
+                if (!next) {
+                  const langName = LANGUAGES.find((l) => l.id === activeLanguageId)?.name || 'All';
+                  setActiveLang(langName);
+                }
+              }}
+              className={cn(
+                'px-4 py-2 rounded-full text-[12px] font-medium font-sans transition-all duration-150 border flex items-center gap-1.5 active:scale-95',
+                showAllLanguages
+                  ? 'bg-parch3 border-bdr text-ink'
+                  : 'bg-white text-ink3 border-bdr/60 hover:bg-parch hover:border-blue/30'
+              )}
+            >
+              <Languages className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">
+                {showAllLanguages
+                  ? t('library.hideOtherLanguages', 'Hide other languages')
+                  : t('library.browseAllLanguages', 'Browse all languages')}
+              </span>
+            </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={cn(

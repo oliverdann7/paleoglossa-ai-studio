@@ -7,7 +7,6 @@ import { apiFetch } from '../lib/services/apiFetch.js';
 import type { Sentence } from '../types/corpus.js';
 import { DependencyTree, type DepToken } from '../components/reader/DependencyTree.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
-import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,13 +47,10 @@ function sentenceSurface(sentence: Sentence): string {
 
 export const Syntax = () => {
   const { activeLanguageId } = useActiveLanguage();
-  const { subscription } = useSubscription();
-  const texts = useMemo(() => {
-    const all = CorpusDB.getTexts();
-    const selected = subscription.selectedLanguageIds;
-    // Show only texts in languages the user has selected; fall back to all if none selected yet.
-    return selected.length > 0 ? all.filter((t) => selected.includes(t.language)) : all;
-  }, [subscription.selectedLanguageIds]);
+  const texts = useMemo(
+    () => CorpusDB.getTextsByLanguage(activeLanguageId),
+    [activeLanguageId]
+  );
 
   // Default to the first text that matches the global active language.
   const defaultTextId = useMemo(() => {

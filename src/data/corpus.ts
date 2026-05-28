@@ -4772,6 +4772,7 @@ function getLemmaIndex() {
 
 export const CorpusDB = {
   getTexts: () => getAllEnhancedTexts(),
+  getTextsByLanguage: (langId: string) => getAllEnhancedTexts().filter((t) => t.language === langId),
   getText: (id: string) => getTextByIdMap().get(id),
   getSection: (sectionId: string) => {
     const split = SECTION_SPLITS[sectionId];

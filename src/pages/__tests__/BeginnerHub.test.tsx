@@ -29,6 +29,16 @@ vi.mock('../../lib/hooks/useAuth.js', () => ({
   useAuth: () => ({ user: mockAuthUser }),
 }));
 
+vi.mock('../../lib/hooks/useActiveLanguage.js', () => ({
+  useActiveLanguage: () => ({
+    activeLanguageId: 'grc',
+    setActiveLanguageId: vi.fn(),
+    currentLanguage: { id: 'grc', name: 'Ancient Greek' },
+    availableLanguages: [],
+    isLoaded: true,
+  }),
+}));
+
 let mockOnboarding:
   | {
       completed: boolean;
@@ -110,7 +120,6 @@ describe('BeginnerHub', () => {
   it('renders the title and description', () => {
     renderHub();
     expect(screen.getByText('Beginner Hub')).toBeDefined();
-    expect(screen.getByText('Choose a language')).toBeDefined();
   });
 
   it('renders tier selector buttons', () => {
@@ -121,64 +130,21 @@ describe('BeginnerHub', () => {
     expect(screen.getByText('I am studying academically')).toBeDefined();
   });
 
-  it('renders language cards from CorpusDB', () => {
+  it('renders the active language card (Ancient Greek by default)', () => {
     renderHub();
-    const languages = getAvailableLanguages();
-    for (const lang of languages) {
-      expect(screen.getByText(lang.name)).toBeDefined();
+    expect(screen.getByText('Ancient Greek')).toBeDefined();
+  });
+
+  it('shows badges for the active language', () => {
+    renderHub();
+    const lang = getAvailableLanguages().find((l) => l.id === 'grc')!;
+    const container = screen.getByText(lang.name).closest('div')?.parentElement;
+    if (lang.supportsMorphology) {
+      expect(container?.textContent).toContain('Morph');
     }
   });
 
-  it('shows Script badge only for languages with hasScriptLearning', () => {
-    renderHub();
-    const scriptLangs = getAvailableLanguages().filter((l) => l.hasScriptLearning);
-    const noScriptLangs = getAvailableLanguages().filter((l) => !l.hasScriptLearning);
-    for (const lang of scriptLangs) {
-      expect(screen.getByText(lang.name).closest('button')?.parentElement?.textContent).toContain(
-        'Script'
-      );
-    }
-    for (const lang of noScriptLangs) {
-      const content = screen.getByText(lang.name).closest('button')?.parentElement?.textContent;
-      if (content) expect(content).not.toContain('Script');
-    }
-  });
-
-  it('shows Morph badge only for languages with supportsMorphology', () => {
-    renderHub();
-    const morphLangs = getAvailableLanguages().filter((l) => l.supportsMorphology);
-    const noMorphLangs = getAvailableLanguages().filter((l) => !l.supportsMorphology);
-    for (const lang of morphLangs) {
-      expect(screen.getByText(lang.name).closest('button')?.parentElement?.textContent).toContain(
-        'Morph'
-      );
-    }
-    for (const lang of noMorphLangs) {
-      const content = screen.getByText(lang.name).closest('button')?.parentElement?.textContent;
-      if (content) expect(content).not.toContain('Morph');
-    }
-  });
-
-  it('shows Dict badge for languages with dictionary entries', () => {
-    renderHub();
-    const hasDict = getAvailableLanguages().filter(
-      (l) => l.dictionaryHints && l.dictionaryHints.dictionaries.length > 0
-    );
-    const noDict = getAvailableLanguages().filter(
-      (l) => !l.dictionaryHints || l.dictionaryHints.dictionaries.length === 0
-    );
-    for (const lang of hasDict) {
-      expect(screen.getByText(lang.name).closest('button')?.parentElement?.textContent).toContain(
-        'Dict'
-      );
-    }
-    for (const lang of noDict) {
-      const content = screen.getByText(lang.name).closest('button')?.parentElement?.textContent;
-      if (content) expect(content).not.toContain('Dict');
-    }
-  });
-
-  it('each language card has a recommended start link pointing to a valid text ID', () => {
+  it('each language has a recommended start link pointing to a valid text ID', () => {
     const allTexts = CorpusDB.getTexts();
     for (const lang of getAvailableLanguages()) {
       const recommended = lang.recommendedStartTextId;
@@ -187,22 +153,15 @@ describe('BeginnerHub', () => {
     }
   });
 
-  it('expanding a language card shows guided path steps', () => {
+  it('shows guided path steps for the active language (always expanded)', () => {
     renderHub();
-    const firstLang = getAvailableLanguages()[0];
-    const card = screen.getByText(firstLang.name).closest('button');
-    expect(card).not.toBeNull();
-    fireEvent.click(card!);
     expect(screen.getByText((c: string) => c.startsWith('Your path'))).toBeDefined();
     expect(screen.getByText('Learn the script')).toBeDefined();
     expect(screen.getByText('Start your first text')).toBeDefined();
   });
 
-  it('changing tier switches the guided path steps without collapsing the card', () => {
+  it('changing tier switches the guided path steps', () => {
     renderHub();
-    const firstLang = getAvailableLanguages()[0];
-    const card = screen.getByText(firstLang.name).closest('button');
-    fireEvent.click(card!);
     fireEvent.click(screen.getByText('I know the alphabet'));
     expect(screen.getByText((c: string) => c.startsWith('Your path'))).toBeDefined();
     expect(screen.getByText('Start A1 reading')).toBeDefined();
@@ -210,15 +169,12 @@ describe('BeginnerHub', () => {
 });
 
 describe('BeginnerHub — ScriptLab links', () => {
-  it('languages with hasScriptLearning show a ScriptLab link when expanded', () => {
+  it('active language with hasScriptLearning shows a ScriptLab link', () => {
     renderHub();
-    const scriptLangs = getAvailableLanguages().filter((l) => l.hasScriptLearning);
-    for (const lang of scriptLangs) {
-      const card = screen.getByText(lang.name).closest('button');
-      fireEvent.click(card!);
+    const activeLang = getAvailableLanguages().find((l) => l.id === 'grc');
+    if (activeLang?.hasScriptLearning) {
       const found = screen.queryByText((content) => content.includes('{{script}}'));
       expect(found).not.toBeNull();
-      fireEvent.click(card!);
     }
   });
 });
@@ -309,14 +265,12 @@ describe('BeginnerHub — preselection from Onboarding', () => {
   it('preselects the matching tier from onboarding profile level', () => {
     mockOnboarding = {
       completed: true,
-      languageId: 'lat',
+      languageId: 'grc',
       level: 'knows-alphabet',
       goal: 'classical',
       dailyCommitment: 15,
     };
     renderHub();
-    // "I know the alphabet" tier should be visually selected — easiest check
-    // is the affordance text being rendered.
     expect(screen.getByText(/Set from your onboarding/)).toBeDefined();
   });
 
@@ -327,7 +281,6 @@ describe('BeginnerHub — preselection from Onboarding', () => {
   });
 
   it('maps all four onboarding levels to a guided tier id', () => {
-    // sanity check: every Onboarding level maps to a real tier
     const levels: Array<'absolute-beginner' | 'knows-alphabet' | 'intermediate' | 'advanced'> = [
       'absolute-beginner',
       'knows-alphabet',
@@ -335,7 +288,6 @@ describe('BeginnerHub — preselection from Onboarding', () => {
       'advanced',
     ];
     const expected = ['know-nothing', 'know-alphabet', 'read-slowly', 'academic'];
-    // We assert via separate renders to avoid module-cache reuse of the map.
     levels.forEach((level, idx) => {
       mockOnboarding = {
         completed: true,
@@ -346,9 +298,7 @@ describe('BeginnerHub — preselection from Onboarding', () => {
       };
       cleanup();
       renderHub();
-      // Affordance text is present whenever a preselection happened.
       expect(screen.getByText(/Set from your onboarding/)).toBeDefined();
-      // And the tier label matches the expected one.
       const labels = ['I know nothing', 'I know the alphabet', 'I can read slowly', 'I am studying academically'];
       expect(labels[idx]).toBeDefined();
       expect(expected[idx]).toBeDefined();

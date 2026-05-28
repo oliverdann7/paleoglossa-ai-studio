@@ -997,11 +997,12 @@ export const Courses = () => {
     });
   }, [userId]);
 
-  const ownedCourses = courses.filter((c) => c.ownerId === userId);
-  const enrolledCourses = courses.filter(
+  const langCourses = courses.filter((c) => c.languageId === activeLanguageId);
+  const ownedCourses = langCourses.filter((c) => c.ownerId === userId);
+  const enrolledCourses = langCourses.filter(
     (c) => c.ownerId !== userId && (c.isEnrolled || c._enrolled)
   );
-  const discoverCourses = courses.filter(
+  const discoverCourses = langCourses.filter(
     (c) => c.ownerId !== userId && !c.isEnrolled && !c._enrolled && c.isPublic
   );
 
