@@ -20,6 +20,8 @@ import {
   Flame,
   BarChart2,
   ChevronDown,
+  Copy,
+  Link2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -448,6 +450,26 @@ function CourseDetail({
   const [showRoster, setShowRoster] = useState(false);
   const [rosterLoading, setRosterLoading] = useState(false);
 
+  // Invite code
+  const [inviteCode, setInviteCode] = useState<string | null>((course as any).joinCode ?? null);
+  const [inviteCodeLoading, setInviteCodeLoading] = useState(false);
+  const [inviteCodeCopied, setInviteCodeCopied] = useState(false);
+
+  const handleGetInviteCode = async () => {
+    setInviteCodeLoading(true);
+    const code = await CourseService.getOrCreateInviteCode(course.id);
+    setInviteCode(code);
+    setInviteCodeLoading(false);
+  };
+
+  const handleCopyInviteCode = () => {
+    if (!inviteCode) return;
+    navigator.clipboard.writeText(inviteCode).then(() => {
+      setInviteCodeCopied(true);
+      setTimeout(() => setInviteCodeCopied(false), 2000);
+    });
+  };
+
   const loadRoster = useCallback(async () => {
     setRosterLoading(true);
     const data = await CourseService.getRoster(course.id);
@@ -854,6 +876,55 @@ function CourseDetail({
             />
           </button>
 
+          {/* Invite code — always visible for private courses, optional for public */}
+          {!course.isPublic && (
+            <div className="mb-5 p-4 bg-parch2 border border-bdr rounded-xl">
+              <div className="flex items-center gap-1.5 text-[12px] font-bold text-ink mb-2">
+                <Link2 className="w-3.5 h-3.5" />
+                Invite Code
+              </div>
+              {inviteCode ? (
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[18px] font-bold tracking-widest text-ink px-3 py-1.5 bg-white border border-bdr rounded-lg">
+                    {inviteCode}
+                  </span>
+                  <button
+                    onClick={handleCopyInviteCode}
+                    className={cn(
+                      'flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors',
+                      inviteCodeCopied
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                        : 'border-bdr text-ink3 hover:border-blue/40 hover:text-blue'
+                    )}
+                  >
+                    {inviteCodeCopied ? (
+                      <Check className="w-3.5 h-3.5" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                    {inviteCodeCopied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleGetInviteCode}
+                  disabled={inviteCodeLoading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-bdr rounded-lg text-[12px] font-medium text-ink3 hover:border-blue/40 hover:text-blue transition-colors disabled:opacity-50"
+                >
+                  {inviteCodeLoading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Link2 className="w-3.5 h-3.5" />
+                  )}
+                  Generate invite code
+                </button>
+              )}
+              <p className="mt-2 text-[11px] text-muted">
+                Share this code with students to let them join this private course.
+              </p>
+            </div>
+          )}
+
           {showRoster && (
             <div className="card overflow-hidden">
               {roster.filter((m) => m.role !== 'teacher').length === 0 ? (
@@ -1049,6 +1120,29 @@ export const Courses = () => {
     setSelectedCourse(fresh ?? selectedCourse);
   };
 
+  const [joinCodeInput, setJoinCodeInput] = useState('');
+  const [joinCodeLoading, setJoinCodeLoading] = useState(false);
+  const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
+
+  const handleJoinByCode = async () => {
+    const code = joinCodeInput.trim().toUpperCase();
+    if (!code) return;
+    setJoinCodeLoading(true);
+    setJoinCodeError(null);
+    const result = await CourseService.joinByCode(code);
+    setJoinCodeLoading(false);
+    if (result.ok) {
+      setJoinCodeInput('');
+      await loadCourses();
+      if (result.courseId) {
+        const fresh = await CourseService.getCourse(result.courseId);
+        if (fresh) { setSelectedCourse(fresh); setView('detail'); }
+      }
+    } else {
+      setJoinCodeError('Invalid code — check with your teacher and try again.');
+    }
+  };
+
   const handleLeave = async () => {
     if (!selectedCourse) return;
     await CourseService.leaveCourse(selectedCourse.id);
@@ -1164,6 +1258,36 @@ export const Courses = () => {
                         />
                       ))}
                     </div>
+                  </section>
+                )}
+
+                {/* Join by invite code */}
+                {user && !isDemoMode && (
+                  <section>
+                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">
+                      Join a Private Course
+                    </h3>
+                    <div className="flex items-center gap-2 max-w-sm">
+                      <input
+                        type="text"
+                        value={joinCodeInput}
+                        onChange={(e) => { setJoinCodeInput(e.target.value.toUpperCase()); setJoinCodeError(null); }}
+                        onKeyDown={(e) => e.key === 'Enter' && handleJoinByCode()}
+                        placeholder="Enter invite code"
+                        maxLength={6}
+                        className="flex-1 px-3 py-2 border border-bdr rounded-xl text-[13px] font-mono tracking-widest uppercase placeholder:normal-case placeholder:tracking-normal focus:outline-none focus:border-blue transition-colors bg-white"
+                      />
+                      <button
+                        onClick={handleJoinByCode}
+                        disabled={joinCodeLoading || joinCodeInput.trim().length < 4}
+                        className="px-4 py-2 bg-blue text-white text-[13px] font-semibold rounded-xl hover:bg-blue/90 disabled:opacity-40 transition-colors"
+                      >
+                        {joinCodeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Join'}
+                      </button>
+                    </div>
+                    {joinCodeError && (
+                      <p className="mt-1.5 text-[12px] text-red-500">{joinCodeError}</p>
+                    )}
                   </section>
                 )}
 

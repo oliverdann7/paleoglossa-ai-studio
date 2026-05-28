@@ -3,6 +3,13 @@ import { requireAuth, optionalAuth } from '../_lib/auth.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 
+function generateJoinCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
 const router = Router();
 
 // ─── List courses (public + owned + enrolled) ────────────────────────────────
@@ -101,7 +108,10 @@ router.get(
         isEnrolled = memberDoc.exists;
       }
 
-      res.status(200).json({ ...serializeCourse(doc.id, data), isEnrolled });
+      res.status(200).json({
+        ...serializeCourse(doc.id, data, { includeJoinCode: data.ownerId === userId }),
+        isEnrolled,
+      });
     } catch (e: any) {
       console.error('[courses] Error fetching:', e.message);
       res.status(500).json({ error: 'Failed to fetch course', code: 'INTERNAL_ERROR' });
@@ -146,6 +156,19 @@ router.post('/api/courses', requireAuth as any, async (req: AuthenticatedRequest
       progress: {},
       joinedAt: FieldValue.serverTimestamp(),
     });
+
+    // Grant teacher custom claim so the role persists in the ID token
+    try {
+      const { getAuth } = await import('firebase-admin/auth');
+      const auth_ = getAuth();
+      const user_ = await auth_.getUser(userId);
+      const currentClaims = user_.customClaims || {};
+      if (!currentClaims.teacher) {
+        await auth_.setCustomUserClaims(userId, { ...currentClaims, teacher: true });
+      }
+    } catch {
+      // best-effort — ownerId check still gates teacher actions
+    }
 
     res.status(200).json({
       id: ref.id,
@@ -432,10 +455,104 @@ router.get(
   }
 );
 
+// ─── Invite code (teacher) ────────────────────────────────────────────────────
+
+router.post(
+  '/api/courses/:courseId/invite-code',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const userId = req.user!.uid;
+    const { courseId } = req.params;
+
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    try {
+      const doc = await adminDb_.doc(`courses/${courseId}`).get();
+      if (!doc.exists)
+        return res.status(404).json({ error: 'Course not found', code: 'NOT_FOUND' });
+      if (doc.data()!.ownerId !== userId)
+        return res.status(403).json({ error: 'Access denied', code: 'FORBIDDEN' });
+
+      const existing = doc.data()!.joinCode;
+      if (existing) return res.status(200).json({ joinCode: existing });
+
+      const { FieldValue } = await import('firebase-admin/firestore');
+      const joinCode = generateJoinCode();
+      await adminDb_.doc(`courses/${courseId}`).update({ joinCode, updatedAt: FieldValue.serverTimestamp() });
+
+      res.status(200).json({ joinCode });
+    } catch (e: any) {
+      console.error('[courses] Error generating invite code:', e.message);
+      res.status(500).json({ error: 'Failed to generate invite code', code: 'INTERNAL_ERROR' });
+    }
+  }
+);
+
+// ─── Join by invite code (any authenticated user) ─────────────────────────────
+
+router.post(
+  '/api/courses/join-by-code',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const userId = req.user!.uid;
+    const { code } = req.body;
+
+    if (!code || typeof code !== 'string' || code.trim().length === 0) {
+      return res.status(400).json({ error: 'code is required', code: 'INVALID_INPUT' });
+    }
+
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    try {
+      const snap = await adminDb_
+        .collection('courses')
+        .where('joinCode', '==', code.trim().toUpperCase())
+        .limit(1)
+        .get();
+
+      if (snap.empty)
+        return res.status(404).json({ error: 'Invalid or expired invite code', code: 'NOT_FOUND' });
+
+      const courseDoc = snap.docs[0];
+      const courseId = courseDoc.id;
+      const data = courseDoc.data();
+
+      if (data.ownerId === userId) {
+        return res.status(200).json({ ok: true, alreadyJoined: true, courseId });
+      }
+
+      const { FieldValue } = await import('firebase-admin/firestore');
+      const memberRef = adminDb_.doc(`courses/${courseId}/members/${userId}`);
+      const existing = await memberRef.get();
+      if (existing.exists) return res.status(200).json({ ok: true, alreadyJoined: true, courseId });
+
+      await memberRef.set({
+        userId,
+        role: 'student',
+        progress: {},
+        joinedAt: FieldValue.serverTimestamp(),
+      });
+      await adminDb_.doc(`courses/${courseId}`).update({ memberCount: FieldValue.increment(1) });
+      await adminDb_
+        .doc(`users/${userId}`)
+        .set({ enrolledCourseIds: FieldValue.arrayUnion(courseId) }, { merge: true });
+
+      res.status(200).json({ ok: true, courseId, courseTitle: data.title });
+    } catch (e: any) {
+      console.error('[courses] Error joining by code:', e.message);
+      res.status(500).json({ error: 'Failed to join course', code: 'INTERNAL_ERROR' });
+    }
+  }
+);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function serializeCourse(id: string, data: any) {
-  return {
+function serializeCourse(id: string, data: any, opts: { includeJoinCode?: boolean } = {}) {
+  const result: Record<string, any> = {
     id,
     ownerId: data.ownerId,
     title: data.title,
@@ -447,6 +564,10 @@ function serializeCourse(id: string, data: any) {
     createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? data.createdAt ?? null,
     updatedAt: data.updatedAt?.toDate?.()?.toISOString?.() ?? data.updatedAt ?? null,
   };
+  if (opts.includeJoinCode && data.joinCode) {
+    result.joinCode = data.joinCode;
+  }
+  return result;
 }
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
