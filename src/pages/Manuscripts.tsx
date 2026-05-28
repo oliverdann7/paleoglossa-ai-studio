@@ -13,6 +13,7 @@ import {
   Plus,
   RotateCcw,
   ScanLine,
+  Search,
   Trash2,
   X,
 } from 'lucide-react';
@@ -887,6 +888,27 @@ export const Manuscripts = () => {
   const [saving, setSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // ─── Filter state ────────────────────────────────────────────────────────────
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterLanguage, setFilterLanguage] = useState('');
+  const [filterTag, setFilterTag] = useState('');
+
+  const allTags = Array.from(new Set(manuscripts.flatMap((m) => m.tags ?? []))).sort();
+  const usedLanguageIds = Array.from(new Set(manuscripts.map((m) => m.languageId).filter(Boolean)));
+
+  const filteredManuscripts = manuscripts.filter((m) => {
+    if (
+      searchQuery &&
+      !m.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !m.description?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !m.source?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+      return false;
+    if (filterLanguage && m.languageId !== filterLanguage) return false;
+    if (filterTag && !m.tags?.includes(filterTag)) return false;
+    return true;
+  });
+
   useEffect(() => {
     let cancelled = false;
     apiFetch<Manuscript[]>('/api/manuscripts')
@@ -1027,11 +1049,77 @@ export const Manuscripts = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {manuscripts.map((m) => (
-          <ManuscriptCard key={m.id} manuscript={m} onClick={() => setSelected(m)} />
-        ))}
-      </div>
+      <>
+        {/* Filter bar */}
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('manuscripts.filter.search', 'Search manuscripts…')}
+              className="w-full pl-8 pr-3 py-2 text-[13px] bg-parch border border-bdr rounded-lg text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-blue/40"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-ink"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          {usedLanguageIds.length > 1 && (
+            <select
+              value={filterLanguage}
+              onChange={(e) => setFilterLanguage(e.target.value)}
+              className="py-2 pl-3 pr-7 text-[13px] bg-parch border border-bdr rounded-lg text-ink focus:outline-none focus:ring-1 focus:ring-blue/40 appearance-none"
+            >
+              <option value="">{t('manuscripts.filter.allLanguages', 'All languages')}</option>
+              {usedLanguageIds.map((id) => {
+                const lang = LANGUAGES.find((l) => l.id === id);
+                return (
+                  <option key={id} value={id}>
+                    {lang?.name ?? id}
+                  </option>
+                );
+              })}
+            </select>
+          )}
+          {allTags.length > 0 && (
+            <select
+              value={filterTag}
+              onChange={(e) => setFilterTag(e.target.value)}
+              className="py-2 pl-3 pr-7 text-[13px] bg-parch border border-bdr rounded-lg text-ink focus:outline-none focus:ring-1 focus:ring-blue/40 appearance-none"
+            >
+              <option value="">{t('manuscripts.filter.allTags', 'All tags')}</option>
+              {allTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
+          )}
+          {(searchQuery || filterLanguage || filterTag) && (
+            <span className="text-[12px] text-muted">
+              {filteredManuscripts.length} of {manuscripts.length}
+            </span>
+          )}
+        </div>
+
+        {filteredManuscripts.length === 0 ? (
+          <div className="py-16 text-center text-muted text-[14px]">
+            {t('manuscripts.filter.noResults', 'No manuscripts match your filters.')}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredManuscripts.map((m) => (
+              <ManuscriptCard key={m.id} manuscript={m} onClick={() => setSelected(m)} />
+            ))}
+          </div>
+        )}
+      </>
     );
   };
 
