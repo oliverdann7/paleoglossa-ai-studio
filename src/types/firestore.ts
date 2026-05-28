@@ -161,6 +161,21 @@ export interface ReviewLog {
   quality: number; // 0-5
 }
 
+/**
+ * Per-concept grammar mastery state.
+ * Path: users/{userId}/grammarMastery/{conceptId}
+ */
+export interface GrammarConceptMastery {
+  conceptId: string;
+  languageId: string;
+  /** 0 = not started, 1 = opened/studied, 2 = quiz attempted, 3 = mastered */
+  level: 0 | 1 | 2 | 3;
+  quizCorrect: number;
+  quizTotal: number;
+  lastStudiedAt: string | Timestamp;
+  masteredAt?: string | Timestamp | null;
+}
+
 export interface DiscussionThread {
   id?: string;
   textId: string;

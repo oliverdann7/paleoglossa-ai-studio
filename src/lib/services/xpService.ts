@@ -25,6 +25,7 @@ export const XP_REWARDS = {
   challengeGold: 200,
   textCompleted: 100,
   streakDay: 10, // per day of streak maintained
+  grammarConceptMastered: 75,
 } as const;
 
 // ─── XP Data ────────────────────────────────────────────────────────────────
