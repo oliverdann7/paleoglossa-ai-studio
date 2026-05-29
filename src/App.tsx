@@ -2,6 +2,16 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { features } from './lib/features.js';
 
+const TutorDirectory = lazy(() =>
+  import('./pages/marketplace/TutorDirectory.js').then((m) => ({ default: m.TutorDirectory }))
+);
+const TutorProfilePage = lazy(() =>
+  import('./pages/marketplace/TutorProfilePage.js').then((m) => ({ default: m.TutorProfilePage }))
+);
+const TutorOnboarding = lazy(() =>
+  import('./pages/marketplace/TutorOnboarding.js').then((m) => ({ default: m.TutorOnboarding }))
+);
+
 const Landing = lazy(() =>
   import('./pages/Landing.js').then((module) => ({ default: module.Landing }))
 );
@@ -199,6 +209,15 @@ export default function App() {
             )}
             {features.isCommunityEnabled() && (
               <Route path="challenges" element={<ChallengesPage />} />
+            )}
+            {features.isMarketplaceEnabled() && (
+              <Route path="tutors" element={<TutorDirectory />} />
+            )}
+            {features.isMarketplaceEnabled() && (
+              <Route path="tutors/:uid" element={<TutorProfilePage />} />
+            )}
+            {features.isMarketplaceEnabled() && (
+              <Route path="teach" element={<TutorOnboarding />} />
             )}
           </Route>
 

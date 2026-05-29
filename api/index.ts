@@ -23,6 +23,8 @@ import discussionsRouter from './_routes/discussions.js';
 import bookmarksRouter from './_routes/bookmarks.js';
 import annotationsRouter from './_routes/annotations.js';
 import challengesRouter from './_routes/challenges.js';
+import connectRouter from './_routes/connect.js';
+import tutorsRouter from './_routes/tutors.js';
 
 const app = express();
 
@@ -79,6 +81,8 @@ app.use(discussionsRouter);
 app.use(bookmarksRouter);
 app.use(annotationsRouter);
 app.use(challengesRouter);
+app.use(connectRouter);
+app.use(tutorsRouter);
 
 // Global error handler — report to Sentry before returning 500
 app.use((err: any, _req: any, res: any, next: any) => {
