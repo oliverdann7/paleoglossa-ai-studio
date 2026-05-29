@@ -34,6 +34,7 @@ import {
   HIT_EXTRAS_MORE,
   UGA_EXTRAS,
   HBO_EXTRAS,
+  SAN_EXTRAS,
 } from './extras.js';
 
 // Merge headword + common-form maps. Main dict wins on collision so curated
@@ -68,6 +69,7 @@ const HIT_MERGED: Record<string, string> = {
   ...HIT_DICTIONARY,
 };
 const UGA_MERGED: Record<string, string> = { ...UGA_EXTRAS, ...UGA_DICTIONARY };
+const SAN_MERGED: Record<string, string> = { ...SAN_EXTRAS, ...SAN_DICTIONARY };
 
 const LANG_DICTS: Record<string, Record<string, string>> = {
   grc: GRC_MERGED,
@@ -81,7 +83,7 @@ const LANG_DICTS: Record<string, Record<string, string>> = {
   cop: COP_MERGED,
   arc: ARC_MERGED,
   akk: AKK_MERGED,
-  san: SAN_DICTIONARY,
+  san: SAN_MERGED,
   egy: EGY_MERGED,
   hit: HIT_MERGED,
   uga: UGA_MERGED,

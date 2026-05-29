@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-29T09:33:39.101Z",
+  "generatedAt": "2026-05-29T09:35:54.750Z",
   "dictSizes": {
     "grc": 2053,
     "grc-koine": 2053,
@@ -12,7 +12,7 @@
     "cop": 276,
     "arc": 278,
     "akk": 288,
-    "san": 360,
+    "san": 406,
     "egy": 235,
     "hit": 244,
     "uga": 247
@@ -1294,124 +1294,12 @@
       "language": "san",
       "totalTokens": 159,
       "uniqueLemmas": 135,
-      "uniqueCovered": 51,
-      "uniqueMissing": 84,
-      "tokensCovered": 75,
-      "coveragePctTokens": 47,
-      "coveragePctLemmas": 38,
+      "uniqueCovered": 79,
+      "uniqueMissing": 56,
+      "tokensCovered": 103,
+      "coveragePctTokens": 65,
+      "coveragePctLemmas": 59,
       "topMissing": [
-        {
-          "lemma": "ca",
-          "count": 1
-        },
-        {
-          "lemma": "eva",
-          "count": 1
-        },
-        {
-          "lemma": "kim",
-          "count": 1
-        },
-        {
-          "lemma": "kṛ",
-          "count": 1
-        },
-        {
-          "lemma": "sañjaya",
-          "count": 1
-        },
-        {
-          "lemma": "विशिष्टाः",
-          "count": 1
-        },
-        {
-          "lemma": "ये",
-          "count": 1
-        },
-        {
-          "lemma": "निबोध",
-          "count": 1
-        },
-        {
-          "lemma": "द्विजोत्तम",
-          "count": 1
-        },
-        {
-          "lemma": "नायकाः",
-          "count": 1
-        },
-        {
-          "lemma": "सैन्यस्य",
-          "count": 1
-        },
-        {
-          "lemma": "सञ्ज्ञार्थम्",
-          "count": 1
-        },
-        {
-          "lemma": "ब्रवीमि",
-          "count": 1
-        },
-        {
-          "lemma": "भवान्",
-          "count": 1
-        },
-        {
-          "lemma": "भीष्मः",
-          "count": 1
-        },
-        {
-          "lemma": "कर्णः",
-          "count": 1
-        },
-        {
-          "lemma": "कृपः",
-          "count": 1
-        },
-        {
-          "lemma": "समितिञ्जयः",
-          "count": 1
-        },
-        {
-          "lemma": "अश्वत्थामा",
-          "count": 1
-        },
-        {
-          "lemma": "विकर्णः",
-          "count": 1
-        },
-        {
-          "lemma": "सौमदत्तिः",
-          "count": 1
-        },
-        {
-          "lemma": "अन्ये",
-          "count": 1
-        },
-        {
-          "lemma": "बहवः",
-          "count": 1
-        },
-        {
-          "lemma": "शूराः",
-          "count": 1
-        },
-        {
-          "lemma": "मदर्थे",
-          "count": 1
-        },
-        {
-          "lemma": "त्यक्तजीविताः",
-          "count": 1
-        },
-        {
-          "lemma": "नानाशस्त्रप्रहरणाः",
-          "count": 1
-        },
-        {
-          "lemma": "युद्धविशारदाः",
-          "count": 1
-        },
         {
           "lemma": "अपर्याप्तम्",
           "count": 1
@@ -1498,6 +1386,118 @@
         },
         {
           "lemma": "युयुत्सुम्",
+          "count": 1
+        },
+        {
+          "lemma": "समुपस्थितम्",
+          "count": 1
+        },
+        {
+          "lemma": "सीदन्ति",
+          "count": 1
+        },
+        {
+          "lemma": "गात्रानि",
+          "count": 1
+        },
+        {
+          "lemma": "मुखम्",
+          "count": 1
+        },
+        {
+          "lemma": "परिशुष्यति",
+          "count": 1
+        },
+        {
+          "lemma": "गाण्डीवम्",
+          "count": 1
+        },
+        {
+          "lemma": "स्रंसते",
+          "count": 1
+        },
+        {
+          "lemma": "हस्तात्",
+          "count": 1
+        },
+        {
+          "lemma": "त्वक्",
+          "count": 1
+        },
+        {
+          "lemma": "चैव",
+          "count": 1
+        },
+        {
+          "lemma": "परिदह्यते",
+          "count": 1
+        },
+        {
+          "lemma": "शक्नोमि",
+          "count": 1
+        },
+        {
+          "lemma": "अवस्थातुम्",
+          "count": 1
+        },
+        {
+          "lemma": "भ्रमति",
+          "count": 1
+        },
+        {
+          "lemma": "मनः",
+          "count": 1
+        },
+        {
+          "lemma": "निमित्तानि",
+          "count": 1
+        },
+        {
+          "lemma": "पश्यामि",
+          "count": 1
+        },
+        {
+          "lemma": "विपरीतानि",
+          "count": 1
+        },
+        {
+          "lemma": "केशव",
+          "count": 1
+        },
+        {
+          "lemma": "श्रेयः",
+          "count": 1
+        },
+        {
+          "lemma": "अनुपश्यामि",
+          "count": 1
+        },
+        {
+          "lemma": "हत्वा",
+          "count": 1
+        },
+        {
+          "lemma": "आहवे",
+          "count": 1
+        },
+        {
+          "lemma": "उक्त्वा",
+          "count": 1
+        },
+        {
+          "lemma": "रथोपस्थः",
+          "count": 1
+        },
+        {
+          "lemma": "उपाविशत्",
+          "count": 1
+        },
+        {
+          "lemma": "विसृज्य",
+          "count": 1
+        },
+        {
+          "lemma": "सशरम्",
           "count": 1
         }
       ]
