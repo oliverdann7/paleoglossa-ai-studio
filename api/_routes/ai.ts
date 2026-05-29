@@ -245,7 +245,7 @@ ${rawText.slice(0, 20000)}`;
   }
 });
 
-router.post('/api/ai/ocr', async (req: any, res: any) => {
+router.post('/api/ai/ocr', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, imageBase64, mimeType } = req.body;
 
@@ -346,7 +346,7 @@ Rules:
   }
 });
 
-router.post('/api/ai/translate', async (req: any, res: any) => {
+router.post('/api/ai/translate', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, tokens } = req.body;
 
@@ -420,9 +420,23 @@ Sentence: ${sentence}`;
   }
 });
 
-router.post('/api/ai/explain', async (req: any, res: any) => {
+router.post('/api/ai/explain', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
-    const { languageId, word, lemma, phrase, type } = req.body;
+    const { languageId, type } = req.body;
+    // A-3: Input length caps + strip control chars to prevent prompt injection.
+    const sanitize = (v: unknown, maxLen = 300): string => {
+      if (typeof v !== 'string') return '';
+      // Filter out ASCII control characters (code points 0–31 and 127) without
+      // embedding a regex literal with raw control chars (no-control-regex rule).
+      const clean = [...v].filter((c) => {
+        const n = c.charCodeAt(0);
+        return n > 0x1f && n !== 0x7f;
+      }).join('');
+      return clean.slice(0, maxLen);
+    };
+    const word = sanitize(req.body.word, 200);
+    const lemma = sanitize(req.body.lemma, 200);
+    const phrase = sanitize(req.body.phrase, 500);
 
     if (!languageId || typeof languageId !== 'string') {
       return res
@@ -438,7 +452,7 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
       });
     }
 
-    if (type === 'phrase' && (!phrase || typeof phrase !== 'string')) {
+    if (type === 'phrase' && !phrase) {
       return res.status(400).json({
         error: 'phrase is required for type=phrase',
         code: 'INVALID_INPUT',
@@ -448,11 +462,11 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
 
     if (
       type !== 'phrase' &&
-      (!word || typeof word !== 'string' || !lemma || typeof lemma !== 'string') &&
-      type !== 'gloss'
+      type !== 'gloss' &&
+      (!word.trim() || !lemma.trim())
     ) {
       return res.status(400).json({
-        error: 'word and lemma are required for type=word or type=paradigm',
+        error: 'word and lemma are required for type=word, type=paradigm, or type=morphology',
         code: 'INVALID_INPUT',
         field: 'word',
       });
@@ -589,7 +603,7 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
   }
 });
 
-router.post('/api/ai/pronunciation', async (req: any, res: any) => {
+router.post('/api/ai/pronunciation', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, text, transliteration, pronunciationMode } = req.body;
 
@@ -688,7 +702,7 @@ Rules:
   }
 });
 
-router.post('/api/ai/scrape', async (req: any, res: any) => {
+router.post('/api/ai/scrape', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { url } = req.body;
 
@@ -741,7 +755,7 @@ router.post('/api/ai/scrape', async (req: any, res: any) => {
   }
 });
 
-router.post('/api/ai/metadata', async (req: any, res: any) => {
+router.post('/api/ai/metadata', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, rawText } = req.body;
 
@@ -830,7 +844,7 @@ Text: ${rawText.slice(0, 5000)}`;
   }
 });
 
-router.post('/api/ai/quiz', async (req: any, res: any) => {
+router.post('/api/ai/quiz', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, lemma, form, type } = req.body;
 
@@ -915,7 +929,7 @@ Rules:
   }
 });
 
-router.post('/api/ai/syntax', async (req: any, res: any) => {
+router.post('/api/ai/syntax', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, sentence, tokens: inputTokens } = req.body;
 
@@ -1473,7 +1487,14 @@ router.post(
         .replace(/^```(?:json)?\s*/i, '')
         .replace(/\s*```\s*$/i, '')
         .trim();
-      const parsed = JSON.parse(cleaned) as CourseQuizResult;
+
+      let parsed: CourseQuizResult;
+      try {
+        parsed = JSON.parse(cleaned) as CourseQuizResult;
+      } catch {
+        console.error('[course-quiz] JSON parse failed. Raw:', cleaned.slice(0, 200));
+        return res.status(500).json({ error: 'Quiz generation failed — invalid AI response', code: 'PARSE_ERROR' });
+      }
 
       if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
         return res.status(500).json({ error: 'Quiz generation failed', code: 'PARSE_ERROR' });

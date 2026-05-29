@@ -242,6 +242,12 @@ export const LexDrawerPanel = memo(({
   const [glossSaved, setGlossSaved] = useState(false);
   const glossTimerRef = useRef<number>(0);
   const noteSavedTimerRef = useRef<number>(0);
+  // Tracks the current selectedWord lemma so the reviewAdded timeout can avoid
+  // clearing a *different* word that was opened while the timer was running (L-2).
+  const selectedWordLemmaRef = useRef<string | null>(null);
+  useEffect(() => {
+    selectedWordLemmaRef.current = selectedWord?.lemma ?? null;
+  });
 
   // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
   const wordInfo = useMemo(
@@ -425,12 +431,14 @@ export const LexDrawerPanel = memo(({
     const currentLemma = selectedWord.lemma;
     wiktionaryLemmaRef.current = currentLemma;
     setIsWiktionaryLoading(true);
+    let cancelled = false;
     (async () => {
       const result = await lookupWiktionary(currentLemma, langId);
-      if (wiktionaryLemmaRef.current !== currentLemma) return;
+      if (cancelled || wiktionaryLemmaRef.current !== currentLemma) return;
       setWiktionaryResult(result);
       setIsWiktionaryLoading(false);
     })();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord?.lemma, !!definitionLookup, langId]);
 
@@ -682,9 +690,13 @@ export const LexDrawerPanel = memo(({
                         updateGloss(selectedWord.lemma, definitionLookup.definition, langId);
                       }
                       setReviewAdded(true);
+                      const capturedLemma = selectedWord.lemma;
                       setTimeout(() => {
                         setReviewAdded(false);
-                        setSelectedWord(null);
+                        // L-2: only clear the panel if the user hasn't moved to a different word
+                        if (selectedWordLemmaRef.current === capturedLemma) {
+                          setSelectedWord(null);
+                        }
                       }, 1800);
                     }
                   }}
@@ -743,7 +755,7 @@ export const LexDrawerPanel = memo(({
                 }
                 if (wiktionaryResult) {
                   const headline = summarizeWiktionary(wiktionaryResult);
-                  const extra = wiktionaryResult.entries[0]?.definitions.slice(1, 3) || [];
+                  const extra = wiktionaryResult.entries[0]?.definitions?.slice(1, 3) || [];
                   return (
                     <>
                       <div className="text-ink">{headline}</div>

@@ -53,10 +53,12 @@ export const Reader = () => {
 
   useEffect(() => {
     if (!textId) return;
+    let active = true;
 
     const tObj = CorpusDB.getText(textId);
     if (!tObj && (textId.startsWith('import-') || textId.startsWith('imp-'))) {
       ImportService.getImports(user ? user.uid : null).then((imports) => {
+        if (!active) return;
         const match = imports.find((item: any) => item.id === textId);
         if (match) setLocalText(match);
       });
@@ -66,6 +68,7 @@ export const Reader = () => {
     } else {
       // Try Firestore-sourced corpus text (added via ingest script, not in static bundle)
       corpusService.getText(textId).then((meta) => {
+        if (!active) return;
         if (meta) {
           setLocalText({
             id: meta.id,
@@ -75,12 +78,30 @@ export const Reader = () => {
             sectionsPreview: meta.sectionsPreview,
             _firestoreCorpus: true,
           });
+        } else {
+          // Only fall back to offline payload if Firestore also had nothing
+          const offline = OfflineService.getOfflinePayload(textId);
+          if (offline && active) {
+            setLocalText({
+              id: offline.textId,
+              title: offline.title,
+              language: offline.languageId,
+              languageId: offline.languageId,
+              sentences: offline.sentences,
+              sourceType: offline.source === 'import' ? 'paste' : 'corpus',
+              sourceKind: offline.source === 'import' ? 'import' : 'corpus',
+              isOffline: true,
+            });
+          }
         }
       });
+      return () => { active = false; };
     }
 
-    // Fallback to offline payload if no text loaded
-    if (!tObj) {
+    // Synchronous offline fallback for import texts (no async path running)
+    if (!tObj && !textId.startsWith('import-') && !textId.startsWith('imp-')) {
+      // Handled in the Firestore branch above
+    } else if (!tObj) {
       const offline = OfflineService.getOfflinePayload(textId);
       if (offline) {
         setLocalText({
@@ -95,6 +116,8 @@ export const Reader = () => {
         });
       }
     }
+
+    return () => { active = false; };
   }, [textId, user]);
 
   // Load sections from API for Firestore-sourced corpus texts
@@ -768,7 +791,7 @@ export const Reader = () => {
       if (readingMode === 'page') {
         tokensToMark = chapter.sentences[currentSentenceIndex]?.tokens || [];
       } else {
-        tokensToMark = displayedSentences?.flatMap((s: ReaderSentence) => s.tokens) || [];
+        tokensToMark = displayedSentences?.flatMap((s: ReaderSentence) => s.tokens ?? []) || [];
       }
 
       const validTokens = tokensToMark.filter((t) => t.lemma && t.lemma.length > 0);
