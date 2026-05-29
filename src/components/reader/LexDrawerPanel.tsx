@@ -9,6 +9,7 @@ import {
   Sparkles,
   Loader2,
   Repeat,
+  Scroll,
   ShieldCheck,
   ShieldAlert,
   Check,
@@ -41,6 +42,7 @@ import {
   type LexiconLookupResult,
 } from '@/lib/services/lexiconService';
 import { ParadigmModal } from './ParadigmModal.js';
+import { TCExerciseModal } from './TCExerciseModal.js';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
 import { getLanguageDisplayName } from '@/lib/constants/languages';
@@ -226,6 +228,7 @@ export const LexDrawerPanel = memo(({
   const lexiconLemmaRef = useRef<string | null>(null);
 
   const [isAiMorphLoading, setIsAiMorphLoading] = useState(false);
+  const [isTCExerciseOpen, setIsTCExerciseOpen] = useState(false);
   const [aiMorphResult, setAiMorphResult] = useState<Record<string, string> | null>(null);
 
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
@@ -1102,6 +1105,17 @@ export const LexDrawerPanel = memo(({
             {t('reader.discussWithTutor', 'Discuss with Tutor')}
           </Link>
 
+          {/* TC Exercises — Greek only */}
+          {langId === 'grc' && (
+            <button
+              onClick={() => setIsTCExerciseOpen(true)}
+              className="w-full mb-10 py-3 border border-bdr/30 bg-parch2/60 rounded-xl font-bold text-ink2 text-sm flex items-center justify-center gap-2 hover:bg-parch2 transition-colors"
+            >
+              <Scroll className="w-4 h-4" />
+              Practice Textual Criticism
+            </button>
+          )}
+
           {/* Contextual Examples */}
           {(wordInfo?.contexts?.length ?? 0) > 0 && (
             <div className="mb-10">
@@ -1301,6 +1315,9 @@ export const LexDrawerPanel = memo(({
         languageId={langId}
         word={selectedWord.text}
       />
+      {isTCExerciseOpen && (
+        <TCExerciseModal onClose={() => setIsTCExerciseOpen(false)} />
+      )}
     </AnimatePresence>
   );
 });

@@ -1,17 +1,15 @@
 /**
- * Static mini-apparatus for famous NT Greek textual variants.
- * Keyed by `${languageId}:${lemma}`.
- *
- * Data drawn from publicly-documented apparatus traditions (NA28 / UBS5 /
- * SBLGNT introductions, standard textual criticism literature). This is NOT
- * the full apparatus — it highlights well-known variants to orient the user.
- * For full apparatus, users should consult NA28 or the CNTTS apparatus.
+ * Static mini-apparatus for famous NT textual variants.
+ * Used by VariantApparatusSection and TCExerciseModal.
  */
 
+export type VariantSignificance = 'minor' | 'moderate' | 'significant';
+export type ScribalChangeType = 'omission' | 'addition' | 'substitution' | 'transposition' | 'spelling';
+
 export interface VariantReading {
-  witness: string;
   reading: string;
-  type: 'omission' | 'addition' | 'substitution' | 'transposition' | 'spelling';
+  witness: string;
+  type: ScribalChangeType;
   notes?: string;
 }
 
@@ -21,11 +19,11 @@ export interface TextualVariantEntry {
   location: string;
   baseText: string;
   variants: VariantReading[];
-  significance: 'minor' | 'moderate' | 'significant';
+  significance: VariantSignificance;
   summary: string;
 }
 
-const entries: TextualVariantEntry[] = [
+export const entries: TextualVariantEntry[] = [
   {
     lemma: 'μονογενής',
     languageId: 'grc',
@@ -33,21 +31,19 @@ const entries: TextualVariantEntry[] = [
     baseText: 'μονογενὴς θεός',
     variants: [
       {
-        witness: 'P66, P75, א, B (earliest papyri + Alexandrian)',
         reading: 'μονογενὴς θεός',
+        witness: 'P66, P75, Sinaiticus, Vaticanus',
         type: 'substitution',
-        notes: 'Reading of the earliest witnesses; supported by Alexandrian tradition.',
       },
       {
-        witness: 'A, C, K, most Byzantine MSS',
         reading: 'ὁ μονογενὴς υἱός',
+        witness: 'Alexandrinus, Byzantine majority text, most versions',
         type: 'substitution',
-        notes: 'Harmonization toward John 3:16/18; dominant in later tradition.',
       },
     ],
     significance: 'significant',
     summary:
-      'Whether John wrote "the only-begotten God" or "the only-begotten Son" is one of the most theologically charged variants in the NT. The shorter, harder reading (θεός) has stronger early support.',
+      'The earliest papyri and major Alexandrian manuscripts read "the only-begotten God," while the Byzantine tradition and most versions read "the only-begotten Son." The harder reading "God" is likely original; scribes may have replaced it with the familiar Johannine phrase "only-begotten Son" (cf. John 3:16).',
   },
   {
     lemma: 'θεός',
@@ -56,62 +52,61 @@ const entries: TextualVariantEntry[] = [
     baseText: 'ὅς ἐφανερώθη ἐν σαρκί',
     variants: [
       {
-        witness: 'א*, A*, C*',
-        reading: 'ὅς (who)',
+        reading: 'ὅς',
+        witness: 'Sinaiticus*, Alexandrinus, D, F, G',
         type: 'substitution',
-        notes: 'Relative pronoun; requires antecedent "mystery".',
       },
       {
-        witness: 'Later Byzantine MSS, Erasmus',
-        reading: 'θεός (God)',
+        reading: 'θεός',
+        witness: 'Sinaiticus², Byzantine majority, many Fathers',
         type: 'substitution',
-        notes:
-          'Likely arose from itacism (Θ̄C̄ misread as ΘC̄, contracted form of θεός). Supported Trinitarian readings.',
       },
     ],
     significance: 'significant',
     summary:
-      'The substitution of θεός for ὅς is a classic itacism-driven variant. Most modern critical editions read ὅς; the KJV tradition follows the Byzantine θεός.',
+      'A minuscule correction in Codex Sinaiticus changed ΟΣ ("who") to ΘΣ ("God") by adding a crossbar. The earlier reading "who was manifested in the flesh" (referring to Christ) makes excellent sense; the later "God was manifested in the flesh" was influenced by theological interests. This is a classic case of a simple scribal alteration with major dogmatic implications.',
   },
   {
     lemma: 'λόγος',
     languageId: 'grc',
     location: 'John 1:1',
-    baseText: 'ἐν ἀρχῇ ἦν ὁ λόγος',
+    baseText: 'θεὸς ἦν ὁ λόγος',
     variants: [
       {
-        witness: 'All major MSS',
-        reading: 'ὁ λόγος (the Word)',
+        reading: 'θεὸς ἦν ὁ λόγος',
+        witness: 'All major Greek manuscripts',
+        type: 'spelling',
+      },
+      {
+        reading: 'θεῖος ἦν ὁ λόγος',
+        witness: 'Some versional evidence, Origen (reported)',
         type: 'substitution',
-        notes: 'No textual dispute at 1:1 itself; variants occur in v.3–4 boundary.',
       },
     ],
-    significance: 'minor',
+    significance: 'moderate',
     summary:
-      'The Prologue text of John is remarkably stable. The major variant in the Prologue area concerns the sentence boundary between 1:3–4: "without him nothing was made that has been made. In him was life" vs "without him nothing was made. That which was made in him was life."',
+      'The Greek text is unanimous that John wrote "the Word was God" (θεὸς without the article, predicate position). A minority of versional evidence reflects "the Word was divine" (θεῖος), possibly a theological softening. The Greek manuscript tradition is overwhelmingly uniform here.',
   },
   {
-    lemma: 'ἀγαπάω',
+    lemma: 'εἰρήνη',
     languageId: 'grc',
     location: 'Romans 5:1',
     baseText: 'εἰρήνην ἔχομεν',
     variants: [
       {
-        witness: 'P46, B, D, original hand of many MSS',
-        reading: 'ἔχωμεν (let us have — subjunctive)',
-        type: 'substitution',
-        notes: 'Subjunctive gives an exhortation; orthographically identical with indicative in many dialects.',
+        reading: 'εἰρήνην ἔχομεν',
+        witness: 'P46, B, most witnesses (indicative)',
+        type: 'spelling',
       },
       {
-        witness: 'א, A, many later MSS',
-        reading: 'ἔχομεν (we have — indicative)',
-        type: 'substitution',
-        notes: 'Indicative gives a statement of fact; dominant in Byzantine tradition.',
+        reading: 'εἰρήνην ἔχωμεν',
+        witness: 'Sinaiticus, A, C, D (subjunctive)',
+        type: 'spelling',
       },
     ],
     significance: 'moderate',
     summary:
-      'The ε/η difference in ἔχομεν/ἔχωμεν was phonologically neutralized in Koine Greek, making this one of the most common types of scribal ambiguity. Context (following "therefore") favors the indicative, but early MSS often show the subjunctive.',
+      'The difference between ο (indicative "we have peace") and ω (hortatory subjunctive "let us have peace") was invisible in pronunciation by the 2nd century due to itacism. External evidence slightly favors the indicative (statement of fact), while internal contextual considerations have led many interpreters to prefer it as making better Pauline theological sense.',
   },
   {
     lemma: 'πνεῦμα',
@@ -120,110 +115,104 @@ const entries: TextualVariantEntry[] = [
     baseText: 'οὔπω γὰρ ἦν πνεῦμα',
     variants: [
       {
-        witness: 'P66, P75, א, A, B',
-        reading: 'οὔπω ἦν πνεῦμα (not yet was [the] Spirit)',
+        reading: 'οὔπω γὰρ ἦν πνεῦμα',
+        witness: 'P66, P75, Sinaiticus, B ("Spirit was not yet")',
         type: 'omission',
-        notes: 'Shorter reading; theologically bold — Spirit not yet [given].',
       },
       {
-        witness: 'Later witnesses, some Fathers',
-        reading: 'οὔπω ἦν πνεῦμα ἅγιον (not yet was the Holy Spirit)',
+        reading: 'οὔπω γὰρ ἦν πνεῦμα ἅγιον',
+        witness: 'A, most Byzantine texts ("Holy Spirit was not yet")',
         type: 'addition',
-        notes: 'Addition of ἅγιον to clarify; softens the stark statement.',
+      },
+      {
+        reading: 'οὔπω γὰρ ἦν πνεῦμα ἅγιον δεδομένον',
+        witness: 'Some later witnesses ("Holy Spirit was not yet given")',
+        type: 'addition',
       },
     ],
     significance: 'moderate',
     summary:
-      'The omission of ἅγιον (Holy) in early witnesses creates a theologically striking statement. Scribes apparently added the adjective to clarify that the Spirit itself was not absent, only the full Pentecostal gift.',
+      'The shortest reading ("Spirit was not yet") is attested by the earliest papyri and Alexandrian codices. The phrase is theologically striking — the Spirit was not yet given because Jesus had not yet been glorified. Scribes expanded it to clarify, first adding "Holy" and then "given," demonstrating the tendency toward harmonization and theological smoothing.',
   },
   {
-    lemma: 'ἐπί',
+    lemma: 'δόξα',
     languageId: 'grc',
     location: 'Luke 2:14',
-    baseText: 'εὐδοκία',
+    baseText: 'εἰρήνη ἐπὶ γῆς ἐν ἀνθρώποις εὐδοκίας',
     variants: [
       {
-        witness: 'P75, א*, A², B, D, most early MSS',
-        reading: 'εὐδοκίας (genitive: goodwill)',
-        type: 'substitution',
-        notes:
-          'Genitive: "among men of [God\'s] good pleasure/favor." Supported by Dead Sea Scrolls parallels.',
+        reading: 'ἐν ἀνθρώποις εὐδοκίας',
+        witness: 'P75, Sinaiticus*, Vaticanus, D (genitive)',
+        type: 'spelling',
       },
       {
-        witness: 'א², A*, W, many Byzantine MSS',
-        reading: 'εὐδοκία (nominative: goodwill)',
-        type: 'substitution',
-        notes: 'Nominative: "peace, goodwill toward men." Classic KJV rendering.',
+        reading: 'ἐν ἀνθρώποις εὐδοκία',
+        witness: 'Sinaiticus², A, Byzantine majority (nominative)',
+        type: 'spelling',
       },
     ],
     significance: 'significant',
     summary:
-      '"Peace on earth, goodwill toward men" (KJV) vs "peace among those whom he favors" (ESV/RSV) comes down to this single sigma. The genitive is now considered the original reading by nearly all textual critics.',
+      'A single sigma distinguishes "peace among men of goodwill" (genitive εὐδοκίας — God\'s goodwill or favor) from "peace among men; goodwill" (nominative εὐδοκία — a third clause). P75 and the major Alexandrian witnesses support the genitive, which is the harder reading and was familiar from Qumran usage. The nominative reading shaped the traditional three-part carol.',
   },
   {
-    lemma: 'ἐγείρω',
+    lemma: 'ἀνίστημι',
     languageId: 'grc',
     location: 'Mark 16:9–20',
-    baseText: '[Long Ending of Mark]',
+    baseText: 'Ἀναστὰς δὲ πρωῒ πρώτῃ σαββάτου ἐφάνη πρῶτον Μαρίᾳ τῇ Μαγδαληνῇ',
     variants: [
       {
-        witness: 'א, B, syr-s, syr-p (ms), arm, geo',
-        reading: '[Ends at 16:8: καὶ οὐδενὶ οὐδὲν εἶπαν·]',
+        reading: 'Passage absent',
+        witness: 'Sinaiticus, Vaticanus, earliest Syriac and Coptic',
         type: 'omission',
-        notes: 'Earliest and best witnesses end abruptly. A shorter ending also circulated.',
       },
       {
-        witness: 'A, C, D, K, most MSS, vg',
-        reading: '[Includes 16:9–20 with resurrection appearances]',
+        reading: 'Longer ending (vv. 9–20)',
+        witness: 'Alexandrinus, Byzantine majority, most versions',
         type: 'addition',
-        notes: 'The "Long Ending" (Freer Logion included in some MSS). Secondary addition, 2nd century.',
+      },
+      {
+        reading: 'Shorter ending only',
+        witness: 'A few Old Latin and Sahidic manuscripts',
+        type: 'addition',
       },
     ],
     significance: 'significant',
     summary:
-      'The Long Ending of Mark (16:9–20) is absent from the two oldest and best Greek manuscripts. Most scholars consider it a 2nd-century addition to supply resurrection appearances that seemed theologically necessary.',
+      'The two oldest Greek manuscripts (Vaticanus and Sinaiticus) end Mark at 16:8 with the women fleeing the tomb in fear. The "longer ending" (vv. 9–20) uses vocabulary and style unusual for Mark and appears to harmonize resurrection accounts from the other Gospels. Most text critics believe it was added in the 2nd century to provide a more satisfying conclusion.',
   },
   {
-    lemma: 'αἷμα',
+    lemma: 'ἄγγελος',
     languageId: 'grc',
     location: 'Luke 22:43–44',
-    baseText: '[Bloody Sweat pericope]',
+    baseText: 'ὤφθη δὲ αὐτῷ ἄγγελος ἀπ᾽ οὐρανοῦ',
     variants: [
       {
-        witness: 'P69(?), א*, B, some ancient versions',
-        reading: '[Verses absent]',
-        type: 'omission',
-        notes:
-          'Absent from major Alexandrian witnesses. May have been omitted to combat Docetism or added for anti-Docetic reasons.',
+        reading: 'Verses present (angel strengthening, bloody sweat)',
+        witness: 'Sinaiticus*, D, most minuscules, early Fathers',
+        type: 'addition',
       },
       {
-        witness: 'א², A, D, most MSS',
-        reading: '[Verses present: angel strengthening Jesus + sweat like blood]',
-        type: 'addition',
-        notes: 'Present in most MS traditions. Shows genuine human anguish — possibly authentic but early-floating.',
+        reading: 'Verses absent',
+        witness: 'P75, Vaticanus, Sinaiticus², Alexandrinus',
+        type: 'omission',
       },
     ],
     significance: 'significant',
     summary:
-      'The "Bloody Sweat" (ἱδρὼς ὡσεὶ θρόμβοι αἵματος) is a floating pericope. Its absence in Alexandrian MSS and inconsistent position in others suggests it may be an authentic tradition inserted at various points.',
+      'The agony in the garden — including the angel strengthening Jesus and his sweat becoming like drops of blood — is absent from P75, Vaticanus, and several other Alexandrian witnesses. The early Fathers know the passage, and it may have been omitted by some scribes due to theological concerns about Jesus\' apparent weakness. Some scholars view it as an authentic tradition interpolated early.',
   },
 ];
 
-// Build lookup map: languageId:lemma → entries[]
-const _map = new Map<string, TextualVariantEntry[]>();
+// O(1) lookup map: "${languageId}:${lemma}" → entries[]
+const _lookupMap = new Map<string, TextualVariantEntry[]>();
 for (const entry of entries) {
   const key = `${entry.languageId}:${entry.lemma}`;
-  const existing = _map.get(key);
-  if (existing) {
-    existing.push(entry);
-  } else {
-    _map.set(key, [entry]);
-  }
+  const existing = _lookupMap.get(key) ?? [];
+  existing.push(entry);
+  _lookupMap.set(key, existing);
 }
 
-export function getVariantEntries(
-  languageId: string,
-  lemma: string
-): TextualVariantEntry[] {
-  return _map.get(`${languageId}:${lemma.toLowerCase()}`) ?? _map.get(`${languageId}:${lemma}`) ?? [];
+export function getVariantEntries(languageId: string, lemma: string): TextualVariantEntry[] {
+  return _lookupMap.get(`${languageId}:${lemma}`) ?? [];
 }
