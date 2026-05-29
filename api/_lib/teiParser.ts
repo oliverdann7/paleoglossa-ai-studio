@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — jsdom 29 types resolve at runtime; declaration gap in some tsconfig setups
 import { JSDOM } from 'jsdom';
 
