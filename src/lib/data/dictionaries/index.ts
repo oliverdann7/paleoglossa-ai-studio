@@ -9,6 +9,7 @@
 
 import { GRC_DICTIONARY } from './grc.js';
 import { LAT_DICTIONARY } from './lat.js';
+import { LAT_FORMS } from './lat-forms.js';
 import { HBO_DICTIONARY } from './hbo.js';
 import { SYR_DICTIONARY } from './syr.js';
 import { COP_DICTIONARY } from './cop.js';
@@ -19,13 +20,16 @@ import { EGY_DICTIONARY } from './egy.js';
 import { HIT_DICTIONARY } from './hit.js';
 import { UGA_DICTIONARY } from './uga.js';
 
+// Headword + common-form merge. Main dict wins on collision.
+const LAT_MERGED: Record<string, string> = { ...LAT_FORMS, ...LAT_DICTIONARY };
+
 const LANG_DICTS: Record<string, Record<string, string>> = {
   grc: GRC_DICTIONARY,
   'grc-koine': GRC_DICTIONARY,
   'grc-class': GRC_DICTIONARY,
-  lat: LAT_DICTIONARY,
-  'lat-class': LAT_DICTIONARY,
-  'lat-med': LAT_DICTIONARY,
+  lat: LAT_MERGED,
+  'lat-class': LAT_MERGED,
+  'lat-med': LAT_MERGED,
   hbo: HBO_DICTIONARY,
   syr: SYR_DICTIONARY,
   cop: COP_DICTIONARY,
