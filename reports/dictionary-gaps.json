@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-29T09:28:10.726Z",
+  "generatedAt": "2026-05-29T09:31:00.066Z",
   "dictSizes": {
-    "grc": 1904,
-    "grc-koine": 1904,
-    "grc-class": 1904,
+    "grc": 2053,
+    "grc-koine": 2053,
+    "grc-class": 2053,
     "lat": 2816,
     "lat-class": 2816,
     "lat-med": 2816,
@@ -22,11 +22,11 @@
       "language": "grc-koine",
       "totalTokens": 20635,
       "uniqueLemmas": 3769,
-      "uniqueCovered": 914,
-      "uniqueMissing": 2855,
-      "tokensCovered": 16334,
+      "uniqueCovered": 930,
+      "uniqueMissing": 2839,
+      "tokensCovered": 16368,
       "coveragePctTokens": 79,
-      "coveragePctLemmas": 24,
+      "coveragePctLemmas": 25,
       "topMissing": [
         {
           "lemma": "εχετε",
@@ -110,10 +110,6 @@
         },
         {
           "lemma": "ποιησω",
-          "count": 6
-        },
-        {
-          "lemma": "χρονον",
           "count": 6
         },
         {
@@ -226,6 +222,10 @@
         },
         {
           "lemma": "μισει",
+          "count": 5
+        },
+        {
+          "lemma": "ποιων",
           "count": 5
         }
       ]
@@ -658,24 +658,12 @@
       "language": "grc",
       "totalTokens": 1332,
       "uniqueLemmas": 754,
-      "uniqueCovered": 211,
-      "uniqueMissing": 543,
-      "tokensCovered": 600,
-      "coveragePctTokens": 45,
-      "coveragePctLemmas": 28,
+      "uniqueCovered": 223,
+      "uniqueMissing": 531,
+      "tokensCovered": 660,
+      "coveragePctTokens": 50,
+      "coveragePctLemmas": 30,
       "topMissing": [
-        {
-          "lemma": "δʼ",
-          "count": 18
-        },
-        {
-          "lemma": "δη",
-          "count": 12
-        },
-        {
-          "lemma": "δ’",
-          "count": 9
-        },
         {
           "lemma": "μιν",
           "count": 7
@@ -697,14 +685,6 @@
           "count": 5
         },
         {
-          "lemma": "διος",
-          "count": 5
-        },
-        {
-          "lemma": "ηδε",
-          "count": 5
-        },
-        {
           "lemma": "αχαιοι",
           "count": 4
         },
@@ -723,10 +703,6 @@
         {
           "lemma": "δηλοι",
           "count": 4
-        },
-        {
-          "lemma": "ες",
-          "count": 3
         },
         {
           "lemma": "ηλθε",
@@ -778,10 +754,6 @@
         },
         {
           "lemma": "εσαν",
-          "count": 3
-        },
-        {
-          "lemma": "πολεμον",
           "count": 3
         },
         {
@@ -863,6 +835,34 @@
         {
           "lemma": "ατρειδης",
           "count": 2
+        },
+        {
+          "lemma": "αποινα",
+          "count": 2
+        },
+        {
+          "lemma": "απολλωνος",
+          "count": 2
+        },
+        {
+          "lemma": "αχαιους",
+          "count": 2
+        },
+        {
+          "lemma": "θεοι",
+          "count": 2
+        },
+        {
+          "lemma": "ιερηα",
+          "count": 2
+        },
+        {
+          "lemma": "θυμω",
+          "count": 2
+        },
+        {
+          "lemma": "τοι",
+          "count": 2
         }
       ]
     },
@@ -870,210 +870,210 @@
       "language": "grc-class",
       "totalTokens": 541,
       "uniqueLemmas": 368,
-      "uniqueCovered": 139,
-      "uniqueMissing": 229,
-      "tokensCovered": 289,
-      "coveragePctTokens": 53,
-      "coveragePctLemmas": 38,
+      "uniqueCovered": 190,
+      "uniqueMissing": 178,
+      "tokensCovered": 362,
+      "coveragePctTokens": 67,
+      "coveragePctLemmas": 52,
       "topMissing": [
-        {
-          "lemma": "φασι",
-          "count": 4
-        },
-        {
-          "lemma": "ουτ᾽",
-          "count": 4
-        },
-        {
-          "lemma": "ες",
-          "count": 3
-        },
-        {
-          "lemma": "δ᾽",
-          "count": 3
-        },
-        {
-          "lemma": "χαρων",
-          "count": 3
-        },
-        {
-          "lemma": "επολεμησαν",
-          "count": 2
-        },
-        {
-          "lemma": "παλαι",
-          "count": 2
-        },
-        {
-          "lemma": "ζευς",
-          "count": 2
-        },
-        {
-          "lemma": "οποιον",
-          "count": 2
-        },
-        {
-          "lemma": "ιδειν",
-          "count": 2
-        },
         {
           "lemma": "—",
           "count": 2
         },
         {
-          "lemma": "ερμη",
-          "count": 2
-        },
-        {
-          "lemma": "γελα",
-          "count": 2
-        },
-        {
-          "lemma": "ερμης",
-          "count": 2
-        },
-        {
-          "lemma": "αναβαντες",
-          "count": 2
-        },
-        {
-          "lemma": "πραγματα",
-          "count": 2
-        },
-        {
-          "lemma": "ηροδοτου",
+          "lemma": "κροισος",
           "count": 1
         },
         {
-          "lemma": "αλικαρνησσεος",
+          "lemma": "λυδος",
           "count": 1
         },
         {
-          "lemma": "ιστοριης",
+          "lemma": "αλυαττεω",
           "count": 1
         },
         {
-          "lemma": "αποδεξις",
+          "lemma": "εθνεων",
           "count": 1
         },
         {
-          "lemma": "ηδε",
+          "lemma": "αλυος",
           "count": 1
         },
         {
-          "lemma": "γενομενα",
+          "lemma": "ποταμου",
           "count": 1
         },
         {
-          "lemma": "χρονω",
+          "lemma": "θουκυδιδης",
           "count": 1
         },
         {
-          "lemma": "εξιτηλα",
+          "lemma": "αθηναιος",
           "count": 1
         },
         {
-          "lemma": "θωμαστα",
+          "lemma": "ξυνεγραψε",
           "count": 1
         },
         {
-          "lemma": "ελλησι",
+          "lemma": "πελοποννησιων",
           "count": 1
         },
         {
-          "lemma": "βαρβαροισι",
+          "lemma": "αθηναιων",
           "count": 1
         },
         {
-          "lemma": "αποδεχθεντα",
+          "lemma": "αρξαμενος",
           "count": 1
         },
         {
-          "lemma": "ακλεα",
+          "lemma": "καθισταμενου",
           "count": 1
         },
         {
-          "lemma": "αιτιην",
+          "lemma": "ελπισας",
           "count": 1
         },
         {
-          "lemma": "αλληλοισι",
+          "lemma": "εσεσθαι",
           "count": 1
         },
         {
-          "lemma": "φοινικες",
+          "lemma": "αξιολογωτατον",
           "count": 1
         },
         {
-          "lemma": "αιτιοι",
+          "lemma": "προγεγενημενων",
           "count": 1
         },
         {
-          "lemma": "εωυτους",
+          "lemma": "τεκμαιρομενος",
           "count": 1
         },
         {
-          "lemma": "διαφορης",
+          "lemma": "ακμαζοντες",
           "count": 1
         },
         {
-          "lemma": "δη",
+          "lemma": "παρασκευη",
           "count": 1
         },
         {
-          "lemma": "αρπαγην",
+          "lemma": "παση",
           "count": 1
         },
         {
-          "lemma": "αρπαγης",
+          "lemma": "δηλοι",
           "count": 1
         },
         {
-          "lemma": "δικαιευν",
+          "lemma": "τοδε",
           "count": 1
         },
         {
-          "lemma": "αρπαγας",
+          "lemma": "παλαιων",
           "count": 1
         },
         {
-          "lemma": "μουνας",
+          "lemma": "ασθενειαν",
           "count": 1
         },
         {
-          "lemma": "ερεων",
+          "lemma": "ηκιστα",
           "count": 1
         },
         {
-          "lemma": "αλλως",
+          "lemma": "φαινεται",
           "count": 1
         },
         {
-          "lemma": "κως",
+          "lemma": "ελλας",
           "count": 1
         },
         {
-          "lemma": "υπαρξαντα",
+          "lemma": "καλουμενη",
           "count": 1
         },
         {
-          "lemma": "αδικων",
+          "lemma": "βεβαιως",
           "count": 1
         },
         {
-          "lemma": "ελληνας",
+          "lemma": "οικουμενη",
           "count": 1
         },
         {
-          "lemma": "σημηνας",
+          "lemma": "οικιαι",
           "count": 1
         },
         {
-          "lemma": "προβησομαι",
+          "lemma": "προτερον",
           "count": 1
         },
         {
-          "lemma": "προσω",
+          "lemma": "μονιμοι",
+          "count": 1
+        },
+        {
+          "lemma": "μετανιστανται",
+          "count": 1
+        },
+        {
+          "lemma": "ραδιως",
+          "count": 1
+        },
+        {
+          "lemma": "κατοικισεις",
+          "count": 1
+        },
+        {
+          "lemma": "εποιουντο",
+          "count": 1
+        },
+        {
+          "lemma": "κοινον",
+          "count": 1
+        },
+        {
+          "lemma": "αυταδελφον",
+          "count": 1
+        },
+        {
+          "lemma": "ισμηνης",
+          "count": 1
+        },
+        {
+          "lemma": "καρα",
+          "count": 1
+        },
+        {
+          "lemma": "αρ᾽",
+          "count": 1
+        },
+        {
+          "lemma": "οισθ᾽",
+          "count": 1
+        },
+        {
+          "lemma": "οιδιπου",
+          "count": 1
+        },
+        {
+          "lemma": "κακων",
+          "count": 1
+        },
+        {
+          "lemma": "νων",
+          "count": 1
+        },
+        {
+          "lemma": "ζωσαιν",
+          "count": 1
+        },
+        {
+          "lemma": "τελει",
           "count": 1
         }
       ]
