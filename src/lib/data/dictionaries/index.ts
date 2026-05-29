@@ -14,6 +14,7 @@ import { SYR_DICTIONARY } from './syr.js';
 import { COP_DICTIONARY } from './cop.js';
 import { ARC_DICTIONARY } from './arc.js';
 import { AKK_DICTIONARY } from './akk.js';
+import { AKK_EXTRAS } from './akk-extras.js';
 import { SAN_DICTIONARY } from './san.js';
 import { EGY_DICTIONARY } from './egy.js';
 import { HIT_DICTIONARY } from './hit.js';
@@ -30,7 +31,7 @@ const LANG_DICTS: Record<string, Record<string, string>> = {
   syr: SYR_DICTIONARY,
   cop: COP_DICTIONARY,
   arc: ARC_DICTIONARY,
-  akk: AKK_DICTIONARY,
+  akk: { ...AKK_EXTRAS, ...AKK_DICTIONARY },
   san: SAN_DICTIONARY,
   egy: EGY_DICTIONARY,
   hit: HIT_DICTIONARY,
