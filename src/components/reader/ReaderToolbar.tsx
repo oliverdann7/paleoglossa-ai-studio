@@ -9,6 +9,7 @@ import {
   Columns,
   Brain,
   GitBranch,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -81,17 +82,28 @@ export function ReaderToolbar({
     >
       {/* Left — chapter selector + known% + reading time */}
       <div className="flex items-center gap-3 text-[11px] font-medium text-ink2 overflow-hidden">
-        <select
-          value={currentChapterIndex}
-          onChange={(e) => onChangeChapter(parseInt(e.target.value, 10))}
-          className="bg-transparent border-none p-0 pr-4 focus:ring-0 cursor-pointer font-bold text-blue truncate max-w-[120px] md:max-w-none"
+        <div
+          className={cn(
+            'relative flex items-center rounded-lg border bg-white/70 hover:bg-white hover:border-blue/40 transition-colors shadow-sm',
+            chapters.length > 1 ? 'border-blue/30' : 'border-bdr'
+          )}
+          title={t('reader.chapterSelectorTitle', 'Jump to a chapter')}
         >
-          {chapters.map((c, i) => (
-            <option key={c.id} value={i}>
-              {c.title}
-            </option>
-          ))}
-        </select>
+          <BookOpen className="w-3.5 h-3.5 text-blue ml-2 shrink-0" />
+          <select
+            value={currentChapterIndex}
+            onChange={(e) => onChangeChapter(parseInt(e.target.value, 10))}
+            aria-label={t('reader.chapterSelectorAria', 'Chapter')}
+            className="appearance-none bg-transparent border-none pl-2 pr-7 py-1.5 focus:ring-0 focus:outline-none cursor-pointer font-bold text-blue truncate max-w-[140px] md:max-w-[220px] text-[12px]"
+          >
+            {chapters.map((c, i) => (
+              <option key={c.id} value={i}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 text-blue absolute right-2 pointer-events-none" />
+        </div>
 
         {knownPercent != null && !isFocus && (
           <span

@@ -4,7 +4,7 @@
  * Each language file exports a Record<string, string> keyed by lemma.
  * Files are eagerly imported here (they're just string maps, small enough).
  * The unified lookup function tries exact match, then lowercase, then
- * accent-stripped, then (for Hebrew) consonantal form.
+ * accent-stripped (in either direction), then (for Hebrew) consonantal.
  */
 
 import { GRC_DICTIONARY } from './grc.js';
@@ -38,17 +38,29 @@ const LANG_DICTS: Record<string, Record<string, string>> = {
 };
 
 function stripDiacritics(s: string): string {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  // NFD + combining-mark strip, then normalize variant apostrophes & elision
+  // marks to a single ASCII form so "ἀλλ᾽", "ἀλλ’", and "αλλ'" all collapse.
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[‘’ʼ᾽᾿ʹ]/g, "'");
 }
 
 function stripHebrewVowels(s: string): string {
-  return s.replace(/[֑-ְׇ-ֽֿׁׂ]/g, '');
+  // Strip Hebrew points U+0591–U+05BD and U+05BF–U+05C7 (vowels, dagesh,
+  // cantillation, shin/sin dots, qamats-qatan, paseq). Preserve U+05BE
+  // (maqaf) so we can still split maqaf-linked phrases. Also drop any
+  // whitespace left over from paseq U+05C0.
+  return s
+    .replace(/[֑-ֽ]/g, '')
+    .replace(/[ֿ-ׇ]/g, '')
+    .replace(/\s+/g, '');
 }
 
 /**
  * Look up a lemma in the static dictionaries. Returns the gloss string
  * or null if no entry exists. Tries exact → lowercase → diacritic-stripped
- * → (Hebrew) consonantal.
+ * (both directions) → (Hebrew) consonantal → maqaf-split.
  */
 export function staticLookup(lemma: string, languageId: string): string | null {
   const dict = LANG_DICTS[languageId];
@@ -61,25 +73,76 @@ export function staticLookup(lemma: string, languageId: string): string | null {
   const lower = lemma.toLowerCase();
   if (lower !== lemma && dict[lower] !== undefined) return dict[lower];
 
-  // 3. Diacritic-stripped
+  // 3. Diacritic-stripped — always run, in either direction.
+  // The corpus often holds bare-form lemmas (e.g. "και") while dict keys
+  // are polytonic ("καί"); we also still want to match when the lemma
+  // itself carries diacritics but a stripped key does not.
   const stripped = stripDiacritics(lemma).toLowerCase();
-  if (stripped !== lower) {
-    for (const key of Object.keys(dict)) {
-      if (stripDiacritics(key).toLowerCase() === stripped) return dict[key];
-    }
-  }
+  const idx = getStrippedIndex(languageId);
+  const hit = idx.get(stripped);
+  if (hit !== undefined) return dict[hit];
 
   // 4. Hebrew consonantal fallback
   if (languageId === 'hbo') {
     const consonantal = stripHebrewVowels(lemma);
-    if (consonantal !== lemma) {
-      for (const key of Object.keys(dict)) {
-        if (stripHebrewVowels(key) === consonantal) return dict[key];
+    const hIdx = getHebrewConsonantalIndex();
+    const hHit = hIdx.get(consonantal);
+    if (hHit !== undefined) return dict[hHit];
+
+    // 4b. Maqaf-linked tokens like "אֶל-יוֹנָה" or "וַֽיְהִי־עֶ֥רֶב":
+    // try each part separately and join the resulting glosses.
+    if (/[-־]/.test(consonantal)) {
+      const parts = consonantal.split(/[-־]+/).filter(Boolean);
+      if (parts.length > 1) {
+        const glosses: string[] = [];
+        for (const part of parts) {
+          const partHit = hIdx.get(part);
+          if (partHit !== undefined) glosses.push(dict[partHit]);
+          else glosses.push('?');
+        }
+        if (glosses.some((g) => g !== '?')) return glosses.join(' • ');
       }
     }
   }
 
   return null;
+}
+
+// Per-language indexes of dict keys by their diacritic-stripped lowercase form,
+// built lazily on first lookup. This lets us match bare-form lemmas in the
+// corpus against polytonic / vocalized dictionary keys cheaply.
+const STRIPPED_INDEXES: Record<string, Map<string, string>> = {};
+const HEBREW_CONSONANTAL_INDEX: Map<string, string> = new Map();
+let hebrewIndexBuilt = false;
+
+function getStrippedIndex(languageId: string): Map<string, string> {
+  if (STRIPPED_INDEXES[languageId]) return STRIPPED_INDEXES[languageId];
+  const dict = LANG_DICTS[languageId];
+  const idx = new Map<string, string>();
+  if (dict) {
+    for (const key of Object.keys(dict)) {
+      const stripped = stripDiacritics(key).toLowerCase();
+      // First key wins — preserves the most canonical form already listed.
+      if (!idx.has(stripped)) idx.set(stripped, key);
+    }
+  }
+  STRIPPED_INDEXES[languageId] = idx;
+  return idx;
+}
+
+function getHebrewConsonantalIndex(): Map<string, string> {
+  if (hebrewIndexBuilt) return HEBREW_CONSONANTAL_INDEX;
+  const dict = LANG_DICTS['hbo'];
+  if (dict) {
+    for (const key of Object.keys(dict)) {
+      const consonantal = stripHebrewVowels(key);
+      if (!HEBREW_CONSONANTAL_INDEX.has(consonantal)) {
+        HEBREW_CONSONANTAL_INDEX.set(consonantal, key);
+      }
+    }
+  }
+  hebrewIndexBuilt = true;
+  return HEBREW_CONSONANTAL_INDEX;
 }
 
 export function getStaticDictSize(languageId: string): number {
