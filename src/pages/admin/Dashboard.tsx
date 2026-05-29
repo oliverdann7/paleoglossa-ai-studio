@@ -90,7 +90,7 @@ interface AdminCourse {
   updatedAt: string | null;
 }
 
-type Tab = 'overview' | 'users' | 'reports' | 'activity' | 'courses' | 'corpus-quality';
+type Tab = 'overview' | 'users' | 'reports' | 'activity' | 'courses' | 'corpus-quality' | 'errors';
 
 const PLANS = [
   { id: 'free', label: 'Free' },
@@ -1108,6 +1108,176 @@ function CorpusQualityTab({
   );
 }
 
+// ─── Errors tab ───────────────────────────────────────────────────────────────
+
+interface ErrorLogEntry {
+  id: string;
+  timestamp: string;
+  message: string;
+  stack?: string;
+  route?: string;
+  method?: string;
+  statusCode?: number;
+  userId?: string;
+}
+
+interface ErrorStats {
+  total: number;
+  last24h: number;
+  lastHour: number;
+}
+
+function ErrorsTab() {
+  const [entries, setEntries] = useState<ErrorLogEntry[]>([]);
+  const [stats, setStats] = useState<ErrorStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<{ stats: ErrorStats; errors: ErrorLogEntry[] }>('/api/admin/errors');
+      setStats(data.stats);
+      setEntries(data.errors);
+    } catch {
+      setEntries([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const clearAll = async () => {
+    if (!window.confirm('Clear all error log entries?')) return;
+    setClearing(true);
+    try {
+      await apiFetch('/api/admin/errors', { method: 'DELETE' });
+      setEntries([]);
+      setStats({ total: 0, last24h: 0, lastHour: 0 });
+    } catch {
+      /* ignore */
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  useEffect(() => {
+    (async () => { await load(); })();
+  }, [load]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-blue" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats row */}
+      {stats && (
+        <div className="grid grid-cols-3 gap-4">
+          <div className="card p-4 flex flex-col gap-1">
+            <Bug className="w-4 h-4 text-red-400" />
+            <div className="text-[22px] font-bold text-ink leading-none">{stats.total}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">Buffered</div>
+          </div>
+          <div className="card p-4 flex flex-col gap-1">
+            <Clock className="w-4 h-4 text-amber-500" />
+            <div className="text-[22px] font-bold text-ink leading-none">{stats.last24h}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">Last 24h</div>
+          </div>
+          <div className="card p-4 flex flex-col gap-1">
+            <Activity className="w-4 h-4 text-purple-500" />
+            <div className="text-[22px] font-bold text-ink leading-none">{stats.lastHour}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">Last Hour</div>
+          </div>
+        </div>
+      )}
+
+      {/* Toolbar */}
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-muted">
+          {entries.length} error{entries.length !== 1 ? 's' : ''} (most recent first)
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={load}
+            className="p-2 rounded-lg border border-bdr bg-parch2 hover:bg-parch3 transition-colors"
+            title="Refresh"
+          >
+            <RefreshCw className="w-4 h-4 text-muted" />
+          </button>
+          <button
+            onClick={clearAll}
+            disabled={clearing || entries.length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 text-[13px] font-medium transition-colors disabled:opacity-40"
+          >
+            {clearing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+            Clear all
+          </button>
+        </div>
+      </div>
+
+      {entries.length === 0 ? (
+        <div className="card p-12 text-center">
+          <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
+          <p className="text-muted text-sm">No server errors in the current buffer.</p>
+        </div>
+      ) : (
+        <div className="card divide-y divide-bdr/40">
+          {entries.map((e) => (
+            <div key={e.id} className="p-4 hover:bg-parch2/50 transition-colors">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    {e.method && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-parch3 text-ink3 uppercase">
+                        {e.method}
+                      </span>
+                    )}
+                    {e.route && <span className="text-[12px] font-mono text-ink2">{e.route}</span>}
+                    {e.statusCode && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-50 text-red-500">
+                        {e.statusCode}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[13px] font-medium text-ink break-words">{e.message}</p>
+                  <div className="flex items-center gap-3 mt-1 text-[11px] text-muted">
+                    <span>{new Date(e.timestamp).toLocaleString()}</span>
+                    {e.userId && <span>uid: {e.userId}</span>}
+                  </div>
+                </div>
+                {e.stack && (
+                  <button
+                    onClick={() => setExpanded(expanded === e.id ? null : e.id)}
+                    className="shrink-0 p-1.5 rounded-lg border border-bdr hover:bg-parch3 transition-colors"
+                    title={expanded === e.id ? 'Collapse stack' : 'Expand stack'}
+                  >
+                    <ChevronDown
+                      className={cn(
+                        'w-3.5 h-3.5 text-muted transition-transform',
+                        expanded === e.id ? 'rotate-180' : ''
+                      )}
+                    />
+                  </button>
+                )}
+              </div>
+              {expanded === e.id && e.stack && (
+                <pre className="mt-3 p-3 bg-parch3 rounded-lg text-[11px] font-mono text-ink2 overflow-x-auto whitespace-pre-wrap break-words leading-relaxed">
+                  {e.stack}
+                </pre>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export const AdminDashboard = () => {
@@ -1267,6 +1437,7 @@ export const AdminDashboard = () => {
     { id: 'activity', label: 'Activity', icon: Activity },
     { id: 'reports', label: 'Reports', icon: Flag, badge: overview?.openReports || undefined },
     { id: 'corpus-quality', label: 'Corpus Quality', icon: BarChart3 },
+    { id: 'errors', label: 'Errors', icon: Bug },
   ];
 
   return (
@@ -1345,6 +1516,7 @@ export const AdminDashboard = () => {
       {tab === 'corpus-quality' && (
         <CorpusQualityTab data={corpusQualityData} loading={corpusQualityLoading} />
       )}
+      {tab === 'errors' && <ErrorsTab />}
     </div>
   );
 };
