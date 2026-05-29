@@ -21,13 +21,33 @@ import { SAN_DICTIONARY } from './san.js';
 import { EGY_DICTIONARY } from './egy.js';
 import { HIT_DICTIONARY } from './hit.js';
 import { UGA_DICTIONARY } from './uga.js';
+import {
+  AKK_EXTRAS,
+  ARC_EXTRAS,
+  COP_EXTRAS,
+  SYR_EXTRAS,
+  EGY_EXTRAS,
+  HIT_EXTRAS,
+  UGA_EXTRAS,
+  HBO_EXTRAS,
+} from './extras.js';
 
-// Merge headword + common-form maps. Headwords win on collision (the
-// `grc-forms` file deliberately covers ambiguous bare-forms with a combined
-// gloss, but if the main dict already has a polytonic entry we prefer it).
+// Merge headword + common-form maps. Main dict wins on collision so curated
+// glosses are preferred over the auto-expansion forms.
 const GRC_MERGED: Record<string, string> = { ...GRC_FORMS, ...GRC_DICTIONARY };
 const LAT_MERGED: Record<string, string> = { ...LAT_FORMS, ...LAT_DICTIONARY };
-const HBO_MERGED: Record<string, string> = { ...HBO_FORMS, ...HBO_DICTIONARY };
+const HBO_MERGED: Record<string, string> = {
+  ...HBO_FORMS,
+  ...HBO_EXTRAS,
+  ...HBO_DICTIONARY,
+};
+const SYR_MERGED: Record<string, string> = { ...SYR_EXTRAS, ...SYR_DICTIONARY };
+const COP_MERGED: Record<string, string> = { ...COP_EXTRAS, ...COP_DICTIONARY };
+const ARC_MERGED: Record<string, string> = { ...ARC_EXTRAS, ...ARC_DICTIONARY };
+const AKK_MERGED: Record<string, string> = { ...AKK_EXTRAS, ...AKK_DICTIONARY };
+const EGY_MERGED: Record<string, string> = { ...EGY_EXTRAS, ...EGY_DICTIONARY };
+const HIT_MERGED: Record<string, string> = { ...HIT_EXTRAS, ...HIT_DICTIONARY };
+const UGA_MERGED: Record<string, string> = { ...UGA_EXTRAS, ...UGA_DICTIONARY };
 
 const LANG_DICTS: Record<string, Record<string, string>> = {
   grc: GRC_MERGED,
@@ -37,14 +57,14 @@ const LANG_DICTS: Record<string, Record<string, string>> = {
   'lat-class': LAT_MERGED,
   'lat-med': LAT_MERGED,
   hbo: HBO_MERGED,
-  syr: SYR_DICTIONARY,
-  cop: COP_DICTIONARY,
-  arc: ARC_DICTIONARY,
-  akk: AKK_DICTIONARY,
+  syr: SYR_MERGED,
+  cop: COP_MERGED,
+  arc: ARC_MERGED,
+  akk: AKK_MERGED,
   san: SAN_DICTIONARY,
-  egy: EGY_DICTIONARY,
-  hit: HIT_DICTIONARY,
-  uga: UGA_DICTIONARY,
+  egy: EGY_MERGED,
+  hit: HIT_MERGED,
+  uga: UGA_MERGED,
 };
 
 function stripDiacritics(s: string): string {

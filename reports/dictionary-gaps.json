@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-29T09:05:39.291Z",
+  "generatedAt": "2026-05-29T09:11:23.523Z",
   "dictSizes": {
     "grc": 1670,
     "grc-koine": 1670,
@@ -7,15 +7,15 @@
     "lat": 2622,
     "lat-class": 2622,
     "lat-med": 2622,
-    "hbo": 1854,
-    "syr": 297,
-    "cop": 219,
-    "arc": 204,
-    "akk": 226,
+    "hbo": 1855,
+    "syr": 319,
+    "cop": 244,
+    "arc": 246,
+    "akk": 255,
     "san": 360,
-    "egy": 211,
-    "hit": 210,
-    "uga": 205
+    "egy": 235,
+    "hit": 226,
+    "uga": 247
   },
   "results": [
     {
@@ -1082,102 +1082,18 @@
       "language": "akk",
       "totalTokens": 286,
       "uniqueLemmas": 210,
-      "uniqueCovered": 28,
-      "uniqueMissing": 182,
-      "tokensCovered": 82,
-      "coveragePctTokens": 29,
-      "coveragePctLemmas": 13,
+      "uniqueCovered": 56,
+      "uniqueMissing": 154,
+      "tokensCovered": 132,
+      "coveragePctTokens": 46,
+      "coveragePctLemmas": 27,
       "topMissing": [
-        {
-          "lemma": "Gilgameš",
-          "count": 7
-        },
-        {
-          "lemma": "Enkidu",
-          "count": 3
-        },
-        {
-          "lemma": "Ištar",
-          "count": 3
-        },
-        {
-          "lemma": "awīlum",
-          "count": 3
-        },
-        {
-          "lemma": "dīnum",
-          "count": 3
-        },
-        {
-          "lemma": "ili",
-          "count": 2
-        },
-        {
-          "lemma": "ammīni",
-          "count": 2
-        },
-        {
-          "lemma": "lu",
-          "count": 2
-        },
-        {
-          "lemma": "kussi",
-          "count": 2
-        },
-        {
-          "lemma": "Utnapištim",
-          "count": 2
-        },
-        {
-          "lemma": "elisu",
-          "count": 2
-        },
-        {
-          "lemma": "Anum",
-          "count": 2
-        },
-        {
-          "lemma": "Enlil",
-          "count": 2
-        },
-        {
-          "lemma": "nagbu",
-          "count": 1
-        },
-        {
-          "lemma": "išdu",
-          "count": 1
-        },
-        {
-          "lemma": "mūdû",
-          "count": 1
-        },
-        {
-          "lemma": "kalāma",
-          "count": 1
-        },
-        {
-          "lemma": "aḫāzu",
-          "count": 1
-        },
-        {
-          "lemma": "arkānu",
-          "count": 1
-        },
-        {
-          "lemma": "maḫāru",
-          "count": 1
-        },
         {
           "lemma": "niṣirtu",
           "count": 1
         },
         {
           "lemma": "petû",
-          "count": 1
-        },
-        {
-          "lemma": "wabālu",
           "count": 1
         },
         {
@@ -1190,10 +1106,6 @@
         },
         {
           "lemma": "šarraqtu",
-          "count": 1
-        },
-        {
-          "lemma": "Uruk",
           "count": 1
         },
         {
@@ -1269,10 +1181,6 @@
           "count": 1
         },
         {
-          "lemma": "damqu",
-          "count": 1
-        },
-        {
           "lemma": "attā",
           "count": 1
         },
@@ -1286,6 +1194,98 @@
         },
         {
           "lemma": "seram",
+          "count": 1
+        },
+        {
+          "lemma": "lubilka",
+          "count": 1
+        },
+        {
+          "lemma": "supuri",
+          "count": 1
+        },
+        {
+          "lemma": "bit",
+          "count": 1
+        },
+        {
+          "lemma": "ellim",
+          "count": 1
+        },
+        {
+          "lemma": "musab",
+          "count": 1
+        },
+        {
+          "lemma": "ani",
+          "count": 1
+        },
+        {
+          "lemma": "asar",
+          "count": 1
+        },
+        {
+          "lemma": "gitmalu",
+          "count": 1
+        },
+        {
+          "lemma": "emuqi",
+          "count": 1
+        },
+        {
+          "lemma": "rimi",
+          "count": 1
+        },
+        {
+          "lemma": "ugdassiru",
+          "count": 1
+        },
+        {
+          "lemma": "etlutim",
+          "count": 1
+        },
+        {
+          "lemma": "imsi",
+          "count": 1
+        },
+        {
+          "lemma": "malesu",
+          "count": 1
+        },
+        {
+          "lemma": "ubbib",
+          "count": 1
+        },
+        {
+          "lemma": "tillesu",
+          "count": 1
+        },
+        {
+          "lemma": "dumqi",
+          "count": 1
+        },
+        {
+          "lemma": "inasa",
+          "count": 1
+        },
+        {
+          "lemma": "issa",
+          "count": 1
+        },
+        {
+          "lemma": "rubutu",
+          "count": 1
+        },
+        {
+          "lemma": "haʾiri-ma",
+          "count": 1
+        },
+        {
+          "lemma": "inbika",
+          "count": 1
+        },
+        {
+          "lemma": "yasi",
           "count": 1
         }
       ]
@@ -1506,92 +1506,12 @@
       "language": "cop",
       "totalTokens": 114,
       "uniqueLemmas": 82,
-      "uniqueCovered": 20,
-      "uniqueMissing": 62,
-      "tokensCovered": 25,
-      "coveragePctTokens": 22,
-      "coveragePctLemmas": 24,
+      "uniqueCovered": 41,
+      "uniqueMissing": 41,
+      "tokensCovered": 73,
+      "coveragePctTokens": 64,
+      "coveragePctLemmas": 50,
       "topMissing": [
-        {
-          "lemma": "ⲁⲩⲱ",
-          "count": 7
-        },
-        {
-          "lemma": "ⲉⲃⲟⲗ",
-          "count": 6
-        },
-        {
-          "lemma": "ⲛϭⲓ",
-          "count": 4
-        },
-        {
-          "lemma": "ⲡⲕⲟⲥⲙⲟⲥ",
-          "count": 3
-        },
-        {
-          "lemma": "ⲁϥϣⲱⲡⲉ",
-          "count": 3
-        },
-        {
-          "lemma": "ϩⲓⲧⲙ",
-          "count": 2
-        },
-        {
-          "lemma": "ⲁϥⲉⲓ",
-          "count": 2
-        },
-        {
-          "lemma": "ⲉⲧⲣⲉϥⲉⲣⲙⲛⲧⲣⲉ",
-          "count": 2
-        },
-        {
-          "lemma": "ⲙⲡⲟⲩⲟⲉⲓⲛ",
-          "count": 2
-        },
-        {
-          "lemma": "ϩⲓⲧⲟⲟⲧϥ",
-          "count": 2
-        },
-        {
-          "lemma": "ⲛⲉϥϣⲟⲟⲡ",
-          "count": 2
-        },
-        {
-          "lemma": "ϩⲙ",
-          "count": 2
-        },
-        {
-          "lemma": "ϫⲉ",
-          "count": 2
-        },
-        {
-          "lemma": "ϩⲙⲟⲧ",
-          "count": 2
-        },
-        {
-          "lemma": "ϩⲛ",
-          "count": 1
-        },
-        {
-          "lemma": "ϩⲟⲩⲉⲓⲧⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲁⲩϣⲱⲡⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲟⲩⲣⲱⲙⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲁⲩϫⲟⲟⲩϥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲉϥⲣⲁⲛ",
-          "count": 1
-        },
         {
           "lemma": "ⲓⲱϩⲁⲛⲛⲏⲥ",
           "count": 1
@@ -1622,10 +1542,6 @@
         },
         {
           "lemma": "ⲁⲗⲗⲁ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲟⲩⲟⲉⲓⲛ",
           "count": 1
         },
         {
@@ -1711,6 +1627,54 @@
         {
           "lemma": "ⲡⲓⲱϩⲁⲛⲛⲏⲥ",
           "count": 1
+        },
+        {
+          "lemma": "ⲛⲉϥⲣⲙⲛⲧⲣⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲧⲃⲏⲧϥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲉϥⲱϣ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉⲧⲁⲓϫⲟⲟϥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲧⲏⲣⲛ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲁⲛϫⲓ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉϥⲙⲁϩⲧⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉϩⲣⲁⲓ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉϫⲙ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲙⲁ",
+          "count": 1
+        },
+        {
+          "lemma": "ϫⲟⲟ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲁϣⲧ",
+          "count": 1
         }
       ]
     },
@@ -1718,92 +1682,12 @@
       "language": "arc",
       "totalTokens": 114,
       "uniqueLemmas": 87,
-      "uniqueCovered": 14,
-      "uniqueMissing": 73,
-      "tokensCovered": 19,
-      "coveragePctTokens": 17,
-      "coveragePctLemmas": 16,
+      "uniqueCovered": 34,
+      "uniqueMissing": 53,
+      "tokensCovered": 61,
+      "coveragePctTokens": 54,
+      "coveragePctLemmas": 39,
       "topMissing": [
-        {
-          "lemma": "יְיָ",
-          "count": 7
-        },
-        {
-          "lemma": "מַיָא",
-          "count": 5
-        },
-        {
-          "lemma": "וַאֲמַר",
-          "count": 3
-        },
-        {
-          "lemma": "יַת",
-          "count": 3
-        },
-        {
-          "lemma": "רְקִיעָא",
-          "count": 2
-        },
-        {
-          "lemma": "בֵּין",
-          "count": 2
-        },
-        {
-          "lemma": "וַעֲבַד",
-          "count": 2
-        },
-        {
-          "lemma": "לִרְקִיעָא",
-          "count": 2
-        },
-        {
-          "lemma": "וִיהוֹן",
-          "count": 2
-        },
-        {
-          "lemma": "דִּשְׁמַיָּא",
-          "count": 2
-        },
-        {
-          "lemma": "נְפֵשׁ",
-          "count": 2
-        },
-        {
-          "lemma": "חַיְתָא",
-          "count": 2
-        },
-        {
-          "lemma": "ܩܕܡܝ",
-          "count": 1
-        },
-        {
-          "lemma": "ܒܪܐ",
-          "count": 1
-        },
-        {
-          "lemma": "ܝܘܝ",
-          "count": 1
-        },
-        {
-          "lemma": "ܝܬ",
-          "count": 1
-        },
-        {
-          "lemma": "ܫܡܝܐ",
-          "count": 1
-        },
-        {
-          "lemma": "ܘܝܬ",
-          "count": 1
-        },
-        {
-          "lemma": "ܐܪܥܐ",
-          "count": 1
-        },
-        {
-          "lemma": "יְהֵי",
-          "count": 1
-        },
         {
           "lemma": "בְּגוֹ",
           "count": 1
@@ -1923,6 +1807,86 @@
         {
           "lemma": "כָּל",
           "count": 1
+        },
+        {
+          "lemma": "דְּרָחֲשָׁא",
+          "count": 1
+        },
+        {
+          "lemma": "תַּפְקֵי",
+          "count": 1
+        },
+        {
+          "lemma": "לְאָתִין",
+          "count": 1
+        },
+        {
+          "lemma": "וּלְמוֹעֲדִין",
+          "count": 1
+        },
+        {
+          "lemma": "נַעֲבֵד",
+          "count": 1
+        },
+        {
+          "lemma": "בְּצַלְמָנָא",
+          "count": 1
+        },
+        {
+          "lemma": "וְיִשְׁלְטוּן",
+          "count": 1
+        },
+        {
+          "lemma": "בִּנְפֵשׁ",
+          "count": 1
+        },
+        {
+          "lemma": "וּבְעוֹפָא",
+          "count": 1
+        },
+        {
+          "lemma": "וּבָרִיךְ",
+          "count": 1
+        },
+        {
+          "lemma": "שְׁבִיעָאָה",
+          "count": 1
+        },
+        {
+          "lemma": "וְקַדֵּישׁ",
+          "count": 1
+        },
+        {
+          "lemma": "יָתֵיהּ",
+          "count": 1
+        },
+        {
+          "lemma": "אֲרֵי",
+          "count": 1
+        },
+        {
+          "lemma": "בֵּיהּ",
+          "count": 1
+        },
+        {
+          "lemma": "שְׁבָת",
+          "count": 1
+        },
+        {
+          "lemma": "מִכָּל",
+          "count": 1
+        },
+        {
+          "lemma": "עֲבִידְתֵּיהּ",
+          "count": 1
+        },
+        {
+          "lemma": "בְּרָא",
+          "count": 1
+        },
+        {
+          "lemma": "אַבָּא",
+          "count": 1
         }
       ]
     },
@@ -1930,92 +1894,12 @@
       "language": "egy",
       "totalTokens": 83,
       "uniqueLemmas": 48,
-      "uniqueCovered": 16,
-      "uniqueMissing": 32,
-      "tokensCovered": 23,
-      "coveragePctTokens": 28,
-      "coveragePctLemmas": 33,
+      "uniqueCovered": 37,
+      "uniqueMissing": 11,
+      "tokensCovered": 72,
+      "coveragePctTokens": 87,
+      "coveragePctLemmas": 77,
       "topMissing": [
-        {
-          "lemma": "n.k",
-          "count": 8
-        },
-        {
-          "lemma": "m",
-          "count": 6
-        },
-        {
-          "lemma": "n.f",
-          "count": 4
-        },
-        {
-          "lemma": "jr",
-          "count": 3
-        },
-        {
-          "lemma": "r",
-          "count": 3
-        },
-        {
-          "lemma": "mꜣꜥ",
-          "count": 3
-        },
-        {
-          "lemma": "jw",
-          "count": 3
-        },
-        {
-          "lemma": "n",
-          "count": 2
-        },
-        {
-          "lemma": "ꜥqꜣ",
-          "count": 2
-        },
-        {
-          "lemma": "ꜥhꜥw",
-          "count": 2
-        },
-        {
-          "lemma": "f",
-          "count": 2
-        },
-        {
-          "lemma": "bw",
-          "count": 2
-        },
-        {
-          "lemma": "jry",
-          "count": 1
-        },
-        {
-          "lemma": "jȝw",
-          "count": 1
-        },
-        {
-          "lemma": "jtjw",
-          "count": 1
-        },
-        {
-          "lemma": "shrw",
-          "count": 1
-        },
-        {
-          "lemma": "jrj.n.f",
-          "count": 1
-        },
-        {
-          "lemma": "jrr",
-          "count": 1
-        },
-        {
-          "lemma": "nbt",
-          "count": 1
-        },
-        {
-          "lemma": "nt",
-          "count": 1
-        },
         {
           "lemma": "jrj.n",
           "count": 1
@@ -2034,10 +1918,6 @@
         },
         {
           "lemma": "jrt",
-          "count": 1
-        },
-        {
-          "lemma": "jrj",
           "count": 1
         },
         {
@@ -2070,92 +1950,12 @@
       "language": "syr",
       "totalTokens": 69,
       "uniqueLemmas": 49,
-      "uniqueCovered": 23,
-      "uniqueMissing": 26,
-      "tokensCovered": 28,
-      "coveragePctTokens": 41,
-      "coveragePctLemmas": 47,
+      "uniqueCovered": 43,
+      "uniqueMissing": 6,
+      "tokensCovered": 63,
+      "coveragePctTokens": 91,
+      "coveragePctLemmas": 88,
       "topMissing": [
-        {
-          "lemma": "ܗܘܐ",
-          "count": 8
-        },
-        {
-          "lemma": "ܢܘܗܪ",
-          "count": 3
-        },
-        {
-          "lemma": "ܪܝܫܝܬ",
-          "count": 2
-        },
-        {
-          "lemma": "ܡܠܬܐ",
-          "count": 2
-        },
-        {
-          "lemma": "ܗܢܐ",
-          "count": 2
-        },
-        {
-          "lemma": "ܐܠܗ",
-          "count": 2
-        },
-        {
-          "lemma": "ܟܠ",
-          "count": 2
-        },
-        {
-          "lemma": "ܒ",
-          "count": 2
-        },
-        {
-          "lemma": "ܐܝܕ",
-          "count": 1
-        },
-        {
-          "lemma": "ܒܠܥܕ",
-          "count": 1
-        },
-        {
-          "lemma": "ܐܦܠܐ",
-          "count": 1
-        },
-        {
-          "lemma": "ܒܪ",
-          "count": 1
-        },
-        {
-          "lemma": "ܐܕܪܟ",
-          "count": 1
-        },
-        {
-          "lemma": "ܓܒܪ",
-          "count": 1
-        },
-        {
-          "lemma": "ܫܠܚ",
-          "count": 1
-        },
-        {
-          "lemma": "ܫܡ",
-          "count": 1
-        },
-        {
-          "lemma": "ܝܘܚܢܢ",
-          "count": 1
-        },
-        {
-          "lemma": "ܣܗܕܘܬ",
-          "count": 1
-        },
-        {
-          "lemma": "ܣܗܕ",
-          "count": 1
-        },
-        {
-          "lemma": "ܥܠ",
-          "count": 1
-        },
         {
           "lemma": "ܒܣܪ",
           "count": 1
@@ -2186,52 +1986,12 @@
       "language": "hit",
       "totalTokens": 49,
       "uniqueLemmas": 39,
-      "uniqueCovered": 8,
-      "uniqueMissing": 31,
-      "tokensCovered": 14,
-      "coveragePctTokens": 29,
-      "coveragePctLemmas": 21,
+      "uniqueCovered": 18,
+      "uniqueMissing": 21,
+      "tokensCovered": 28,
+      "coveragePctTokens": 57,
+      "coveragePctLemmas": 46,
       "topMissing": [
-        {
-          "lemma": "umma",
-          "count": 2
-        },
-        {
-          "lemma": "UTU",
-          "count": 2
-        },
-        {
-          "lemma": "mursili",
-          "count": 2
-        },
-        {
-          "lemma": "arzawa",
-          "count": 2
-        },
-        {
-          "lemma": "2",
-          "count": 1
-        },
-        {
-          "lemma": "ŠI",
-          "count": 1
-        },
-        {
-          "lemma": "GAL",
-          "count": 1
-        },
-        {
-          "lemma": "mahhan",
-          "count": 1
-        },
-        {
-          "lemma": "hurk-",
-          "count": 1
-        },
-        {
-          "lemma": "EN",
-          "count": 1
-        },
         {
           "lemma": "paizzi",
           "count": 1
@@ -2322,117 +2082,12 @@
       "language": "uga",
       "totalTokens": 38,
       "uniqueLemmas": 32,
-      "uniqueCovered": 6,
-      "uniqueMissing": 26,
-      "tokensCovered": 10,
-      "coveragePctTokens": 26,
-      "coveragePctLemmas": 19,
-      "topMissing": [
-        {
-          "lemma": "b'l",
-          "count": 3
-        },
-        {
-          "lemma": "db'l",
-          "count": 1
-        },
-        {
-          "lemma": "zbl",
-          "count": 1
-        },
-        {
-          "lemma": "aliyn",
-          "count": 1
-        },
-        {
-          "lemma": "'ab",
-          "count": 1
-        },
-        {
-          "lemma": "y'n",
-          "count": 1
-        },
-        {
-          "lemma": "ql",
-          "count": 1
-        },
-        {
-          "lemma": "btš'",
-          "count": 1
-        },
-        {
-          "lemma": "atrt",
-          "count": 1
-        },
-        {
-          "lemma": "prm",
-          "count": 1
-        },
-        {
-          "lemma": "qlt",
-          "count": 1
-        },
-        {
-          "lemma": "𐎁𐎓𐎍",
-          "count": 1
-        },
-        {
-          "lemma": "𐎛𐎍",
-          "count": 1
-        },
-        {
-          "lemma": "𐎎𐎍𐎋",
-          "count": 1
-        },
-        {
-          "lemma": "𐎁𐎐",
-          "count": 1
-        },
-        {
-          "lemma": "𐎃𐎐",
-          "count": 1
-        },
-        {
-          "lemma": "𐎖𐎍",
-          "count": 1
-        },
-        {
-          "lemma": "𐎂𐎁𐎗",
-          "count": 1
-        },
-        {
-          "lemma": "𐎋𐎒𐎀",
-          "count": 1
-        },
-        {
-          "lemma": "𐎜𐎄𐎐",
-          "count": 1
-        },
-        {
-          "lemma": "𐎊𐎄",
-          "count": 1
-        },
-        {
-          "lemma": "𐎌𐎁𐎓",
-          "count": 1
-        },
-        {
-          "lemma": "𐎋𐎁𐎄",
-          "count": 1
-        },
-        {
-          "lemma": "𐎎𐎅",
-          "count": 1
-        },
-        {
-          "lemma": "𐎌𐎐𐎀",
-          "count": 1
-        },
-        {
-          "lemma": "𐎂𐎗",
-          "count": 1
-        }
-      ]
+      "uniqueCovered": 32,
+      "uniqueMissing": 0,
+      "tokensCovered": 38,
+      "coveragePctTokens": 100,
+      "coveragePctLemmas": 100,
+      "topMissing": []
     }
   ]
 }
