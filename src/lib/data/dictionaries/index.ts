@@ -23,11 +23,15 @@ import { HIT_DICTIONARY } from './hit.js';
 import { UGA_DICTIONARY } from './uga.js';
 import {
   AKK_EXTRAS,
+  AKK_EXTRAS_MORE,
   ARC_EXTRAS,
+  ARC_EXTRAS_MORE,
   COP_EXTRAS,
+  COP_EXTRAS_MORE,
   SYR_EXTRAS,
   EGY_EXTRAS,
   HIT_EXTRAS,
+  HIT_EXTRAS_MORE,
   UGA_EXTRAS,
   HBO_EXTRAS,
 } from './extras.js';
@@ -42,11 +46,27 @@ const HBO_MERGED: Record<string, string> = {
   ...HBO_DICTIONARY,
 };
 const SYR_MERGED: Record<string, string> = { ...SYR_EXTRAS, ...SYR_DICTIONARY };
-const COP_MERGED: Record<string, string> = { ...COP_EXTRAS, ...COP_DICTIONARY };
-const ARC_MERGED: Record<string, string> = { ...ARC_EXTRAS, ...ARC_DICTIONARY };
-const AKK_MERGED: Record<string, string> = { ...AKK_EXTRAS, ...AKK_DICTIONARY };
+const COP_MERGED: Record<string, string> = {
+  ...COP_EXTRAS_MORE,
+  ...COP_EXTRAS,
+  ...COP_DICTIONARY,
+};
+const ARC_MERGED: Record<string, string> = {
+  ...ARC_EXTRAS_MORE,
+  ...ARC_EXTRAS,
+  ...ARC_DICTIONARY,
+};
+const AKK_MERGED: Record<string, string> = {
+  ...AKK_EXTRAS_MORE,
+  ...AKK_EXTRAS,
+  ...AKK_DICTIONARY,
+};
 const EGY_MERGED: Record<string, string> = { ...EGY_EXTRAS, ...EGY_DICTIONARY };
-const HIT_MERGED: Record<string, string> = { ...HIT_EXTRAS, ...HIT_DICTIONARY };
+const HIT_MERGED: Record<string, string> = {
+  ...HIT_EXTRAS_MORE,
+  ...HIT_EXTRAS,
+  ...HIT_DICTIONARY,
+};
 const UGA_MERGED: Record<string, string> = { ...UGA_EXTRAS, ...UGA_DICTIONARY };
 
 const LANG_DICTS: Record<string, Record<string, string>> = {
