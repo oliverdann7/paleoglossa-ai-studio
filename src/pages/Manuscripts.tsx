@@ -14,12 +14,18 @@ import {
   RotateCcw,
   ScanLine,
   Search,
+  Scroll,
   Trash2,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiFetch } from '@/lib/services/apiFetch';
 import { LANGUAGES } from '@/lib/constants/languages';
+import {
+  WITNESSES,
+  getApparatusForManuscript,
+} from '../lib/data/criticalApparatus.js';
+import type { ApparatusLocus } from '../lib/data/criticalApparatus.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -406,6 +412,131 @@ function TranscriptionPanel({ text, isRtl }: { text: string; isRtl: boolean }) {
   );
 }
 
+// ─── Critical Apparatus panel ─────────────────────────────────────────────────
+
+const CHANGE_TYPE_COLORS: Record<string, string> = {
+  omission: 'bg-red-50 text-red-600 border-red-200',
+  addition: 'bg-blue/5 text-blue border-blue/20',
+  substitution: 'bg-amber-50 text-amber-700 border-amber-200',
+  transposition: 'bg-purple-50 text-purple-600 border-purple-200',
+  spelling: 'bg-parch3 text-muted border-bdr',
+  harmonization: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+};
+
+const SIGNIFICANCE_COLORS: Record<string, string> = {
+  significant: 'text-red-500',
+  moderate: 'text-amber-600',
+  minor: 'text-muted',
+};
+
+function WitnessChip({ siglum }: { siglum: string }) {
+  const w = WITNESSES[siglum];
+  return (
+    <span
+      title={w ? `${w.fullName} (${w.date})` : siglum}
+      className="inline-block px-1.5 py-0.5 bg-parch3 border border-bdr/60 rounded text-[10px] font-mono font-semibold text-ink2 cursor-help"
+    >
+      {w?.siglum ?? siglum}
+    </span>
+  );
+}
+
+function ApparatusEntry({ locus }: { locus: ApparatusLocus }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="border-b border-bdr/40 last:border-0 py-3 px-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="text-[12px] font-bold text-blue mb-1">{locus.reference}</div>
+          <div className="flex flex-wrap gap-1 mb-1.5">
+            <span className="text-[11px] font-mono text-ink">{locus.baseText}</span>
+            <span className="text-[10px] text-muted italic">base text</span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {locus.baseWitnesses.map((w) => (
+              <WitnessChip key={w} siglum={w} />
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          className="shrink-0 p-1 rounded hover:bg-parch3 transition-colors"
+        >
+          <ChevronDown className={cn('w-3.5 h-3.5 text-muted transition-transform', expanded && 'rotate-180')} />
+        </button>
+      </div>
+
+      {locus.variants.map((v, i) => (
+        <div key={i} className="mt-2 ml-2 pl-3 border-l-2 border-bdr/60">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className={cn(
+                'text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wide',
+                CHANGE_TYPE_COLORS[v.changeType] || 'bg-parch3 text-muted border-bdr'
+              )}
+            >
+              {v.changeType}
+            </span>
+            <span className={cn('text-[10px] font-semibold', SIGNIFICANCE_COLORS[v.significance])}>
+              {v.significance}
+            </span>
+          </div>
+          <div className="text-[11px] font-mono text-ink mt-1 italic">{v.reading}</div>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {v.witnesses.map((w) => (
+              <WitnessChip key={w} siglum={w} />
+            ))}
+          </div>
+          {v.note && (
+            <p className="text-[11px] text-ink2 leading-relaxed mt-1.5">{v.note}</p>
+          )}
+        </div>
+      ))}
+
+      {expanded && (
+        <p className="text-[11px] text-ink2 leading-relaxed mt-2 pt-2 border-t border-bdr/40 italic">
+          {locus.discussionNote}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function CriticalApparatusPanel({
+  languageId,
+  title,
+}: {
+  languageId: string;
+  title: string;
+}) {
+  const entries = getApparatusForManuscript(languageId, title);
+  if (languageId !== 'grc') {
+    return (
+      <div className="flex-1 flex items-center justify-center text-center px-6">
+        <div>
+          <Scroll className="w-7 h-7 text-muted mx-auto mb-2" />
+          <p className="text-[13px] text-muted">
+            Critical apparatus data is currently available for Ancient Greek manuscripts only.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="divide-y divide-bdr/20">
+        {entries.map((locus) => (
+          <ApparatusEntry key={locus.reference} locus={locus} />
+        ))}
+      </div>
+      <p className="text-[10px] text-muted px-4 pb-4 pt-2">
+        Apparatus based on NA28 / UBS5 scholarship. Tap each entry to expand the discussion note.
+        Witness abbreviations follow standard NA28 conventions.
+      </p>
+    </div>
+  );
+}
+
 // ─── Manuscript form ──────────────────────────────────────────────────────────
 
 function ManuscriptForm({
@@ -747,6 +878,7 @@ function ManuscriptDetail({
   const lang = LANGUAGES.find((l) => l.id === manuscript.languageId);
   const isRtl = ['hbo', 'arc', 'syr', 'egy'].includes(manuscript.languageId);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [rightTab, setRightTab] = useState<'transcription' | 'apparatus'>('transcription');
 
   return (
     <div className="flex flex-col h-full">
@@ -859,14 +991,34 @@ function ManuscriptDetail({
           )}
         </div>
 
-        {/* Transcription */}
+        {/* Transcription / Apparatus */}
         <div className="flex flex-col w-80 xl:w-96 shrink-0 border border-bdr/40 rounded-lg bg-parch overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-bdr/40 bg-parch2/60">
-            <span className="text-[11px] font-bold text-muted uppercase tracking-wider">
-              {t('manuscripts.transcription', 'Diplomatic Transcription')}
-            </span>
+          <div className="flex border-b border-bdr/40 bg-parch2/60">
+            <button
+              onClick={() => setRightTab('transcription')}
+              className={cn(
+                'flex-1 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors',
+                rightTab === 'transcription' ? 'text-blue border-b-2 border-blue -mb-px' : 'text-muted hover:text-ink'
+              )}
+            >
+              {t('manuscripts.transcription', 'Transcription')}
+            </button>
+            <button
+              onClick={() => setRightTab('apparatus')}
+              className={cn(
+                'flex-1 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1',
+                rightTab === 'apparatus' ? 'text-blue border-b-2 border-blue -mb-px' : 'text-muted hover:text-ink'
+              )}
+            >
+              <Scroll className="w-3 h-3" />
+              {t('manuscripts.apparatus', 'Apparatus')}
+            </button>
           </div>
-          <TranscriptionPanel text={manuscript.transcription} isRtl={isRtl} />
+          {rightTab === 'transcription' ? (
+            <TranscriptionPanel text={manuscript.transcription} isRtl={isRtl} />
+          ) : (
+            <CriticalApparatusPanel languageId={manuscript.languageId} title={manuscript.title} />
+          )}
         </div>
       </div>
     </div>
