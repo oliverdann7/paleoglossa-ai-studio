@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-29T09:11:23.523Z",
+  "generatedAt": "2026-05-29T09:21:13.763Z",
   "dictSizes": {
     "grc": 1670,
     "grc-koine": 1670,
@@ -20,11 +20,11 @@
   "results": [
     {
       "language": "grc-koine",
-      "totalTokens": 20418,
-      "uniqueLemmas": 3735,
-      "uniqueCovered": 772,
-      "uniqueMissing": 2963,
-      "tokensCovered": 15565,
+      "totalTokens": 20635,
+      "uniqueLemmas": 3769,
+      "uniqueCovered": 775,
+      "uniqueMissing": 2994,
+      "tokensCovered": 15721,
       "coveragePctTokens": 76,
       "coveragePctLemmas": 21,
       "topMissing": [
@@ -181,6 +181,10 @@
           "count": 7
         },
         {
+          "lemma": "οδον",
+          "count": 7
+        },
+        {
           "lemma": "ευρισκει",
           "count": 7
         },
@@ -209,6 +213,10 @@
           "count": 7
         },
         {
+          "lemma": "δος",
+          "count": 7
+        },
+        {
           "lemma": "εποιησα",
           "count": 7
         },
@@ -219,24 +227,228 @@
         {
           "lemma": "πεμψαντα",
           "count": 7
+        }
+      ]
+    },
+    {
+      "language": "lat",
+      "totalTokens": 1781,
+      "uniqueLemmas": 1158,
+      "uniqueCovered": 390,
+      "uniqueMissing": 768,
+      "tokensCovered": 931,
+      "coveragePctTokens": 52,
+      "coveragePctLemmas": 34,
+      "topMissing": [
+        {
+          "lemma": "margaritam",
+          "count": 3
         },
         {
-          "lemma": "εσχατη",
-          "count": 7
+          "lemma": "terrarum",
+          "count": 3
         },
         {
-          "lemma": "αποθανη",
-          "count": 7
+          "lemma": "ingenia",
+          "count": 3
+        },
+        {
+          "lemma": "profugus",
+          "count": 2
+        },
+        {
+          "lemma": "altae",
+          "count": 2
+        },
+        {
+          "lemma": "causas",
+          "count": 2
+        },
+        {
+          "lemma": "volvere",
+          "count": 2
+        },
+        {
+          "lemma": "labores",
+          "count": 2
+        },
+        {
+          "lemma": "troiam",
+          "count": 2
+        },
+        {
+          "lemma": "conspectu",
+          "count": 2
+        },
+        {
+          "lemma": "siculae",
+          "count": 2
+        },
+        {
+          "lemma": "telluris",
+          "count": 2
+        },
+        {
+          "lemma": "vela",
+          "count": 2
+        },
+        {
+          "lemma": "dabant",
+          "count": 2
+        },
+        {
+          "lemma": "laeti",
+          "count": 2
+        },
+        {
+          "lemma": "aere",
+          "count": 2
+        },
+        {
+          "lemma": "aeternum",
+          "count": 2
+        },
+        {
+          "lemma": "servans",
+          "count": 2
+        },
+        {
+          "lemma": "secum",
+          "count": 2
+        },
+        {
+          "lemma": "mene",
+          "count": 2
+        },
+        {
+          "lemma": "incepto",
+          "count": 2
+        },
+        {
+          "lemma": "desistere",
+          "count": 2
+        },
+        {
+          "lemma": "victam",
+          "count": 2
+        },
+        {
+          "lemma": "posse",
+          "count": 2
+        },
+        {
+          "lemma": "teucrorum",
+          "count": 2
+        },
+        {
+          "lemma": "avertere",
+          "count": 2
+        },
+        {
+          "lemma": "vetor",
+          "count": 2
+        },
+        {
+          "lemma": "fatis",
+          "count": 2
+        },
+        {
+          "lemma": "classem",
+          "count": 2
+        },
+        {
+          "lemma": "nubibus",
+          "count": 2
+        },
+        {
+          "lemma": "acuto",
+          "count": 2
+        },
+        {
+          "lemma": "ast",
+          "count": 2
+        },
+        {
+          "lemma": "divom",
+          "count": 2
+        },
+        {
+          "lemma": "iovisque",
+          "count": 2
+        },
+        {
+          "lemma": "gente",
+          "count": 2
+        },
+        {
+          "lemma": "annos",
+          "count": 2
+        },
+        {
+          "lemma": "verba",
+          "count": 2
+        },
+        {
+          "lemma": "subit",
+          "count": 2
+        },
+        {
+          "lemma": "portu",
+          "count": 2
+        },
+        {
+          "lemma": "apparet",
+          "count": 2
+        },
+        {
+          "lemma": "silentum",
+          "count": 2
+        },
+        {
+          "lemma": "ferens",
+          "count": 2
+        },
+        {
+          "lemma": "dido",
+          "count": 2
+        },
+        {
+          "lemma": "agrum",
+          "count": 2
+        },
+        {
+          "lemma": "agro",
+          "count": 2
+        },
+        {
+          "lemma": "horto",
+          "count": 2
+        },
+        {
+          "lemma": "piscator",
+          "count": 2
+        },
+        {
+          "lemma": "ambulat",
+          "count": 2
+        },
+        {
+          "lemma": "rete",
+          "count": 2
+        },
+        {
+          "lemma": "portat",
+          "count": 2
         }
       ]
     },
     {
       "language": "hbo",
-      "totalTokens": 1636,
-      "uniqueLemmas": 1109,
-      "uniqueCovered": 522,
-      "uniqueMissing": 587,
-      "tokensCovered": 969,
+      "totalTokens": 1672,
+      "uniqueLemmas": 1128,
+      "uniqueCovered": 528,
+      "uniqueMissing": 600,
+      "tokensCovered": 992,
       "coveragePctTokens": 59,
       "coveragePctLemmas": 47,
       "topMissing": [
@@ -438,218 +650,6 @@
         },
         {
           "lemma": "עמכם",
-          "count": 2
-        }
-      ]
-    },
-    {
-      "language": "lat",
-      "totalTokens": 1623,
-      "uniqueLemmas": 1079,
-      "uniqueCovered": 368,
-      "uniqueMissing": 711,
-      "tokensCovered": 846,
-      "coveragePctTokens": 52,
-      "coveragePctLemmas": 34,
-      "topMissing": [
-        {
-          "lemma": "terrarum",
-          "count": 3
-        },
-        {
-          "lemma": "ingenia",
-          "count": 3
-        },
-        {
-          "lemma": "profugus",
-          "count": 2
-        },
-        {
-          "lemma": "causas",
-          "count": 2
-        },
-        {
-          "lemma": "volvere",
-          "count": 2
-        },
-        {
-          "lemma": "labores",
-          "count": 2
-        },
-        {
-          "lemma": "troiam",
-          "count": 2
-        },
-        {
-          "lemma": "conspectu",
-          "count": 2
-        },
-        {
-          "lemma": "siculae",
-          "count": 2
-        },
-        {
-          "lemma": "telluris",
-          "count": 2
-        },
-        {
-          "lemma": "vela",
-          "count": 2
-        },
-        {
-          "lemma": "dabant",
-          "count": 2
-        },
-        {
-          "lemma": "laeti",
-          "count": 2
-        },
-        {
-          "lemma": "aere",
-          "count": 2
-        },
-        {
-          "lemma": "aeternum",
-          "count": 2
-        },
-        {
-          "lemma": "servans",
-          "count": 2
-        },
-        {
-          "lemma": "secum",
-          "count": 2
-        },
-        {
-          "lemma": "mene",
-          "count": 2
-        },
-        {
-          "lemma": "incepto",
-          "count": 2
-        },
-        {
-          "lemma": "desistere",
-          "count": 2
-        },
-        {
-          "lemma": "victam",
-          "count": 2
-        },
-        {
-          "lemma": "posse",
-          "count": 2
-        },
-        {
-          "lemma": "teucrorum",
-          "count": 2
-        },
-        {
-          "lemma": "avertere",
-          "count": 2
-        },
-        {
-          "lemma": "vetor",
-          "count": 2
-        },
-        {
-          "lemma": "fatis",
-          "count": 2
-        },
-        {
-          "lemma": "classem",
-          "count": 2
-        },
-        {
-          "lemma": "nubibus",
-          "count": 2
-        },
-        {
-          "lemma": "acuto",
-          "count": 2
-        },
-        {
-          "lemma": "ast",
-          "count": 2
-        },
-        {
-          "lemma": "divom",
-          "count": 2
-        },
-        {
-          "lemma": "iovisque",
-          "count": 2
-        },
-        {
-          "lemma": "gente",
-          "count": 2
-        },
-        {
-          "lemma": "annos",
-          "count": 2
-        },
-        {
-          "lemma": "verba",
-          "count": 2
-        },
-        {
-          "lemma": "subit",
-          "count": 2
-        },
-        {
-          "lemma": "portu",
-          "count": 2
-        },
-        {
-          "lemma": "apparet",
-          "count": 2
-        },
-        {
-          "lemma": "silentum",
-          "count": 2
-        },
-        {
-          "lemma": "ferens",
-          "count": 2
-        },
-        {
-          "lemma": "dido",
-          "count": 2
-        },
-        {
-          "lemma": "agrum",
-          "count": 2
-        },
-        {
-          "lemma": "agro",
-          "count": 2
-        },
-        {
-          "lemma": "piscator",
-          "count": 2
-        },
-        {
-          "lemma": "rete",
-          "count": 2
-        },
-        {
-          "lemma": "portat",
-          "count": 2
-        },
-        {
-          "lemma": "perhiberet",
-          "count": 2
-        },
-        {
-          "lemma": "lumine",
-          "count": 2
-        },
-        {
-          "lemma": "credunt",
-          "count": 2
-        },
-        {
-          "lemma": "voluntate",
           "count": 2
         }
       ]
@@ -1292,13 +1292,13 @@
     },
     {
       "language": "san",
-      "totalTokens": 146,
-      "uniqueLemmas": 125,
-      "uniqueCovered": 42,
-      "uniqueMissing": 83,
-      "tokensCovered": 63,
-      "coveragePctTokens": 43,
-      "coveragePctLemmas": 34,
+      "totalTokens": 159,
+      "uniqueLemmas": 135,
+      "uniqueCovered": 51,
+      "uniqueMissing": 84,
+      "tokensCovered": 75,
+      "coveragePctTokens": 47,
+      "coveragePctLemmas": 38,
       "topMissing": [
         {
           "lemma": "ca",
@@ -1503,191 +1503,19 @@
       ]
     },
     {
-      "language": "cop",
-      "totalTokens": 114,
-      "uniqueLemmas": 82,
-      "uniqueCovered": 41,
-      "uniqueMissing": 41,
-      "tokensCovered": 73,
-      "coveragePctTokens": 64,
-      "coveragePctLemmas": 50,
-      "topMissing": [
-        {
-          "lemma": "ⲓⲱϩⲁⲛⲛⲏⲥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲩⲙⲛⲧⲙⲛⲧⲣⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ϩⲓⲛⲁ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲛⲧⲟⲩⲡⲓⲥⲧⲉⲩⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲧⲏⲣⲟⲩ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲙⲡⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲓⲟⲩⲟⲉⲓⲛ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲁⲗⲗⲁ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲛⲧⲁϩⲏϫⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲧⲣⲉϥⲣⲟⲩⲟⲉⲓⲛ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲟⲩⲟⲛ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲧⲛⲏⲩ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲡⲕⲟⲥⲙⲟⲥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲙⲡⲉϥⲥⲟⲩⲱⲛϥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲛⲉϥⲓⲇⲓⲁ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲛⲉϥⲓⲇⲓⲁ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲙⲡⲟⲩϫⲓⲧϥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲓⲱⲡ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡϣⲁϫⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲛⲥⲁⲣⲝ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲁϥⲥⲕⲏⲛⲟⲩ",
-          "count": 1
-        },
-        {
-          "lemma": "ϩⲣⲁⲓ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲛϩⲏⲧⲛ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲁⲛⲁⲩ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲡⲉϥⲉⲟⲟⲩ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲉⲟⲟⲩ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲙⲙⲟⲛⲟⲅⲉⲛⲏⲥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲉⲓⲱⲧ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲓⲱϩⲁⲛⲛⲏⲥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲛⲉϥⲣⲙⲛⲧⲣⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉⲧⲃⲏⲧϥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲛⲉϥⲱϣ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲉⲧⲁⲓϫⲟⲟϥ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲧⲏⲣⲛ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲁⲛϫⲓ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲡⲉϥⲙⲁϩⲧⲉ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉϩⲣⲁⲓ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲉϫⲙ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲙⲁ",
-          "count": 1
-        },
-        {
-          "lemma": "ϫⲟⲟ",
-          "count": 1
-        },
-        {
-          "lemma": "ⲛⲁϣⲧ",
-          "count": 1
-        }
-      ]
-    },
-    {
       "language": "arc",
-      "totalTokens": 114,
-      "uniqueLemmas": 87,
-      "uniqueCovered": 34,
-      "uniqueMissing": 53,
-      "tokensCovered": 61,
-      "coveragePctTokens": 54,
-      "coveragePctLemmas": 39,
+      "totalTokens": 130,
+      "uniqueLemmas": 100,
+      "uniqueCovered": 38,
+      "uniqueMissing": 62,
+      "tokensCovered": 67,
+      "coveragePctTokens": 52,
+      "coveragePctLemmas": 38,
       "topMissing": [
+        {
+          "lemma": "כָּל",
+          "count": 2
+        },
         {
           "lemma": "בְּגוֹ",
           "count": 1
@@ -1805,10 +1633,6 @@
           "count": 1
         },
         {
-          "lemma": "כָּל",
-          "count": 1
-        },
-        {
           "lemma": "דְּרָחֲשָׁא",
           "count": 1
         },
@@ -1881,11 +1705,291 @@
           "count": 1
         },
         {
-          "lemma": "בְּרָא",
+          "lemma": "רַבָּן",
           "count": 1
         },
         {
-          "lemma": "אַבָּא",
+          "lemma": "גַּמְלִיאֵל",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "cop",
+      "totalTokens": 127,
+      "uniqueLemmas": 85,
+      "uniqueCovered": 41,
+      "uniqueMissing": 44,
+      "tokensCovered": 80,
+      "coveragePctTokens": 63,
+      "coveragePctLemmas": 48,
+      "topMissing": [
+        {
+          "lemma": "ⲡϣⲁϫⲉ",
+          "count": 4
+        },
+        {
+          "lemma": "ⲓⲱϩⲁⲛⲛⲏⲥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲩⲙⲛⲧⲙⲛⲧⲣⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ϩⲓⲛⲁ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲧⲟⲩⲡⲓⲥⲧⲉⲩⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲧⲏⲣⲟⲩ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲙⲡⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲓⲟⲩⲟⲉⲓⲛ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲁⲗⲗⲁ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲧⲁϩⲏϫⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲧⲣⲉϥⲣⲟⲩⲟⲉⲓⲛ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲟⲩⲟⲛ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲧⲛⲏⲩ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲡⲕⲟⲥⲙⲟⲥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲙⲡⲉϥⲥⲟⲩⲱⲛϥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲛⲉϥⲓⲇⲓⲁ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲉϥⲓⲇⲓⲁ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲙⲡⲟⲩϫⲓⲧϥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲓⲱⲡ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲥⲁⲣⲝ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲁϥⲥⲕⲏⲛⲟⲩ",
+          "count": 1
+        },
+        {
+          "lemma": "ϩⲣⲁⲓ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛϩⲏⲧⲛ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲁⲛⲁⲩ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲡⲉϥⲉⲟⲟⲩ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉⲟⲟⲩ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲙⲙⲟⲛⲟⲅⲉⲛⲏⲥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉⲓⲱⲧ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲓⲱϩⲁⲛⲛⲏⲥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲉϥⲣⲙⲛⲧⲣⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲧⲃⲏⲧϥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲉϥⲱϣ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉⲧⲁⲓϫⲟⲟϥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲧⲏⲣⲛ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲁⲛϫⲓ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉϥⲙⲁϩⲧⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉϩⲣⲁⲓ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉϫⲙ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲧⲉϩⲟⲩⲉⲓⲧⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲛⲁϩⲣⲙ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲉⲩⲛⲟⲩⲧⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲙⲁ",
+          "count": 1
+        },
+        {
+          "lemma": "ϫⲟⲟ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲁϣⲧ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "syr",
+      "totalTokens": 86,
+      "uniqueLemmas": 65,
+      "uniqueCovered": 45,
+      "uniqueMissing": 20,
+      "tokensCovered": 65,
+      "coveragePctTokens": 76,
+      "coveragePctLemmas": 69,
+      "topMissing": [
+        {
+          "lemma": "ܕܒܫܡܝܐ",
+          "count": 2
+        },
+        {
+          "lemma": "ܒܣܪ",
+          "count": 1
+        },
+        {
+          "lemma": "ܥܡܪ",
+          "count": 1
+        },
+        {
+          "lemma": "ܒܝܢܬ",
+          "count": 1
+        },
+        {
+          "lemma": "ܐܒܘܢ",
+          "count": 1
+        },
+        {
+          "lemma": "ܢܬܩܕܫ",
+          "count": 1
+        },
+        {
+          "lemma": "ܫܡܟ",
+          "count": 1
+        },
+        {
+          "lemma": "ܬܐܬܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܡܠܟܘܬܟ",
+          "count": 1
+        },
+        {
+          "lemma": "ܢܗܘܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܨܒܝܢܟ",
+          "count": 1
+        },
+        {
+          "lemma": "ܐܦ",
+          "count": 1
+        },
+        {
+          "lemma": "ܒܐܪܥܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܠܢ",
+          "count": 1
+        },
+        {
+          "lemma": "ܠܚܡܢ",
+          "count": 1
+        },
+        {
+          "lemma": "ܕܣܘܢܩܢܢ",
+          "count": 1
+        },
+        {
+          "lemma": "ܝܘܡܢܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܫܡܝܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܢܘܗܪܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܫܠܡܐ",
           "count": 1
         }
       ]
@@ -1942,42 +2046,6 @@
         },
         {
           "lemma": "ỉw",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "language": "syr",
-      "totalTokens": 69,
-      "uniqueLemmas": 49,
-      "uniqueCovered": 43,
-      "uniqueMissing": 6,
-      "tokensCovered": 63,
-      "coveragePctTokens": 91,
-      "coveragePctLemmas": 88,
-      "topMissing": [
-        {
-          "lemma": "ܒܣܪ",
-          "count": 1
-        },
-        {
-          "lemma": "ܥܡܪ",
-          "count": 1
-        },
-        {
-          "lemma": "ܒܝܢܬ",
-          "count": 1
-        },
-        {
-          "lemma": "ܫܡܝܐ",
-          "count": 1
-        },
-        {
-          "lemma": "ܢܘܗܪܐ",
-          "count": 1
-        },
-        {
-          "lemma": "ܫܠܡܐ",
           "count": 1
         }
       ]
