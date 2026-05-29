@@ -944,6 +944,31 @@ export const TEXT_HEB_GENESIS: Text = {
   ],
 };
 
+export const TEXT_COP_MINI_STORIES: Text = {
+  id: "CopMini",
+  corpusId: "COPTIC_SAHIDIC",
+  title: "ⲛⲉϣⲁϫⲉ ⲛⲕⲟⲩⲓ",
+  canonicalRef: "Coptic Mini-Stories",
+  author: "Paleoglossa",
+  language: "cop",
+  direction: "ltr",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 3,
+  sectionsPreview: [
+    { id: "CopMini-1", label: "In the beginning (John 1)" },
+  ],
+};
+
 export const TEXT_HEB_PS23: Text = {
   id: "Heb-Ps23",
   corpusId: "OSHB",
@@ -4656,6 +4681,7 @@ import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION
 import { ALL_HEBREW_EXTENDED_2_SECTIONS } from "./corpus/hebrew-extended-2.js";
 import { ALL_SYRIAC_EXTENDED_SECTIONS } from "./corpus/syriac-extended.js";
 import { ALL_COPTIC_EXTENDED_SECTIONS } from "./corpus/coptic-extended.js";
+import { ALL_COPTIC_MINI_STORIES, COP_MINI_1 } from "./corpus/coptic-mini-stories.js";
 import { ALL_ARAMAIC_EXTENDED_SECTIONS } from "./corpus/aramaic-extended.js";
 import { ALL_AKKADIAN_EXTENDED_SECTIONS } from "./corpus/akkadian-extended.js";
 import { ALL_HITTITE_EXTENDED_SECTIONS } from "./corpus/hittite-extended.js";
@@ -4711,6 +4737,7 @@ function getAllEnhancedTexts() {
       TEXT_LAT_MINI_STORIES,
       TEXT_LAT_VG_JOHN,
       TEXT_LAT_CATO,
+      TEXT_COP_MINI_STORIES,
       TEXT_HEB_GENESIS,
       TEXT_HEB_PS23,
       TEXT_HEB_JONAH,
@@ -4787,6 +4814,7 @@ function getLemmaIndex() {
     ...ALL_HEBREW_EXTENDED_2_SECTIONS,
     ...ALL_SYRIAC_EXTENDED_SECTIONS,
     ...ALL_COPTIC_EXTENDED_SECTIONS,
+    ...ALL_COPTIC_MINI_STORIES,
     ...ALL_ARAMAIC_EXTENDED_SECTIONS,
     ...ALL_AKKADIAN_EXTENDED_SECTIONS,
     ...ALL_HITTITE_EXTENDED_SECTIONS,
@@ -4948,6 +4976,7 @@ export const CorpusDB = {
     if (syriacExtMatch) return syriacExtMatch;
     const copticExtMatch = ALL_COPTIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
     if (copticExtMatch) return copticExtMatch;
+    if (sectionId === "CopMini-1") return COP_MINI_1;
     const aramaicExtMatch = ALL_ARAMAIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
     if (aramaicExtMatch) return aramaicExtMatch;
     if (sectionId === "grc-voc-1") return GRC_VOCAB_SECTION;
