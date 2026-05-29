@@ -23,6 +23,7 @@ import {
   Download,
   UserMinus,
   ArrowUpDown,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -197,6 +198,7 @@ function CourseForm({
   const [texts, setTexts] = useState<CourseTextAssignment[]>(initial?.texts ?? []);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
 
   const addText = (textId: string, textTitle: string) => {
     if (texts.some((t) => t.textId === textId)) return;
@@ -209,6 +211,12 @@ function CourseForm({
   const removeText = (textId: string) => {
     setTexts((prev) =>
       prev.filter((t) => t.textId !== textId).map((t, i) => ({ ...t, order: i + 1 }))
+    );
+  };
+
+  const updateTeacherNote = (textId: string, note: string) => {
+    setTexts((prev) =>
+      prev.map((t) => (t.textId === textId ? { ...t, teacherNote: note } : t))
     );
   };
 
@@ -326,20 +334,42 @@ function CourseForm({
         {texts.length > 0 && (
           <div className="space-y-1.5 mb-3">
             {texts.map((t, i) => (
-              <div
-                key={t.textId}
-                className="flex items-center gap-2 px-3 py-2 bg-parch2 rounded-lg text-[13px]"
-              >
-                <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue/10 text-blue text-[10px] font-bold shrink-0">
-                  {i + 1}
-                </span>
-                <span className="flex-1 text-ink truncate">{t.learningObjectives || t.textId}</span>
-                <button
-                  onClick={() => removeText(t.textId)}
-                  className="text-muted hover:text-red-500 transition-colors shrink-0"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+              <div key={t.textId} className="bg-parch2 rounded-lg overflow-hidden">
+                <div className="flex items-center gap-2 px-3 py-2 text-[13px]">
+                  <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue/10 text-blue text-[10px] font-bold shrink-0">
+                    {i + 1}
+                  </span>
+                  <span className="flex-1 text-ink truncate">{t.learningObjectives || t.textId}</span>
+                  <button
+                    onClick={() => setExpandedNoteId(expandedNoteId === t.textId ? null : t.textId)}
+                    className={cn(
+                      'p-1 rounded transition-colors shrink-0',
+                      expandedNoteId === t.textId || t.teacherNote
+                        ? 'text-blue'
+                        : 'text-muted hover:text-ink'
+                    )}
+                    title="Add reading guide"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => removeText(t.textId)}
+                    className="text-muted hover:text-red-500 transition-colors shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {expandedNoteId === t.textId && (
+                  <div className="px-3 pb-2.5 border-t border-bdr/30">
+                    <textarea
+                      className="w-full mt-2 text-[12px] bg-white border border-bdr rounded-lg px-3 py-2 text-ink placeholder:text-muted resize-none focus:outline-none focus:ring-1 focus:ring-blue/40"
+                      rows={3}
+                      placeholder="Add a reading guide, key vocabulary, or learning objectives for students…"
+                      value={t.teacherNote ?? ''}
+                      onChange={(e) => updateTeacherNote(t.textId, e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -807,6 +837,11 @@ function CourseDetail({
                         </div>
                         <span className="text-[11px] text-muted shrink-0">{pct}%</span>
                       </div>
+                    )}
+                    {assignment.teacherNote && (
+                      <p className="mt-1.5 text-[12px] text-ink2 italic leading-relaxed border-l-2 border-blue/30 pl-2">
+                        {assignment.teacherNote}
+                      </p>
                     )}
                   </div>
                   {canRead && (
