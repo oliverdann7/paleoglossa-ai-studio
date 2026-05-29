@@ -41,9 +41,10 @@ export const useVocabulary = () => {
     const init = async () => {
       setIsLoading(true);
       setError(null);
-      try {
-        if (userId) {
-          // Run lemma-key migration once per user (guarded by Firestore flag inside).
+      // V-2: Run migrations in a separate try/catch so a migration failure
+      // never prevents the vocabulary from loading.
+      if (userId) {
+        try {
           await VocabularyService.migrateToLemmaKeys(userId);
 
           const localKnowledge = localStorage.getItem(STORAGE_KEYS.KNOWLEDGE);
@@ -53,8 +54,13 @@ export const useVocabulary = () => {
               await VocabularyService.migrateLocalStorage(userId);
             }
           }
+        } catch (migrationErr) {
+          // Log but do not abort — always proceed to load vocabulary below
+          console.error('[useVocabulary] migration error (non-fatal):', migrationErr);
         }
+      }
 
+      try {
         const dbVocab = await VocabularyService.getVocabulary(userId);
         if (!active) return;
         setKnowledge(dbVocab);
@@ -107,7 +113,8 @@ export const useVocabulary = () => {
         return { ...prev, [normKey]: info };
       });
       bumpVersion();
-      VocabularyService.setWordState(userId, lemma, state, languageId, initialSrs, extra);
+      VocabularyService.setWordState(userId, lemma, state, languageId, initialSrs, extra)
+        .catch((e) => console.error('[useVocabulary] setWordState failed:', e));
     },
     [userId, bumpVersion]
   );
@@ -120,7 +127,8 @@ export const useVocabulary = () => {
         return { ...prev, [normKey]: { ...current, srs, state, languageId } };
       });
       bumpVersion();
-      VocabularyService.updateSRS(userId, lemma, srs, state, languageId);
+      VocabularyService.updateSRS(userId, lemma, srs, state, languageId)
+        .catch((e) => console.error('[useVocabulary] updateSRS failed:', e));
     },
     [userId, bumpVersion]
   );
@@ -167,7 +175,7 @@ export const useVocabulary = () => {
           token.lemma,
           WordState.KNOWN,
           token.languageId || 'unknown'
-        );
+        ).catch((e) => console.error('[useVocabulary] markPageAsSeen setWordState failed:', e));
       });
     },
     [userId, bumpVersion]
@@ -185,7 +193,8 @@ export const useVocabulary = () => {
         return { ...prev, [normKey]: { ...current, notes } };
       });
       bumpVersion();
-      VocabularyService.setWordNote(userId, lemma, notes, languageId);
+      VocabularyService.setWordNote(userId, lemma, notes, languageId)
+        .catch((e) => console.error('[useVocabulary] setWordNote failed:', e));
     },
     [userId, bumpVersion]
   );
@@ -204,6 +213,7 @@ export const useVocabulary = () => {
         return { ...prev, [normKey]: { ...current, contexts: [...contexts, context].slice(-5) } };
       });
       bumpVersion();
+      // setWordContext uses the write queue — not async, so no .catch needed
       VocabularyService.setWordContext(userId, lemma, context, languageId);
     },
     [userId, bumpVersion]
@@ -228,7 +238,8 @@ export const useVocabulary = () => {
         return { ...prev, [normKey]: { ...current, userGloss: gloss } as any };
       });
       bumpVersion();
-      VocabularyService.updateGloss(userId, lemma, gloss, languageId);
+      VocabularyService.updateGloss(userId, lemma, gloss, languageId)
+        .catch((e) => console.error('[useVocabulary] updateGloss failed:', e));
     },
     [userId, bumpVersion]
   );
