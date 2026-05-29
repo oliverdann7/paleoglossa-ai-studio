@@ -20,10 +20,9 @@ import {
   Flame,
   BarChart2,
   ChevronDown,
-  Copy,
-  Link2,
-  Calendar,
-  KeyRound,
+  Download,
+  UserMinus,
+  ArrowUpDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -213,12 +212,6 @@ function CourseForm({
     );
   };
 
-  const setDueDate = (textId: string, dueDate: string) => {
-    setTexts((prev) =>
-      prev.map((t) => (t.textId === textId ? { ...t, dueDate: dueDate || undefined } : t))
-    );
-  };
-
   const handleSubmit = async () => {
     if (!title.trim()) {
       setError('Title is required');
@@ -341,16 +334,6 @@ function CourseForm({
                   {i + 1}
                 </span>
                 <span className="flex-1 text-ink truncate">{t.learningObjectives || t.textId}</span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Calendar className="w-3 h-3 text-muted" />
-                  <input
-                    type="date"
-                    value={t.dueDate ?? ''}
-                    onChange={(e) => setDueDate(t.textId, e.target.value)}
-                    title="Due date"
-                    className="text-[11px] text-ink border border-bdr rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue/30 bg-white"
-                  />
-                </div>
                 <button
                   onClick={() => removeText(t.textId)}
                   className="text-muted hover:text-red-500 transition-colors shrink-0"
@@ -407,38 +390,6 @@ function CourseForm({
 }
 
 // ─── Course Detail ────────────────────────────────────────────────────────────
-
-// ─── Due date badge ───────────────────────────────────────────────────────────
-function DueDateBadge({ dueDate, pct }: { dueDate?: string; pct: number }) {
-  if (!dueDate) return null;
-  const now = new Date();
-  const due = new Date(dueDate + 'T23:59:59');
-  const done = pct >= 100;
-  const daysLeft = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  if (done)
-    return (
-      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 flex items-center gap-0.5 shrink-0">
-        <Check className="w-2.5 h-2.5" /> Done
-      </span>
-    );
-  if (daysLeft < 0)
-    return (
-      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 flex items-center gap-0.5 shrink-0">
-        <Calendar className="w-2.5 h-2.5" /> Overdue
-      </span>
-    );
-  if (daysLeft <= 3)
-    return (
-      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 flex items-center gap-0.5 shrink-0">
-        <Calendar className="w-2.5 h-2.5" /> {daysLeft}d left
-      </span>
-    );
-  return (
-    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-parch3 text-muted flex items-center gap-0.5 shrink-0">
-      <Calendar className="w-2.5 h-2.5" /> Due {dueDate}
-    </span>
-  );
-}
 
 // ─── Difficulty badge ─────────────────────────────────────────────────────────
 function DifficultyBadge({ unknownPct }: { unknownPct: number | null }) {
@@ -499,28 +450,8 @@ function CourseDetail({
   const [roster, setRoster] = useState<CourseRosterMember[]>([]);
   const [showRoster, setShowRoster] = useState(false);
   const [rosterLoading, setRosterLoading] = useState(false);
-
-  // Invite code
-  const [inviteCode, setInviteCode] = useState<string | null>((course as any).joinCode ?? (course as any).inviteCode ?? null);
-  const [inviteCodeLoading, setInviteCodeLoading] = useState(false);
-  const [inviteCodeCopied, setInviteCodeCopied] = useState(false);
-  const [inviteLoading, setInviteLoading] = useState(false);
-  const [inviteCopied, setInviteCopied] = useState(false);
-
-  const handleGetInviteCode = async () => {
-    setInviteCodeLoading(true);
-    const code = await CourseService.getOrCreateInviteCode(course.id);
-    setInviteCode(code);
-    setInviteCodeLoading(false);
-  };
-
-  const handleCopyInviteCode = () => {
-    if (!inviteCode) return;
-    navigator.clipboard.writeText(inviteCode).then(() => {
-      setInviteCodeCopied(true);
-      setTimeout(() => setInviteCodeCopied(false), 2000);
-    });
-  };
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+  const [rosterSortBy, setRosterSortBy] = useState<'name' | 'progress'>('name');
 
   const loadRoster = useCallback(async () => {
     setRosterLoading(true);
@@ -533,6 +464,34 @@ function CourseDetail({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isOwner) loadRoster();
   }, [isOwner, loadRoster]);
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!confirm('Remove this student from the course?')) return;
+    setRemovingMemberId(memberId);
+    const ok = await CourseService.removeMember(course.id, memberId);
+    if (ok) setRoster((r) => r.filter((m) => m.userId !== memberId));
+    setRemovingMemberId(null);
+  };
+
+  const exportRosterCSV = () => {
+    const students = roster.filter((m) => m.role !== 'teacher');
+    const sortedTexts = [...course.texts].sort((a, b) => a.order - b.order);
+    const headers = ['Name', 'Email', 'Joined', ...sortedTexts.map((_, i) => `Text ${i + 1}`), 'Overall'];
+    const rows = students.map((m) => {
+      const pcts = sortedTexts.map((t) => m.progress[t.textId] ?? 0);
+      const overall = pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0;
+      const joinedStr = m.joinedAt ? new Date(m.joinedAt).toLocaleDateString() : '';
+      return [m.displayName, m.email, joinedStr, ...pcts.map(String), String(overall)];
+    });
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${course.title.replace(/\s+/g, '-')}-roster.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Sync reading progress to course member doc (enrolled students and owner)
   useEffect(() => {
@@ -837,9 +796,6 @@ function CourseDetail({
                         </span>
                       )}
                       <DifficultyBadge unknownPct={density} />
-                      {(isOwner || isEnrolled) && (
-                        <DueDateBadge dueDate={assignment.dueDate} pct={pct} />
-                      )}
                     </div>
                     {canRead && (
                       <div className="flex items-center gap-2">
@@ -931,55 +887,6 @@ function CourseDetail({
             />
           </button>
 
-          {/* Invite code — always visible for private courses, optional for public */}
-          {!course.isPublic && (
-            <div className="mb-5 p-4 bg-parch2 border border-bdr rounded-xl">
-              <div className="flex items-center gap-1.5 text-[12px] font-bold text-ink mb-2">
-                <Link2 className="w-3.5 h-3.5" />
-                Invite Code
-              </div>
-              {inviteCode ? (
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[18px] font-bold tracking-widest text-ink px-3 py-1.5 bg-white border border-bdr rounded-lg">
-                    {inviteCode}
-                  </span>
-                  <button
-                    onClick={handleCopyInviteCode}
-                    className={cn(
-                      'flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors',
-                      inviteCodeCopied
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                        : 'border-bdr text-ink3 hover:border-blue/40 hover:text-blue'
-                    )}
-                  >
-                    {inviteCodeCopied ? (
-                      <Check className="w-3.5 h-3.5" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                    {inviteCodeCopied ? 'Copied!' : 'Copy'}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleGetInviteCode}
-                  disabled={inviteCodeLoading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 border border-bdr rounded-lg text-[12px] font-medium text-ink3 hover:border-blue/40 hover:text-blue transition-colors disabled:opacity-50"
-                >
-                  {inviteCodeLoading ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Link2 className="w-3.5 h-3.5" />
-                  )}
-                  Generate invite code
-                </button>
-              )}
-              <p className="mt-2 text-[11px] text-muted">
-                Share this code with students to let them join this private course.
-              </p>
-            </div>
-          )}
-
           {showRoster && (
             <div className="card overflow-hidden">
               {roster.filter((m) => m.role !== 'teacher').length === 0 ? (
@@ -987,100 +894,110 @@ function CourseDetail({
                   No students have joined yet.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-[12px]">
-                    <thead>
-                      <tr className="border-b border-bdr bg-parch2">
-                        <th className="px-4 py-2.5 text-left font-bold text-muted uppercase tracking-wider">
-                          Student
-                        </th>
-                        {sortedTexts.map((t, i) => (
-                          <th
-                            key={t.textId}
-                            className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider whitespace-nowrap"
-                          >
-                            <div>Text {i + 1}</div>
-                            {t.dueDate && (
-                              <div className="text-[9px] font-normal text-muted/70 normal-case tracking-normal">
-                                Due {t.dueDate}
-                              </div>
-                            )}
+                <>
+                  {/* Toolbar */}
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-bdr/40 bg-parch2/60">
+                    <button
+                      onClick={() => setRosterSortBy((s) => s === 'name' ? 'progress' : 'name')}
+                      className="flex items-center gap-1.5 text-[11px] text-muted hover:text-ink transition-colors"
+                    >
+                      <ArrowUpDown className="w-3 h-3" />
+                      Sort by {rosterSortBy === 'name' ? 'progress' : 'name'}
+                    </button>
+                    <button
+                      onClick={exportRosterCSV}
+                      className="flex items-center gap-1.5 text-[11px] text-blue hover:text-blue/80 transition-colors font-medium"
+                    >
+                      <Download className="w-3 h-3" />
+                      Export CSV
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-[12px]">
+                      <thead>
+                        <tr className="border-b border-bdr bg-parch2">
+                          <th className="px-4 py-2.5 text-left font-bold text-muted uppercase tracking-wider">
+                            Student
                           </th>
-                        ))}
-                        <th className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider">
-                          Overall
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {roster
-                        .filter((m) => m.role !== 'teacher')
-                        .map((member) => {
-                          const memberPcts = sortedTexts.map(
-                            (t) => member.progress[t.textId] ?? 0
-                          );
-                          const overall =
-                            memberPcts.length > 0
-                              ? Math.round(memberPcts.reduce((a, b) => a + b, 0) / memberPcts.length)
-                              : 0;
-                          return (
-                            <tr key={member.userId} className="border-b border-bdr/50 last:border-0">
+                          <th className="px-3 py-2.5 text-left font-bold text-muted uppercase tracking-wider whitespace-nowrap">
+                            Joined
+                          </th>
+                          {sortedTexts.map((t, i) => (
+                            <th
+                              key={t.textId}
+                              className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Text {i + 1}
+                            </th>
+                          ))}
+                          <th className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider">
+                            Overall
+                          </th>
+                          <th className="px-2 py-2.5" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {roster
+                          .filter((m) => m.role !== 'teacher')
+                          .map((member) => {
+                            const textPcts = sortedTexts.map(
+                              (t) => member.progress[t.textId] ?? 0
+                            );
+                            const overall =
+                              textPcts.length > 0
+                                ? Math.round(textPcts.reduce((a, b) => a + b, 0) / textPcts.length)
+                                : 0;
+                            return { member, textPcts, overall };
+                          })
+                          .sort((a, b) =>
+                            rosterSortBy === 'name'
+                              ? a.member.displayName.localeCompare(b.member.displayName)
+                              : b.overall - a.overall
+                          )
+                          .map(({ member, textPcts, overall }) => (
+                            <tr key={member.userId} className="border-b border-bdr/50 last:border-0 group">
                               <td className="px-4 py-3">
-                                <div className="font-medium text-ink truncate max-w-[140px]">
+                                <div className="font-medium text-ink truncate max-w-[130px]">
                                   {member.displayName}
                                 </div>
                                 {member.email && (
-                                  <div className="text-muted text-[11px] truncate max-w-[140px]">
+                                  <div className="text-muted text-[11px] truncate max-w-[130px]">
                                     {member.email}
                                   </div>
                                 )}
                               </td>
-                              {sortedTexts.map((assignment, i) => {
-                                const pct = member.progress[assignment.textId] ?? 0;
-                                const dueDate = assignment.dueDate;
-                                const isLate =
-                                  dueDate &&
-                                  pct < 100 &&
-                                  new Date() > new Date(dueDate + 'T23:59:59');
-                                return (
-                                  <td key={i} className="px-3 py-3 text-center">
-                                    <div className="flex flex-col items-center gap-1">
-                                      <span
-                                        className={cn(
-                                          'font-bold text-[11px]',
-                                          pct === 0
-                                            ? 'text-muted'
-                                            : pct >= 100
-                                              ? 'text-emerald-600'
-                                              : isLate
-                                                ? 'text-red-500'
-                                                : 'text-blue'
-                                        )}
-                                      >
-                                        {pct}%
-                                      </span>
-                                      <div className="w-12 h-1 bg-parch3 rounded-full overflow-hidden">
-                                        <div
-                                          className={cn(
-                                            'h-full rounded-full transition-all',
-                                            pct >= 100
-                                              ? 'bg-emerald-500'
-                                              : isLate
-                                                ? 'bg-red-400'
-                                                : 'bg-blue'
-                                          )}
-                                          style={{ width: `${Math.min(pct, 100)}%` }}
-                                        />
-                                      </div>
-                                      {isLate && (
-                                        <span className="text-[8px] text-red-500 font-bold uppercase tracking-wider">
-                                          Late
-                                        </span>
+                              <td className="px-3 py-3 text-muted whitespace-nowrap">
+                                {member.joinedAt
+                                  ? formatDistanceToNow(new Date(member.joinedAt), { addSuffix: true })
+                                  : '—'}
+                              </td>
+                              {textPcts.map((pct, i) => (
+                                <td key={i} className="px-3 py-3 text-center">
+                                  <div className="flex flex-col items-center gap-1">
+                                    <span
+                                      className={cn(
+                                        'font-bold text-[11px]',
+                                        pct === 0
+                                          ? 'text-muted'
+                                          : pct >= 100
+                                            ? 'text-emerald-600'
+                                            : 'text-blue'
                                       )}
+                                    >
+                                      {pct}%
+                                    </span>
+                                    <div className="w-12 h-1 bg-parch3 rounded-full overflow-hidden">
+                                      <div
+                                        className={cn(
+                                          'h-full rounded-full transition-all',
+                                          pct >= 100 ? 'bg-emerald-500' : 'bg-blue'
+                                        )}
+                                        style={{ width: `${Math.min(pct, 100)}%` }}
+                                      />
                                     </div>
-                                  </td>
-                                );
-                              })}
+                                  </div>
+                                </td>
+                              ))}
                               <td className="px-3 py-3 text-center">
                                 <span
                                   className={cn(
@@ -1095,82 +1012,29 @@ function CourseDetail({
                                   {overall}%
                                 </span>
                               </td>
+                              <td className="px-2 py-3">
+                                <button
+                                  onClick={() => handleRemoveMember(member.userId)}
+                                  disabled={removingMemberId === member.userId}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50 hover:text-red-600 text-muted disabled:opacity-50"
+                                  title="Remove student"
+                                >
+                                  {removingMemberId === member.userId ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <UserMinus className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
+                              </td>
                             </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {/* ── Invite code (teacher only) ─────────────────────────────────── */}
-      {isOwner && (
-        <div className="mt-6 p-4 bg-parch2 border border-bdr/40 rounded-xl">
-          <div className="flex items-center gap-2 mb-3">
-            <Link2 className="w-3.5 h-3.5 text-muted" />
-            <span className="text-[12px] font-bold text-muted uppercase tracking-wider">
-              Student Invite Code
-            </span>
-          </div>
-          {inviteCode ? (
-            <div className="flex items-center gap-2">
-              <span className="flex-1 font-mono text-[18px] font-bold tracking-widest text-blue bg-white border border-bdr rounded-lg px-4 py-2 text-center">
-                {inviteCode}
-              </span>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(inviteCode);
-                  setInviteCopied(true);
-                  setTimeout(() => setInviteCopied(false), 2000);
-                }}
-                className="flex items-center gap-1.5 px-3 py-2 border border-bdr rounded-lg text-[12px] font-semibold hover:bg-white transition-colors"
-              >
-                {inviteCopied ? (
-                  <Check className="w-3.5 h-3.5 text-green-600" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-                {inviteCopied ? 'Copied!' : 'Copy'}
-              </button>
-              <button
-                onClick={async () => {
-                  setInviteLoading(true);
-                  const code = await CourseService.generateInviteCode(course.id);
-                  if (code) setInviteCode(code);
-                  setInviteLoading(false);
-                }}
-                disabled={inviteLoading}
-                className="px-3 py-2 border border-bdr rounded-lg text-[12px] font-semibold hover:bg-white transition-colors disabled:opacity-50"
-              >
-                {inviteLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Regenerate'}
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={async () => {
-                setInviteLoading(true);
-                const code = await CourseService.generateInviteCode(course.id);
-                if (code) setInviteCode(code);
-                setInviteLoading(false);
-              }}
-              disabled={inviteLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-blue text-white text-[13px] font-semibold rounded-lg hover:bg-blue/90 disabled:opacity-50 transition-colors"
-            >
-              {inviteLoading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Link2 className="w-3.5 h-3.5" />
-              )}
-              Generate Invite Code
-            </button>
-          )}
-          <p className="text-[11px] text-muted/70 mt-2">
-            Share this code with students so they can join privately, even if the course is not public.
-          </p>
         </div>
       )}
     </motion.div>
@@ -1266,65 +1130,12 @@ export const Courses = () => {
     setSelectedCourse(fresh ?? selectedCourse);
   };
 
-  const [joinCodeInput, setJoinCodeInput] = useState('');
-  const [joinCodeLoading, setJoinCodeLoading] = useState(false);
-  const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
-
-  const handleJoinByCode = async () => {
-    const code = joinCodeInput.trim().toUpperCase();
-    if (!code) return;
-    setJoinCodeLoading(true);
-    setJoinCodeError(null);
-    const result = await CourseService.joinByCode(code);
-    setJoinCodeLoading(false);
-    if (result.ok) {
-      setJoinCodeInput('');
-      await loadCourses();
-      if (result.courseId) {
-        const fresh = await CourseService.getCourse(result.courseId);
-        if (fresh) { setSelectedCourse(fresh); setView('detail'); }
-      }
-    } else {
-      setJoinCodeError('Invalid code — check with your teacher and try again.');
-    }
-  };
-
   const handleLeave = async () => {
     if (!selectedCourse) return;
     await CourseService.leaveCourse(selectedCourse.id);
     await loadCourses();
     const fresh = await CourseService.getCourse(selectedCourse.id);
     setSelectedCourse(fresh ?? selectedCourse);
-  };
-
-  // ── Join by invite code ──────────────────────────────────────────────────
-  const [showInviteDialog, setShowInviteDialog] = useState(false);
-  const [inviteInput, setInviteInput] = useState('');
-  const [inviteJoining, setInviteJoining] = useState(false);
-  const [inviteError, setInviteError] = useState<string | null>(null);
-
-  const handleJoinByInviteCode = async () => {
-    const code = inviteInput.trim().toUpperCase();
-    if (!code || code.length < 4) {
-      setInviteError('Please enter a valid invite code.');
-      return;
-    }
-    setInviteJoining(true);
-    setInviteError(null);
-    const result = await CourseService.joinByInviteCode(code);
-    setInviteJoining(false);
-    if (!result) {
-      setInviteError('Invalid code or course not found.');
-      return;
-    }
-    setShowInviteDialog(false);
-    setInviteInput('');
-    await loadCourses();
-    const fresh = await CourseService.getCourse(result.courseId);
-    if (fresh) {
-      setSelectedCourse(fresh);
-      setView('detail');
-    }
   };
 
   return (
@@ -1345,87 +1156,14 @@ export const Courses = () => {
           </div>
         </div>
         {view === 'list' && user && !isDemoMode && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowInviteDialog(true)}
-              className="flex items-center gap-2 px-4 py-2 border border-bdr text-ink font-semibold rounded-xl text-[13px] hover:bg-parch2 transition-all"
-              title="Join by invite code"
-            >
-              <KeyRound className="w-4 h-4" /> Join by Code
-            </button>
-            <button
-              onClick={() => setView('create')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue text-white font-bold rounded-xl text-[13px] hover:bg-blue/90 transition-all"
-            >
-              <Plus className="w-4 h-4" /> New List
-            </button>
-          </div>
+          <button
+            onClick={() => setView('create')}
+            className="flex items-center gap-2 px-4 py-2 bg-blue text-white font-bold rounded-xl text-[13px] hover:bg-blue/90 transition-all"
+          >
+            <Plus className="w-4 h-4" /> New List
+          </button>
         )}
       </header>
-
-      {/* Invite code dialog */}
-      <AnimatePresence>
-        {showInviteDialog && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowInviteDialog(false)}
-          >
-            <motion.div
-              className="bg-parch rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-bdr"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <KeyRound className="w-5 h-5 text-blue" />
-                  <h3 className="text-[16px] font-bold text-ink">Join by Invite Code</h3>
-                </div>
-                <button
-                  onClick={() => setShowInviteDialog(false)}
-                  className="text-muted hover:text-ink transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <p className="text-[13px] text-muted mb-4">
-                Enter the 6-character code your teacher shared with you.
-              </p>
-              <input
-                type="text"
-                value={inviteInput}
-                onChange={(e) => {
-                  setInviteInput(e.target.value.toUpperCase().slice(0, 8));
-                  setInviteError(null);
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && handleJoinByInviteCode()}
-                placeholder="e.g. A3X7P2"
-                className="w-full px-4 py-3 border border-bdr rounded-xl text-[16px] font-mono font-bold uppercase tracking-widest text-center focus:outline-none focus:border-blue bg-white mb-3"
-                autoFocus
-              />
-              {inviteError && (
-                <p className="text-[12px] text-red-500 text-center mb-3">{inviteError}</p>
-              )}
-              <button
-                onClick={handleJoinByInviteCode}
-                disabled={inviteJoining || !inviteInput.trim()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue text-white font-bold rounded-xl text-[14px] hover:bg-blue/90 disabled:opacity-50 transition-colors"
-              >
-                {inviteJoining ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <UserCheck className="w-4 h-4" />
-                )}
-                Join Reading List
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {/* List view */}
@@ -1507,36 +1245,6 @@ export const Courses = () => {
                         />
                       ))}
                     </div>
-                  </section>
-                )}
-
-                {/* Join by invite code */}
-                {user && !isDemoMode && (
-                  <section>
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted mb-3">
-                      Join a Private Course
-                    </h3>
-                    <div className="flex items-center gap-2 max-w-sm">
-                      <input
-                        type="text"
-                        value={joinCodeInput}
-                        onChange={(e) => { setJoinCodeInput(e.target.value.toUpperCase()); setJoinCodeError(null); }}
-                        onKeyDown={(e) => e.key === 'Enter' && handleJoinByCode()}
-                        placeholder="Enter invite code"
-                        maxLength={6}
-                        className="flex-1 px-3 py-2 border border-bdr rounded-xl text-[13px] font-mono tracking-widest uppercase placeholder:normal-case placeholder:tracking-normal focus:outline-none focus:border-blue transition-colors bg-white"
-                      />
-                      <button
-                        onClick={handleJoinByCode}
-                        disabled={joinCodeLoading || joinCodeInput.trim().length < 4}
-                        className="px-4 py-2 bg-blue text-white text-[13px] font-semibold rounded-xl hover:bg-blue/90 disabled:opacity-40 transition-colors"
-                      >
-                        {joinCodeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Join'}
-                      </button>
-                    </div>
-                    {joinCodeError && (
-                      <p className="mt-1.5 text-[12px] text-red-500">{joinCodeError}</p>
-                    )}
                   </section>
                 )}
 
