@@ -1,6 +1,7 @@
 import express from 'express';
 import { initServerSentry, captureServerException } from './_lib/sentry.js';
 import { correlationIdMiddleware } from './_lib/observability.js';
+import { aiRateLimit, apiRateLimit, authRateLimit, importRateLimit } from './_lib/rateLimiter.js';
 
 initServerSentry();
 import aiRouter from './_routes/ai.js';
@@ -58,6 +59,17 @@ app.use((_req: any, res: any, next: any) => {
 app.post('/api/test', (_req: any, res: any) => {
   res.status(200).json({ ok: true, message: 'Test route works' });
 });
+
+// ── Rate limiting (applied before domain routers) ────────────────────────────
+// Auth endpoints: strict (10 req/min) — slow brute-force
+app.use('/api/auth', authRateLimit);
+// AI/LLM endpoints: 30 req/min — Gemini calls are expensive
+app.use('/api/ai', aiRateLimit);
+// Import + OCR: very expensive per-request, tight cap
+app.use('/api/ai/analyze', importRateLimit);
+app.use('/api/ai/ocr', importRateLimit);
+// All other API routes: 120 req/min general limit
+app.use('/api', apiRateLimit);
 
 // Domain routers — each module registers its own full /api/... paths
 app.use(authRouter);
