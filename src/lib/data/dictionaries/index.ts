@@ -77,7 +77,11 @@ function stripDiacritics(s: string): string {
 }
 
 function stripHebrewVowels(s: string): string {
-  return s.replace(/[֑-ׇ]/g, '');
+  // Strip Hebrew points U+0591–U+05BD and U+05BF–U+05C7 (vowels, dagesh,
+  // cantillation, shin/sin dots, qamats-qatan, paseq). Preserve U+05BE
+  // (maqaf) so we can still split maqaf-linked phrases. Also drop the
+  // paseq whitespace U+05C0 leftover.
+  return s.replace(/[֑-ֽ]/g, '').replace(/[ֿ-ׇ]/g, '').replace(/\s+/g, '');
 }
 
 /**

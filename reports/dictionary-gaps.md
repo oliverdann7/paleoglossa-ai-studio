@@ -1,14 +1,14 @@
 # Static Dictionary Gap Audit
 
-Generated: 2026-05-29T09:23:41.743Z
+Generated: 2026-05-29T09:28:10.727Z
 
 ## Coverage Summary
 
 | Lang | Dict | Tokens | Unique lemmas | Token cov | Lemma cov |
 |---|---|---|---|---|---|
 | grc-koine | 1904 | 20635 | 3769 | 79% | 24% |
-| lat | 2622 | 1781 | 1158 | 52% | 34% |
-| hbo | 1855 | 1672 | 1128 | 59% | 47% |
+| lat | 2816 | 1781 | 1158 | 59% | 39% |
+| hbo | 1896 | 1672 | 1128 | 67% | 54% |
 | grc | 1904 | 1332 | 754 | 45% | 28% |
 | grc-class | 1904 | 541 | 368 | 53% | 38% |
 | akk | 255 | 286 | 210 | 46% | 27% |
@@ -74,91 +74,63 @@ Generated: 2026-05-29T09:23:41.743Z
 - `νικοδημος` × 5
 - `μισει` × 5
 
-### lat — 768 missing (covers 850 tokens)
-- `margaritam` × 3
-- `terrarum` × 3
-- `ingenia` × 3
-- `profugus` × 2
-- `altae` × 2
-- `causas` × 2
-- `volvere` × 2
-- `labores` × 2
-- `troiam` × 2
-- `conspectu` × 2
-- `siculae` × 2
-- `telluris` × 2
-- `vela` × 2
-- `dabant` × 2
-- `laeti` × 2
-- `aere` × 2
-- `aeternum` × 2
-- `servans` × 2
-- `secum` × 2
-- `mene` × 2
-- `incepto` × 2
-- `desistere` × 2
-- `victam` × 2
-- `posse` × 2
-- `teucrorum` × 2
-- `avertere` × 2
-- `vetor` × 2
-- `fatis` × 2
-- `classem` × 2
-- `nubibus` × 2
-- `acuto` × 2
-- `ast` × 2
-- `divom` × 2
-- `iovisque` × 2
-- `gente` × 2
-- `annos` × 2
-- `verba` × 2
-- `subit` × 2
-- `portu` × 2
-- `apparet` × 2
-- `silentum` × 2
-- `ferens` × 2
-- `dido` × 2
-- `agrum` × 2
-- `agro` × 2
-- `horto` × 2
-- `piscator` × 2
-- `ambulat` × 2
-- `rete` × 2
-- `portat` × 2
+### lat — 704 missing (covers 732 tokens)
+- `vendit` × 2
+- `pecuniam` × 2
+- `discedit` × 2
+- `quaerit` × 2
+- `carnem` × 2
+- `cupit` × 2
+- `superior` × 2
+- `vulpes` × 2
+- `uvas` × 2
+- `capere` × 2
+- `sua` × 2
+- `perhiberet` × 2
+- `lumine` × 2
+- `credunt` × 2
+- `voluntate` × 2
+- `multis` × 2
+- `quidquid` × 2
+- `dis` × 2
+- `cetera` × 2
+- `romani` × 2
+- `scriptores` × 2
+- `rerum` × 2
+- `principis` × 2
+- `foedum` × 2
+- `iure` × 2
+- `siciliam` × 2
+- `alterum` × 2
+- `atheniensium` × 2
+- `ora` × 1
+- `Lavinius` × 1
+- `Musa` × 1
+- `iactatus` × 1
+- `alto` × 1
+- `vi` × 1
+- `superum` × 1
+- `saevae` × 1
+- `memorem` × 1
+- `iram` × 1
+- `passus` × 1
+- `conderet` × 1
+- `inferretque` × 1
+- `latio` × 1
+- `latinum` × 1
+- `albanique` × 1
+- `musa` × 1
+- `memora` × 1
+- `numine` × 1
+- `laeso` × 1
+- `quidve` × 1
+- `dolens` × 1
 
-### hbo — 600 missing (covers 680 tokens)
-- `וַֽיְהִי־עֶ֥רֶב` × 6
-- `וַֽיְהִי־בֹ֖קֶר` × 6
-- `וַֽיְהִי־כֵֽן` × 6
-- `כִּי־טֽוֹב` × 5
-- `אֱלֹהִ֤ים ׀` × 3
-- `וּבֵ֣ין` × 3
-- `בִּרְקִ֣יעַ` × 3
-- `עַל־הָאָֽרֶץ` × 3
-- `מכל` × 3
-- `ואשתו` × 3
-- `הַגְּדוֹלָה` × 3
-- `הָאֱלֹהִים` × 3
+### hbo — 516 missing (covers 544 tokens)
 - `מבית` × 3
-- `אֱלִימֶלֶךְ` × 3
-- `עַל־פְּנֵ֣י` × 2
 - `הָא֖וֹר` × 2
-- `עֵ֚שֶׂב` × 2
-- `מַזְרִ֣יעַ` × 2
-- `זַרְעוֹ־ב֖וֹ` × 2
-- `עַל־הָאָ֑רֶץ` × 2
-- `לְמִינֵ֔הוּ` × 2
-- `לְמִינֵ֑הוּ` × 2
-- `לְהָאִ֖יר` × 2
-- `הַגְּדֹלִ֑ים` × 2
-- `לְמֶמְשֶׁ֣לֶת` × 2
-- `לְמִינָ֔הּ` × 2
-- `וּבְע֣וֹף` × 2
-- `עַל־פְּנֵי` × 2
 - `ימים` × 2
-- `למינה` × 2
 - `השביעי` × 2
-- `לאשה` × 2
 - `חית` × 2
 - `תאכלו` × 2
 - `העץ` × 2
@@ -177,6 +149,34 @@ Generated: 2026-05-29T09:23:41.743Z
 - `כלתיה` × 2
 - `לשוב` × 2
 - `עמכם` × 2
+- `וכה` × 2
+- `לקט` × 2
+- `בתי` × 2
+- `חמותה` × 2
+- `ותקראנה` × 2
+- `הָיְתָ֥ה` × 1
+- `וָבֹ֔הוּ` × 1
+- `וְחֹ֖שֶׁךְ` × 1
+- `וְר֣וּחַ` × 1
+- `מְרַחֶ֖פֶת` × 1
+- `יְהִ֣י` × 1
+- `הַחֹֽשֶׁךְ` × 1
+- `לָאוֹר֙` × 1
+- `וְלַחֹ֖שֶׁךְ` × 1
+- `יְהִ֥י` × 1
+- `מַבְדִּ֔יל` × 1
+- `לָמָֽיִם` × 1
+- `יִקָּו֨וּ` × 1
+- `וְתֵרָאֶ֖ה` × 1
+- `הַיַּבָּשָׁ֑ה` × 1
+- `לַיַּבָּשָׁה֙` × 1
+- `וּלְמִקְוֵ֥ה` × 1
+- `יַמִּ֑ים` × 1
+- `תַּדְשֵׁ֤א` × 1
+- `וַתּוֹצֵ֨א` × 1
+- `וְעֵ֧ץ` × 1
+- `שְׁלִישִֽׁי` × 1
+- `יְהִ֤י` × 1
 
 ### grc — 543 missing (covers 732 tokens)
 - `δʼ` × 18

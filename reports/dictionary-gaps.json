@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-05-29T09:23:41.742Z",
+  "generatedAt": "2026-05-29T09:28:10.726Z",
   "dictSizes": {
     "grc": 1904,
     "grc-koine": 1904,
     "grc-class": 1904,
-    "lat": 2622,
-    "lat-class": 2622,
-    "lat-med": 2622,
-    "hbo": 1855,
+    "lat": 2816,
+    "lat-class": 2816,
+    "lat-med": 2816,
+    "hbo": 1896,
     "syr": 319,
     "cop": 244,
     "arc": 246,
@@ -234,211 +234,211 @@
       "language": "lat",
       "totalTokens": 1781,
       "uniqueLemmas": 1158,
-      "uniqueCovered": 390,
-      "uniqueMissing": 768,
-      "tokensCovered": 931,
-      "coveragePctTokens": 52,
-      "coveragePctLemmas": 34,
+      "uniqueCovered": 454,
+      "uniqueMissing": 704,
+      "tokensCovered": 1049,
+      "coveragePctTokens": 59,
+      "coveragePctLemmas": 39,
       "topMissing": [
         {
-          "lemma": "margaritam",
-          "count": 3
-        },
-        {
-          "lemma": "terrarum",
-          "count": 3
-        },
-        {
-          "lemma": "ingenia",
-          "count": 3
-        },
-        {
-          "lemma": "profugus",
+          "lemma": "vendit",
           "count": 2
         },
         {
-          "lemma": "altae",
+          "lemma": "pecuniam",
           "count": 2
         },
         {
-          "lemma": "causas",
+          "lemma": "discedit",
           "count": 2
         },
         {
-          "lemma": "volvere",
+          "lemma": "quaerit",
           "count": 2
         },
         {
-          "lemma": "labores",
+          "lemma": "carnem",
           "count": 2
         },
         {
-          "lemma": "troiam",
+          "lemma": "cupit",
           "count": 2
         },
         {
-          "lemma": "conspectu",
+          "lemma": "superior",
           "count": 2
         },
         {
-          "lemma": "siculae",
+          "lemma": "vulpes",
           "count": 2
         },
         {
-          "lemma": "telluris",
+          "lemma": "uvas",
           "count": 2
         },
         {
-          "lemma": "vela",
+          "lemma": "capere",
           "count": 2
         },
         {
-          "lemma": "dabant",
+          "lemma": "sua",
           "count": 2
         },
         {
-          "lemma": "laeti",
+          "lemma": "perhiberet",
           "count": 2
         },
         {
-          "lemma": "aere",
+          "lemma": "lumine",
           "count": 2
         },
         {
-          "lemma": "aeternum",
+          "lemma": "credunt",
           "count": 2
         },
         {
-          "lemma": "servans",
+          "lemma": "voluntate",
           "count": 2
         },
         {
-          "lemma": "secum",
+          "lemma": "multis",
           "count": 2
         },
         {
-          "lemma": "mene",
+          "lemma": "quidquid",
           "count": 2
         },
         {
-          "lemma": "incepto",
+          "lemma": "dis",
           "count": 2
         },
         {
-          "lemma": "desistere",
+          "lemma": "cetera",
           "count": 2
         },
         {
-          "lemma": "victam",
+          "lemma": "romani",
           "count": 2
         },
         {
-          "lemma": "posse",
+          "lemma": "scriptores",
           "count": 2
         },
         {
-          "lemma": "teucrorum",
+          "lemma": "rerum",
           "count": 2
         },
         {
-          "lemma": "avertere",
+          "lemma": "principis",
           "count": 2
         },
         {
-          "lemma": "vetor",
+          "lemma": "foedum",
           "count": 2
         },
         {
-          "lemma": "fatis",
+          "lemma": "iure",
           "count": 2
         },
         {
-          "lemma": "classem",
+          "lemma": "siciliam",
           "count": 2
         },
         {
-          "lemma": "nubibus",
+          "lemma": "alterum",
           "count": 2
         },
         {
-          "lemma": "acuto",
+          "lemma": "atheniensium",
           "count": 2
         },
         {
-          "lemma": "ast",
-          "count": 2
+          "lemma": "ora",
+          "count": 1
         },
         {
-          "lemma": "divom",
-          "count": 2
+          "lemma": "Lavinius",
+          "count": 1
         },
         {
-          "lemma": "iovisque",
-          "count": 2
+          "lemma": "Musa",
+          "count": 1
         },
         {
-          "lemma": "gente",
-          "count": 2
+          "lemma": "iactatus",
+          "count": 1
         },
         {
-          "lemma": "annos",
-          "count": 2
+          "lemma": "alto",
+          "count": 1
         },
         {
-          "lemma": "verba",
-          "count": 2
+          "lemma": "vi",
+          "count": 1
         },
         {
-          "lemma": "subit",
-          "count": 2
+          "lemma": "superum",
+          "count": 1
         },
         {
-          "lemma": "portu",
-          "count": 2
+          "lemma": "saevae",
+          "count": 1
         },
         {
-          "lemma": "apparet",
-          "count": 2
+          "lemma": "memorem",
+          "count": 1
         },
         {
-          "lemma": "silentum",
-          "count": 2
+          "lemma": "iram",
+          "count": 1
         },
         {
-          "lemma": "ferens",
-          "count": 2
+          "lemma": "passus",
+          "count": 1
         },
         {
-          "lemma": "dido",
-          "count": 2
+          "lemma": "conderet",
+          "count": 1
         },
         {
-          "lemma": "agrum",
-          "count": 2
+          "lemma": "inferretque",
+          "count": 1
         },
         {
-          "lemma": "agro",
-          "count": 2
+          "lemma": "latio",
+          "count": 1
         },
         {
-          "lemma": "horto",
-          "count": 2
+          "lemma": "latinum",
+          "count": 1
         },
         {
-          "lemma": "piscator",
-          "count": 2
+          "lemma": "albanique",
+          "count": 1
         },
         {
-          "lemma": "ambulat",
-          "count": 2
+          "lemma": "musa",
+          "count": 1
         },
         {
-          "lemma": "rete",
-          "count": 2
+          "lemma": "memora",
+          "count": 1
         },
         {
-          "lemma": "portat",
-          "count": 2
+          "lemma": "numine",
+          "count": 1
+        },
+        {
+          "lemma": "laeso",
+          "count": 1
+        },
+        {
+          "lemma": "quidve",
+          "count": 1
+        },
+        {
+          "lemma": "dolens",
+          "count": 1
         }
       ]
     },
@@ -446,122 +446,18 @@
       "language": "hbo",
       "totalTokens": 1672,
       "uniqueLemmas": 1128,
-      "uniqueCovered": 528,
-      "uniqueMissing": 600,
-      "tokensCovered": 992,
-      "coveragePctTokens": 59,
-      "coveragePctLemmas": 47,
+      "uniqueCovered": 612,
+      "uniqueMissing": 516,
+      "tokensCovered": 1128,
+      "coveragePctTokens": 67,
+      "coveragePctLemmas": 54,
       "topMissing": [
-        {
-          "lemma": "וַֽיְהִי־עֶ֥רֶב",
-          "count": 6
-        },
-        {
-          "lemma": "וַֽיְהִי־בֹ֖קֶר",
-          "count": 6
-        },
-        {
-          "lemma": "וַֽיְהִי־כֵֽן",
-          "count": 6
-        },
-        {
-          "lemma": "כִּי־טֽוֹב",
-          "count": 5
-        },
-        {
-          "lemma": "אֱלֹהִ֤ים ׀",
-          "count": 3
-        },
-        {
-          "lemma": "וּבֵ֣ין",
-          "count": 3
-        },
-        {
-          "lemma": "בִּרְקִ֣יעַ",
-          "count": 3
-        },
-        {
-          "lemma": "עַל־הָאָֽרֶץ",
-          "count": 3
-        },
-        {
-          "lemma": "מכל",
-          "count": 3
-        },
-        {
-          "lemma": "ואשתו",
-          "count": 3
-        },
-        {
-          "lemma": "הַגְּדוֹלָה",
-          "count": 3
-        },
-        {
-          "lemma": "הָאֱלֹהִים",
-          "count": 3
-        },
         {
           "lemma": "מבית",
           "count": 3
         },
         {
-          "lemma": "אֱלִימֶלֶךְ",
-          "count": 3
-        },
-        {
-          "lemma": "עַל־פְּנֵ֣י",
-          "count": 2
-        },
-        {
           "lemma": "הָא֖וֹר",
-          "count": 2
-        },
-        {
-          "lemma": "עֵ֚שֶׂב",
-          "count": 2
-        },
-        {
-          "lemma": "מַזְרִ֣יעַ",
-          "count": 2
-        },
-        {
-          "lemma": "זַרְעוֹ־ב֖וֹ",
-          "count": 2
-        },
-        {
-          "lemma": "עַל־הָאָ֑רֶץ",
-          "count": 2
-        },
-        {
-          "lemma": "לְמִינֵ֔הוּ",
-          "count": 2
-        },
-        {
-          "lemma": "לְמִינֵ֑הוּ",
-          "count": 2
-        },
-        {
-          "lemma": "לְהָאִ֖יר",
-          "count": 2
-        },
-        {
-          "lemma": "הַגְּדֹלִ֑ים",
-          "count": 2
-        },
-        {
-          "lemma": "לְמֶמְשֶׁ֣לֶת",
-          "count": 2
-        },
-        {
-          "lemma": "לְמִינָ֔הּ",
-          "count": 2
-        },
-        {
-          "lemma": "וּבְע֣וֹף",
-          "count": 2
-        },
-        {
-          "lemma": "עַל־פְּנֵי",
           "count": 2
         },
         {
@@ -569,15 +465,7 @@
           "count": 2
         },
         {
-          "lemma": "למינה",
-          "count": 2
-        },
-        {
           "lemma": "השביעי",
-          "count": 2
-        },
-        {
-          "lemma": "לאשה",
           "count": 2
         },
         {
@@ -651,6 +539,118 @@
         {
           "lemma": "עמכם",
           "count": 2
+        },
+        {
+          "lemma": "וכה",
+          "count": 2
+        },
+        {
+          "lemma": "לקט",
+          "count": 2
+        },
+        {
+          "lemma": "בתי",
+          "count": 2
+        },
+        {
+          "lemma": "חמותה",
+          "count": 2
+        },
+        {
+          "lemma": "ותקראנה",
+          "count": 2
+        },
+        {
+          "lemma": "הָיְתָ֥ה",
+          "count": 1
+        },
+        {
+          "lemma": "וָבֹ֔הוּ",
+          "count": 1
+        },
+        {
+          "lemma": "וְחֹ֖שֶׁךְ",
+          "count": 1
+        },
+        {
+          "lemma": "וְר֣וּחַ",
+          "count": 1
+        },
+        {
+          "lemma": "מְרַחֶ֖פֶת",
+          "count": 1
+        },
+        {
+          "lemma": "יְהִ֣י",
+          "count": 1
+        },
+        {
+          "lemma": "הַחֹֽשֶׁךְ",
+          "count": 1
+        },
+        {
+          "lemma": "לָאוֹר֙",
+          "count": 1
+        },
+        {
+          "lemma": "וְלַחֹ֖שֶׁךְ",
+          "count": 1
+        },
+        {
+          "lemma": "יְהִ֥י",
+          "count": 1
+        },
+        {
+          "lemma": "מַבְדִּ֔יל",
+          "count": 1
+        },
+        {
+          "lemma": "לָמָֽיִם",
+          "count": 1
+        },
+        {
+          "lemma": "יִקָּו֨וּ",
+          "count": 1
+        },
+        {
+          "lemma": "וְתֵרָאֶ֖ה",
+          "count": 1
+        },
+        {
+          "lemma": "הַיַּבָּשָׁ֑ה",
+          "count": 1
+        },
+        {
+          "lemma": "לַיַּבָּשָׁה֙",
+          "count": 1
+        },
+        {
+          "lemma": "וּלְמִקְוֵ֥ה",
+          "count": 1
+        },
+        {
+          "lemma": "יַמִּ֑ים",
+          "count": 1
+        },
+        {
+          "lemma": "תַּדְשֵׁ֤א",
+          "count": 1
+        },
+        {
+          "lemma": "וַתּוֹצֵ֨א",
+          "count": 1
+        },
+        {
+          "lemma": "וְעֵ֧ץ",
+          "count": 1
+        },
+        {
+          "lemma": "שְׁלִישִֽׁי",
+          "count": 1
+        },
+        {
+          "lemma": "יְהִ֤י",
+          "count": 1
         }
       ]
     },
