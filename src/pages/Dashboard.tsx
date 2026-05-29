@@ -33,6 +33,7 @@ import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useStreakNotifications } from '../lib/hooks/useStreakNotifications.js';
 import { StudyPlanWidget } from '../components/StudyPlanWidget.js';
+import { ReadyToReadRail } from '../components/dashboard/ReadyToReadRail.js';
 import { pickDashboardRecommendation } from '../lib/services/recommendationService.js';
 import { StudyHeatmap } from '../components/StudyHeatmap.js';
 import { VocabFrequencyGoals } from '../components/VocabFrequencyGoals.js';
@@ -436,6 +437,9 @@ export const Dashboard = () => {
           recommendedText={suggestedText}
         />
       )}
+
+      {/* ── Ready to Read (lemma-based, comprehension-banded picks) ── */}
+      <ReadyToReadRail activeLanguageId={activeLanguageId} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
         {/* Review Hero */}
