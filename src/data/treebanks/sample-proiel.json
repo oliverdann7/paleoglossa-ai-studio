@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "source": "proiel",
+  "textId": "treebank-sample",
+  "sentences": {
+    "treebank-sample_0": {
+      "source": "proiel",
+      "sourceSentenceId": "100",
+      "citation": "Hom. Il. 1.1-2",
+      "tokens": [
+        {
+          "index": 0,
+          "surface": "μῆνιν",
+          "lemma": "μῆνις",
+          "relation": "obj",
+          "head": 1,
+          "morphology": "-s---fa-",
+          "gloss": "wrath"
+        },
+        {
+          "index": 1,
+          "surface": "ἄειδε",
+          "lemma": "ἀείδω",
+          "relation": "pred",
+          "head": -1,
+          "morphology": "2spia----",
+          "gloss": "sing"
+        },
+        {
+          "index": 2,
+          "surface": "θεὰ",
+          "lemma": "θεά",
+          "relation": "voc",
+          "head": 1,
+          "morphology": "-s---fv-",
+          "gloss": "goddess"
+        }
+      ]
+    }
+  }
+}
