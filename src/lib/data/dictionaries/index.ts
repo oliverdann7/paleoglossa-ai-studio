@@ -13,6 +13,7 @@ import { HBO_DICTIONARY } from './hbo.js';
 import { SYR_DICTIONARY } from './syr.js';
 import { COP_DICTIONARY } from './cop.js';
 import { ARC_DICTIONARY } from './arc.js';
+import { ARC_EXTRAS } from './arc-extras.js';
 import { AKK_DICTIONARY } from './akk.js';
 import { SAN_DICTIONARY } from './san.js';
 import { EGY_DICTIONARY } from './egy.js';
@@ -29,7 +30,7 @@ const LANG_DICTS: Record<string, Record<string, string>> = {
   hbo: HBO_DICTIONARY,
   syr: SYR_DICTIONARY,
   cop: COP_DICTIONARY,
-  arc: ARC_DICTIONARY,
+  arc: { ...ARC_EXTRAS, ...ARC_DICTIONARY },
   akk: AKK_DICTIONARY,
   san: SAN_DICTIONARY,
   egy: EGY_DICTIONARY,
