@@ -51,6 +51,89 @@ service cloud.firestore {
       allow write: if false; // Admin SDK bypasses rules; client writes are never allowed
     }
 
+    // Public profiles — read by anyone, written by server only.
+    match /publicProfiles/{uid} {
+      // eslint-disable-next-line @firebase/security-rules/no-open-reads -- intentionally public
+      allow read: if true;
+      allow write: if false; // Admin SDK only (account creation/update)
+    }
+
+    // Syntax annotations — read by anyone, written by server only.
+    match /syntaxAnnotations/{annotationId} {
+      // eslint-disable-next-line @firebase/security-rules/no-open-reads -- public read intentional, writes are Admin-SDK-only
+      allow read: if true;
+      allow write: if false; // Admin SDK only
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // COURSES  (all mutations via server / Admin SDK)
+    // ═══════════════════════════════════════════════════════
+
+    // A course is readable by authenticated users if it is public/open,
+    // or if the requesting user is the owner.
+    // Member-only private courses are fetched through the API (which uses Admin SDK),
+    // so we deny direct client reads of private courses to prevent enumeration.
+    match /courses/{courseId} {
+      allow get: if isSignedIn() && (
+        resource.data.isPublic == true ||
+        resource.data.ownerId == request.auth.uid
+      );
+      allow list: if isSignedIn() && resource.data.isPublic == true;
+      allow write: if false; // Admin SDK only
+
+      // Members sub-collection: only the course owner may read the full list.
+      // Students see their own membership record only.
+      match /members/{memberId} {
+        allow get: if isSignedIn() && (
+          memberId == request.auth.uid ||
+          get(/databases/$(database)/documents/courses/$(courseId)).data.ownerId == request.auth.uid
+        );
+        allow list: if isSignedIn() &&
+          get(/databases/$(database)/documents/courses/$(courseId)).data.ownerId == request.auth.uid;
+        allow write: if false; // Admin SDK only (join/leave go through API)
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // TEXT DISCUSSIONS  (all mutations via server / Admin SDK)
+    // ═══════════════════════════════════════════════════════
+
+    match /textDiscussions/{discussionId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Admin SDK only
+
+      match /comments/{commentId} {
+        allow read: if isSignedIn();
+        allow write: if false; // Admin SDK only
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // AI USAGE  (server-controlled quota tracking)
+    // ═══════════════════════════════════════════════════════
+
+    // aiUsage documents are read and written exclusively by the server.
+    // Clients must not read or write these documents directly.
+    match /aiUsage/{uid} {
+      allow read, write: if false; // Admin SDK only
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // IMPORTED TEXTS  (legacy top-level collection)
+    // ═══════════════════════════════════════════════════════
+
+    // importedTexts/{uid}/texts is a legacy path used by account deletion.
+    // Only the owner may read their imported texts. Writes are server-only
+    // (the client imports through the API, not directly to Firestore).
+    match /importedTexts/{uid} {
+      allow read, write: if false; // document-level denied; see subcollection
+
+      match /texts/{textId} {
+        allow read: if isOwner(uid);
+        allow write: if false; // Admin SDK only (API handles imports & deletion)
+      }
+    }
+
     // ═══════════════════════════════════════════════════════
     // USER-SPECIFIC DATA
     // ═══════════════════════════════════════════════════════
@@ -90,7 +173,7 @@ service cloud.firestore {
       match /imports/{importId} {
         function isValidImportPayload() {
           return incoming().keys().hasAll(['title', 'languageId', 'sourceType', 'visibility'])
-            && incoming().sourceType in ['paste', 'file', 'url', 'image', 'pdf']
+            && incoming().sourceType in ['paste', 'file', 'url', 'image', 'pdf', 'tei']
             && incoming().visibility in ['private', 'shared', 'public'];
         }
 
@@ -163,13 +246,37 @@ service cloud.firestore {
           allow read, write: if isOwner(userId);
         }
       }
-    }
 
-    // ── Syntax Annotations (top-level, server-managed) ──
-    match /syntaxAnnotations/{annotationId} {
-      // eslint-disable-next-line @firebase/security-rules/no-open-reads -- public read intentional, writes are Admin-SDK-only
-      allow read: if true;
-      allow write: if false; // Admin SDK only
+      // ── Beginner Progress ─────────────────────────────
+      // Per-language milestone flags tracked directly by the client SDK.
+      match /beginnerProgress/{languageId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && incoming().keys().hasOnly([
+            'scriptOpened', 'firstTextOpened', 'firstWordSaved',
+            'firstReviewCompleted', 'updatedAt'
+          ]);
+        allow delete: if isOwner(userId);
+      }
+
+      // ── Grammar Mastery ────────────────────────────────
+      // Per-concept SRS mastery records tracked directly by the client SDK.
+      match /grammarMastery/{conceptId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && incoming().keys().hasOnly([
+            'conceptId', 'tier', 'score', 'lastReviewedAt',
+            'nextReviewAt', 'reviewCount', 'updatedAt'
+          ]);
+        allow delete: if isOwner(userId);
+      }
+
+      // ── Challenge Progress ────────────────────────────
+      // Written by the server (API + Admin SDK), read by owner.
+      match /challengeProgress/{challengeId} {
+        allow get, list: if isOwner(userId);
+        allow write: if false; // Admin SDK only (challenges API route)
+      }
     }
   }
 }
