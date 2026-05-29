@@ -1746,4 +1746,64 @@ Keep the summary informative but accessible. Do not use jargon without explanati
   }
 });
 
+// ─── Textual Apparatus Notes ─────────────────────────────────────────────────
+const _apparatusCache = new Map<string, { notes: string; cachedAt: number }>();
+const APPARATUS_TTL = 24 * 60 * 60 * 1000;
+
+router.post(
+  '/api/ai/apparatus-notes',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { languageId, lemma, wordText, sentenceText } = req.body ?? {};
+      if (!languageId || !lemma) {
+        return res.status(400).json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
+      }
+
+      const cacheKey = `${languageId}:${lemma}:${wordText ?? ''}`;
+      const cached = _apparatusCache.get(cacheKey);
+      if (cached && Date.now() - cached.cachedAt < APPARATUS_TTL) {
+        return res.status(200).json({ notes: cached.notes, cached: true });
+      }
+
+      const apiKey = resolveGeminiApiKey(req) || process.env.GOOGLE_AI_API_KEY;
+      if (!apiKey) return res.status(200).json({ unavailable: true, notes: null });
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+
+      const contextClause = sentenceText
+        ? `The word appears in the sentence: "${sentenceText}".`
+        : '';
+      const formClause =
+        wordText && wordText !== lemma
+          ? `The inflected form is "${wordText}" (lemma: ${lemma}).`
+          : `The lemma is ${lemma}.`;
+
+      const prompt = `You are a New Testament / ancient text textual critic. ${formClause} ${contextClause}
+
+Write 2–4 sentences of apparatus-style commentary on any known manuscript variants for this word or its immediate context. Include:
+- Names of key witnesses (papyri, uncials, versional evidence) if known
+- The nature of the variant (omission, addition, substitution, spelling)
+- A brief note on scholarly consensus or significance
+
+If no significant variants are known for this specific lemma in this language, say so briefly. Write in the style of a textual criticism handbook entry — precise, scholarly, non-redundant. Do not add bullet points; prose only.`;
+
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+
+      const notes = (response?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+      if (!notes) return res.status(200).json({ notes: null });
+
+      _apparatusCache.set(cacheKey, { notes, cachedAt: Date.now() });
+      return res.status(200).json({ notes, cached: false });
+    } catch (err: any) {
+      console.error('[apparatus-notes] Error:', err.message);
+      return res.status(200).json({ notes: null });
+    }
+  }
+);
+
 export default router;

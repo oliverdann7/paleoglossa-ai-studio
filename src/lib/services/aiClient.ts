@@ -359,4 +359,21 @@ export class AIClient {
       return null;
     }
   }
+
+  static async getApparatusNotes(
+    languageId: string,
+    lemma: string,
+    wordText?: string,
+    sentenceText?: string
+  ): Promise<string | null> {
+    try {
+      const data = await apiFetch<{ notes: string | null; unavailable?: boolean }>(
+        '/api/ai/apparatus-notes',
+        { method: 'POST', body: { languageId, lemma, wordText, sentenceText }, skipAuth: true }
+      );
+      return data.notes ?? null;
+    } catch {
+      return null;
+    }
+  }
 }
