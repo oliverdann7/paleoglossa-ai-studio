@@ -172,6 +172,25 @@ export default defineConfig(({mode}) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
+            // Split the corpus into per-family sub-chunks so the browser can
+            // fetch in parallel and the service worker can cache at a finer
+            // granularity. The corpus parent module (src/data/corpus.ts) still
+            // statically imports these, so they all load together — but as
+            // separate files instead of one ~900 KB blob.
+            if (id.includes('/src/data/corpus/')) {
+              if (id.includes('/john-full.')) return 'corpus-grc-john';
+              if (id.includes('/greek-nt-extended.') || id.includes('/greek-mark.') || id.includes('/greek-mini-stories.')) return 'corpus-grc-koine';
+              if (id.includes('/greek-classics') || id.includes('/plato-apology.')) return 'corpus-grc-classical';
+              if (id.includes('/lxx-septuagint.') || id.includes('/patristics.')) return 'corpus-grc-lxx-patristic';
+              if (id.includes('/latin-')) return 'corpus-lat';
+              if (id.includes('/ovid-') || id.includes('/cicero-') || id.includes('/caesar-')) return 'corpus-lat-classics';
+              if (id.includes('/hebrew-')) return 'corpus-hebrew';
+              if (id.includes('/syriac-') || id.includes('/aramaic-') || id.includes('/coptic-')) return 'corpus-aramaic-family';
+              if (id.includes('/akkadian-') || id.includes('/hittite-') || id.includes('/ugaritic-') || id.includes('/egyptian-') || id.includes('/sanskrit-')) return 'corpus-other-ancient';
+              if (id.includes('/expanded-sections.')) return 'corpus-expanded';
+              if (id.includes('/vocabulary-texts.') || id.includes('/treebank-sections.')) return 'corpus-misc';
+              return 'corpus-core';
+            }
             if (!id.includes('node_modules')) return undefined;
             if (id.includes('/firebase/')) return 'vendor-firebase';
             if (id.includes('/react-markdown/') || id.includes('/remark-') || id.includes('/rehype-') || id.includes('/micromark') || id.includes('/mdast') || id.includes('/hast') || id.includes('/unified') || id.includes('/vfile')) return 'vendor-markdown';
