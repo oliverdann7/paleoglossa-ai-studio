@@ -242,14 +242,23 @@ const ReaderToken = memo(function ReaderToken({
       {token.punctBefore && <span className="opacity-40">{token.punctBefore}</span>}
       <span
         data-testid="word-token"
+        role="button"
+        tabIndex={0}
+        aria-label={token.gloss ? `${token.text} — ${token.gloss}` : token.text}
         onClick={() => onWordClick(token, sentenceText, sentenceIndex)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onWordClick(token, sentenceText, sentenceIndex);
+          }
+        }}
         onContextMenu={handleContextMenu}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={onWordLeave}
-        className="cursor-pointer px-1.5 md:px-1 rounded-sm inline-flex flex-col items-center align-top leading-none min-h-[28px] md:min-h-0"
+        className="cursor-pointer px-1.5 md:px-1 rounded-sm inline-flex flex-col items-center align-top leading-none min-h-[28px] md:min-h-0 focus:outline-none focus:ring-2 focus:ring-blue/50 focus:rounded"
         style={tokenStyle}
       >
         <bdi className="leading-tight mb-1">{token.text}</bdi>
