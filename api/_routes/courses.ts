@@ -30,7 +30,7 @@ router.get('/api/courses', optionalAuth as any, async (req: AuthenticatedRequest
       ownedSnap.forEach((doc) => {
         if (!seenIds.has(doc.id)) {
           seenIds.add(doc.id);
-          results.push(serializeCourse(doc.id, doc.data()));
+          results.push(serializeCourse(doc.id, doc.data(), true));
         }
       });
 
@@ -108,10 +108,8 @@ router.get(
         isEnrolled = memberDoc.exists;
       }
 
-      res.status(200).json({
-        ...serializeCourse(doc.id, data, { includeJoinCode: data.ownerId === userId }),
-        isEnrolled,
-      });
+      const isOwner = data.ownerId === userId;
+      res.status(200).json({ ...serializeCourse(doc.id, data, isOwner), isEnrolled });
     } catch (e: any) {
       console.error('[courses] Error fetching:', e.message);
       res.status(500).json({ error: 'Failed to fetch course', code: 'INTERNAL_ERROR' });
@@ -490,6 +488,32 @@ router.post(
   }
 );
 
+// ─── Invite code: generate (v2) ──────────────────────────────────────────────
+
+router.post(
+  '/api/courses/:courseId/invite',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const userId = req.user!.uid;
+    const { courseId } = req.params;
+
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    const courseRef = adminDb_.doc(`courses/${courseId}`);
+    const snap = await courseRef.get();
+    if (!snap.exists) return res.status(404).json({ error: 'Course not found', code: 'NOT_FOUND' });
+    if (snap.data()?.ownerId !== userId) {
+      return res.status(403).json({ error: 'Not authorised', code: 'FORBIDDEN' });
+    }
+
+    // 6-character alphanumeric code, uppercase
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    await courseRef.update({ inviteCode: code });
+    return res.status(200).json({ inviteCode: code });
+  }
+);
+
 // ─── Join by invite code (any authenticated user) ─────────────────────────────
 
 router.post(
@@ -549,9 +573,57 @@ router.post(
   }
 );
 
+// ─── Invite code: join (v2) ──────────────────────────────────────────────────
+
+router.post(
+  '/api/courses/join-by-invite',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const userId = req.user!.uid;
+    const { code } = req.body ?? {};
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ error: 'code is required', code: 'INVALID_INPUT' });
+    }
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+
+    const coursesRef = adminDb_.collection('courses');
+    const snap = await coursesRef.where('inviteCode', '==', code.trim().toUpperCase()).limit(1).get();
+    if (snap.empty) {
+      return res.status(404).json({ error: 'Invalid invite code', code: 'NOT_FOUND' });
+    }
+
+    const courseDoc = snap.docs[0];
+    const courseId = courseDoc.id;
+    const courseData = courseDoc.data();
+
+    if (courseData.ownerId === userId) {
+      return res.status(400).json({ error: 'You own this course', code: 'ALREADY_OWNER' });
+    }
+
+    const memberRef = adminDb_.doc(`courses/${courseId}/members/${userId}`);
+    const memberSnap = await memberRef.get();
+    if (memberSnap.exists) {
+      return res.status(200).json({ courseId, title: courseData.title, alreadyMember: true });
+    }
+
+    await memberRef.set({
+      userId,
+      role: 'student',
+      progress: {},
+      joinedAt: new Date().toISOString(),
+    });
+
+    const memberCount = (courseData.memberCount ?? 1) + 1;
+    await courseDoc.ref.update({ memberCount });
+
+    return res.status(200).json({ courseId, title: courseData.title });
+  }
+);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function serializeCourse(id: string, data: any, opts: { includeJoinCode?: boolean } = {}) {
+function serializeCourse(id: string, data: any, includeInviteCode = false) {
   const result: Record<string, any> = {
     id,
     ownerId: data.ownerId,
@@ -564,9 +636,9 @@ function serializeCourse(id: string, data: any, opts: { includeJoinCode?: boolea
     createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? data.createdAt ?? null,
     updatedAt: data.updatedAt?.toDate?.()?.toISOString?.() ?? data.updatedAt ?? null,
   };
-  if (opts.includeJoinCode && data.joinCode) {
-    result.joinCode = data.joinCode;
-  }
+  // Invite code is only returned to the course owner
+  if (includeInviteCode && data.inviteCode) result.inviteCode = data.inviteCode;
+  if (includeInviteCode && data.joinCode) result.joinCode = data.joinCode;
   return result;
 }
 

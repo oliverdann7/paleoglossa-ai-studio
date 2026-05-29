@@ -140,4 +140,27 @@ export class CourseService {
       // non-critical
     }
   }
+
+  static async generateInviteCode(courseId: string): Promise<string | null> {
+    try {
+      const data = await apiFetch<{ inviteCode: string }>(
+        `/api/courses/${encodeURIComponent(courseId)}/invite`,
+        { method: 'POST' }
+      );
+      return data.inviteCode;
+    } catch {
+      return null;
+    }
+  }
+
+  static async joinByInviteCode(code: string): Promise<{ courseId: string; title: string } | null> {
+    try {
+      return await apiFetch<{ courseId: string; title: string }>('/api/courses/join-by-invite', {
+        method: 'POST',
+        body: { code },
+      });
+    } catch {
+      return null;
+    }
+  }
 }
