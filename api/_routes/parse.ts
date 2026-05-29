@@ -3,6 +3,7 @@ import multer from 'multer';
 // pdf-parse v1.1.1 — pure JS, no native binaries, works on Vercel Linux
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import mammoth from 'mammoth';
+import { parseTeiXml } from '../_lib/teiParser.js';
 
 const router = Router();
 
@@ -14,8 +15,12 @@ const upload = multer({
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'text/plain',
+      'application/xml',
+      'text/xml',
     ];
-    if (allowed.includes(file.mimetype)) {
+    // Also allow XML by filename extension when MIME type is reported as octet-stream
+    const isXmlByName = file.originalname?.toLowerCase().endsWith('.xml');
+    if (allowed.includes(file.mimetype) || isXmlByName) {
       cb(null, true);
     } else {
       cb(new Error(`Unsupported file type: ${file.mimetype}`));
@@ -64,6 +69,36 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
       if (!text) {
         warnings.push('The DOCX file appears to contain no text content.');
       }
+    } else if (
+      mimetype === 'application/xml' ||
+      mimetype === 'text/xml' ||
+      originalname?.toLowerCase().endsWith('.xml')
+    ) {
+      const xmlString = buffer.toString('utf-8');
+      const teiResult = parseTeiXml(xmlString);
+      text = teiResult.text;
+      warnings.push(...teiResult.warnings);
+
+      const truncated = text.length > 100000;
+      if (truncated) {
+        warnings.push(
+          `Text was truncated to 100,000 characters (document contained ${text.length.toLocaleString()}).`
+        );
+      }
+
+      return res.status(200).json({
+        text: text.slice(0, 100000),
+        originalFilename: originalname,
+        mimeType: mimetype,
+        characterCount: Math.min(text.length, 100000),
+        truncated,
+        teiMetadata: {
+          title: teiResult.title,
+          author: teiResult.author,
+          languageHint: teiResult.languageHint,
+        },
+        warnings: warnings.length > 0 ? warnings : undefined,
+      });
     } else {
       text = buffer.toString('utf-8').trim();
     }
