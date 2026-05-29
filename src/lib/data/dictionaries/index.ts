@@ -18,6 +18,7 @@ import { SAN_DICTIONARY } from './san.js';
 import { EGY_DICTIONARY } from './egy.js';
 import { HIT_DICTIONARY } from './hit.js';
 import { UGA_DICTIONARY } from './uga.js';
+import { UGA_EXTRAS } from './uga-extras.js';
 
 const LANG_DICTS: Record<string, Record<string, string>> = {
   grc: GRC_DICTIONARY,
@@ -34,7 +35,7 @@ const LANG_DICTS: Record<string, Record<string, string>> = {
   san: SAN_DICTIONARY,
   egy: EGY_DICTIONARY,
   hit: HIT_DICTIONARY,
-  uga: UGA_DICTIONARY,
+  uga: { ...UGA_EXTRAS, ...UGA_DICTIONARY },
 };
 
 function stripDiacritics(s: string): string {
