@@ -1487,4 +1487,97 @@ router.post(
   }
 );
 
+// In-process cache: textId → historical context
+const _historicalContextCache = new Map<string, { data: HistoricalContextResult; cachedAt: number }>();
+const HISTORICAL_CONTEXT_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+interface HistoricalContextResult {
+  geography: string;
+  period: string;
+  keyFigures: string;
+  culturalBackground: string;
+  literaryContext: string;
+}
+
+router.post('/api/ai/historical-context', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { textId, title, languageId, author, period } = req.body;
+
+    if (!title || typeof title !== 'string') {
+      return res.status(400).json({ error: 'title is required', code: 'INVALID_INPUT' });
+    }
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+    }
+
+    // Serve from cache if available
+    const cacheKey = textId || title;
+    const cached = _historicalContextCache.get(cacheKey);
+    if (cached && Date.now() - cached.cachedAt < HISTORICAL_CONTEXT_TTL) {
+      return res.status(200).json(cached.data);
+    }
+
+    const apiKey = resolveGeminiApiKey(req);
+    if (!apiKey) {
+      return res.status(200).json({
+        geography: '',
+        period: '',
+        keyFigures: '',
+        culturalBackground: '',
+        literaryContext: '',
+        _unavailable: true,
+      });
+    }
+
+    const langName = getLanguageName(languageId);
+    const authorLine = author ? `Author: ${author}` : '';
+    const periodLine = period ? `Period: ${period}` : '';
+
+    const prompt = `You are a classical philologist and historian. Provide concise historical background for a ${langName} text.
+
+Title: ${title}
+${authorLine}
+${periodLine}
+Language: ${langName}
+
+Return ONLY valid JSON with this exact structure — no markdown, no code fences:
+{
+  "geography": "2-3 sentences on the geographic setting and relevant locations",
+  "period": "2-3 sentences on the historical period, dating, and context",
+  "keyFigures": "2-3 sentences on key historical or mythological figures in this text or its context",
+  "culturalBackground": "2-3 sentences on the cultural, religious, or political context",
+  "literaryContext": "2-3 sentences on the literary tradition, genre, and significance of this work"
+}
+
+Keep each section brief and learner-friendly. Focus on what helps a student reading this text.`;
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: { temperature: 0.3, maxOutputTokens: 1024 },
+    });
+
+    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
+
+    let parsed: HistoricalContextResult;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return res.status(500).json({ error: 'Failed to parse AI response', code: 'PARSE_ERROR' });
+    }
+
+    _historicalContextCache.set(cacheKey, { data: parsed, cachedAt: Date.now() });
+    return res.status(200).json(parsed);
+  } catch (err: any) {
+    console.error('[historical-context] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch historical context', code: 'AI_ERROR' });
+  }
+});
+
 export default router;
