@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "textId": "TEXT_SAMPLE_IMPORT",
+  "language": "grc",
+  "sections": [
+    {
+      "id": "Sample-1",
+      "sequence": 1,
+      "label": "Sample 1",
+      "sentences": [
+        {
+          "id": "Sample-1-1",
+          "src": "ἐν ἀρχῇ ἦν ὁ λόγος",
+          "translation": "In the beginning was the Word",
+          "tokens": [
+            { "surface": "ἐν", "lemma": "ἐν", "gloss": "in" },
+            { "surface": "ἀρχῇ", "lemma": "ἀρχή", "gloss": "beginning" },
+            { "surface": "ἦν", "lemma": "εἰμί", "gloss": "was" },
+            { "surface": "ὁ", "lemma": "ὁ", "gloss": "the" },
+            { "surface": "λόγος", "lemma": "λόγος", "gloss": "word" }
+          ]
+        },
+        {
+          "id": "Sample-1-2",
+          "src": "καὶ ὁ λόγος ἦν πρὸς τὸν θεόν",
+          "translation": "and the Word was with God"
+        }
+      ]
+    }
+  ]
+}
