@@ -7,29 +7,51 @@ import { useSettings } from '../lib/hooks/useSettings.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { OnboardingProfile } from '../types/firestore.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
-import { getLanguageById } from '../lib/data/languages.js';
+import { getLanguageById, LANGUAGES } from '../lib/data/languages.js';
 import { fetchOnboardingLemmas, invalidateRecommendations } from '../lib/services/recommendationApi.js';
 import { VocabularyService } from '../lib/services/vocabularyService.js';
 import { WordState } from '../lib/constants/wordStates.js';
+import { useVocabulary } from '../lib/hooks/useVocabulary.js';
 
-const languages = [
-  { id: 'greek', glyph: 'Ω', labelKey: 'grc', descKey: 'onboarding.ancientGreekDesc', font: 'font-greek' },
-  { id: 'hebrew', glyph: 'א', labelKey: 'hbo', descKey: 'onboarding.hebrewDesc', font: 'font-hebrew' },
-  { id: 'latin', glyph: 'L', labelKey: 'lat', descKey: 'onboarding.latinDesc', font: 'font-serif' },
-  { id: 'syriac', glyph: 'ܐ', labelKey: 'syr', descKey: 'onboarding.syriacDesc', font: 'font-syriac' },
-];
+const FONT_BY_SCRIPT: Record<string, string> = {
+  Greek: 'font-greek',
+  Hebrew: 'font-hebrew',
+  Syriac: 'font-syriac',
+};
+
+const fontForLanguage = (scripts: string[]): string =>
+  scripts.map((s) => FONT_BY_SCRIPT[s]).find(Boolean) ?? 'font-serif';
 
 const LanguageStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => void }) => {
   const { t } = useTranslation();
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
-      <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseLanguage', 'Choose your primary language')}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {languages.map((lang) => (
-          <button key={lang.id} onClick={() => onNext({ languageId: lang.labelKey })} className="p-4 border rounded-xl hover:bg-parch3 transition-all flex flex-col items-center">
-            <span className={`${lang.font} text-2xl`}>{lang.glyph}</span> {t(`languageNames.${lang.labelKey}`, lang.labelKey)}
-          </button>
-        ))}
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-5xl w-full">
+      <h2 className="text-3xl font-serif mb-10 text-center">{t('onboarding.chooseLanguage', 'Choose your primary language')}</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {LANGUAGES.map((lang) => {
+          const font = fontForLanguage(lang.scripts);
+          const isComingSoon = lang.corpusStatus === 'coming_soon';
+          return (
+            <button
+              key={lang.id}
+              onClick={() => !isComingSoon && onNext({ languageId: lang.id })}
+              disabled={isComingSoon}
+              className="group relative aspect-square border rounded-2xl hover:bg-parch3 hover:border-ink/40 hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-current disabled:hover:shadow-none"
+            >
+              <span className={`${font} text-5xl sm:text-6xl leading-none transition-transform group-hover:scale-110`}>
+                {lang.symbol}
+              </span>
+              <span className="font-serif text-sm sm:text-base opacity-80 text-center px-2">
+                {t(`languageNames.${lang.id}`, lang.shortName)}
+              </span>
+              {isComingSoon && (
+                <span className="absolute top-2 right-2 text-[10px] uppercase tracking-wide opacity-60">
+                  {t('onboarding.comingSoon', 'Soon')}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
     </motion.div>
   );
@@ -187,8 +209,9 @@ const KnownWordsStep = ({
 export const Onboarding = () => {
   const navigate = useNavigate();
   const { setFreeLanguage } = useSubscription();
-  const { updateSettings } = useSettings();
+  const { updateSettings, settings } = useSettings();
   const { user } = useAuth();
+  const { knowledge, isLoading: vocabLoading } = useVocabulary();
   const [step, setStep] = useState<number>(0);
   const [profile, setProfile] = useState<OnboardingProfile>({
     completed: false,
@@ -197,6 +220,33 @@ export const Onboarding = () => {
     goal: 'biblical',
     dailyCommitment: 15,
   });
+
+  // Existing users with prior vocabulary should never see onboarding. If they
+  // already have more than one KNOWN lemma, silently mark onboarding complete
+  // and send them to the app. This is meant only for fresh sign-ups.
+  useEffect(() => {
+    if (vocabLoading) return;
+    if (settings.onboardingProfile?.completed) {
+      navigate('/app', { replace: true });
+      return;
+    }
+    const knownCount = Object.values(knowledge).filter(
+      (info) => info?.state === WordState.KNOWN
+    ).length;
+    if (knownCount > 1) {
+      const existing = settings.onboardingProfile;
+      const completedProfile: OnboardingProfile = {
+        completed: true,
+        languageId: existing?.languageId ?? profile.languageId,
+        level: existing?.level ?? profile.level,
+        goal: existing?.goal ?? profile.goal,
+        dailyCommitment: existing?.dailyCommitment ?? profile.dailyCommitment,
+      };
+      updateSettings({ onboardingProfile: completedProfile });
+      navigate('/app', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vocabLoading, knowledge, settings.onboardingProfile?.completed]);
 
   const finish = async (finalProfile: OnboardingProfile) => {
     finalProfile.completed = true;
