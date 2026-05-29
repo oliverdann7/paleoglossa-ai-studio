@@ -1,0 +1,40 @@
+/**
+ * Egyptian gap-filler dictionary — high-frequency transliterated forms
+ * (Middle and Late Egyptian). Merged in index.ts after EGY_DICTIONARY
+ * so curated glosses win on collision.
+ */
+export const EGY_EXTRAS: Record<string, string> = {
+  'n.k': 'for you / to you',
+  'n.f': 'for him / to him',
+  m: 'in, with, from; (imperative marker)',
+  jr: 'as for; if',
+  r: 'to, toward; with respect to',
+  mꜣꜥ: 'true, just; truth',
+  jw: '(circumstantial particle); is',
+  n: 'to, for; (negation)',
+  ꜥqꜣ: 'straight, exact',
+  ꜥhꜥw: 'lifespan, period of time',
+  f: 'he, him (suffix)',
+  bw: 'place; not',
+  jry: 'doing; companion',
+  jȝw: 'old age; praise',
+  jtjw: 'fathers, ancestors',
+  shrw: 'plans, counsels',
+  'jrj.n.f': 'he did, he made',
+  jrr: 'doing; does',
+  nbt: 'lady; every (f.)',
+  nt: 'of (f.); water',
+  pꜣ: 'the (m.); this',
+  tꜣ: 'the (f.); land',
+  nꜣ: 'the (pl.); these',
+  ḏd: 'to say; speech',
+  rḫ: 'to know',
+  jrj: 'to do, to make',
+  sḏm: 'to hear',
+  mꜣꜣ: 'to see',
+  ꜥnḫ: 'to live; life',
+  s: 'he, him (suffix); man',
+  k: 'you (m. suffix)',
+  t: 'you (f. suffix); the (f.)',
+  sn: 'they (suffix); brother',
+};
