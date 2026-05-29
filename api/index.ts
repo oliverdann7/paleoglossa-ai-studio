@@ -25,6 +25,9 @@ import annotationsRouter from './_routes/annotations.js';
 import challengesRouter from './_routes/challenges.js';
 import connectRouter from './_routes/connect.js';
 import tutorsRouter from './_routes/tutors.js';
+import availabilityRouter from './_routes/availability.js';
+import bookingsRouter from './_routes/bookings.js';
+import reviewsRouter from './_routes/reviews.js';
 
 const app = express();
 
@@ -83,6 +86,9 @@ app.use(annotationsRouter);
 app.use(challengesRouter);
 app.use(connectRouter);
 app.use(tutorsRouter);
+app.use(availabilityRouter);
+app.use(bookingsRouter);
+app.use(reviewsRouter);
 
 // Global error handler — report to Sentry before returning 500
 app.use((err: any, _req: any, res: any, next: any) => {
