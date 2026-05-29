@@ -3,6 +3,7 @@ import { requireAuth } from '../_lib/auth.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 import { CorpusDB } from '../../src/data/corpus.js';
+import { getTreebankSentence } from '../_lib/treebankIndex.js';
 
 const router = Router();
 
@@ -60,7 +61,7 @@ router.get('/api/syntax/:textId/:sentenceIndex', async (req: any, res: any) => {
   const textId = req.params.textId as string;
   const sentenceIndex = parseInt(req.params.sentenceIndex as string, 10);
 
-  // 1. Prefer static treebank data from corpus tokens
+  // 1. Prefer inline treebank data from corpus tokens
   const treebank = corpusTreebankTokens(textId, sentenceIndex);
   if (treebank) {
     return res.status(200).json({
@@ -71,7 +72,27 @@ router.get('/api/syntax/:textId/:sentenceIndex', async (req: any, res: any) => {
     });
   }
 
-  // 2. Fall back to Firestore-cached AI annotation
+  // 2. Try sidecar treebanks imported from PROIEL/Gorman/Perseus
+  const sidecar = getTreebankSentence(textId, sentenceIndex);
+  if (sidecar) {
+    return res.status(200).json({
+      tokens: sidecar.tokens.map((t) => ({
+        index: t.index,
+        surface: t.surface,
+        lemma: t.lemma,
+        gloss: t.gloss ?? '',
+        head: t.head,
+        relation: t.relation,
+        morphology: t.morphology ?? null,
+      })),
+      explanation: null,
+      confidence: 1.0,
+      source: `treebank:${sidecar.source}`,
+      citation: sidecar.citation ?? null,
+    });
+  }
+
+  // 3. Fall back to Firestore-cached AI annotation
   const adminDb_ = getAdminDb();
   if (!adminDb_) return res.status(200).json(null);
   try {
