@@ -944,6 +944,32 @@ export const TEXT_HEB_GENESIS: Text = {
   ],
 };
 
+export const TEXT_HEB_MINI_STORIES: Text = {
+  id: "HebMini",
+  corpusId: "OSHB",
+  title: "סִפּוּרִים קְצָרִים",
+  canonicalRef: "Hebrew Mini-Stories",
+  author: "Paleoglossa",
+  language: "hbo",
+  direction: "rtl",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice', 'biblical'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 9,
+  sectionsPreview: [
+    { id: "HebMini-1", label: "In the beginning" },
+    { id: "HebMini-2", label: "The good shepherd" },
+  ],
+};
+
 export const TEXT_HEB_PS23: Text = {
   id: "Heb-Ps23",
   corpusId: "OSHB",
@@ -4645,6 +4671,7 @@ import { ALL_GREEK_MINI_STORIES, GRC_MINI_1, GRC_MINI_2, GRC_MINI_3, GRC_MINI_4,
 import { ALL_LATIN_BEGINNER_SECTIONS, LAT_VULGATE_JOHN_1, LAT_DISTICHA_CATONIS } from "./corpus/latin-beginner.js";
 import { ALL_LATIN_MINI_STORIES, LAT_MINI_1, LAT_MINI_2, LAT_MINI_3, LAT_MINI_4, LAT_MINI_5 } from "./corpus/latin-mini-stories.js";
 import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
+import { ALL_HEBREW_MINI_STORIES, HEB_MINI_1, HEB_MINI_2 } from "./corpus/hebrew-mini-stories.js";
 import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS_3, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
 import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
 import { ALL_LATIN_CLASSICS_SECTIONS, LAT_HORACE_ODES_1_1, LAT_HORACE_ODES_1_9, LAT_HORACE_ODES_1_11, LAT_LIVY_PRAEF, LAT_LIVY_1_1, LAT_SALLUST_CAT, LAT_TACITUS_ANN } from "./corpus/latin-classics.js";
@@ -4712,6 +4739,7 @@ function getAllEnhancedTexts() {
       TEXT_LAT_VG_JOHN,
       TEXT_LAT_CATO,
       TEXT_HEB_GENESIS,
+      TEXT_HEB_MINI_STORIES,
       TEXT_HEB_PS23,
       TEXT_HEB_JONAH,
       TEXT_HEB_PS91,
@@ -4779,6 +4807,7 @@ function getLemmaIndex() {
     ...ALL_LATIN_BEGINNER_SECTIONS,
     ...ALL_HEBREW_EXTENDED_SECTIONS,
     ...ALL_HEBREW_BEGINNER_SECTIONS,
+    ...ALL_HEBREW_MINI_STORIES,
     ...ALL_LATIN_CLASSICS_SECTIONS,
     ...ALL_GREEK_CLASSICS_SECTIONS,
     ...ALL_GREEK_NT_EXTENDED_SECTIONS,
@@ -4912,6 +4941,8 @@ export const CorpusDB = {
     if (sectionId === "Heb-Jon-3") return HEB_JONAH_3;
     if (sectionId === "Heb-Jon-4") return HEB_JONAH_4;
     if (sectionId === "Heb-Ps-91") return HEB_PSALM_91;
+    if (sectionId === "HebMini-1") return HEB_MINI_1;
+    if (sectionId === "HebMini-2") return HEB_MINI_2;
     // Patristics additions
     if (sectionId === "Ign-Eph-1") return IGNATIUS_EPHESIANS_1;
     if (sectionId === "Justin-Apol-1") return JUSTIN_MARTYR_APOLOGY_1;
