@@ -8,6 +8,7 @@
  */
 
 import { GRC_DICTIONARY } from './grc.js';
+import { GRC_FORMS } from './grc-forms.js';
 import { LAT_DICTIONARY } from './lat.js';
 import { HBO_DICTIONARY } from './hbo.js';
 import { SYR_DICTIONARY } from './syr.js';
@@ -19,10 +20,14 @@ import { EGY_DICTIONARY } from './egy.js';
 import { HIT_DICTIONARY } from './hit.js';
 import { UGA_DICTIONARY } from './uga.js';
 
+// Headword + common-form merge. Main dict wins on collision so curated
+// glosses are preferred over the auto-expansion forms.
+const GRC_MERGED: Record<string, string> = { ...GRC_FORMS, ...GRC_DICTIONARY };
+
 const LANG_DICTS: Record<string, Record<string, string>> = {
-  grc: GRC_DICTIONARY,
-  'grc-koine': GRC_DICTIONARY,
-  'grc-class': GRC_DICTIONARY,
+  grc: GRC_MERGED,
+  'grc-koine': GRC_MERGED,
+  'grc-class': GRC_MERGED,
   lat: LAT_DICTIONARY,
   'lat-class': LAT_DICTIONARY,
   'lat-med': LAT_DICTIONARY,
