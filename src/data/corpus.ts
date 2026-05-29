@@ -802,13 +802,18 @@ export const TEXT_GRC_MINI_STORIES: Text = {
   sourceStatus: 'complete',
   isComplete: true,
   isSample: false,
-  sentenceCount: 35,
+  sentenceCount: 70,
   sectionsPreview: [
     { id: "GrcMini-1", label: "A man at the marketplace" },
     { id: "GrcMini-2", label: "The teacher and the student" },
     { id: "GrcMini-3", label: "The fisherman" },
     { id: "GrcMini-4", label: "The traveler" },
     { id: "GrcMini-5", label: "The shepherd" },
+    { id: "GrcMini-6", label: "The mother and the child" },
+    { id: "GrcMini-7", label: "The blind man" },
+    { id: "GrcMini-8", label: "The bread and the fish" },
+    { id: "GrcMini-9", label: "The storm" },
+    { id: "GrcMini-10", label: "The lost son" },
   ],
 };
 
@@ -907,13 +912,18 @@ export const TEXT_LAT_MINI_STORIES: Text = {
   sourceStatus: 'complete',
   isComplete: true,
   isSample: false,
-  sentenceCount: 35,
+  sentenceCount: 65,
   sectionsPreview: [
     { id: "LatMini-1", label: "Agricola et villa — The farmer and his estate" },
     { id: "LatMini-2", label: "Puer et magister — The boy and the teacher" },
     { id: "LatMini-3", label: "Piscator — The fisherman" },
     { id: "LatMini-4", label: "Viator — The traveler" },
     { id: "LatMini-5", label: "Pastor et oves — The shepherd and the sheep" },
+    { id: "LatMini-6", label: "Canis et caro — The dog and the meat" },
+    { id: "LatMini-7", label: "Lupus et agnus — The wolf and the lamb" },
+    { id: "LatMini-8", label: "Vulpes et uva — The fox and the grapes" },
+    { id: "LatMini-9", label: "Mercator et margarita — The merchant and the pearl" },
+    { id: "LatMini-10", label: "Samaritanus bonus — The good Samaritan" },
   ],
 };
 
@@ -4642,8 +4652,10 @@ import { PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLA
 import { LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1 } from "./corpus/lxx-septuagint.js";
 import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1, IGNATIUS_EPHESIANS_1, JUSTIN_MARTYR_APOLOGY_1, POLYCARP_PHILIPPIANS_1 } from "./corpus/patristics.js";
 import { ALL_GREEK_MINI_STORIES, GRC_MINI_1, GRC_MINI_2, GRC_MINI_3, GRC_MINI_4, GRC_MINI_5 } from "./corpus/greek-mini-stories.js";
+import { ALL_GREEK_MINI_STORIES_2, GRC_MINI_6, GRC_MINI_7, GRC_MINI_8, GRC_MINI_9, GRC_MINI_10 } from "./corpus/greek-mini-stories-2.js";
 import { ALL_LATIN_BEGINNER_SECTIONS, LAT_VULGATE_JOHN_1, LAT_DISTICHA_CATONIS } from "./corpus/latin-beginner.js";
 import { ALL_LATIN_MINI_STORIES, LAT_MINI_1, LAT_MINI_2, LAT_MINI_3, LAT_MINI_4, LAT_MINI_5 } from "./corpus/latin-mini-stories.js";
+import { ALL_LATIN_MINI_STORIES_2, LAT_MINI_6, LAT_MINI_7, LAT_MINI_8, LAT_MINI_9, LAT_MINI_10 } from "./corpus/latin-mini-stories-2.js";
 import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
 import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS_3, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
 import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
@@ -4774,8 +4786,10 @@ function getLemmaIndex() {
     ...ALL_EXPANDED_SECTIONS,
     ...ALL_TREEBANK_SECTIONS,
     ...ALL_GREEK_MINI_STORIES,
+    ...ALL_GREEK_MINI_STORIES_2,
     ...ALL_GREEK_MARK_SECTIONS,
     ...ALL_LATIN_MINI_STORIES,
+    ...ALL_LATIN_MINI_STORIES_2,
     ...ALL_LATIN_BEGINNER_SECTIONS,
     ...ALL_HEBREW_EXTENDED_SECTIONS,
     ...ALL_HEBREW_BEGINNER_SECTIONS,
@@ -4894,6 +4908,11 @@ export const CorpusDB = {
     if (sectionId === "GrcMini-3") return GRC_MINI_3;
     if (sectionId === "GrcMini-4") return GRC_MINI_4;
     if (sectionId === "GrcMini-5") return GRC_MINI_5;
+    if (sectionId === "GrcMini-6") return GRC_MINI_6;
+    if (sectionId === "GrcMini-7") return GRC_MINI_7;
+    if (sectionId === "GrcMini-8") return GRC_MINI_8;
+    if (sectionId === "GrcMini-9") return GRC_MINI_9;
+    if (sectionId === "GrcMini-10") return GRC_MINI_10;
     if (sectionId === "GrcMk-1a") return GRC_MARK_1A;
     if (sectionId === "GrcMk-1b") return GRC_MARK_1B;
     if (sectionId === "LatMini-1") return LAT_MINI_1;
@@ -4901,6 +4920,11 @@ export const CorpusDB = {
     if (sectionId === "LatMini-3") return LAT_MINI_3;
     if (sectionId === "LatMini-4") return LAT_MINI_4;
     if (sectionId === "LatMini-5") return LAT_MINI_5;
+    if (sectionId === "LatMini-6") return LAT_MINI_6;
+    if (sectionId === "LatMini-7") return LAT_MINI_7;
+    if (sectionId === "LatMini-8") return LAT_MINI_8;
+    if (sectionId === "LatMini-9") return LAT_MINI_9;
+    if (sectionId === "LatMini-10") return LAT_MINI_10;
     if (sectionId === "Lat-Vg-Jn-1") return LAT_VULGATE_JOHN_1;
     if (sectionId === "Lat-Cat-1") return LAT_DISTICHA_CATONIS;
     if (sectionId === "Heb-Gen-1") return HEB_GENESIS_1;
