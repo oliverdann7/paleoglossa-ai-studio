@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-29T09:21:13.763Z",
+  "generatedAt": "2026-05-29T09:23:41.742Z",
   "dictSizes": {
-    "grc": 1670,
-    "grc-koine": 1670,
-    "grc-class": 1670,
+    "grc": 1904,
+    "grc-koine": 1904,
+    "grc-class": 1904,
     "lat": 2622,
     "lat-class": 2622,
     "lat-med": 2622,
@@ -22,211 +22,211 @@
       "language": "grc-koine",
       "totalTokens": 20635,
       "uniqueLemmas": 3769,
-      "uniqueCovered": 775,
-      "uniqueMissing": 2994,
-      "tokensCovered": 15721,
-      "coveragePctTokens": 76,
-      "coveragePctLemmas": 21,
+      "uniqueCovered": 914,
+      "uniqueMissing": 2855,
+      "tokensCovered": 16334,
+      "coveragePctTokens": 79,
+      "coveragePctLemmas": 24,
       "topMissing": [
-        {
-          "lemma": "φαρισαιοι",
-          "count": 10
-        },
-        {
-          "lemma": "θελημα",
-          "count": 10
-        },
         {
           "lemma": "εχετε",
           "count": 10
         },
         {
-          "lemma": "τοπον",
-          "count": 10
-        },
-        {
-          "lemma": "μνημειον",
-          "count": 10
-        },
-        {
-          "lemma": "δεδωκας",
-          "count": 10
-        },
-        {
-          "lemma": "πεμψας",
-          "count": 9
-        },
-        {
-          "lemma": "απεστειλεν",
-          "count": 9
-        },
-        {
-          "lemma": "εχων",
-          "count": 9
-        },
-        {
-          "lemma": "πεμψαντος",
-          "count": 9
-        },
-        {
-          "lemma": "δυνασθε",
-          "count": 9
-        },
-        {
-          "lemma": "παρρησια",
-          "count": 9
-        },
-        {
-          "lemma": "λαλω",
-          "count": 9
-        },
-        {
-          "lemma": "αρχιερεις",
-          "count": 9
-        },
-        {
-          "lemma": "αμαρτιας",
-          "count": 9
-        },
-        {
-          "lemma": "πατερ",
-          "count": 9
-        },
-        {
-          "lemma": "πληρωθη",
-          "count": 9
-        },
-        {
-          "lemma": "ιδια",
-          "count": 8
-        },
-        {
-          "lemma": "περαν",
-          "count": 8
-        },
-        {
-          "lemma": "καλον",
-          "count": 8
-        },
-        {
-          "lemma": "ιερω",
-          "count": 8
-        },
-        {
-          "lemma": "ποιεις",
-          "count": 8
-        },
-        {
-          "lemma": "διδασκαλος",
-          "count": 8
-        },
-        {
-          "lemma": "δεδωκεν",
-          "count": 8
-        },
-        {
-          "lemma": "ελθη",
-          "count": 8
-        },
-        {
-          "lemma": "εορτην",
-          "count": 8
-        },
-        {
-          "lemma": "αποκτειναι",
-          "count": 8
-        },
-        {
-          "lemma": "φωνης",
-          "count": 8
-        },
-        {
-          "lemma": "ελθειν",
-          "count": 8
-        },
-        {
-          "lemma": "θαλασσης",
-          "count": 8
-        },
-        {
-          "lemma": "θαλασσαν",
-          "count": 8
-        },
-        {
-          "lemma": "εγνωσαν",
-          "count": 8
-        },
-        {
-          "lemma": "ποιμην",
-          "count": 8
-        },
-        {
-          "lemma": "ωσιν",
-          "count": 8
-        },
-        {
-          "lemma": "ελαβον",
+          "lemma": "εσχατη",
           "count": 7
         },
         {
-          "lemma": "μαρτυρει",
+          "lemma": "αποθανη",
           "count": 7
         },
         {
-          "lemma": "σκοτια",
+          "lemma": "κατ’",
           "count": 7
         },
         {
-          "lemma": "ερημω",
+          "lemma": "θεωρει",
           "count": 7
         },
         {
-          "lemma": "οδον",
+          "lemma": "απεστειλας",
           "count": 7
         },
         {
-          "lemma": "ευρισκει",
+          "lemma": "μεθ᾽",
           "count": 7
         },
         {
-          "lemma": "γαλιλαιαν",
-          "count": 7
+          "lemma": "ερχομενον",
+          "count": 6
         },
         {
-          "lemma": "νομω",
-          "count": 7
+          "lemma": "εωρακεν",
+          "count": 6
         },
         {
-          "lemma": "γεγραμμενον",
-          "count": 7
+          "lemma": "ηρωτησαν",
+          "count": 6
         },
         {
-          "lemma": "εορτη",
-          "count": 7
+          "lemma": "βαπτιζων",
+          "count": 6
         },
         {
-          "lemma": "πολιν",
-          "count": 7
+          "lemma": "σιμωνος",
+          "count": 6
         },
         {
-          "lemma": "πλησιον",
-          "count": 7
+          "lemma": "γυναι",
+          "count": 6
         },
         {
-          "lemma": "δος",
-          "count": 7
+          "lemma": "καφαρναουμ",
+          "count": 6
         },
         {
-          "lemma": "εποιησα",
-          "count": 7
+          "lemma": "ανεβη",
+          "count": 6
         },
         {
-          "lemma": "εξηλθον",
-          "count": 7
+          "lemma": "ιεροσολυμοις",
+          "count": 6
         },
         {
-          "lemma": "πεμψαντα",
-          "count": 7
+          "lemma": "χρειαν",
+          "count": 6
+        },
+        {
+          "lemma": "ανωθεν",
+          "count": 6
+        },
+        {
+          "lemma": "επανω",
+          "count": 6
+        },
+        {
+          "lemma": "μειζων",
+          "count": 6
+        },
+        {
+          "lemma": "ποιησω",
+          "count": 6
+        },
+        {
+          "lemma": "χρονον",
+          "count": 6
+        },
+        {
+          "lemma": "εληλυθα",
+          "count": 6
+        },
+        {
+          "lemma": "δωσει",
+          "count": 6
+        },
+        {
+          "lemma": "σεαυτον",
+          "count": 6
+        },
+        {
+          "lemma": "εδοξασθη",
+          "count": 6
+        },
+        {
+          "lemma": "υπηρεται",
+          "count": 6
+        },
+        {
+          "lemma": "ενα",
+          "count": 6
+        },
+        {
+          "lemma": "απεθανεν",
+          "count": 6
+        },
+        {
+          "lemma": "γονεις",
+          "count": 6
+        },
+        {
+          "lemma": "εμα",
+          "count": 6
+        },
+        {
+          "lemma": "εντολην",
+          "count": 6
+        },
+        {
+          "lemma": "λαζαρος",
+          "count": 6
+        },
+        {
+          "lemma": "θωμας",
+          "count": 6
+        },
+        {
+          "lemma": "μαρθα",
+          "count": 6
+        },
+        {
+          "lemma": "ιουδας",
+          "count": 6
+        },
+        {
+          "lemma": "θεωρειτε",
+          "count": 6
+        },
+        {
+          "lemma": "ελαλησα",
+          "count": 6
+        },
+        {
+          "lemma": "γινου",
+          "count": 6
+        },
+        {
+          "lemma": "παντος",
+          "count": 6
+        },
+        {
+          "lemma": "μαρτυρηση",
+          "count": 5
+        },
+        {
+          "lemma": "πιστευουσιν",
+          "count": 5
+        },
+        {
+          "lemma": "επαυριον",
+          "count": 5
+        },
+        {
+          "lemma": "ειστηκει",
+          "count": 5
+        },
+        {
+          "lemma": "οψεσθε",
+          "count": 5
+        },
+        {
+          "lemma": "ημεραν",
+          "count": 5
+        },
+        {
+          "lemma": "οινον",
+          "count": 5
+        },
+        {
+          "lemma": "αδελφοι",
+          "count": 5
+        },
+        {
+          "lemma": "νικοδημος",
+          "count": 5
+        },
+        {
+          "lemma": "μισει",
+          "count": 5
         }
       ]
     },
@@ -658,11 +658,11 @@
       "language": "grc",
       "totalTokens": 1332,
       "uniqueLemmas": 754,
-      "uniqueCovered": 202,
-      "uniqueMissing": 552,
-      "tokensCovered": 585,
-      "coveragePctTokens": 44,
-      "coveragePctLemmas": 27,
+      "uniqueCovered": 211,
+      "uniqueMissing": 543,
+      "tokensCovered": 600,
+      "coveragePctTokens": 45,
+      "coveragePctLemmas": 28,
       "topMissing": [
         {
           "lemma": "δʼ",
@@ -729,10 +729,6 @@
           "count": 3
         },
         {
-          "lemma": "πολιν",
-          "count": 3
-        },
-        {
           "lemma": "ηλθε",
           "count": 3
         },
@@ -793,10 +789,6 @@
           "count": 3
         },
         {
-          "lemma": "θαλασσαν",
-          "count": 3
-        },
-        {
           "lemma": "μυρμηξ",
           "count": 3
         },
@@ -845,10 +837,6 @@
           "count": 2
         },
         {
-          "lemma": "βασιλεως",
-          "count": 2
-        },
-        {
           "lemma": "πληθος",
           "count": 2
         },
@@ -863,6 +851,18 @@
         {
           "lemma": "αραβιας",
           "count": 2
+        },
+        {
+          "lemma": "τ’",
+          "count": 2
+        },
+        {
+          "lemma": "χρυσην",
+          "count": 2
+        },
+        {
+          "lemma": "ατρειδης",
+          "count": 2
         }
       ]
     },
@@ -870,11 +870,11 @@
       "language": "grc-class",
       "totalTokens": 541,
       "uniqueLemmas": 368,
-      "uniqueCovered": 135,
-      "uniqueMissing": 233,
-      "tokensCovered": 285,
+      "uniqueCovered": 139,
+      "uniqueMissing": 229,
+      "tokensCovered": 289,
       "coveragePctTokens": 53,
-      "coveragePctLemmas": 37,
+      "coveragePctLemmas": 38,
       "topMissing": [
         {
           "lemma": "φασι",
