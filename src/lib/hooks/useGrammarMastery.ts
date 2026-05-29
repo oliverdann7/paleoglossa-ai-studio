@@ -10,6 +10,7 @@ import {
 import { db } from '../firebase.js';
 import { useAuth } from './useAuth.js';
 import type { GrammarConceptMastery } from '../../types/firestore.js';
+import { calculateSM2, type Rating, type SRSState } from '../srs/sm2.js';
 
 const STORAGE_KEY = 'paleoglossa_grammar_mastery';
 const FIRESTORE_COLLECTION = 'grammarMastery';
@@ -165,6 +166,14 @@ export function useGrammarMastery() {
         newLevel = 3;
       }
 
+      // Drive concept-level SM-2 so mastered concepts decay and resurface.
+      // A failed quiz also demotes from `mastered` back to `quizzed`.
+      const rating: Rating = correct ? 'GOOD' : 'AGAIN';
+      const prevSrs = (existing?.srs as SRSState | undefined) ?? null;
+      const nextSrs = calculateSM2(rating, prevSrs);
+      const lapses = (existing?.lapses ?? 0) + (correct ? 0 : 1);
+      if (!correct && newLevel === 3) newLevel = 2;
+
       const mastery: GrammarConceptMastery = {
         conceptId,
         languageId,
@@ -173,6 +182,8 @@ export function useGrammarMastery() {
         quizTotal,
         lastStudiedAt: new Date().toISOString(),
         masteredAt: newLevel === 3 ? (existing?.masteredAt ?? new Date().toISOString()) : null,
+        srs: nextSrs,
+        lapses,
       };
       await persistConcept(conceptId, mastery);
       return newLevel === 3 && currentLevel < 3;
@@ -184,6 +195,18 @@ export function useGrammarMastery() {
     (_conceptId: string, prerequisites: string[]): boolean => {
       if (prerequisites.length === 0) return true;
       return prerequisites.every((p) => (map[p]?.level ?? 0) >= 1);
+    },
+    [map]
+  );
+
+  const getDueConcepts = useCallback(
+    (languageId?: string): GrammarConceptMastery[] => {
+      const nowIso = new Date().toISOString();
+      return Object.values(map).filter((m) => {
+        if (languageId && m.languageId !== languageId) return false;
+        if (!m.srs) return false;
+        return m.srs.nextReview <= nowIso;
+      });
     },
     [map]
   );
@@ -209,6 +232,7 @@ export function useGrammarMastery() {
     markStudied,
     recordQuizResult,
     isUnlocked,
+    getDueConcepts,
     stats,
   };
 }

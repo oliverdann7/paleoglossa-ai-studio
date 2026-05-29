@@ -1028,6 +1028,23 @@ export const Grammar = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {(() => {
+            const due = mastery.getDueConcepts(activeLang).length;
+            if (due === 0) return null;
+            return (
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber/10 text-amber-700 text-[12px] font-semibold rounded-lg shrink-0"
+                title={t(
+                  'grammar.dueReview.tooltip',
+                  '{{count}} concept(s) are due for review based on your SM-2 schedule.',
+                  { count: due }
+                )}
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                {t('grammar.dueReview.label', '{{count}} due', { count: due })}
+              </div>
+            );
+          })()}
           <Link
             to="/app/grammar/pathways"
             className="flex items-center gap-1.5 px-3 py-1.5 bg-blue text-white text-[12px] font-bold rounded-lg hover:opacity-90 transition-opacity shrink-0"
