@@ -110,6 +110,26 @@ export class CourseService {
     }
   }
 
+  static async getOrCreateInviteCode(courseId: string): Promise<string | null> {
+    try {
+      const result = await apiFetch<{ joinCode: string }>(
+        `/api/courses/${encodeURIComponent(courseId)}/invite-code`,
+        { method: 'POST' }
+      );
+      return result.joinCode ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  static async joinByCode(code: string): Promise<{ ok: boolean; courseId?: string; courseTitle?: string; error?: string }> {
+    try {
+      return await apiFetch('/api/courses/join-by-code', { method: 'POST', body: { code } });
+    } catch (e: any) {
+      return { ok: false, error: e?.message || 'Failed to join' };
+    }
+  }
+
   static async updateProgress(courseId: string, textId: string, percent: number): Promise<void> {
     try {
       await apiFetch(`/api/courses/${encodeURIComponent(courseId)}/progress`, {
