@@ -3,6 +3,11 @@ import { requireAuth } from '../_lib/auth.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 import { sendPaymentReceiptEmail, sendPaymentFailedEmail } from '../_lib/email.js';
+import {
+  mapStripeStatusToInternal,
+  planIdFromPriceId,
+  languagesForPlan,
+} from '../_lib/billingMappers.js';
 
 const router = Router();
 
@@ -212,22 +217,7 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
               subscriptionStatus: 'active',
               stripeCustomerId: session.customer,
               stripeSubscriptionId: session.subscription,
-              selectedLanguageIds:
-                planId === 'full_all'
-                  ? [
-                      'grc',
-                      'grc-koine',
-                      'hbo',
-                      'lat',
-                      'syr',
-                      'cop',
-                      'arc',
-                      'akk',
-                      'san',
-                      'egy',
-                      'hit',
-                    ]
-                  : ['grc'],
+              selectedLanguageIds: languagesForPlan(planId),
               subscriptionUpdatedAt: serverTimestamp(),
             },
             { merge: true }
@@ -253,16 +243,8 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
         const items = subscription.items?.data || [];
         const priceId = items[0]?.price?.id;
 
-        const planInfo = priceId ? PLANS_BY_PRICE[priceId] : null;
-        const planId = planInfo?.planId || 'basic_1';
-        const subscriptionStatus =
-          status === 'active'
-            ? ('active' as const)
-            : status === 'past_due'
-              ? ('past_due' as const)
-              : status === 'canceled' || status === 'unpaid'
-                ? ('canceled' as const)
-                : ('past_due' as const);
+        const planId = planIdFromPriceId(priceId, PRICE_IDS);
+        const subscriptionStatus = mapStripeStatusToInternal(status);
 
         try {
           const { collection, getDocs, doc, setDoc, serverTimestamp } =
