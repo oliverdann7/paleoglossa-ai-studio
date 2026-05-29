@@ -944,6 +944,31 @@ export const TEXT_HEB_GENESIS: Text = {
   ],
 };
 
+export const TEXT_SYR_MINI_STORIES: Text = {
+  id: "SyrMini",
+  corpusId: "SYRIAC_PESHITTA",
+  title: "ܬܫܥܝܬܐ ܙܥܘܪ̈ܝܬܐ",
+  canonicalRef: "Syriac Mini-Stories",
+  author: "Paleoglossa",
+  language: "syr",
+  direction: "rtl",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice', 'liturgical'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "SyrMini-1", label: "Our Father in heaven" },
+  ],
+};
+
 export const TEXT_HEB_PS23: Text = {
   id: "Heb-Ps23",
   corpusId: "OSHB",
@@ -4655,6 +4680,7 @@ import { ALL_LATIN_EXTENDED_SECTIONS } from "./corpus/latin-extended.js";
 import { TEXT_VOCAB_GRC, TEXT_VOCAB_GRC_KOINE, TEXT_VOCAB_LAT, GRC_VOCAB_SECTION, GRC_KOINE_VOCAB_SECTION, LAT_VOCAB_SECTION, TEXT_VOCAB_HEB, HEB_VOCAB_SECTION, TEXT_VOCAB_SYR, SYR_VOCAB_SECTION, TEXT_VOCAB_COP, COP_VOCAB_SECTION, TEXT_VOCAB_ARC, ARC_VOCAB_SECTION, TEXT_VOCAB_AKK, AKK_VOCAB_SECTION, TEXT_VOCAB_HIT, HIT_VOCAB_SECTION, TEXT_VOCAB_UGA, UGA_VOCAB_SECTION, TEXT_VOCAB_SAN, SAN_VOCAB_SECTION, TEXT_VOCAB_EGY, EGY_VOCAB_SECTION } from "./corpus/vocabulary-texts.js";
 import { ALL_HEBREW_EXTENDED_2_SECTIONS } from "./corpus/hebrew-extended-2.js";
 import { ALL_SYRIAC_EXTENDED_SECTIONS } from "./corpus/syriac-extended.js";
+import { ALL_SYRIAC_MINI_STORIES, SYR_MINI_1 } from "./corpus/syriac-mini-stories.js";
 import { ALL_COPTIC_EXTENDED_SECTIONS } from "./corpus/coptic-extended.js";
 import { ALL_ARAMAIC_EXTENDED_SECTIONS } from "./corpus/aramaic-extended.js";
 import { ALL_AKKADIAN_EXTENDED_SECTIONS } from "./corpus/akkadian-extended.js";
@@ -4711,6 +4737,7 @@ function getAllEnhancedTexts() {
       TEXT_LAT_MINI_STORIES,
       TEXT_LAT_VG_JOHN,
       TEXT_LAT_CATO,
+      TEXT_SYR_MINI_STORIES,
       TEXT_HEB_GENESIS,
       TEXT_HEB_PS23,
       TEXT_HEB_JONAH,
@@ -4786,6 +4813,7 @@ function getLemmaIndex() {
     ...ALL_LATIN_EXTENDED_SECTIONS,
     ...ALL_HEBREW_EXTENDED_2_SECTIONS,
     ...ALL_SYRIAC_EXTENDED_SECTIONS,
+    ...ALL_SYRIAC_MINI_STORIES,
     ...ALL_COPTIC_EXTENDED_SECTIONS,
     ...ALL_ARAMAIC_EXTENDED_SECTIONS,
     ...ALL_AKKADIAN_EXTENDED_SECTIONS,
@@ -4946,6 +4974,7 @@ export const CorpusDB = {
     if (hebrewExt2Match) return hebrewExt2Match;
     const syriacExtMatch = ALL_SYRIAC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
     if (syriacExtMatch) return syriacExtMatch;
+    if (sectionId === "SyrMini-1") return SYR_MINI_1;
     const copticExtMatch = ALL_COPTIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);
     if (copticExtMatch) return copticExtMatch;
     const aramaicExtMatch = ALL_ARAMAIC_EXTENDED_SECTIONS.find(s => s.id === sectionId);

@@ -11,6 +11,7 @@ import { GRC_DICTIONARY } from './grc.js';
 import { LAT_DICTIONARY } from './lat.js';
 import { HBO_DICTIONARY } from './hbo.js';
 import { SYR_DICTIONARY } from './syr.js';
+import { SYR_EXTRAS } from './syr-extras.js';
 import { COP_DICTIONARY } from './cop.js';
 import { ARC_DICTIONARY } from './arc.js';
 import { AKK_DICTIONARY } from './akk.js';
@@ -27,7 +28,7 @@ const LANG_DICTS: Record<string, Record<string, string>> = {
   'lat-class': LAT_DICTIONARY,
   'lat-med': LAT_DICTIONARY,
   hbo: HBO_DICTIONARY,
-  syr: SYR_DICTIONARY,
+  syr: { ...SYR_EXTRAS, ...SYR_DICTIONARY },
   cop: COP_DICTIONARY,
   arc: ARC_DICTIONARY,
   akk: AKK_DICTIONARY,
