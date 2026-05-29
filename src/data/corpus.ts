@@ -944,6 +944,31 @@ export const TEXT_HEB_GENESIS: Text = {
   ],
 };
 
+export const TEXT_SAN_MINI_STORIES: Text = {
+  id: "SanMini",
+  corpusId: "SANSKRIT_MAHABHARATA",
+  title: "लघुकथाः",
+  canonicalRef: "Sanskrit Mini-Stories",
+  author: "Paleoglossa",
+  language: "san",
+  direction: "ltr",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "SanMini-1", label: "Bhagavad-Gītā opening" },
+  ],
+};
+
 export const TEXT_HEB_PS23: Text = {
   id: "Heb-Ps23",
   corpusId: "OSHB",
@@ -4661,6 +4686,7 @@ import { ALL_AKKADIAN_EXTENDED_SECTIONS } from "./corpus/akkadian-extended.js";
 import { ALL_HITTITE_EXTENDED_SECTIONS } from "./corpus/hittite-extended.js";
 import { ALL_UGARITIC_EXTENDED_SECTIONS } from "./corpus/ugaritic-extended.js";
 import { ALL_SANSKRIT_EXTENDED_SECTIONS } from "./corpus/sanskrit-extended.js";
+import { ALL_SANSKRIT_MINI_STORIES, SAN_MINI_1 } from "./corpus/sanskrit-mini-stories.js";
 import { ALL_EGYPTIAN_EXTENDED_SECTIONS } from "./corpus/egyptian-extended.js";
 
 // Module-level caches — corpus data is static at runtime
@@ -4711,6 +4737,7 @@ function getAllEnhancedTexts() {
       TEXT_LAT_MINI_STORIES,
       TEXT_LAT_VG_JOHN,
       TEXT_LAT_CATO,
+      TEXT_SAN_MINI_STORIES,
       TEXT_HEB_GENESIS,
       TEXT_HEB_PS23,
       TEXT_HEB_JONAH,
@@ -4792,6 +4819,7 @@ function getLemmaIndex() {
     ...ALL_HITTITE_EXTENDED_SECTIONS,
     ...ALL_UGARITIC_EXTENDED_SECTIONS,
     ...ALL_SANSKRIT_EXTENDED_SECTIONS,
+    ...ALL_SANSKRIT_MINI_STORIES,
     ...ALL_EGYPTIAN_EXTENDED_SECTIONS,
     GRC_VOCAB_SECTION,
     GRC_KOINE_VOCAB_SECTION,
@@ -4968,6 +4996,7 @@ export const CorpusDB = {
     if (sectionId === "uga-voc-1") return UGA_VOCAB_SECTION;
     const sanskritExtMatch = ALL_SANSKRIT_EXTENDED_SECTIONS.find(s => s.id === sectionId);
     if (sanskritExtMatch) return sanskritExtMatch;
+    if (sectionId === "SanMini-1") return SAN_MINI_1;
     const egyptianExtMatch = ALL_EGYPTIAN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
     if (egyptianExtMatch) return egyptianExtMatch;
     if (sectionId === "san-voc-1") return SAN_VOCAB_SECTION;
