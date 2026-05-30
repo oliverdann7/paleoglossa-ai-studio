@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft, UserPlus, UserCheck, Users } from 'lucide-react';
+import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft, UserPlus, UserCheck, Users, Loader2 } from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import {
   fetchOwnProfile,
@@ -116,7 +116,7 @@ export const ProfilePage = () => {
   if (loading) {
     return (
       <div className="p-12 flex items-center justify-center min-h-screen">
-        <div className="card px-6 py-4 text-sm font-medium text-ink2">Loading profile…</div>
+        <Loader2 className="w-6 h-6 text-muted animate-spin" />
       </div>
     );
   }
