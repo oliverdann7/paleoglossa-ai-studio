@@ -78,6 +78,42 @@ export function validateCorpus(): string[] {
         `Text "${text.id}" is marked as complete but only has ${totalSentences} sentences (too small to be complete)`
       );
     }
+
+    // Completeness gate: a text marked complete must have every token in every
+    // section annotated with a real partOfSpeech (not 'unknown') and a non-empty
+    // gloss. Lemma must also be set. Texts that fail this should be marked
+    // `partial` until the gaps are filled.
+    if (text.sourceStatus === 'complete' || text.isComplete) {
+      let unknownPos = 0;
+      let missingGloss = 0;
+      let missingLemma = 0;
+      let totalTokens = 0;
+      for (const preview of text.sectionsPreview || []) {
+        const section = CorpusDB.getSection(preview.id);
+        if (!section) continue;
+        for (const sentence of section.sentences) {
+          for (const token of sentence.tokens) {
+            totalTokens++;
+            if (!token.morphology || token.morphology.partOfSpeech === 'unknown') {
+              unknownPos++;
+            }
+            if (!token.gloss || token.gloss.trim() === '') {
+              missingGloss++;
+            }
+            if (!token.lemma || token.lemma.trim() === '') {
+              missingLemma++;
+            }
+          }
+        }
+      }
+      if (totalTokens > 0 && (unknownPos > 0 || missingGloss > 0 || missingLemma > 0)) {
+        errors.push(
+          `Text "${text.id}" is marked complete but has annotation gaps: ` +
+            `${unknownPos} unknown POS, ${missingGloss} missing gloss, ${missingLemma} missing lemma ` +
+            `(of ${totalTokens} tokens). Either complete the annotations or change sourceStatus to 'partial'.`
+        );
+      }
+    }
   }
 
   // Corpus definitions are consistent

@@ -36,6 +36,37 @@ describe('corpus production data', () => {
     'Text "san-vocab" has isSample=false but sourceStatus is "undefined"',
     'Text "egy-vocab" has isSample=false but sourceStatus is "undefined"',
     'Corpus "" referenced by text "uga-vocab" does not exist',
+    // Completeness-gate baseline: texts currently marked complete but whose
+    // tokens are not fully POS-tagged + glossed. Tracked for systematic
+    // backfill — when a text's annotation gap closes, update or remove its
+    // entry here. The gate prevents NEW under-annotated texts from landing
+    // under sourceStatus: 'complete'.
+    'Text "Jn-1" is marked complete but has annotation gaps: 191 unknown POS, 191 missing gloss, 0 missing lemma (of 252 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Jn-full" is marked complete but has annotation gaps: 15620 unknown POS, 15620 missing gloss, 5 missing lemma (of 15620 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Gen" is marked complete but has annotation gaps: 354 unknown POS, 354 missing gloss, 0 missing lemma (of 400 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Aeneid-1" is marked complete but has annotation gaps: 398 unknown POS, 398 missing gloss, 0 missing lemma (of 433 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Ps-23" is marked complete but has annotation gaps: 33 unknown POS, 33 missing gloss, 0 missing lemma (of 44 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Anab-1" is marked complete but has annotation gaps: 261 unknown POS, 261 missing gloss, 0 missing lemma (of 314 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Iliad-1" is marked complete but has annotation gaps: 432 unknown POS, 432 missing gloss, 0 missing lemma (of 465 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LXX-Gen-1" is marked complete but has annotation gaps: 721 unknown POS, 721 missing gloss, 0 missing lemma (of 721 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LXX-Ps-1" is marked complete but has annotation gaps: 110 unknown POS, 110 missing gloss, 0 missing lemma (of 110 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LXX-Ps-33" is marked complete but has annotation gaps: 131 unknown POS, 131 missing gloss, 0 missing lemma (of 131 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LXX-Exod-12" is marked complete but has annotation gaps: 424 unknown POS, 424 missing gloss, 0 missing lemma (of 424 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LXX-Isa-6" is marked complete but has annotation gaps: 208 unknown POS, 208 missing gloss, 0 missing lemma (of 208 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LXX-Prov-1" is marked complete but has annotation gaps: 109 unknown POS, 109 missing gloss, 0 missing lemma (of 109 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LXX-Ps-50" is marked complete but has annotation gaps: 165 unknown POS, 165 missing gloss, 0 missing lemma (of 165 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LXX-Jonah-1" is marked complete but has annotation gaps: 308 unknown POS, 308 missing gloss, 0 missing lemma (of 308 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "GrcMini" is marked complete but has annotation gaps: 409 unknown POS, 409 missing gloss, 0 missing lemma (of 409 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "GrcMk" is marked complete but has annotation gaps: 431 unknown POS, 431 missing gloss, 0 missing lemma (of 431 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "LatMini" is marked complete but has annotation gaps: 319 unknown POS, 319 missing gloss, 0 missing lemma (of 319 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "HebMini" is marked complete but has annotation gaps: 36 unknown POS, 36 missing gloss, 0 missing lemma (of 36 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "ArcMini" is marked complete but has annotation gaps: 16 unknown POS, 16 missing gloss, 0 missing lemma (of 16 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "SyrMini" is marked complete but has annotation gaps: 17 unknown POS, 17 missing gloss, 0 missing lemma (of 17 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "CopMini" is marked complete but has annotation gaps: 13 unknown POS, 13 missing gloss, 0 missing lemma (of 13 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "SanMini" is marked complete but has annotation gaps: 13 unknown POS, 13 missing gloss, 0 missing lemma (of 13 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Heb-Ps23" is marked complete but has annotation gaps: 37 unknown POS, 37 missing gloss, 0 missing lemma (of 48 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Heb-Jonah" is marked complete but has annotation gaps: 315 unknown POS, 315 missing gloss, 0 missing lemma (of 315 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Heb-Ps91" is marked complete but has annotation gaps: 61 unknown POS, 61 missing gloss, 0 missing lemma (of 61 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
   ]);
 
   it('introduces no new validateCorpus regressions over the known baseline', () => {
