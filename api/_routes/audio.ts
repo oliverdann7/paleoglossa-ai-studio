@@ -1,6 +1,20 @@
 import { Router } from 'express';
+import multer from 'multer';
+import { getStorage } from 'firebase-admin/storage';
+import { requireAuth, type AuthenticatedRequest } from '../_lib/auth.js';
+import { getAdminDb, isAdminAvailable } from '../_lib/firebaseAdmin.js';
 
 const router = Router();
+
+const recordingUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 }, // 8 MB per clip
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav'];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error(`Unsupported audio type: ${file.mimetype}`));
+  },
+});
 
 // In-memory LRU cache: key = `${languageId}::${text}`, value = base64 audio data URL
 // Capped at 200 entries (~40 MB assuming ~200 KB per audio) to bound memory usage.
@@ -175,10 +189,93 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
   }
 });
 
-router.post('/api/audio/recordings', (_req: any, res: any) => {
-  res
-    .status(200)
-    .json({ audioUrl: null, supported: false, reason: 'User recordings not yet implemented.' });
-});
+// Upload a user pronunciation clip to Cloud Storage and record metadata in Firestore.
+// Returns a signed download URL (24h) so the client can play it back without exposing the bucket.
+router.post(
+  '/api/audio/recordings',
+  requireAuth,
+  recordingUpload.single('audio'),
+  async (req: AuthenticatedRequest & { file?: Express.Multer.File }, res: any) => {
+    const uid = req.user?.uid;
+    if (!uid) {
+      return res.status(401).json({ error: 'UNAUTHORIZED' });
+    }
+
+    if (!isAdminAvailable()) {
+      return res.status(503).json({
+        audioUrl: null,
+        supported: false,
+        reason: 'Firebase Admin not configured on this server.',
+      });
+    }
+
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: 'NO_FILE', message: 'Expected multipart field "audio".' });
+    }
+
+    const languageId = String(req.body?.languageId ?? 'unknown').slice(0, 32);
+    const textRef = String(req.body?.textRef ?? '').slice(0, 256);
+    const tokenIndex = req.body?.tokenIndex != null ? Number(req.body.tokenIndex) : null;
+
+    const ext =
+      file.mimetype === 'audio/webm'
+        ? 'webm'
+        : file.mimetype === 'audio/ogg'
+          ? 'ogg'
+          : file.mimetype === 'audio/mp4'
+            ? 'm4a'
+            : file.mimetype === 'audio/wav' || file.mimetype === 'audio/x-wav'
+              ? 'wav'
+              : 'mp3';
+
+    const recordingId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const objectPath = `recordings/${uid}/${recordingId}.${ext}`;
+
+    try {
+      const bucket = getStorage().bucket();
+      const blob = bucket.file(objectPath);
+      await blob.save(file.buffer, {
+        contentType: file.mimetype,
+        resumable: false,
+        metadata: { metadata: { uid, languageId, textRef } },
+      });
+
+      const [audioUrl] = await blob.getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 24 * 60 * 60 * 1000,
+      });
+
+      const db = getAdminDb();
+      if (db) {
+        await db.collection('users').doc(uid).collection('recordings').doc(recordingId).set({
+          id: recordingId,
+          path: objectPath,
+          languageId,
+          textRef,
+          tokenIndex,
+          mimeType: file.mimetype,
+          sizeBytes: file.size,
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      return res.json({
+        audioUrl,
+        recordingId,
+        path: objectPath,
+        supported: true,
+        expiresInSeconds: 24 * 60 * 60,
+      });
+    } catch (error: any) {
+      console.error('[audio/recordings] upload failed', error);
+      return res.status(500).json({
+        audioUrl: null,
+        supported: false,
+        reason: error?.message ?? 'Upload failed',
+      });
+    }
+  }
+);
 
 export default router;

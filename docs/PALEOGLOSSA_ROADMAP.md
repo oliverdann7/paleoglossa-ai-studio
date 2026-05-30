@@ -64,7 +64,7 @@
 | Research notebook | ✅ Complete | Per-user notebooks with Firestore sync (`Notebooks.tsx`, `NotebookDetail.tsx`) |
 | Manuscript/epigraphy lab | ✅ Functional | Image pan/zoom viewer + IIIF manifest support (`Manuscripts.tsx`, 1092 lines) |
 | Audio/pronunciation lab | ✅ Functional | TTS with server-side cache + pronunciation guides (`AudioLab.tsx`) |
-| Classroom/course builder | 🚧 Partial | Models + full page exist (`Courses.tsx`, 1257 lines); teacher roles + student enrollment incomplete |
+| Classroom/course builder | ✅ Complete | Teacher custom claims, student enrollment, assignments, and roster CRUD wired through `api/_routes/courses.ts` + `Courses.tsx` (1257 lines) |
 | Smart text recommendations | ✅ Complete | Multi-signal scoring, difficulty labels, reasons; unified Dashboard + Library (`recommendationService.ts`) |
 | Beginner hub | ✅ Complete | Language-scoped onboarding, milestones, script primers, daily path (`BeginnerHub.tsx`) |
 | XP & gamification | ✅ Complete | XP system, challenges, leaderboard, scholar profiles (`Challenges.tsx`) |

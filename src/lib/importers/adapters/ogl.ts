@@ -6,38 +6,35 @@ import {
 } from '../types.js';
 import { validateImport } from '../validate.js';
 
+class NotImplementedError extends Error {
+  constructor(method: string) {
+    super(
+      `OglAdapter.${method} is not implemented. The Open Greek and Latin (OGL/Perseus CTS) ` +
+        `adapter requires a TEI-XML fetcher and parser; see docs/CORPUS_IMPORT_GUIDE.md. ` +
+        `Use SBLGNT, OSHB, or the manual paste/file import flows instead.`
+    );
+  }
+}
+
 export const OglAdapter: ContentSourceAdapter = {
   id: 'ogl',
-  label: 'Open Greek and Latin',
-  language: 'grc', // Also latin but grc for now
+  label: 'Open Greek and Latin (planned)',
+  language: 'grc',
   corpusType: 'text',
-  license: 'CC BY-SA 4.0', // Varying licenses
-  canFetch: true,
-  canImportFile: true,
+  license: 'CC BY-SA 4.0',
+  canFetch: false,
+  canImportFile: false,
 
   async fetchIndex() {
-    // Stub: Fetch CTS API endpoints
-    return [];
+    throw new NotImplementedError('fetchIndex');
   },
 
-  async fetchText(ref: string) {
-    // Stub: Fetch TEI XML via CTS API
-    return `stub raw CTS TEI XML for ${ref}`;
+  async fetchText() {
+    throw new NotImplementedError('fetchText');
   },
 
-  async normalize(_raw: any, metadata: any) {
-    // Stub: parse TEI XML structure
-    return {
-      text: {
-        id: metadata?.id || 'stub-id',
-        corpusId: 'OGL',
-        title: metadata?.title || 'Stub Title',
-        language: 'grc',
-        direction: 'ltr',
-        hasMorphology: false,
-      },
-      sections: [],
-    };
+  async normalize() {
+    throw new NotImplementedError('normalize');
   },
 
   validate(normalized: {
