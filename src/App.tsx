@@ -215,8 +215,12 @@ export default function App() {
             <Route path="grammar/pathways" element={<GrammarPathways />} />
             <Route path="grammar/pathways/:pathwayId" element={<GrammarPathways />} />
             <Route path="tutor" element={<Tutor />} />
-            <Route path="syntax" element={<Syntax />} />
-            <Route path="manuscripts" element={<Manuscripts />} />
+            {features.isExperimentalEnabled() && (
+              <Route path="syntax" element={<Syntax />} />
+            )}
+            {features.isExperimentalEnabled() && (
+              <Route path="manuscripts" element={<Manuscripts />} />
+            )}
             <Route path="courses" element={<Courses />} />
             <Route path="audio-lab" element={<AudioLab />} />
             <Route path="more" element={<More />} />

@@ -201,18 +201,22 @@ export const Navbar = () => {
             isActive={path.startsWith('/app/grammar')}
             to="/app/grammar"
           />
-          <DesktopNavItem
-            icon={GitBranch}
-            label={t('nav.syntax', 'Syntax')}
-            isActive={path.startsWith('/app/syntax')}
-            to="/app/syntax"
-          />
-          <DesktopNavItem
-            icon={ScanLine}
-            label={t('nav.manuscripts', 'Manuscripts')}
-            isActive={path.startsWith('/app/manuscripts')}
-            to="/app/manuscripts"
-          />
+          {features.isExperimentalEnabled() && (
+            <DesktopNavItem
+              icon={GitBranch}
+              label={t('nav.syntax', 'Syntax')}
+              isActive={path.startsWith('/app/syntax')}
+              to="/app/syntax"
+            />
+          )}
+          {features.isExperimentalEnabled() && (
+            <DesktopNavItem
+              icon={ScanLine}
+              label={t('nav.manuscripts', 'Manuscripts')}
+              isActive={path.startsWith('/app/manuscripts')}
+              to="/app/manuscripts"
+            />
+          )}
           <DesktopNavItem
             icon={Headphones}
             label={t('nav.audioLab', 'Audio Lab')}
