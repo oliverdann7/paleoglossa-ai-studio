@@ -809,6 +809,10 @@ export const LXX_LEX: Record<string, { lemma: string; gloss: string; partOfSpeec
   αποσκοπωμεν: { lemma: 'ἀποσκοπέω', gloss: 'let us gaze afar', partOfSpeech: 'verb' },
   ορας: { lemma: 'ὁράω', gloss: 'you see', partOfSpeech: 'verb' },
   πολεις: { lemma: 'πόλις', gloss: 'cities', partOfSpeech: 'noun' },
+  γε: { lemma: 'γε', gloss: 'at least, indeed', partOfSpeech: 'particle' },
+  καθως: { lemma: 'καθώς', gloss: 'just as', partOfSpeech: 'conjunction' },
+  αρχης: { lemma: 'ἀρχή', gloss: 'of the beginning', partOfSpeech: 'noun' },
+  θαλατταν: { lemma: 'θάλαττα', gloss: 'sea (Attic, acc.)', partOfSpeech: 'noun' },
   // Psalm 33/34 — David's psalm of refuge
   παροικιων: { lemma: 'παροικία', gloss: 'of sojournings', partOfSpeech: 'noun' },
   ερρυσατο: { lemma: 'ῥύομαι', gloss: 'delivered', partOfSpeech: 'verb' },
