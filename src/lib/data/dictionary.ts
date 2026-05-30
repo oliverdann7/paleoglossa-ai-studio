@@ -157,6 +157,46 @@ function makeEntryKey(languageId: string, lemma: string) {
   return `${languageId}:${lemma}`;
 }
 
+// Static-dictionary language aliases — e.g. Koine/Classical Greek reuse the
+// shared Ancient Greek lexicon. Used to enrich corpus-derived entries that
+// carry no inline token gloss.
+const STATIC_LANG_ALIASES: Record<string, string[]> = {
+  'grc-koine': ['grc'],
+  'grc-class': ['grc'],
+};
+
+/**
+ * Non-recursive lookup of a static gloss/definition for a lemma. Safe to call
+ * while `getDictionaryEntries()` is still building its cache, because it only
+ * touches the static lexicons (STATIC_DICT + per-language compact maps) and
+ * never re-enters the corpus-derived entry list.
+ */
+function staticEnrichment(
+  lemma: string,
+  languageId: string
+): { shortGloss: string; fullDefinition?: string } | null {
+  const langs = [languageId, ...(STATIC_LANG_ALIASES[languageId] || [])];
+  const lower = lemma.toLowerCase();
+
+  // 1. Rich static DB (Strong's / LSJ / Whitaker's) — has fullDefinition.
+  for (const lang of langs) {
+    const e = STATIC_DICT[`${lang}:${lemma}`] || STATIC_DICT[`${lang}:${lower}`];
+    if (e?.shortGloss || e?.fullDefinition) {
+      return {
+        shortGloss: e.shortGloss || e.fullDefinition || '',
+        fullDefinition: e.fullDefinition || e.shortGloss,
+      };
+    }
+  }
+
+  // 2. Compact per-language gloss maps — handles diacritic-stripping and the
+  // grc-koine alias internally.
+  const compact = staticLookup(lemma, languageId);
+  if (compact) return { shortGloss: compact };
+
+  return null;
+}
+
 function addTokenToEntry(
   entries: Map<string, EntryAccumulator>,
   token: any,
@@ -532,8 +572,21 @@ export const getDictionaryEntries = (): DictionaryEntry[] => {
 
   _entriesCache = Array.from(entries.values())
     .map((entry) => {
-      const shortGloss = Array.from(entry.glosses)[0] || '';
       const glosses = Array.from(entry.glosses).filter(Boolean);
+      let shortGloss = glosses[0] || '';
+      let fullDefinition = glosses.length > 1 ? glosses.join('; ') : shortGloss;
+
+      // Corpus tokens often carry no inline gloss (e.g. Koine high-frequency
+      // words). Backfill from the static lexicon so the Definition panel is
+      // never blank when a known gloss exists.
+      if (!shortGloss) {
+        const enriched = staticEnrichment(entry.lemma, entry.languageId);
+        if (enriched) {
+          shortGloss = enriched.shortGloss;
+          fullDefinition = enriched.fullDefinition || enriched.shortGloss;
+        }
+      }
+
       const partOfSpeech = Array.from(entry.partsOfSpeech)[0];
       const dictionaries = Array.from(entry.sources.values());
       const relatedForms = Array.from(entry.forms)
@@ -548,7 +601,7 @@ export const getDictionaryEntries = (): DictionaryEntry[] => {
         transliteration: entry.transliteration,
         partOfSpeech,
         shortGloss,
-        fullDefinition: glosses.length > 1 ? glosses.join('; ') : shortGloss,
+        fullDefinition,
         semanticDomain: Array.from(entry.semanticDomain),
         relatedForms,
         corpusExamples: entry.examples,

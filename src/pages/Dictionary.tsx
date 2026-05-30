@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BookOpen, ExternalLink, Library, Search, AlignLeft, Table2, Sparkles } from 'lucide-react';
+import { BookOpen, ExternalLink, Library, Search, AlignLeft, Table2, Sparkles, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useActiveLanguage } from '@/lib/hooks/useActiveLanguage';
 import {
   DictionaryEntry,
   findDictionaryEntry,
@@ -295,6 +297,90 @@ function UnorganizedForms({ forms, isRtl }: { forms: AttestedForm[]; isRtl: bool
   );
 }
 
+// Display names for the supported UI languages, keyed by i18n locale code.
+const UI_LANGUAGE_LABELS: Record<string, string> = {
+  pt: 'Português',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+  ru: 'Русский',
+  tr: 'Türkçe',
+  zh: '中文',
+};
+
+// Native-language "show definition in <lang>" call to action.
+const UI_LANGUAGE_CTA: Record<string, string> = {
+  pt: 'Ver em Português',
+  es: 'Ver en Español',
+  fr: 'Voir en Français',
+  de: 'Auf Deutsch anzeigen',
+  ru: 'Показать на русском',
+  tr: 'Türkçe göster',
+  zh: '用中文显示',
+};
+
+// Part C: on-demand AI gloss translated into the learner's UI language.
+// Shown only when the interface language is not English, since the bundled
+// glosses are English.
+function LocalizedDefinition({ entry }: { entry: DictionaryEntry }) {
+  const { i18n } = useTranslation();
+  const uiLang = (i18n.language || 'en').split('-')[0];
+  // State resets across entries via the `key` prop at the call site, so no
+  // effect-based reset is needed here.
+  const [text, setText] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  if (uiLang === 'en' || !UI_LANGUAGE_LABELS[uiLang]) return null;
+  const langLabel = UI_LANGUAGE_LABELS[uiLang];
+
+  const generate = () => {
+    setLoading(true);
+    setError(false);
+    fetch(getApiUrl('/api/ai/explain'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        languageId: entry.languageId,
+        word: entry.lemma,
+        lemma: entry.lemma,
+        type: 'gloss',
+        targetLanguage: uiLang,
+      }),
+    })
+      .then((r) => r.json())
+      .then((d) => setText(d.explanation ?? null))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-bdr/30">
+      {text ? (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-blue">
+            <Sparkles className="w-3 h-3" />
+            {langLabel}
+          </div>
+          <p className="font-body text-[16px] text-ink leading-snug">{text}</p>
+        </div>
+      ) : (
+        <button
+          onClick={generate}
+          disabled={loading}
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue/10 text-blue text-[12px] font-semibold rounded-lg hover:bg-blue/20 transition-colors disabled:opacity-60"
+        >
+          <Languages className="w-3.5 h-3.5" />
+          {loading ? `${langLabel}…` : UI_LANGUAGE_CTA[uiLang] || langLabel}
+        </button>
+      )}
+      {error && (
+        <p className="text-red-500 text-[12px] mt-2">Could not generate translation.</p>
+      )}
+    </div>
+  );
+}
+
 function EntryCard({ entry }: { entry: DictionaryEntry }) {
   const isRtl = isRtlLanguage(entry.languageId);
   const [activeTab, setActiveTab] = useState<EntryTab>('definition');
@@ -371,10 +457,22 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 mb-8">
             <div className="p-5 rounded-[20px] bg-parch/40 border border-bdr/30">
               <div className="eyebrow mb-3 text-ink">Definition</div>
-              <p className="font-body text-[22px] text-ink leading-snug mb-4">{entry.shortGloss}</p>
-              <p className="font-body text-[15px] text-ink2 leading-relaxed">
-                {entry.fullDefinition}
-              </p>
+              {entry.shortGloss ? (
+                <>
+                  <p className="font-body text-[22px] text-ink leading-snug mb-4">
+                    {entry.shortGloss}
+                  </p>
+                  <p className="font-body text-[15px] text-ink2 leading-relaxed">
+                    {entry.fullDefinition}
+                  </p>
+                </>
+              ) : (
+                <p className="font-body text-[15px] text-muted italic leading-relaxed">
+                  No bundled definition for this lemma yet — generate one below or check the
+                  concordance for usage in context.
+                </p>
+              )}
+              <LocalizedDefinition key={entry.id} entry={entry} />
             </div>
 
             <div className="p-5 rounded-[20px] bg-parch2/30 border border-bdr/30">
@@ -489,9 +587,24 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
 export const Dictionary = () => {
   const params = useParams();
   const navigate = useNavigate();
+  const { activeLanguageId } = useActiveLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || params.lemma || '');
-  const [languageId, setLanguageId] = useState(searchParams.get('lang') || params.languageId || '');
+  // Default the language filter to the global navbar selection, but let an
+  // explicit deep link (?lang= or /:languageId) win on first load.
+  const [languageId, setLanguageId] = useState(
+    searchParams.get('lang') || params.languageId || activeLanguageId || ''
+  );
+
+  // Follow the global language selector when the user switches it in the
+  // navbar (but not on the initial mount, so deep links survive).
+  const prevActiveLang = useRef(activeLanguageId);
+  useEffect(() => {
+    if (prevActiveLang.current !== activeLanguageId) {
+      prevActiveLang.current = activeLanguageId;
+      setLanguageId(activeLanguageId);
+    }
+  }, [activeLanguageId]);
 
   const languages = useMemo(() => getDictionaryLanguages(), []);
   const results = useMemo(
