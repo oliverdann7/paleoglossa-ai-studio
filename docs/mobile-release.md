@@ -378,6 +378,13 @@ Detailed auth setup is covered above in the [Firebase Authentication](#firebase-
 
 ---
 
+## Store listing copy
+
+Source-of-truth copy for App Store Connect + Play Console (subtitle,
+keywords, promo text, long description, what's-new, reviewer notes)
+lives in [`store-listing.md`](store-listing.md). Update both stores
+together when changing.
+
 ## Store metadata checklist
 
 - [ ] App name: **Paleoglossa**
