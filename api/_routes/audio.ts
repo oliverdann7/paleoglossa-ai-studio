@@ -1,6 +1,16 @@
 import { Router } from 'express';
+import { requireAuth } from '../_lib/auth.js';
+import { getAdminDb } from '../_lib/firebaseAdmin.js';
+import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
+
+// Recordings are stored inline in Firestore (base64). Firestore caps a single
+// document at ~1 MiB, so we cap recordings well under that to leave room for
+// metadata and base64 overhead. Clients that need longer clips should upgrade
+// to Firebase Storage and post a download URL here instead.
+const MAX_RECORDING_BYTES = 700_000;
+const MAX_RECORDINGS_PER_USER = 50;
 
 // In-memory LRU cache: key = `${languageId}::${text}`, value = base64 audio data URL
 // Capped at 200 entries (~40 MB assuming ~200 KB per audio) to bound memory usage.
@@ -175,10 +185,107 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
   }
 });
 
-router.post('/api/audio/recordings', (_req: any, res: any) => {
-  res
-    .status(200)
-    .json({ audioUrl: null, supported: false, reason: 'User recordings not yet implemented.' });
-});
+// ─── User recordings ─────────────────────────────────────────────────────────
+// POST: persist a recording (base64 audio data URL) under the caller's uid.
+// GET:  list the caller's recordings (most recent first).
+// DELETE /:id: remove one recording.
+
+router.post(
+  '/api/audio/recordings',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) {
+      return res
+        .status(503)
+        .json({ supported: false, reason: 'Firestore backend not configured.' });
+    }
+
+    const userId = req.user!.uid;
+    const body = (req.body ?? {}) as {
+      audioBase64?: string;
+      languageId?: string;
+      textId?: string;
+      sentenceIndex?: number;
+      transcript?: string;
+      durationMs?: number;
+    };
+
+    const audio = (body.audioBase64 ?? '').trim();
+    if (!audio.startsWith('data:audio/')) {
+      return res
+        .status(400)
+        .json({ supported: false, reason: 'audioBase64 must be a data:audio/* URL.' });
+    }
+    // Approximate byte size of the base64 payload portion.
+    const payload = audio.split(',', 2)[1] ?? '';
+    const approxBytes = Math.floor((payload.length * 3) / 4);
+    if (approxBytes > MAX_RECORDING_BYTES) {
+      return res.status(413).json({
+        supported: false,
+        reason: `Recording too large (${approxBytes} bytes > ${MAX_RECORDING_BYTES}).`,
+      });
+    }
+
+    const col = adminDb_.collection('users').doc(userId).collection('recordings');
+
+    // Enforce per-user cap by evicting oldest if needed.
+    const existing = await col.orderBy('createdAt', 'asc').get();
+    const overflow = existing.size - (MAX_RECORDINGS_PER_USER - 1);
+    if (overflow > 0) {
+      const batch = adminDb_.batch();
+      existing.docs.slice(0, overflow).forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+
+    const doc = await col.add({
+      audioBase64: audio,
+      languageId: body.languageId ?? null,
+      textId: body.textId ?? null,
+      sentenceIndex: typeof body.sentenceIndex === 'number' ? body.sentenceIndex : null,
+      transcript: body.transcript ?? null,
+      durationMs: typeof body.durationMs === 'number' ? body.durationMs : null,
+      bytes: approxBytes,
+      createdAt: Date.now(),
+    });
+
+    return res.status(201).json({ supported: true, id: doc.id, bytes: approxBytes });
+  }
+);
+
+router.get(
+  '/api/audio/recordings',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(200).json({ recordings: [] });
+
+    const userId = req.user!.uid;
+    const snap = await adminDb_
+      .collection('users')
+      .doc(userId)
+      .collection('recordings')
+      .orderBy('createdAt', 'desc')
+      .limit(MAX_RECORDINGS_PER_USER)
+      .get();
+
+    const recordings = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return res.status(200).json({ recordings });
+  }
+);
+
+router.delete(
+  '/api/audio/recordings/:id',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ ok: false });
+
+    const userId = req.user!.uid;
+    const id = req.params.id as string;
+    await adminDb_.collection('users').doc(userId).collection('recordings').doc(id).delete();
+    return res.status(200).json({ ok: true });
+  }
+);
 
 export default router;

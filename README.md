@@ -57,8 +57,8 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | 7-day review forecast | ✅ |
 | Study activity heatmap | ✅ |
 | Scholar profiles | ✅ |
-| Classroom / course builder | 🚧 |
-| User recording upload | 🚧 |
+| Classroom / course builder | ✅ |
+| User recording upload | ✅ |
 
 ## API Routes
 
@@ -81,8 +81,8 @@ Routes are modularized under `api/_routes/`. Some require a Gemini API key and F
 | `/api/import/parse` | POST | ✅ | File import parsing |
 | `/api/auth/me` | GET | ✅ | Current user info |
 | `/api/admin/...` | GET/POST/DELETE | ✅ | Admin operations |
-| `/api/courses` | GET/POST | 🚧 | Classroom management (teacher roles incomplete) |
-| `/api/audio/recordings` | POST | 🚧 | User recording upload (stub) |
+| `/api/courses` | GET/POST/PATCH/DELETE | ✅ | Classroom management with teacher custom claims |
+| `/api/audio/recordings` | GET/POST/DELETE | ✅ | User pronunciation recording (Firestore-backed) |
 
 ## Corpus Status
 
