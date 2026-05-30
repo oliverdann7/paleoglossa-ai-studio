@@ -277,6 +277,14 @@ service cloud.firestore {
         allow get, list: if isOwner(userId);
         allow write: if false; // Admin SDK only (challenges API route)
       }
+
+      // ── Pronunciation Recordings ──────────────────────
+      // Written by the server (POST /api/audio/recordings, size-guarded).
+      // Owner may read and delete via the API.
+      match /recordings/{recordingId} {
+        allow get, list: if isOwner(userId);
+        allow write: if false; // Admin SDK only — enforces size + count caps
+      }
     }
   }
 }

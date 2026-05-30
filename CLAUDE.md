@@ -62,14 +62,16 @@ npm run e2e          # playwright test
 - Auth (Google + Email + guest), Firestore sync
 - i18n (8 UI languages), Tailwind parchment/sepia/dark themes
 - Grammar browser, AI philology tutor, research notebooks
-- Audio lab: TTS with waveform, user recording + compare, IPA, pronunciation mode switching
+- Audio lab: TTS with waveform, user recording + compare (server-persisted), IPA, pronunciation mode switching
+- Grammar prerequisite graph with per-concept SM-2 mastery tracking (`useGrammarMastery`)
+- Classroom courses with teacher custom claims, enrollment, ownership-gated mutations
 - Notebook export (Markdown + PDF), cross-text note linking with backlinks
 
-### Stubs / in-progress — do not claim these are done
+### Data ingestion gaps — code is wired, content isn't bulk-loaded
 | Feature | File(s) | What's missing |
 |---------|---------|----------------|
-| Syntax treebank | `src/pages/Syntax.tsx`, `api/_routes/syntax.ts` | PROIEL/Gorman/Perseus bulk import not integrated |
-| Grammar prerequisite graph | `src/pages/Grammar.tsx`, `api/_lib/grammarData.ts` | Tiered graph view exists; needs per-concept mastery tracking tied to SRS |
+| Syntax treebank | `api/_routes/syntax.ts`, `api/_lib/treebankIndex.ts`, `scripts/treebank/import-proiel.ts` | Reader + PROIEL importer exist; `src/data/treebanks/` ships only `sample-proiel.json`. Run the importer against full PROIEL/Gorman/Perseus drops to populate. |
+| Manuscripts | `src/components/reader/Manuscripts.tsx`, `api/_routes/manuscripts.ts` | CRUD + IIIF viewer work; no curated manuscript catalog seeded yet. |
 
 ---
 

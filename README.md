@@ -57,8 +57,8 @@ Read the ancient world, word by word. Paleoglossa combines an ancient-text reade
 | 7-day review forecast | ✅ |
 | Study activity heatmap | ✅ |
 | Scholar profiles | ✅ |
-| Classroom / course builder | 🚧 |
-| User recording upload | 🚧 |
+| Classroom / course builder | ✅ |
+| User recording upload | ✅ |
 
 ## API Routes
 
@@ -81,8 +81,8 @@ Routes are modularized under `api/_routes/`. Some require a Gemini API key and F
 | `/api/import/parse` | POST | ✅ | File import parsing |
 | `/api/auth/me` | GET | ✅ | Current user info |
 | `/api/admin/...` | GET/POST/DELETE | ✅ | Admin operations |
-| `/api/courses` | GET/POST | 🚧 | Classroom management (teacher roles incomplete) |
-| `/api/audio/recordings` | POST | 🚧 | User recording upload (stub) |
+| `/api/courses` | GET/POST/PATCH/DELETE | ✅ | Classroom management with teacher custom claims |
+| `/api/audio/recordings` | GET/POST/DELETE | ✅ | User pronunciation recording (Firestore-backed) |
 
 ## Corpus Status
 
@@ -281,6 +281,27 @@ npm run clean
 - **`firestore.indexes.json`** — Composite indexes for vocabulary, review, reading progress queries.
 - **`firebase-blueprint.json`** — Firestore collection and entity schema summary.
 - **`security_spec.md`** — Security threat model and mitigations.
+
+## Mobile apps (iOS + Android)
+
+Native shells are generated via Capacitor 8 from the same web bundle.
+
+- **Bundle ID / package:** `com.paleoglossa.app`
+- **iOS project:** `ios/App/App.xcodeproj` (Xcode 16+, iOS 16+)
+- **Android project:** `android/` (Android Studio, minSdk 24, targetSdk 36)
+- **Build & sync:**
+  ```bash
+  npm run mobile:build:production   # web bundle + cap sync (both platforms)
+  npm run ios:open                  # open Xcode → Archive → App Store Connect
+  npm run android:bundle            # produces app-release.aab for Play Console
+  ```
+- **Full release guide:** [`docs/mobile-release.md`](docs/mobile-release.md)
+- **Store metadata checklist:** [`docs/mobile-metadata-checklist.md`](docs/mobile-metadata-checklist.md)
+- **Pre-submission QA:** [`docs/mobile-qa-checklist.md`](docs/mobile-qa-checklist.md)
+
+Subscriptions in native builds are web-managed by default to comply with
+App Store / Play Store policies; set `VITE_ENABLE_MOBILE_PURCHASES=true`
+to flip to in-app purchases once StoreKit / Play Billing are integrated.
 
 ## Deployment
 

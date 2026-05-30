@@ -378,6 +378,13 @@ Detailed auth setup is covered above in the [Firebase Authentication](#firebase-
 
 ---
 
+## Store listing copy
+
+Source-of-truth copy for App Store Connect + Play Console (subtitle,
+keywords, promo text, long description, what's-new, reviewer notes)
+lives in [`store-listing.md`](store-listing.md). Update both stores
+together when changing.
+
 ## Store metadata checklist
 
 - [ ] App name: **Paleoglossa**
@@ -408,8 +415,6 @@ Detailed auth setup is covered above in the [Firebase Authentication](#firebase-
 
 These features are either stubs or not functional in the current build:
 
-- **Syntax trees** (`src/pages/Syntax.tsx`) — UI is present but the API
-  endpoint is a stub returning placeholder data.
 - **Manuscripts** (`src/components/reader/Manuscripts.tsx`) — UI shell
   only, no real manuscript data.
 - **AI pronunciation** — May not work on all devices depending on the
