@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark, Trash2, Loader2, BookOpen } from 'lucide-react';
+import { EmptyState } from '../components/ui/index.js';
 import { useTranslation } from 'react-i18next';
 import { BookmarkService, type Bookmark as BookmarkType } from '../lib/services/bookmarkService.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -89,12 +90,22 @@ export const Bookmarks = () => {
       )}
 
       {!loading && !error && bookmarks.length === 0 && (
-        <div className="text-center py-16">
-          <Bookmark className="w-10 h-10 text-muted mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-[15px] text-muted font-body italic">
-            {t('bookmarks.empty', "No bookmarks yet. While reading, hover over a sentence and click the bookmark icon to save it here.")}
-          </p>
-        </div>
+        <EmptyState
+          illustration="amphora"
+          heading={t('bookmarks.emptyHeading', 'No saved sentences yet')}
+          description={t(
+            'bookmarks.empty',
+            'No bookmarks yet. While reading, hover over a sentence and click the bookmark icon to save it here.'
+          )}
+          action={
+            <button
+              onClick={() => navigate('/app/library')}
+              className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 transition-opacity"
+            >
+              {t('bookmarks.browseLibrary', 'Browse the library')}
+            </button>
+          }
+        />
       )}
 
       {!loading && bookmarks.length > 0 && (
