@@ -183,6 +183,14 @@ export interface GrammarConceptMastery {
   quizTotal: number;
   lastStudiedAt: string | Timestamp;
   masteredAt?: string | Timestamp | null;
+  /**
+   * SM-2 schedule for concept-level review. Present once the user has
+   * attempted at least one quiz on the concept. When `nextReview` has
+   * passed, the concept resurfaces as "due" regardless of mastery level.
+   */
+  srs?: SRSData;
+  /** Number of times the user has failed a review on this concept. */
+  lapses?: number;
 }
 
 export interface DiscussionThread {

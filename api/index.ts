@@ -1,6 +1,9 @@
 import express from 'express';
 import { initServerSentry, captureServerException } from './_lib/sentry.js';
 import { correlationIdMiddleware } from './_lib/observability.js';
+import { aiRateLimit, apiRateLimit, authRateLimit, importRateLimit } from './_lib/rateLimiter.js';
+import { searchLimiter } from './_lib/rateLimits.js';
+import { logError } from './_lib/errorLog.js';
 
 initServerSentry();
 import aiRouter from './_routes/ai.js';
@@ -28,6 +31,7 @@ import tutorsRouter from './_routes/tutors.js';
 import availabilityRouter from './_routes/availability.js';
 import bookingsRouter from './_routes/bookings.js';
 import reviewsRouter from './_routes/reviews.js';
+import recommendationsRouter from './_routes/recommendations.js';
 
 const app = express();
 
@@ -63,6 +67,19 @@ app.post('/api/test', (_req: any, res: any) => {
   res.status(200).json({ ok: true, message: 'Test route works' });
 });
 
+// ── Rate limiting (applied before domain routers) ────────────────────────────
+// Auth endpoints: strict (10 req/min) — slow brute-force
+app.use('/api/auth', authRateLimit);
+// AI/LLM endpoints: 30 req/min — Gemini calls are expensive
+app.use('/api/ai', aiRateLimit);
+// Import + OCR: very expensive per-request, tight cap
+app.use('/api/ai/analyze', importRateLimit);
+app.use('/api/ai/ocr', importRateLimit);
+// Search endpoints
+app.use('/api/search', searchLimiter);
+// All other API routes: 120 req/min general limit
+app.use('/api', apiRateLimit);
+
 // Domain routers — each module registers its own full /api/... paths
 app.use(authRouter);
 app.use(lexiconRouter);
@@ -89,9 +106,11 @@ app.use(tutorsRouter);
 app.use(availabilityRouter);
 app.use(bookingsRouter);
 app.use(reviewsRouter);
+app.use(recommendationsRouter);
 
 // Global error handler — report to Sentry before returning 500
-app.use((err: any, _req: any, res: any, next: any) => {
+app.use((err: any, req: any, res: any, next: any) => {
+  logError(err, { route: req.path, method: req.method, statusCode: 500, userId: req.user?.uid });
   captureServerException(err);
   if (res.headersSent) return next(err);
   res.status(500).json({ error: 'Internal server error' });

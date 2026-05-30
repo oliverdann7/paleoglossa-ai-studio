@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { loadLanguage } from '../lib/i18n.js';
 
 const INTERFACE_LANGUAGES = [
   { code: 'en', label: 'English', native: 'English' },
@@ -33,7 +34,8 @@ export function InterfaceLanguageSwitcher() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const switchLanguage = (code: string) => {
+  const switchLanguage = async (code: string) => {
+    await loadLanguage(code as any);
     i18n.changeLanguage(code);
     localStorage.setItem(STORAGE_KEY, code);
     setOpen(false);

@@ -341,4 +341,39 @@ export class AIClient {
     const data = await this.request('syntax', { languageId, sentence }, SyntaxResponseSchema);
     return data.explanation;
   }
+
+  static async getConceptSummary(
+    languageId: string,
+    lemma: string,
+    gloss?: string,
+    context?: string
+  ): Promise<string | null> {
+    try {
+      const data = await apiFetch<{ summary: string | null; unavailable?: boolean }>('/api/ai/concept-summary', {
+        method: 'POST',
+        body: { languageId, lemma, gloss, context },
+        skipAuth: true,
+      });
+      return data.summary ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  static async getApparatusNotes(
+    languageId: string,
+    lemma: string,
+    wordText?: string,
+    sentenceText?: string
+  ): Promise<string | null> {
+    try {
+      const data = await apiFetch<{ notes: string | null; unavailable?: boolean }>(
+        '/api/ai/apparatus-notes',
+        { method: 'POST', body: { languageId, lemma, wordText, sentenceText }, skipAuth: true }
+      );
+      return data.notes ?? null;
+    } catch {
+      return null;
+    }
+  }
 }

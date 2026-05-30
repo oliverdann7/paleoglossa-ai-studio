@@ -710,7 +710,7 @@ export const Import = () => {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileUpload}
-                    accept=".txt,.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                    accept=".txt,.pdf,.docx,.xml,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/xml,text/xml"
                     className="hidden"
                   />
                   <div className="w-16 h-16 bg-parch2 text-muted rounded-full flex items-center justify-center mb-6">

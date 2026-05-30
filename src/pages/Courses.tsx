@@ -20,6 +20,10 @@ import {
   Flame,
   BarChart2,
   ChevronDown,
+  Download,
+  UserMinus,
+  ArrowUpDown,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
@@ -194,6 +198,7 @@ function CourseForm({
   const [texts, setTexts] = useState<CourseTextAssignment[]>(initial?.texts ?? []);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
 
   const addText = (textId: string, textTitle: string) => {
     if (texts.some((t) => t.textId === textId)) return;
@@ -206,6 +211,12 @@ function CourseForm({
   const removeText = (textId: string) => {
     setTexts((prev) =>
       prev.filter((t) => t.textId !== textId).map((t, i) => ({ ...t, order: i + 1 }))
+    );
+  };
+
+  const updateTeacherNote = (textId: string, note: string) => {
+    setTexts((prev) =>
+      prev.map((t) => (t.textId === textId ? { ...t, teacherNote: note } : t))
     );
   };
 
@@ -323,20 +334,42 @@ function CourseForm({
         {texts.length > 0 && (
           <div className="space-y-1.5 mb-3">
             {texts.map((t, i) => (
-              <div
-                key={t.textId}
-                className="flex items-center gap-2 px-3 py-2 bg-parch2 rounded-lg text-[13px]"
-              >
-                <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue/10 text-blue text-[10px] font-bold shrink-0">
-                  {i + 1}
-                </span>
-                <span className="flex-1 text-ink truncate">{t.learningObjectives || t.textId}</span>
-                <button
-                  onClick={() => removeText(t.textId)}
-                  className="text-muted hover:text-red-500 transition-colors shrink-0"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+              <div key={t.textId} className="bg-parch2 rounded-lg overflow-hidden">
+                <div className="flex items-center gap-2 px-3 py-2 text-[13px]">
+                  <span className="w-5 h-5 flex items-center justify-center rounded-full bg-blue/10 text-blue text-[10px] font-bold shrink-0">
+                    {i + 1}
+                  </span>
+                  <span className="flex-1 text-ink truncate">{t.learningObjectives || t.textId}</span>
+                  <button
+                    onClick={() => setExpandedNoteId(expandedNoteId === t.textId ? null : t.textId)}
+                    className={cn(
+                      'p-1 rounded transition-colors shrink-0',
+                      expandedNoteId === t.textId || t.teacherNote
+                        ? 'text-blue'
+                        : 'text-muted hover:text-ink'
+                    )}
+                    title="Add reading guide"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => removeText(t.textId)}
+                    className="text-muted hover:text-red-500 transition-colors shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {expandedNoteId === t.textId && (
+                  <div className="px-3 pb-2.5 border-t border-bdr/30">
+                    <textarea
+                      className="w-full mt-2 text-[12px] bg-white border border-bdr rounded-lg px-3 py-2 text-ink placeholder:text-muted resize-none focus:outline-none focus:ring-1 focus:ring-blue/40"
+                      rows={3}
+                      placeholder="Add a reading guide, key vocabulary, or learning objectives for students…"
+                      value={t.teacherNote ?? ''}
+                      onChange={(e) => updateTeacherNote(t.textId, e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -447,6 +480,8 @@ function CourseDetail({
   const [roster, setRoster] = useState<CourseRosterMember[]>([]);
   const [showRoster, setShowRoster] = useState(false);
   const [rosterLoading, setRosterLoading] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+  const [rosterSortBy, setRosterSortBy] = useState<'name' | 'progress'>('name');
 
   const loadRoster = useCallback(async () => {
     setRosterLoading(true);
@@ -459,6 +494,34 @@ function CourseDetail({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isOwner) loadRoster();
   }, [isOwner, loadRoster]);
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!confirm('Remove this student from the course?')) return;
+    setRemovingMemberId(memberId);
+    const ok = await CourseService.removeMember(course.id, memberId);
+    if (ok) setRoster((r) => r.filter((m) => m.userId !== memberId));
+    setRemovingMemberId(null);
+  };
+
+  const exportRosterCSV = () => {
+    const students = roster.filter((m) => m.role !== 'teacher');
+    const sortedTexts = [...course.texts].sort((a, b) => a.order - b.order);
+    const headers = ['Name', 'Email', 'Joined', ...sortedTexts.map((_, i) => `Text ${i + 1}`), 'Overall'];
+    const rows = students.map((m) => {
+      const pcts = sortedTexts.map((t) => m.progress[t.textId] ?? 0);
+      const overall = pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0;
+      const joinedStr = m.joinedAt ? new Date(m.joinedAt).toLocaleDateString() : '';
+      return [m.displayName, m.email, joinedStr, ...pcts.map(String), String(overall)];
+    });
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${course.title.replace(/\s+/g, '-')}-roster.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Sync reading progress to course member doc (enrolled students and owner)
   useEffect(() => {
@@ -775,6 +838,11 @@ function CourseDetail({
                         <span className="text-[11px] text-muted shrink-0">{pct}%</span>
                       </div>
                     )}
+                    {assignment.teacherNote && (
+                      <p className="mt-1.5 text-[12px] text-ink2 italic leading-relaxed border-l-2 border-blue/30 pl-2">
+                        {assignment.teacherNote}
+                      </p>
+                    )}
                   </div>
                   {canRead && (
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -861,48 +929,82 @@ function CourseDetail({
                   No students have joined yet.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-[12px]">
-                    <thead>
-                      <tr className="border-b border-bdr bg-parch2">
-                        <th className="px-4 py-2.5 text-left font-bold text-muted uppercase tracking-wider">
-                          Student
-                        </th>
-                        {sortedTexts.map((t, i) => (
-                          <th
-                            key={t.textId}
-                            className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Text {i + 1}
+                <>
+                  {/* Toolbar */}
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-bdr/40 bg-parch2/60">
+                    <button
+                      onClick={() => setRosterSortBy((s) => s === 'name' ? 'progress' : 'name')}
+                      className="flex items-center gap-1.5 text-[11px] text-muted hover:text-ink transition-colors"
+                    >
+                      <ArrowUpDown className="w-3 h-3" />
+                      Sort by {rosterSortBy === 'name' ? 'progress' : 'name'}
+                    </button>
+                    <button
+                      onClick={exportRosterCSV}
+                      className="flex items-center gap-1.5 text-[11px] text-blue hover:text-blue/80 transition-colors font-medium"
+                    >
+                      <Download className="w-3 h-3" />
+                      Export CSV
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-[12px]">
+                      <thead>
+                        <tr className="border-b border-bdr bg-parch2">
+                          <th className="px-4 py-2.5 text-left font-bold text-muted uppercase tracking-wider">
+                            Student
                           </th>
-                        ))}
-                        <th className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider">
-                          Overall
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {roster
-                        .filter((m) => m.role !== 'teacher')
-                        .map((member) => {
-                          const textPcts = sortedTexts.map(
-                            (t) => member.progress[t.textId] ?? 0
-                          );
-                          const overall =
-                            textPcts.length > 0
-                              ? Math.round(textPcts.reduce((a, b) => a + b, 0) / textPcts.length)
-                              : 0;
-                          return (
-                            <tr key={member.userId} className="border-b border-bdr/50 last:border-0">
+                          <th className="px-3 py-2.5 text-left font-bold text-muted uppercase tracking-wider whitespace-nowrap">
+                            Joined
+                          </th>
+                          {sortedTexts.map((t, i) => (
+                            <th
+                              key={t.textId}
+                              className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Text {i + 1}
+                            </th>
+                          ))}
+                          <th className="px-3 py-2.5 text-center font-bold text-muted uppercase tracking-wider">
+                            Overall
+                          </th>
+                          <th className="px-2 py-2.5" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {roster
+                          .filter((m) => m.role !== 'teacher')
+                          .map((member) => {
+                            const textPcts = sortedTexts.map(
+                              (t) => member.progress[t.textId] ?? 0
+                            );
+                            const overall =
+                              textPcts.length > 0
+                                ? Math.round(textPcts.reduce((a, b) => a + b, 0) / textPcts.length)
+                                : 0;
+                            return { member, textPcts, overall };
+                          })
+                          .sort((a, b) =>
+                            rosterSortBy === 'name'
+                              ? a.member.displayName.localeCompare(b.member.displayName)
+                              : b.overall - a.overall
+                          )
+                          .map(({ member, textPcts, overall }) => (
+                            <tr key={member.userId} className="border-b border-bdr/50 last:border-0 group">
                               <td className="px-4 py-3">
-                                <div className="font-medium text-ink truncate max-w-[140px]">
+                                <div className="font-medium text-ink truncate max-w-[130px]">
                                   {member.displayName}
                                 </div>
                                 {member.email && (
-                                  <div className="text-muted text-[11px] truncate max-w-[140px]">
+                                  <div className="text-muted text-[11px] truncate max-w-[130px]">
                                     {member.email}
                                   </div>
                                 )}
+                              </td>
+                              <td className="px-3 py-3 text-muted whitespace-nowrap">
+                                {member.joinedAt
+                                  ? formatDistanceToNow(new Date(member.joinedAt), { addSuffix: true })
+                                  : '—'}
                               </td>
                               {textPcts.map((pct, i) => (
                                 <td key={i} className="px-3 py-3 text-center">
@@ -945,12 +1047,26 @@ function CourseDetail({
                                   {overall}%
                                 </span>
                               </td>
+                              <td className="px-2 py-3">
+                                <button
+                                  onClick={() => handleRemoveMember(member.userId)}
+                                  disabled={removingMemberId === member.userId}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50 hover:text-red-600 text-muted disabled:opacity-50"
+                                  title="Remove student"
+                                >
+                                  {removingMemberId === member.userId ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <UserMinus className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
+                              </td>
                             </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           )}

@@ -1,17 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { checkAndIncrementUsage, getPlanAILimit } from '../_lib/aiUsage';
 
-describe('getPlanAILimit', () => {
-  // Replicate the logic from aiUsage.ts
-  function getPlanAILimit(planId: string): number | 'all' {
-    const limits: Record<string, number | 'all'> = {
-      free: 20,
-      basic_1: 200,
-      duo_2: 1000,
-      full_all: 'all',
-    };
-    return limits[planId] || 20;
-  }
-
+describe('getPlanAILimit (real export)', () => {
   it('free plan has limit of 20', () => {
     expect(getPlanAILimit('free')).toBe(20);
   });
@@ -90,5 +80,53 @@ describe('Quota check logic', () => {
     const result = checkQuota(undefined, 20);
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(20);
+  });
+});
+
+/**
+ * These exercise the real `checkAndIncrementUsage` against the actual
+ * `getAdminDb` helper, which returns `null` in the test environment because
+ * `FIREBASE_SERVICE_ACCOUNT_JSON` is not set. That hits the documented
+ * fallback path in aiUsage.ts: "Admin DB not available (dev mode), allow".
+ *
+ * Per CLAUDE.md these quota-exceeded fallback paths previously had no
+ * coverage — these tests pin them.
+ */
+describe('checkAndIncrementUsage — fallback paths', () => {
+  it('returns allowed when admin DB is unavailable (dev mode)', async () => {
+    const result = await checkAndIncrementUsage('user-abc', 'free', 'analyze', 100);
+    expect(result.allowed).toBe(true);
+    expect(result.planLimit).toBe(20);
+    expect(result.remaining).toBe(20);
+    expect(typeof result.resetDate).toBe('string');
+  });
+
+  it('reports plan limit reflecting the requested plan', async () => {
+    const basic = await checkAndIncrementUsage('user-abc', 'basic_1', 'analyze', 100);
+    expect(basic.planLimit).toBe(200);
+
+    const duo = await checkAndIncrementUsage('user-abc', 'duo_2', 'analyze', 100);
+    expect(duo.planLimit).toBe(1000);
+  });
+
+  it('unlimited plan reports "unlimited" remaining', async () => {
+    const result = await checkAndIncrementUsage('user-abc', 'full_all', 'analyze', 100);
+    expect(result.allowed).toBe(true);
+    expect(result.planLimit).toBe('all');
+    expect(result.remaining).toBe('unlimited');
+  });
+
+  it('unknown plan IDs are treated as free tier', async () => {
+    const result = await checkAndIncrementUsage('user-abc', 'mystery_plan', 'analyze', 100);
+    expect(result.allowed).toBe(true);
+    expect(result.planLimit).toBe(20);
+  });
+
+  it('resetDate is always a future UTC midnight', async () => {
+    const result = await checkAndIncrementUsage('user-abc', 'free', 'analyze', 100);
+    const reset = new Date(result.resetDate);
+    expect(reset.getTime()).toBeGreaterThan(Date.now());
+    expect(reset.getUTCHours()).toBe(0);
+    expect(reset.getUTCMinutes()).toBe(0);
   });
 });

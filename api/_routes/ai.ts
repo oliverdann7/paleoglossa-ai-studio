@@ -245,7 +245,7 @@ ${rawText.slice(0, 20000)}`;
   }
 });
 
-router.post('/api/ai/ocr', async (req: any, res: any) => {
+router.post('/api/ai/ocr', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, imageBase64, mimeType } = req.body;
 
@@ -346,7 +346,7 @@ Rules:
   }
 });
 
-router.post('/api/ai/translate', async (req: any, res: any) => {
+router.post('/api/ai/translate', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, tokens } = req.body;
 
@@ -420,9 +420,23 @@ Sentence: ${sentence}`;
   }
 });
 
-router.post('/api/ai/explain', async (req: any, res: any) => {
+router.post('/api/ai/explain', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
-    const { languageId, word, lemma, phrase, type } = req.body;
+    const { languageId, type } = req.body;
+    // A-3: Input length caps + strip control chars to prevent prompt injection.
+    const sanitize = (v: unknown, maxLen = 300): string => {
+      if (typeof v !== 'string') return '';
+      // Filter out ASCII control characters (code points 0–31 and 127) without
+      // embedding a regex literal with raw control chars (no-control-regex rule).
+      const clean = [...v].filter((c) => {
+        const n = c.charCodeAt(0);
+        return n > 0x1f && n !== 0x7f;
+      }).join('');
+      return clean.slice(0, maxLen);
+    };
+    const word = sanitize(req.body.word, 200);
+    const lemma = sanitize(req.body.lemma, 200);
+    const phrase = sanitize(req.body.phrase, 500);
 
     if (!languageId || typeof languageId !== 'string') {
       return res
@@ -438,7 +452,7 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
       });
     }
 
-    if (type === 'phrase' && (!phrase || typeof phrase !== 'string')) {
+    if (type === 'phrase' && !phrase) {
       return res.status(400).json({
         error: 'phrase is required for type=phrase',
         code: 'INVALID_INPUT',
@@ -448,11 +462,11 @@ router.post('/api/ai/explain', async (req: any, res: any) => {
 
     if (
       type !== 'phrase' &&
-      (!word || typeof word !== 'string' || !lemma || typeof lemma !== 'string') &&
-      type !== 'gloss'
+      type !== 'gloss' &&
+      (!word.trim() || !lemma.trim())
     ) {
       return res.status(400).json({
-        error: 'word and lemma are required for type=word or type=paradigm',
+        error: 'word and lemma are required for type=word, type=paradigm, or type=morphology',
         code: 'INVALID_INPUT',
         field: 'word',
       });
@@ -589,9 +603,9 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
   }
 });
 
-router.post('/api/ai/pronunciation', async (req: any, res: any) => {
+router.post('/api/ai/pronunciation', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
-    const { languageId, text, transliteration } = req.body;
+    const { languageId, text, transliteration, pronunciationMode } = req.body;
 
     if (!languageId || typeof languageId !== 'string') {
       return res.status(400).json({
@@ -627,10 +641,14 @@ router.post('/api/ai/pronunciation', async (req: any, res: any) => {
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });
 
+    const modeInstruction = pronunciationMode && pronunciationMode !== 'default'
+      ? `\nPronunciation system: Use the "${pronunciationMode}" pronunciation tradition specifically.`
+      : '';
+
     const prompt = `You are a historical linguist specializing in ${langName}. Provide a pronunciation guide for this text.
 
 Text: "${text}"
-${transliteration ? `Transliteration: "${transliteration}"` : ''}
+${transliteration ? `Transliteration: "${transliteration}"` : ''}${modeInstruction}
 
 Return ONLY valid JSON with this exact structure — no markdown, no explanation:
 {
@@ -684,7 +702,7 @@ Rules:
   }
 });
 
-router.post('/api/ai/scrape', async (req: any, res: any) => {
+router.post('/api/ai/scrape', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { url } = req.body;
 
@@ -737,7 +755,7 @@ router.post('/api/ai/scrape', async (req: any, res: any) => {
   }
 });
 
-router.post('/api/ai/metadata', async (req: any, res: any) => {
+router.post('/api/ai/metadata', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, rawText } = req.body;
 
@@ -826,7 +844,7 @@ Text: ${rawText.slice(0, 5000)}`;
   }
 });
 
-router.post('/api/ai/quiz', async (req: any, res: any) => {
+router.post('/api/ai/quiz', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, lemma, form, type } = req.body;
 
@@ -911,7 +929,7 @@ Rules:
   }
 });
 
-router.post('/api/ai/syntax', async (req: any, res: any) => {
+router.post('/api/ai/syntax', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, sentence, tokens: inputTokens } = req.body;
 
@@ -1469,7 +1487,14 @@ router.post(
         .replace(/^```(?:json)?\s*/i, '')
         .replace(/\s*```\s*$/i, '')
         .trim();
-      const parsed = JSON.parse(cleaned) as CourseQuizResult;
+
+      let parsed: CourseQuizResult;
+      try {
+        parsed = JSON.parse(cleaned) as CourseQuizResult;
+      } catch {
+        console.error('[course-quiz] JSON parse failed. Raw:', cleaned.slice(0, 200));
+        return res.status(500).json({ error: 'Quiz generation failed — invalid AI response', code: 'PARSE_ERROR' });
+      }
 
       if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
         return res.status(500).json({ error: 'Quiz generation failed', code: 'PARSE_ERROR' });
@@ -1479,6 +1504,325 @@ router.post(
     } catch (err: any) {
       console.error('[course-quiz] Error:', err.message);
       return res.status(500).json({ error: 'Failed to generate quiz', code: 'QUIZ_ERROR' });
+    }
+  }
+);
+
+// In-process cache: textId → historical context
+const _historicalContextCache = new Map<string, { data: HistoricalContextResult; cachedAt: number }>();
+const HISTORICAL_CONTEXT_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+interface HistoricalContextResult {
+  geography: string;
+  period: string;
+  keyFigures: string;
+  culturalBackground: string;
+  literaryContext: string;
+}
+
+router.post('/api/ai/historical-context', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { textId, title, languageId, author, period } = req.body;
+
+    if (!title || typeof title !== 'string') {
+      return res.status(400).json({ error: 'title is required', code: 'INVALID_INPUT' });
+    }
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+    }
+
+    // Serve from cache if available
+    const cacheKey = textId || title;
+    const cached = _historicalContextCache.get(cacheKey);
+    if (cached && Date.now() - cached.cachedAt < HISTORICAL_CONTEXT_TTL) {
+      return res.status(200).json(cached.data);
+    }
+
+    const apiKey = resolveGeminiApiKey(req);
+    if (!apiKey) {
+      return res.status(200).json({
+        geography: '',
+        period: '',
+        keyFigures: '',
+        culturalBackground: '',
+        literaryContext: '',
+        _unavailable: true,
+      });
+    }
+
+    const langName = getLanguageName(languageId);
+    const authorLine = author ? `Author: ${author}` : '';
+    const periodLine = period ? `Period: ${period}` : '';
+
+    const prompt = `You are a classical philologist and historian. Provide concise historical background for a ${langName} text.
+
+Title: ${title}
+${authorLine}
+${periodLine}
+Language: ${langName}
+
+Return ONLY valid JSON with this exact structure — no markdown, no code fences:
+{
+  "geography": "2-3 sentences on the geographic setting and relevant locations",
+  "period": "2-3 sentences on the historical period, dating, and context",
+  "keyFigures": "2-3 sentences on key historical or mythological figures in this text or its context",
+  "culturalBackground": "2-3 sentences on the cultural, religious, or political context",
+  "literaryContext": "2-3 sentences on the literary tradition, genre, and significance of this work"
+}
+
+Keep each section brief and learner-friendly. Focus on what helps a student reading this text.`;
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: { temperature: 0.3, maxOutputTokens: 1024 },
+    });
+
+    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
+
+    let parsed: HistoricalContextResult;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return res.status(500).json({ error: 'Failed to parse AI response', code: 'PARSE_ERROR' });
+    }
+
+    _historicalContextCache.set(cacheKey, { data: parsed, cachedAt: Date.now() });
+    return res.status(200).json(parsed);
+  } catch (err: any) {
+    console.error('[historical-context] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch historical context', code: 'AI_ERROR' });
+  }
+});
+
+// In-process cache: `${languageId}:${lemma}` → semantic context
+const _semanticContextCache = new Map<string, { data: SemanticContextResult; cachedAt: number }>();
+const SEMANTIC_CONTEXT_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+interface SemanticCognate {
+  language: string;
+  word: string;
+  meaning: string;
+}
+
+interface SemanticContextResult {
+  semanticDomain: string;
+  cognates: SemanticCognate[];
+  usageNotes: string;
+  historicalEvolution: string;
+}
+
+router.post('/api/ai/semantic-context', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const { lemma, languageId, gloss } = req.body;
+
+    if (!lemma || typeof lemma !== 'string') {
+      return res.status(400).json({ error: 'lemma is required', code: 'INVALID_INPUT' });
+    }
+    if (!languageId || typeof languageId !== 'string') {
+      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+    }
+
+    const cacheKey = `${languageId}:${lemma}`;
+    const cached = _semanticContextCache.get(cacheKey);
+    if (cached && Date.now() - cached.cachedAt < SEMANTIC_CONTEXT_TTL) {
+      return res.status(200).json(cached.data);
+    }
+
+    const apiKey = resolveGeminiApiKey(req);
+    if (!apiKey) {
+      return res.status(200).json({
+        semanticDomain: '',
+        cognates: [],
+        usageNotes: '',
+        historicalEvolution: '',
+        _unavailable: true,
+      });
+    }
+
+    const langName = getLanguageName(languageId);
+    const glossLine = gloss ? `Gloss: ${gloss}` : '';
+
+    const prompt = `You are a comparative philologist. Provide semantic and etymological context for the following word.
+
+Language: ${langName}
+Lemma: ${lemma}
+${glossLine}
+
+Return ONLY valid JSON with this exact structure — no markdown, no code fences:
+{
+  "semanticDomain": "One primary semantic domain label (e.g. 'Religion & Ritual', 'Military', 'Family', 'Nature', 'Governance', 'Commerce', 'Philosophy', 'Emotion', 'Body', 'Time', 'Space', 'Communication')",
+  "cognates": [
+    { "language": "Language name", "word": "cognate word", "meaning": "brief meaning" }
+  ],
+  "usageNotes": "2-3 sentences on register, typical contexts, and how this word is typically used in classical texts",
+  "historicalEvolution": "2-3 sentences on how the meaning or usage evolved over time, if notable"
+}
+
+Rules:
+- cognates: list 2-4 cognates from related languages (Latin, Greek, Hebrew, Sanskrit, etc. depending on the source language). If none, use empty array.
+- Keep each field concise and learner-friendly.
+- Focus on what helps a student understand this word more deeply.`;
+
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const response = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: { temperature: 0.3, maxOutputTokens: 800 },
+    });
+
+    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/i, '')
+      .trim();
+
+    let parsed: SemanticContextResult;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return res.status(500).json({ error: 'Failed to parse AI response', code: 'PARSE_ERROR' });
+    }
+
+    _semanticContextCache.set(cacheKey, { data: parsed, cachedAt: Date.now() });
+    return res.status(200).json(parsed);
+  } catch (err: any) {
+    console.error('[semantic-context] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch semantic context', code: 'AI_ERROR' });
+  }
+});
+
+// ─── Concept Summary ─────────────────────────────────────────────────────────
+// 24-hour in-process cache keyed by "{languageId}:{lemma}"
+const _conceptSummaryCache = new Map<string, { summary: string; cachedAt: number }>();
+const CONCEPT_SUMMARY_TTL = 24 * 60 * 60 * 1000;
+
+router.post('/api/ai/concept-summary', async (req: any, res: any) => {
+  const { languageId, lemma, gloss, context } = req.body ?? {};
+
+  if (!languageId || typeof languageId !== 'string' || !lemma || typeof lemma !== 'string') {
+    return res
+      .status(400)
+      .json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
+  }
+
+  const cacheKey = `${languageId}:${lemma.toLowerCase()}`;
+  const cached = _conceptSummaryCache.get(cacheKey);
+  if (cached && Date.now() - cached.cachedAt < CONCEPT_SUMMARY_TTL) {
+    return res.status(200).json({ summary: cached.summary, cached: true });
+  }
+
+  const apiKey = resolveGeminiApiKey(req);
+  if (!apiKey) {
+    return res.status(200).json({
+      summary: null,
+      unavailable: true,
+      reason: 'Gemini API key not configured.',
+    });
+  }
+
+  try {
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey });
+    const langName = getLanguageName(languageId);
+
+    const contextNote = context ? `The word appears in this context: "${context}".` : '';
+    const glossNote = gloss ? ` (gloss: ${gloss})` : '';
+
+    const prompt = `You are a specialist in ancient languages and the history of ideas.
+Write a concise theological, philosophical, or cultural concept summary (2–4 sentences) for the ${langName} word "${lemma}"${glossNote}.
+
+Focus on:
+- Its core meaning and range of usage in antiquity
+- Key theological or philosophical significance (if any)
+- How its meaning evolved or was contested across traditions
+- One striking usage or contrast that illuminates the concept
+
+${contextNote}
+
+Keep the summary informative but accessible. Do not use jargon without explanation. Do not pad. Return ONLY the summary text — no headers, no lists, no markdown.`;
+
+    const model = genAI.models;
+    const result = await model.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    });
+
+    const summary = result.text?.trim() ?? '';
+    if (summary) {
+      _conceptSummaryCache.set(cacheKey, { summary, cachedAt: Date.now() });
+    }
+
+    return res.status(200).json({ summary: summary || null, cached: false });
+  } catch (err: any) {
+    console.error('[concept-summary] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to generate summary', code: 'CONCEPT_ERROR' });
+  }
+});
+
+// ─── Textual Apparatus Notes ─────────────────────────────────────────────────
+const _apparatusCache = new Map<string, { notes: string; cachedAt: number }>();
+const APPARATUS_TTL = 24 * 60 * 60 * 1000;
+
+router.post(
+  '/api/ai/apparatus-notes',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { languageId, lemma, wordText, sentenceText } = req.body ?? {};
+      if (!languageId || !lemma) {
+        return res.status(400).json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
+      }
+
+      const cacheKey = `${languageId}:${lemma}:${wordText ?? ''}`;
+      const cached = _apparatusCache.get(cacheKey);
+      if (cached && Date.now() - cached.cachedAt < APPARATUS_TTL) {
+        return res.status(200).json({ notes: cached.notes, cached: true });
+      }
+
+      const apiKey = resolveGeminiApiKey(req) || process.env.GOOGLE_AI_API_KEY;
+      if (!apiKey) return res.status(200).json({ unavailable: true, notes: null });
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+
+      const contextClause = sentenceText
+        ? `The word appears in the sentence: "${sentenceText}".`
+        : '';
+      const formClause =
+        wordText && wordText !== lemma
+          ? `The inflected form is "${wordText}" (lemma: ${lemma}).`
+          : `The lemma is ${lemma}.`;
+
+      const prompt = `You are a New Testament / ancient text textual critic. ${formClause} ${contextClause}
+
+Write 2–4 sentences of apparatus-style commentary on any known manuscript variants for this word or its immediate context. Include:
+- Names of key witnesses (papyri, uncials, versional evidence) if known
+- The nature of the variant (omission, addition, substitution, spelling)
+- A brief note on scholarly consensus or significance
+
+If no significant variants are known for this specific lemma in this language, say so briefly. Write in the style of a textual criticism handbook entry — precise, scholarly, non-redundant. Do not add bullet points; prose only.`;
+
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+
+      const notes = (response?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+      if (!notes) return res.status(200).json({ notes: null });
+
+      _apparatusCache.set(cacheKey, { notes, cachedAt: Date.now() });
+      return res.status(200).json({ notes, cached: false });
+    } catch (err: any) {
+      console.error('[apparatus-notes] Error:', err.message);
+      return res.status(200).json({ notes: null });
     }
   }
 );

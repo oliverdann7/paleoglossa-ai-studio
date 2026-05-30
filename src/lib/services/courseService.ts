@@ -110,6 +110,37 @@ export class CourseService {
     }
   }
 
+  static async getOrCreateInviteCode(courseId: string): Promise<string | null> {
+    try {
+      const result = await apiFetch<{ joinCode: string }>(
+        `/api/courses/${encodeURIComponent(courseId)}/invite-code`,
+        { method: 'POST' }
+      );
+      return result.joinCode ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  static async joinByCode(code: string): Promise<{ ok: boolean; courseId?: string; courseTitle?: string; error?: string }> {
+    try {
+      return await apiFetch('/api/courses/join-by-code', { method: 'POST', body: { code } });
+    } catch (e: any) {
+      return { ok: false, error: e?.message || 'Failed to join' };
+    }
+  }
+
+  static async removeMember(courseId: string, memberId: string): Promise<boolean> {
+    try {
+      await apiFetch(`/api/courses/${encodeURIComponent(courseId)}/members/${encodeURIComponent(memberId)}`, {
+        method: 'DELETE',
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   static async updateProgress(courseId: string, textId: string, percent: number): Promise<void> {
     try {
       await apiFetch(`/api/courses/${encodeURIComponent(courseId)}/progress`, {
@@ -118,6 +149,29 @@ export class CourseService {
       });
     } catch {
       // non-critical
+    }
+  }
+
+  static async generateInviteCode(courseId: string): Promise<string | null> {
+    try {
+      const data = await apiFetch<{ inviteCode: string }>(
+        `/api/courses/${encodeURIComponent(courseId)}/invite`,
+        { method: 'POST' }
+      );
+      return data.inviteCode;
+    } catch {
+      return null;
+    }
+  }
+
+  static async joinByInviteCode(code: string): Promise<{ courseId: string; title: string } | null> {
+    try {
+      return await apiFetch<{ courseId: string; title: string }>('/api/courses/join-by-invite', {
+        method: 'POST',
+        body: { code },
+      });
+    } catch {
+      return null;
     }
   }
 }

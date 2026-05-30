@@ -9,6 +9,7 @@ import {
   Sparkles,
   Loader2,
   Repeat,
+  Scroll,
   ShieldCheck,
   ShieldAlert,
   Check,
@@ -20,6 +21,8 @@ import {
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { ScholarAnnotations } from './ScholarAnnotations.js';
+import { CognateLinksSection } from './CognateLinksSection.js';
+import { ConceptSummarySection } from './ConceptSummarySection.js';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/hooks/useAuth';
 import {
@@ -39,6 +42,7 @@ import {
   type LexiconLookupResult,
 } from '@/lib/services/lexiconService';
 import { ParadigmModal } from './ParadigmModal.js';
+import { TCExerciseModal } from './TCExerciseModal.js';
 import { ATTRIBUTIONS, CorpusDB } from '@/data/corpus';
 import { MorphologyService } from '@/lib/services/morphologyService';
 import { getLanguageDisplayName } from '@/lib/constants/languages';
@@ -60,6 +64,8 @@ import type { WordInfo, KnowledgeMap } from '@/lib/services/vocabularyService';
 import type { ReadingContext } from '@/lib/review/readingContext';
 import { buildReadingContext } from '@/lib/review/readingContext';
 import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
+import { SemanticContextSection } from './SemanticContextSection.js';
+import { VariantApparatusSection } from './VariantApparatusSection.js';
 
 type SelectedWord = ReaderToken & { sentenceText?: string; sentenceIndex?: number };
 
@@ -222,6 +228,7 @@ export const LexDrawerPanel = memo(({
   const lexiconLemmaRef = useRef<string | null>(null);
 
   const [isAiMorphLoading, setIsAiMorphLoading] = useState(false);
+  const [isTCExerciseOpen, setIsTCExerciseOpen] = useState(false);
   const [aiMorphResult, setAiMorphResult] = useState<Record<string, string> | null>(null);
 
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
@@ -235,6 +242,12 @@ export const LexDrawerPanel = memo(({
   const [glossSaved, setGlossSaved] = useState(false);
   const glossTimerRef = useRef<number>(0);
   const noteSavedTimerRef = useRef<number>(0);
+  // Tracks the current selectedWord lemma so the reviewAdded timeout can avoid
+  // clearing a *different* word that was opened while the timer was running (L-2).
+  const selectedWordLemmaRef = useRef<string | null>(null);
+  useEffect(() => {
+    selectedWordLemmaRef.current = selectedWord?.lemma ?? null;
+  });
 
   // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
   const wordInfo = useMemo(
@@ -418,12 +431,14 @@ export const LexDrawerPanel = memo(({
     const currentLemma = selectedWord.lemma;
     wiktionaryLemmaRef.current = currentLemma;
     setIsWiktionaryLoading(true);
+    let cancelled = false;
     (async () => {
       const result = await lookupWiktionary(currentLemma, langId);
-      if (wiktionaryLemmaRef.current !== currentLemma) return;
+      if (cancelled || wiktionaryLemmaRef.current !== currentLemma) return;
       setWiktionaryResult(result);
       setIsWiktionaryLoading(false);
     })();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWord?.lemma, !!definitionLookup, langId]);
 
@@ -675,9 +690,13 @@ export const LexDrawerPanel = memo(({
                         updateGloss(selectedWord.lemma, definitionLookup.definition, langId);
                       }
                       setReviewAdded(true);
+                      const capturedLemma = selectedWord.lemma;
                       setTimeout(() => {
                         setReviewAdded(false);
-                        setSelectedWord(null);
+                        // L-2: only clear the panel if the user hasn't moved to a different word
+                        if (selectedWordLemmaRef.current === capturedLemma) {
+                          setSelectedWord(null);
+                        }
                       }, 1800);
                     }
                   }}
@@ -736,7 +755,7 @@ export const LexDrawerPanel = memo(({
                 }
                 if (wiktionaryResult) {
                   const headline = summarizeWiktionary(wiktionaryResult);
-                  const extra = wiktionaryResult.entries[0]?.definitions.slice(1, 3) || [];
+                  const extra = wiktionaryResult.entries[0]?.definitions?.slice(1, 3) || [];
                   return (
                     <>
                       <div className="text-ink">{headline}</div>
@@ -1098,6 +1117,17 @@ export const LexDrawerPanel = memo(({
             {t('reader.discussWithTutor', 'Discuss with Tutor')}
           </Link>
 
+          {/* TC Exercises — Greek only */}
+          {langId === 'grc' && (
+            <button
+              onClick={() => setIsTCExerciseOpen(true)}
+              className="w-full mb-10 py-3 border border-bdr/30 bg-parch2/60 rounded-xl font-bold text-ink2 text-sm flex items-center justify-center gap-2 hover:bg-parch2 transition-colors"
+            >
+              <Scroll className="w-4 h-4" />
+              Practice Textual Criticism
+            </button>
+          )}
+
           {/* Contextual Examples */}
           {(wordInfo?.contexts?.length ?? 0) > 0 && (
             <div className="mb-10">
@@ -1117,6 +1147,34 @@ export const LexDrawerPanel = memo(({
               </div>
             </div>
           )}
+          {/* Semantic Context */}
+          <SemanticContextSection
+            lemma={selectedWord.lemma}
+            languageId={langId}
+            gloss={selectedWord.gloss}
+          />
+
+          {/* Cross-language cognate links */}
+          <CognateLinksSection lemma={selectedWord.lemma} languageId={langId} />
+
+          {/* AI Concept Summary */}
+          <ConceptSummarySection
+            lemma={selectedWord.lemma}
+            languageId={langId}
+            gloss={wordInfo?.userGloss || selectedWord.gloss}
+            context={selectedWord.sentenceText}
+            aiEnabled={settings?.aiEnabled !== false}
+          />
+
+          {/* Textual Variants */}
+          <VariantApparatusSection
+            lemma={selectedWord.lemma}
+            languageId={langId}
+            wordText={selectedWord.text}
+            sentenceText={selectedWord.sentenceText}
+            aiEnabled={settings?.aiEnabled !== false}
+          />
+
           {/* Notes Section */}
           <div className="mb-6">
             <div className="eyebrow mb-3 text-ink">
@@ -1269,6 +1327,9 @@ export const LexDrawerPanel = memo(({
         languageId={langId}
         word={selectedWord.text}
       />
+      {isTCExerciseOpen && (
+        <TCExerciseModal onClose={() => setIsTCExerciseOpen(false)} />
+      )}
     </AnimatePresence>
   );
 });

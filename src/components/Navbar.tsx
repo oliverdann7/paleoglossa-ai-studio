@@ -99,7 +99,7 @@ export const Navbar = () => {
 
   return (
     <>
-      <nav className="hidden md:flex fixed left-0 top-0 h-full w-[220px] border-r border-bdr bg-parch2 flex-col z-50 overflow-y-auto">
+      <nav aria-label="Main navigation" className="hidden md:flex fixed left-0 top-0 h-full w-[220px] border-r border-bdr bg-parch2 flex-col z-50 overflow-y-auto">
         <div className="p-5 flex flex-col gap-1">
           <Link to="/app" className="flex items-center gap-2.5">
             <PaleoIcon className="w-7 h-7 flex-shrink-0" />

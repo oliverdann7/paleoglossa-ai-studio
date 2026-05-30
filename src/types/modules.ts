@@ -207,6 +207,7 @@ export interface Course {
   languageId: string;
   texts: CourseTextAssignment[];
   isPublic: boolean;
+  inviteCode?: string;
   createdAt: string | Timestamp;
 }
 
@@ -215,6 +216,10 @@ export interface CourseTextAssignment {
   order: number;
   week?: number;
   learningObjectives: string;
+  /** ISO date string (YYYY-MM-DD). Teacher-set deadline for this text. */
+  dueDate?: string;
+  /** Teacher-authored reading guide shown to all enrolled students */
+  teacherNote?: string;
 }
 
 export interface CourseMembership {

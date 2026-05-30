@@ -23,10 +23,17 @@ function AppLayoutContent() {
 
   return (
     <div className="min-h-screen">
+      {/* Skip navigation link — visible only on focus for keyboard/screen reader users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-blue focus:text-white focus:rounded-lg focus:text-[13px] focus:font-bold"
+      >
+        Skip to main content
+      </a>
       <DemoModeBanner />
       <Navbar />
       <MigrationModal />
-      <main className="md:pl-[220px] pb-20 md:pb-0 min-h-screen">
+      <main id="main-content" className="md:pl-[220px] pb-20 md:pb-0 min-h-screen">
         <AuthGuard>
           <Outlet />
         </AuthGuard>

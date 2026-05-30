@@ -1,6 +1,6 @@
 # Paleoglossa: Technical Implementation Roadmap
 
-> **Audit date:** 2026-05-11 · **Updated:** 2026-05-28
+> **Audit date:** 2026-05-11 · **Updated:** 2026-05-29
 > **Target:** A serious platform for studying ancient languages through real texts.
 > **Current state:** React 19 + Vite 6 + Firebase/Firestore + Express 5 + Gemini AI.
 > **Guiding principle:** Extend what exists; build new modules only where gaps cannot be filled.
@@ -563,22 +563,23 @@ The Reader page should be extended (not rewritten) via:
 - [x] Note creation with text context
 - [x] Note tagging and organization
 - [x] Notebook detail view with note rendering
-- [ ] Export: Markdown, PDF
-- [ ] Cross-text note linking
+- [x] Export: Markdown (per-note and full notebook download) + PDF (styled HTML export with print dialog)
+- [x] Cross-text note linking — wikilink syntax `[[lemma]]` and `[[text:id|label]]` with link insertion toolbar and backlinks display
 
-**Deliverable:** ✅ Users can create notebooks, add notes, and organize research. Export and cross-linking remain future enhancements.
+**Deliverable:** ✅ Users can create notebooks, add notes, organize research, export as Markdown or PDF, and cross-link between notes using wikilinks with backlink navigation.
 
-### Phase 5: Audio & Pronunciation — Partially Complete
+### Phase 5: Audio & Pronunciation — ✅ Complete
 
 - [x] Server-side TTS caching (audio route with cache)
 - [x] Pronunciation guide page (`/app/audio-lab`)
 - [x] Script primers for Syriac, Coptic, Aramaic, Sanskrit (PR #228)
-- [ ] Word-by-word audio highlighting with waveform
-- [ ] User recording + playback for pronunciation practice
-- [ ] IPA transcription display
-- [ ] Pronunciation mode switching (restored/Erasmian/modern)
+- [x] Word-by-word audio highlighting with waveform — `useReaderTTS` drives proportional token highlighting in `ReadingPane`
+- [x] User recording + playback for pronunciation practice — MediaRecorder-based widget in AudioLab with compare-to-TTS
+- [x] IPA transcription display — AI-generated IPA via `/api/ai/pronunciation`, displayed in AudioLab
+- [x] Pronunciation mode switching (restored/Erasmian/modern) — per-language mode selector in AudioLab, passed to TTS and guide endpoints
+- [x] Waveform visualization — canvas-based waveform with playback progress and seek
 
-**Deliverable:** TTS playback and pronunciation guides work. Recording, waveform visualization, and IPA display remain.
+**Deliverable:** ✅ Users can listen to TTS with word-by-word highlighting, record themselves and compare with TTS, view IPA transcriptions, and switch between pronunciation traditions (restored/Erasmian/modern for Greek, restored/ecclesiastical for Latin, Tiberian/modern for Hebrew).
 
 ### Phase 5b: Historical Context Panels (1-2 weeks)
 
@@ -629,8 +630,8 @@ The Reader page should be extended (not rewritten) via:
 - [ ] Accessibility audit: ARIA labels, keyboard navigation, screen reader support
 - [ ] E2E tests with Playwright for critical flows (auth, reader, review)
 - [ ] Error reporting dashboard
-- [ ] Analytics: track feature usage to guide priorities
-- [ ] Documentation: architecture docs, contribution guide, API reference
+- [x] Analytics: track feature usage to guide priorities (PostHog wired in `src/lib/analytics.ts`; events fired from Reader, LexDrawer, Review, Import, Auth, Subscription)
+- [x] Documentation: architecture docs, contribution guide, API reference (`docs/contributing.md`, `docs/api-reference.md`)
 
 ---
 
@@ -771,8 +772,10 @@ After Phase 0, immediately begin **Phase 1 (Corpus Engine)** — it delivers the
 ~~**Phase 1: Text & Corpus Engine**~~ ✅ Complete.
 ~~**Phase 2: Search & Syntax**~~ ✅ Complete.
 ~~**Phase 3: Grammar & AI Tutor**~~ ✅ Complete.
+~~**Phase 4: Research Notebook**~~ ✅ Complete.
+~~**Phase 5: Audio & Pronunciation**~~ ✅ Complete.
 
-**Next:** Phase 5 (Audio & Pronunciation) — word-by-word highlighting, user recording, and IPA display would complete the pronunciation learning loop. Alternatively, Phase 4 gaps (notebook export) are quick wins.
+**Next:** Phase 5b (Historical Context Panels) — AI-generated context for text sections would transform word-level study into historical understanding. Alternatively, the Phase 1 semantic concept layer (domains, cognates, usage evolution) deepens the lexicon experience.
 
 ---
 
@@ -837,13 +840,11 @@ The items below track completed work and identify remaining gaps.
 
 | Priority | Item | Phase | Notes |
 |----------|------|-------|-------|
-| Medium | Word-by-word audio highlighting + waveform | 5 | AudioLab TTS works; needs sync overlay |
-| Medium | User recording upload + playback | 5 | API stub exists; needs storage infrastructure |
-| Medium | IPA transcription display | 5 | Per-language phonology data needed |
-| Medium | Notebook export (Markdown, PDF) | 4 | Notebook CRUD complete; export not yet wired |
-| Medium | Cross-text note linking | 4 | Note system works; linking not yet implemented |
+| Medium | Historical context panels in Reader | 5b | AI-generated geography/culture context per text section |
+| Medium | Semantic concept layer (domains, cognates) | 1 | Extend LemmaDoc, concept tab in LexDrawerPanel |
 | Low | Manuscript line-level alignment | 6 | Viewer works; fine-grained alignment not done |
 | Low | TEI XML import | 6 | Manuscript data model exists; importer needed |
+| Low | Variant apparatus explorer + TC exercises | 6 | Gamified textual criticism with Gemini |
 | Low | Teacher roles via Firebase custom claims | 7 | Course page exists; auth roles incomplete |
 | Low | Student enrollment + assignment tracking | 7 | Course creation works; classroom features stub |
 | Low | Parallel text word-level alignment | 1 | Sentence-level works; word alignment complex |

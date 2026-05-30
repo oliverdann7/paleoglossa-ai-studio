@@ -33,6 +33,7 @@ import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useStreakNotifications } from '../lib/hooks/useStreakNotifications.js';
 import { StudyPlanWidget } from '../components/StudyPlanWidget.js';
+import { ReadyToReadRail } from '../components/dashboard/ReadyToReadRail.js';
 import { pickDashboardRecommendation } from '../lib/services/recommendationService.js';
 import { StudyHeatmap } from '../components/StudyHeatmap.js';
 import { VocabFrequencyGoals } from '../components/VocabFrequencyGoals.js';
@@ -99,10 +100,15 @@ export const Dashboard = () => {
   const hour = new Date().getHours();
 
   useEffect(() => {
-    getAllProgress().then((p) => {
-      setReadingProgress(p);
-      setProgressLoaded(true);
-    });
+    getAllProgress()
+      .then((p) => {
+        setReadingProgress(p);
+        setProgressLoaded(true);
+      })
+      .catch(() => {
+        setReadingProgress([]);
+        setProgressLoaded(true);
+      });
   }, [getAllProgress]);
 
   const { knownCount, learningCount, reviewCount, recentVocab } = useMemo(() => {
@@ -219,7 +225,7 @@ export const Dashboard = () => {
   }, [readingProgress, activeLanguageId, knowledge]);
 
   const dailyGoal = settings.dailyGoalWords > 0 ? settings.dailyGoalWords : 500;
-  const dailyProgress = Math.min(1, stats.readToday / dailyGoal);
+  const dailyProgress = Math.min(1, (stats.readToday ?? 0) / dailyGoal);
 
   if (isLoading) return <DashboardSkeleton />;
 
@@ -436,6 +442,9 @@ export const Dashboard = () => {
           recommendedText={suggestedText}
         />
       )}
+
+      {/* ── Ready to Read (lemma-based, comprehension-banded picks) ── */}
+      <ReadyToReadRail activeLanguageId={activeLanguageId} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
         {/* Review Hero */}
@@ -715,7 +724,7 @@ export const Dashboard = () => {
 
               {stats.history && stats.history.length > 1 && (() => {
                 const chartData = [...stats.history].slice(-30).map((h) => ({
-                  date: h.date.slice(5),
+                  date: h.date?.slice(5) ?? '',
                   known: h.knownWords ?? 0,
                 }));
                 return (
