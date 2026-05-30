@@ -39,13 +39,170 @@ function sent(
 // Text: SBLGNT § John 1 — public domain Scripture, SBLGNT freely licensed.
 // We keep verses 1–5 richly tokenized (existing) and add verses 6–18 here.
 
+const JN1_LEX: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }> = {
+  'Ἐγένετο': { lemma: 'γίνομαι', gloss: 'there came', partOfSpeech: 'verb' },
+  'ἄνθρωπος': { lemma: 'ἄνθρωπος', gloss: 'a man', partOfSpeech: 'noun' },
+  'ἀπεσταλμένος': { lemma: 'ἀποστέλλω', gloss: 'sent', partOfSpeech: 'verb' },
+  'παρὰ': { lemma: 'παρά', gloss: 'from', partOfSpeech: 'preposition' },
+  'θεοῦ,': { lemma: 'θεός', gloss: 'of God', partOfSpeech: 'noun' },
+  'θεοῦ': { lemma: 'θεός', gloss: 'of God', partOfSpeech: 'noun' },
+  'Θεὸν': { lemma: 'θεός', gloss: 'God (acc.)', partOfSpeech: 'noun' },
+  'θεὸς': { lemma: 'θεός', gloss: 'God', partOfSpeech: 'noun' },
+  'ὄνομα': { lemma: 'ὄνομα', gloss: 'name', partOfSpeech: 'noun' },
+  'αὐτῷ': { lemma: 'αὐτός', gloss: 'to him', partOfSpeech: 'pronoun' },
+  'Ἰωάννης·': { lemma: 'Ἰωάννης', gloss: 'John', partOfSpeech: 'noun' },
+  'Ἰωάννης': { lemma: 'Ἰωάννης', gloss: 'John', partOfSpeech: 'noun' },
+  'οὗτος': { lemma: 'οὗτος', gloss: 'this one', partOfSpeech: 'pronoun' },
+  'ἦλθεν': { lemma: 'ἔρχομαι', gloss: 'came', partOfSpeech: 'verb' },
+  'ἦλθεν,': { lemma: 'ἔρχομαι', gloss: 'came', partOfSpeech: 'verb' },
+  'εἰς': { lemma: 'εἰς', gloss: 'into, to', partOfSpeech: 'preposition' },
+  'μαρτυρίαν,': { lemma: 'μαρτυρία', gloss: 'witness', partOfSpeech: 'noun' },
+  'ἵνα': { lemma: 'ἵνα', gloss: 'so that', partOfSpeech: 'conjunction' },
+  'μαρτυρήσῃ': { lemma: 'μαρτυρέω', gloss: 'might bear witness', partOfSpeech: 'verb' },
+  'περὶ': { lemma: 'περί', gloss: 'about', partOfSpeech: 'preposition' },
+  'τοῦ': { lemma: 'ὁ', gloss: 'the (gen.)', partOfSpeech: 'article' },
+  'τὸ': { lemma: 'ὁ', gloss: 'the (n.)', partOfSpeech: 'article' },
+  'τὸν': { lemma: 'ὁ', gloss: 'the (acc.)', partOfSpeech: 'article' },
+  'τὰ': { lemma: 'ὁ', gloss: 'the (n.pl.)', partOfSpeech: 'article' },
+  'τὴν': { lemma: 'ὁ', gloss: 'the (f. acc.)', partOfSpeech: 'article' },
+  'τῷ': { lemma: 'ὁ', gloss: 'the (dat.)', partOfSpeech: 'article' },
+  'τοῖς': { lemma: 'ὁ', gloss: 'the (m.pl. dat.)', partOfSpeech: 'article' },
+  'οἱ': { lemma: 'ὁ', gloss: 'the (m.pl.)', partOfSpeech: 'article' },
+  'ὁ': { lemma: 'ὁ', gloss: 'the', partOfSpeech: 'article' },
+  'ἡ': { lemma: 'ὁ', gloss: 'the (f.)', partOfSpeech: 'article' },
+  'φωτός,': { lemma: 'φῶς', gloss: 'of light', partOfSpeech: 'noun' },
+  'φωτός.': { lemma: 'φῶς', gloss: 'of light', partOfSpeech: 'noun' },
+  'πάντες': { lemma: 'πᾶς', gloss: 'all', partOfSpeech: 'adjective' },
+  'πάντα': { lemma: 'πᾶς', gloss: 'every', partOfSpeech: 'adjective' },
+  'πιστεύσωσιν': { lemma: 'πιστεύω', gloss: 'they may believe', partOfSpeech: 'verb' },
+  'πιστεύουσιν': { lemma: 'πιστεύω', gloss: 'to those believing', partOfSpeech: 'verb' },
+  'δι’': { lemma: 'διά', gloss: 'through', partOfSpeech: 'preposition' },
+  'διὰ': { lemma: 'διά', gloss: 'through', partOfSpeech: 'preposition' },
+  'αὐτοῦ.': { lemma: 'αὐτός', gloss: 'him', partOfSpeech: 'pronoun' },
+  'αὐτοῦ,': { lemma: 'αὐτός', gloss: 'his', partOfSpeech: 'pronoun' },
+  'αὐτοῦ': { lemma: 'αὐτός', gloss: 'his', partOfSpeech: 'pronoun' },
+  'αὐτὸν': { lemma: 'αὐτός', gloss: 'him', partOfSpeech: 'pronoun' },
+  'αὐτόν,': { lemma: 'αὐτός', gloss: 'him', partOfSpeech: 'pronoun' },
+  'αὐτοῖς': { lemma: 'αὐτός', gloss: 'to them', partOfSpeech: 'pronoun' },
+  'οὐκ': { lemma: 'οὐ', gloss: 'not', partOfSpeech: 'adverb' },
+  'οὐ': { lemma: 'οὐ', gloss: 'not', partOfSpeech: 'adverb' },
+  'οὐδὲ': { lemma: 'οὐδέ', gloss: 'nor', partOfSpeech: 'conjunction' },
+  'οὐδεὶς': { lemma: 'οὐδείς', gloss: 'no one', partOfSpeech: 'pronoun' },
+  'ἦν': { lemma: 'εἰμί', gloss: 'was', partOfSpeech: 'verb' },
+  'ἦν,': { lemma: 'εἰμί', gloss: 'was', partOfSpeech: 'verb' },
+  'ἦν.': { lemma: 'εἰμί', gloss: 'was', partOfSpeech: 'verb' },
+  'ἐκεῖνος': { lemma: 'ἐκεῖνος', gloss: 'that one', partOfSpeech: 'pronoun' },
+  'φῶς,': { lemma: 'φῶς', gloss: 'light', partOfSpeech: 'noun' },
+  'φῶς': { lemma: 'φῶς', gloss: 'light', partOfSpeech: 'noun' },
+  'ἀλλ’': { lemma: 'ἀλλά', gloss: 'but', partOfSpeech: 'conjunction' },
+  'Ἦν': { lemma: 'εἰμί', gloss: 'was', partOfSpeech: 'verb' },
+  'ἀληθινόν,': { lemma: 'ἀληθινός', gloss: 'true', partOfSpeech: 'adjective' },
+  'ὃ': { lemma: 'ὅς', gloss: 'which', partOfSpeech: 'pronoun' },
+  'ὃν': { lemma: 'ὅς', gloss: 'whom', partOfSpeech: 'pronoun' },
+  'οἳ': { lemma: 'ὅς', gloss: 'who (m.pl.)', partOfSpeech: 'pronoun' },
+  'ὅσοι': { lemma: 'ὅσος', gloss: 'as many as', partOfSpeech: 'pronoun' },
+  'φωτίζει': { lemma: 'φωτίζω', gloss: 'enlightens', partOfSpeech: 'verb' },
+  'ἄνθρωπον,': { lemma: 'ἄνθρωπος', gloss: 'man (acc.)', partOfSpeech: 'noun' },
+  'ἐρχόμενον': { lemma: 'ἔρχομαι', gloss: 'coming', partOfSpeech: 'verb' },
+  'ἐρχόμενος': { lemma: 'ἔρχομαι', gloss: 'coming (m.)', partOfSpeech: 'verb' },
+  'κόσμον.': { lemma: 'κόσμος', gloss: 'world (acc.)', partOfSpeech: 'noun' },
+  'κόσμος': { lemma: 'κόσμος', gloss: 'world', partOfSpeech: 'noun' },
+  'κόσμῳ': { lemma: 'κόσμος', gloss: 'in the world', partOfSpeech: 'noun' },
+  'ἐν': { lemma: 'ἐν', gloss: 'in', partOfSpeech: 'preposition' },
+  'καὶ': { lemma: 'καί', gloss: 'and', partOfSpeech: 'conjunction' },
+  'Καὶ': { lemma: 'καί', gloss: 'and', partOfSpeech: 'conjunction' },
+  'ἐγένετο,': { lemma: 'γίνομαι', gloss: 'came to be', partOfSpeech: 'verb' },
+  'ἐγένετο.': { lemma: 'γίνομαι', gloss: 'came to be', partOfSpeech: 'verb' },
+  'ἐγένετο': { lemma: 'γίνομαι', gloss: 'came', partOfSpeech: 'verb' },
+  'ἔγνω.': { lemma: 'γινώσκω', gloss: 'knew', partOfSpeech: 'verb' },
+  'ἴδια': { lemma: 'ἴδιος', gloss: 'his own things', partOfSpeech: 'adjective' },
+  'ἴδιοι': { lemma: 'ἴδιος', gloss: 'his own people', partOfSpeech: 'adjective' },
+  'παρέλαβον.': { lemma: 'παραλαμβάνω', gloss: 'received', partOfSpeech: 'verb' },
+  'δὲ': { lemma: 'δέ', gloss: 'but, and', partOfSpeech: 'conjunction' },
+  'ἔλαβον': { lemma: 'λαμβάνω', gloss: 'received', partOfSpeech: 'verb' },
+  'ἐλάβομεν,': { lemma: 'λαμβάνω', gloss: 'we received', partOfSpeech: 'verb' },
+  'ἔδωκεν': { lemma: 'δίδωμι', gloss: 'he gave', partOfSpeech: 'verb' },
+  'ἐξουσίαν': { lemma: 'ἐξουσία', gloss: 'authority', partOfSpeech: 'noun' },
+  'τέκνα': { lemma: 'τέκνον', gloss: 'children', partOfSpeech: 'noun' },
+  'γενέσθαι,': { lemma: 'γίνομαι', gloss: 'to become', partOfSpeech: 'verb' },
+  'αἱμάτων': { lemma: 'αἷμα', gloss: 'of bloods', partOfSpeech: 'noun' },
+  'ἐκ': { lemma: 'ἐκ', gloss: 'out of, from', partOfSpeech: 'preposition' },
+  'ἐξ': { lemma: 'ἐκ', gloss: 'out of', partOfSpeech: 'preposition' },
+  'θελήματος': { lemma: 'θέλημα', gloss: 'of will', partOfSpeech: 'noun' },
+  'σαρκὸς': { lemma: 'σάρξ', gloss: 'of flesh', partOfSpeech: 'noun' },
+  'σὰρξ': { lemma: 'σάρξ', gloss: 'flesh', partOfSpeech: 'noun' },
+  'ἀνδρὸς': { lemma: 'ἀνήρ', gloss: 'of a man', partOfSpeech: 'noun' },
+  'ἐγεννήθησαν.': { lemma: 'γεννάω', gloss: 'they were born', partOfSpeech: 'verb' },
+  'λόγος': { lemma: 'λόγος', gloss: 'Word', partOfSpeech: 'noun' },
+  'ἐσκήνωσεν': { lemma: 'σκηνόω', gloss: 'tabernacled', partOfSpeech: 'verb' },
+  'ἡμῖν,': { lemma: 'ἐγώ', gloss: 'among us', partOfSpeech: 'pronoun' },
+  'ἡμεῖς': { lemma: 'ἐγώ', gloss: 'we', partOfSpeech: 'pronoun' },
+  'ἐθεασάμεθα': { lemma: 'θεάομαι', gloss: 'we beheld', partOfSpeech: 'verb' },
+  'δόξαν': { lemma: 'δόξα', gloss: 'glory', partOfSpeech: 'noun' },
+  'ὡς': { lemma: 'ὡς', gloss: 'as', partOfSpeech: 'conjunction' },
+  'μονογενοῦς': { lemma: 'μονογενής', gloss: 'of only-begotten', partOfSpeech: 'adjective' },
+  'μονογενὴς': { lemma: 'μονογενής', gloss: 'only-begotten', partOfSpeech: 'adjective' },
+  'πατρός,': { lemma: 'πατήρ', gloss: 'of father', partOfSpeech: 'noun' },
+  'πατρὸς': { lemma: 'πατήρ', gloss: 'of the Father', partOfSpeech: 'noun' },
+  'πλήρης': { lemma: 'πλήρης', gloss: 'full', partOfSpeech: 'adjective' },
+  'χάριτος': { lemma: 'χάρις', gloss: 'of grace', partOfSpeech: 'noun' },
+  'χάριτος·': { lemma: 'χάρις', gloss: 'grace', partOfSpeech: 'noun' },
+  'χάριν': { lemma: 'χάρις', gloss: 'grace', partOfSpeech: 'noun' },
+  'χάρις': { lemma: 'χάρις', gloss: 'grace', partOfSpeech: 'noun' },
+  'ἀληθείας.': { lemma: 'ἀλήθεια', gloss: 'of truth', partOfSpeech: 'noun' },
+  'ἀλήθεια': { lemma: 'ἀλήθεια', gloss: 'truth', partOfSpeech: 'noun' },
+  'μαρτυρεῖ': { lemma: 'μαρτυρέω', gloss: 'bears witness', partOfSpeech: 'verb' },
+  'κέκραγεν': { lemma: 'κράζω', gloss: 'cried out', partOfSpeech: 'verb' },
+  'λέγων·': { lemma: 'λέγω', gloss: 'saying', partOfSpeech: 'verb' },
+  'εἶπον·': { lemma: 'λέγω', gloss: 'I said', partOfSpeech: 'verb' },
+  'ὀπίσω': { lemma: 'ὀπίσω', gloss: 'after, behind', partOfSpeech: 'preposition' },
+  'μου': { lemma: 'ἐγώ', gloss: 'me, my', partOfSpeech: 'pronoun' },
+  'ἔμπροσθέν': { lemma: 'ἔμπροσθεν', gloss: 'before', partOfSpeech: 'preposition' },
+  'γέγονεν,': { lemma: 'γίνομαι', gloss: 'has come', partOfSpeech: 'verb' },
+  'ὅτι': { lemma: 'ὅτι', gloss: 'because, that', partOfSpeech: 'conjunction' },
+  'πρῶτός': { lemma: 'πρῶτος', gloss: 'first', partOfSpeech: 'adjective' },
+  'πληρώματος': { lemma: 'πλήρωμα', gloss: 'fullness', partOfSpeech: 'noun' },
+  'ἀντὶ': { lemma: 'ἀντί', gloss: 'in exchange for', partOfSpeech: 'preposition' },
+  'νόμος': { lemma: 'νόμος', gloss: 'the law', partOfSpeech: 'noun' },
+  'Μωϋσέως': { lemma: 'Μωϋσῆς', gloss: 'of Moses', partOfSpeech: 'noun' },
+  'ἐδόθη,': { lemma: 'δίδωμι', gloss: 'was given', partOfSpeech: 'verb' },
+  'Ἰησοῦ': { lemma: 'Ἰησοῦς', gloss: 'of Jesus', partOfSpeech: 'noun' },
+  'Χριστοῦ': { lemma: 'Χριστός', gloss: 'of Christ', partOfSpeech: 'noun' },
+  'ἑώρακεν': { lemma: 'ὁράω', gloss: 'has seen', partOfSpeech: 'verb' },
+  'πώποτε·': { lemma: 'πώποτε', gloss: 'ever yet', partOfSpeech: 'adverb' },
+  'ὢν': { lemma: 'εἰμί', gloss: 'being', partOfSpeech: 'verb' },
+  'κόλπον': { lemma: 'κόλπος', gloss: 'bosom (acc.)', partOfSpeech: 'noun' },
+  'ἐξηγήσατο.': { lemma: 'ἐξηγέομαι', gloss: 'has made known', partOfSpeech: 'verb' },
+  // punctuation-stripped duplicates
+  'φωτός': { lemma: 'φῶς', gloss: 'of light', partOfSpeech: 'noun' },
+  'μαρτυρίαν': { lemma: 'μαρτυρία', gloss: 'witness', partOfSpeech: 'noun' },
+  'ἀληθινόν': { lemma: 'ἀληθινός', gloss: 'true', partOfSpeech: 'adjective' },
+  'ἄνθρωπον': { lemma: 'ἄνθρωπος', gloss: 'man (acc.)', partOfSpeech: 'noun' },
+  'κόσμον': { lemma: 'κόσμος', gloss: 'world (acc.)', partOfSpeech: 'noun' },
+  'ἔγνω': { lemma: 'γινώσκω', gloss: 'knew', partOfSpeech: 'verb' },
+  'παρέλαβον': { lemma: 'παραλαμβάνω', gloss: 'received', partOfSpeech: 'verb' },
+  'αὐτόν': { lemma: 'αὐτός', gloss: 'him', partOfSpeech: 'pronoun' },
+  'γενέσθαι': { lemma: 'γίνομαι', gloss: 'to become', partOfSpeech: 'verb' },
+  'ἐγεννήθησαν': { lemma: 'γεννάω', gloss: 'they were born', partOfSpeech: 'verb' },
+  'ἡμῖν': { lemma: 'ἐγώ', gloss: 'among us', partOfSpeech: 'pronoun' },
+  'πατρός': { lemma: 'πατήρ', gloss: 'of father', partOfSpeech: 'noun' },
+  'ἀληθείας': { lemma: 'ἀλήθεια', gloss: 'of truth', partOfSpeech: 'noun' },
+  'γέγονεν': { lemma: 'γίνομαι', gloss: 'has come', partOfSpeech: 'verb' },
+  'ἐλάβομεν': { lemma: 'λαμβάνω', gloss: 'we received', partOfSpeech: 'verb' },
+  'ἐδόθη': { lemma: 'δίδωμι', gloss: 'was given', partOfSpeech: 'verb' },
+  'ἐξηγήσατο': { lemma: 'ἐξηγέομαι', gloss: 'has made known', partOfSpeech: 'verb' },
+};
+
+const sentJ = (id: string, words: string[], translation: string) =>
+  sent(id, words, translation, JN1_LEX);
+
 const john1verses68 = [
-  sent(
+  sentJ(
     'Jn-1-1-6',
     ['Ἐγένετο', 'ἄνθρωπος', 'ἀπεσταλμένος', 'παρὰ', 'θεοῦ,', 'ὄνομα', 'αὐτῷ', 'Ἰωάννης·'],
     'There came a man sent from God, whose name was John.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-7',
     [
       'οὗτος',
@@ -65,12 +222,12 @@ const john1verses68 = [
     ],
     'He came as a witness, to bear witness about the light, that all might believe through him.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-8',
     ['οὐκ', 'ἦν', 'ἐκεῖνος', 'τὸ', 'φῶς,', 'ἀλλ’', 'ἵνα', 'μαρτυρήσῃ', 'περὶ', 'τοῦ', 'φωτός.'],
     'He was not the light, but came to bear witness about the light.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-9',
     [
       'Ἦν',
@@ -89,7 +246,7 @@ const john1verses68 = [
     ],
     'The true light, which enlightens everyone, was coming into the world.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-10',
     [
       'ἐν',
@@ -111,12 +268,12 @@ const john1verses68 = [
     ],
     'He was in the world, and the world was made through him, yet the world did not know him.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-11',
     ['εἰς', 'τὰ', 'ἴδια', 'ἦλθεν,', 'καὶ', 'οἱ', 'ἴδιοι', 'αὐτὸν', 'οὐ', 'παρέλαβον.'],
     'He came to his own, and his own people did not receive him.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-12',
     [
       'ὅσοι',
@@ -138,7 +295,7 @@ const john1verses68 = [
     ],
     'But to all who received him, who believed in his name, he gave the right to become children of God.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-13',
     [
       'οἳ',
@@ -160,7 +317,7 @@ const john1verses68 = [
     ],
     'who were born, not of blood nor of the will of the flesh nor of the will of man, but of God.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-14',
     [
       'Καὶ',
@@ -189,7 +346,7 @@ const john1verses68 = [
     ],
     'And the Word became flesh and dwelt among us, and we have seen his glory, glory as of the only Son from the Father, full of grace and truth.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-15',
     [
       'Ἰωάννης',
@@ -217,7 +374,7 @@ const john1verses68 = [
     ],
     'John bore witness about him, and cried out, "This was he of whom I said, He who comes after me ranks before me, because he was before me."'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-16',
     [
       'ὅτι',
@@ -235,7 +392,7 @@ const john1verses68 = [
     ],
     'For from his fullness we have all received, grace upon grace.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-17',
     [
       'ὅτι',
@@ -256,7 +413,7 @@ const john1verses68 = [
     ],
     'For the law was given through Moses; grace and truth came through Jesus Christ.'
   ),
-  sent(
+  sentJ(
     'Jn-1-1-18',
     [
       'Θεὸν',
