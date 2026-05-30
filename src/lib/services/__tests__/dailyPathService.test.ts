@@ -11,6 +11,7 @@ const BASE: DailyPathInput = {
     firstTextOpened: false,
     firstWordSaved: false,
     firstReviewCompleted: false,
+    curriculumIndex: 0,
   },
   textId: 'Jn-1',
   dueCount: 0,
@@ -209,6 +210,7 @@ describe('computeDailyPath', () => {
         firstTextOpened: true,
         firstWordSaved: true,
         firstReviewCompleted: false,
+        curriculumIndex: 0,
       },
       dueCount: 15,
     });
@@ -226,6 +228,7 @@ describe('computeDailyPath', () => {
         firstTextOpened: true,
         firstWordSaved: true,
         firstReviewCompleted: true,
+        curriculumIndex: 0,
       },
       dueCount: 0,
     });
@@ -234,6 +237,60 @@ describe('computeDailyPath', () => {
     // Review: not shown (0 due)
     expect(items.map((i) => i.id)).toEqual(['reading']);
     expect(items[0].isComplete).toBe(true);
+  });
+});
+
+// ── Curriculum-backed reading ────────────────────────────────────────────────
+
+describe('computeDailyPath — curriculum', () => {
+  const CURRICULUM = [
+    { id: 'u1', textId: 'GrcMini', title: 'Greek Mini-Stories', level: 'A1' as const, estimatedMinutes: 10 },
+    { id: 'u2', textId: 'Jn-1', title: 'Gospel of John, chapter 1', level: 'A1' as const, estimatedMinutes: 10 },
+    { id: 'u3', textId: 'Anab-1', title: 'Xenophon, Anabasis', level: 'B1' as const, estimatedMinutes: 15 },
+  ];
+
+  it('reading bite points at the unit at curriculumIndex, not the generic textId', () => {
+    const items = computeDailyPath({ ...BASE, curriculum: CURRICULUM, curriculumIndex: 0 });
+    const reading = items.find((i) => i.id === 'reading');
+    expect(reading?.textId).toBe('GrcMini');
+    expect(reading?.unitTitle).toBe('Greek Mini-Stories');
+    expect(reading?.unitLevel).toBe('A1');
+    expect(reading?.curriculumIndex).toBe(0);
+  });
+
+  it('advances to the next unit as curriculumIndex increases', () => {
+    const items = computeDailyPath({ ...BASE, curriculum: CURRICULUM, curriculumIndex: 1 });
+    const reading = items.find((i) => i.id === 'reading');
+    expect(reading?.textId).toBe('Jn-1');
+    expect(reading?.curriculumIndex).toBe(1);
+  });
+
+  it('curriculum reading bite is never marked complete (next unit each day)', () => {
+    const items = computeDailyPath({
+      ...BASE,
+      curriculum: CURRICULUM,
+      curriculumIndex: 0,
+      progress: { ...BASE.progress, firstTextOpened: true },
+    });
+    expect(items.find((i) => i.id === 'reading')?.isComplete).toBe(false);
+  });
+
+  it('falls back to the generic recommended text once the ladder is finished', () => {
+    const items = computeDailyPath({
+      ...BASE,
+      curriculum: CURRICULUM,
+      curriculumIndex: CURRICULUM.length,
+      textId: 'Plato-Apology-1',
+    });
+    const reading = items.find((i) => i.id === 'reading');
+    expect(reading?.textId).toBe('Plato-Apology-1');
+    expect(reading?.unitTitle).toBeUndefined();
+  });
+
+  it('ignores curriculum when none is provided (generic behavior preserved)', () => {
+    const items = computeDailyPath({ ...BASE, curriculum: null });
+    expect(items.find((i) => i.id === 'reading')?.textId).toBe('Jn-1');
+    expect(items.find((i) => i.id === 'reading')?.unitTitle).toBeUndefined();
   });
 });
 

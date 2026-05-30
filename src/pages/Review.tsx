@@ -16,6 +16,7 @@ import { Timestamp } from 'firebase/firestore';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
+import { ReviewTutorial } from '../components/review/ReviewTutorial.js';
 
 interface ReviewSettings {
   enabledTypes: CardType[];
@@ -662,6 +663,9 @@ export const Review = () => {
 
   return (
     <div className="max-w-2xl mx-auto font-sans min-h-screen p-6 md:p-12">
+      {/* First-run coaching (self-dismissing, once per device) */}
+      <ReviewTutorial />
+
       {/* Progress */}
       <div className="flex items-center gap-3 mb-6">
         <div
