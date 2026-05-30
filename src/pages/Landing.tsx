@@ -5,7 +5,14 @@ import { ArrowRight, BookOpen, GraduationCap, Sparkles, Check } from 'lucide-rea
 import { useTranslation } from 'react-i18next';
 import { loadLanguage } from '../lib/i18n.js';
 import { PaleoIcon } from '../components/PaleoIcon.js';
-import { PLANS } from '../lib/constants/plans.js';
+import { PLANS, type PlanId } from '../lib/constants/plans.js';
+
+const PLAN_I18N_KEY: Record<PlanId, string> = {
+  free: 'free',
+  basic_1: 'basic',
+  duo_2: 'duo',
+  full_all: 'full',
+};
 
 const BOOKS = [
   {
@@ -307,43 +314,60 @@ export const Landing = () => {
             {t('landing.pricingSubtitle', 'Start free. Upgrade when you need unlimited vocabulary saves and full AI analysis.')}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.id}
-                className={`card p-6 flex flex-col ${plan.recommended ? 'ring-2 ring-blue relative' : ''}`}
-              >
-                {plan.badge && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {plan.badge}
-                  </span>
-                )}
-                <h4 className="text-lg font-bold text-ink">{plan.name}</h4>
-                <div className="mt-2 mb-4">
-                  {plan.monthlyPriceUsd === 0 ? (
-                    <span className="text-3xl font-serif font-bold text-ink">Free</span>
-                  ) : (
-                    <>
-                      <span className="text-3xl font-serif font-bold text-ink">${plan.monthlyPriceUsd}</span>
-                      <span className="text-ink2 text-sm">/mo</span>
-                    </>
-                  )}
-                </div>
-                <ul className="flex-1 space-y-2 mb-6">
-                  {plan.features.slice(0, 4).map((f, i) => (
-                    <li key={i} className="text-ink2 text-[13px] flex items-start gap-2">
-                      <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => plan.id === 'free' ? onEnter() : navigate('/pricing')}
-                  className={plan.recommended ? 'btn-primary w-full' : 'btn-secondary w-full'}
+            {PLANS.map((plan) => {
+              const planKey = PLAN_I18N_KEY[plan.id];
+              const displayName = t(`plans.${planKey}.name`, plan.name);
+              const displayBadge = plan.badge
+                ? t(`plans.${planKey}.badge`, plan.badge)
+                : null;
+              const featureCount = plan.features.length;
+              const displayFeatures = Array.from({ length: Math.min(4, featureCount) }, (_, i) =>
+                t(`plans.${planKey}.feat${i + 1}`, plan.features[i])
+              );
+              return (
+                <div
+                  key={plan.id}
+                  className={`card p-6 flex flex-col relative ${plan.recommended ? 'ring-2 ring-blue' : ''}`}
                 >
-                  {plan.id === 'free' ? t('landing.startFree', 'Start free') : t('landing.seePlans', 'Choose plan')}
-                </button>
-              </div>
-            ))}
+                  {displayBadge && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                      {displayBadge}
+                    </span>
+                  )}
+                  <h4 className="text-lg font-bold text-ink">{displayName}</h4>
+                  <div className="mt-2 mb-4">
+                    {plan.monthlyPriceUsd === 0 ? (
+                      <span className="text-3xl font-serif font-bold text-ink">
+                        {t('landing.priceFree', 'Free')}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="text-3xl font-serif font-bold text-ink">
+                          ${plan.monthlyPriceUsd}
+                        </span>
+                        <span className="text-ink2 text-sm">{t('landing.perMonth', '/mo')}</span>
+                      </>
+                    )}
+                  </div>
+                  <ul className="flex-1 space-y-2 mb-6">
+                    {displayFeatures.map((f, i) => (
+                      <li key={i} className="text-ink2 text-[13px] flex items-start gap-2">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => (plan.id === 'free' ? onEnter() : navigate('/pricing'))}
+                    className={plan.recommended ? 'btn-primary w-full' : 'btn-secondary w-full'}
+                  >
+                    {plan.id === 'free'
+                      ? t('landing.startFree', 'Start free')
+                      : t('landing.seePlans', 'Choose plan')}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </section>
       </main>

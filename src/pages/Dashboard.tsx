@@ -234,8 +234,8 @@ export const Dashboard = () => {
       <header className="mb-8 md:mb-10">
         {/* Onboarding CTA */}
         {!isOnboardingComplete && (
-          <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex items-center justify-between">
-            <div>
+          <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
               <h3 className="font-serif text-[18px] text-ink">
                 {t('dashboard.completeOnboarding', 'Complete your learning path')}
               </h3>
@@ -246,19 +246,19 @@ export const Dashboard = () => {
                 )}
               </p>
             </div>
-            <button onClick={() => navigate('/onboarding')} className="btn-primary">
+            <button onClick={() => navigate('/onboarding')} className="btn-primary shrink-0">
               {t('common.getStarted', 'Get Started')}
             </button>
           </div>
         )}
         {/* Personalized Recommendation */}
         {recommendedNextStep && (
-          <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex items-center justify-between">
-            <div>
+          <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
               <h3 className="font-serif text-[18px] text-ink">{recommendedNextStep.title}</h3>
               <p className="text-[14px] text-ink3">{recommendedNextStep.desc}</p>
             </div>
-            <button onClick={() => navigate(recommendedNextStep.to)} className="btn-primary">
+            <button onClick={() => navigate(recommendedNextStep.to)} className="btn-primary shrink-0">
               {t('common.getStarted', 'Get Started')}
             </button>
           </div>

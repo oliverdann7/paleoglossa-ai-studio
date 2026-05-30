@@ -1103,8 +1103,12 @@ router.post(
         suggestedQuestions,
       });
     } catch (err: any) {
-      console.error('[tutor/start] Error:', err.message);
-      res.status(500).json({ error: 'Failed to start tutor session', code: 'TUTOR_ERROR' });
+      console.error('[tutor/start] Error:', err.message, err.stack);
+      const detail =
+        process.env.NODE_ENV !== 'production' && err?.message
+          ? `Failed to start tutor session: ${err.message}`
+          : 'Failed to start tutor session';
+      res.status(500).json({ error: detail, code: 'TUTOR_ERROR' });
     }
   }
 );
@@ -1264,8 +1268,12 @@ router.get(
 
       res.status(200).json({ sessions });
     } catch (err: any) {
-      console.error('[tutor/sessions] Error:', err.message);
-      res.status(500).json({ error: 'Failed to fetch sessions', code: 'TUTOR_ERROR' });
+      console.error('[tutor/sessions] Error:', err.message, err.stack);
+      const detail =
+        process.env.NODE_ENV !== 'production' && err?.message
+          ? `Failed to fetch sessions: ${err.message}`
+          : 'Failed to fetch sessions';
+      res.status(500).json({ error: detail, code: 'TUTOR_ERROR' });
     }
   }
 );
