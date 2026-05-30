@@ -437,6 +437,8 @@ router.post('/api/ai/explain', optionalAuth as any, async (req: AuthenticatedReq
     const word = sanitize(req.body.word, 200);
     const lemma = sanitize(req.body.lemma, 200);
     const phrase = sanitize(req.body.phrase, 500);
+    // Optional UI-language code (e.g. 'pt', 'es') for localized glosses.
+    const targetLanguage = sanitize(req.body.targetLanguage, 12).toLowerCase();
 
     if (!languageId || typeof languageId !== 'string') {
       return res
@@ -548,14 +550,27 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
 `;
     } else if (type === 'gloss') {
       // Short dictionary-style gloss for the Meaning panel — no prose, no sections.
-      prompt = `You are a ${langName} lexicographer. Give a SHORT English gloss for the ${langName} word "${word}" (lemma: "${lemma}").
+      // Optionally localized into the learner's UI language.
+      const UI_LANGUAGE_NAMES: Record<string, string> = {
+        en: 'English',
+        pt: 'Portuguese',
+        es: 'Spanish',
+        fr: 'French',
+        de: 'German',
+        ru: 'Russian',
+        tr: 'Turkish',
+        zh: 'Simplified Chinese',
+      };
+      const glossLangCode = targetLanguage.split('-')[0];
+      const glossLang = UI_LANGUAGE_NAMES[glossLangCode] || 'English';
+      prompt = `You are a ${langName} lexicographer. Give a SHORT ${glossLang} gloss for the ${langName} word "${word || lemma}" (lemma: "${lemma || word}").
 
 Rules:
+- Write the gloss in ${glossLang}.
 - Return ONLY a short gloss — 2 to 8 words maximum.
 - Format: "primary meaning; secondary meaning (if any)"
-- Examples: "to do, make, create" / "love, desire, affection" / "city-state, community"
 - No part-of-speech labels, no numbered lists, no explanation, no markdown.
-- If you cannot identify the word, reply: "unknown word".
+- If you cannot identify the word, reply with the ${glossLang} equivalent of "unknown word".
 `;
     } else {
       prompt = `You are a philologist specializing in ${langName}. Analyze the word "${word}" (lemma: "${lemma}") in ${langName}.
