@@ -282,6 +282,27 @@ npm run clean
 - **`firebase-blueprint.json`** — Firestore collection and entity schema summary.
 - **`security_spec.md`** — Security threat model and mitigations.
 
+## Mobile apps (iOS + Android)
+
+Native shells are generated via Capacitor 8 from the same web bundle.
+
+- **Bundle ID / package:** `com.paleoglossa.app`
+- **iOS project:** `ios/App/App.xcodeproj` (Xcode 16+, iOS 16+)
+- **Android project:** `android/` (Android Studio, minSdk 24, targetSdk 36)
+- **Build & sync:**
+  ```bash
+  npm run mobile:build:production   # web bundle + cap sync (both platforms)
+  npm run ios:open                  # open Xcode → Archive → App Store Connect
+  npm run android:bundle            # produces app-release.aab for Play Console
+  ```
+- **Full release guide:** [`docs/mobile-release.md`](docs/mobile-release.md)
+- **Store metadata checklist:** [`docs/mobile-metadata-checklist.md`](docs/mobile-metadata-checklist.md)
+- **Pre-submission QA:** [`docs/mobile-qa-checklist.md`](docs/mobile-qa-checklist.md)
+
+Subscriptions in native builds are web-managed by default to comply with
+App Store / Play Store policies; set `VITE_ENABLE_MOBILE_PURCHASES=true`
+to flip to in-app purchases once StoreKit / Play Billing are integrated.
+
 ## Deployment
 
 The project is deployed on Vercel. Pushes to `origin/main` trigger automatic production deploys.
