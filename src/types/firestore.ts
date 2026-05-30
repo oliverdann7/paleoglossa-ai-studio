@@ -1,5 +1,14 @@
 import { Timestamp } from 'firebase/firestore';
 import { WordState } from '../lib/constants/wordStates.js';
+import type {
+  BookingStatus,
+  CredentialType,
+  LessonDurationMin,
+  ProficiencyLevel,
+  StripeConnectStatus,
+  TutorVerificationStatus,
+  UserRole,
+} from '../lib/constants/marketplace.js';
 
 export interface SRSData {
   nextReview: string | Timestamp;
@@ -200,6 +209,144 @@ export interface DiscussionThread {
   commentCount: number;
   createdAt: string | Timestamp;
   updatedAt: string | Timestamp;
+}
+
+// ─── Tutor marketplace ────────────────────────────────────────────────────────
+
+/** Optional fields layered onto users/{uid} for marketplace participants. */
+export interface UserMarketplaceFields {
+  roles?: UserRole[];
+  stripeConnectAccountId?: string;
+  stripeConnectStatus?: StripeConnectStatus;
+}
+
+export interface TutorLanguageOffering {
+  languageId: string;
+  /** e.g. 'attic', 'koine', 'vulgate', 'tiberian' */
+  dialect?: string;
+  level: ProficiencyLevel;
+  canTeach: true;
+}
+
+export interface TutorCredential {
+  type: CredentialType;
+  institution: string;
+  year?: number;
+  detail?: string;
+  verifiedAt?: string | Timestamp | null;
+}
+
+/** Path: tutorProfiles/{uid} */
+export interface TutorProfile {
+  uid: string;
+  displayName: string;
+  headline: string;
+  bio: string;
+  avatarUrl?: string;
+  videoIntroUrl?: string;
+  timezone: string;
+  country: string;
+  currency: string;
+  hourlyRateCents: number;
+  languagesTaught: TutorLanguageOffering[];
+  spokenLanguages: string[];
+  credentials: TutorCredential[];
+  tags: string[];
+  published: boolean;
+  verificationStatus: TutorVerificationStatus;
+  avgRating: number;
+  reviewCount: number;
+  lessonCount: number;
+  responseTimeHours?: number;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
+}
+
+/** Path: tutorProfiles/{uid}/availability/recurring/{weekday 0-6} */
+export interface RecurringAvailabilityDoc {
+  weekday: number;
+  /** Minutes from 00:00 UTC. */
+  slots: { startMin: number; endMin: number }[];
+  updatedAt: string | Timestamp;
+}
+
+/** Path: tutorProfiles/{uid}/availabilityExceptions/{YYYY-MM-DD} */
+export interface AvailabilityExceptionDoc {
+  date: string;
+  blocks: { startMin: number; endMin: number }[];
+  extraSlots: { startMin: number; endMin: number }[];
+  updatedAt: string | Timestamp;
+}
+
+/** Path: bookings/{bookingId} */
+export interface Booking {
+  id?: string;
+  tutorId: string;
+  learnerId: string;
+  languageId: string;
+  startAt: string | Timestamp;
+  durationMin: LessonDurationMin;
+  priceCents: number;
+  platformFeeCents: number;
+  currency: string;
+  status: BookingStatus;
+  stripePaymentIntentId?: string;
+  stripeTransferId?: string;
+  videoRoomUrl?: string;
+  videoRoomToken?: string;
+  lessonGoal?: string;
+  attachedTextId?: string;
+  cancelReason?: string;
+  cancelledAt?: string | Timestamp;
+  completedAt?: string | Timestamp;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
+}
+
+/** Path: bookings/{bookingId}/messages/{msgId} */
+export interface BookingMessage {
+  id?: string;
+  bookingId: string;
+  authorUid: string;
+  body: string;
+  /** Server marks redactions made by the anti-circumvention filter. */
+  redacted?: boolean;
+  createdAt: string | Timestamp;
+}
+
+/** Path: reviews/{reviewId} — one per booking, only after status=completed. */
+export interface TutorReview {
+  id?: string;
+  bookingId: string;
+  tutorId: string;
+  learnerId: string;
+  rating: 1 | 2 | 3 | 4 | 5;
+  body: string;
+  createdAt: string | Timestamp;
+}
+
+/** Path: tutorPayouts/{payoutId} — mirror of Stripe transfer/payout events. */
+export interface TutorPayout {
+  id?: string;
+  tutorId: string;
+  stripeTransferId?: string;
+  stripePayoutId?: string;
+  amountCents: number;
+  currency: string;
+  status: 'pending' | 'paid' | 'failed';
+  bookingId?: string;
+  createdAt: string | Timestamp;
+}
+
+/** Path: marketplaceEvents/{eventId} — append-only audit log. */
+export interface MarketplaceEvent {
+  id?: string;
+  bookingId?: string;
+  tutorId?: string;
+  learnerId?: string;
+  kind: string;
+  detail?: Record<string, unknown>;
+  createdAt: string | Timestamp;
 }
 
 export interface DiscussionComment {
