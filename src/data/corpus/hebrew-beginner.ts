@@ -10,19 +10,25 @@
 
 import { TextSection, Sentence } from '../../types/corpus.js';
 
-function sent(id: string, words: string[], translation: string): Sentence {
+function sent(
+  id: string,
+  words: string[],
+  translation: string,
+  lex?: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }>
+): Sentence {
   return {
     id,
     tokens: words.map((w, i) => {
       const clean = w.replace(/^[\s.,;:!?()"«»—–׃]+|[\s.,;:!?()"«»—–׃]+$/g, '');
       const punctAfter = w.slice(clean.length) || ' ';
+      const hit = lex?.[clean];
       return {
         id: `${id}-t${i}`,
         surface: w,
         normalized: clean,
-        lemma: clean,
-        gloss: '',
-        morphology: { partOfSpeech: 'unknown' },
+        lemma: hit?.lemma || clean,
+        gloss: hit?.gloss || '',
+        morphology: { partOfSpeech: hit?.partOfSpeech || 'unknown' },
         punctBefore: i === 0 ? '' : '',
         punctAfter: punctAfter.trim() ? punctAfter + ' ' : ' ',
       };
@@ -30,6 +36,68 @@ function sent(id: string, words: string[], translation: string): Sentence {
     translation,
   };
 }
+
+const PS91_LEX: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }> = {
+  יֹשֵׁב: { lemma: 'ישׁב', gloss: 'he who dwells', partOfSpeech: 'verb' },
+  בְּסֵתֶר: { lemma: 'סֵתֶר', gloss: 'in the shelter of', partOfSpeech: 'noun' },
+  עֶלְיוֹן: { lemma: 'עֶלְיוֹן', gloss: 'Most High', partOfSpeech: 'noun' },
+  בְּצֵל: { lemma: 'צֵל', gloss: 'in the shadow of', partOfSpeech: 'noun' },
+  שַׁדַּי: { lemma: 'שַׁדַּי', gloss: 'the Almighty', partOfSpeech: 'noun' },
+  יִתְלוֹנָן: { lemma: 'לון', gloss: 'he will lodge', partOfSpeech: 'verb' },
+  אֹמַר: { lemma: 'אמר', gloss: 'I will say', partOfSpeech: 'verb' },
+  לַיהוָה: { lemma: 'יְהוָה', gloss: 'to the LORD', partOfSpeech: 'noun' },
+  מַחְסִי: { lemma: 'מַחְסֶה', gloss: 'my refuge', partOfSpeech: 'noun' },
+  וּמְצוּדָתִי: { lemma: 'מְצוּדָה', gloss: 'and my fortress', partOfSpeech: 'noun' },
+  אֱלֹהַי: { lemma: 'אֱלֹהִים', gloss: 'my God', partOfSpeech: 'noun' },
+  'אֶבְטַח-בּוֹ': { lemma: 'בטח', gloss: 'I trust in him', partOfSpeech: 'verb' },
+  כִּי: { lemma: 'כִּי', gloss: 'for, because', partOfSpeech: 'conjunction' },
+  הוּא: { lemma: 'הוּא', gloss: 'he', partOfSpeech: 'pronoun' },
+  יַצִּילְךָ: { lemma: 'נצל', gloss: 'he will deliver you', partOfSpeech: 'verb' },
+  מִפַּח: { lemma: 'פַּח', gloss: 'from the snare of', partOfSpeech: 'noun' },
+  יָקוּשׁ: { lemma: 'יָקוּשׁ', gloss: 'fowler', partOfSpeech: 'noun' },
+  מִדֶּבֶר: { lemma: 'דֶּבֶר', gloss: 'from the pestilence', partOfSpeech: 'noun' },
+  הַוּוֹת: { lemma: 'הַוָּה', gloss: 'of destruction', partOfSpeech: 'noun' },
+  בְּאֶבְרָתוֹ: { lemma: 'אֶבְרָה', gloss: 'with his pinion', partOfSpeech: 'noun' },
+  יָסֶךְ: { lemma: 'סכך', gloss: 'he will cover', partOfSpeech: 'verb' },
+  לָךְ: { lemma: 'אַתָּה', gloss: 'for you', partOfSpeech: 'pronoun' },
+  'וְתַחַת-כְּנָפָיו': { lemma: 'כָּנָף', gloss: 'and under his wings', partOfSpeech: 'noun' },
+  תֶּחְסֶה: { lemma: 'חסה', gloss: 'you will take refuge', partOfSpeech: 'verb' },
+  צִנָּה: { lemma: 'צִנָּה', gloss: 'shield', partOfSpeech: 'noun' },
+  וְסֹחֵרָה: { lemma: 'סֹחֵרָה', gloss: 'and buckler', partOfSpeech: 'noun' },
+  אֲמִתּוֹ: { lemma: 'אֱמֶת', gloss: 'his faithfulness', partOfSpeech: 'noun' },
+  'לֹא-תִירָא': { lemma: 'ירא', gloss: 'you will not fear', partOfSpeech: 'verb' },
+  מִפַּחַד: { lemma: 'פַּחַד', gloss: 'from the terror', partOfSpeech: 'noun' },
+  לָיְלָה: { lemma: 'לַיְלָה', gloss: 'of the night', partOfSpeech: 'noun' },
+  מֵחֵץ: { lemma: 'חֵץ', gloss: 'from the arrow', partOfSpeech: 'noun' },
+  יָעוּף: { lemma: 'עוף', gloss: 'that flies', partOfSpeech: 'verb' },
+  יוֹמָם: { lemma: 'יוֹמָם', gloss: 'by day', partOfSpeech: 'adverb' },
+  מַלְאָכָיו: { lemma: 'מַלְאָךְ', gloss: 'his angels', partOfSpeech: 'noun' },
+  'יְצַוֶּה-לָּךְ': { lemma: 'צוה', gloss: 'he will command concerning you', partOfSpeech: 'verb' },
+  לִשְׁמָרְךָ: { lemma: 'שמר', gloss: 'to guard you', partOfSpeech: 'verb' },
+  'בְּכָל-דְּרָכֶיךָ': { lemma: 'דֶּרֶךְ', gloss: 'in all your ways', partOfSpeech: 'noun' },
+  'עַל-כַּפַּיִם': { lemma: 'כַּף', gloss: 'on (their) hands', partOfSpeech: 'noun' },
+  יִשָּׂאוּנְךָ: { lemma: 'נשׂא', gloss: 'they will bear you up', partOfSpeech: 'verb' },
+  'פֶּן-תִּגֹּף': { lemma: 'נגף', gloss: 'lest you strike', partOfSpeech: 'verb' },
+  בָּאֶבֶן: { lemma: 'אֶבֶן', gloss: 'against a stone', partOfSpeech: 'noun' },
+  רַגְלֶךָ: { lemma: 'רֶגֶל', gloss: 'your foot', partOfSpeech: 'noun' },
+  בִי: { lemma: 'אֲנִי', gloss: 'in me', partOfSpeech: 'pronoun' },
+  חָשַׁק: { lemma: 'חשׁק', gloss: 'he has clung in love', partOfSpeech: 'verb' },
+  וַאֲפַלְּטֵהוּ: { lemma: 'פלט', gloss: 'and I will deliver him', partOfSpeech: 'verb' },
+  אֲשַׂגְּבֵהוּ: { lemma: 'שׂגב', gloss: 'I will set him on high', partOfSpeech: 'verb' },
+  'כִּי-יָדַע': { lemma: 'ידע', gloss: 'because he knows', partOfSpeech: 'verb' },
+  שְׁמִי: { lemma: 'שֵׁם', gloss: 'my name', partOfSpeech: 'noun' },
+  יִקְרָאֵנִי: { lemma: 'קרא', gloss: 'he will call me', partOfSpeech: 'verb' },
+  וְאֶעֱנֵהוּ: { lemma: 'ענה', gloss: 'and I will answer him', partOfSpeech: 'verb' },
+  'עִמּוֹ-אָנֹכִי': { lemma: 'אָנֹכִי', gloss: 'I am with him', partOfSpeech: 'pronoun' },
+  בְצָרָה: { lemma: 'צָרָה', gloss: 'in trouble', partOfSpeech: 'noun' },
+  אֲחַלְּצֵהוּ: { lemma: 'חלץ', gloss: 'I will rescue him', partOfSpeech: 'verb' },
+  וַאֲכַבְּדֵהוּ: { lemma: 'כבד', gloss: 'and I will honor him', partOfSpeech: 'verb' },
+  אֹרֶךְ: { lemma: 'אֹרֶךְ', gloss: 'length of', partOfSpeech: 'noun' },
+  יָמִים: { lemma: 'יוֹם', gloss: 'days', partOfSpeech: 'noun' },
+  אַשְׂבִּיעֵהוּ: { lemma: 'שׂבע', gloss: 'I will satisfy him', partOfSpeech: 'verb' },
+  וְאַרְאֵהוּ: { lemma: 'ראה', gloss: 'and I will show him', partOfSpeech: 'verb' },
+  בִּישׁוּעָתִי: { lemma: 'יְשׁוּעָה', gloss: 'my salvation', partOfSpeech: 'noun' },
+};
 
 // ─── Jonah 1 ─────────────────────────────────────────────────────────────────
 
@@ -121,16 +189,16 @@ export const HEB_PSALM_91: TextSection = {
   sequence: 1,
   label: 'תְּהִלִּים צא — Psalm 91',
   sentences: [
-    sent('Ps91-1', ['יֹשֵׁב', 'בְּסֵתֶר', 'עֶלְיוֹן', 'בְּצֵל', 'שַׁדַּי', 'יִתְלוֹנָן׃'], 'He who dwells in the shelter of the Most High will abide in the shadow of the Almighty.'),
-    sent('Ps91-2', ['אֹמַר', 'לַיהוָה', 'מַחְסִי', 'וּמְצוּדָתִי', 'אֱלֹהַי', 'אֶבְטַח-בּוֹ׃'], 'I will say to the LORD: My refuge and my fortress, my God, in whom I trust.'),
-    sent('Ps91-3', ['כִּי', 'הוּא', 'יַצִּילְךָ', 'מִפַּח', 'יָקוּשׁ', 'מִדֶּבֶר', 'הַוּוֹת׃'], 'For he will deliver you from the snare of the fowler and from the deadly pestilence.'),
-    sent('Ps91-4', ['בְּאֶבְרָתוֹ', 'יָסֶךְ', 'לָךְ', 'וְתַחַת-כְּנָפָיו', 'תֶּחְסֶה', 'צִנָּה', 'וְסֹחֵרָה', 'אֲמִתּוֹ׃'], 'He will cover you with his pinions, and under his wings you will find refuge; his faithfulness is a shield and buckler.'),
-    sent('Ps91-5', ['לֹא-תִירָא', 'מִפַּחַד', 'לָיְלָה', 'מֵחֵץ', 'יָעוּף', 'יוֹמָם׃'], 'You will not fear the terror of the night, nor the arrow that flies by day.'),
-    sent('Ps91-6', ['כִּי', 'מַלְאָכָיו', 'יְצַוֶּה-לָּךְ', 'לִשְׁמָרְךָ', 'בְּכָל-דְּרָכֶיךָ׃'], 'For he will command his angels concerning you to guard you in all your ways.'),
-    sent('Ps91-7', ['עַל-כַּפַּיִם', 'יִשָּׂאוּנְךָ', 'פֶּן-תִּגֹּף', 'בָּאֶבֶן', 'רַגְלֶךָ׃'], 'On their hands they will bear you up, lest you strike your foot against a stone.'),
-    sent('Ps91-8', ['כִּי', 'בִי', 'חָשַׁק', 'וַאֲפַלְּטֵהוּ', 'אֲשַׂגְּבֵהוּ', 'כִּי-יָדַע', 'שְׁמִי׃'], 'Because he holds fast to me in love, I will deliver him; I will protect him, because he knows my name.'),
-    sent('Ps91-9', ['יִקְרָאֵנִי', 'וְאֶעֱנֵהוּ', 'עִמּוֹ-אָנֹכִי', 'בְצָרָה', 'אֲחַלְּצֵהוּ', 'וַאֲכַבְּדֵהוּ׃'], 'When he calls to me, I will answer him; I will be with him in trouble; I will rescue him and honor him.'),
-    sent('Ps91-10', ['אֹרֶךְ', 'יָמִים', 'אַשְׂבִּיעֵהוּ', 'וְאַרְאֵהוּ', 'בִּישׁוּעָתִי׃'], 'With long life I will satisfy him and show him my salvation.'),
+    sent('Ps91-1', ['יֹשֵׁב', 'בְּסֵתֶר', 'עֶלְיוֹן', 'בְּצֵל', 'שַׁדַּי', 'יִתְלוֹנָן׃'], 'He who dwells in the shelter of the Most High will abide in the shadow of the Almighty.', PS91_LEX),
+    sent('Ps91-2', ['אֹמַר', 'לַיהוָה', 'מַחְסִי', 'וּמְצוּדָתִי', 'אֱלֹהַי', 'אֶבְטַח-בּוֹ׃'], 'I will say to the LORD: My refuge and my fortress, my God, in whom I trust.', PS91_LEX),
+    sent('Ps91-3', ['כִּי', 'הוּא', 'יַצִּילְךָ', 'מִפַּח', 'יָקוּשׁ', 'מִדֶּבֶר', 'הַוּוֹת׃'], 'For he will deliver you from the snare of the fowler and from the deadly pestilence.', PS91_LEX),
+    sent('Ps91-4', ['בְּאֶבְרָתוֹ', 'יָסֶךְ', 'לָךְ', 'וְתַחַת-כְּנָפָיו', 'תֶּחְסֶה', 'צִנָּה', 'וְסֹחֵרָה', 'אֲמִתּוֹ׃'], 'He will cover you with his pinions, and under his wings you will find refuge; his faithfulness is a shield and buckler.', PS91_LEX),
+    sent('Ps91-5', ['לֹא-תִירָא', 'מִפַּחַד', 'לָיְלָה', 'מֵחֵץ', 'יָעוּף', 'יוֹמָם׃'], 'You will not fear the terror of the night, nor the arrow that flies by day.', PS91_LEX),
+    sent('Ps91-6', ['כִּי', 'מַלְאָכָיו', 'יְצַוֶּה-לָּךְ', 'לִשְׁמָרְךָ', 'בְּכָל-דְּרָכֶיךָ׃'], 'For he will command his angels concerning you to guard you in all your ways.', PS91_LEX),
+    sent('Ps91-7', ['עַל-כַּפַּיִם', 'יִשָּׂאוּנְךָ', 'פֶּן-תִּגֹּף', 'בָּאֶבֶן', 'רַגְלֶךָ׃'], 'On their hands they will bear you up, lest you strike your foot against a stone.', PS91_LEX),
+    sent('Ps91-8', ['כִּי', 'בִי', 'חָשַׁק', 'וַאֲפַלְּטֵהוּ', 'אֲשַׂגְּבֵהוּ', 'כִּי-יָדַע', 'שְׁמִי׃'], 'Because he holds fast to me in love, I will deliver him; I will protect him, because he knows my name.', PS91_LEX),
+    sent('Ps91-9', ['יִקְרָאֵנִי', 'וְאֶעֱנֵהוּ', 'עִמּוֹ-אָנֹכִי', 'בְצָרָה', 'אֲחַלְּצֵהוּ', 'וַאֲכַבְּדֵהוּ׃'], 'When he calls to me, I will answer him; I will be with him in trouble; I will rescue him and honor him.', PS91_LEX),
+    sent('Ps91-10', ['אֹרֶךְ', 'יָמִים', 'אַשְׂבִּיעֵהוּ', 'וְאַרְאֵהוּ', 'בִּישׁוּעָתִי׃'], 'With long life I will satisfy him and show him my salvation.', PS91_LEX),
   ],
 };
 

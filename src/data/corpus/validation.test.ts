@@ -59,7 +59,6 @@ describe('corpus production data', () => {
     'Text "GrcMk" is marked complete but has annotation gaps: 431 unknown POS, 431 missing gloss, 0 missing lemma (of 431 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "LatMini" is marked complete but has annotation gaps: 319 unknown POS, 319 missing gloss, 0 missing lemma (of 319 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Heb-Jonah" is marked complete but has annotation gaps: 315 unknown POS, 315 missing gloss, 0 missing lemma (of 315 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
-    'Text "Heb-Ps91" is marked complete but has annotation gaps: 61 unknown POS, 61 missing gloss, 0 missing lemma (of 61 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
   ]);
 
   it('introduces no new validateCorpus regressions over the known baseline', () => {
