@@ -13,7 +13,7 @@ import { TextSection, Sentence } from '../../types/corpus.js';
 // Per-text supplements (LXX_PS1_LEX etc.) override / extend it.
 // Keys: normalized form (lowercase, no diacritics) so all accent
 // variants resolve to the same entry.
-const LXX_LEX: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }> = {
+export const LXX_LEX: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }> = {
   // High-frequency function words across the LXX
   και: { lemma: 'καί', gloss: 'and', partOfSpeech: 'conjunction' },
   ο: { lemma: 'ὁ', gloss: 'the', partOfSpeech: 'article' },
