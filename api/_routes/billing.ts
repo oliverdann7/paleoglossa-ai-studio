@@ -272,6 +272,93 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
         break;
       }
 
+      case 'payment_intent.succeeded': {
+        const pi = event.data.object as any;
+        const bookingId = pi.metadata?.bookingId;
+        if (bookingId) {
+          try {
+            const { getAdminDb } = await import('../_lib/firebaseAdmin.js');
+            const { createLessonRoom } = await import('../_lib/dailyVideo.js');
+            const adminDb_ = getAdminDb();
+            if (adminDb_) {
+              const ref = adminDb_.doc(`bookings/${bookingId}`);
+              const snap = await ref.get();
+              if (snap.exists && snap.data()?.status === 'pending_payment') {
+                const data = snap.data()!;
+                const room = await createLessonRoom({
+                  bookingId,
+                  startMs: new Date(data.startAt).getTime(),
+                  durationMin: data.durationMin,
+                });
+                const now = new Date().toISOString();
+                await ref.set(
+                  {
+                    status: 'confirmed',
+                    videoRoomUrl: room.url,
+                    updatedAt: now,
+                  },
+                  { merge: true }
+                );
+                await adminDb_.collection('marketplaceEvents').add({
+                  bookingId,
+                  kind: 'booking.confirmed',
+                  createdAt: now,
+                });
+              }
+            }
+          } catch (e) {
+            console.error('[webhook] booking confirm failed', e);
+          }
+        }
+        break;
+      }
+
+      case 'payment_intent.payment_failed': {
+        const pi = event.data.object as any;
+        const bookingId = pi.metadata?.bookingId;
+        if (bookingId) {
+          try {
+            const { getAdminDb } = await import('../_lib/firebaseAdmin.js');
+            const adminDb_ = getAdminDb();
+            if (adminDb_) {
+              await adminDb_.doc(`bookings/${bookingId}`).set(
+                {
+                  status: 'refunded',
+                  updatedAt: new Date().toISOString(),
+                },
+                { merge: true }
+              );
+            }
+          } catch (e) {
+            console.error('[webhook] payment_failed handler', e);
+          }
+        }
+        break;
+      }
+
+      case 'account.updated': {
+        const account = event.data.object as any;
+        try {
+          const { getAdminDb } = await import('../_lib/firebaseAdmin.js');
+          const { deriveConnectStatus } = await import('../_lib/stripeConnect.js');
+          const adminDb_ = getAdminDb();
+          if (adminDb_) {
+            const usersSnap = await adminDb_
+              .collection('users')
+              .where('stripeConnectAccountId', '==', account.id)
+              .limit(1)
+              .get();
+            const status = deriveConnectStatus(account);
+            usersSnap.forEach((doc) => {
+              doc.ref.set({ stripeConnectStatus: status }, { merge: true }).catch(() => {});
+            });
+          }
+        } catch (e) {
+          console.error('[webhook] account.updated', e);
+        }
+        break;
+      }
+
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
         const failedEmail = invoice.customer_email;
