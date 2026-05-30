@@ -26,6 +26,11 @@ import discussionsRouter from './_routes/discussions.js';
 import bookmarksRouter from './_routes/bookmarks.js';
 import annotationsRouter from './_routes/annotations.js';
 import challengesRouter from './_routes/challenges.js';
+import connectRouter from './_routes/connect.js';
+import tutorsRouter from './_routes/tutors.js';
+import availabilityRouter from './_routes/availability.js';
+import bookingsRouter from './_routes/bookings.js';
+import reviewsRouter from './_routes/reviews.js';
 import recommendationsRouter from './_routes/recommendations.js';
 
 const app = express();
@@ -96,6 +101,11 @@ app.use(discussionsRouter);
 app.use(bookmarksRouter);
 app.use(annotationsRouter);
 app.use(challengesRouter);
+app.use(connectRouter);
+app.use(tutorsRouter);
+app.use(availabilityRouter);
+app.use(bookingsRouter);
+app.use(reviewsRouter);
 app.use(recommendationsRouter);
 
 // Global error handler — report to Sentry before returning 500

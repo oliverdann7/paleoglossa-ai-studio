@@ -1,0 +1,1965 @@
+{
+  "generatedAt": "2026-05-29T09:35:54.750Z",
+  "dictSizes": {
+    "grc": 2053,
+    "grc-koine": 2053,
+    "grc-class": 2053,
+    "lat": 2816,
+    "lat-class": 2816,
+    "lat-med": 2816,
+    "hbo": 1896,
+    "syr": 319,
+    "cop": 276,
+    "arc": 278,
+    "akk": 288,
+    "san": 406,
+    "egy": 235,
+    "hit": 244,
+    "uga": 247
+  },
+  "results": [
+    {
+      "language": "grc-koine",
+      "totalTokens": 20635,
+      "uniqueLemmas": 3769,
+      "uniqueCovered": 930,
+      "uniqueMissing": 2839,
+      "tokensCovered": 16368,
+      "coveragePctTokens": 79,
+      "coveragePctLemmas": 25,
+      "topMissing": [
+        {
+          "lemma": "εχετε",
+          "count": 10
+        },
+        {
+          "lemma": "εσχατη",
+          "count": 7
+        },
+        {
+          "lemma": "αποθανη",
+          "count": 7
+        },
+        {
+          "lemma": "κατ’",
+          "count": 7
+        },
+        {
+          "lemma": "θεωρει",
+          "count": 7
+        },
+        {
+          "lemma": "απεστειλας",
+          "count": 7
+        },
+        {
+          "lemma": "μεθ᾽",
+          "count": 7
+        },
+        {
+          "lemma": "ερχομενον",
+          "count": 6
+        },
+        {
+          "lemma": "εωρακεν",
+          "count": 6
+        },
+        {
+          "lemma": "ηρωτησαν",
+          "count": 6
+        },
+        {
+          "lemma": "βαπτιζων",
+          "count": 6
+        },
+        {
+          "lemma": "σιμωνος",
+          "count": 6
+        },
+        {
+          "lemma": "γυναι",
+          "count": 6
+        },
+        {
+          "lemma": "καφαρναουμ",
+          "count": 6
+        },
+        {
+          "lemma": "ανεβη",
+          "count": 6
+        },
+        {
+          "lemma": "ιεροσολυμοις",
+          "count": 6
+        },
+        {
+          "lemma": "χρειαν",
+          "count": 6
+        },
+        {
+          "lemma": "ανωθεν",
+          "count": 6
+        },
+        {
+          "lemma": "επανω",
+          "count": 6
+        },
+        {
+          "lemma": "μειζων",
+          "count": 6
+        },
+        {
+          "lemma": "ποιησω",
+          "count": 6
+        },
+        {
+          "lemma": "εληλυθα",
+          "count": 6
+        },
+        {
+          "lemma": "δωσει",
+          "count": 6
+        },
+        {
+          "lemma": "σεαυτον",
+          "count": 6
+        },
+        {
+          "lemma": "εδοξασθη",
+          "count": 6
+        },
+        {
+          "lemma": "υπηρεται",
+          "count": 6
+        },
+        {
+          "lemma": "ενα",
+          "count": 6
+        },
+        {
+          "lemma": "απεθανεν",
+          "count": 6
+        },
+        {
+          "lemma": "γονεις",
+          "count": 6
+        },
+        {
+          "lemma": "εμα",
+          "count": 6
+        },
+        {
+          "lemma": "εντολην",
+          "count": 6
+        },
+        {
+          "lemma": "λαζαρος",
+          "count": 6
+        },
+        {
+          "lemma": "θωμας",
+          "count": 6
+        },
+        {
+          "lemma": "μαρθα",
+          "count": 6
+        },
+        {
+          "lemma": "ιουδας",
+          "count": 6
+        },
+        {
+          "lemma": "θεωρειτε",
+          "count": 6
+        },
+        {
+          "lemma": "ελαλησα",
+          "count": 6
+        },
+        {
+          "lemma": "γινου",
+          "count": 6
+        },
+        {
+          "lemma": "παντος",
+          "count": 6
+        },
+        {
+          "lemma": "μαρτυρηση",
+          "count": 5
+        },
+        {
+          "lemma": "πιστευουσιν",
+          "count": 5
+        },
+        {
+          "lemma": "επαυριον",
+          "count": 5
+        },
+        {
+          "lemma": "ειστηκει",
+          "count": 5
+        },
+        {
+          "lemma": "οψεσθε",
+          "count": 5
+        },
+        {
+          "lemma": "ημεραν",
+          "count": 5
+        },
+        {
+          "lemma": "οινον",
+          "count": 5
+        },
+        {
+          "lemma": "αδελφοι",
+          "count": 5
+        },
+        {
+          "lemma": "νικοδημος",
+          "count": 5
+        },
+        {
+          "lemma": "μισει",
+          "count": 5
+        },
+        {
+          "lemma": "ποιων",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "language": "lat",
+      "totalTokens": 1781,
+      "uniqueLemmas": 1158,
+      "uniqueCovered": 454,
+      "uniqueMissing": 704,
+      "tokensCovered": 1049,
+      "coveragePctTokens": 59,
+      "coveragePctLemmas": 39,
+      "topMissing": [
+        {
+          "lemma": "vendit",
+          "count": 2
+        },
+        {
+          "lemma": "pecuniam",
+          "count": 2
+        },
+        {
+          "lemma": "discedit",
+          "count": 2
+        },
+        {
+          "lemma": "quaerit",
+          "count": 2
+        },
+        {
+          "lemma": "carnem",
+          "count": 2
+        },
+        {
+          "lemma": "cupit",
+          "count": 2
+        },
+        {
+          "lemma": "superior",
+          "count": 2
+        },
+        {
+          "lemma": "vulpes",
+          "count": 2
+        },
+        {
+          "lemma": "uvas",
+          "count": 2
+        },
+        {
+          "lemma": "capere",
+          "count": 2
+        },
+        {
+          "lemma": "sua",
+          "count": 2
+        },
+        {
+          "lemma": "perhiberet",
+          "count": 2
+        },
+        {
+          "lemma": "lumine",
+          "count": 2
+        },
+        {
+          "lemma": "credunt",
+          "count": 2
+        },
+        {
+          "lemma": "voluntate",
+          "count": 2
+        },
+        {
+          "lemma": "multis",
+          "count": 2
+        },
+        {
+          "lemma": "quidquid",
+          "count": 2
+        },
+        {
+          "lemma": "dis",
+          "count": 2
+        },
+        {
+          "lemma": "cetera",
+          "count": 2
+        },
+        {
+          "lemma": "romani",
+          "count": 2
+        },
+        {
+          "lemma": "scriptores",
+          "count": 2
+        },
+        {
+          "lemma": "rerum",
+          "count": 2
+        },
+        {
+          "lemma": "principis",
+          "count": 2
+        },
+        {
+          "lemma": "foedum",
+          "count": 2
+        },
+        {
+          "lemma": "iure",
+          "count": 2
+        },
+        {
+          "lemma": "siciliam",
+          "count": 2
+        },
+        {
+          "lemma": "alterum",
+          "count": 2
+        },
+        {
+          "lemma": "atheniensium",
+          "count": 2
+        },
+        {
+          "lemma": "ora",
+          "count": 1
+        },
+        {
+          "lemma": "Lavinius",
+          "count": 1
+        },
+        {
+          "lemma": "Musa",
+          "count": 1
+        },
+        {
+          "lemma": "iactatus",
+          "count": 1
+        },
+        {
+          "lemma": "alto",
+          "count": 1
+        },
+        {
+          "lemma": "vi",
+          "count": 1
+        },
+        {
+          "lemma": "superum",
+          "count": 1
+        },
+        {
+          "lemma": "saevae",
+          "count": 1
+        },
+        {
+          "lemma": "memorem",
+          "count": 1
+        },
+        {
+          "lemma": "iram",
+          "count": 1
+        },
+        {
+          "lemma": "passus",
+          "count": 1
+        },
+        {
+          "lemma": "conderet",
+          "count": 1
+        },
+        {
+          "lemma": "inferretque",
+          "count": 1
+        },
+        {
+          "lemma": "latio",
+          "count": 1
+        },
+        {
+          "lemma": "latinum",
+          "count": 1
+        },
+        {
+          "lemma": "albanique",
+          "count": 1
+        },
+        {
+          "lemma": "musa",
+          "count": 1
+        },
+        {
+          "lemma": "memora",
+          "count": 1
+        },
+        {
+          "lemma": "numine",
+          "count": 1
+        },
+        {
+          "lemma": "laeso",
+          "count": 1
+        },
+        {
+          "lemma": "quidve",
+          "count": 1
+        },
+        {
+          "lemma": "dolens",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "hbo",
+      "totalTokens": 1672,
+      "uniqueLemmas": 1128,
+      "uniqueCovered": 612,
+      "uniqueMissing": 516,
+      "tokensCovered": 1128,
+      "coveragePctTokens": 67,
+      "coveragePctLemmas": 54,
+      "topMissing": [
+        {
+          "lemma": "מבית",
+          "count": 3
+        },
+        {
+          "lemma": "הָא֖וֹר",
+          "count": 2
+        },
+        {
+          "lemma": "ימים",
+          "count": 2
+        },
+        {
+          "lemma": "השביעי",
+          "count": 2
+        },
+        {
+          "lemma": "חית",
+          "count": 2
+        },
+        {
+          "lemma": "תאכלו",
+          "count": 2
+        },
+        {
+          "lemma": "העץ",
+          "count": 2
+        },
+        {
+          "lemma": "עמה",
+          "count": 2
+        },
+        {
+          "lemma": "בגן",
+          "count": 2
+        },
+        {
+          "lemma": "עמדי",
+          "count": 2
+        },
+        {
+          "lemma": "וּקְרָא",
+          "count": 2
+        },
+        {
+          "lemma": "וַיֵּרֶד",
+          "count": 2
+        },
+        {
+          "lemma": "וַיְמַן",
+          "count": 2
+        },
+        {
+          "lemma": "יָמִים",
+          "count": 2
+        },
+        {
+          "lemma": "וַיִּתְפַּלֵּל",
+          "count": 2
+        },
+        {
+          "lemma": "לַיהוָה",
+          "count": 2
+        },
+        {
+          "lemma": "מַחְלוֹן",
+          "count": 2
+        },
+        {
+          "lemma": "וכליון",
+          "count": 2
+        },
+        {
+          "lemma": "בשדה",
+          "count": 2
+        },
+        {
+          "lemma": "כלתיה",
+          "count": 2
+        },
+        {
+          "lemma": "לשוב",
+          "count": 2
+        },
+        {
+          "lemma": "עמכם",
+          "count": 2
+        },
+        {
+          "lemma": "וכה",
+          "count": 2
+        },
+        {
+          "lemma": "לקט",
+          "count": 2
+        },
+        {
+          "lemma": "בתי",
+          "count": 2
+        },
+        {
+          "lemma": "חמותה",
+          "count": 2
+        },
+        {
+          "lemma": "ותקראנה",
+          "count": 2
+        },
+        {
+          "lemma": "הָיְתָ֥ה",
+          "count": 1
+        },
+        {
+          "lemma": "וָבֹ֔הוּ",
+          "count": 1
+        },
+        {
+          "lemma": "וְחֹ֖שֶׁךְ",
+          "count": 1
+        },
+        {
+          "lemma": "וְר֣וּחַ",
+          "count": 1
+        },
+        {
+          "lemma": "מְרַחֶ֖פֶת",
+          "count": 1
+        },
+        {
+          "lemma": "יְהִ֣י",
+          "count": 1
+        },
+        {
+          "lemma": "הַחֹֽשֶׁךְ",
+          "count": 1
+        },
+        {
+          "lemma": "לָאוֹר֙",
+          "count": 1
+        },
+        {
+          "lemma": "וְלַחֹ֖שֶׁךְ",
+          "count": 1
+        },
+        {
+          "lemma": "יְהִ֥י",
+          "count": 1
+        },
+        {
+          "lemma": "מַבְדִּ֔יל",
+          "count": 1
+        },
+        {
+          "lemma": "לָמָֽיִם",
+          "count": 1
+        },
+        {
+          "lemma": "יִקָּו֨וּ",
+          "count": 1
+        },
+        {
+          "lemma": "וְתֵרָאֶ֖ה",
+          "count": 1
+        },
+        {
+          "lemma": "הַיַּבָּשָׁ֑ה",
+          "count": 1
+        },
+        {
+          "lemma": "לַיַּבָּשָׁה֙",
+          "count": 1
+        },
+        {
+          "lemma": "וּלְמִקְוֵ֥ה",
+          "count": 1
+        },
+        {
+          "lemma": "יַמִּ֑ים",
+          "count": 1
+        },
+        {
+          "lemma": "תַּדְשֵׁ֤א",
+          "count": 1
+        },
+        {
+          "lemma": "וַתּוֹצֵ֨א",
+          "count": 1
+        },
+        {
+          "lemma": "וְעֵ֧ץ",
+          "count": 1
+        },
+        {
+          "lemma": "שְׁלִישִֽׁי",
+          "count": 1
+        },
+        {
+          "lemma": "יְהִ֤י",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "grc",
+      "totalTokens": 1332,
+      "uniqueLemmas": 754,
+      "uniqueCovered": 223,
+      "uniqueMissing": 531,
+      "tokensCovered": 660,
+      "coveragePctTokens": 50,
+      "coveragePctLemmas": 30,
+      "topMissing": [
+        {
+          "lemma": "μιν",
+          "count": 7
+        },
+        {
+          "lemma": "κυρος",
+          "count": 5
+        },
+        {
+          "lemma": "ευφρατην",
+          "count": 5
+        },
+        {
+          "lemma": "εξελαυνει",
+          "count": 5
+        },
+        {
+          "lemma": "σταθμους",
+          "count": 5
+        },
+        {
+          "lemma": "αχαιοι",
+          "count": 4
+        },
+        {
+          "lemma": "ατρειδη",
+          "count": 4
+        },
+        {
+          "lemma": "ενι",
+          "count": 4
+        },
+        {
+          "lemma": "ενθα",
+          "count": 4
+        },
+        {
+          "lemma": "δηλοι",
+          "count": 4
+        },
+        {
+          "lemma": "ηλθε",
+          "count": 3
+        },
+        {
+          "lemma": "ποταμον",
+          "count": 3
+        },
+        {
+          "lemma": "πριν",
+          "count": 3
+        },
+        {
+          "lemma": "κε",
+          "count": 3
+        },
+        {
+          "lemma": "γε",
+          "count": 3
+        },
+        {
+          "lemma": "αυταρ",
+          "count": 3
+        },
+        {
+          "lemma": "θεα",
+          "count": 3
+        },
+        {
+          "lemma": "ενθʼ",
+          "count": 3
+        },
+        {
+          "lemma": "φυγον",
+          "count": 3
+        },
+        {
+          "lemma": "αιπυν",
+          "count": 3
+        },
+        {
+          "lemma": "ολεθρον",
+          "count": 3
+        },
+        {
+          "lemma": "οικοι",
+          "count": 3
+        },
+        {
+          "lemma": "εσαν",
+          "count": 3
+        },
+        {
+          "lemma": "πεφευγοτες",
+          "count": 3
+        },
+        {
+          "lemma": "μυρμηξ",
+          "count": 3
+        },
+        {
+          "lemma": "τροφην",
+          "count": 3
+        },
+        {
+          "lemma": "ειπεν·",
+          "count": 3
+        },
+        {
+          "lemma": "χελωνη",
+          "count": 3
+        },
+        {
+          "lemma": "Δαρεῖος",
+          "count": 2
+        },
+        {
+          "lemma": "πρέσβυς",
+          "count": 2
+        },
+        {
+          "lemma": "Ἀρταξέρξης",
+          "count": 2
+        },
+        {
+          "lemma": "Κῦρος",
+          "count": 2
+        },
+        {
+          "lemma": "πάρειμι",
+          "count": 2
+        },
+        {
+          "lemma": "αρχης",
+          "count": 2
+        },
+        {
+          "lemma": "επορευετο",
+          "count": 2
+        },
+        {
+          "lemma": "κιλικιαν",
+          "count": 2
+        },
+        {
+          "lemma": "πληθος",
+          "count": 2
+        },
+        {
+          "lemma": "μεγαλην",
+          "count": 2
+        },
+        {
+          "lemma": "συριας",
+          "count": 2
+        },
+        {
+          "lemma": "αραβιας",
+          "count": 2
+        },
+        {
+          "lemma": "τ’",
+          "count": 2
+        },
+        {
+          "lemma": "χρυσην",
+          "count": 2
+        },
+        {
+          "lemma": "ατρειδης",
+          "count": 2
+        },
+        {
+          "lemma": "αποινα",
+          "count": 2
+        },
+        {
+          "lemma": "απολλωνος",
+          "count": 2
+        },
+        {
+          "lemma": "αχαιους",
+          "count": 2
+        },
+        {
+          "lemma": "θεοι",
+          "count": 2
+        },
+        {
+          "lemma": "ιερηα",
+          "count": 2
+        },
+        {
+          "lemma": "θυμω",
+          "count": 2
+        },
+        {
+          "lemma": "τοι",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "language": "grc-class",
+      "totalTokens": 541,
+      "uniqueLemmas": 368,
+      "uniqueCovered": 190,
+      "uniqueMissing": 178,
+      "tokensCovered": 362,
+      "coveragePctTokens": 67,
+      "coveragePctLemmas": 52,
+      "topMissing": [
+        {
+          "lemma": "—",
+          "count": 2
+        },
+        {
+          "lemma": "κροισος",
+          "count": 1
+        },
+        {
+          "lemma": "λυδος",
+          "count": 1
+        },
+        {
+          "lemma": "αλυαττεω",
+          "count": 1
+        },
+        {
+          "lemma": "εθνεων",
+          "count": 1
+        },
+        {
+          "lemma": "αλυος",
+          "count": 1
+        },
+        {
+          "lemma": "ποταμου",
+          "count": 1
+        },
+        {
+          "lemma": "θουκυδιδης",
+          "count": 1
+        },
+        {
+          "lemma": "αθηναιος",
+          "count": 1
+        },
+        {
+          "lemma": "ξυνεγραψε",
+          "count": 1
+        },
+        {
+          "lemma": "πελοποννησιων",
+          "count": 1
+        },
+        {
+          "lemma": "αθηναιων",
+          "count": 1
+        },
+        {
+          "lemma": "αρξαμενος",
+          "count": 1
+        },
+        {
+          "lemma": "καθισταμενου",
+          "count": 1
+        },
+        {
+          "lemma": "ελπισας",
+          "count": 1
+        },
+        {
+          "lemma": "εσεσθαι",
+          "count": 1
+        },
+        {
+          "lemma": "αξιολογωτατον",
+          "count": 1
+        },
+        {
+          "lemma": "προγεγενημενων",
+          "count": 1
+        },
+        {
+          "lemma": "τεκμαιρομενος",
+          "count": 1
+        },
+        {
+          "lemma": "ακμαζοντες",
+          "count": 1
+        },
+        {
+          "lemma": "παρασκευη",
+          "count": 1
+        },
+        {
+          "lemma": "παση",
+          "count": 1
+        },
+        {
+          "lemma": "δηλοι",
+          "count": 1
+        },
+        {
+          "lemma": "τοδε",
+          "count": 1
+        },
+        {
+          "lemma": "παλαιων",
+          "count": 1
+        },
+        {
+          "lemma": "ασθενειαν",
+          "count": 1
+        },
+        {
+          "lemma": "ηκιστα",
+          "count": 1
+        },
+        {
+          "lemma": "φαινεται",
+          "count": 1
+        },
+        {
+          "lemma": "ελλας",
+          "count": 1
+        },
+        {
+          "lemma": "καλουμενη",
+          "count": 1
+        },
+        {
+          "lemma": "βεβαιως",
+          "count": 1
+        },
+        {
+          "lemma": "οικουμενη",
+          "count": 1
+        },
+        {
+          "lemma": "οικιαι",
+          "count": 1
+        },
+        {
+          "lemma": "προτερον",
+          "count": 1
+        },
+        {
+          "lemma": "μονιμοι",
+          "count": 1
+        },
+        {
+          "lemma": "μετανιστανται",
+          "count": 1
+        },
+        {
+          "lemma": "ραδιως",
+          "count": 1
+        },
+        {
+          "lemma": "κατοικισεις",
+          "count": 1
+        },
+        {
+          "lemma": "εποιουντο",
+          "count": 1
+        },
+        {
+          "lemma": "κοινον",
+          "count": 1
+        },
+        {
+          "lemma": "αυταδελφον",
+          "count": 1
+        },
+        {
+          "lemma": "ισμηνης",
+          "count": 1
+        },
+        {
+          "lemma": "καρα",
+          "count": 1
+        },
+        {
+          "lemma": "αρ᾽",
+          "count": 1
+        },
+        {
+          "lemma": "οισθ᾽",
+          "count": 1
+        },
+        {
+          "lemma": "οιδιπου",
+          "count": 1
+        },
+        {
+          "lemma": "κακων",
+          "count": 1
+        },
+        {
+          "lemma": "νων",
+          "count": 1
+        },
+        {
+          "lemma": "ζωσαιν",
+          "count": 1
+        },
+        {
+          "lemma": "τελει",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "akk",
+      "totalTokens": 286,
+      "uniqueLemmas": 210,
+      "uniqueCovered": 82,
+      "uniqueMissing": 128,
+      "tokensCovered": 158,
+      "coveragePctTokens": 55,
+      "coveragePctLemmas": 39,
+      "topMissing": [
+        {
+          "lemma": "tarappud",
+          "count": 1
+        },
+        {
+          "lemma": "seram",
+          "count": 1
+        },
+        {
+          "lemma": "lubilka",
+          "count": 1
+        },
+        {
+          "lemma": "supuri",
+          "count": 1
+        },
+        {
+          "lemma": "bit",
+          "count": 1
+        },
+        {
+          "lemma": "ellim",
+          "count": 1
+        },
+        {
+          "lemma": "musab",
+          "count": 1
+        },
+        {
+          "lemma": "ani",
+          "count": 1
+        },
+        {
+          "lemma": "asar",
+          "count": 1
+        },
+        {
+          "lemma": "gitmalu",
+          "count": 1
+        },
+        {
+          "lemma": "emuqi",
+          "count": 1
+        },
+        {
+          "lemma": "rimi",
+          "count": 1
+        },
+        {
+          "lemma": "ugdassiru",
+          "count": 1
+        },
+        {
+          "lemma": "etlutim",
+          "count": 1
+        },
+        {
+          "lemma": "imsi",
+          "count": 1
+        },
+        {
+          "lemma": "malesu",
+          "count": 1
+        },
+        {
+          "lemma": "ubbib",
+          "count": 1
+        },
+        {
+          "lemma": "tillesu",
+          "count": 1
+        },
+        {
+          "lemma": "dumqi",
+          "count": 1
+        },
+        {
+          "lemma": "inasa",
+          "count": 1
+        },
+        {
+          "lemma": "issa",
+          "count": 1
+        },
+        {
+          "lemma": "rubutu",
+          "count": 1
+        },
+        {
+          "lemma": "haʾiri-ma",
+          "count": 1
+        },
+        {
+          "lemma": "inbika",
+          "count": 1
+        },
+        {
+          "lemma": "yasi",
+          "count": 1
+        },
+        {
+          "lemma": "qisam",
+          "count": 1
+        },
+        {
+          "lemma": "qisma",
+          "count": 1
+        },
+        {
+          "lemma": "pasu",
+          "count": 1
+        },
+        {
+          "lemma": "ipusamma",
+          "count": 1
+        },
+        {
+          "lemma": "lusqakimma",
+          "count": 1
+        },
+        {
+          "lemma": "hirat-ka",
+          "count": 1
+        },
+        {
+          "lemma": "assatu",
+          "count": 1
+        },
+        {
+          "lemma": "kanunu",
+          "count": 1
+        },
+        {
+          "lemma": "ibellu",
+          "count": 1
+        },
+        {
+          "lemma": "sasu",
+          "count": 1
+        },
+        {
+          "lemma": "ruqi",
+          "count": 1
+        },
+        {
+          "lemma": "pani-ka",
+          "count": 1
+        },
+        {
+          "lemma": "akli",
+          "count": 1
+        },
+        {
+          "lemma": "baltuti",
+          "count": 1
+        },
+        {
+          "lemma": "ibri",
+          "count": 1
+        },
+        {
+          "lemma": "aramu",
+          "count": 1
+        },
+        {
+          "lemma": "dannis",
+          "count": 1
+        },
+        {
+          "lemma": "simti",
+          "count": 1
+        },
+        {
+          "lemma": "ameluti",
+          "count": 1
+        },
+        {
+          "lemma": "urri",
+          "count": 1
+        },
+        {
+          "lemma": "musi",
+          "count": 1
+        },
+        {
+          "lemma": "bakaku",
+          "count": 1
+        },
+        {
+          "lemma": "mutu",
+          "count": 1
+        },
+        {
+          "lemma": "eppes-ma",
+          "count": 1
+        },
+        {
+          "lemma": "haliqu",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "san",
+      "totalTokens": 159,
+      "uniqueLemmas": 135,
+      "uniqueCovered": 79,
+      "uniqueMissing": 56,
+      "tokensCovered": 103,
+      "coveragePctTokens": 65,
+      "coveragePctLemmas": 59,
+      "topMissing": [
+        {
+          "lemma": "अपर्याप्तम्",
+          "count": 1
+        },
+        {
+          "lemma": "भीष्माभिरक्षितम्",
+          "count": 1
+        },
+        {
+          "lemma": "पर्याप्तम्",
+          "count": 1
+        },
+        {
+          "lemma": "एतेषाम्",
+          "count": 1
+        },
+        {
+          "lemma": "भीमाभिरक्षितम्",
+          "count": 1
+        },
+        {
+          "lemma": "अथ",
+          "count": 1
+        },
+        {
+          "lemma": "व्यवस्थितान्",
+          "count": 1
+        },
+        {
+          "lemma": "धार्तराष्ट्रान्",
+          "count": 1
+        },
+        {
+          "lemma": "कपिध्वजः",
+          "count": 1
+        },
+        {
+          "lemma": "प्रवृत्ते",
+          "count": 1
+        },
+        {
+          "lemma": "शस्त्रसम्पाते",
+          "count": 1
+        },
+        {
+          "lemma": "धनुः",
+          "count": 1
+        },
+        {
+          "lemma": "उद्यम्य",
+          "count": 1
+        },
+        {
+          "lemma": "पाण्डवः",
+          "count": 1
+        },
+        {
+          "lemma": "हृषीकेशम्",
+          "count": 1
+        },
+        {
+          "lemma": "तदा",
+          "count": 1
+        },
+        {
+          "lemma": "वाक्यम्",
+          "count": 1
+        },
+        {
+          "lemma": "आह",
+          "count": 1
+        },
+        {
+          "lemma": "महीपते",
+          "count": 1
+        },
+        {
+          "lemma": "युयुत्सुः",
+          "count": 1
+        },
+        {
+          "lemma": "अवतिष्ठते",
+          "count": 1
+        },
+        {
+          "lemma": "युयुत्सुम्",
+          "count": 1
+        },
+        {
+          "lemma": "समुपस्थितम्",
+          "count": 1
+        },
+        {
+          "lemma": "सीदन्ति",
+          "count": 1
+        },
+        {
+          "lemma": "गात्रानि",
+          "count": 1
+        },
+        {
+          "lemma": "मुखम्",
+          "count": 1
+        },
+        {
+          "lemma": "परिशुष्यति",
+          "count": 1
+        },
+        {
+          "lemma": "गाण्डीवम्",
+          "count": 1
+        },
+        {
+          "lemma": "स्रंसते",
+          "count": 1
+        },
+        {
+          "lemma": "हस्तात्",
+          "count": 1
+        },
+        {
+          "lemma": "त्वक्",
+          "count": 1
+        },
+        {
+          "lemma": "चैव",
+          "count": 1
+        },
+        {
+          "lemma": "परिदह्यते",
+          "count": 1
+        },
+        {
+          "lemma": "शक्नोमि",
+          "count": 1
+        },
+        {
+          "lemma": "अवस्थातुम्",
+          "count": 1
+        },
+        {
+          "lemma": "भ्रमति",
+          "count": 1
+        },
+        {
+          "lemma": "मनः",
+          "count": 1
+        },
+        {
+          "lemma": "निमित्तानि",
+          "count": 1
+        },
+        {
+          "lemma": "पश्यामि",
+          "count": 1
+        },
+        {
+          "lemma": "विपरीतानि",
+          "count": 1
+        },
+        {
+          "lemma": "केशव",
+          "count": 1
+        },
+        {
+          "lemma": "श्रेयः",
+          "count": 1
+        },
+        {
+          "lemma": "अनुपश्यामि",
+          "count": 1
+        },
+        {
+          "lemma": "हत्वा",
+          "count": 1
+        },
+        {
+          "lemma": "आहवे",
+          "count": 1
+        },
+        {
+          "lemma": "उक्त्वा",
+          "count": 1
+        },
+        {
+          "lemma": "रथोपस्थः",
+          "count": 1
+        },
+        {
+          "lemma": "उपाविशत्",
+          "count": 1
+        },
+        {
+          "lemma": "विसृज्य",
+          "count": 1
+        },
+        {
+          "lemma": "सशरम्",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "arc",
+      "totalTokens": 130,
+      "uniqueLemmas": 100,
+      "uniqueCovered": 63,
+      "uniqueMissing": 37,
+      "tokensCovered": 93,
+      "coveragePctTokens": 72,
+      "coveragePctLemmas": 63,
+      "topMissing": [
+        {
+          "lemma": "בִּרְקִיעָא",
+          "count": 1
+        },
+        {
+          "lemma": "לְאַנְהָרָא",
+          "count": 1
+        },
+        {
+          "lemma": "תַּנִּינַיָּא",
+          "count": 1
+        },
+        {
+          "lemma": "רַבְרְבַיָּא",
+          "count": 1
+        },
+        {
+          "lemma": "וְיַת",
+          "count": 1
+        },
+        {
+          "lemma": "דְּרָחֲשָׁא",
+          "count": 1
+        },
+        {
+          "lemma": "תַּפְקֵי",
+          "count": 1
+        },
+        {
+          "lemma": "לְאָתִין",
+          "count": 1
+        },
+        {
+          "lemma": "וּלְמוֹעֲדִין",
+          "count": 1
+        },
+        {
+          "lemma": "נַעֲבֵד",
+          "count": 1
+        },
+        {
+          "lemma": "בְּצַלְמָנָא",
+          "count": 1
+        },
+        {
+          "lemma": "וְיִשְׁלְטוּן",
+          "count": 1
+        },
+        {
+          "lemma": "בִּנְפֵשׁ",
+          "count": 1
+        },
+        {
+          "lemma": "וּבְעוֹפָא",
+          "count": 1
+        },
+        {
+          "lemma": "וּבָרִיךְ",
+          "count": 1
+        },
+        {
+          "lemma": "שְׁבִיעָאָה",
+          "count": 1
+        },
+        {
+          "lemma": "וְקַדֵּישׁ",
+          "count": 1
+        },
+        {
+          "lemma": "יָתֵיהּ",
+          "count": 1
+        },
+        {
+          "lemma": "אֲרֵי",
+          "count": 1
+        },
+        {
+          "lemma": "בֵּיהּ",
+          "count": 1
+        },
+        {
+          "lemma": "שְׁבָת",
+          "count": 1
+        },
+        {
+          "lemma": "מִכָּל",
+          "count": 1
+        },
+        {
+          "lemma": "עֲבִידְתֵּיהּ",
+          "count": 1
+        },
+        {
+          "lemma": "רַבָּן",
+          "count": 1
+        },
+        {
+          "lemma": "גַּמְלִיאֵל",
+          "count": 1
+        },
+        {
+          "lemma": "לְתַלְמִידוֹי",
+          "count": 1
+        },
+        {
+          "lemma": "חַכִּימָא",
+          "count": 1
+        },
+        {
+          "lemma": "דְּחָזֵי",
+          "count": 1
+        },
+        {
+          "lemma": "דְּמִיתֵיהּ",
+          "count": 1
+        },
+        {
+          "lemma": "וְתָאֵב",
+          "count": 1
+        },
+        {
+          "lemma": "וְלָא",
+          "count": 1
+        },
+        {
+          "lemma": "תֵּימָר",
+          "count": 1
+        },
+        {
+          "lemma": "בְּרָא",
+          "count": 1
+        },
+        {
+          "lemma": "אַבָּא",
+          "count": 1
+        },
+        {
+          "lemma": "חָכְמְתָא",
+          "count": 1
+        },
+        {
+          "lemma": "עַבְדָּא",
+          "count": 1
+        },
+        {
+          "lemma": "מִלְּתָא",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "cop",
+      "totalTokens": 127,
+      "uniqueLemmas": 85,
+      "uniqueCovered": 66,
+      "uniqueMissing": 19,
+      "tokensCovered": 108,
+      "coveragePctTokens": 85,
+      "coveragePctLemmas": 78,
+      "topMissing": [
+        {
+          "lemma": "ⲡⲉⲟⲟⲩ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲙⲙⲟⲛⲟⲅⲉⲛⲏⲥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉⲓⲱⲧ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲓⲱϩⲁⲛⲛⲏⲥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲉϥⲣⲙⲛⲧⲣⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉⲧⲃⲏⲧϥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲉϥⲱϣ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉⲧⲁⲓϫⲟⲟϥ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲧⲏⲣⲛ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲁⲛϫⲓ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲡⲉϥⲙⲁϩⲧⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉϩⲣⲁⲓ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲉϫⲙ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲧⲉϩⲟⲩⲉⲓⲧⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲛⲁϩⲣⲙ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲉⲩⲛⲟⲩⲧⲉ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲙⲁ",
+          "count": 1
+        },
+        {
+          "lemma": "ϫⲟⲟ",
+          "count": 1
+        },
+        {
+          "lemma": "ⲛⲁϣⲧ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "syr",
+      "totalTokens": 86,
+      "uniqueLemmas": 65,
+      "uniqueCovered": 45,
+      "uniqueMissing": 20,
+      "tokensCovered": 65,
+      "coveragePctTokens": 76,
+      "coveragePctLemmas": 69,
+      "topMissing": [
+        {
+          "lemma": "ܕܒܫܡܝܐ",
+          "count": 2
+        },
+        {
+          "lemma": "ܒܣܪ",
+          "count": 1
+        },
+        {
+          "lemma": "ܥܡܪ",
+          "count": 1
+        },
+        {
+          "lemma": "ܒܝܢܬ",
+          "count": 1
+        },
+        {
+          "lemma": "ܐܒܘܢ",
+          "count": 1
+        },
+        {
+          "lemma": "ܢܬܩܕܫ",
+          "count": 1
+        },
+        {
+          "lemma": "ܫܡܟ",
+          "count": 1
+        },
+        {
+          "lemma": "ܬܐܬܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܡܠܟܘܬܟ",
+          "count": 1
+        },
+        {
+          "lemma": "ܢܗܘܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܨܒܝܢܟ",
+          "count": 1
+        },
+        {
+          "lemma": "ܐܦ",
+          "count": 1
+        },
+        {
+          "lemma": "ܒܐܪܥܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܠܢ",
+          "count": 1
+        },
+        {
+          "lemma": "ܠܚܡܢ",
+          "count": 1
+        },
+        {
+          "lemma": "ܕܣܘܢܩܢܢ",
+          "count": 1
+        },
+        {
+          "lemma": "ܝܘܡܢܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܫܡܝܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܢܘܗܪܐ",
+          "count": 1
+        },
+        {
+          "lemma": "ܫܠܡܐ",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "egy",
+      "totalTokens": 83,
+      "uniqueLemmas": 48,
+      "uniqueCovered": 37,
+      "uniqueMissing": 11,
+      "tokensCovered": 72,
+      "coveragePctTokens": 87,
+      "coveragePctLemmas": 77,
+      "topMissing": [
+        {
+          "lemma": "jrj.n",
+          "count": 1
+        },
+        {
+          "lemma": "qꜣ",
+          "count": 1
+        },
+        {
+          "lemma": "ꜥdꜣ",
+          "count": 1
+        },
+        {
+          "lemma": "sstꜣ",
+          "count": 1
+        },
+        {
+          "lemma": "jrt",
+          "count": 1
+        },
+        {
+          "lemma": "ꜥd",
+          "count": 1
+        },
+        {
+          "lemma": "tȝ",
+          "count": 1
+        },
+        {
+          "lemma": "ˁnḫ",
+          "count": 1
+        },
+        {
+          "lemma": "mȝˁt",
+          "count": 1
+        },
+        {
+          "lemma": "ỉr",
+          "count": 1
+        },
+        {
+          "lemma": "ỉw",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "hit",
+      "totalTokens": 49,
+      "uniqueLemmas": 39,
+      "uniqueCovered": 29,
+      "uniqueMissing": 10,
+      "tokensCovered": 39,
+      "coveragePctTokens": 80,
+      "coveragePctLemmas": 74,
+      "topMissing": [
+        {
+          "lemma": "ḫarnik-",
+          "count": 1
+        },
+        {
+          "lemma": "LÚKÚR",
+          "count": 1
+        },
+        {
+          "lemma": "ÉRINMEŠ",
+          "count": 1
+        },
+        {
+          "lemma": "DINGIR",
+          "count": 1
+        },
+        {
+          "lemma": "dUTU",
+          "count": 1
+        },
+        {
+          "lemma": "LUGAL.GAL",
+          "count": 1
+        },
+        {
+          "lemma": "pa-",
+          "count": 1
+        },
+        {
+          "lemma": "uwa-",
+          "count": 1
+        },
+        {
+          "lemma": "ḫar-",
+          "count": 1
+        },
+        {
+          "lemma": "ak-",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "language": "uga",
+      "totalTokens": 38,
+      "uniqueLemmas": 32,
+      "uniqueCovered": 32,
+      "uniqueMissing": 0,
+      "tokensCovered": 38,
+      "coveragePctTokens": 100,
+      "coveragePctLemmas": 100,
+      "topMissing": []
+    }
+  ]
+}
