@@ -105,12 +105,16 @@ check('iOS LaunchScreen storyboard configured', () => {
 check(
   'iOS GoogleService-Info.plist present (Firebase native config)',
   () => {
-    return {
-      ok: fileExists('ios/App/App/GoogleService-Info.plist'),
-      detail: fileExists('ios/App/App/GoogleService-Info.plist')
-        ? 'present'
-        : 'download from Firebase Console → Project Settings → iOS app → GoogleService-Info.plist',
-    };
+    if (fileExists('ios/App/App/GoogleService-Info.plist')) {
+      return { ok: true, detail: 'present' };
+    }
+    if (fileExists('ios/App/App/GoogleService-Info.plist.example')) {
+      return {
+        ok: false,
+        detail: 'template present — replace with real file from Firebase Console',
+      };
+    }
+    return { ok: false, detail: 'missing — download from Firebase Console' };
   },
   'external'
 );
@@ -130,12 +134,16 @@ check('Android signing config wired to key.properties', () => {
 check(
   'Android google-services.json present (Firebase native config)',
   () => {
-    return {
-      ok: fileExists('android/app/google-services.json'),
-      detail: fileExists('android/app/google-services.json')
-        ? 'present'
-        : 'download from Firebase Console → Project Settings → Android app → google-services.json',
-    };
+    if (fileExists('android/app/google-services.json')) {
+      return { ok: true, detail: 'present' };
+    }
+    if (fileExists('android/app/google-services.json.example')) {
+      return {
+        ok: false,
+        detail: 'template present — replace with real file from Firebase Console',
+      };
+    }
+    return { ok: false, detail: 'missing — download from Firebase Console' };
   },
   'external'
 );

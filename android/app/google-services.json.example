@@ -1,0 +1,40 @@
+{
+  "_comment": "TEMPLATE — replace with the real google-services.json from Firebase Console: Project Settings → General → Your apps → Android app → Download google-services.json, then save it as android/app/google-services.json (without the .example suffix). The real file is gitignored.",
+  "project_info": {
+    "project_number": "REPLACE_ME_PROJECT_NUMBER",
+    "project_id": "paleoglossa-reader",
+    "storage_bucket": "paleoglossa-reader.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:REPLACE_ME_PROJECT_NUMBER:android:REPLACE_ME_APP_HASH",
+        "android_client_info": {
+          "package_name": "com.paleoglossa.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "REPLACE_ME_CLIENT_ID.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "REPLACE_ME_ANDROID_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "REPLACE_ME_WEB_CLIENT_ID.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
