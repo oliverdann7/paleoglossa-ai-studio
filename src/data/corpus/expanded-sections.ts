@@ -4,6 +4,8 @@ import { HEB_LEXICON } from './hebrew-extended.js';
 import { LXX_LEX } from './lxx-septuagint.js';
 import { MINI_LEX as GRC_MINI_LEX } from './greek-mini-stories.js';
 import { LAT_MINI_LEX } from './latin-mini-stories.js';
+import { COP_LEXICON } from './coptic-extended.js';
+import { ARC_LEXICON } from './aramaic-extended.js';
 
 function sent(
   id: string,
@@ -39,7 +41,12 @@ function sent(
         LXX_LEX[normalized] ||
         LAT_MINI_LEX[normalized] ||
         CLASSICAL_GRC_LEX[normalized] ||
-        CLASSICAL_LAT_LEX[normalized];
+        CLASSICAL_LAT_LEX[normalized] ||
+        COP_LEXICON[clean] ||
+        ARC_LEXICON[clean] ||
+        ARC_LEXICON[clean.normalize('NFC')] ||
+        ARC_LEXICON[clean.normalize('NFD')] ||
+        ARC_LEXICON[noCantillation];
       return {
         id: `${id}-t${i}`,
         surface: w,
