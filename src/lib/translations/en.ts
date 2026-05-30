@@ -495,6 +495,22 @@ export const en = {
     'landing.feature3Desc':
       'Spaced repetition system designed for lexical mastery and retaining classical vocabulary.',
     'landing.tryDemo': 'Try Demo',
+    'landing.getStarted': 'Get started free',
+    'landing.alreadyHaveAccount': 'Already have an account?',
+    'landing.signIn': 'Sign in',
+    'landing.pricingTitle': 'Simple, transparent pricing',
+    'landing.pricingSubtitle':
+      'Start free. Upgrade when you need unlimited vocabulary saves and full AI analysis.',
+    'landing.startFree': 'Start free',
+    'landing.seePlans': 'Choose plan',
+    'landing.priceFree': 'Free',
+    'landing.perMonth': '/mo',
+    'plans.free.name': 'Free',
+    'plans.basic.name': 'Basic',
+    'plans.duo.name': 'Duo',
+    'plans.full.name': 'Full Pack',
+    'plans.duo.badge': 'Most Popular',
+    'plans.full.badge': 'Best Value',
 
     'admin.title': 'Admin Dashboard',
     'admin.description': 'Site overview and moderation.',

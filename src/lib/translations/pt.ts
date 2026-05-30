@@ -518,6 +518,22 @@ export const pt = {
     'landing.feature3Desc':
       'Sistema de repetição espaçada projetado para maestria léxica e retenção de vocabulário clássico.',
     'landing.tryDemo': 'Testar Demo',
+    'landing.getStarted': 'Comece grátis',
+    'landing.alreadyHaveAccount': 'Já tem uma conta?',
+    'landing.signIn': 'Entrar',
+    'landing.pricingTitle': 'Preços simples e transparentes',
+    'landing.pricingSubtitle':
+      'Comece grátis. Atualize quando precisar de salvamentos ilimitados de vocabulário e análise completa com IA.',
+    'landing.startFree': 'Começar grátis',
+    'landing.seePlans': 'Escolher plano',
+    'landing.priceFree': 'Grátis',
+    'landing.perMonth': '/mês',
+    'plans.free.name': 'Grátis',
+    'plans.basic.name': 'Básico',
+    'plans.duo.name': 'Duo',
+    'plans.full.name': 'Pacote Completo',
+    'plans.duo.badge': 'Mais Popular',
+    'plans.full.badge': 'Melhor Valor',
 
     'admin.title': 'Painel Admin',
     'admin.description': 'Visão geral e moderação do site.',
