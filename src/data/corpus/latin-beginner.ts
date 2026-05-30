@@ -11,6 +11,7 @@
  */
 
 import { TextSection, Sentence } from '../../types/corpus.js';
+import { LAT_MINI_LEX } from './latin-mini-stories.js';
 
 function sent(id: string, words: string[], translation: string): Sentence {
   return {
@@ -19,13 +20,14 @@ function sent(id: string, words: string[], translation: string): Sentence {
       const clean = w.replace(/^[\s.,;:!?()"«»—–]+|[\s.,;:!?()"«»—–]+$/g, '');
       const punctAfter = w.slice(clean.length) || ' ';
       const normalized = clean.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+      const hit = LAT_MINI_LEX[normalized];
       return {
         id: `${id}-t${i}`,
         surface: w,
         normalized,
-        lemma: normalized,
-        gloss: '',
-        morphology: { partOfSpeech: 'unknown' },
+        lemma: hit?.lemma || normalized,
+        gloss: hit?.gloss || '',
+        morphology: { partOfSpeech: hit?.partOfSpeech || 'unknown' },
         punctBefore: i === 0 ? '' : '',
         punctAfter: punctAfter.trim() ? punctAfter + ' ' : ' ',
       };
