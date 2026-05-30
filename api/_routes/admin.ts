@@ -564,4 +564,41 @@ router.get(
   },
 );
 
+// ─── Marketplace: tutor verification ────────────────────────────────────────
+
+router.get(
+  '/api/admin/tutors/pending',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    const snap = await adminDb_
+      .collection('tutorProfiles')
+      .where('verificationStatus', '==', 'pending')
+      .limit(100)
+      .get();
+    res.status(200).json(snap.docs.map((d) => ({ uid: d.id, ...d.data() })));
+  }
+);
+
+router.post(
+  '/api/admin/tutors/:uid/verification',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    if (!requireAdmin(req, res)) return;
+    const adminDb_ = getAdminDb();
+    if (!adminDb_)
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    const { status } = req.body || {};
+    if (!['approved', 'rejected', 'pending'].includes(status))
+      return res.status(400).json({ error: 'Invalid status', code: 'INVALID_STATUS' });
+    await adminDb_
+      .doc(`tutorProfiles/${req.params.uid}`)
+      .set({ verificationStatus: status, updatedAt: new Date().toISOString() }, { merge: true });
+    res.status(200).json({ ok: true });
+  }
+);
+
 export default router;
