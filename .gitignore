@@ -20,3 +20,10 @@ assets/
 *.p12
 *.cer
 *.mobileprovision
+*.keystore
+*.jks
+android/key.properties
+
+# Native Firebase config — downloaded per-developer from Firebase Console
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist

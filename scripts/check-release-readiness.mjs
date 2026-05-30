@@ -16,18 +16,21 @@ const root = path.join(__dirname, '..');
 
 const results = [];
 
-function check(label, fn) {
+// kind: 'repo'     — must pass; failure exits non-zero (the repo itself isn't ready)
+// kind: 'external' — informational; failure is expected without user credentials
+//                    (Firebase service files, keystore, store accounts). Never exits non-zero.
+function check(label, fn, kind = 'repo') {
   try {
     const result = fn();
     if (result === true || (result && result.ok)) {
-      results.push({ label, status: 'pass', detail: result?.detail });
+      results.push({ label, kind, status: 'pass', detail: result?.detail });
     } else if (result === false) {
-      results.push({ label, status: 'fail', detail: 'check returned false' });
+      results.push({ label, kind, status: 'fail', detail: 'check returned false' });
     } else {
-      results.push({ label, status: 'fail', detail: result?.detail ?? 'check failed' });
+      results.push({ label, kind, status: 'fail', detail: result?.detail ?? 'check failed' });
     }
   } catch (err) {
-    results.push({ label, status: 'fail', detail: err.message });
+    results.push({ label, kind, status: 'fail', detail: err.message });
   }
 }
 
@@ -99,14 +102,18 @@ check('iOS LaunchScreen storyboard configured', () => {
   return plist.includes('UILaunchStoryboardName');
 });
 
-check('iOS GoogleService-Info.plist present (Firebase) — REQUIRED for native auth', () => {
-  return {
-    ok: fileExists('ios/App/App/GoogleService-Info.plist'),
-    detail: fileExists('ios/App/App/GoogleService-Info.plist')
-      ? 'present'
-      : 'download from Firebase Console → Project Settings → iOS app → GoogleService-Info.plist',
-  };
-});
+check(
+  'iOS GoogleService-Info.plist present (Firebase native config)',
+  () => {
+    return {
+      ok: fileExists('ios/App/App/GoogleService-Info.plist'),
+      detail: fileExists('ios/App/App/GoogleService-Info.plist')
+        ? 'present'
+        : 'download from Firebase Console → Project Settings → iOS app → GoogleService-Info.plist',
+    };
+  },
+  'external'
+);
 
 // ── Android configuration ────────────────────────────────────────────────────
 
@@ -120,23 +127,31 @@ check('Android signing config wired to key.properties', () => {
   return gradle.includes("rootProject.file('key.properties')") && gradle.includes('signingConfigs');
 });
 
-check('Android google-services.json present — REQUIRED for native Firebase', () => {
-  return {
-    ok: fileExists('android/app/google-services.json'),
-    detail: fileExists('android/app/google-services.json')
-      ? 'present'
-      : 'download from Firebase Console → Project Settings → Android app → google-services.json',
-  };
-});
+check(
+  'Android google-services.json present (Firebase native config)',
+  () => {
+    return {
+      ok: fileExists('android/app/google-services.json'),
+      detail: fileExists('android/app/google-services.json')
+        ? 'present'
+        : 'download from Firebase Console → Project Settings → Android app → google-services.json',
+    };
+  },
+  'external'
+);
 
-check('Android key.properties present (release signing) — REQUIRED for AAB upload', () => {
-  return {
-    ok: fileExists('android/key.properties'),
-    detail: fileExists('android/key.properties')
-      ? 'present'
-      : 'create from android/key.properties.example; never commit',
-  };
-});
+check(
+  'Android key.properties present (release signing)',
+  () => {
+    return {
+      ok: fileExists('android/key.properties'),
+      detail: fileExists('android/key.properties')
+        ? 'present'
+        : 'create from android/key.properties.example; never commit',
+    };
+  },
+  'external'
+);
 
 check('Android INTERNET permission declared', () => {
   const manifest = read('android/app/src/main/AndroidManifest.xml');
@@ -189,29 +204,57 @@ check('App icons generated (1024 + 512)', () => {
 
 // ── Report ───────────────────────────────────────────────────────────────────
 
-const pass = results.filter((r) => r.status === 'pass');
-const fail = results.filter((r) => r.status === 'fail');
+const reset = '\x1b[0m';
+const green = '\x1b[32m';
+const red = '\x1b[31m';
+const yellow = '\x1b[33m';
+const dim = '\x1b[2m';
 
-console.log('');
-console.log('── Release readiness ──────────────────────────────────────────────');
-for (const r of results) {
-  const mark = r.status === 'pass' ? '✓' : '✗';
-  const color = r.status === 'pass' ? '\x1b[32m' : '\x1b[31m';
-  const reset = '\x1b[0m';
-  const detail = r.detail ? ` — ${r.detail}` : '';
-  console.log(`  ${color}${mark}${reset} ${r.label}${detail}`);
+function section(title, items) {
+  if (items.length === 0) return;
+  console.log(`\n${dim}── ${title} ${'─'.repeat(Math.max(0, 64 - title.length))}${reset}`);
+  for (const r of items) {
+    const mark = r.status === 'pass' ? '✓' : r.kind === 'external' ? '○' : '✗';
+    const color = r.status === 'pass' ? green : r.kind === 'external' ? yellow : red;
+    const detail = r.detail ? ` — ${dim}${r.detail}${reset}` : '';
+    console.log(`  ${color}${mark}${reset} ${r.label}${detail}`);
+  }
 }
+
+const repoItems = results.filter((r) => r.kind === 'repo');
+const externalItems = results.filter((r) => r.kind === 'external');
+const repoFails = repoItems.filter((r) => r.status === 'fail');
+const externalFails = externalItems.filter((r) => r.status === 'fail');
+
 console.log('');
-console.log(`  ${pass.length} pass · ${fail.length} fail`);
+console.log('Release readiness report');
+section('Repo-local (must pass)', repoItems);
+section('External (require user credentials/action)', externalItems);
+
+console.log('');
+console.log(
+  `  Repo:     ${repoItems.length - repoFails.length}/${repoItems.length} ${
+    repoFails.length === 0 ? green + '✓ ready' + reset : red + '✗ incomplete' + reset
+  }`
+);
+console.log(
+  `  External: ${externalItems.length - externalFails.length}/${externalItems.length} ${
+    externalFails.length === 0 ? green + '✓ ready' + reset : yellow + '○ pending user action' + reset
+  }`
+);
 console.log('');
 
-if (fail.length > 0) {
-  console.log('External items the repo cannot verify itself:');
-  console.log('  - Apple Developer enrollment + App Store Connect app record');
-  console.log('  - Google Play Console enrollment + app record');
-  console.log('  - Device screenshots (iPhone 6.7", 5.5", iPad, Android phone, tablet)');
-  console.log('  - Privacy policy + ToS publicly hosted (routes exist in-app)');
+if (externalFails.length > 0) {
+  console.log(`${yellow}Next steps for external items:${reset}`);
+  console.log('  See docs/STORE_SUBMISSION_HANDOFF.md');
+  console.log('    1. Apple Developer enrollment + App Store Connect record');
+  console.log('    2. Google Play Console enrollment + record');
+  console.log('    3. Firebase Console → download GoogleService-Info.plist + google-services.json');
+  console.log('    4. keytool → keystore → android/key.properties');
+  console.log('    5. Device screenshots (Xcode simulator / Android emulator)');
+  console.log('    6. Confirm privacy + ToS routes are live on paleoglossa.com');
   console.log('');
 }
 
-process.exit(fail.length > 0 ? 1 : 0);
+// Repo failures block; external "failures" are pending user action and do not block.
+process.exit(repoFails.length > 0 ? 1 : 0);

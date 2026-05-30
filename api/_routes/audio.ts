@@ -1,20 +1,16 @@
 import { Router } from 'express';
-import multer from 'multer';
-import { getStorage } from 'firebase-admin/storage';
-import { requireAuth, type AuthenticatedRequest } from '../_lib/auth.js';
-import { getAdminDb, isAdminAvailable } from '../_lib/firebaseAdmin.js';
+import { requireAuth } from '../_lib/auth.js';
+import { getAdminDb } from '../_lib/firebaseAdmin.js';
+import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 
-const recordingUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 }, // 8 MB per clip
-  fileFilter: (_req, file, cb) => {
-    const allowed = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav'];
-    if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error(`Unsupported audio type: ${file.mimetype}`));
-  },
-});
+// Recordings are stored inline in Firestore (base64). Firestore caps a single
+// document at ~1 MiB, so we cap recordings well under that to leave room for
+// metadata and base64 overhead. Clients that need longer clips should upgrade
+// to Firebase Storage and post a download URL here instead.
+const MAX_RECORDING_BYTES = 700_000;
+const MAX_RECORDINGS_PER_USER = 50;
 
 // In-memory LRU cache: key = `${languageId}::${text}`, value = base64 audio data URL
 // Capped at 200 entries (~40 MB assuming ~200 KB per audio) to bound memory usage.
@@ -189,92 +185,106 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
   }
 });
 
-// Upload a user pronunciation clip to Cloud Storage and record metadata in Firestore.
-// Returns a signed download URL (24h) so the client can play it back without exposing the bucket.
+// ─── User recordings ─────────────────────────────────────────────────────────
+// POST: persist a recording (base64 audio data URL) under the caller's uid.
+// GET:  list the caller's recordings (most recent first).
+// DELETE /:id: remove one recording.
+
 router.post(
   '/api/audio/recordings',
-  requireAuth,
-  recordingUpload.single('audio'),
-  async (req: AuthenticatedRequest & { file?: Express.Multer.File }, res: any) => {
-    const uid = req.user?.uid;
-    if (!uid) {
-      return res.status(401).json({ error: 'UNAUTHORIZED' });
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) {
+      return res
+        .status(503)
+        .json({ supported: false, reason: 'Firestore backend not configured.' });
     }
 
-    if (!isAdminAvailable()) {
-      return res.status(503).json({
-        audioUrl: null,
+    const userId = req.user!.uid;
+    const body = (req.body ?? {}) as {
+      audioBase64?: string;
+      languageId?: string;
+      textId?: string;
+      sentenceIndex?: number;
+      transcript?: string;
+      durationMs?: number;
+    };
+
+    const audio = (body.audioBase64 ?? '').trim();
+    if (!audio.startsWith('data:audio/')) {
+      return res
+        .status(400)
+        .json({ supported: false, reason: 'audioBase64 must be a data:audio/* URL.' });
+    }
+    // Approximate byte size of the base64 payload portion.
+    const payload = audio.split(',', 2)[1] ?? '';
+    const approxBytes = Math.floor((payload.length * 3) / 4);
+    if (approxBytes > MAX_RECORDING_BYTES) {
+      return res.status(413).json({
         supported: false,
-        reason: 'Firebase Admin not configured on this server.',
+        reason: `Recording too large (${approxBytes} bytes > ${MAX_RECORDING_BYTES}).`,
       });
     }
 
-    const file = req.file;
-    if (!file) {
-      return res.status(400).json({ error: 'NO_FILE', message: 'Expected multipart field "audio".' });
+    const col = adminDb_.collection('users').doc(userId).collection('recordings');
+
+    // Enforce per-user cap by evicting oldest if needed.
+    const existing = await col.orderBy('createdAt', 'asc').get();
+    const overflow = existing.size - (MAX_RECORDINGS_PER_USER - 1);
+    if (overflow > 0) {
+      const batch = adminDb_.batch();
+      existing.docs.slice(0, overflow).forEach((d) => batch.delete(d.ref));
+      await batch.commit();
     }
 
-    const languageId = String(req.body?.languageId ?? 'unknown').slice(0, 32);
-    const textRef = String(req.body?.textRef ?? '').slice(0, 256);
-    const tokenIndex = req.body?.tokenIndex != null ? Number(req.body.tokenIndex) : null;
+    const doc = await col.add({
+      audioBase64: audio,
+      languageId: body.languageId ?? null,
+      textId: body.textId ?? null,
+      sentenceIndex: typeof body.sentenceIndex === 'number' ? body.sentenceIndex : null,
+      transcript: body.transcript ?? null,
+      durationMs: typeof body.durationMs === 'number' ? body.durationMs : null,
+      bytes: approxBytes,
+      createdAt: Date.now(),
+    });
 
-    const ext =
-      file.mimetype === 'audio/webm'
-        ? 'webm'
-        : file.mimetype === 'audio/ogg'
-          ? 'ogg'
-          : file.mimetype === 'audio/mp4'
-            ? 'm4a'
-            : file.mimetype === 'audio/wav' || file.mimetype === 'audio/x-wav'
-              ? 'wav'
-              : 'mp3';
+    return res.status(201).json({ supported: true, id: doc.id, bytes: approxBytes });
+  }
+);
 
-    const recordingId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    const objectPath = `recordings/${uid}/${recordingId}.${ext}`;
+router.get(
+  '/api/audio/recordings',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(200).json({ recordings: [] });
 
-    try {
-      const bucket = getStorage().bucket();
-      const blob = bucket.file(objectPath);
-      await blob.save(file.buffer, {
-        contentType: file.mimetype,
-        resumable: false,
-        metadata: { metadata: { uid, languageId, textRef } },
-      });
+    const userId = req.user!.uid;
+    const snap = await adminDb_
+      .collection('users')
+      .doc(userId)
+      .collection('recordings')
+      .orderBy('createdAt', 'desc')
+      .limit(MAX_RECORDINGS_PER_USER)
+      .get();
 
-      const [audioUrl] = await blob.getSignedUrl({
-        action: 'read',
-        expires: Date.now() + 24 * 60 * 60 * 1000,
-      });
+    const recordings = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return res.status(200).json({ recordings });
+  }
+);
 
-      const db = getAdminDb();
-      if (db) {
-        await db.collection('users').doc(uid).collection('recordings').doc(recordingId).set({
-          id: recordingId,
-          path: objectPath,
-          languageId,
-          textRef,
-          tokenIndex,
-          mimeType: file.mimetype,
-          sizeBytes: file.size,
-          createdAt: new Date().toISOString(),
-        });
-      }
+router.delete(
+  '/api/audio/recordings/:id',
+  requireAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return res.status(503).json({ ok: false });
 
-      return res.json({
-        audioUrl,
-        recordingId,
-        path: objectPath,
-        supported: true,
-        expiresInSeconds: 24 * 60 * 60,
-      });
-    } catch (error: any) {
-      console.error('[audio/recordings] upload failed', error);
-      return res.status(500).json({
-        audioUrl: null,
-        supported: false,
-        reason: error?.message ?? 'Upload failed',
-      });
-    }
+    const userId = req.user!.uid;
+    const id = req.params.id as string;
+    await adminDb_.collection('users').doc(userId).collection('recordings').doc(id).delete();
+    return res.status(200).json({ ok: true });
   }
 );
 

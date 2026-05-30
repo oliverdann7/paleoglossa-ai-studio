@@ -382,8 +382,9 @@ Detailed auth setup is covered above in the [Firebase Authentication](#firebase-
 
 Paste-ready store copy lives at:
 
-- iOS — [`store/listings/ios/en-US/metadata.md`](../store/listings/ios/en-US/metadata.md)
-- Android — [`store/listings/android/en-US/metadata.md`](../store/listings/android/en-US/metadata.md)
+- Single-file overview — [`store-listing.md`](store-listing.md) (identity, keywords, descriptions, what's-new for v1.0.0)
+- iOS per-locale — [`store/listings/ios/en-US/metadata.md`](../store/listings/ios/en-US/metadata.md)
+- Android per-locale — [`store/listings/android/en-US/metadata.md`](../store/listings/android/en-US/metadata.md)
 - Release notes — [`store/release-notes/`](../store/release-notes/) (one file per version)
 
 Update these alongside any feature change that materially affects what the
@@ -436,8 +437,6 @@ that doesn't change the marketing version.
 
 These features are either stubs or not functional in the current build:
 
-- **Syntax trees** (`src/pages/Syntax.tsx`) — UI is present but the API
-  endpoint is a stub returning placeholder data.
 - **Manuscripts** (`src/components/reader/Manuscripts.tsx`) — UI shell
   only, no real manuscript data.
 - **AI pronunciation** — May not work on all devices depending on the
