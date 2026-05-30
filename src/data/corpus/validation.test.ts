@@ -36,6 +36,12 @@ describe('corpus production data', () => {
     'Text "san-vocab" has isSample=false but sourceStatus is "undefined"',
     'Text "egy-vocab" has isSample=false but sourceStatus is "undefined"',
     'Corpus "" referenced by text "uga-vocab" does not exist',
+    // Completeness-gate baseline: texts currently marked complete but whose
+    // tokens are not fully POS-tagged + glossed. Tracked for systematic
+    // backfill — when a text's annotation gap closes, update or remove its
+    // entry here. The gate prevents NEW under-annotated texts from landing
+    // under sourceStatus: 'complete'.
+    'Text "Jn-full" is marked complete but has annotation gaps: 2349 unknown POS, 2349 missing gloss, 5 missing lemma (of 15620 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
   ]);
 
   it('introduces no new validateCorpus regressions over the known baseline', () => {
