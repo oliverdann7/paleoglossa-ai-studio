@@ -4,7 +4,7 @@
  * Each language file exports a Record<string, string> keyed by lemma.
  * Files are eagerly imported here (they're just string maps, small enough).
  * The unified lookup function tries exact match, then lowercase, then
- * accent-stripped, then (for Hebrew) consonantal form.
+ * accent-stripped (in either direction), then (for Hebrew) consonantal.
  */
 
 import { GRC_DICTIONARY } from './grc.js';
@@ -109,7 +109,7 @@ function stripHebrewVowels(s: string): string {
 /**
  * Look up a lemma in the static dictionaries. Returns the gloss string
  * or null if no entry exists. Tries exact → lowercase → diacritic-stripped
- * → (Hebrew) consonantal.
+ * (both directions) → (Hebrew) consonantal → maqaf-split.
  */
 export function staticLookup(lemma: string, languageId: string): string | null {
   const dict = LANG_DICTS[languageId];
