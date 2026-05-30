@@ -6,6 +6,8 @@ import { MINI_LEX as GRC_MINI_LEX } from './greek-mini-stories.js';
 import { LAT_MINI_LEX } from './latin-mini-stories.js';
 import { COP_LEXICON } from './coptic-extended.js';
 import { ARC_LEXICON } from './aramaic-extended.js';
+import { SAN_LEXICON } from './sanskrit-extended.js';
+import { EGY_LEXICON } from './egyptian-extended.js';
 
 function sent(
   id: string,
@@ -46,7 +48,11 @@ function sent(
         ARC_LEXICON[clean] ||
         ARC_LEXICON[clean.normalize('NFC')] ||
         ARC_LEXICON[clean.normalize('NFD')] ||
-        ARC_LEXICON[noCantillation];
+        ARC_LEXICON[noCantillation] ||
+        SAN_LEXICON[clean] ||
+        SAN_LEXICON[clean.normalize('NFC')] ||
+        SAN_LEXICON[clean.normalize('NFD')] ||
+        EGY_LEXICON[clean];
       return {
         id: `${id}-t${i}`,
         surface: w,
