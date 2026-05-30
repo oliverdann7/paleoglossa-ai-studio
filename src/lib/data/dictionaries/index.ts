@@ -71,6 +71,8 @@ const HIT_MERGED: Record<string, string> = {
 const UGA_MERGED: Record<string, string> = { ...UGA_EXTRAS, ...UGA_DICTIONARY };
 const SAN_MERGED: Record<string, string> = { ...SAN_EXTRAS, ...SAN_DICTIONARY };
 
+// Headword + common-form merge. Main dict wins on collision.
+
 const LANG_DICTS: Record<string, Record<string, string>> = {
   grc: GRC_MERGED,
   'grc-koine': GRC_MERGED,
