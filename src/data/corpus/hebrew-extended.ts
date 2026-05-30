@@ -1,7 +1,7 @@
 import { TextSection } from '../../types/corpus.js';
 import { sentLex } from '../../lib/utils/lexicalHelper.js';
 
-const HEB_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: string }> = {
+export const HEB_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: string }> = {
   // Common words
   אֱלֹהִים: { lemma: 'אֱלֹהִים', gloss: 'God', partOfSpeech: 'noun' },
   יְהוָה: { lemma: 'יְהוָה', gloss: 'LORD', partOfSpeech: 'noun' },

@@ -42,7 +42,6 @@ describe('corpus production data', () => {
     // entry here. The gate prevents NEW under-annotated texts from landing
     // under sourceStatus: 'complete'.
     'Text "Jn-full" is marked complete but has annotation gaps: 15620 unknown POS, 15620 missing gloss, 5 missing lemma (of 15620 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
-    'Text "Gen" is marked complete but has annotation gaps: 354 unknown POS, 354 missing gloss, 0 missing lemma (of 400 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Aeneid-1" is marked complete but has annotation gaps: 398 unknown POS, 398 missing gloss, 0 missing lemma (of 433 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Anab-1" is marked complete but has annotation gaps: 261 unknown POS, 261 missing gloss, 0 missing lemma (of 314 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Iliad-1" is marked complete but has annotation gaps: 432 unknown POS, 432 missing gloss, 0 missing lemma (of 465 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
