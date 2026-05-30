@@ -1,24 +1,24 @@
 # Corpus Quality Report
 
-Generated at: 2026-05-25T09:56:24.613Z
+Generated at: 2026-05-29T08:48:58.653Z
 
 ## Summary
 
-| Language | Texts | Tokens | Gloss % | POS % | Morph % |
-|---|---|---|---|---|---|
-| grc-koine | 22 | 20418 | 0% | 0% | 0% |
-| hbo | 8 | 1636 | 24% | 23% | 1% |
-| lat | 10 | 1630 | 4% | 3% | 2% |
-| syr | 2 | 69 | 100% | 78% | 0% |
-| cop | 2 | 114 | 19% | 6% | 0% |
-| arc | 2 | 114 | 19% | 6% | 0% |
-| akk | 4 | 286 | 51% | 46% | 0% |
-| san | 2 | 146 | 19% | 9% | 0% |
-| hit | 2 | 49 | 100% | 69% | 0% |
-| egy | 2 | 83 | 22% | 4% | 0% |
-| uga | 2 | 38 | 100% | 61% | 0% |
-| grc | 6 | 1344 | 12% | 10% | 8% |
-| grc-class | 5 | 541 | 0% | 0% | 0% |
+| Language | Texts | Tokens | Gloss % | POS % | Lemma % | Morph % | Status |
+|---|---|---|---|---|---|---|---|
+| grc-koine | 22 | 20418 | 0% | 0% | 100% | 0% | needs_work |
+| hbo | 8 | 1636 | 24% | 23% | 100% | 1% | needs_work |
+| lat | 9 | 1623 | 4% | 2% | 100% | 2% | needs_work |
+| syr | 2 | 69 | 100% | 78% | 100% | 0% | needs_work |
+| cop | 2 | 114 | 19% | 6% | 100% | 0% | needs_work |
+| arc | 2 | 114 | 19% | 6% | 100% | 0% | needs_work |
+| akk | 4 | 286 | 51% | 46% | 100% | 0% | needs_work |
+| san | 2 | 146 | 19% | 9% | 100% | 0% | needs_work |
+| hit | 2 | 49 | 100% | 69% | 100% | 0% | needs_work |
+| egy | 2 | 83 | 22% | 4% | 100% | 0% | needs_work |
+| uga | 2 | 38 | 100% | 61% | 100% | 0% | needs_work |
+| grc | 5 | 1332 | 11% | 9% | 100% | 7% | needs_work |
+| grc-class | 5 | 541 | 0% | 0% | 100% | 0% | needs_work |
 
 ## Top missing POS lemmas
 

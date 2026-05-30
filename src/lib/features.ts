@@ -12,4 +12,8 @@ export const features = {
   isCommunityEnabled: () => {
     return import.meta.env.VITE_ENABLE_COMMUNITY === 'true';
   },
+  // Tutor marketplace (Phase 0: internal-only; gates routes + nav)
+  isMarketplaceEnabled: () => {
+    return import.meta.env.VITE_ENABLE_MARKETPLACE === 'true';
+  },
 };
