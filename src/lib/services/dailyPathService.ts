@@ -1,4 +1,5 @@
 import type { BeginnerProgress } from '../hooks/useBeginnerProgress.js';
+import type { CurriculumUnit } from '../constants/beginnerCurriculum.js';
 
 export type DailyPathItemId = 'script' | 'reading' | 'review';
 
@@ -14,6 +15,16 @@ export interface DailyPathItem {
   textId?: string;
   /** Number of SRS cards due (review items only). */
   dueCount?: number;
+  /** Curriculum unit title (reading items backed by a curriculum). */
+  unitTitle?: string;
+  /** Curriculum unit CEFR level (reading items backed by a curriculum). */
+  unitLevel?: string;
+  /**
+   * Index of this curriculum unit. Present only for curriculum-backed reading
+   * items — callers advance the learner by recording `curriculumIndex + 1`
+   * once the unit is opened.
+   */
+  curriculumIndex?: number;
 }
 
 export interface DailyPathInput {
@@ -34,6 +45,14 @@ export interface DailyPathInput {
    * Used to scale the reading-time estimate. Defaults to 10.
    */
   dailyCommitment: number;
+  /**
+   * Ordered beginner curriculum for the language (null when none exists).
+   * When present and not yet finished, the reading bite walks this ladder
+   * instead of always pointing at the generic recommended text.
+   */
+  curriculum?: CurriculumUnit[] | null;
+  /** How far the learner has progressed through `curriculum`. Defaults to 0. */
+  curriculumIndex?: number;
 }
 
 /**
@@ -50,6 +69,8 @@ export interface DailyPathInput {
 export function computeDailyPath(input: DailyPathInput): DailyPathItem[] {
   const { languageId, tierId, hasScriptLearning, progress, textId, dueCount, dailyCommitment } =
     input;
+  const curriculum = input.curriculum ?? null;
+  const curriculumIndex = input.curriculumIndex ?? 0;
 
   const items: DailyPathItem[] = [];
 
@@ -69,9 +90,28 @@ export function computeDailyPath(input: DailyPathInput): DailyPathItem[] {
   }
 
   // ── Reading bite ─────────────────────────────────────────────────────────
-  // Always recommended when there is a beginner text. The estimated time
-  // scales proportionally with dailyCommitment, clamped to [5, 20] minutes.
-  if (textId) {
+  // When a curriculum exists and isn't finished, walk it one unit at a time so
+  // the learner advances (graded reader → authentic text) instead of always
+  // re-opening the same recommended text. Otherwise fall back to the generic
+  // recommended-text bite, scaled by dailyCommitment and clamped to [5, 20].
+  const activeUnit =
+    curriculum && curriculum.length > 0 && curriculumIndex < curriculum.length
+      ? curriculum[curriculumIndex]
+      : null;
+
+  if (activeUnit) {
+    items.push({
+      id: 'reading',
+      estimatedMinutes: activeUnit.estimatedMinutes,
+      // Never "complete": each day surfaces the next unit until the ladder ends.
+      isComplete: false,
+      link: `/app/reader/${activeUnit.textId}`,
+      textId: activeUnit.textId,
+      unitTitle: activeUnit.title,
+      unitLevel: activeUnit.level,
+      curriculumIndex,
+    });
+  } else if (textId) {
     const readingMinutes = Math.max(5, Math.min(20, Math.floor(dailyCommitment * 0.5)));
     items.push({
       id: 'reading',

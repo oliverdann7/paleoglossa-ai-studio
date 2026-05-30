@@ -16,6 +16,7 @@ import { cn } from '../lib/utils.js';
 import { CorpusDB } from '../data/corpus.js';
 import { getLanguageIcon, getLanguageById } from '../lib/constants/languages.js';
 import { GUIDED_TIERS } from '../lib/constants/beginnerPaths.js';
+import { getBeginnerCurriculum, getCurrentUnit } from '../lib/constants/beginnerCurriculum.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import type { GuidedTier } from '../lib/constants/beginnerPaths.js';
 import { useBeginnerProgress } from '../lib/hooks/useBeginnerProgress.js';
@@ -36,7 +37,7 @@ const LEVEL_TO_TIER: Record<
 export const BeginnerHub = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { getProgress, markMilestone } = useBeginnerProgress();
+  const { getProgress, markMilestone, advanceCurriculum } = useBeginnerProgress();
   const { settings } = useSettings();
   const { activeLanguageId } = useActiveLanguage();
 
@@ -62,14 +63,28 @@ export const BeginnerHub = () => {
     [effectiveTier]
   );
 
+  // Beginner curriculum + how far the learner has progressed for this language.
+  const curriculum = useMemo(
+    () => getBeginnerCurriculum(activeLanguageId),
+    [activeLanguageId]
+  );
+  const activeProgress = getProgress(activeLanguageId);
+  const currentUnit = useMemo(
+    () => (curriculum ? getCurrentUnit(activeLanguageId, activeProgress.curriculumIndex) : null),
+    [curriculum, activeLanguageId, activeProgress.curriculumIndex]
+  );
+
   const startTextId = useMemo(() => {
+    // Prefer the learner's current curriculum unit (graded ladder) over the
+    // generic recommended text, so absolute beginners don't start on hard texts.
+    if (currentUnit) return currentUnit.textId;
     if (textsForLanguage.length === 0) return null;
     const recommended = activeLang?.recommendedStartTextId;
     if (recommended && textsForLanguage.some((t) => t.id === recommended)) return recommended;
     const beginner = textsForLanguage.find((t) => t.level === 'A1' || t.level === 'A0');
     if (beginner) return beginner.id;
     return textsForLanguage[0]?.id || null;
-  }, [textsForLanguage, activeLang]);
+  }, [currentUnit, textsForLanguage, activeLang]);
 
   const hasBeginner = useMemo(
     () => textsForLanguage.some((t) => t.level === 'A1' || t.level === 'A2' || t.level === 'A0'),
@@ -236,7 +251,12 @@ export const BeginnerHub = () => {
                     {startTextId && (
                       <Link
                         to={`/app/reader/${startTextId}`}
-                        onClick={() => markMilestone(lang.id, 'firstTextOpened')}
+                        onClick={() => {
+                          markMilestone(lang.id, 'firstTextOpened');
+                          if (currentUnit) {
+                            advanceCurriculum(lang.id, activeProgress.curriculumIndex + 1);
+                          }
+                        }}
                         className="flex items-center gap-3 p-3 bg-blue/5 rounded-xl border border-blue/20 hover:bg-blue/10 transition-colors group"
                       >
                         <BookOpen className="w-5 h-5 text-blue shrink-0" />
@@ -245,7 +265,9 @@ export const BeginnerHub = () => {
                             {t('beginnerHub.recommendedStart', 'Recommended start')}
                           </div>
                           <div className="text-sm text-ink font-medium truncate">
-                            {textsForLanguage.find((t) => t.id === startTextId)?.title || startTextId}
+                            {currentUnit?.title ||
+                              textsForLanguage.find((t) => t.id === startTextId)?.title ||
+                              startTextId}
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-blue shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />

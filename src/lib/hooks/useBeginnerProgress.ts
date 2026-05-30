@@ -16,15 +16,34 @@ export interface BeginnerProgress {
   firstTextOpened: boolean;
   firstWordSaved: boolean;
   firstReviewCompleted: boolean;
+  /**
+   * Index of the next-to-read unit in the language's beginner curriculum
+   * (see `beginnerCurriculum.ts`). 0 = at the first unit. Advanced via
+   * `advanceCurriculum`. Languages without a curriculum simply leave it at 0.
+   */
+  curriculumIndex: number;
 }
 
-export type BeginnerMilestone = keyof BeginnerProgress;
+/** Boolean milestones only — excludes the numeric `curriculumIndex`. */
+export type BeginnerMilestone =
+  | 'scriptOpened'
+  | 'firstTextOpened'
+  | 'firstWordSaved'
+  | 'firstReviewCompleted';
+
+const MILESTONE_KEYS: BeginnerMilestone[] = [
+  'scriptOpened',
+  'firstTextOpened',
+  'firstWordSaved',
+  'firstReviewCompleted',
+];
 
 const DEFAULT_PROGRESS: BeginnerProgress = {
   scriptOpened: false,
   firstTextOpened: false,
   firstWordSaved: false,
   firstReviewCompleted: false,
+  curriculumIndex: 0,
 };
 
 // ── Module-level store ──────────────────────────────────────────────────────
@@ -80,9 +99,11 @@ function mergeProgress(
   b: BeginnerProgress | undefined
 ): BeginnerProgress {
   const result: BeginnerProgress = { ...DEFAULT_PROGRESS };
-  for (const key of Object.keys(DEFAULT_PROGRESS) as BeginnerMilestone[]) {
+  for (const key of MILESTONE_KEYS) {
     result[key] = Boolean(a?.[key]) || Boolean(b?.[key]);
   }
+  // Curriculum progress only ever moves forward — take the furthest of the two.
+  result.curriculumIndex = Math.max(a?.curriculumIndex ?? 0, b?.curriculumIndex ?? 0);
   return result;
 }
 
@@ -114,6 +135,8 @@ async function fetchAllFromFirestore(uid: string): Promise<ProgressMap> {
             firstTextOpened: !!data.firstTextOpened,
             firstWordSaved: !!data.firstWordSaved,
             firstReviewCompleted: !!data.firstReviewCompleted,
+            curriculumIndex:
+              typeof data.curriculumIndex === 'number' ? data.curriculumIndex : 0,
           };
         }
       } catch {
@@ -162,6 +185,27 @@ export function recordMilestone(languageId: string, milestone: BeginnerMilestone
   }
 }
 
+/**
+ * Advance the beginner-curriculum pointer for a language to (at least) the
+ * given index. Monotonic — never moves backward — so re-opening an earlier
+ * unit won't rewind progress. No-op when the target is not further along.
+ */
+export function advanceCurriculum(languageId: string, toIndex: number): void {
+  if (!languageId) return;
+  const current = progressForLanguage(progressMap, languageId);
+  const next = Math.max(current.curriculumIndex, toIndex);
+  if (next === current.curriculumIndex) return;
+
+  const updated: BeginnerProgress = { ...current, curriculumIndex: next };
+  progressMap = { ...progressMap, [languageId]: updated };
+  saveToStorage(progressMap);
+  notify();
+
+  if (currentUid) {
+    void writeLanguageToFirestore(currentUid, languageId, updated);
+  }
+}
+
 /** Read-only snapshot for non-React callers. */
 export function getProgressFor(languageId: string): BeginnerProgress {
   return progressForLanguage(progressMap, languageId);
@@ -193,9 +237,8 @@ async function hydrateFromFirestore(uid: string): Promise<void> {
       const remoteEntry = remote[langId];
       const needsPush =
         !remoteEntry ||
-        (Object.keys(progress) as BeginnerMilestone[]).some(
-          (k) => progress[k] && !remoteEntry[k]
-        );
+        MILESTONE_KEYS.some((k) => progress[k] && !remoteEntry[k]) ||
+        progress.curriculumIndex > (remoteEntry.curriculumIndex ?? 0);
       return needsPush ? writeLanguageToFirestore(uid, langId, progress) : Promise.resolve();
     })
   );
@@ -241,6 +284,10 @@ export function useBeginnerProgress() {
     []
   );
 
+  const advanceCurriculumIndex = useCallback((languageId: string, toIndex: number) => {
+    advanceCurriculum(languageId, toIndex);
+  }, []);
+
   const resetProgress = useCallback((languageId?: string) => {
     if (languageId) {
       const next = { ...progressMap };
@@ -253,5 +300,5 @@ export function useBeginnerProgress() {
     notify();
   }, []);
 
-  return { getProgress, markMilestone, resetProgress, progressMap: map };
+  return { getProgress, markMilestone, advanceCurriculum: advanceCurriculumIndex, resetProgress, progressMap: map };
 }
