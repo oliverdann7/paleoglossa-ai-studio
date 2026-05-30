@@ -47,7 +47,6 @@ describe('corpus production data', () => {
     'Text "Aeneid-1" is marked complete but has annotation gaps: 398 unknown POS, 398 missing gloss, 0 missing lemma (of 433 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Anab-1" is marked complete but has annotation gaps: 261 unknown POS, 261 missing gloss, 0 missing lemma (of 314 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Iliad-1" is marked complete but has annotation gaps: 432 unknown POS, 432 missing gloss, 0 missing lemma (of 465 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
-    'Text "GrcMini" is marked complete but has annotation gaps: 409 unknown POS, 409 missing gloss, 0 missing lemma (of 409 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "GrcMk" is marked complete but has annotation gaps: 431 unknown POS, 431 missing gloss, 0 missing lemma (of 431 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "LatMini" is marked complete but has annotation gaps: 319 unknown POS, 319 missing gloss, 0 missing lemma (of 319 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
   ]);
