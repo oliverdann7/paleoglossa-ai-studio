@@ -45,7 +45,6 @@ describe('corpus production data', () => {
     'Text "Jn-full" is marked complete but has annotation gaps: 15620 unknown POS, 15620 missing gloss, 5 missing lemma (of 15620 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Gen" is marked complete but has annotation gaps: 354 unknown POS, 354 missing gloss, 0 missing lemma (of 400 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Aeneid-1" is marked complete but has annotation gaps: 398 unknown POS, 398 missing gloss, 0 missing lemma (of 433 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
-    'Text "Ps-23" is marked complete but has annotation gaps: 33 unknown POS, 33 missing gloss, 0 missing lemma (of 44 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Anab-1" is marked complete but has annotation gaps: 261 unknown POS, 261 missing gloss, 0 missing lemma (of 314 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Iliad-1" is marked complete but has annotation gaps: 432 unknown POS, 432 missing gloss, 0 missing lemma (of 465 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "LXX-Gen-1" is marked complete but has annotation gaps: 721 unknown POS, 721 missing gloss, 0 missing lemma (of 721 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
@@ -59,7 +58,6 @@ describe('corpus production data', () => {
     'Text "GrcMini" is marked complete but has annotation gaps: 409 unknown POS, 409 missing gloss, 0 missing lemma (of 409 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "GrcMk" is marked complete but has annotation gaps: 431 unknown POS, 431 missing gloss, 0 missing lemma (of 431 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "LatMini" is marked complete but has annotation gaps: 319 unknown POS, 319 missing gloss, 0 missing lemma (of 319 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
-    'Text "Heb-Ps23" is marked complete but has annotation gaps: 37 unknown POS, 37 missing gloss, 0 missing lemma (of 48 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Heb-Jonah" is marked complete but has annotation gaps: 315 unknown POS, 315 missing gloss, 0 missing lemma (of 315 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Heb-Ps91" is marked complete but has annotation gaps: 61 unknown POS, 61 missing gloss, 0 missing lemma (of 61 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
   ]);

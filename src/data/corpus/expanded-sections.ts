@@ -5,7 +5,7 @@ function sent(
   id: string,
   words: string[],
   translation: string,
-  lemmaMap?: Record<string, { lemma: string; gloss: string }>
+  lemmaMap?: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }>
 ): Sentence {
   return {
     id,
@@ -26,7 +26,7 @@ function sent(
         normalized,
         lemma: mapped?.lemma || normalized,
         gloss: mapped?.gloss || '',
-        morphology: { partOfSpeech: 'unknown' },
+        morphology: { partOfSpeech: mapped?.partOfSpeech || 'unknown' },
         punctBefore: i === 0 ? '' : ' ',
         punctAfter: punctAfter ? punctAfter + ' ' : ' ',
       };
@@ -1333,11 +1333,56 @@ export const GENESIS_26_31: TextSection = {
 
 // ─── Psalm 23:3-6 (Hebrew, OSHB CC BY 4.0) ────────────────────────────────
 
+const PS23_LEX: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }> = {
+  'נַפְשִׁ֥י': { lemma: 'נֶפֶשׁ', gloss: 'my soul', partOfSpeech: 'noun' },
+  'יְשׁוֹבֵ֑ב': { lemma: 'שׁוב', gloss: 'he restores', partOfSpeech: 'verb' },
+  'יַֽנְחֵ֥נִי': { lemma: 'נחה', gloss: 'he leads me', partOfSpeech: 'verb' },
+  'בְמַעְגְּלֵי־צֶ֝֗דֶק': { lemma: 'מַעְגָּל', gloss: 'in paths of righteousness', partOfSpeech: 'noun' },
+  'לְמַ֣עַן': { lemma: 'מַעַן', gloss: 'for the sake of', partOfSpeech: 'preposition' },
+  'שְׁמֽוֹ': { lemma: 'שֵׁם', gloss: 'his name', partOfSpeech: 'noun' },
+  'גַּ֤ם כִּֽי־אֵלֵ֨ךְ בְּגֵ֪יא צַלְמָ֡וֶת': {
+    lemma: 'הלך',
+    gloss: 'even though I walk through the valley of the shadow of death',
+    partOfSpeech: 'verb',
+  },
+  'לֹא־אִ֘ירָ֤א': { lemma: 'ירא', gloss: 'I will not fear', partOfSpeech: 'verb' },
+  'רָ֗ע': { lemma: 'רַע', gloss: 'evil', partOfSpeech: 'adjective' },
+  'כִּי־אַתָּ֥ה': { lemma: 'אַתָּה', gloss: 'for you', partOfSpeech: 'pronoun' },
+  'עִמָּדִ֑י': { lemma: 'עִמָּד', gloss: 'with me', partOfSpeech: 'preposition' },
+  'שִׁבְטְךָ֥': { lemma: 'שֵׁבֶט', gloss: 'your rod', partOfSpeech: 'noun' },
+  'וּ֝מִשְׁעַנְתֶּ֗ךָ': { lemma: 'מִשְׁעֶנֶת', gloss: 'and your staff', partOfSpeech: 'noun' },
+  'הֵ֣מָּה': { lemma: 'הֵם', gloss: 'they', partOfSpeech: 'pronoun' },
+  'יְנַֽחֲמֻֽנִי': { lemma: 'נחם', gloss: 'they comfort me', partOfSpeech: 'verb' },
+  'תַּעֲרֹ֬ךְ לְפָנַ֨י ׀ שֻׁלְחָ֗ן': {
+    lemma: 'ערך',
+    gloss: 'you prepare a table before me',
+    partOfSpeech: 'verb',
+  },
+  'נֶ֥גֶד': { lemma: 'נֶגֶד', gloss: 'in the presence of', partOfSpeech: 'preposition' },
+  'צֹרְרָ֑י': { lemma: 'צרר', gloss: 'my enemies', partOfSpeech: 'noun' },
+  'דִּשַּׁ֥נְתָּ': { lemma: 'דשׁן', gloss: 'you anoint', partOfSpeech: 'verb' },
+  'בַשֶּׁ֥מֶן': { lemma: 'שֶׁמֶן', gloss: 'with oil', partOfSpeech: 'noun' },
+  'רֹ֝אשִׁ֗י': { lemma: 'רֹאשׁ', gloss: 'my head', partOfSpeech: 'noun' },
+  'כּוֹסִ֥י': { lemma: 'כּוֹס', gloss: 'my cup', partOfSpeech: 'noun' },
+  'רְוָיָֽה': { lemma: 'רְוָיָה', gloss: 'overflowing, abundance', partOfSpeech: 'noun' },
+  'אַ֤ךְ': { lemma: 'אַךְ', gloss: 'surely', partOfSpeech: 'adverb' },
+  'ט֤וֹב': { lemma: 'טוֹב', gloss: 'goodness', partOfSpeech: 'noun' },
+  'וָחֶ֣סֶד': { lemma: 'חֶסֶד', gloss: 'and steadfast love', partOfSpeech: 'noun' },
+  'יִ֭רְדְּפוּנִי': { lemma: 'רדף', gloss: 'they shall follow me', partOfSpeech: 'verb' },
+  'כָּל־יְמֵ֣י': { lemma: 'יוֹם', gloss: 'all the days of', partOfSpeech: 'noun' },
+  'חַיָּ֑י': { lemma: 'חַי', gloss: 'my life', partOfSpeech: 'noun' },
+  'וְשַׁבְתִּ֥י': { lemma: 'שׁוב', gloss: 'and I shall dwell/return', partOfSpeech: 'verb' },
+  'בְּבֵית־יְ֝הוָ֗ה': { lemma: 'בַּיִת', gloss: 'in the house of the LORD', partOfSpeech: 'noun' },
+  'לְאֹ֣רֶךְ': { lemma: 'אֹרֶךְ', gloss: 'for length of', partOfSpeech: 'noun' },
+  'יָמִֽים': { lemma: 'יוֹם', gloss: 'days', partOfSpeech: 'noun' },
+};
+
 const psalm23_3_6 = [
   sent(
     'p23-3',
     ['נַפְשִׁ֥י', 'יְשׁוֹבֵ֑ב', 'יַֽנְחֵ֥נִי', 'בְמַעְגְּלֵי־צֶ֝֗דֶק', 'לְמַ֣עַן', 'שְׁמֽוֹ'],
-    "He restores my soul. He leads me in paths of righteousness for his name's sake."
+    "He restores my soul. He leads me in paths of righteousness for his name's sake.",
+    PS23_LEX
   ),
   sent(
     'p23-4',
@@ -1352,7 +1397,8 @@ const psalm23_3_6 = [
       'הֵ֣מָּה',
       'יְנַֽחֲמֻֽנִי',
     ],
-    'Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me.'
+    'Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me.',
+    PS23_LEX
   ),
   sent(
     'p23-5',
@@ -1366,7 +1412,8 @@ const psalm23_3_6 = [
       'כּוֹסִ֥י',
       'רְוָיָֽה',
     ],
-    'You prepare a table before me in the presence of my enemies; you anoint my head with oil; my cup overflows.'
+    'You prepare a table before me in the presence of my enemies; you anoint my head with oil; my cup overflows.',
+    PS23_LEX
   ),
   sent(
     'p23-6',
@@ -1382,7 +1429,8 @@ const psalm23_3_6 = [
       'לְאֹ֣רֶךְ',
       'יָמִֽים',
     ],
-    'Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the Lord forever.'
+    'Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the Lord forever.',
+    PS23_LEX
   ),
 ];
 
