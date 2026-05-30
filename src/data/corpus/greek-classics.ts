@@ -142,7 +142,7 @@ export const GRC_SOPHOCLES_ANT: TextSection = {
       ['ἐᾶν', 'δ᾽', 'ἄθαπτον', 'καὶ', 'πρὸς', 'οἰωνῶν', 'δέμας', 'καὶ', 'πρὸς', 'κυνῶν', 'ἐδεστὸν', 'αἰκισθέν', 'τ᾽', 'ἰδεῖν.'],
       'but to leave unburied, a sweet treasure for birds as they look for food, and for dogs.'),
     sent('Soph-Ant-10',
-      ['τοιαῦτα', 'φασὶ', 'τὸν', 'ἀγαθὸν', 'Κρέοντα', 'σοί', 'τε', 'κἀμοὶ', '—', 'λέγω', 'γάρ', 'κἀμέ', '—', 'κηρύσσειν', 'ἔχειν.'],
+      ['τοιαῦτα', 'φασὶ', 'τὸν', 'ἀγαθὸν', 'Κρέοντα', 'σοί', 'τε', 'κἀμοὶ', 'λέγω', 'γάρ', 'κἀμέ', 'κηρύσσειν', 'ἔχειν.'],
       'Such is what they say noble Creon has proclaimed to you and me — for I include myself — and is coming to announce.'),
   ],
 };
