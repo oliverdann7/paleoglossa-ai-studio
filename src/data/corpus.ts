@@ -912,13 +912,18 @@ export const TEXT_LAT_MINI_STORIES: Text = {
   sourceStatus: 'complete',
   isComplete: true,
   isSample: false,
-  sentenceCount: 35,
+  sentenceCount: 65,
   sectionsPreview: [
     { id: "LatMini-1", label: "Agricola et villa — The farmer and his estate" },
     { id: "LatMini-2", label: "Puer et magister — The boy and the teacher" },
     { id: "LatMini-3", label: "Piscator — The fisherman" },
     { id: "LatMini-4", label: "Viator — The traveler" },
     { id: "LatMini-5", label: "Pastor et oves — The shepherd and the sheep" },
+    { id: "LatMini-6", label: "Canis et caro — The dog and the meat" },
+    { id: "LatMini-7", label: "Lupus et agnus — The wolf and the lamb" },
+    { id: "LatMini-8", label: "Vulpes et uva — The fox and the grapes" },
+    { id: "LatMini-9", label: "Mercator et margarita — The merchant and the pearl" },
+    { id: "LatMini-10", label: "Samaritanus bonus — The good Samaritan" },
   ],
 };
 
@@ -946,6 +951,134 @@ export const TEXT_HEB_GENESIS: Text = {
     { id: "Heb-Gen-1", label: "Genesis 1 — In the beginning" },
     { id: "Heb-Gen-2", label: "Genesis 2 — The Garden of Eden" },
     { id: "Heb-Gen-3", label: "Genesis 3 — The Fall" },
+  ],
+};
+
+// ── Hebrew/Aramaic/Syriac/Coptic/Sanskrit beginner mini-stories ──────────
+
+export const TEXT_HEB_MINI_STORIES: Text = {
+  id: "HebMini",
+  corpusId: "OSHB",
+  title: "סִפּוּרִים קְצָרִים",
+  canonicalRef: "Hebrew Mini-Stories",
+  author: "Paleoglossa",
+  language: "hbo",
+  direction: "rtl",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice', 'biblical'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 9,
+  sectionsPreview: [
+    { id: "HebMini-1", label: "In the beginning" },
+    { id: "HebMini-2", label: "The good shepherd" },
+  ],
+};
+
+export const TEXT_ARC_MINI_STORIES: Text = {
+  id: "ArcMini",
+  corpusId: "ARAMAIC_TARGUM",
+  title: "סִפּוּרִין קַצִּירִין",
+  canonicalRef: "Aramaic Mini-Stories",
+  author: "Paleoglossa",
+  language: "arc",
+  direction: "rtl",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "ArcMini-1", label: "The teacher spoke" },
+  ],
+};
+
+export const TEXT_SYR_MINI_STORIES: Text = {
+  id: "SyrMini",
+  corpusId: "SYRIAC_PESHITTA",
+  title: "ܬܫܥܝܬܐ ܙܥܘܪ̈ܝܬܐ",
+  canonicalRef: "Syriac Mini-Stories",
+  author: "Paleoglossa",
+  language: "syr",
+  direction: "rtl",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice', 'liturgical'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "SyrMini-1", label: "Our Father in heaven" },
+  ],
+};
+
+export const TEXT_COP_MINI_STORIES: Text = {
+  id: "CopMini",
+  corpusId: "COPTIC_SAHIDIC",
+  title: "ⲛⲉϣⲁϫⲉ ⲛⲕⲟⲩⲓ",
+  canonicalRef: "Coptic Mini-Stories",
+  author: "Paleoglossa",
+  language: "cop",
+  direction: "ltr",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 3,
+  sectionsPreview: [
+    { id: "CopMini-1", label: "In the beginning (John 1)" },
+  ],
+};
+
+export const TEXT_SAN_MINI_STORIES: Text = {
+  id: "SanMini",
+  corpusId: "SANSKRIT_MAHABHARATA",
+  title: "लघुकथाः",
+  canonicalRef: "Sanskrit Mini-Stories",
+  author: "Paleoglossa",
+  language: "san",
+  direction: "ltr",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'practice'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 4,
+  sectionsPreview: [
+    { id: "SanMini-1", label: "Bhagavad-Gītā opening" },
   ],
 };
 
@@ -4650,6 +4783,11 @@ import { ALL_GREEK_MINI_STORIES, GRC_MINI_1, GRC_MINI_2, GRC_MINI_3, GRC_MINI_4,
 import { ALL_GREEK_MINI_STORIES_2, GRC_MINI_6, GRC_MINI_7, GRC_MINI_8, GRC_MINI_9, GRC_MINI_10 } from "./corpus/greek-mini-stories-2.js";
 import { ALL_LATIN_BEGINNER_SECTIONS, LAT_VULGATE_JOHN_1, LAT_DISTICHA_CATONIS } from "./corpus/latin-beginner.js";
 import { ALL_LATIN_MINI_STORIES, LAT_MINI_1, LAT_MINI_2, LAT_MINI_3, LAT_MINI_4, LAT_MINI_5 } from "./corpus/latin-mini-stories.js";
+import { ALL_LATIN_MINI_STORIES_2, LAT_MINI_6, LAT_MINI_7, LAT_MINI_8, LAT_MINI_9, LAT_MINI_10 } from "./corpus/latin-mini-stories-2.js";
+import {
+  ALL_MULTILANG_MINI_STORIES,
+  HEB_MINI_1, HEB_MINI_2, ARC_MINI_1, SYR_MINI_1, COP_MINI_1, SAN_MINI_1
+} from "./corpus/multilang-mini-stories.js";
 import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
 import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS_3, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
 import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
@@ -4717,6 +4855,11 @@ function getAllEnhancedTexts() {
       TEXT_LAT_MINI_STORIES,
       TEXT_LAT_VG_JOHN,
       TEXT_LAT_CATO,
+      TEXT_HEB_MINI_STORIES,
+      TEXT_ARC_MINI_STORIES,
+      TEXT_SYR_MINI_STORIES,
+      TEXT_COP_MINI_STORIES,
+      TEXT_SAN_MINI_STORIES,
       TEXT_HEB_GENESIS,
       TEXT_HEB_PS23,
       TEXT_HEB_JONAH,
@@ -4783,6 +4926,8 @@ function getLemmaIndex() {
     ...ALL_GREEK_MINI_STORIES_2,
     ...ALL_GREEK_MARK_SECTIONS,
     ...ALL_LATIN_MINI_STORIES,
+    ...ALL_LATIN_MINI_STORIES_2,
+    ...ALL_MULTILANG_MINI_STORIES,
     ...ALL_LATIN_BEGINNER_SECTIONS,
     ...ALL_HEBREW_EXTENDED_SECTIONS,
     ...ALL_HEBREW_BEGINNER_SECTIONS,
@@ -4913,6 +5058,17 @@ export const CorpusDB = {
     if (sectionId === "LatMini-3") return LAT_MINI_3;
     if (sectionId === "LatMini-4") return LAT_MINI_4;
     if (sectionId === "LatMini-5") return LAT_MINI_5;
+    if (sectionId === "LatMini-6") return LAT_MINI_6;
+    if (sectionId === "LatMini-7") return LAT_MINI_7;
+    if (sectionId === "LatMini-8") return LAT_MINI_8;
+    if (sectionId === "LatMini-9") return LAT_MINI_9;
+    if (sectionId === "LatMini-10") return LAT_MINI_10;
+    if (sectionId === "HebMini-1") return HEB_MINI_1;
+    if (sectionId === "HebMini-2") return HEB_MINI_2;
+    if (sectionId === "ArcMini-1") return ARC_MINI_1;
+    if (sectionId === "SyrMini-1") return SYR_MINI_1;
+    if (sectionId === "CopMini-1") return COP_MINI_1;
+    if (sectionId === "SanMini-1") return SAN_MINI_1;
     if (sectionId === "Lat-Vg-Jn-1") return LAT_VULGATE_JOHN_1;
     if (sectionId === "Lat-Cat-1") return LAT_DISTICHA_CATONIS;
     if (sectionId === "Heb-Gen-1") return HEB_GENESIS_1;
