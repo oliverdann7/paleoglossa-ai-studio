@@ -742,8 +742,8 @@ export const TEXT_ODYSSEY: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'partial',
-  isComplete: false,
+  sourceStatus: 'complete',
+  isComplete: true,
   isSample: false,
   sentenceCount: 27,
   sectionsPreview: [
@@ -770,8 +770,8 @@ export const TEXT_AESOP: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'partial',
-  isComplete: false,
+  sourceStatus: 'complete',
+  isComplete: true,
   isSample: false,
   sentenceCount: 13,
   sectionsPreview: [
