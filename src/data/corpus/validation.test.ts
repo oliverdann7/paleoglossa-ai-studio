@@ -41,7 +41,7 @@ describe('corpus production data', () => {
     // backfill — when a text's annotation gap closes, update or remove its
     // entry here. The gate prevents NEW under-annotated texts from landing
     // under sourceStatus: 'complete'.
-    'Text "Jn-full" is marked complete but has annotation gaps: 2389 unknown POS, 2389 missing gloss, 5 missing lemma (of 15620 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    'Text "Jn-full" is marked complete but has annotation gaps: 2382 unknown POS, 2382 missing gloss, 5 missing lemma (of 15620 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
   ]);
 
   it('introduces no new validateCorpus regressions over the known baseline', () => {
