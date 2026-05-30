@@ -9,20 +9,26 @@
 
 import { TextSection, Sentence } from '../../types/corpus.js';
 
-function sent(id: string, words: string[], translation: string): Sentence {
+function sent(
+  id: string,
+  words: string[],
+  translation: string,
+  lex?: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }>
+): Sentence {
   return {
     id,
     tokens: words.map((w, i) => {
       const clean = w.replace(/^[\s.,;·:!?()"«»—–]+|[\s.,;·:!?()"«»—–]+$/g, '');
       const punctAfter = w.slice(clean.length) || ' ';
       const normalized = clean.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+      const hit = lex?.[clean] || lex?.[normalized];
       return {
         id: `${id}-t${i}`,
         surface: w,
         normalized,
-        lemma: normalized,
-        gloss: '',
-        morphology: { partOfSpeech: 'unknown' },
+        lemma: hit?.lemma || normalized,
+        gloss: hit?.gloss || '',
+        morphology: { partOfSpeech: hit?.partOfSpeech || 'unknown' },
         punctBefore: i === 0 ? '' : '',
         punctAfter: punctAfter.trim() ? punctAfter + ' ' : ' ',
       };
@@ -30,6 +36,87 @@ function sent(id: string, words: string[], translation: string): Sentence {
     translation,
   };
 }
+
+// Shared Psalm 1 lex (Koine Greek, LXX). Keyed by normalized lowercase
+// (no diacritics) so it survives accentuation variants in the text.
+const LXX_PS1_LEX: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }> = {
+  μακαριος: { lemma: 'μακάριος', gloss: 'blessed', partOfSpeech: 'adjective' },
+  ανηρ: { lemma: 'ἀνήρ', gloss: 'man', partOfSpeech: 'noun' },
+  ος: { lemma: 'ὅς', gloss: 'who', partOfSpeech: 'pronoun' },
+  ουκ: { lemma: 'οὐ', gloss: 'not', partOfSpeech: 'adverb' },
+  ουχ: { lemma: 'οὐ', gloss: 'not', partOfSpeech: 'adverb' },
+  επορευθη: { lemma: 'πορεύομαι', gloss: 'he walked', partOfSpeech: 'verb' },
+  εν: { lemma: 'ἐν', gloss: 'in', partOfSpeech: 'preposition' },
+  βουλη: { lemma: 'βουλή', gloss: 'counsel', partOfSpeech: 'noun' },
+  ασεβων: { lemma: 'ἀσεβής', gloss: 'of the ungodly', partOfSpeech: 'adjective' },
+  ασεβεις: { lemma: 'ἀσεβής', gloss: 'the ungodly', partOfSpeech: 'adjective' },
+  και: { lemma: 'καί', gloss: 'and', partOfSpeech: 'conjunction' },
+  οδω: { lemma: 'ὁδός', gloss: 'in the way', partOfSpeech: 'noun' },
+  οδον: { lemma: 'ὁδός', gloss: 'the way', partOfSpeech: 'noun' },
+  οδος: { lemma: 'ὁδός', gloss: 'the way', partOfSpeech: 'noun' },
+  αμαρτωλων: { lemma: 'ἁμαρτωλός', gloss: 'of sinners', partOfSpeech: 'noun' },
+  αμαρτωλοι: { lemma: 'ἁμαρτωλός', gloss: 'sinners', partOfSpeech: 'noun' },
+  εστη: { lemma: 'ἵστημι', gloss: 'he stood', partOfSpeech: 'verb' },
+  επι: { lemma: 'ἐπί', gloss: 'on, upon', partOfSpeech: 'preposition' },
+  καθεδραν: { lemma: 'καθέδρα', gloss: 'seat', partOfSpeech: 'noun' },
+  λοιμων: { lemma: 'λοιμός', gloss: 'of scoffers, pestilent ones', partOfSpeech: 'noun' },
+  εκαθισεν: { lemma: 'καθίζω', gloss: 'he sat', partOfSpeech: 'verb' },
+  'ἀλλ’': { lemma: 'ἀλλά', gloss: 'but', partOfSpeech: 'conjunction' },
+  αλλ: { lemma: 'ἀλλά', gloss: 'but', partOfSpeech: 'conjunction' },
+  η: { lemma: 'ἤ', gloss: 'or, than', partOfSpeech: 'conjunction' },
+  τω: { lemma: 'ὁ', gloss: 'in the', partOfSpeech: 'article' },
+  το: { lemma: 'ὁ', gloss: 'the', partOfSpeech: 'article' },
+  τον: { lemma: 'ὁ', gloss: 'the (acc.)', partOfSpeech: 'article' },
+  τας: { lemma: 'ὁ', gloss: 'the (fpl. acc.)', partOfSpeech: 'article' },
+  των: { lemma: 'ὁ', gloss: 'of the (gen.)', partOfSpeech: 'article' },
+  της: { lemma: 'ὁ', gloss: 'of the (fem.)', partOfSpeech: 'article' },
+  ο: { lemma: 'ὁ', gloss: 'the', partOfSpeech: 'article' },
+  οι: { lemma: 'ὁ', gloss: 'the (mpl.)', partOfSpeech: 'article' },
+  νομω: { lemma: 'νόμος', gloss: 'in the law', partOfSpeech: 'noun' },
+  κυριου: { lemma: 'κύριος', gloss: 'of the Lord', partOfSpeech: 'noun' },
+  κυριος: { lemma: 'κύριος', gloss: 'the Lord', partOfSpeech: 'noun' },
+  θελημα: { lemma: 'θέλημα', gloss: 'will, delight', partOfSpeech: 'noun' },
+  αυτου: { lemma: 'αὐτός', gloss: 'his', partOfSpeech: 'pronoun' },
+  μελετησει: { lemma: 'μελετάω', gloss: 'he will meditate', partOfSpeech: 'verb' },
+  ημερας: { lemma: 'ἡμέρα', gloss: 'day', partOfSpeech: 'noun' },
+  νυκτος: { lemma: 'νύξ', gloss: 'and night', partOfSpeech: 'noun' },
+  εσται: { lemma: 'εἰμί', gloss: 'he shall be', partOfSpeech: 'verb' },
+  ως: { lemma: 'ὡς', gloss: 'as, like', partOfSpeech: 'conjunction' },
+  ξυλον: { lemma: 'ξύλον', gloss: 'tree', partOfSpeech: 'noun' },
+  πεφυτευμενον: { lemma: 'φυτεύω', gloss: 'planted', partOfSpeech: 'verb' },
+  παρα: { lemma: 'παρά', gloss: 'beside', partOfSpeech: 'preposition' },
+  διεξοδους: { lemma: 'διέξοδος', gloss: 'streams, channels', partOfSpeech: 'noun' },
+  υδατων: { lemma: 'ὕδωρ', gloss: 'of waters', partOfSpeech: 'noun' },
+  καρπον: { lemma: 'καρπός', gloss: 'fruit', partOfSpeech: 'noun' },
+  δωσει: { lemma: 'δίδωμι', gloss: 'will give', partOfSpeech: 'verb' },
+  καιρω: { lemma: 'καιρός', gloss: 'in season', partOfSpeech: 'noun' },
+  φυλλον: { lemma: 'φύλλον', gloss: 'leaf', partOfSpeech: 'noun' },
+  απορρυησεται: { lemma: 'ἀπορρέω', gloss: 'will fall off', partOfSpeech: 'verb' },
+  παντα: { lemma: 'πᾶς', gloss: 'all things', partOfSpeech: 'adjective' },
+  οσα: { lemma: 'ὅσος', gloss: 'whatever', partOfSpeech: 'pronoun' },
+  αν: { lemma: 'ἄν', gloss: '(modal particle)', partOfSpeech: 'particle' },
+  ποιη: { lemma: 'ποιέω', gloss: 'he does', partOfSpeech: 'verb' },
+  κατευοδωθησεται: { lemma: 'κατευοδόω', gloss: 'shall prosper', partOfSpeech: 'verb' },
+  ουτως: { lemma: 'οὕτως', gloss: 'so, thus', partOfSpeech: 'adverb' },
+  χνους: { lemma: 'χνοῦς', gloss: 'chaff, dust', partOfSpeech: 'noun' },
+  ον: { lemma: 'ὅς', gloss: 'which (acc.)', partOfSpeech: 'pronoun' },
+  εκριπτει: { lemma: 'ἐκρίπτω', gloss: 'casts out', partOfSpeech: 'verb' },
+  ανεμος: { lemma: 'ἄνεμος', gloss: 'wind', partOfSpeech: 'noun' },
+  απο: { lemma: 'ἀπό', gloss: 'from', partOfSpeech: 'preposition' },
+  προσωπου: { lemma: 'πρόσωπον', gloss: 'face', partOfSpeech: 'noun' },
+  γης: { lemma: 'γῆ', gloss: 'earth', partOfSpeech: 'noun' },
+  δια: { lemma: 'διά', gloss: 'because of', partOfSpeech: 'preposition' },
+  τουτο: { lemma: 'οὗτος', gloss: 'this', partOfSpeech: 'pronoun' },
+  αναστησονται: { lemma: 'ἀνίστημι', gloss: 'shall rise/stand', partOfSpeech: 'verb' },
+  κρισει: { lemma: 'κρίσις', gloss: 'in judgment', partOfSpeech: 'noun' },
+  ουδε: { lemma: 'οὐδέ', gloss: 'nor', partOfSpeech: 'conjunction' },
+  δικαιων: { lemma: 'δίκαιος', gloss: 'of the righteous', partOfSpeech: 'adjective' },
+  οτι: { lemma: 'ὅτι', gloss: 'because, that', partOfSpeech: 'conjunction' },
+  γινωσκει: { lemma: 'γινώσκω', gloss: 'knows', partOfSpeech: 'verb' },
+  απολειται: { lemma: 'ἀπόλλυμι', gloss: 'shall perish', partOfSpeech: 'verb' },
+  // δὲ which appears in surrounding LXX-Gen-1 text
+  δε: { lemma: 'δέ', gloss: 'but, and', partOfSpeech: 'conjunction' },
+};
 
 // ─── Genesis 1:1–13 (Days 1–3) ──────────────────────────────────────────────
 export const LXX_GENESIS_1_1: TextSection = {
@@ -935,7 +1022,8 @@ export const LXX_PSALM_1_1: TextSection = {
         'οὐκ',
         'ἐκάθισεν,',
       ],
-      'Blessed is the man who does not walk in the counsel of the ungodly, nor stand in the way of sinners, nor sit in the seat of the scornful.'
+      'Blessed is the man who does not walk in the counsel of the ungodly, nor stand in the way of sinners, nor sit in the seat of the scornful.',
+      LXX_PS1_LEX
     ),
     sent(
       'LXX-Ps-1-1-s2',
@@ -959,7 +1047,8 @@ export const LXX_PSALM_1_1: TextSection = {
         'καὶ',
         'νυκτός.',
       ],
-      'But his delight is in the law of the Lord, and in his law he meditates day and night.'
+      'But his delight is in the law of the Lord, and in his law he meditates day and night.',
+      LXX_PS1_LEX
     ),
     sent(
       'LXX-Ps-1-1-s3',
@@ -997,7 +1086,8 @@ export const LXX_PSALM_1_1: TextSection = {
         'ποιῇ,',
         'κατευοδωθήσεται.',
       ],
-      'He shall be like a tree planted by the streams of water, which will yield its fruit in its season, and its leaf will not wither. And whatever he does shall prosper.'
+      'He shall be like a tree planted by the streams of water, which will yield its fruit in its season, and its leaf will not wither. And whatever he does shall prosper.',
+      LXX_PS1_LEX
     ),
     sent(
       'LXX-Ps-1-1-s4',
@@ -1022,7 +1112,8 @@ export const LXX_PSALM_1_1: TextSection = {
         'τῆς',
         'γῆς.',
       ],
-      'Not so are the ungodly, not so. But they are like the chaff which the wind scatters from the face of the earth.'
+      'Not so are the ungodly, not so. But they are like the chaff which the wind scatters from the face of the earth.',
+      LXX_PS1_LEX
     ),
     sent(
       'LXX-Ps-1-1-s5',
@@ -1040,12 +1131,14 @@ export const LXX_PSALM_1_1: TextSection = {
         'βουλῇ',
         'δικαίων·',
       ],
-      'Therefore the ungodly shall not stand in the judgment, nor sinners in the assembly of the righteous.'
+      'Therefore the ungodly shall not stand in the judgment, nor sinners in the assembly of the righteous.',
+      LXX_PS1_LEX
     ),
     sent(
       'LXX-Ps-1-1-s6',
       ['ὅτι', 'γινώσκει', 'κύριος', 'ὁδὸν', 'δικαίων,', 'καὶ', 'ὁδὸς', 'ἀσεβῶν', 'ἀπολεῖται.'],
-      'For the Lord knows the way of the righteous, but the way of the ungodly shall perish.'
+      'For the Lord knows the way of the righteous, but the way of the ungodly shall perish.',
+      LXX_PS1_LEX
     ),
   ],
 };

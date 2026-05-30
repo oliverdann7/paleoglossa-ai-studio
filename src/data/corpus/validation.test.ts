@@ -48,7 +48,6 @@ describe('corpus production data', () => {
     'Text "Anab-1" is marked complete but has annotation gaps: 261 unknown POS, 261 missing gloss, 0 missing lemma (of 314 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "Iliad-1" is marked complete but has annotation gaps: 432 unknown POS, 432 missing gloss, 0 missing lemma (of 465 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "LXX-Gen-1" is marked complete but has annotation gaps: 721 unknown POS, 721 missing gloss, 0 missing lemma (of 721 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
-    'Text "LXX-Ps-1" is marked complete but has annotation gaps: 110 unknown POS, 110 missing gloss, 0 missing lemma (of 110 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "LXX-Ps-33" is marked complete but has annotation gaps: 131 unknown POS, 131 missing gloss, 0 missing lemma (of 131 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "LXX-Exod-12" is marked complete but has annotation gaps: 424 unknown POS, 424 missing gloss, 0 missing lemma (of 424 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
     'Text "LXX-Isa-6" is marked complete but has annotation gaps: 208 unknown POS, 208 missing gloss, 0 missing lemma (of 208 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
