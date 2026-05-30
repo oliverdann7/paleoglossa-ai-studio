@@ -378,12 +378,34 @@ Detailed auth setup is covered above in the [Firebase Authentication](#firebase-
 
 ---
 
-## Store listing copy
+## Store listings (in-repo source of truth)
 
-Source-of-truth copy for App Store Connect + Play Console (subtitle,
-keywords, promo text, long description, what's-new, reviewer notes)
-lives in [`store-listing.md`](store-listing.md). Update both stores
-together when changing.
+Paste-ready store copy lives at:
+
+- Single-file overview — [`store-listing.md`](store-listing.md) (identity, keywords, descriptions, what's-new for v1.0.0)
+- iOS per-locale — [`store/listings/ios/en-US/metadata.md`](../store/listings/ios/en-US/metadata.md)
+- Android per-locale — [`store/listings/android/en-US/metadata.md`](../store/listings/android/en-US/metadata.md)
+- Release notes — [`store/release-notes/`](../store/release-notes/) (one file per version)
+
+Update these alongside any feature change that materially affects what the
+app does or claims to do.
+
+## Version bumps
+
+Use the bump script so iOS `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`
+and Android `versionName` / `versionCode` stay in lockstep with
+`package.json`:
+
+```bash
+npm run mobile:version:patch    # 1.0.0 → 1.0.1, build +1
+npm run mobile:version:minor    # 1.0.0 → 1.1.0, build +1
+npm run mobile:version:major    # 1.0.0 → 2.0.0, build +1
+npm run mobile:version:set 1.2.3
+```
+
+Stores require a unique build number per upload, so the script always
+increments `CURRENT_PROJECT_VERSION` and `versionCode` even on a `set`
+that doesn't change the marketing version.
 
 ## Store metadata checklist
 

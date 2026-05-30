@@ -6,36 +6,36 @@ import {
 } from '../types.js';
 import { validateImport } from '../validate.js';
 
+class NotImplementedError extends Error {
+  constructor(method: string) {
+    super(
+      `StepBibleAdapter.${method} is not implemented. STEPBible lexicon/morphology ` +
+        `requires a local TB1Lexicon + Tyndale-morph file upload pipeline; ` +
+        `see docs/CORPUS_IMPORT_GUIDE.md. Greek morphology is already covered by SBLGNT ` +
+        `and Hebrew by OSHB — prefer those adapters for end-user imports.`
+    );
+  }
+}
+
 export const StepBibleAdapter: ContentSourceAdapter = {
   id: 'stepbible',
-  label: 'STEPBible (Lexicon & Morph)',
-  language: 'mix', // Greek/Hebrew usually
+  label: 'STEPBible Lexicon & Morphology (planned)',
+  language: 'mix',
   corpusType: 'lexicon',
   license: 'CC BY 4.0',
-  canFetch: false, // Usually provided as a zip file to import
-  canImportFile: true,
+  canFetch: false,
+  canImportFile: false,
 
   async fetchIndex() {
-    return [];
+    throw new NotImplementedError('fetchIndex');
   },
 
   async fetchText() {
-    throw new Error(
-      'STEPBible data is usually imported as a local database file/JSON block, not fetched text-by-text'
-    );
+    throw new NotImplementedError('fetchText');
   },
 
   async normalize() {
-    // Stub: parses STEPBible TB1Lexicon data and Tyndale morphology
-    return {
-      text: {
-        id: 'lexicon',
-        corpusId: 'STEPBible',
-        title: 'Lexicon Data',
-        language: 'mixed',
-      },
-      sections: [],
-    };
+    throw new NotImplementedError('normalize');
   },
 
   validate(normalized: {
