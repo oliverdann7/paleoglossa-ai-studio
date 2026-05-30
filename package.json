@@ -39,7 +39,11 @@
     "android:sync": "npm run build && npx cap sync android",
     "android:sync:production": "vite build --mode native-production && npx cap sync android",
     "android:bundle": "cd android && ./gradlew bundleRelease",
-    "android:assemble": "cd android && ./gradlew assembleDebug"
+    "android:assemble": "cd android && ./gradlew assembleDebug",
+    "mobile:version:patch": "node scripts/bump-mobile-version.mjs patch",
+    "mobile:version:minor": "node scripts/bump-mobile-version.mjs minor",
+    "mobile:version:major": "node scripts/bump-mobile-version.mjs major",
+    "mobile:version:set": "node scripts/bump-mobile-version.mjs set"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.3",

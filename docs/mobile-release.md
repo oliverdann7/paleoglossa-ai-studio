@@ -378,6 +378,34 @@ Detailed auth setup is covered above in the [Firebase Authentication](#firebase-
 
 ---
 
+## Store listings (in-repo source of truth)
+
+Paste-ready store copy lives at:
+
+- iOS — [`store/listings/ios/en-US/metadata.md`](../store/listings/ios/en-US/metadata.md)
+- Android — [`store/listings/android/en-US/metadata.md`](../store/listings/android/en-US/metadata.md)
+- Release notes — [`store/release-notes/`](../store/release-notes/) (one file per version)
+
+Update these alongside any feature change that materially affects what the
+app does or claims to do.
+
+## Version bumps
+
+Use the bump script so iOS `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION`
+and Android `versionName` / `versionCode` stay in lockstep with
+`package.json`:
+
+```bash
+npm run mobile:version:patch    # 1.0.0 → 1.0.1, build +1
+npm run mobile:version:minor    # 1.0.0 → 1.1.0, build +1
+npm run mobile:version:major    # 1.0.0 → 2.0.0, build +1
+npm run mobile:version:set 1.2.3
+```
+
+Stores require a unique build number per upload, so the script always
+increments `CURRENT_PROJECT_VERSION` and `versionCode` even on a `set`
+that doesn't change the marketing version.
+
 ## Store metadata checklist
 
 - [ ] App name: **Paleoglossa**
