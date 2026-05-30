@@ -114,7 +114,7 @@ export const LAT_HORACE_ODES_1_11: TextSection = {
   label: 'Odes I.11 — Tu ne quaesieris (Carpe diem)',
   sentences: [
     sent('Hor-1-11-1',
-      ['Tu', 'ne', 'quaesieris', '—', 'scire', 'nefas', '—', 'quem', 'mihi,', 'quem', 'tibi', 'finem', 'di', 'dederint,', 'Leuconoe,'],
+      ['Tu', 'ne', 'quaesieris', 'scire', 'nefas', 'quem', 'mihi,', 'quem', 'tibi', 'finem', 'di', 'dederint,', 'Leuconoe,'],
       'Do not ask — it is forbidden to know — what end the gods have given to me and to you, Leuconoe,'),
     sent('Hor-1-11-2',
       ['nec', 'Babylonios', 'temptaris', 'numeros.'],
@@ -216,7 +216,7 @@ export const LAT_SALLUST_CAT: TextSection = {
       ['alterum', 'nobis', 'cum', 'dis,', 'alterum', 'cum', 'beluis', 'commune', 'est.'],
       'The one we share with the gods, the other with the beasts.'),
     sent('Sall-Cat-2-1',
-      ['Igitur', 'initio', 'reges', '—', 'nam', 'in', 'terris', 'nomen', 'imperi', 'id', 'primum', 'fuit', '—', 'divorsi', 'pars', 'ingenium,', 'alii', 'corpus', 'exercebant:'],
+      ['Igitur', 'initio', 'reges', 'nam', 'in', 'terris', 'nomen', 'imperi', 'id', 'primum', 'fuit', 'divorsi', 'pars', 'ingenium,', 'alii', 'corpus', 'exercebant:'],
       'In the beginning, therefore, kings — for that was the first title of power on earth — were divided; some exercised their intellect, others their body:'),
     sent('Sall-Cat-2-2',
       ['etiam', 'tum', 'vita', 'hominum', 'sine', 'cupiditate', 'agitabatur;', 'sua', 'cuique', 'satis', 'placebant.'],
