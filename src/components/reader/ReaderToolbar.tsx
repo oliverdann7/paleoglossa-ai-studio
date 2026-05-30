@@ -39,12 +39,42 @@ interface Props {
   hasSyntax?: boolean;
 }
 
-const DISPLAY_MODES: { id: DisplayMode; label: string; icon: React.ReactNode }[] = [
-  { id: 'scholar', label: 'Scholar', icon: <BookOpen className="w-3.5 h-3.5" /> },
-  { id: 'focus', label: 'Focus', icon: <Focus className="w-3.5 h-3.5" /> },
-  { id: 'morphology', label: 'Morphology', icon: <Microscope className="w-3.5 h-3.5" /> },
-  { id: 'interlinear', label: 'Interlinear', icon: <AlignJustify className="w-3.5 h-3.5" /> },
-  { id: 'parallel', label: 'Parallel', icon: <Columns className="w-3.5 h-3.5" /> },
+const DISPLAY_MODES: {
+  id: DisplayMode;
+  labelKey: string;
+  fallback: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    id: 'scholar',
+    labelKey: 'reader.modeScholar',
+    fallback: 'Scholar',
+    icon: <BookOpen className="w-3.5 h-3.5" />,
+  },
+  {
+    id: 'focus',
+    labelKey: 'reader.modeFocus',
+    fallback: 'Focus',
+    icon: <Focus className="w-3.5 h-3.5" />,
+  },
+  {
+    id: 'morphology',
+    labelKey: 'reader.modeMorphology',
+    fallback: 'Morphology',
+    icon: <Microscope className="w-3.5 h-3.5" />,
+  },
+  {
+    id: 'interlinear',
+    labelKey: 'reader.modeInterlinear',
+    fallback: 'Interlinear',
+    icon: <AlignJustify className="w-3.5 h-3.5" />,
+  },
+  {
+    id: 'parallel',
+    labelKey: 'reader.modeParallel',
+    fallback: 'Parallel',
+    icon: <Columns className="w-3.5 h-3.5" />,
+  },
 ];
 
 export function ReaderToolbar({
@@ -133,22 +163,25 @@ export function ReaderToolbar({
         {/* Display mode switcher — compact icon row */}
         {onChangeDisplayMode && (
           <div className="hidden md:flex items-center gap-0.5 bg-parch3 p-0.5 rounded-lg border border-bdr shrink-0">
-            {DISPLAY_MODES.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => onChangeDisplayMode(m.id)}
-                title={m.label}
-                className={cn(
-                  'flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all',
-                  displayMode === m.id
-                    ? 'bg-white text-ink shadow-sm'
-                    : 'text-muted hover:text-ink cursor-pointer'
-                )}
-              >
-                {m.icon}
-                <span className="hidden lg:inline">{m.label}</span>
-              </button>
-            ))}
+            {DISPLAY_MODES.map((m) => {
+              const label = t(m.labelKey, m.fallback);
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => onChangeDisplayMode(m.id)}
+                  title={label}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all',
+                    displayMode === m.id
+                      ? 'bg-white text-ink shadow-sm'
+                      : 'text-muted hover:text-ink cursor-pointer'
+                  )}
+                >
+                  {m.icon}
+                  <span className="hidden lg:inline">{label}</span>
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -173,7 +206,7 @@ export function ReaderToolbar({
                   showParallel ? 'bg-blue/10 text-blue' : 'text-muted hover:bg-parch3'
                 )}
               >
-                <Layout className="w-3.5 h-3.5" /> {t('reader.toggleParallel', 'Parallel')}
+                <Layout className="w-3.5 h-3.5" /> {t('reader.toggleTranslation', 'Translation')}
               </button>
             )}
             {displayMode === 'scholar' && (
@@ -196,7 +229,7 @@ export function ReaderToolbar({
                 )}
               >
                 <AlignJustify className="w-3.5 h-3.5" />{' '}
-                {t('reader.toggleInterlinear', 'Interlinear')}
+                {t('reader.toggleGloss', 'Gloss')}
               </button>
             )}
             {hasSyntax && onToggleSyntax && (
