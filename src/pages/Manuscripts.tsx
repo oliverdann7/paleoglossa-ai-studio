@@ -21,11 +21,9 @@ import {
 import { cn } from '@/lib/utils';
 import { apiFetch } from '@/lib/services/apiFetch';
 import { LANGUAGES } from '@/lib/constants/languages';
-import {
-  WITNESSES,
-  getApparatusForManuscript,
-} from '../lib/data/criticalApparatus.js';
+import { WITNESSES, getApparatusForManuscript } from '../lib/data/criticalApparatus.js';
 import type { ApparatusLocus } from '../lib/data/criticalApparatus.js';
+import { CURATED_MANUSCRIPTS } from '../lib/data/manuscriptCatalog.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,6 +40,8 @@ interface Manuscript {
   tags: string[];
   createdAt: string | null;
   updatedAt: string | null;
+  /** Read-only entry seeded from the curated catalog (not user-owned). */
+  curated?: boolean;
 }
 
 type FormData = Omit<Manuscript, 'id' | 'createdAt' | 'updatedAt'>;
@@ -146,11 +146,7 @@ function ImageViewer({ imageUrl, title }: { imageUrl: string; title: string }) {
         )}
       >
         <span className="text-[12px] text-muted flex-1 truncate">{title}</span>
-        <button
-          onClick={() => zoom(0.25)}
-          className="p-1 hover:bg-bdr/20 rounded"
-          title="Zoom in"
-        >
+        <button onClick={() => zoom(0.25)} className="p-1 hover:bg-bdr/20 rounded" title="Zoom in">
           <Plus className="w-3.5 h-3.5" />
         </button>
         <button
@@ -171,7 +167,11 @@ function ImageViewer({ imageUrl, title }: { imageUrl: string; title: string }) {
           className="p-1 hover:bg-bdr/20 rounded ml-1"
           title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
         >
-          {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          {fullscreen ? (
+            <Minimize2 className="w-3.5 h-3.5" />
+          ) : (
+            <Maximize2 className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
 
@@ -367,7 +367,12 @@ function IIIFViewer({ manifestUrl, title }: { manifestUrl: string; title: string
           </button>
         </div>
       )}
-      <div className={cn('flex flex-col flex-1 min-h-0', pages.length > 1 && 'border border-bdr/40 rounded-b-lg border-t-0 overflow-hidden')}>
+      <div
+        className={cn(
+          'flex flex-col flex-1 min-h-0',
+          pages.length > 1 && 'border border-bdr/40 rounded-b-lg border-t-0 overflow-hidden'
+        )}
+      >
         <ImageViewer imageUrl={current.url} title={`${title} — ${current.label}`} />
       </div>
     </div>
@@ -462,7 +467,9 @@ function ApparatusEntry({ locus }: { locus: ApparatusLocus }) {
           onClick={() => setExpanded((e) => !e)}
           className="shrink-0 p-1 rounded hover:bg-parch3 transition-colors"
         >
-          <ChevronDown className={cn('w-3.5 h-3.5 text-muted transition-transform', expanded && 'rotate-180')} />
+          <ChevronDown
+            className={cn('w-3.5 h-3.5 text-muted transition-transform', expanded && 'rotate-180')}
+          />
         </button>
       </div>
 
@@ -487,9 +494,7 @@ function ApparatusEntry({ locus }: { locus: ApparatusLocus }) {
               <WitnessChip key={w} siglum={w} />
             ))}
           </div>
-          {v.note && (
-            <p className="text-[11px] text-ink2 leading-relaxed mt-1.5">{v.note}</p>
-          )}
+          {v.note && <p className="text-[11px] text-ink2 leading-relaxed mt-1.5">{v.note}</p>}
         </div>
       ))}
 
@@ -502,13 +507,7 @@ function ApparatusEntry({ locus }: { locus: ApparatusLocus }) {
   );
 }
 
-function CriticalApparatusPanel({
-  languageId,
-  title,
-}: {
-  languageId: string;
-  title: string;
-}) {
+function CriticalApparatusPanel({ languageId, title }: { languageId: string; title: string }) {
   const entries = getApparatusForManuscript(languageId, title);
   if (languageId !== 'grc') {
     return (
@@ -555,8 +554,7 @@ function ManuscriptForm({
   const [tagInput, setTagInput] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const set = (key: keyof FormData, value: string) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  const set = (key: keyof FormData, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
   const addTag = () => {
     const tag = tagInput.trim();
@@ -574,7 +572,9 @@ function ManuscriptForm({
       <div className="bg-parch w-full max-w-2xl rounded-xl shadow-2xl border border-bdr/60 m-4">
         <div className="flex items-center justify-between px-6 py-4 border-b border-bdr/40">
           <h3 className="text-[18px] font-bold text-ink font-sans">
-            {initial.title ? t('manuscripts.edit', 'Edit Manuscript') : t('manuscripts.new', 'New Manuscript')}
+            {initial.title
+              ? t('manuscripts.edit', 'Edit Manuscript')
+              : t('manuscripts.new', 'New Manuscript')}
           </h3>
           <button onClick={onClose} className="p-1.5 hover:bg-bdr/20 rounded">
             <X className="w-4 h-4 text-muted" />
@@ -590,7 +590,10 @@ function ManuscriptForm({
               autoFocus
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
-              placeholder={t('manuscripts.form.titlePlaceholder', 'e.g. Chester Beatty P46 — Romans 1')}
+              placeholder={t(
+                'manuscripts.form.titlePlaceholder',
+                'e.g. Chester Beatty P46 — Romans 1'
+              )}
               className="w-full px-3 py-2 bg-parch2 border border-bdr/60 rounded-lg text-[14px] text-ink focus:outline-none focus:border-blue/60"
             />
           </div>
@@ -633,7 +636,10 @@ function ManuscriptForm({
             <input
               value={form.source}
               onChange={(e) => set('source', e.target.value)}
-              placeholder={t('manuscripts.form.sourcePlaceholder', 'e.g. Codex Sinaiticus, fol. 38r')}
+              placeholder={t(
+                'manuscripts.form.sourcePlaceholder',
+                'e.g. Codex Sinaiticus, fol. 38r'
+              )}
               className="w-full px-3 py-2 bg-parch2 border border-bdr/60 rounded-lg text-[14px] text-ink focus:outline-none focus:border-blue/60"
             />
           </div>
@@ -695,7 +701,9 @@ function ManuscriptForm({
             onClick={() => setShowAdvanced((a) => !a)}
             className="flex items-center gap-1.5 text-[12px] text-muted hover:text-ink transition-colors"
           >
-            <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', showAdvanced && 'rotate-180')} />
+            <ChevronDown
+              className={cn('w-3.5 h-3.5 transition-transform', showAdvanced && 'rotate-180')}
+            />
             {t('manuscripts.form.advanced', 'Advanced')}
           </button>
 
@@ -709,7 +717,10 @@ function ManuscriptForm({
                   value={form.description}
                   onChange={(e) => set('description', e.target.value)}
                   rows={3}
-                  placeholder={t('manuscripts.form.descriptionPlaceholder', 'Scholarly notes, context, bibliography…')}
+                  placeholder={t(
+                    'manuscripts.form.descriptionPlaceholder',
+                    'Scholarly notes, context, bibliography…'
+                  )}
                   className="w-full px-3 py-2 bg-parch2 border border-bdr/60 rounded-lg text-[13px] text-ink focus:outline-none focus:border-blue/60 resize-y"
                 />
               </div>
@@ -781,13 +792,7 @@ function ManuscriptForm({
 
 // ─── Manuscript card ──────────────────────────────────────────────────────────
 
-function ManuscriptCard({
-  manuscript,
-  onClick,
-}: {
-  manuscript: Manuscript;
-  onClick: () => void;
-}) {
+function ManuscriptCard({ manuscript, onClick }: { manuscript: Manuscript; onClick: () => void }) {
   const lang = LANGUAGES.find((l) => l.id === manuscript.languageId);
 
   return (
@@ -823,18 +828,23 @@ function ManuscriptCard({
       )}
 
       <div className="p-4">
-        <h3 className="text-[15px] font-bold text-ink font-sans mb-1 line-clamp-1 group-hover:text-blue transition-colors">
-          {manuscript.title}
-        </h3>
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-[15px] font-bold text-ink font-sans line-clamp-1 group-hover:text-blue transition-colors">
+            {manuscript.title}
+          </h3>
+          {manuscript.curated && (
+            <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+              Curated
+            </span>
+          )}
+        </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
           {lang && (
             <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">
               {lang.name}
             </span>
           )}
-          {manuscript.date && (
-            <span className="text-[11px] text-muted">{manuscript.date}</span>
-          )}
+          {manuscript.date && <span className="text-[11px] text-muted">{manuscript.date}</span>}
         </div>
         {manuscript.source && (
           <p className="text-[12px] text-ink3 italic line-clamp-1">{manuscript.source}</p>
@@ -924,42 +934,48 @@ function ManuscriptDetail({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={onEdit}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-ink hover:bg-bdr/20 rounded-lg border border-bdr/60 transition-colors"
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-            {t('common.edit', 'Edit')}
-          </button>
-          {confirmDelete ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[12px] text-red-600 font-semibold">
-                {t('manuscripts.confirmDelete', 'Delete?')}
-              </span>
-              <button
-                onClick={onDelete}
-                className="px-3 py-1.5 text-[13px] font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
-              >
-                {t('common.yes', 'Yes')}
-              </button>
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className="px-3 py-1.5 text-[13px] font-semibold text-muted hover:bg-bdr/20 rounded-lg transition-colors"
-              >
-                {t('common.no', 'No')}
-              </button>
-            </div>
-          ) : (
+        {manuscript.curated ? (
+          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full self-start">
+            {t('manuscripts.curatedReadOnly', 'Curated · read-only')}
+          </span>
+        ) : (
+          <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => setConfirmDelete(true)}
-              className="p-1.5 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-              title={t('common.delete', 'Delete')}
+              onClick={onEdit}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-ink hover:bg-bdr/20 rounded-lg border border-bdr/60 transition-colors"
             >
-              <Trash2 className="w-4 h-4" />
+              <Edit2 className="w-3.5 h-3.5" />
+              {t('common.edit', 'Edit')}
             </button>
-          )}
-        </div>
+            {confirmDelete ? (
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] text-red-600 font-semibold">
+                  {t('manuscripts.confirmDelete', 'Delete?')}
+                </span>
+                <button
+                  onClick={onDelete}
+                  className="px-3 py-1.5 text-[13px] font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                >
+                  {t('common.yes', 'Yes')}
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="px-3 py-1.5 text-[13px] font-semibold text-muted hover:bg-bdr/20 rounded-lg transition-colors"
+                >
+                  {t('common.no', 'No')}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="p-1.5 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                title={t('common.delete', 'Delete')}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Split view */}
@@ -998,7 +1014,9 @@ function ManuscriptDetail({
               onClick={() => setRightTab('transcription')}
               className={cn(
                 'flex-1 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors',
-                rightTab === 'transcription' ? 'text-blue border-b-2 border-blue -mb-px' : 'text-muted hover:text-ink'
+                rightTab === 'transcription'
+                  ? 'text-blue border-b-2 border-blue -mb-px'
+                  : 'text-muted hover:text-ink'
               )}
             >
               {t('manuscripts.transcription', 'Transcription')}
@@ -1007,7 +1025,9 @@ function ManuscriptDetail({
               onClick={() => setRightTab('apparatus')}
               className={cn(
                 'flex-1 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1',
-                rightTab === 'apparatus' ? 'text-blue border-b-2 border-blue -mb-px' : 'text-muted hover:text-ink'
+                rightTab === 'apparatus'
+                  ? 'text-blue border-b-2 border-blue -mb-px'
+                  : 'text-muted hover:text-ink'
               )}
             >
               <Scroll className="w-3 h-3" />
@@ -1061,22 +1081,28 @@ export const Manuscripts = () => {
     return true;
   });
 
+  const curated = CURATED_MANUSCRIPTS as unknown as Manuscript[];
+
   useEffect(() => {
     let cancelled = false;
     apiFetch<Manuscript[]>('/api/manuscripts')
       .then((data) => {
         if (cancelled) return;
-        setManuscripts(data ?? []);
+        // Curated catalog entries are always shown first, ahead of the
+        // user's own manuscripts.
+        setManuscripts([...curated, ...(data ?? [])]);
         setLoading(false);
       })
-      .catch((e: any) => {
+      .catch(() => {
         if (cancelled) return;
-        setError(e.message ?? 'Failed to load manuscripts');
+        // Network/auth failure should still leave the curated catalog usable.
+        setManuscripts([...curated]);
         setLoading(false);
       });
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
   const load = useCallback(() => {

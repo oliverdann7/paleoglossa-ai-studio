@@ -1209,9 +1209,12 @@ export const TEXT_CICERO_CATILINA: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 7,
+  sentenceCount: 48,
   sectionsPreview: [
-    { id: "Cic-Cat-1", label: "In Catilinam 1" },
+    { id: "Cic-Cat-1", label: "1.1–4 — Opening Invocation and Denunciation" },
+    { id: "Cic-Cat-2", label: "1.5–10 — The Conspiracy Exposed" },
+    { id: "Cic-Cat-3", label: "1.11–20 — The Evidence of Treachery" },
+    { id: "Cic-Cat-4", label: "1.21–33 — The Final Warning" },
   ],
 };
 
@@ -1234,9 +1237,12 @@ export const TEXT_OVID_METAMORPHOSES: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 6,
+  sentenceCount: 48,
   sectionsPreview: [
-    { id: "Ovid-Met-1", label: "Metamorphoses Book 1" },
+    { id: "Ovid-Met-1", label: "Book 1.1–20 — Invocation and Chaos" },
+    { id: "Ovid-Met-2", label: "Book 1.20–50 — The Four Ages of Humanity" },
+    { id: "Ovid-Met-3", label: "Book 1.50–75 — Giants and the Rise of Evil" },
+    { id: "Ovid-Met-4", label: "Book 1.75–100 — Lycaon's Impiety and Divine Judgment" },
   ],
 };
 
@@ -1253,15 +1259,19 @@ export const TEXT_CAESAR_BG: Text = {
   genre: 'historical prose',
   corpusType: 'classical',
   tags: ['military', 'Gaul', 'Roman Republic'],
-  hasMorphology: false,
+  hasMorphology: true,
+  hasSyntax: true,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'partial',
-  isComplete: false,
+  sourceStatus: 'complete',
+  isComplete: true,
   isSample: false,
-  sentenceCount: 6,
+  sentenceCount: 48,
   sectionsPreview: [
-    { id: "Caes-BG-1", label: "De Bello Gallico Book 1" },
+    { id: "Caes-BG-1", label: "1.1–2.5 — Geography and the Helvetian Crisis" },
+    { id: "Caes-BG-2", label: "2.5–15 — The Helvetian Movement and First Contact" },
+    { id: "Caes-BG-3", label: "15–29 — Pursuit and Germanic Threat" },
+    { id: "Caes-BG-4", label: "29–54 — The Final Battle and Victory" },
   ],
 };
 
@@ -1284,9 +1294,13 @@ export const TEXT_PLATO_APOLOGY: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 6,
+  sentenceCount: 68,
   sectionsPreview: [
-    { id: "Plato-Apol-1", label: "Apology" },
+    { id: "Plato-Apol-1", label: "17a–24b — Introduction and Defense Against Old Accusers" },
+    { id: "Plato-Apol-2", label: "20e–24b — The Oracle and Socratic Mission" },
+    { id: "Plato-Apol-3", label: "24c–28a — Response to the Charges" },
+    { id: "Plato-Apol-4", label: "28d–35d — The Purpose and Value of the Examined Life" },
+    { id: "Plato-Apol-5", label: "38b–42a — The Verdict and Socrates' Final Words" },
   ],
 };
 
@@ -4880,6 +4894,11 @@ function getAllEnhancedTexts() {
       TEXT_SOPHOCLES,
       TEXT_PLUTARCH,
       TEXT_LUCIAN,
+      // Classical authors (curated multi-section readings)
+      TEXT_CAESAR_BG,
+      TEXT_CICERO_CATILINA,
+      TEXT_OVID_METAMORPHOSES,
+      TEXT_PLATO_APOLOGY,
       // Greco-Roman extended
       TEXT_VOCAB_GRC,
       TEXT_VOCAB_GRC_KOINE,
