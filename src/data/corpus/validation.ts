@@ -1,9 +1,59 @@
 import { CorpusDB } from '../corpus.js';
+import type { Text, TextSection } from '../../types/corpus.js';
 
 const errors: string[] = [];
 
 function check(condition: boolean, message: string) {
   if (!condition) errors.push(message);
+}
+
+/**
+ * Per-text completeness check, decoupled from CorpusDB so it can be run against
+ * a single not-yet-shipped text (e.g. inside the ingestion pipeline before
+ * writing to Firestore). Returns a list of human-readable problems; an empty
+ * array means the text satisfies the "complete" contract: every token in every
+ * section has a real partOfSpeech (not 'unknown'), a non-empty gloss, and a
+ * non-empty lemma.
+ *
+ * This is the same gate {@link validateCorpus} applies to bundled texts — kept
+ * as a standalone function so the pipeline and the bundle share one source of
+ * truth for what "complete" means. The returned message text matches what
+ * validateCorpus emits, so callers/tests see identical strings.
+ */
+export function validateTextAnnotations(
+  text: Pick<Text, 'id'>,
+  sections: Pick<TextSection, 'id' | 'sentences'>[]
+): string[] {
+  let unknownPos = 0;
+  let missingGloss = 0;
+  let missingLemma = 0;
+  let totalTokens = 0;
+
+  for (const section of sections) {
+    for (const sentence of section.sentences) {
+      for (const token of sentence.tokens) {
+        totalTokens++;
+        if (!token.morphology || token.morphology.partOfSpeech === 'unknown') {
+          unknownPos++;
+        }
+        if (!token.gloss || token.gloss.trim() === '') {
+          missingGloss++;
+        }
+        if (!token.lemma || token.lemma.trim() === '') {
+          missingLemma++;
+        }
+      }
+    }
+  }
+
+  if (totalTokens > 0 && (unknownPos > 0 || missingGloss > 0 || missingLemma > 0)) {
+    return [
+      `Text "${text.id}" is marked complete but has annotation gaps: ` +
+        `${unknownPos} unknown POS, ${missingGloss} missing gloss, ${missingLemma} missing lemma ` +
+        `(of ${totalTokens} tokens). Either complete the annotations or change sourceStatus to 'partial'.`,
+    ];
+  }
+  return [];
 }
 
 export function validateCorpus(): string[] {
@@ -102,34 +152,11 @@ export function validateCorpus(): string[] {
     // gloss. Lemma must also be set. Texts that fail this should be marked
     // `partial` until the gaps are filled.
     if (text.sourceStatus === 'complete' || text.isComplete) {
-      let unknownPos = 0;
-      let missingGloss = 0;
-      let missingLemma = 0;
-      let totalTokens = 0;
-      for (const preview of text.sectionsPreview || []) {
-        const section = CorpusDB.getSection(preview.id);
-        if (!section) continue;
-        for (const sentence of section.sentences) {
-          for (const token of sentence.tokens) {
-            totalTokens++;
-            if (!token.morphology || token.morphology.partOfSpeech === 'unknown') {
-              unknownPos++;
-            }
-            if (!token.gloss || token.gloss.trim() === '') {
-              missingGloss++;
-            }
-            if (!token.lemma || token.lemma.trim() === '') {
-              missingLemma++;
-            }
-          }
-        }
-      }
-      if (totalTokens > 0 && (unknownPos > 0 || missingGloss > 0 || missingLemma > 0)) {
-        errors.push(
-          `Text "${text.id}" is marked complete but has annotation gaps: ` +
-            `${unknownPos} unknown POS, ${missingGloss} missing gloss, ${missingLemma} missing lemma ` +
-            `(of ${totalTokens} tokens). Either complete the annotations or change sourceStatus to 'partial'.`
-        );
+      const sections = (text.sectionsPreview || [])
+        .map((preview) => CorpusDB.getSection(preview.id))
+        .filter((s): s is NonNullable<typeof s> => !!s);
+      for (const message of validateTextAnnotations(text, sections)) {
+        errors.push(message);
       }
     }
   }
