@@ -1,0 +1,6 @@
+xml:id	ref	role	class	type	gloss	text	after	lemma	normalized	strong	morph	domain	ln	frame	gender	case	number	person	tense	voice	mood
+x	MRK 1:1!1		noun		beginning	Ἀρχὴ	 	ἀρχή	αρχη	746	N-NSF				feminine	nominative	singular				
+x	MRK 1:1!2		det		the	τοῦ	 	ὁ	ο	3588	T-GSN				neuter	genitive	singular				
+x	MRK 1:1!3		noun		gospel	εὐαγγελίου	. 	εὐαγγέλιον	ευαγγελιον	2098	N-GSN				neuter	genitive	singular				
+x	MRK 1:2!1		adv		just as	Καθὼς	 	καθώς	καθως	2531	ADV										
+x	MRK 1:2!2		verb		it is written	γέγραπται	.	γράφω	γεγραπται	1125	V-RPI-3S						singular	third	perfect	passive	indicative
