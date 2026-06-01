@@ -23,9 +23,16 @@ import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useTranslation } from 'react-i18next';
 import { loadLanguage } from '../lib/i18n.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
-import { getLanguageIcon, getLanguageDisplayName, getAvailableLanguages } from '../lib/constants/languages.js';
+import {
+  getLanguageIcon,
+  getLanguageDisplayName,
+  getAvailableLanguages,
+} from '../lib/constants/languages.js';
 import { db } from '../lib/firebase.js';
-import { DICTIONARY_SOURCES } from '../lib/data/dictionaryDB.js';
+import {
+  getDictionariesForLanguage,
+  resolvePreferredDictionaryId,
+} from '../lib/data/dictionarySources.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { uploadAvatar, updateUserProfile } from '../lib/services/profileService.js';
 import { privacyService } from '../lib/services/privacyService.js';
@@ -62,8 +69,8 @@ export const Settings = () => {
   const [showDesiredPicker, setShowDesiredPicker] = useState(false);
 
   // ── Gemini API key (stored in localStorage only — never synced to Firestore) ─
-  const [geminiApiKey, setGeminiApiKey] = useState(() =>
-    localStorage.getItem('user_gemini_api_key') ?? ''
+  const [geminiApiKey, setGeminiApiKey] = useState(
+    () => localStorage.getItem('user_gemini_api_key') ?? ''
   );
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
@@ -282,7 +289,8 @@ export const Settings = () => {
                   Free plan — all languages available
                 </p>
                 <p className="text-[11px] text-muted">
-                  You can read any language, but only <strong>25 words per language</strong> can be saved. Upgrade to unlock unlimited saves in one or more languages.
+                  You can read any language, but only <strong>25 words per language</strong> can be
+                  saved. Upgrade to unlock unlimited saves in one or more languages.
                 </p>
                 <a
                   href="/app/subscription"
@@ -295,7 +303,10 @@ export const Settings = () => {
 
             {/* Unlocked languages (paid plans) */}
             {subscription.selectedLanguageIds.map((langId) => (
-              <div key={langId} className="flex items-center gap-4 p-4 rounded-xl bg-parch2/60 border border-bdr">
+              <div
+                key={langId}
+                className="flex items-center gap-4 p-4 rounded-xl bg-parch2/60 border border-bdr"
+              >
                 <span className="text-[22px]">{getLanguageIcon(langId)}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -315,7 +326,9 @@ export const Settings = () => {
             {subscription.currentPlan !== 'full_all' && (
               <div className="p-4 rounded-xl border border-dashed border-bdr">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[13px] font-semibold text-ink">Pre-select language to unlock</span>
+                  <span className="text-[13px] font-semibold text-ink">
+                    Pre-select language to unlock
+                  </span>
                   {subscription.desiredSecondLanguageId && (
                     <button
                       onClick={() => setDesiredSecondLanguage(undefined)}
@@ -327,9 +340,12 @@ export const Settings = () => {
                 </div>
                 {subscription.desiredSecondLanguageId ? (
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[18px]">{getLanguageIcon(subscription.desiredSecondLanguageId)}</span>
+                    <span className="text-[18px]">
+                      {getLanguageIcon(subscription.desiredSecondLanguageId)}
+                    </span>
                     <span className="text-[13px] text-ink2 font-medium">
-                      {getLanguageDisplayName(subscription.desiredSecondLanguageId) || subscription.desiredSecondLanguageId}
+                      {getLanguageDisplayName(subscription.desiredSecondLanguageId) ||
+                        subscription.desiredSecondLanguageId}
                     </span>
                     <span className="text-[9px] bg-amber/10 text-amber-700 px-1.5 py-0.5 rounded font-bold">
                       Saved for upgrade
@@ -345,7 +361,12 @@ export const Settings = () => {
                   className="mt-2 text-[11px] text-blue font-semibold hover:underline flex items-center gap-1"
                 >
                   {subscription.desiredSecondLanguageId ? 'Change' : 'Choose a language'}{' '}
-                  <ChevronDown className={cn('w-3 h-3 transition-transform', showDesiredPicker && 'rotate-180')} />
+                  <ChevronDown
+                    className={cn(
+                      'w-3 h-3 transition-transform',
+                      showDesiredPicker && 'rotate-180'
+                    )}
+                  />
                 </button>
                 {showDesiredPicker && (
                   <div className="mt-2 grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto">
@@ -579,11 +600,16 @@ export const Settings = () => {
             {t('settings.onboarding', 'Onboarding')}
           </h3>
           <p className="text-[13px] text-muted mb-6">
-            {t('settings.onboardingDesc', 'Restart the initial onboarding flow to update your learning path.')}
+            {t(
+              'settings.onboardingDesc',
+              'Restart the initial onboarding flow to update your learning path.'
+            )}
           </p>
           <button
             onClick={() => {
-              updateSettings({ onboardingProfile: { ...settings.onboardingProfile, completed: false } as any });
+              updateSettings({
+                onboardingProfile: { ...settings.onboardingProfile, completed: false } as any,
+              });
               navigate('/onboarding');
             }}
             className="btn-secondary px-6 py-3 font-bold"
@@ -814,35 +840,62 @@ export const Settings = () => {
           <p className="text-[13px] text-muted mb-6">
             {t(
               'settings.dictionariesDesc',
-              'Select which dictionaries to use when looking up words.'
+              'Choose the default dictionary for each language. Each language has its own dictionaries — they never mix.'
             )}
           </p>
-          <div className="space-y-3">
-            {Object.values(DICTIONARY_SOURCES).map((source) => {
-              const active = settings.activeDictionaries ?? Object.keys(DICTIONARY_SOURCES);
-              const isChecked = active.includes(source.id);
+          <div className="space-y-6">
+            {(settings.activeLanguages?.length
+              ? settings.activeLanguages
+              : ['grc', 'hbo', 'lat']
+            ).map((langId) => {
+              const sources = getDictionariesForLanguage(langId).filter(
+                (s) => s.resolver !== 'external-link'
+              );
+              if (sources.length === 0) return null;
+              const preferred = resolvePreferredDictionaryId(
+                langId,
+                settings.preferredDictionaryByLang
+              );
               return (
-                <label key={source.id} className="flex items-start gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={(e) => {
-                      const current =
-                        settings.activeDictionaries ?? Object.keys(DICTIONARY_SOURCES);
-                      const next = e.target.checked
-                        ? [...current, source.id]
-                        : current.filter((id) => id !== source.id);
-                      updateSettings({ activeDictionaries: next });
-                    }}
-                    className="w-5 h-5 mt-0.5 rounded text-blue focus:ring-blue accent-blue border-bdr bg-white"
-                  />
-                  <span className="flex flex-col">
-                    <span className="text-[14px] font-medium text-ink group-hover:text-blue transition-colors">
-                      {source.name}
+                <div key={langId}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[18px] leading-none">{getLanguageIcon(langId)}</span>
+                    <span className="text-[14px] font-bold text-ink">
+                      {getLanguageDisplayName(langId) || langId}
                     </span>
-                    <span className="text-[11px] text-muted">{source.licenseName}</span>
-                  </span>
-                </label>
+                  </div>
+                  <div className="space-y-2 pl-1">
+                    {sources.map((source) => (
+                      <label
+                        key={source.id}
+                        className="flex items-start gap-3 cursor-pointer group"
+                      >
+                        <input
+                          type="radio"
+                          name={`dict-${langId}`}
+                          checked={preferred === source.id}
+                          onChange={() =>
+                            updateSettings({
+                              preferredDictionaryByLang: {
+                                ...(settings.preferredDictionaryByLang ?? {}),
+                                [langId]: source.id,
+                              },
+                            })
+                          }
+                          className="w-4 h-4 mt-0.5 text-blue focus:ring-blue accent-blue border-bdr bg-white"
+                        />
+                        <span className="flex flex-col">
+                          <span className="text-[14px] font-medium text-ink group-hover:text-blue transition-colors">
+                            {source.name}
+                          </span>
+                          {source.licenseName && (
+                            <span className="text-[11px] text-muted">{source.licenseName}</span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               );
             })}
           </div>
