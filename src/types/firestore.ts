@@ -158,6 +158,8 @@ export interface UserSettings {
   uiLanguage: string;
   swipePageMovesToKnown?: boolean;
   activeDictionaries?: string[];
+  /** Preferred dictionary source id per study language, e.g. { grc: 'logeion' }. */
+  preferredDictionaryByLang?: Record<string, string>;
   onboardingProfile?: OnboardingProfile;
 }
 
