@@ -22,7 +22,6 @@ describe('corpus production data', () => {
    * entries to silence regressions.
    */
   const KNOWN_VALIDATE_CORPUS_ERRORS = new Set<string>([
-    'Text "GrcMk" has sourceStatus=complete but isComplete is not true',
     'Text "grc-vocab" has isSample=false but sourceStatus is "undefined"',
     'Text "grc-koine-vocab" has isSample=false but sourceStatus is "undefined"',
     'Text "lat-vocab" has isSample=false but sourceStatus is "undefined"',

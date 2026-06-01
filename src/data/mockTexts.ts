@@ -266,6 +266,13 @@ const generateMocks = () => {
           });
         }
 
+        // These are synthetically recombined snippets, not the full work the
+        // base text represents. Reflect that honestly so the library doesn't
+        // advertise a 3-sentence placeholder as a "complete" classic.
+        newText.sourceStatus = 'partial';
+        newText.isComplete = false;
+        newText.sentenceCount = syntheticSentences.length;
+
         const splitIndex = Math.max(1, Math.ceil(syntheticSentences.length / 2));
         const newSection1: TextSection = {
           ...base.section,

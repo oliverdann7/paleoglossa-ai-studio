@@ -79,6 +79,24 @@ export function validateCorpus(): string[] {
       );
     }
 
+    // Truthful-count gate: a text marked complete must not claim materially
+    // more sentences than it actually ships. A famous large work represented
+    // by a handful of opening sentences (but advertising sentenceCount in the
+    // hundreds) reads as "complete" in the library when it is really a sparse
+    // excerpt — mark it `partial` and set sentenceCount to the real total.
+    if ((text.sourceStatus === 'complete' || text.isComplete) && text.sentenceCount) {
+      const actualSentences = (text.sectionsPreview || []).reduce((sum, p) => {
+        const s = CorpusDB.getSection(p.id);
+        return sum + (s ? s.sentences.length : 0);
+      }, 0);
+      check(
+        actualSentences >= text.sentenceCount * 0.7,
+        `Text "${text.id}" is marked complete with sentenceCount=${text.sentenceCount} but only ` +
+          `${actualSentences} sentences are actually present. Either add the missing content, ` +
+          `correct sentenceCount, or change sourceStatus to 'partial'.`
+      );
+    }
+
     // Completeness gate: a text marked complete must have every token in every
     // section annotated with a real partOfSpeech (not 'unknown') and a non-empty
     // gloss. Lemma must also be set. Texts that fail this should be marked
