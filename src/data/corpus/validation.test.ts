@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   validateCorpus,
+  validateTextAnnotations,
   COMPLETE_SHORT_WORKS,
   SHORT_COMPLETE_THRESHOLD,
 } from './validation';
@@ -52,7 +53,9 @@ describe('corpus production data', () => {
     // backfill — when a text's annotation gap closes, update or remove its
     // entry here. The gate prevents NEW under-annotated texts from landing
     // under sourceStatus: 'complete'.
-    'Text "Jn-full" is marked complete but has annotation gaps: 2349 unknown POS, 2349 missing gloss, 5 missing lemma (of 15620 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
+    //
+    // Jn-full was backfilled from Macula Greek (JN_LEX_MACULA in john-full.ts);
+    // it now annotates every token and is no longer baselined.
   ]);
 
   it('introduces no new validateCorpus regressions over the known baseline', () => {
@@ -72,6 +75,15 @@ describe('corpus production data', () => {
     const errors = new Set(validateCorpus());
     const stale = [...KNOWN_VALIDATE_CORPUS_ERRORS].filter((e) => !errors.has(e));
     expect(stale).toEqual([]);
+  });
+
+  it('Jn-full is fully annotated (no POS/gloss/lemma gaps)', () => {
+    const text = CorpusDB.getText('Jn-full');
+    expect(text).toBeTruthy();
+    const sections = (text!.sectionsPreview ?? [])
+      .map((p) => CorpusDB.getSection(p.id))
+      .filter((s): s is NonNullable<typeof s> => !!s);
+    expect(validateTextAnnotations({ id: 'Jn-full' }, sections)).toEqual([]);
   });
 
   it('every section reachable via sectionsPreview conforms to the TextSection schema', () => {
