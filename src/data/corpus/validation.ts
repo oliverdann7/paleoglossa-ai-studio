@@ -1,6 +1,30 @@
 import { CorpusDB } from '../corpus.js';
 import type { Text, TextSection } from '../../types/corpus.js';
 
+/**
+ * Texts that are genuinely COMPLETE works yet legitimately fall under the
+ * short-text threshold below — a single psalm is a whole poem, the *Mini
+ * stories are original whole pieces. Any other `complete` text under the
+ * threshold is treated as a mislabeled excerpt and fails validation, forcing
+ * an explicit human decision (reclassify as 'excerpt' or add it here).
+ */
+export const COMPLETE_SHORT_WORKS = new Set<string>([
+  'Ps-23',
+  'Heb-Ps23',
+  'LXX-Ps-1',
+  'LXX-Ps-33',
+  'LXX-Ps-50',
+  'Heb-Ps91',
+  'CopMini',
+  'SyrMini',
+  'ArcMini',
+  'SanMini',
+  'HebMini',
+]);
+
+/** A `complete` text below this many sentences must be in COMPLETE_SHORT_WORKS. */
+export const SHORT_COMPLETE_THRESHOLD = 15;
+
 const errors: string[] = [];
 
 function check(condition: boolean, message: string) {
@@ -117,15 +141,17 @@ export function validateCorpus(): string[] {
       }
     }
 
-    // Complete texts should not be suspiciously tiny (skip very short works like Psalm 23)
-    if (text.isComplete) {
+    // A text claiming completeness must either clear the short-text threshold or
+    // be an explicitly vetted short complete work. Otherwise it is almost
+    // certainly a mislabeled excerpt — fail so a human reclassifies it.
+    if (text.isComplete || text.sourceStatus === 'complete') {
       const totalSentences = (text.sectionsPreview || []).reduce((sum, p) => {
         const s = CorpusDB.getSection(p.id);
         return sum + (s ? s.sentences.length : 0);
       }, 0);
       check(
-        totalSentences >= 3,
-        `Text "${text.id}" is marked as complete but only has ${totalSentences} sentences (too small to be complete)`
+        totalSentences >= SHORT_COMPLETE_THRESHOLD || COMPLETE_SHORT_WORKS.has(text.id),
+        `Text "${text.id}" is marked complete but only has ${totalSentences} sentences and is not in COMPLETE_SHORT_WORKS — reclassify it as 'excerpt' (isSample:true) or add it to the allowlist.`
       );
     }
 

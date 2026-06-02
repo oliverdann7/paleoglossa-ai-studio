@@ -1,7 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { validateCorpus } from './validation';
+import {
+  validateCorpus,
+  COMPLETE_SHORT_WORKS,
+  SHORT_COMPLETE_THRESHOLD,
+} from './validation';
 import { CorpusDB } from '../corpus';
 import { validateSection } from '../../lib/corpus-schema/validateSection';
+
+function actualSentenceCount(textId: string): number {
+  const text = CorpusDB.getText(textId);
+  return (text?.sectionsPreview ?? []).reduce(
+    (sum, p) => sum + (CorpusDB.getSection(p.id)?.sentences.length ?? 0),
+    0
+  );
+}
 
 /**
  * Locks in the production corpus's structural invariants. A "huge import"
@@ -79,5 +91,64 @@ describe('corpus production data', () => {
       console.error('Section schema issues:\n' + allIssues.map((m) => '  - ' + m).join('\n'));
     }
     expect(allIssues).toEqual([]);
+  });
+});
+
+describe('complete vs excerpt labeling', () => {
+  it('reports no "marked complete but too short" errors over the real corpus', () => {
+    const offenders = validateCorpus().filter((e) => /marked complete but only has/.test(e));
+    if (offenders.length > 0) {
+      console.error('Short-complete offenders:\n' + offenders.map((e) => '  - ' + e).join('\n'));
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('every short "complete" text is an explicitly vetted whole work', () => {
+    // Lock the invariant directly: any complete text under the threshold MUST be
+    // in the allowlist. A new short "complete" text fails here until vetted.
+    const violations = CorpusDB.getTexts()
+      .filter((t) => t.isComplete || t.sourceStatus === 'complete')
+      .filter((t) => actualSentenceCount(t.id) < SHORT_COMPLETE_THRESHOLD)
+      .filter((t) => !COMPLETE_SHORT_WORKS.has(t.id))
+      .map((t) => t.id);
+    expect(violations).toEqual([]);
+  });
+
+  it('keeps an allowlisted short work (Psalm 23) as complete', () => {
+    const ps23 = CorpusDB.getText('Ps-23');
+    expect(ps23?.sourceStatus).toBe('complete');
+    expect(ps23?.isComplete).toBe(true);
+    expect(actualSentenceCount('Ps-23')).toBeLessThan(SHORT_COMPLETE_THRESHOLD);
+  });
+
+  it('reclassifies opening-selection excerpts of larger works as excerpt + sample', () => {
+    const reclassified = [
+      // Biblical chapter/book excerpts
+      'Jn-1', 'Gen', 'Anab-1', 'Iliad-1', 'Aeneid-1', 'GrcMk',
+      'LXX-Gen-1', 'LXX-Exod-12', 'LXX-Isa-6', 'LXX-Prov-1', 'LXX-Jonah-1',
+      // Classics — opening selections of huge works
+      'Livy-AUC', 'Sall-Cat', 'Tac-Ann', 'Hdt-Hist', 'Thuc-Hist',
+      'Soph-Ant', 'Plut-Alex', 'Lucian-Char', 'Aesop-1',
+      // Patristics / beginner — opening sections of larger works
+      '1Clem-1', 'Did-1', 'Athan-Inc-1', 'Chrys-Jn-1', 'Hermas-Vis-1',
+      'Basil-Hex-1', 'Ign-Eph', 'Justin-Apol', 'Polyc-Phil',
+      'Lat-Vg-Jn', 'Lat-Cato',
+    ];
+    for (const id of reclassified) {
+      const t = CorpusDB.getText(id);
+      expect(t, `missing text ${id}`).toBeTruthy();
+      expect(t?.sourceStatus, `${id} sourceStatus`).toBe('excerpt');
+      expect(t?.isComplete, `${id} isComplete`).not.toBe(true);
+      expect(t?.isSample, `${id} isSample`).toBe(true);
+    }
+  });
+
+  it('derives sentenceCount from real sections (no declared/actual drift)', () => {
+    for (const t of CorpusDB.getTexts()) {
+      const actual = actualSentenceCount(t.id);
+      if (actual > 0) {
+        expect(t.sentenceCount, `${t.id} sentenceCount`).toBe(actual);
+      }
+    }
   });
 });
