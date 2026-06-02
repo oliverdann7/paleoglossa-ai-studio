@@ -95,6 +95,17 @@ fetched by the maintainer into `scripts/corpus/ingest/.sources/` (gitignored);
 an entry whose file is absent is skipped with a notice, so a full dry-run works
 before any download.
 
+The manifest covers the whole Bible (Macula → fully `complete`, no AI) plus a
+`*-full` target for every bundled excerpt/sample of a larger work — the
+Septuagint, classical Greek & Latin, the Apostolic Fathers/patristics, and the
+ancient-Near-Eastern works. Each entry's `notes` records the bundled id it
+supersedes (`supersedes <id>`); `manifest.test.ts` enforces that coverage. The
+non-Bible literary works come from public-domain / CC-BY editions and assemble
+`partial` (text + dictionary/AI glosses) until a commercially-licensed treebank
+or a reviewed gloss cache fills the remaining morphology — drop the source file
+into `.sources/<path>` (the `file:` in each entry), supply `--gemini-key`, and
+review the gloss cache before they promote to `complete`.
+
 ```bash
 npm run ingest:manifest:dry              # validate everything, write nothing
 npm run ingest:manifest -- --only grc-koine   # real ingest of the Koine NT
