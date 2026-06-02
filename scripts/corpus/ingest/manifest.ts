@@ -108,9 +108,9 @@ const stagedEntries: ManifestEntry[] = [
     title: 'Bhagavad Gītā',
     source: 'plaintext',
     file: 'pd/bhagavad-gita.txt',
-    attribution: 'wikisource',
+    attribution: 'public-domain-edition',
     status: 'active',
-    notes: 'Sanskrit Wikisource (CC BY-SA); supersedes San-Gita-1. Ships partial (no bundled Sanskrit gloss source — full text + on-click AI).',
+    notes: 'Public-domain Gita dataset (gita/gita, Unlicense); supersedes San-Gita-1. Ships partial (no bundled Sanskrit gloss source — full text + on-click AI).',
   },
   {
     textId: 'syr-peshitta-john-full',
