@@ -1,96 +1,11 @@
-import { Text, TextSection, Corpus, SourceAttribution } from "../types/corpus.js";
+import { Text, TextSection, Corpus } from "../types/corpus.js";
 
-export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
-  "sblgnt-text": {
-    id: "sblgnt-text",
-    sourceName: "SBL Greek New Testament",
-    sourceUrl: "https://sblgnt.com",
-    dataType: "text",
-    licenseName: "SBLGNT License",
-    licenseUrl: "https://sblgnt.com/license/",
-    attributionText:
-      "The SBL Greek New Testament, edited by Michael W. Holmes. Copyright 2010 Society of Biblical Literature and Logos Bible Software.",
-    requiresAttribution: true,
-    allowsCommercialUse: false,
-    allowsModification: false,
-    shareAlike: false,
-  },
-  "morphgnt-parsing": {
-    id: "morphgnt-parsing",
-    sourceName: "MorphGNT",
-    sourceUrl: "https://github.com/morphgnt/sblgnt",
-    dataType: "morphology",
-    licenseName: "CC BY-SA 3.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
-    attributionText: "Morphological parsing by MorphGNT.",
-    requiresAttribution: true,
-    allowsCommercialUse: true,
-    allowsModification: true,
-    shareAlike: true,
-  },
-  "oshb-text-morph": {
-    id: "oshb-text-morph",
-    sourceName: "Open Scriptures Hebrew Bible",
-    sourceUrl: "https://github.com/openscriptures/morphhb",
-    dataType: "text",
-    licenseName: "CC BY 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
-    attributionText: "OSHB text and morphology provided by Open Scriptures.",
-    requiresAttribution: true,
-    allowsCommercialUse: true,
-    allowsModification: true,
-    shareAlike: false,
-    notes: "Includes WLC text.",
-  },
-  "perseus-texts": {
-    id: "perseus-texts",
-    sourceName: "Perseus Digital Library",
-    sourceUrl: "http://www.perseus.tufts.edu/",
-    dataType: "text",
-    licenseName: "CC BY-SA 3.0",
-    attributionText: "Text provided by Perseus Digital Library.",
-    requiresAttribution: true,
-    allowsCommercialUse: true,
-    allowsModification: true,
-    shareAlike: true,
-  },
-  "project-gutenberg": {
-    id: "project-gutenberg",
-    sourceName: "Project Gutenberg",
-    sourceUrl: "https://www.gutenberg.org/",
-    dataType: "text",
-    licenseName: "Public Domain",
-    attributionText: "Text provided by Project Gutenberg.",
-    requiresAttribution: false,
-    allowsCommercialUse: true,
-    allowsModification: true,
-    shareAlike: false,
-  },
-  "lxx-text": {
-    id: "lxx-text",
-    sourceName: "Septuagint (LXX)",
-    sourceUrl: "https://www.academic-bible.com/en/online-bibles/septuagint-lxx/",
-    dataType: "text",
-    licenseName: "Public Domain",
-    attributionText: "Septuagint text (Rahlfs-Hanhart). Public Domain.",
-    requiresAttribution: false,
-    allowsCommercialUse: true,
-    allowsModification: true,
-    shareAlike: false,
-  },
-  "patristic-texts": {
-    id: "patristic-texts",
-    sourceName: "Patristic Greek Texts",
-    sourceUrl: "",
-    dataType: "text",
-    licenseName: "Public Domain",
-    attributionText: "Patristic Greek texts are in the Public Domain.",
-    requiresAttribution: false,
-    allowsCommercialUse: true,
-    allowsModification: true,
-    shareAlike: false,
-  },
-};
+// ATTRIBUTIONS now lives in ./attributions.ts (extracted to keep this file
+// small and to let the ingestion pipeline import the license registry without
+// pulling in the whole bundled corpus). Imported for local use in the corpus
+// definitions below and re-exported for existing importers.
+import { ATTRIBUTIONS, getAttribution, isCommercialSafe } from "./attributions.js";
+export { ATTRIBUTIONS, getAttribution, isCommercialSafe };
 
 export const GREEK_CORPUS: Corpus = {
   id: "SBLGNT",

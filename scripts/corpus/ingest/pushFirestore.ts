@@ -50,6 +50,8 @@ export async function pushToFirestore(
     title: text.title,
     languageId: text.language,
     author: text.author ?? null,
+    direction: text.direction ?? null,
+    sourceAttributionId: text.sourceAttributionId ?? null,
     sourceStatus: text.sourceStatus ?? 'partial',
     isSample: text.isSample ?? false,
     isComplete: text.isComplete ?? false,
