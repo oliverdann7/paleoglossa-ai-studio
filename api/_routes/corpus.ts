@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { CorpusDB } from '../../src/data/corpus.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
+import {
+  listLocalCorpus,
+  getLocalText,
+  getLocalSection,
+} from '../_lib/localCorpus.js';
 
 interface CorpusTextListItem {
   id: string;
@@ -10,7 +15,7 @@ interface CorpusTextListItem {
   isSample: boolean;
   sentenceCount: number;
   sectionsPreview: { id: string; label: string }[];
-  source: 'static' | 'firestore';
+  source: 'static' | 'firestore' | 'local';
 }
 
 const router = Router();
@@ -38,16 +43,26 @@ router.get('/api/corpus', async (req: any, res: any) => {
     source: 'static' as const,
   }));
 
-  // Merge Firestore corpus texts (non-destructive: static wins on id collision)
+  const staticIds = new Set(staticItems.map((si) => si.id));
+
+  // Merge local (file-served) corpus — full texts completed by the pipeline.
+  // Static wins on id collision; local wins over Firestore.
+  const localItems: CorpusTextListItem[] = listLocalCorpus(
+    typeof lang === 'string' ? lang : undefined
+  )
+    .filter((li) => !staticIds.has(li.id))
+    .map((li) => ({ ...li, source: 'local' as const }));
+  const localIds = new Set(localItems.map((li) => li.id));
+
+  // Merge Firestore corpus texts (non-destructive: static/local win on id collision)
   const firestoreItems: CorpusTextListItem[] = [];
   try {
     const adminDb = getAdminDb();
     if (adminDb) {
       const snap = await adminDb.collection('corpus').get();
-      const staticIds = new Set(staticItems.map((si) => si.id));
       snap.forEach((doc) => {
         const data = doc.data();
-        if (staticIds.has(doc.id)) return; // static takes precedence
+        if (staticIds.has(doc.id) || localIds.has(doc.id)) return; // static/local take precedence
         if (lang && data.languageId !== lang) return;
         firestoreItems.push({
           id: doc.id,
@@ -62,10 +77,10 @@ router.get('/api/corpus', async (req: any, res: any) => {
       });
     }
   } catch {
-    // Firestore unavailable — static corpus only
+    // Firestore unavailable — static + local corpus only
   }
 
-  res.status(200).json([...staticItems, ...firestoreItems]);
+  res.status(200).json([...staticItems, ...localItems, ...firestoreItems]);
 });
 
 // ─── Get single corpus text metadata ─────────────────────────────────────────
@@ -82,6 +97,18 @@ router.get('/api/corpus/:textId', async (req: any, res: any) => {
       languageId: (staticText as any).languageId || (staticText as any).language,
       sectionsPreview: (staticText as any).sectionsPreview ?? [],
       source: 'static',
+    });
+  }
+
+  // Try local (file-served) corpus
+  const localText = getLocalText(textId);
+  if (localText) {
+    return res.status(200).json({
+      id: localText.id,
+      title: localText.title,
+      languageId: (localText as any).languageId || localText.language,
+      sectionsPreview: localText.sectionsPreview ?? [],
+      source: 'local',
     });
   }
 
@@ -117,6 +144,12 @@ router.get('/api/corpus/:textId/sections/:sectionId', async (req: any, res: any)
   const section = CorpusDB.getSection(sectionId);
   if (section) {
     return res.status(200).json({ ...section, source: 'static' });
+  }
+
+  // Try local (file-served) corpus
+  const localSection = getLocalSection(textId, sectionId);
+  if (localSection) {
+    return res.status(200).json({ ...localSection, source: 'local' });
   }
 
   // Try Firestore corpus/{textId}/sections/{sectionId}

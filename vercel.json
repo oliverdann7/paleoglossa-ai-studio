@@ -3,6 +3,11 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "api/_data/**"
+    }
+  },
   "rewrites": [
     { "source": "/api/ping", "destination": "/api/ping.ts" },
     { "source": "/api/(.*)", "destination": "/api/index.ts" },
