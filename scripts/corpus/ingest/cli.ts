@@ -33,18 +33,28 @@ import { buildMaculaSections } from './sources/macula.js';
 import { fillGlosses, createGeminiGlossResolver } from './glossFill.js';
 import { assembleText } from './assemble.js';
 import { pushToFirestore } from './pushFirestore.js';
+import { buildMaculaHebrewSections } from './sources/macula-hebrew.js';
+import { parseTeiWork } from './sources/tei.js';
+import { parsePlaintextWork } from './sources/plaintext.js';
+import { assertLicenseAllowsIngest } from './licenseGate.js';
+import { getLanguageDirection } from '../../../src/lib/data/languages.js';
 import type { TextSection, TokenAnnotation, WorkInput } from './types.js';
 
+type SourceKind = 'macula' | 'macula-hebrew' | 'tei' | 'plaintext' | 'work';
+
 interface Args {
-  source: 'macula' | 'work';
+  source: SourceKind;
   tsv?: string;
   book?: string;
   work?: string;
+  input?: string;
   annotations?: string;
   textId: string;
   language: string;
   title: string;
   author?: string;
+  attribution?: string;
+  allowNonCommercial: boolean;
   geminiKey?: string;
   glossCache?: string;
   dryRun: boolean;
@@ -56,15 +66,18 @@ function parseArgs(argv: string[]): Args {
     return i >= 0 ? argv[i + 1] : undefined;
   };
   const args: Args = {
-    source: (get('--source') as Args['source']) ?? 'work',
+    source: (get('--source') as SourceKind) ?? 'work',
     tsv: get('--tsv'),
     book: get('--book'),
     work: get('--work'),
+    input: get('--input'),
     annotations: get('--annotations'),
     textId: get('--text-id') ?? '',
     language: get('--language') ?? '',
     title: get('--title') ?? '',
     author: get('--author'),
+    attribution: get('--attribution'),
+    allowNonCommercial: argv.includes('--allow-noncommercial'),
     geminiKey: get('--gemini-key') ?? process.env.GEMINI_API_KEY,
     glossCache: get('--gloss-cache'),
     dryRun: argv.includes('--dry-run'),
@@ -73,8 +86,11 @@ function parseArgs(argv: string[]): Args {
   if (!args.textId) missing.push('--text-id');
   if (!args.language) missing.push('--language');
   if (!args.title) missing.push('--title');
-  if (args.source === 'macula' && (!args.tsv || !args.book)) missing.push('--tsv and --book (macula)');
+  if ((args.source === 'macula' || args.source === 'macula-hebrew') && (!args.tsv || !args.book))
+    missing.push('--tsv and --book');
   if (args.source === 'work' && !args.work) missing.push('--work (work)');
+  if ((args.source === 'tei' || args.source === 'plaintext') && !args.input)
+    missing.push('--input');
   if (missing.length) {
     console.error(`[ingest] Missing required args: ${missing.join(', ')}`);
     process.exit(1);
@@ -87,8 +103,29 @@ async function buildSections(args: Args): Promise<TextSection[]> {
     const tsv = readFileSync(args.tsv!, 'utf-8');
     return buildMaculaSections(tsv, { book: args.book!, textId: args.textId });
   }
-  // source === 'work'
-  const work = JSON.parse(readFileSync(args.work!, 'utf-8')) as WorkInput;
+  if (args.source === 'macula-hebrew') {
+    const tsv = readFileSync(args.tsv!, 'utf-8');
+    return buildMaculaHebrewSections(tsv, { book: args.book!, textId: args.textId });
+  }
+
+  // Text-only sources → a WorkInput that flows through segment → glossFill.
+  let work: WorkInput;
+  if (args.source === 'tei') {
+    work = parseTeiWork(readFileSync(args.input!, 'utf-8'), {
+      textId: args.textId,
+      language: args.language,
+      title: args.title,
+    });
+  } else if (args.source === 'plaintext') {
+    work = parsePlaintextWork(readFileSync(args.input!, 'utf-8'), {
+      textId: args.textId,
+      language: args.language,
+      title: args.title,
+    });
+  } else {
+    // source === 'work'
+    work = JSON.parse(readFileSync(args.work!, 'utf-8')) as WorkInput;
+  }
   // textId/language from the flags win, so one work file can be re-targeted.
   work.textId = args.textId;
   work.language = args.language;
@@ -106,6 +143,9 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   console.log(`[ingest] ${args.dryRun ? '[DRY RUN] ' : ''}${args.textId} (${args.language}) via "${args.source}"`);
 
+  // Enforce the licensing gate BEFORE doing any (possibly billable) work.
+  assertLicenseAllowsIngest(args.attribution, { allowNonCommercial: args.allowNonCommercial });
+
   let sections = await buildSections(args);
 
   const cachePath = args.glossCache ?? `scripts/corpus/ingest/.cache/${args.language}-glosses.json`;
@@ -119,7 +159,17 @@ async function main() {
     `[ingest] Glosses — bundled: ${gloss.filledFromBundled}, ai: ${gloss.filledFromAi}, still missing: ${gloss.stillMissing}`
   );
 
-  const assembled = assembleText(args.textId, args.language, { title: args.title, author: args.author }, sections);
+  const assembled = assembleText(
+    args.textId,
+    args.language,
+    {
+      title: args.title,
+      author: args.author,
+      sourceAttributionId: args.attribution,
+      direction: getLanguageDirection(args.language),
+    },
+    sections
+  );
 
   if (!assembled.complete) {
     console.warn(`[ingest] ⚠ Text "${args.textId}" did NOT pass the completeness gate — writing as 'partial':`);

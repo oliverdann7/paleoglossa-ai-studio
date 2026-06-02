@@ -30,3 +30,5 @@ ios/App/App/GoogleService-Info.plist
 
 # Corpus ingestion gloss cache (generated)
 scripts/corpus/ingest/.cache/
+# Corpus ingestion source downloads (Macula TSVs, TEI/plaintext dumps — fetched by maintainer)
+scripts/corpus/ingest/.sources/

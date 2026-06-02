@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc><titleStmt><title>Sample</title></titleStmt></fileDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div type="chapter" n="1">
+        <l n="1">ܒ݁ܪܺܫܺܝܬ݂ ܐܺܝܬ݂ܰܘܗ݈ܝ ܗ݈ܘܳܐ <note>gloss</note>ܡܶܠܬ݂ܳܐ</l>
+        <l n="2">ܘܗܽܘ ܡܶܠܬ݂ܳܐ ܐܺܝܬ݂ܰܘܗ݈ܝ ܗ݈ܘܳܐ</l>
+      </div>
+      <div type="chapter" n="2">
+        <l n="1">ܟ݁ܽܠ ܒ݁ܺܐܺܝܕ݂ܶܗ ܗܘܳܐ</l>
+      </div>
+    </body>
+  </text>
+</TEI>
