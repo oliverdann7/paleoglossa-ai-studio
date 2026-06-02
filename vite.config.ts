@@ -66,7 +66,20 @@ export default defineConfig(({mode}) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+          // The file-served corpus (full works, some tens of MB) must NOT be
+          // precached — it's fetched on demand and would blow the precache.
+          globIgnores: ['**/corpus-data/**'],
           runtimeCaching: [
+            {
+              // Completed full texts served as static assets — cache on demand.
+              urlPattern: /\/corpus-data\/.*\.json$/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'corpus-data-cache',
+                expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
               handler: 'CacheFirst',
