@@ -239,10 +239,10 @@ const aneEntries: ManifestEntry[] = [
     language: 'akk',
     title: 'Epic of Gilgamesh (Standard Babylonian)',
     source: 'plaintext',
-    attribution: 'oracc',
-    status: 'blocked',
-    blockedReason:
-      'Supersedes Akk-Gilg-1. The richly-annotated source (ORACC) is CC BY-SA — share-alike, case-by-case for a closed product. Modern critical editions (e.g. George 2003) are in copyright. Ingest only from a confirmed PD transliteration via public-domain-edition, or a share-alike build.',
+    file: 'pd/gilgamesh.txt',
+    attribution: 'ebl',
+    status: 'active',
+    notes: 'Supersedes Akk-Gilg-1. Reconstructed SB transliteration (12 tablets) from the electronic Babylonian Library (eBL, CC BY-SA). Ships partial (no bundled Akkadian gloss source — full text + on-click AI).',
   },
 ];
 
