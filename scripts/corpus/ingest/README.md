@@ -26,6 +26,7 @@ segment → annotate → glossFill → assemble → pushFirestore
 | glossFill | `glossFill.ts` | Fill any remaining empty gloss from bundled dictionaries (`getDefinitionWithFallbacks`), then batch Gemini for the residue. Caches per `{language, lemma}`. |
 | assemble | `assemble.ts` | Build `Text` + `TextSection[]`, run the **shared** completeness gate (`validateTextAnnotations`). Passes → `complete`; gaps → `partial`. |
 | pushFirestore | `pushFirestore.ts` | Write to `corpus/{textId}` (+ sections), matching the shapes `api/_routes/corpus.ts` reads. Carries `sourceAttributionId` + `direction`. `--dry-run` needs no credentials. |
+| emitLocal | `emitLocal.ts` | Alternative sink to Firestore: write one `{ text, sections }` JSON to `api/_data/corpus/<textId>.json`. **No credentials needed.** Served by `api/_lib/localCorpus.ts` via the same `/api/corpus/*` endpoints, so the Reader renders it like any remote text — without bloating the eager `corpus` JS bundle. Use `--emit-local`. |
 
 The completeness gate (`src/data/corpus/validation.ts` → `validateTextAnnotations`)
 is the same check the bundled corpus uses: a text only becomes `complete` when
@@ -95,6 +96,17 @@ fetched by the maintainer into `scripts/corpus/ingest/.sources/` (gitignored);
 an entry whose file is absent is skipped with a notice, so a full dry-run works
 before any download.
 
+The manifest covers the whole Bible (Macula → fully `complete`, no AI) plus a
+`*-full` target for every bundled excerpt/sample of a larger work — the
+Septuagint, classical Greek & Latin, the Apostolic Fathers/patristics, and the
+ancient-Near-Eastern works. Each entry's `notes` records the bundled id it
+supersedes (`supersedes <id>`); `manifest.test.ts` enforces that coverage. The
+non-Bible literary works come from public-domain / CC-BY editions and assemble
+`partial` (text + dictionary/AI glosses) until a commercially-licensed treebank
+or a reviewed gloss cache fills the remaining morphology — drop the source file
+into `.sources/<path>` (the `file:` in each entry), supply `--gemini-key`, and
+review the gloss cache before they promote to `complete`.
+
 ```bash
 npm run ingest:manifest:dry              # validate everything, write nothing
 npm run ingest:manifest -- --only grc-koine   # real ingest of the Koine NT
@@ -102,7 +114,27 @@ npm run ingest:manifest -- --only hbo         # real ingest of the Hebrew Bible
 ```
 
 Flags: `--only <lang|textId>`, `--allow-noncommercial`, `--sources-dir <path>`,
-`--gemini-key <key>`. Real writes need `FIREBASE_SERVICE_ACCOUNT_JSON`.
+`--gemini-key <key>`, `--emit-local`. Real Firestore writes need
+`FIREBASE_SERVICE_ACCOUNT_JSON`; `--emit-local` needs nothing.
+
+### Two ways to serve a completed text
+
+```bash
+# A) Firestore (external storage; scales to the whole corpus; needs credentials)
+FIREBASE_SERVICE_ACCOUNT_JSON="$(cat sa.json)" \
+  npm run ingest:manifest -- --only grc-koine
+
+# B) Local file-served (no credentials; committed JSON read on the server on
+#    demand; ideal for a curated high-value subset). Writes api/_data/corpus/*.json:
+tsx scripts/corpus/ingest/run-manifest.ts --only grc-koine-mark-full --emit-local
+tsx scripts/corpus/ingest/run-manifest.ts --only hbo-genesis-full     --emit-local
+```
+
+`--emit-local` is how the seeded full books (Mark, Genesis, Jonah, Ruth) ship in
+the app today, fully annotated from Macula with no AI and **zero bundle cost**
+(the JSON is server-side, not in the SPA chunk). Vercel ships the files via the
+`functions.includeFiles` entry in `vercel.json`. The whole Bible would be ~150 MB
+of JSON — past that subset, use Firestore (option A) rather than committing it.
 
 To actually write, drop `--dry-run` and provide `FIREBASE_SERVICE_ACCOUNT_JSON`:
 

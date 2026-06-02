@@ -105,8 +105,11 @@ export interface GlossFillResult {
 }
 
 /**
- * Fill empty token glosses in-place across the sections. Lemma is required to
- * resolve a meaning; tokens with no lemma are left for the completeness gate.
+ * Fill empty token glosses in-place across the sections. A meaning is resolved
+ * by the token's lemma when set, else by its normalized surface form, so
+ * text-only sources (plaintext/tei) without a treebank still get glosses from
+ * inflection-aware dictionaries. POS is not inferred here, so such texts remain
+ * `partial` until a treebank or reviewed pass supplies morphology.
  */
 export async function fillGlosses(
   sections: TextSection[],
@@ -117,16 +120,28 @@ export async function fillGlosses(
   let filledFromAi = 0;
   let stillMissing = 0;
 
-  // Collect the unique lemmas that need a gloss first, so AI is called at most
-  // once per lemma regardless of how often it occurs.
+  // The term to resolve a meaning by: the lemma when a treebank/Macula set one,
+  // otherwise the normalized surface form. Text-only sources (plaintext/tei)
+  // leave lemma empty, so without this fallback they would resolve nothing;
+  // surface-form lookup still hits inflection-aware dictionaries (e.g. Whitaker's
+  // Latin) and the corpus-derived form index. Returns '' if nothing usable.
+  const lookupTerm = (tok: { lemma?: string; normalized?: string; surface?: string }): string => {
+    if (tok.lemma && tok.lemma.trim()) return tok.lemma.trim();
+    if (tok.normalized && tok.normalized.trim()) return tok.normalized.trim();
+    return (tok.surface ?? '').trim();
+  };
+
+  // Collect the unique terms that need a gloss first, so AI is called at most
+  // once per term regardless of how often it occurs.
   const need = new Map<string, { lemma: string; surface: string }>();
   for (const section of sections) {
     for (const sentence of section.sentences) {
       for (const tok of sentence.tokens) {
         if (tok.gloss && tok.gloss.trim()) continue;
-        if (!tok.lemma || !tok.lemma.trim()) continue;
-        const k = cacheKey(opts.languageId, tok.lemma);
-        if (!need.has(k)) need.set(k, { lemma: tok.lemma, surface: tok.surface });
+        const term = lookupTerm(tok);
+        if (!term) continue;
+        const k = cacheKey(opts.languageId, term);
+        if (!need.has(k)) need.set(k, { lemma: term, surface: tok.surface });
       }
     }
   }
@@ -157,18 +172,22 @@ export async function fillGlosses(
       ...sentence,
       tokens: sentence.tokens.map((tok) => {
         if (tok.gloss && tok.gloss.trim()) return tok;
-        if (!tok.lemma || !tok.lemma.trim()) {
+        const term = lookupTerm(tok);
+        if (!term) {
           stillMissing++;
           return tok;
         }
-        const entry = cache[cacheKey(opts.languageId, tok.lemma)];
+        const entry = cache[cacheKey(opts.languageId, term)];
         if (!entry) {
           stillMissing++;
           return tok;
         }
         if (entry.aiGenerated) filledFromAi++;
         else filledFromBundled++;
-        return { ...tok, gloss: entry.gloss };
+        // Carry the resolved term as the lemma when the source left it empty, so
+        // the token gains a dictionary headword (helps the Reader + the gate).
+        const lemma = tok.lemma && tok.lemma.trim() ? tok.lemma : term;
+        return { ...tok, lemma, gloss: entry.gloss };
       }),
     })),
   }));

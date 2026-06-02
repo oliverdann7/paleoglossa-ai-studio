@@ -31,6 +31,7 @@ import { applyAnnotations } from './annotate.js';
 import { fillGlosses, createGeminiGlossResolver } from './glossFill.js';
 import { assembleText } from './assemble.js';
 import { pushToFirestore } from './pushFirestore.js';
+import { emitLocal } from './emitLocal.js';
 import { checkLicense } from './licenseGate.js';
 import { getLanguageDirection } from '../../../src/lib/data/languages.js';
 import { MANIFEST, type ManifestEntry } from './manifest.js';
@@ -42,6 +43,7 @@ interface RunArgs {
   allowNonCommercial: boolean;
   sourcesDir: string;
   geminiKey?: string;
+  emitLocal: boolean;
 }
 
 function parseArgs(argv: string[]): RunArgs {
@@ -55,6 +57,7 @@ function parseArgs(argv: string[]): RunArgs {
     allowNonCommercial: argv.includes('--allow-noncommercial'),
     sourcesDir: get('--sources-dir') ?? 'scripts/corpus/ingest/.sources',
     geminiKey: get('--gemini-key') ?? process.env.GEMINI_API_KEY,
+    emitLocal: argv.includes('--emit-local'),
   };
 }
 
@@ -161,7 +164,10 @@ async function main() {
       gloss.sections
     );
 
-    const result = await pushToFirestore(assembled, { dryRun: args.dryRun });
+    const result =
+      args.emitLocal && !args.dryRun
+        ? emitLocal(assembled)
+        : await pushToFirestore(assembled, { dryRun: args.dryRun });
     const state = assembled.complete ? 'complete' : 'partial';
     if (assembled.complete) summary.complete++;
     else summary.partial++;

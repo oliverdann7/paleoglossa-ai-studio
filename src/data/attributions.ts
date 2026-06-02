@@ -237,6 +237,37 @@ export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
     notes:
       'Share-alike: commercially usable but the derived data must remain shareable. Treat as case-by-case before ingesting.',
   },
+  ebl: {
+    id: 'ebl',
+    sourceName: 'electronic Babylonian Library (eBL)',
+    sourceUrl: 'https://www.ebl.lmu.de/',
+    dataType: 'text',
+    licenseName: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    attributionText:
+      'Akkadian reconstructed text from the electronic Babylonian Library (eBL), LMU Munich.',
+    requiresAttribution: true,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: true,
+    notes:
+      'Eclectic reconstructed transliteration of cuneiform literature (e.g. the Standard Babylonian Gilgamesh). Share-alike warns but passes the commercial gate.',
+  },
+  wikisource: {
+    id: 'wikisource',
+    sourceName: 'Wikisource',
+    sourceUrl: 'https://wikisource.org/',
+    dataType: 'text',
+    licenseName: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+    attributionText: 'Text from Wikisource; the underlying ancient works are public domain.',
+    requiresAttribution: true,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: true,
+    notes:
+      'Multilingual public-domain texts typed by the Wikisource community (CC BY-SA). Share-alike warns but passes the commercial gate.',
+  },
 };
 
 /** Look up a source attribution by id. */
