@@ -4,6 +4,8 @@
  */
 
 import { TextSection, Sentence } from '../../types/corpus.js';
+import { LXX_LEX } from './lxx-septuagint.js';
+import { MINI_LEX } from './greek-mini-stories.js';
 
 function sent(id: string, words: string[], translation: string): Sentence {
   return {
@@ -12,13 +14,14 @@ function sent(id: string, words: string[], translation: string): Sentence {
       const clean = w.replace(/^[\s.,;:!?()"«»—–·]+|[\s.,;:!?()"«»—–·]+$/g, '');
       const punctAfter = w.slice(clean.length) || ' ';
       const normalized = clean.normalize('NFD').replace(/[̀-ͯ᷀-᷿⃐-⃿]/g, '').toLowerCase();
+      const hit = LXX_LEX[normalized] || MINI_LEX[normalized];
       return {
         id: `${id}-t${i}`,
         surface: w,
         normalized,
-        lemma: normalized,
-        gloss: '',
-        morphology: { partOfSpeech: 'unknown' },
+        lemma: hit?.lemma || normalized,
+        gloss: hit?.gloss || '',
+        morphology: { partOfSpeech: hit?.partOfSpeech || 'unknown' },
         punctBefore: '',
         punctAfter: punctAfter.trim() ? punctAfter + ' ' : ' ',
       };
@@ -139,7 +142,7 @@ export const GRC_SOPHOCLES_ANT: TextSection = {
       ['ἐᾶν', 'δ᾽', 'ἄθαπτον', 'καὶ', 'πρὸς', 'οἰωνῶν', 'δέμας', 'καὶ', 'πρὸς', 'κυνῶν', 'ἐδεστὸν', 'αἰκισθέν', 'τ᾽', 'ἰδεῖν.'],
       'but to leave unburied, a sweet treasure for birds as they look for food, and for dogs.'),
     sent('Soph-Ant-10',
-      ['τοιαῦτα', 'φασὶ', 'τὸν', 'ἀγαθὸν', 'Κρέοντα', 'σοί', 'τε', 'κἀμοὶ', '—', 'λέγω', 'γάρ', 'κἀμέ', '—', 'κηρύσσειν', 'ἔχειν.'],
+      ['τοιαῦτα', 'φασὶ', 'τὸν', 'ἀγαθὸν', 'Κρέοντα', 'σοί', 'τε', 'κἀμοὶ', 'λέγω', 'γάρ', 'κἀμέ', 'κηρύσσειν', 'ἔχειν.'],
       'Such is what they say noble Creon has proclaimed to you and me — for I include myself — and is coming to announce.'),
   ],
 };

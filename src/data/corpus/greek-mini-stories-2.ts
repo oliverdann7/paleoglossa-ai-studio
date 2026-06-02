@@ -7,6 +7,8 @@
  */
 
 import { TextSection, Sentence } from '../../types/corpus.js';
+import { LXX_LEX } from './lxx-septuagint.js';
+import { MINI_LEX as SHARED_MINI_LEX } from './greek-mini-stories.js';
 
 function sent(id: string, words: string[], translation: string): Sentence {
   return {
@@ -18,13 +20,14 @@ function sent(id: string, words: string[], translation: string): Sentence {
         .normalize('NFD')
         .replace(/[̀-ͯ]/g, '')
         .toLowerCase();
+      const hit = MINI_LEX2[normalized] || SHARED_MINI_LEX[normalized] || LXX_LEX[normalized];
       return {
         id: `${id}-t${i}`,
         surface: w,
         normalized,
-        lemma: normalized,
-        gloss: '',
-        morphology: { partOfSpeech: 'unknown' },
+        lemma: hit?.lemma || normalized,
+        gloss: hit?.gloss || '',
+        morphology: { partOfSpeech: hit?.partOfSpeech || 'unknown' },
         punctBefore: i === 0 ? '' : '',
         punctAfter: punctAfter.trim() ? punctAfter + ' ' : ' ',
       };
@@ -32,6 +35,8 @@ function sent(id: string, words: string[], translation: string): Sentence {
     translation,
   };
 }
+
+const MINI_LEX2: Record<string, { lemma: string; gloss: string; partOfSpeech?: string }> = {};
 
 // ─── Story 6: Ἡ μήτηρ καὶ τὸ τέκνον (The mother and the child) ────────────
 

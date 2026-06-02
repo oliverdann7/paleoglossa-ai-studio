@@ -47,6 +47,12 @@ describe('corpus production data', () => {
     'Text "san-vocab" has isSample=false but sourceStatus is "undefined"',
     'Text "egy-vocab" has isSample=false but sourceStatus is "undefined"',
     'Corpus "" referenced by text "uga-vocab" does not exist',
+    // Completeness-gate baseline: texts currently marked complete but whose
+    // tokens are not fully POS-tagged + glossed. Tracked for systematic
+    // backfill — when a text's annotation gap closes, update or remove its
+    // entry here. The gate prevents NEW under-annotated texts from landing
+    // under sourceStatus: 'complete'.
+    'Text "Jn-full" is marked complete but has annotation gaps: 2349 unknown POS, 2349 missing gloss, 5 missing lemma (of 15620 tokens). Either complete the annotations or change sourceStatus to \'partial\'.',
   ]);
 
   it('introduces no new validateCorpus regressions over the known baseline', () => {
@@ -115,10 +121,18 @@ describe('complete vs excerpt labeling', () => {
     expect(actualSentenceCount('Ps-23')).toBeLessThan(SHORT_COMPLETE_THRESHOLD);
   });
 
-  it('reclassifies single-chapter/book excerpts as excerpt + sample', () => {
+  it('reclassifies opening-selection excerpts of larger works as excerpt + sample', () => {
     const reclassified = [
-      'Jn-1', 'Aeneid-1', 'Gen', 'Anab-1', 'Iliad-1', 'GrcMk',
+      // Biblical chapter/book excerpts
+      'Jn-1', 'Gen', 'Anab-1', 'Iliad-1', 'Aeneid-1', 'GrcMk',
       'LXX-Gen-1', 'LXX-Exod-12', 'LXX-Isa-6', 'LXX-Prov-1', 'LXX-Jonah-1',
+      // Classics — opening selections of huge works
+      'Livy-AUC', 'Sall-Cat', 'Tac-Ann', 'Hdt-Hist', 'Thuc-Hist',
+      'Soph-Ant', 'Plut-Alex', 'Lucian-Char', 'Aesop-1',
+      // Patristics / beginner — opening sections of larger works
+      '1Clem-1', 'Did-1', 'Athan-Inc-1', 'Chrys-Jn-1', 'Hermas-Vis-1',
+      'Basil-Hex-1', 'Ign-Eph', 'Justin-Apol', 'Polyc-Phil',
+      'Lat-Vg-Jn', 'Lat-Cato',
     ];
     for (const id of reclassified) {
       const t = CorpusDB.getText(id);

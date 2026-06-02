@@ -68,6 +68,10 @@ npm run e2e          # playwright test
 - Notebook export (Markdown + PDF), cross-text note linking with backlinks
 
 ### Data ingestion gaps — code is wired, content isn't bulk-loaded
+Both surfaces below are gated behind `VITE_ENABLE_EXPERIMENTAL` (off in production) so they
+don't read as unfinished — see `src/lib/features.ts` (`isExperimentalEnabled`). Flip the env
+var on in dev to work on them; promote a surface out of the gate once its content is seeded.
+
 | Feature | File(s) | What's missing |
 |---------|---------|----------------|
 | Syntax treebank | `api/_routes/syntax.ts`, `api/_lib/treebankIndex.ts`, `scripts/treebank/import-proiel.ts` | Reader + PROIEL importer exist; `src/data/treebanks/` ships only `sample-proiel.json`. Run the importer against full PROIEL/Gorman/Perseus drops to populate. |

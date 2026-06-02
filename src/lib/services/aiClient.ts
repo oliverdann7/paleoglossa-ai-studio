@@ -14,10 +14,7 @@ export class AIError extends Error {
 
 // ── Response schemas ─────────────────────────────────────────────────────
 
-const TokenMorphologySchema = z
-  .record(z.string(), z.string())
-  .optional()
-  .nullable();
+const TokenMorphologySchema = z.record(z.string(), z.string()).optional().nullable();
 
 const SentenceAnalysisSchema = z.object({
   sentences: z.array(
@@ -183,22 +180,39 @@ export class AIClient {
    * Returns a SHORT dictionary-style gloss (2–8 words) for the Meaning panel.
    * Use this for the auto-fallback in LexDrawerPanel — NOT the full `explainWord`.
    */
-  static async getWordGloss(languageId: string, word: string, lemma: string): Promise<string> {
+  static async getWordGloss(
+    languageId: string,
+    word: string,
+    lemma: string,
+    targetLanguage?: string
+  ): Promise<string> {
     const data = await this.request(
       'explain',
-      { languageId, word, lemma, type: 'gloss' },
+      { languageId, word, lemma, type: 'gloss', ...(targetLanguage ? { targetLanguage } : {}) },
       ExplainResponseSchema
     );
     return data.explanation;
   }
 
+  /**
+   * Cache type for a gloss. English glosses use `short-gloss`; glosses already
+   * translated into a UI language use `short-gloss:<lang>` so each UI language
+   * gets its own cache entry.
+   */
+  private static glossCacheType(targetLanguage?: string): string {
+    const lang = targetLanguage?.split('-')[0];
+    return lang && lang !== 'en' ? `short-gloss:${lang}` : 'short-gloss';
+  }
+
   static async fetchCachedGloss(
     languageId: string,
-    lemma: string
+    lemma: string,
+    targetLanguage?: string
   ): Promise<{ value: string } | null> {
     try {
+      const type = this.glossCacheType(targetLanguage);
       const response = await fetch(
-        `/api/lexical-cache/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}/short-gloss`
+        `/api/lexical-cache/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}/${encodeURIComponent(type)}`
       );
       if (!response.ok) return null;
       return (await response.json()) as { value: string };
@@ -211,13 +225,20 @@ export class AIClient {
     languageId: string,
     lemma: string,
     surface: string,
-    value: string
+    value: string,
+    targetLanguage?: string
   ): Promise<void> {
     try {
       await fetch('/api/lexical-cache', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ languageId, lemma, surface, type: 'short-gloss', value }),
+        body: JSON.stringify({
+          languageId,
+          lemma,
+          surface,
+          type: this.glossCacheType(targetLanguage),
+          value,
+        }),
       });
     } catch {
       // Non-critical — cache persistence failure is silent
@@ -349,11 +370,14 @@ export class AIClient {
     context?: string
   ): Promise<string | null> {
     try {
-      const data = await apiFetch<{ summary: string | null; unavailable?: boolean }>('/api/ai/concept-summary', {
-        method: 'POST',
-        body: { languageId, lemma, gloss, context },
-        skipAuth: true,
-      });
+      const data = await apiFetch<{ summary: string | null; unavailable?: boolean }>(
+        '/api/ai/concept-summary',
+        {
+          method: 'POST',
+          body: { languageId, lemma, gloss, context },
+          skipAuth: true,
+        }
+      );
       return data.summary ?? null;
     } catch {
       return null;

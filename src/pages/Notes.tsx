@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { EmptyState } from '../components/ui/index.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { Search, Pencil, Trash2, Check, X } from 'lucide-react';
 import { getTokenInfo } from '../lib/data/dictionary.js';
@@ -75,9 +76,14 @@ export const Notes = () => {
       </div>
 
       {notesList.length === 0 ? (
-        <div className="card p-12 text-center text-muted">
-          <p>{t('notes.empty', 'No notes found. You can add notes to words in the Reader.')}</p>
-        </div>
+        <EmptyState
+          illustration="quill"
+          heading={t('notes.emptyHeading', 'No notes yet')}
+          description={t(
+            'notes.empty',
+            'No notes found. You can add notes to words in the Reader.'
+          )}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {notesList.map((note) => (

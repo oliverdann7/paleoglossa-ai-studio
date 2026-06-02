@@ -23,7 +23,10 @@ const router = Router();
 router.get('/api/lexical-cache/:language/:lemma/:type', async (req: any, res: any) => {
   try {
     const { language, lemma, type } = req.params;
-    if (!['short-gloss', 'word-explanation'].includes(type)) {
+    // Accept English types plus UI-localised glosses keyed `short-gloss:<lang>`.
+    const isValidType =
+      type === 'short-gloss' || type === 'word-explanation' || /^short-gloss:[a-z]{2}$/.test(type);
+    if (!isValidType) {
       return res.status(400).json({ error: 'Invalid type', code: 'INVALID_INPUT' });
     }
     const entry = await getCacheEntry(language, lemma, type as any);
@@ -135,7 +138,10 @@ router.get('/api/lemmas/:language/:lemma/forms', (req: any, res: any) => {
 
     const texts = CorpusDB.getTexts() as any[];
 
-    const formsMap = new Map<string, { surface: string; features: Record<string, string>; count: number }>();
+    const formsMap = new Map<
+      string,
+      { surface: string; features: Record<string, string>; count: number }
+    >();
 
     for (const text of texts) {
       const textLang = (text as any).languageId || (text as any).language || '';
@@ -308,7 +314,9 @@ function stripTags(html: string): string {
 router.get('/api/lexicon-lookup/:language/:lemma', async (req: any, res: any) => {
   const { language, lemma } = req.params;
   if (!lemma || !language) {
-    return res.status(400).json({ error: 'language and lemma are required', code: 'INVALID_INPUT' });
+    return res
+      .status(400)
+      .json({ error: 'language and lemma are required', code: 'INVALID_INPUT' });
   }
 
   const isGreek = language === 'grc' || language === 'grc-koine';
@@ -334,9 +342,7 @@ router.get('/api/lexicon-lookup/:language/:lemma', async (req: any, res: any) =>
       const data: Record<string, any[]> = await response.json();
 
       // Priority order: LSJ > middleLiddell for Greek; ls > logeion for Latin
-      const candidateKeys = isLatin
-        ? ['ls', 'logeion']
-        : ['lsj', 'middleLiddell', 'logeion'];
+      const candidateKeys = isLatin ? ['ls', 'logeion'] : ['lsj', 'middleLiddell', 'logeion'];
 
       const sourceLabels: Record<string, string> = {
         lsj: 'Liddell-Scott-Jones',
@@ -361,7 +367,9 @@ router.get('/api/lexicon-lookup/:language/:lemma', async (req: any, res: any) =>
           sourceUrl: `https://logeion.uchicago.edu/${encodeURIComponent(lemma)}`,
         });
       }
-      return res.status(404).json({ error: 'No usable definition in Logeion response', code: 'NOT_FOUND' });
+      return res
+        .status(404)
+        .json({ error: 'No usable definition in Logeion response', code: 'NOT_FOUND' });
     } catch (err: any) {
       console.error('[lexicon-lookup] Logeion error:', err.message);
       return res.status(502).json({ error: 'Logeion request failed', code: 'UPSTREAM_ERROR' });
@@ -391,12 +399,18 @@ router.get('/api/lexicon-lookup/:language/:lemma', async (req: any, res: any) =>
       let definition = '';
 
       for (const block of content) {
-        if (block?.en) { definition = block.en; break; }
+        if (block?.en) {
+          definition = block.en;
+          break;
+        }
         if (Array.isArray(block?.senses)) {
           const senseDefs = block.senses
             .map((s: any) => s?.definition || s?.en || '')
             .filter(Boolean);
-          if (senseDefs.length) { definition = senseDefs.join('; '); break; }
+          if (senseDefs.length) {
+            definition = senseDefs.join('; ');
+            break;
+          }
         }
       }
 
@@ -418,7 +432,9 @@ router.get('/api/lexicon-lookup/:language/:lemma', async (req: any, res: any) =>
     }
   }
 
-  return res.status(400).json({ error: 'Language not supported for lexicon lookup', code: 'UNSUPPORTED_LANGUAGE' });
+  return res
+    .status(400)
+    .json({ error: 'Language not supported for lexicon lookup', code: 'UNSUPPORTED_LANGUAGE' });
 });
 
 // ─── Dictionary ───────────────────────────────────────────────────────────────
@@ -464,8 +480,10 @@ router.get('/api/lemma-frequency/:lang', (req: any, res: any) => {
 
     const limitParam = req.query.limit;
     const offsetParam = req.query.offset;
-    const limit = limitParam && typeof limitParam === 'string' ? Math.min(parseInt(limitParam, 10), 2000) : 500;
-    const offset = offsetParam && typeof offsetParam === 'string' ? Math.max(parseInt(offsetParam, 10), 0) : 0;
+    const limit =
+      limitParam && typeof limitParam === 'string' ? Math.min(parseInt(limitParam, 10), 2000) : 500;
+    const offset =
+      offsetParam && typeof offsetParam === 'string' ? Math.max(parseInt(offsetParam, 10), 0) : 0;
 
     const all = getDictionaryEntries();
     const forLang = all.filter((e) => e.languageId === lang);

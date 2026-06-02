@@ -16,4 +16,11 @@ export const features = {
   isMarketplaceEnabled: () => {
     return import.meta.env.VITE_ENABLE_MARKETPLACE === 'true';
   },
+  // Experimental surfaces that ship without seeded content (Syntax treebank,
+  // Manuscripts catalog). Gated off in production so they don't read as
+  // unfinished; flip on in dev to work on them. Promote a surface out of this
+  // gate once its content is bulk-loaded.
+  isExperimentalEnabled: () => {
+    return import.meta.env.VITE_ENABLE_EXPERIMENTAL === 'true';
+  },
 };

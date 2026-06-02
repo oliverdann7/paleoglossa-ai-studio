@@ -7,4 +7,5 @@ export const STORAGE_KEYS = {
   READING_PROGRESS_PREFIX: 'reading_progress_',
   RECENT_PROGRESS: 'recent_reading_progress',
   TUTORIAL_COMPLETED: 'tutorialCompleted',
+  REVIEW_TUTORIAL_COMPLETED: 'reviewTutorialCompleted',
 } as const;

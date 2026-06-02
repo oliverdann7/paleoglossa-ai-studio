@@ -1,7 +1,7 @@
 import type { TextSection } from '../../types/corpus.js';
 import { sentLex } from '../../lib/utils/lexicalHelper.js';
 
-const EGY_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: string }> = {
+export const EGY_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: string }> = {
   m: { lemma: 'm', gloss: 'in, by, as', partOfSpeech: 'preposition' },
   n: { lemma: 'n', gloss: 'to, for, of', partOfSpeech: 'preposition' },
   r: { lemma: 'r', gloss: 'to, concerning', partOfSpeech: 'preposition' },
@@ -21,6 +21,37 @@ const EGY_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: 
   pr: { lemma: 'pr', gloss: 'house', partOfSpeech: 'noun' },
   ḥȝty: { lemma: 'ḥȝty', gloss: 'heart, mind', partOfSpeech: 'noun' },
   ȝ: { lemma: 'ȝ', gloss: 'great, big', partOfSpeech: 'adjective' },
+  bw: { lemma: 'bw', gloss: 'place; (negation)', partOfSpeech: 'particle' },
+  'f,': { lemma: 'f', gloss: 'he, his (suffix)', partOfSpeech: 'pronoun' },
+  f: { lemma: 'f', gloss: 'he, his', partOfSpeech: 'pronoun' },
+  jr: { lemma: 'jr', gloss: 'as for, if', partOfSpeech: 'particle' },
+  jrj: { lemma: 'jrj', gloss: 'to do, make', partOfSpeech: 'verb' },
+  'jrj.n': { lemma: 'jrj', gloss: 'did, made', partOfSpeech: 'verb' },
+  'jrj.n.f': { lemma: 'jrj', gloss: 'he made', partOfSpeech: 'verb' },
+  jrr: { lemma: 'jrj', gloss: 'does, makes', partOfSpeech: 'verb' },
+  jrt: { lemma: 'jrj', gloss: 'doing, making', partOfSpeech: 'verb' },
+  jry: { lemma: 'jrj', gloss: 'done', partOfSpeech: 'verb' },
+  jtjw: { lemma: 'jtj', gloss: 'fathers, ancestors', partOfSpeech: 'noun' },
+  jw: { lemma: 'jw', gloss: '(auxiliary)', partOfSpeech: 'particle' },
+  jȝw: { lemma: 'jȝw', gloss: 'old age', partOfSpeech: 'noun' },
+  mꜣꜥ: { lemma: 'mꜣꜥ', gloss: 'true, just', partOfSpeech: 'adjective' },
+  'n.f': { lemma: 'n', gloss: 'to him', partOfSpeech: 'preposition' },
+  'n.k': { lemma: 'n', gloss: 'to you', partOfSpeech: 'preposition' },
+  nbt: { lemma: 'nb', gloss: 'all, every (f.)', partOfSpeech: 'adjective' },
+  nt: { lemma: 'nt', gloss: 'of (f.)', partOfSpeech: 'preposition' },
+  nṯr: { lemma: 'nṯr', gloss: 'god', partOfSpeech: 'noun' },
+  qꜣ: { lemma: 'qꜣ', gloss: 'high; be proud', partOfSpeech: 'adjective' },
+  rmṯ: { lemma: 'rmṯ', gloss: 'people, men', partOfSpeech: 'noun' },
+  st: { lemma: 'st', gloss: 'place, seat', partOfSpeech: 'noun' },
+  sštꜣ: { lemma: 'sštꜣ', gloss: 'secret, mystery', partOfSpeech: 'noun' },
+  sḫr: { lemma: 'sḫr', gloss: 'counsel, plan', partOfSpeech: 'noun' },
+  sḫrw: { lemma: 'sḫr', gloss: 'counsels, plans', partOfSpeech: 'noun' },
+  šw: { lemma: 'šw', gloss: 'empty; free from', partOfSpeech: 'adjective' },
+  ꜥnḫ: { lemma: 'ꜥnḫ', gloss: 'life; to live', partOfSpeech: 'noun' },
+  ꜥqꜣ: { lemma: 'ꜥqꜣ', gloss: 'straight, correct', partOfSpeech: 'adjective' },
+  ꜥḏ: { lemma: 'ꜥḏ', gloss: 'safe, sound', partOfSpeech: 'adjective' },
+  ꜥḏꜣ: { lemma: 'ꜥḏꜣ', gloss: 'wrong, false', partOfSpeech: 'adjective' },
+  ꜥḥꜥw: { lemma: 'ꜥḥꜥw', gloss: 'lifetime', partOfSpeech: 'noun' },
 };
 
 export const EGY_PTAHHOTEP_2: TextSection = {

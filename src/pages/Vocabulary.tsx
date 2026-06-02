@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { EmptyState } from '../components/ui/index.js';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
@@ -570,13 +571,22 @@ export const Vocabulary = () => {
             </motion.div>
           ))
         ) : (
-          <div className="card p-12 text-center border-dashed border-2 border-bdr/40 bg-parch2/50 flex flex-col items-center">
-            <Brain className="w-12 h-12 text-muted mb-4 opacity-50" />
-            <h3 className="font-serif text-[24px] text-ink mb-2">{t('vocab.noWordsFound', 'No Words Found')}</h3>
-            <p className="text-ink3 max-w-sm mx-auto mb-6">
-              {t('vocab.noWordsFoundDesc', 'Read texts or import vocabulary to begin building your personal lexicon.')}
-            </p>
-          </div>
+          <EmptyState
+            illustration="amphora"
+            heading={t('vocab.noWordsFound', 'No Words Found')}
+            description={t(
+              'vocab.noWordsFoundDesc',
+              'Read texts or import vocabulary to begin building your personal lexicon.'
+            )}
+            action={
+              <button
+                onClick={() => navigate('/app/library')}
+                className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 transition-opacity"
+              >
+                {t('vocab.browseLibrary', 'Browse the library')}
+              </button>
+            }
+          />
         )}
 
         {totalPages > 1 && (

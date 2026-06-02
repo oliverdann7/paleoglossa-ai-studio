@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Loader2, Plus, Trash2, ChevronRight } from 'lucide-react';
+import { EmptyState } from '../components/ui/index.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { apiFetch } from '../lib/services/apiFetch.js';
 
@@ -112,16 +113,19 @@ export const Notebooks = () => {
       )}
 
       {notebooks.length === 0 ? (
-        <div className="text-center py-16 text-ink2">
-          <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted" />
-          <p className="text-[16px] mb-4">No notebooks yet.</p>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90"
-          >
-            Create Your First Notebook
-          </button>
-        </div>
+        <EmptyState
+          illustration="scroll"
+          heading="No notebooks yet"
+          description="Group your notes and texts into research notebooks to organize your study."
+          action={
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Create your first notebook
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {notebooks.map((nb) => (

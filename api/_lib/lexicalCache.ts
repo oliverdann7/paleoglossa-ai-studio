@@ -1,11 +1,18 @@
 import { getAdminDb, isAdminAvailable } from './firebaseAdmin.js';
 import { FieldValue } from 'firebase-admin/firestore';
 
+/**
+ * Cache types. `short-gloss` / `word-explanation` are English; a UI-localised
+ * gloss is keyed as `short-gloss:<uiLang>` (e.g. `short-gloss:pt`) so each
+ * interface language gets its own cached translation.
+ */
+export type LexicalCacheType = 'short-gloss' | 'word-explanation' | `short-gloss:${string}`;
+
 export interface LexicalCacheEntry {
   languageId: string;
   lemma: string;
   surface?: string;
-  type: 'short-gloss' | 'word-explanation';
+  type: LexicalCacheType;
   value: string;
   source: 'ai';
   model?: string;
@@ -24,14 +31,14 @@ function buildKey(languageId: string, lemma: string, type: string): string {
 export async function getCacheEntry(
   languageId: string,
   lemma: string,
-  type: 'short-gloss' | 'word-explanation'
+  type: LexicalCacheType
 ): Promise<LexicalCacheEntry | null> {
   const key = buildKey(languageId, lemma, type);
 
   if (isAdminAvailable()) {
     const db = getAdminDb();
     if (!db) return memoryCache.get(key) || null;
-    
+
     const doc = await db.collection('lexicalCache').doc(key).get();
     if (doc.exists) {
       return doc.data() as LexicalCacheEntry;
@@ -45,7 +52,7 @@ export async function upsertCacheEntry(
   languageId: string,
   lemma: string,
   surface: string | undefined,
-  type: 'short-gloss' | 'word-explanation',
+  type: LexicalCacheType,
   value: string
 ): Promise<void> {
   const key = buildKey(languageId, lemma, type);
@@ -71,10 +78,16 @@ export async function upsertCacheEntry(
     const db = getAdminDb();
     if (db) {
       try {
-        await db.collection('lexicalCache').doc(key).set({
-          ...entry,
-          hitCount: FieldValue.increment(1),
-        }, { merge: true });
+        await db
+          .collection('lexicalCache')
+          .doc(key)
+          .set(
+            {
+              ...entry,
+              hitCount: FieldValue.increment(1),
+            },
+            { merge: true }
+          );
       } catch (e) {
         console.error('[lexicalCache] Failed to persist to Firestore:', e);
       }

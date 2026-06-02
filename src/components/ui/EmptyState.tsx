@@ -1,7 +1,10 @@
 import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { SpotIllustration, type SpotIllustrationName } from './illustrations/SpotIllustrations';
 
 interface Props {
+  /** Thematic spot illustration. Takes precedence over `icon`. */
+  illustration?: SpotIllustrationName;
   icon?: ReactNode;
   heading: string;
   description?: string;
@@ -10,7 +13,15 @@ interface Props {
   compact?: boolean;
 }
 
-export function EmptyState({ icon, heading, description, action, className, compact }: Props) {
+export function EmptyState({
+  illustration,
+  icon,
+  heading,
+  description,
+  action,
+  className,
+  compact,
+}: Props) {
   return (
     <div
       className={cn(
@@ -20,7 +31,13 @@ export function EmptyState({ icon, heading, description, action, className, comp
         className
       )}
     >
-      {icon && <div className="text-gold/60 mb-1">{icon}</div>}
+      {illustration ? (
+        <div className="text-gold/60 mb-1">
+          <SpotIllustration name={illustration} />
+        </div>
+      ) : (
+        icon && <div className="text-gold/60 mb-1">{icon}</div>
+      )}
       <h3 className="text-[18px] font-bold text-ink font-sans">{heading}</h3>
       {description && (
         <p className="text-[14px] text-ink3 max-w-sm leading-relaxed">{description}</p>

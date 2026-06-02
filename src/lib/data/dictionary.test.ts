@@ -32,6 +32,16 @@ describe('Dictionary data', () => {
     const filtered = searchDictionaryEntries('created', 'hbo');
     expect(filtered.every((entry) => entry.languageId === 'hbo')).toBe(true);
   });
+
+  it('backfills a static gloss for corpus entries lacking an inline token gloss', () => {
+    // καί is high-frequency in the Koine corpus but its tokens carry no inline
+    // gloss; the Definition panel must still show a meaning from the static
+    // lexicon (grc-koine aliases to the shared Ancient Greek dictionary).
+    const kai = findDictionaryEntry('καί', 'grc-koine');
+    expect(kai).toBeTruthy();
+    expect(kai?.shortGloss).toBeTruthy();
+    expect(kai?.fullDefinition).toBeTruthy();
+  });
 });
 
 describe('getGlossWithFallbacks', () => {

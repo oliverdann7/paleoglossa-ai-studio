@@ -11,6 +11,7 @@ import type { DailyPathItem } from '../../lib/services/dailyPathService.js';
 import { getLanguageById } from '../../lib/constants/languages.js';
 import { CorpusDB } from '../../data/corpus.js';
 import { GUIDED_TIERS } from '../../lib/constants/beginnerPaths.js';
+import { getBeginnerCurriculum } from '../../lib/constants/beginnerCurriculum.js';
 import { cn } from '../../lib/utils.js';
 
 /** Maps onboarding level strings to tier IDs used in BeginnerHub. */
@@ -53,8 +54,13 @@ export function DailyPath({ className }: DailyPathProps) {
   const dailyCommitment = onboarding?.dailyCommitment ?? 10;
   const level = onboarding?.level ?? 'absolute-beginner';
 
-  const { getProgress } = useBeginnerProgress();
+  const { getProgress, markMilestone, advanceCurriculum } = useBeginnerProgress();
   const progress = getProgress(languageId);
+
+  const curriculum = useMemo(
+    () => (languageId ? getBeginnerCurriculum(languageId) : null),
+    [languageId]
+  );
 
   // useKnowledge with no language ID loads the full map for all languages.
   // For a single-language daily path this is fine — countDueToday works on
@@ -91,9 +97,11 @@ export function DailyPath({ className }: DailyPathProps) {
             textId,
             dueCount,
             dailyCommitment,
+            curriculum,
+            curriculumIndex: progress.curriculumIndex,
           })
         : [],
-    [languageId, tierId, lang?.hasScriptLearning, progress, textId, dueCount, dailyCommitment]
+    [languageId, tierId, lang?.hasScriptLearning, progress, textId, dueCount, dailyCommitment, curriculum]
   );
 
   // Nothing to show — don't render the card at all.
@@ -169,7 +177,8 @@ export function DailyPath({ className }: DailyPathProps) {
                     )}
                   >
                     {item.id === 'script' && t('dailyPath.scriptDrill', 'Learn the script')}
-                    {item.id === 'reading' && t('dailyPath.readingBite', 'Read a passage')}
+                    {item.id === 'reading' &&
+                      (item.unitTitle ?? t('dailyPath.readingBite', 'Read a passage'))}
                     {item.id === 'review' &&
                       t('dailyPath.reviewCards', '{{count}} cards to review', {
                         count: item.dueCount,
@@ -184,7 +193,11 @@ export function DailyPath({ className }: DailyPathProps) {
                           'Practice reading characters with the interactive script lab'
                         )}
                       {item.id === 'reading' &&
-                        t('dailyPath.readingDesc', 'Open a beginner text and start reading')}
+                        (item.unitLevel
+                          ? t('dailyPath.readingUnitDesc', 'Level {{level}} · continue your reading path', {
+                              level: item.unitLevel,
+                            })
+                          : t('dailyPath.readingDesc', 'Open a beginner text and start reading'))}
                       {item.id === 'review' &&
                         t(
                           'dailyPath.reviewDesc',
@@ -203,6 +216,14 @@ export function DailyPath({ className }: DailyPathProps) {
                 {!item.isComplete && (
                   <Link
                     to={item.link}
+                    onClick={() => {
+                      if (item.id === 'reading' && languageId) {
+                        markMilestone(languageId, 'firstTextOpened');
+                        if (item.curriculumIndex !== undefined) {
+                          advanceCurriculum(languageId, item.curriculumIndex + 1);
+                        }
+                      }
+                    }}
                     className="shrink-0 px-3 py-1.5 text-[11px] font-semibold bg-blue text-white rounded-lg hover:bg-blue/90 active:scale-95 transition-all self-center"
                   >
                     {t('common.start', 'Start')}

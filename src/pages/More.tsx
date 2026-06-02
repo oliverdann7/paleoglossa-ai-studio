@@ -21,6 +21,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
+import { features } from '@/lib/features';
 import { signOut } from '@/lib/services/authService';
 
 interface MoreCardProps {
@@ -86,7 +87,9 @@ export const More = () => {
           />
           <MoreCard icon={MessageCircle} label={t('nav.tutor', 'Tutor')} to="/app/tutor" />
           <MoreCard icon={GraduationCap} label={t('nav.grammar', 'Grammar')} to="/app/grammar" />
-          <MoreCard icon={GitBranch} label={t('nav.syntax', 'Syntax')} to="/app/syntax" />
+          {features.isExperimentalEnabled() && (
+            <MoreCard icon={GitBranch} label={t('nav.syntax', 'Syntax')} to="/app/syntax" />
+          )}
           <MoreCard icon={GraduationCap} label={t('nav.courses', 'Courses')} to="/app/courses" />
         </Section>
 

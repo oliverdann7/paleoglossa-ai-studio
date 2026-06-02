@@ -1,13 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BookOpen, ExternalLink, Library, Search, AlignLeft, Table2, Sparkles } from 'lucide-react';
+import {
+  BookOpen,
+  ExternalLink,
+  Library,
+  Search,
+  AlignLeft,
+  Table2,
+  Sparkles,
+  Languages,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useActiveLanguage } from '@/lib/hooks/useActiveLanguage';
+import { useLocalizedGloss } from '@/lib/hooks/useLocalizedGloss';
 import {
   DictionaryEntry,
   findDictionaryEntry,
-  getDictionaryLanguages,
   searchDictionaryEntries,
 } from '@/lib/data/dictionary';
+import { getLanguageDisplayName } from '@/lib/constants/languages';
 import { KWICPanel } from '../components/corpus/KWICPanel.js';
 import { frequencyTier } from '../lib/utils/frequencyTier.js';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
@@ -62,11 +74,7 @@ function AiParadigmFallback({ entry }: { entry: DictionaryEntry }) {
   };
 
   if (loadingAi) {
-    return (
-      <div className="py-16 text-center text-muted text-[14px]">
-        Generating AI paradigm…
-      </div>
-    );
+    return <div className="py-16 text-center text-muted text-[14px]">Generating AI paradigm…</div>;
   }
 
   if (aiText) {
@@ -91,8 +99,8 @@ function AiParadigmFallback({ entry }: { entry: DictionaryEntry }) {
   return (
     <div className="py-12 text-center space-y-4">
       <p className="text-muted text-[14px]">
-        No attested forms found for{' '}
-        <span className="font-serif text-ink">{entry.lemma}</span> in the corpus.
+        No attested forms found for <span className="font-serif text-ink">{entry.lemma}</span> in
+        the corpus.
       </p>
       {aiError && <p className="text-red-500 text-[13px]">{aiError}</p>}
       <button
@@ -114,7 +122,11 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setForms(null);
-    fetch(getApiUrl(`/api/lemmas/${encodeURIComponent(entry.languageId)}/${encodeURIComponent(entry.lemma)}/forms`))
+    fetch(
+      getApiUrl(
+        `/api/lemmas/${encodeURIComponent(entry.languageId)}/${encodeURIComponent(entry.lemma)}/forms`
+      )
+    )
       .then((r) => r.json())
       .then((d) => setForms(d.forms ?? []))
       .catch(() => setForms([]))
@@ -122,11 +134,7 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
   }, [entry.languageId, entry.lemma]);
 
   if (loading) {
-    return (
-      <div className="py-16 text-center text-muted text-[14px]">
-        Loading corpus forms…
-      </div>
-    );
+    return <div className="py-16 text-center text-muted text-[14px]">Loading corpus forms…</div>;
   }
 
   if (!forms || forms.length === 0) {
@@ -135,7 +143,10 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
 
   const pos = forms[0]?.features?.pos || entry.partOfSpeech || '';
   const isVerb = pos.toLowerCase().includes('verb');
-  const isNoun = pos.toLowerCase().includes('noun') || pos.toLowerCase().includes('adjective') || pos.toLowerCase().includes('article');
+  const isNoun =
+    pos.toLowerCase().includes('noun') ||
+    pos.toLowerCase().includes('adjective') ||
+    pos.toLowerCase().includes('article');
   const isRtl = isRtlLanguage(entry.languageId);
 
   // Group forms by relevant features
@@ -148,10 +159,14 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
     return (
       <div className="space-y-6">
         <p className="text-[12px] text-muted italic">
-          Showing all forms attested in the corpus for <span className="font-serif text-ink not-italic">{entry.lemma}</span>. Grey cells = form not yet attested.
+          Showing all forms attested in the corpus for{' '}
+          <span className="font-serif text-ink not-italic">{entry.lemma}</span>. Grey cells = form
+          not yet attested.
         </p>
         {(genders.length > 0 ? genders : ['']).map((gender) => {
-          const gForms = gender ? forms.filter((f) => !f.features.gender || f.features.gender === gender) : forms;
+          const gForms = gender
+            ? forms.filter((f) => !f.features.gender || f.features.gender === gender)
+            : forms;
           if (gForms.length === 0) return null;
           return (
             <div key={gender || 'all'}>
@@ -162,7 +177,10 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
                     <tr>
                       <th className="p-2 text-left text-muted font-bold border-b border-bdr/40 bg-parch/30 w-28"></th>
                       {numbers.map((n) => (
-                        <th key={n} className="p-2 text-center text-muted font-bold border-b border-bdr/40 bg-parch/30 capitalize">
+                        <th
+                          key={n}
+                          className="p-2 text-center text-muted font-bold border-b border-bdr/40 bg-parch/30 capitalize"
+                        >
                           {capitalize(n)}
                         </th>
                       ))}
@@ -171,9 +189,13 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
                   <tbody>
                     {cases.map((c, i) => (
                       <tr key={c} className={i % 2 === 0 ? 'bg-white' : 'bg-parch/20'}>
-                        <td className="p-2 text-muted font-bold capitalize border-r border-bdr/20">{capitalize(c)}</td>
+                        <td className="p-2 text-muted font-bold capitalize border-r border-bdr/20">
+                          {capitalize(c)}
+                        </td>
                         {numbers.map((n) => {
-                          const match = gForms.find((f) => f.features.case === c && f.features.number === n);
+                          const match = gForms.find(
+                            (f) => f.features.case === c && f.features.number === n
+                          );
                           return (
                             <td
                               key={n}
@@ -209,9 +231,16 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
     const persons = PERSON_ORDER.filter((p) => forms.some((f) => f.features.person === p));
     const numbers = NUMBER_ORDER.filter((n) => forms.some((f) => f.features.number === n));
 
-    const personNum = persons.length > 0 && numbers.length > 0
-      ? persons.flatMap((p) => numbers.map((n) => ({ p, n, label: `${capitalize(p).slice(0, 3)} ${capitalize(n).slice(0, 2)}` })))
-      : [];
+    const personNum =
+      persons.length > 0 && numbers.length > 0
+        ? persons.flatMap((p) =>
+            numbers.map((n) => ({
+              p,
+              n,
+              label: `${capitalize(p).slice(0, 3)} ${capitalize(n).slice(0, 2)}`,
+            }))
+          )
+        : [];
 
     return (
       <div className="space-y-8">
@@ -231,7 +260,10 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
                       <tr>
                         <th className="p-2 text-left text-muted font-bold border-b border-bdr/40 bg-parch/30 w-20"></th>
                         {tenses.map((t) => (
-                          <th key={t} className="p-2 text-center text-muted font-bold border-b border-bdr/40 bg-parch/30 capitalize text-[11px]">
+                          <th
+                            key={t}
+                            className="p-2 text-center text-muted font-bold border-b border-bdr/40 bg-parch/30 capitalize text-[11px]"
+                          >
                             {capitalize(t)}
                           </th>
                         ))}
@@ -240,13 +272,23 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
                     <tbody>
                       {personNum.map(({ p, n, label }, i) => (
                         <tr key={`${p}-${n}`} className={i % 2 === 0 ? 'bg-white' : 'bg-parch/20'}>
-                          <td className="p-2 text-muted font-bold text-[11px] border-r border-bdr/20">{label}</td>
+                          <td className="p-2 text-muted font-bold text-[11px] border-r border-bdr/20">
+                            {label}
+                          </td>
                           {tenses.map((t) => {
-                            const match = vForms.find((f) => f.features.tense === t && f.features.person === p && f.features.number === n);
+                            const match = vForms.find(
+                              (f) =>
+                                f.features.tense === t &&
+                                f.features.person === p &&
+                                f.features.number === n
+                            );
                             return (
                               <td
                                 key={t}
-                                className={cn('p-2 text-center font-serif text-[15px]', match ? 'text-ink' : 'text-muted/30')}
+                                className={cn(
+                                  'p-2 text-center font-serif text-[15px]',
+                                  match ? 'text-ink' : 'text-muted/30'
+                                )}
                                 title={match ? `${match.count}× attested` : 'Not attested'}
                               >
                                 {match ? match.surface : '—'}
@@ -264,7 +306,10 @@ function ParadigmTab({ entry }: { entry: DictionaryEntry }) {
             </div>
           );
         })}
-        <UnorganizedForms forms={forms.filter((f) => !f.features.voice && !f.features.tense)} isRtl={false} />
+        <UnorganizedForms
+          forms={forms.filter((f) => !f.features.voice && !f.features.tense)}
+          isRtl={false}
+        />
       </div>
     );
   }
@@ -282,15 +327,62 @@ function UnorganizedForms({ forms, isRtl }: { forms: AttestedForm[]; isRtl: bool
         {forms.map((f, i) => (
           <span
             key={i}
-            className={cn('px-3 py-1.5 rounded-xl border border-bdr/40 bg-parch/30 font-serif text-[15px] text-ink', isRtl ? 'font-hebrew' : '')}
+            className={cn(
+              'px-3 py-1.5 rounded-xl border border-bdr/40 bg-parch/30 font-serif text-[15px] text-ink',
+              isRtl ? 'font-hebrew' : ''
+            )}
             dir={isRtl ? 'rtl' : 'ltr'}
-            title={Object.entries(f.features).map(([k, v]) => `${k}: ${v}`).join(' · ') + ` · ${f.count}×`}
+            title={
+              Object.entries(f.features)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(' · ') + ` · ${f.count}×`
+            }
           >
             {f.surface}
             <span className="ml-1.5 text-[10px] text-muted font-sans">{f.count}×</span>
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+// Display names for the supported UI languages, keyed by i18n locale code.
+const UI_LANGUAGE_LABELS: Record<string, string> = {
+  pt: 'Português',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+  ru: 'Русский',
+  tr: 'Türkçe',
+  zh: '中文',
+};
+
+// The word's meaning rendered automatically in the learner's interface
+// language (cache-first, AI fallback). Shown only when the UI language is not
+// English, since the bundled glosses are already English.
+function LocalizedDefinition({ entry }: { entry: DictionaryEntry }) {
+  const { text, localized, loading, uiLang } = useLocalizedGloss(
+    entry.lemma,
+    entry.languageId,
+    entry.shortGloss
+  );
+  const langLabel = UI_LANGUAGE_LABELS[uiLang];
+  if (!langLabel) return null; // English UI or unsupported language — nothing to add.
+
+  return (
+    <div className="mt-4 pt-4 border-t border-bdr/30">
+      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-blue mb-1.5">
+        {localized ? <Languages className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
+        {langLabel}
+      </div>
+      {loading ? (
+        <p className="font-body text-[14px] text-muted italic">{`${langLabel}…`}</p>
+      ) : localized ? (
+        <p className="font-body text-[16px] text-ink leading-snug">{text}</p>
+      ) : (
+        <p className="font-body text-[14px] text-muted italic">{text}</p>
+      )}
     </div>
   );
 }
@@ -371,10 +463,22 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 mb-8">
             <div className="p-5 rounded-[20px] bg-parch/40 border border-bdr/30">
               <div className="eyebrow mb-3 text-ink">Definition</div>
-              <p className="font-body text-[22px] text-ink leading-snug mb-4">{entry.shortGloss}</p>
-              <p className="font-body text-[15px] text-ink2 leading-relaxed">
-                {entry.fullDefinition}
-              </p>
+              {entry.shortGloss ? (
+                <>
+                  <p className="font-body text-[22px] text-ink leading-snug mb-4">
+                    {entry.shortGloss}
+                  </p>
+                  <p className="font-body text-[15px] text-ink2 leading-relaxed">
+                    {entry.fullDefinition}
+                  </p>
+                </>
+              ) : (
+                <p className="font-body text-[15px] text-muted italic leading-relaxed">
+                  No bundled definition for this lemma yet — generate one below or check the
+                  concordance for usage in context.
+                </p>
+              )}
+              <LocalizedDefinition key={entry.id} entry={entry} />
             </div>
 
             <div className="p-5 rounded-[20px] bg-parch2/30 border border-bdr/30">
@@ -487,28 +591,39 @@ function EntryCard({ entry }: { entry: DictionaryEntry }) {
 }
 
 export const Dictionary = () => {
+  const { t } = useTranslation();
   const params = useParams();
   const navigate = useNavigate();
+  const { activeLanguageId, setActiveLanguageId } = useActiveLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || params.lemma || '');
-  const [languageId, setLanguageId] = useState(searchParams.get('lang') || params.languageId || '');
 
-  const languages = useMemo(() => getDictionaryLanguages(), []);
+  // Strict per-language separation: the dictionary always shows the active
+  // study language and never mixes languages. A deep link to another language
+  // (e.g. from a Hebrew reader) adopts that language as the active one.
+  useEffect(() => {
+    if (params.languageId && params.languageId !== activeLanguageId) {
+      setActiveLanguageId(params.languageId);
+    }
+  }, [params.languageId, activeLanguageId, setActiveLanguageId]);
+
+  const languageId = activeLanguageId;
+  const languageName = getLanguageDisplayName(languageId) || languageId;
+
   const results = useMemo(
     () => searchDictionaryEntries(query, languageId || undefined, 80),
     [query, languageId]
   );
   const selectedEntry = useMemo(() => {
-    if (params.lemma) return findDictionaryEntry(params.lemma, params.languageId);
+    if (params.lemma) return findDictionaryEntry(params.lemma, languageId);
     return results[0] || null;
-  }, [params.lemma, params.languageId, results]);
+  }, [params.lemma, languageId, results]);
 
   useEffect(() => {
     const next: Record<string, string> = {};
     if (query) next.q = query;
-    if (languageId) next.lang = languageId;
     setSearchParams(next, { replace: true });
-  }, [query, languageId, setSearchParams]);
+  }, [query, setSearchParams]);
 
   return (
     <div className="p-6 md:p-12 max-w-7xl mx-auto font-sans min-h-screen">
@@ -543,18 +658,13 @@ export const Dictionary = () => {
             />
           </div>
 
-          <select
-            value={languageId}
-            onChange={(event) => setLanguageId(event.target.value)}
-            className="w-full mb-5 px-3 py-3 bg-white border border-bdr rounded-[14px] text-[13px] text-ink3 focus:outline-none focus:border-blue"
-          >
-            <option value="">All languages</option>
-            {languages.map((language) => (
-              <option key={language.id} value={language.id}>
-                {language.name}
-              </option>
-            ))}
-          </select>
+          <div className="w-full mb-5 px-3 py-2.5 bg-bluexl border border-blue/20 rounded-[14px] text-[13px] flex items-center gap-2">
+            <Languages className="w-4 h-4 text-blue" />
+            <span className="font-semibold text-ink">{languageName}</span>
+            <span className="text-[11px] text-muted ml-auto">
+              {t('dictionary.switchInNavbar', 'Switch in the top bar')}
+            </span>
+          </div>
 
           <div className="eyebrow mb-3 flex items-center justify-between text-ink">
             <span>Results</span>

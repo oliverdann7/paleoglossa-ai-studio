@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   uiLanguage: 'en',
   swipePageMovesToKnown: true,
   activeDictionaries: ['strongs-greek', 'strongs-hebrew', 'liddell-scott', 'whitakers-words'],
+  preferredDictionaryByLang: {},
   onboardingProfile: {
     completed: false,
     languageId: 'grc',

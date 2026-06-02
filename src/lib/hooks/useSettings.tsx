@@ -16,6 +16,8 @@ export interface Settings {
   interlinearMode: boolean;
   swipePageMovesToKnown: boolean;
   activeDictionaries: string[];
+  /** Preferred dictionary source id per study language, e.g. { grc: 'logeion' }. */
+  preferredDictionaryByLang: Record<string, string>;
   aiEnabled: boolean;
   onboardingProfile?: {
     completed: boolean;
@@ -41,6 +43,7 @@ const DEFAULT_SETTINGS: Settings = {
   interlinearMode: false,
   swipePageMovesToKnown: true,
   activeDictionaries: ['strongs-greek', 'strongs-hebrew', 'liddell-scott', 'whitakers-words'],
+  preferredDictionaryByLang: {},
   aiEnabled: true,
   onboardingProfile: {
     completed: false,
