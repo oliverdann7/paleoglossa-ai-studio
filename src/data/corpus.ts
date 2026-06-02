@@ -254,9 +254,9 @@ export const TEXT_JOHN_1: Text = {
   hasTranslation: true,
   hasTransliteration: true,
   hasSyntax: true,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 18,
   sectionsPreview: [
     { id: "Jn-1-1", label: "John 1:1-5" },
@@ -326,9 +326,9 @@ export const TEXT_GENESIS: Text = {
   hasTranslation: true,
   hasTransliteration: true,
   hasSyntax: true,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 31,
   sectionsPreview: [
     { id: "Gen-1", label: "Genesis 1:1" },
@@ -358,9 +358,9 @@ export const TEXT_AENEID_1: Text = {
   hasTranslation: true,
   hasTransliteration: false,
   hasSyntax: true,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 110,
   sectionsPreview: [
     { id: "Aen-1-1", label: "Aeneid 1.1-7" },
@@ -684,9 +684,9 @@ export const TEXT_ANABASIS: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 20,
   sectionsPreview: [
     { id: "Anab-1-1", label: "Anabasis 1.1 §1-3" },
@@ -712,9 +712,9 @@ export const TEXT_ILIAD: Text = {
   hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: true,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 110,
   sectionsPreview: [
     { id: "Iliad-1-1", label: "Iliad 1.1-7" },
@@ -833,7 +833,7 @@ export const TEXT_GRC_MARK: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'complete',
+  sourceStatus: 'excerpt',
   isComplete: false,
   isSample: true,
   sentenceCount: 27,
@@ -1307,9 +1307,9 @@ export const TEXT_LXX_GENESIS: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 30,
   sectionsPreview: [
     { id: "LXX-Gen-1-1", label: "Genesis 1:1–13" },
@@ -1383,9 +1383,9 @@ export const TEXT_LXX_EXODUS_12: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 17,
   sectionsPreview: [
     { id: "LXX-Exod-12-1", label: "Exodus 12:1–20" },
@@ -1408,9 +1408,9 @@ export const TEXT_LXX_ISAIAH_6: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 8,
   sectionsPreview: [
     { id: "LXX-Isa-6-1", label: "Isaiah 6:1–9" },
@@ -1433,9 +1433,9 @@ export const TEXT_LXX_PROVERBS: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 4,
   sectionsPreview: [
     { id: "LXX-Prov-1-1", label: "Proverbs 1:1–9" },
@@ -1483,9 +1483,9 @@ export const TEXT_LXX_JONAH: Text = {
   hasMorphology: false,
   hasTranslation: true,
   hasTransliteration: false,
-  sourceStatus: 'complete',
-  isComplete: true,
-  isSample: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
   sentenceCount: 11,
   sectionsPreview: [
     { id: "LXX-Jonah-1-1", label: "Jonah 1:1–12" },
@@ -4765,10 +4765,20 @@ const splitTextSection = (base: TextSection, id: string, label: string, part: Sp
   };
 };
 
-const enhanceText = (text: Text): Text => ({
-  ...text,
-  sectionsPreview: SECTION_PREVIEW_OVERRIDES[text.id] || text.sectionsPreview,
-});
+const enhanceText = (text: Text): Text => {
+  const sectionsPreview = SECTION_PREVIEW_OVERRIDES[text.id] || text.sectionsPreview;
+  // Derive sentenceCount from the actual sections so the displayed count can never
+  // drift from the real content (e.g. a text declaring 110 but loading only 26).
+  const derived = (sectionsPreview || []).reduce(
+    (sum, p) => sum + (CorpusDB.getSection(p.id)?.sentences.length ?? 0),
+    0
+  );
+  return {
+    ...text,
+    sectionsPreview,
+    sentenceCount: derived || text.sentenceCount,
+  };
+};
 
 import { getMockTexts, getMockSections } from "./mockTexts.js";
 import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections.js";
