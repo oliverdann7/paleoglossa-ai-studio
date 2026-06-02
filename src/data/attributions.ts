@@ -237,6 +237,21 @@ export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
     notes:
       'Share-alike: commercially usable but the derived data must remain shareable. Treat as case-by-case before ingesting.',
   },
+  wikisource: {
+    id: 'wikisource',
+    sourceName: 'Wikisource',
+    sourceUrl: 'https://wikisource.org/',
+    dataType: 'text',
+    licenseName: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+    attributionText: 'Text from Wikisource; the underlying ancient works are public domain.',
+    requiresAttribution: true,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: true,
+    notes:
+      'Multilingual public-domain texts typed by the Wikisource community (CC BY-SA). Share-alike warns but passes the commercial gate.',
+  },
 };
 
 /** Look up a source attribution by id. */

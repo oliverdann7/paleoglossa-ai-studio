@@ -107,10 +107,10 @@ const stagedEntries: ManifestEntry[] = [
     language: 'san',
     title: 'Bhagavad Gītā',
     source: 'plaintext',
-    file: 'gretil/bhagavad-gita.txt',
-    attribution: 'gretil',
+    file: 'pd/bhagavad-gita.txt',
+    attribution: 'wikisource',
     status: 'active',
-    notes: 'GRETIL CC BY 4.0. Ships partial until AI gloss cache is reviewed.',
+    notes: 'Sanskrit Wikisource (CC BY-SA); supersedes San-Gita-1. Ships partial (no bundled Sanskrit gloss source — full text + on-click AI).',
   },
   {
     textId: 'syr-peshitta-john-full',
@@ -229,7 +229,7 @@ const patristicsEntries: ManifestEntry[] = [
 // ─── Ancient Near Eastern & other-language works ─────────────────────────────
 
 const aneEntries: ManifestEntry[] = [
-  { textId: 'cop-john-full', language: 'cop', title: 'Gospel of John (Sahidic Coptic)', source: 'tei', file: 'scriptorium/sahidic-john.xml', attribution: 'coptic-scriptorium', status: 'active', notes: 'Supersedes Cop-Jn-1. Verify per-corpus license (some BY-SA); ships partial until reviewed.' },
+  { textId: 'cop-john-full', language: 'cop', title: 'Gospel of John (Bohairic Coptic)', source: 'plaintext', file: 'pd/coptic-john.txt', attribution: 'coptic-scriptorium', status: 'active', notes: 'Supersedes Cop-Jn-1. Coptic SCRIPTORIUM Bohairic NT (CC BY); ships partial (no bundled Coptic gloss source — full text + on-click AI).' },
   { textId: 'arc-targum-onkelos-genesis-full', language: 'arc', title: 'Targum Onkelos — Genesis', source: 'plaintext', file: 'pd/targum-onkelos-genesis.txt', attribution: 'public-domain-edition', status: 'active', notes: 'Supersedes Arc-Gen-1. PD Sperber edition; ships partial. (Biblical Aramaic of Daniel/Ezra is covered by macula-hebrew instead.)' },
   { textId: 'hit-mursili-annals-full', language: 'hit', title: 'Annals of Muršili II', source: 'plaintext', file: 'pd/mursili-annals.txt', attribution: 'public-domain-edition', status: 'active', notes: 'Supersedes Hit-Annals-1. PD transliteration edition; ships partial. Confirm the specific edition is out of copyright.' },
   { textId: 'uga-baal-cycle-full', language: 'uga', title: 'The Baal Cycle', source: 'plaintext', file: 'pd/baal-cycle.txt', attribution: 'public-domain-edition', status: 'active', notes: 'Supersedes Uga-Baal-1. PD transliteration edition; ships partial. Confirm the specific edition is out of copyright.' },
