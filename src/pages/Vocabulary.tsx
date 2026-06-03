@@ -28,6 +28,7 @@ import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { apiFetch } from '../lib/services/apiFetch.js';
 import { useToast } from '../lib/hooks/useToast.js';
 import { ReviewForecast } from '../components/ReviewForecast.js';
+import { logSilentFailure } from '../lib/utils/logSilent.js';
 
 const PAGE_SIZE = 50;
 
@@ -203,7 +204,7 @@ export const Vocabulary = () => {
         });
         setFreqMap(map);
       })
-      .catch(() => {});
+      .catch((e) => logSilentFailure('Vocabulary.loadFreqMap', e));
     return () => { stale = true; };
   }, [selectedLang, availableLanguages]);
 

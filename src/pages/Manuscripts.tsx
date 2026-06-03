@@ -1093,9 +1093,11 @@ export const Manuscripts = () => {
         setManuscripts([...curated, ...(data ?? [])]);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((e) => {
         if (cancelled) return;
-        // Network/auth failure should still leave the curated catalog usable.
+        // Network/auth failure should still leave the curated catalog usable,
+        // but log so a server-side list failure isn't completely invisible.
+        console.error('[manuscripts] Failed to load user manuscripts:', e);
         setManuscripts([...curated]);
         setLoading(false);
       });

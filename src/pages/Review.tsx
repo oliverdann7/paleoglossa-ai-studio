@@ -17,6 +17,7 @@ import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
 import { ReviewTutorial } from '../components/review/ReviewTutorial.js';
+import { logSilentFailure } from '../lib/utils/logSilent.js';
 
 interface ReviewSettings {
   enabledTypes: CardType[];
@@ -265,7 +266,7 @@ export const Review = () => {
             }
           );
           // Award XP for completing a review card
-          awardXP(XP_REWARDS.reviewCard).catch(() => {});
+          awardXP(XP_REWARDS.reviewCard).catch((e) => logSilentFailure('Review.awardXP', e));
         } else {
           const nextReviewDate = new Date();
           // Preserve the card's existing SRS values so HARD properly reduces ease

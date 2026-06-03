@@ -40,7 +40,7 @@ router.get('/api/manuscripts', requireAuth as any, async (req: AuthenticatedRequ
     res.status(200).json(results);
   } catch (e: any) {
     console.error('[manuscripts] Error listing:', e.message);
-    res.status(200).json([]);
+    res.status(500).json({ error: 'Failed to list manuscripts', code: 'LIST_FAILED' });
   }
 });
 

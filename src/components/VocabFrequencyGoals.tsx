@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { apiFetch } from '../lib/services/apiFetch.js';
 import { WordState, normalizeWordState } from '../lib/constants/wordStates.js';
 import type { KnowledgeMap } from '../lib/services/vocabularyService.js';
+import { logSilentFailure } from '../lib/utils/logSilent.js';
 
 interface FreqEntry {
   lemma: string;
@@ -49,7 +50,7 @@ export function VocabFrequencyGoals({ knowledge, languageId }: Props) {
       .then((data) => {
         if (!stale) setEntries(data.entries ?? []);
       })
-      .catch(() => {});
+      .catch((e) => logSilentFailure('VocabFrequencyGoals.loadFreq', e));
     return () => {
       stale = true;
     };

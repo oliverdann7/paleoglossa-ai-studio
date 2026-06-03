@@ -10,6 +10,7 @@ import type { PublicScholar } from '../types/social.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
+import { logSilentFailure } from '../lib/utils/logSilent.js';
 
 // ─── Challenge definitions ─────────────────────────────────────────────────
 
@@ -223,7 +224,7 @@ export function Challenges() {
         setCompletionMap(map);
         for (const id of Object.keys(map)) recordedRef.current.add(id);
       })
-      .catch(() => {});
+      .catch((e) => logSilentFailure('Challenges.loadCompletions', e));
     return () => { stale = true; };
   }, [user]);
 
@@ -248,12 +249,14 @@ export function Challenges() {
         if (value >= c.target) {
           recordedRef.current.add(c.id);
           newEntries[c.id] = now;
-          ChallengeService.recordCompletion(c.id, c.metric, value).catch(() => {});
+          ChallengeService.recordCompletion(c.id, c.metric, value).catch((e) =>
+            logSilentFailure('Challenges.recordCompletion', e)
+          );
           // Award XP based on challenge tier
           const tierXP = c.tier === 'gold' ? XP_REWARDS.challengeGold
             : c.tier === 'silver' ? XP_REWARDS.challengeSilver
             : XP_REWARDS.challengeBronze;
-          awardXP(tierXP).catch(() => {});
+          awardXP(tierXP).catch((e) => logSilentFailure('Challenges.awardXP', e));
         }
       }
       if (Object.keys(newEntries).length > 0) {
