@@ -58,6 +58,7 @@ const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+G
 
 /* ------------------------------------------------------------ shared CSS */
 function css(p) {
+  const ios = p.kind === 'ios';
   return `
 ${FONTS}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
@@ -97,26 +98,67 @@ body::after{
 /* ---- device frame ---- */
 .stand{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
 .phone-fit{transform:scale(${p.scale});transform-origin:center}
+${ios ? `
+/* iPhone 17 Pro Max — natural-titanium rail, ultra-thin uniform bezel, Dynamic Island */
 .phone{
-  width:${PHONE_W}px;height:${PHONE_H}px;border-radius:108px;position:relative;
-  background:#0c0a08;padding:22px;
+  width:${PHONE_W}px;height:${PHONE_H}px;border-radius:128px;position:relative;
+  padding:7px; /* titanium rail thickness */
+  background:linear-gradient(135deg,#e6e7ea 0%,#a9abae 16%,#cfd1d4 32%,#86888c 52%,#dadce0 70%,#9b9da1 86%,#bfc1c4 100%);
   box-shadow:
-    0 2px 0 2px #2c2620 inset,
-    0 0 0 2px rgba(184,132,42,.35),
-    0 70px 120px -40px rgba(0,0,0,.65),
-    0 30px 60px -30px rgba(0,0,0,.55);
+    0 0 0 1px rgba(255,255,255,.5) inset,
+    0 80px 130px -40px rgba(0,0,0,.62),
+    0 34px 64px -30px rgba(0,0,0,.5);
 }
+.bezel{
+  width:100%;height:100%;border-radius:121px;background:#08080a;padding:17px; /* thin black bezel */
+  box-shadow:0 0 0 1.5px #2a2b2e inset;
+}
+.screen::before{ /* Dynamic Island */
+  content:'';position:absolute;top:30px;left:50%;transform:translateX(-50%);
+  width:248px;height:42px;border-radius:24px;background:#040405;z-index:40;
+  box-shadow:0 0 0 1px rgba(255,255,255,.04) inset;
+}
+/* titanium side buttons */
+.btn{position:absolute;background:linear-gradient(90deg,#c7c9cc,#85878b);border-radius:5px;z-index:5;
+  box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.btn-l{left:-5px}.btn-r{right:-5px}
+.b-action{top:392px;width:8px;height:78px}                /* Action button */
+.b-vup{top:520px;width:8px;height:150px}                  /* Volume up */
+.b-vdn{top:700px;width:8px;height:150px}                  /* Volume down */
+.b-power{top:560px;width:8px;height:230px}                /* Side button */
+.b-cam{top:840px;width:8px;height:120px;border-radius:6px} /* Camera Control */
+` : `
+/* Android phone — slim aluminium frame, centered punch-hole camera */
+.phone{
+  width:${PHONE_W}px;height:${PHONE_H}px;border-radius:96px;position:relative;
+  padding:6px;
+  background:linear-gradient(140deg,#3a3b3f,#161719 40%,#2c2d31 70%,#101113);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.06) inset,
+    0 80px 130px -40px rgba(0,0,0,.62),
+    0 34px 64px -30px rgba(0,0,0,.5);
+}
+.bezel{
+  width:100%;height:100%;border-radius:90px;background:#050506;padding:13px; /* uniform thin bezel */
+}
+.screen::before{ /* punch-hole front camera */
+  content:'';position:absolute;top:30px;left:50%;transform:translateX(-50%);
+  width:34px;height:34px;border-radius:50%;background:#040405;z-index:40;
+  box-shadow:0 0 0 2px rgba(0,0,0,.6);
+}
+.btn{position:absolute;background:linear-gradient(90deg,#46474b,#1d1e20);border-radius:4px;z-index:5}
+.btn-r{right:-4px}.btn-l{display:none}
+.b-power{top:560px;width:7px;height:150px}
+.b-vup{top:380px;width:7px;height:150px}
+.b-vdn{display:none}.b-action{display:none}.b-cam{display:none}
+`}
 .screen{
-  width:100%;height:100%;border-radius:88px;overflow:hidden;position:relative;
+  width:100%;height:100%;border-radius:${ios ? '104px' : '78px'};overflow:hidden;position:relative;
   background:${C.parchment};
   background-image:
     radial-gradient(150% 120% at 50% -10%, #FCF8EF 0%, #F8F3E8 42%, #F1E9D6 100%);
   display:flex;flex-direction:column;
   font-size:30px;color:${C.ink};
-}
-.screen::before{ /* dynamic-island style pill */
-  content:'';position:absolute;top:30px;left:50%;transform:translateX(-50%);
-  width:230px;height:34px;border-radius:20px;background:#0c0a08;z-index:40;
 }
 
 /* status bar */
@@ -404,6 +446,7 @@ writeFileSync(join(ROOT, '.sizes'),
 
 let count = 0;
 for (const [pk, p] of Object.entries(PLATFORMS)) {
+  p.kind = pk.startsWith('ios') ? 'ios' : 'android';
   const dir = join(ROOT, pk);
   mkdirSync(dir, { recursive: true });
   for (const s of SCREENS) {
@@ -416,9 +459,12 @@ for (const [pk, p] of Object.entries(PLATFORMS)) {
     <div class="rule"></div>
     <p class="sub">${s.sub}</p>
   </div>
-  <div class="stand"><div class="phone-fit"><div class="phone"><div class="screen">
+  <div class="stand"><div class="phone-fit"><div class="phone">
+    <span class="btn btn-l b-action"></span><span class="btn btn-l b-vup"></span><span class="btn btn-l b-vdn"></span>
+    <span class="btn btn-r b-power"></span><span class="btn btn-r b-cam"></span>
+    <div class="bezel"><div class="screen">
     ${RENDER[s.id]()}
-  </div></div></div></div>
+  </div></div></div></div></div>
 </div></body></html>`;
     writeFileSync(join(dir, `${s.id}.html`), html);
     count++;
