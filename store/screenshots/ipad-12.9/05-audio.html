@@ -1,0 +1,180 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<style>:root{--accent:#A06820}
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Noto+Serif+Hebrew:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;500;600&family=Noto+Sans+Coptic&family=Noto+Sans+Syriac&family=Noto+Sans+Egyptian+Hieroglyphs&family=Noto+Sans+Cuneiform&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html,body{width:2048px;height:2732px;overflow:hidden}
+body{
+  font-family:'Crimson Pro',Georgia,serif;
+  background:
+    radial-gradient(120% 80% at 18% 0%, rgba(184,132,42,.16), transparent 55%),
+    radial-gradient(130% 90% at 100% 100%, rgba(30,92,56,.18), transparent 50%),
+    linear-gradient(168deg, #16294a 0%, #1E3D6E 46%, #102339 100%);
+  position:relative;
+}
+/* faint manuscript-rule texture over the whole canvas */
+body::after{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.05;
+  background-image:repeating-linear-gradient(0deg, transparent 0 46px, rgba(255,255,255,.6) 46px 47px);
+}
+.stage{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;z-index:2}
+
+/* ---- marketing caption ---- */
+.cap{width:100%;text-align:center;padding:148px 96px 0}
+.kicker{
+  font-family:'DM Mono',monospace;font-weight:500;font-size:26px;letter-spacing:.42em;
+  text-transform:uppercase;color:rgba(248,243,232,.62);margin-bottom:30px;
+}
+.title{
+  font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;
+  font-size:98px;line-height:.99;color:#FBF7EE;letter-spacing:-.01em;
+  white-space:pre-line;text-shadow:0 2px 30px rgba(0,0,0,.28);
+}
+.rule{width:84px;height:5px;border-radius:5px;margin:42px auto 34px;background:var(--accent)}
+.sub{
+  font-family:'Crimson Pro',Georgia,serif;font-weight:400;font-size:39px;line-height:1.36;
+  color:rgba(244,238,226,.82);max-width:860px;margin:0 auto;
+}
+
+/* ---- device frame ---- */
+.stand{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
+.phone-fit{transform:scale(0.9);transform-origin:center}
+.cam{display:none}
+
+/* iPad Pro (M4) — slim graphite rail, uniform bezel, no home button, top camera */
+.phone{
+  width:1640px;height:2187px;border-radius:90px;position:relative;
+  padding:8px; /* aluminium rail */
+  background:linear-gradient(135deg,#5a5b5f 0%,#303134 22%,#46474b 46%,#26272a 70%,#4a4b4f 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.14) inset,
+    0 90px 150px -44px rgba(0,0,0,.62),
+    0 38px 70px -30px rgba(0,0,0,.5);
+}
+.bezel{
+  width:100%;height:100%;border-radius:82px;background:#08080a;padding:34px; /* uniform iPad bezel */
+  box-shadow:0 0 0 1.5px #26272a inset;
+}
+.screen::before{display:none}
+.cam{ /* front camera, centered on the top bezel (sits on the black, not the screen) */
+  display:block;position:absolute;top:24px;left:50%;transform:translateX(-50%);
+  width:20px;height:20px;border-radius:50%;background:#0a0f16;z-index:45;
+  box-shadow:0 0 0 4px #0c0d0f, inset 0 0 0 5px #16243a;
+}
+.btn{position:absolute;background:linear-gradient(180deg,#54555a,#2a2b2e);border-radius:5px;z-index:5;
+  box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.b-power{top:-6px;right:300px;width:170px;height:9px;border-radius:5px}  /* top-edge power */
+.b-cam{right:-6px;top:150px;width:9px;height:230px}                      /* volume on right edge */
+.btn-l{display:none}.b-action{display:none}.b-vup{display:none}.b-vdn{display:none}
+
+.screen{
+  width:100%;height:100%;border-radius:52px;overflow:hidden;position:relative;
+  background:#F8F3E8;
+  background-image:
+    radial-gradient(150% 120% at 50% -10%, #FCF8EF 0%, #F8F3E8 42%, #F1E9D6 100%);
+  display:flex;flex-direction:column;
+  font-size:30px;color:#1A1410;
+}
+
+/* status bar */
+.status{height:96px;flex:0 0 auto;display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 58px 14px;font-family:'DM Mono',monospace;font-weight:500;font-size:30px;color:#3D3020}
+.status .dots{display:flex;gap:9px;align-items:center}
+.status .dots i{width:13px;height:13px;border-radius:50%;background:#3D3020;display:block}
+.status .batt{width:46px;height:24px;border:2.5px solid #3D3020;border-radius:6px;position:relative}
+.status .batt::after{content:'';position:absolute;left:3px;top:3px;bottom:3px;width:30px;background:#3D3020;border-radius:2px}
+
+/* app bar */
+.appbar{flex:0 0 auto;display:flex;align-items:center;gap:24px;padding:18px 52px 26px}
+.appbar .ico{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;
+  background:#F0E9D5;border:1.5px solid #CFC0A0;font-size:38px;color:#3D3020}
+.appbar .ttl{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:46px;color:#1A1410;line-height:1}
+.appbar .meta{font-family:'DM Mono',monospace;font-size:24px;color:#7A6A52;letter-spacing:.06em;margin-top:6px}
+.appbar .spacer{flex:1}
+.chip{font-family:'DM Mono',monospace;font-size:24px;letter-spacing:.05em;padding:11px 22px;border-radius:999px;
+  background:#EEF3F8;color:#1E3D6E;border:1.5px solid rgba(30,61,110,.22);white-space:nowrap}
+
+.body{flex:1;min-height:0;padding:8px 56px 0;overflow:hidden}
+
+/* knowledge-state word styling (reader) */
+.kn-known{color:#1E5C38}
+.kn-learn{color:#A06820;border-bottom:3px solid rgba(160,104,32,.4)}
+.kn-new{border-bottom:3px solid rgba(30,61,110,.45)}
+.kn-focus{background:#B8842A;color:#fff;border-radius:10px;padding:2px 12px;box-shadow:0 8px 22px -8px rgba(184,132,42,.8)}
+
+/* generic card */
+.card{background:#FCF9F1;border:1.5px solid #CFC0A0;border-radius:34px;
+  box-shadow:0 30px 50px -34px rgba(35,20,10,.4), 0 1px 0 rgba(255,255,255,.7) inset}
+
+/* home indicator */
+.homebar{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  width:300px;height:11px;border-radius:11px;background:rgba(26,20,16,.35);z-index:30}
+</style></head>
+<body><div class="stage">
+  <div class="cap">
+    <div class="kicker">Paleoglossa</div>
+    <h1 class="title">Hear it the
+way it sounded</h1>
+    <div class="rule"></div>
+    <p class="sub">Restored, Erasmian, and modern traditions with audio, IPA, and your own recordings.</p>
+  </div>
+  <div class="stand"><div class="phone-fit"><div class="phone">
+    <span class="btn btn-l b-action"></span><span class="btn btn-l b-vup"></span><span class="btn btn-l b-vdn"></span>
+    <span class="btn btn-r b-power"></span><span class="btn btn-r b-cam"></span>
+    <span class="cam"></span>
+    <div class="bezel"><div class="screen">
+    
+  <div style="flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:26px 60px 0;
+    font-family:'DM Mono',monospace;font-size:27px;color:#3D3020;letter-spacing:.04em">
+    <span>9:41</span>
+    <span style="display:flex;gap:16px;align-items:center"><span style="font-size:23px">5G</span>
+      <span style="width:50px;height:26px;border:2.5px solid #3D3020;border-radius:6px;position:relative;display:inline-block">
+        <span style="position:absolute;left:3px;top:3px;bottom:3px;right:9px;background:#3D3020;border-radius:2px;display:block"></span></span>
+    </span>
+  </div>
+  <div style="flex:0 0 auto;display:flex;align-items:center;gap:28px;padding:22px 60px 30px;border-bottom:1.5px solid #CFC0A0">
+    <div style="width:74px;height:74px;border-radius:21px;background:#F0E9D5;border:1.5px solid #CFC0A0;display:grid;place-items:center;font-size:42px;color:#3D3020">❦</div>
+    <div><div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:60px;color:#1A1410;line-height:1">Pronunciation</div>
+      <div style="font-family:'DM Mono',monospace;font-size:27px;color:#7A6A52;margin-top:8px;letter-spacing:.05em">AudioLab · Iliad Α.1</div></div>
+    <div style="flex:1"></div>
+    <div class="chip" style="font-size:29px;padding:14px 28px">AudioLab</div>
+  </div>
+  <div style="flex:1;min-height:0;display:flex"><div style="flex:0 0 460px;border-right:1.5px solid #CFC0A0;padding:44px 36px;display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'DM Mono',monospace;font-size:24px;letter-spacing:.18em;text-transform:uppercase;color:#7A6A52;margin-bottom:18px;padding:0 30px">Iliad Α · words</div>
+    <div style="padding:26px 30px;border-radius:20px;display:flex;justify-content:space-between;align-items:baseline;
+    background:#FEF0D8;border:1.5px solid #A0682055">
+    <span style="font-family:'Cormorant Garamond',serif;font-size:46px;color:#1A1410">μῆνιν</span>
+    <span style="font-size:28px;color:#7A6A52;font-style:italic">wrath</span></div><div style="padding:26px 30px;border-radius:20px;display:flex;justify-content:space-between;align-items:baseline;
+    ">
+    <span style="font-family:'Cormorant Garamond',serif;font-size:46px;color:#3D3020">ἄειδε</span>
+    <span style="font-size:28px;color:#7A6A52;font-style:italic">sing</span></div><div style="padding:26px 30px;border-radius:20px;display:flex;justify-content:space-between;align-items:baseline;
+    ">
+    <span style="font-family:'Cormorant Garamond',serif;font-size:46px;color:#3D3020">θεὰ</span>
+    <span style="font-size:28px;color:#7A6A52;font-style:italic">goddess</span></div><div style="padding:26px 30px;border-radius:20px;display:flex;justify-content:space-between;align-items:baseline;
+    ">
+    <span style="font-family:'Cormorant Garamond',serif;font-size:46px;color:#3D3020">Ἀχιλῆος</span>
+    <span style="font-size:28px;color:#7A6A52;font-style:italic">of Achilles</span></div><div style="padding:26px 30px;border-radius:20px;display:flex;justify-content:space-between;align-items:baseline;
+    ">
+    <span style="font-family:'Cormorant Garamond',serif;font-size:46px;color:#3D3020">οὐλομένην</span>
+    <span style="font-size:28px;color:#7A6A52;font-style:italic">accursed</span></div>
+  </div><div style="flex:1;min-width:0;padding:56px 64px;display:flex;flex-direction:column;justify-content:center">
+    <div style="text-align:center">
+      <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:150px;color:#1A1410;line-height:1">μῆνιν</div>
+      <div style="font-family:'DM Mono',monospace;font-size:42px;color:#A06820;margin-top:20px">[ ˈmɛ̂ː.nin ]</div>
+    </div>
+    <div style="display:flex;gap:16px;justify-content:center;margin:46px 0 40px"><span style="font-family:'DM Mono',monospace;font-size:26px;padding:13px 28px;border-radius:999px;
+  background:#1E3D6E;color:#FBF7EE">Restored</span><span style="font-family:'DM Mono',monospace;font-size:26px;padding:13px 28px;border-radius:999px;
+  background:#F0E9D5;color:#6B5C48;border:1.5px solid #CFC0A0">Erasmian</span><span style="font-family:'DM Mono',monospace;font-size:26px;padding:13px 28px;border-radius:999px;
+  background:#F0E9D5;color:#6B5C48;border:1.5px solid #CFC0A0">Modern</span></div>
+    <div class="card" style="padding:54px 50px">
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:7px;height:230px;overflow:hidden"><span style="display:inline-block;width:12px;height:74px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:151px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:196px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:192px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:137px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:47px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:79px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:155px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:187px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:168px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:107px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:117px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:185px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:210px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:182px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:109px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:61px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:119px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:160px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:167px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:127px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:68px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:153px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:206px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:208px;border-radius:7px;flex:0 0 auto;background:#B8842A"></span><span style="display:inline-block;width:12px;height:159px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:74px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:112px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:156px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:154px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:134px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:78px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:105px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:180px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:212px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:191px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:125px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:94px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:156px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:179px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:152px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:90px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:44px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:135px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:194px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span><span style="display:inline-block;width:12px;height:203px;border-radius:7px;flex:0 0 auto;background:#E4D8BE"></span></div>
+      <div style="display:flex;align-items:center;gap:34px;margin-top:48px">
+        <span style="width:120px;height:120px;border-radius:50%;background:#A06820;color:#fff;display:grid;place-items:center;font-size:54px;box-shadow:0 20px 40px -16px #A06820">▶</span>
+        <div style="flex:1"><div style="height:14px;border-radius:14px;background:#E4D8BE;overflow:hidden"><div style="width:52%;height:100%;background:#A06820"></div></div>
+          <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:25px;color:#7A6A52;margin-top:14px"><span>0:01</span><span>0:02</span></div></div>
+        <span style="width:108px;height:108px;border-radius:50%;background:#F7E9E9;color:#8C1C1C;border:2.5px solid #8C1C1C55;display:grid;place-items:center;font-size:46px">●</span>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:33px;color:#6B5C48;margin-top:38px;font-style:italic">Record yourself, then compare against the model voice.</div>
+  </div></div>
+  </div></div></div></div></div>
+</div></body></html>

@@ -17,9 +17,15 @@ palette with the real product type (Cormorant Garamond / Crimson Pro / DM Mono).
 
 Each panel is produced at the sizes App Store Connect and Play Console accept:
 
-- **`ios-6.7/*.png`** — 1284 × 2778 px (iPhone 6.7" display).
-- **`ios-6.5/*.png`** — 1242 × 2688 px (iPhone 6.5" display).
+- **`ios-6.7/*.png`** — 1284 × 2778 px (iPhone 6.7" display) — iPhone 17 Pro Max frame.
+- **`ios-6.5/*.png`** — 1242 × 2688 px (iPhone 6.5" display) — iPhone 17 Pro Max frame.
+- **`ipad-13/*.png`** — 2064 × 2752 px (iPad 13" display) — iPad Pro frame, tablet layouts.
+- **`ipad-12.9/*.png`** — 2048 × 2732 px (iPad 12.9" display) — iPad Pro frame, tablet layouts.
 - **`android/*.png`** — 1080 × 2400 px (9:20 portrait phone).
+
+The iPad panels are not the phone screens scaled up — they use genuine tablet layouts
+(reader + inspector split, tutor reading/chat split, library filter rail + 3-column grid,
+review stats rail, AudioLab word list + detail).
 
 Drop the PNGs straight into App Store Connect (Media Manager) and Google Play Console
 (Store listing → Phone screenshots). Both stores want 2–10 images; all six per platform

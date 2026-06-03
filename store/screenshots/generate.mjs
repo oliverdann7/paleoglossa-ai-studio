@@ -35,13 +35,18 @@ const C = {
    phone is scaled to fit. The phone content is authored once at a constant
    resolution, so both stores get pixel-identical UI, only the framing differs. */
 const PLATFORMS = {
-  'ios-6.7': { w: 1284, h: 2778, scale: 0.86, capTop: 120, capName: 'iPhone 6.7" (1284×2778)' },
-  'ios-6.5': { w: 1242, h: 2688, scale: 0.86, capTop: 110, capName: 'iPhone 6.5" (1242×2688)' },
-  android:   { w: 1080, h: 2400, scale: 0.72, capTop: 100, capName: 'Android phone (1080×2400)' },
+  'ios-6.7':  { w: 1284, h: 2778, scale: 0.86, capTop: 120, capName: 'iPhone 6.7" (1284×2778)' },
+  'ios-6.5':  { w: 1242, h: 2688, scale: 0.86, capTop: 110, capName: 'iPhone 6.5" (1242×2688)' },
+  'ipad-13':  { w: 2064, h: 2752, scale: 0.90, capTop: 150, capName: 'iPad 13" (2064×2752)' },
+  'ipad-12.9':{ w: 2048, h: 2732, scale: 0.90, capTop: 148, capName: 'iPad 12.9" (2048×2732)' },
+  android:    { w: 1080, h: 2400, scale: 0.72, capTop: 100, capName: 'Android phone (1080×2400)' },
 };
 
 const PHONE_W = 1080;
 const PHONE_H = 2280;
+// iPad authored at a constant 4:3-ish portrait resolution, scaled to fit each canvas.
+const IPAD_W = 1640;
+const IPAD_H = 2187;
 
 /* --------------------------------------------------------------- captions */
 const SCREENS = [
@@ -59,6 +64,7 @@ const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+G
 /* ------------------------------------------------------------ shared CSS */
 function css(p) {
   const ios = p.kind === 'ios';
+  const tablet = p.kind === 'ipad';
   return `
 ${FONTS}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
@@ -98,6 +104,7 @@ body::after{
 /* ---- device frame ---- */
 .stand{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
 .phone-fit{transform:scale(${p.scale});transform-origin:center}
+.cam{display:none}
 ${ios ? `
 /* iPhone 17 Pro Max — natural-titanium rail, ultra-thin uniform bezel, Dynamic Island */
 .phone{
@@ -127,6 +134,32 @@ ${ios ? `
 .b-vdn{top:700px;width:8px;height:150px}                  /* Volume down */
 .b-power{top:560px;width:8px;height:230px}                /* Side button */
 .b-cam{top:840px;width:8px;height:120px;border-radius:6px} /* Camera Control */
+` : tablet ? `
+/* iPad Pro (M4) — slim graphite rail, uniform bezel, no home button, top camera */
+.phone{
+  width:${IPAD_W}px;height:${IPAD_H}px;border-radius:90px;position:relative;
+  padding:8px; /* aluminium rail */
+  background:linear-gradient(135deg,#5a5b5f 0%,#303134 22%,#46474b 46%,#26272a 70%,#4a4b4f 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.14) inset,
+    0 90px 150px -44px rgba(0,0,0,.62),
+    0 38px 70px -30px rgba(0,0,0,.5);
+}
+.bezel{
+  width:100%;height:100%;border-radius:82px;background:#08080a;padding:34px; /* uniform iPad bezel */
+  box-shadow:0 0 0 1.5px #26272a inset;
+}
+.screen::before{display:none}
+.cam{ /* front camera, centered on the top bezel (sits on the black, not the screen) */
+  display:block;position:absolute;top:24px;left:50%;transform:translateX(-50%);
+  width:20px;height:20px;border-radius:50%;background:#0a0f16;z-index:45;
+  box-shadow:0 0 0 4px #0c0d0f, inset 0 0 0 5px #16243a;
+}
+.btn{position:absolute;background:linear-gradient(180deg,#54555a,#2a2b2e);border-radius:5px;z-index:5;
+  box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.b-power{top:-6px;right:300px;width:170px;height:9px;border-radius:5px}  /* top-edge power */
+.b-cam{right:-6px;top:150px;width:9px;height:230px}                      /* volume on right edge */
+.btn-l{display:none}.b-action{display:none}.b-vup{display:none}.b-vdn{display:none}
 ` : `
 /* Android phone — slim aluminium frame, centered punch-hole camera */
 .phone{
@@ -153,7 +186,7 @@ ${ios ? `
 .b-vdn{display:none}.b-action{display:none}.b-cam{display:none}
 `}
 .screen{
-  width:100%;height:100%;border-radius:${ios ? '104px' : '78px'};overflow:hidden;position:relative;
+  width:100%;height:100%;border-radius:${ios ? '104px' : tablet ? '52px' : '78px'};overflow:hidden;position:relative;
   background:${C.parchment};
   background-image:
     radial-gradient(150% 120% at 50% -10%, #FCF8EF 0%, #F8F3E8 42%, #F1E9D6 100%);
@@ -437,7 +470,231 @@ function navfoot(){
 }
 function homeOnly(){return `<div style="height:60px;flex:0 0 auto"></div><div class="homebar"></div>`;}
 
+/* ====================================================== iPad layouts (1640×2187)
+   The tablet gets multi-pane, multi-column layouts that use the wide canvas —
+   not the phone's single column blown up. */
+const GAR = "'Cormorant Garamond',serif";
+
+function ipadShell(title, meta, chip, content) {
+  return `
+  <div style="flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:26px 60px 0;
+    font-family:'DM Mono',monospace;font-size:27px;color:${C.ink2};letter-spacing:.04em">
+    <span>9:41</span>
+    <span style="display:flex;gap:16px;align-items:center"><span style="font-size:23px">5G</span>
+      <span style="width:50px;height:26px;border:2.5px solid ${C.ink2};border-radius:6px;position:relative;display:inline-block">
+        <span style="position:absolute;left:3px;top:3px;bottom:3px;right:9px;background:${C.ink2};border-radius:2px;display:block"></span></span>
+    </span>
+  </div>
+  <div style="flex:0 0 auto;display:flex;align-items:center;gap:28px;padding:22px 60px 30px;border-bottom:1.5px solid ${C.border}">
+    <div style="width:74px;height:74px;border-radius:21px;background:${C.parchment2};border:1.5px solid ${C.border};display:grid;place-items:center;font-size:42px;color:${C.ink2}">❦</div>
+    <div><div style="font-family:${GAR};font-weight:600;font-size:60px;color:${C.ink};line-height:1">${title}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:27px;color:${C.muted};margin-top:8px;letter-spacing:.05em">${meta}</div></div>
+    <div style="flex:1"></div>
+    <div class="chip" style="font-size:29px;padding:14px 28px">${chip}</div>
+  </div>
+  <div style="flex:1;min-height:0;display:flex">${content}</div>`;
+}
+
+// 1 — Reader: wide reading column + persistent inspector panel
+function ipadReader() {
+  const w = (t, c) => c ? `<span class="${c}">${t}</span>` : t;
+  const text = `
+    ${w('μῆνιν','kn-focus')} ${w('ἄειδε','kn-known')} ${w('θεὰ','kn-known')} ${w('Πηληϊάδεω','kn-new')}
+    ${w('Ἀχιλῆος','kn-learn')} ${w('οὐλομένην','kn-new')}, ${w('ἣ','kn-known')} ${w('μυρί᾽','kn-learn')}
+    ${w('Ἀχαιοῖς','kn-known')} ${w('ἄλγε᾽','kn-new')} ${w('ἔθηκε','kn-learn')},
+    ${w('πολλὰς','kn-known')} ${w('δ᾽','kn-known')} ${w('ἰφθίμους','kn-new')} ${w('ψυχὰς','kn-learn')}
+    ${w('Ἄϊδι','kn-new')} ${w('προΐαψεν','kn-new')} ${w('ἡρώων','kn-learn')}, ${w('αὐτοὺς','kn-known')}
+    ${w('δὲ','kn-known')} ${w('ἑλώρια','kn-new')} ${w('τεῦχε','kn-learn')} ${w('κύνεσσιν','kn-new')}
+    ${w('οἰωνοῖσί','kn-new')} ${w('τε','kn-known')} ${w('πᾶσι','kn-learn')}· ${w('Διὸς','kn-known')}
+    ${w('δ᾽','kn-known')} ${w('ἐτελείετο','kn-new')} ${w('βουλή','kn-learn')},`;
+  const main = `<div style="flex:1.6;padding:50px 58px;overflow:hidden">
+    <div style="font-family:'DM Mono',monospace;font-size:25px;letter-spacing:.2em;text-transform:uppercase;color:${C.muted};margin-bottom:34px">Book Α · the proem</div>
+    <div style="font-family:${GAR};font-size:62px;line-height:1.64;color:${C.ink}">${text}</div>
+  </div>`;
+  const para = (a, b) => `<tr><td style="padding:9px 0;color:${C.ink3}">${a}</td>
+    <td style="padding:9px 0;text-align:right;font-family:${GAR};font-size:36px;color:${C.ink}">${b}</td></tr>`;
+  const side = `<div style="flex:1;max-width:600px;background:#FCF9F1;border-left:1.5px solid ${C.border};
+    padding:50px 50px;display:flex;flex-direction:column;gap:34px">
+    <div style="font-family:'DM Mono',monospace;font-size:24px;letter-spacing:.18em;text-transform:uppercase;color:${C.muted}">Word inspector</div>
+    <div>
+      <div style="display:flex;align-items:baseline;gap:22px">
+        <div style="font-family:${GAR};font-weight:600;font-size:84px;color:${C.gold};line-height:1">μῆνιν</div>
+        <div style="font-family:'DM Mono',monospace;font-size:27px;color:${C.muted}">/ˈmɛː.nin/</div>
+      </div>
+      <div style="font-size:40px;font-style:italic;color:${C.ink2};margin-top:12px">wrath, rage, fury</div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:26px">${tag('noun')}${tag('accusative')}${tag('singular')}${tag('feminine')}</div>
+    </div>
+    <div style="height:1.5px;background:${C.border}"></div>
+    <div>
+      <div style="font-family:'DM Mono',monospace;font-size:23px;letter-spacing:.14em;text-transform:uppercase;color:${C.muted};margin-bottom:14px">Paradigm · μῆνις</div>
+      <table style="width:100%;font-size:33px;color:${C.ink2}">
+        ${para('nominative','μῆνις')}${para('genitive','μήνιδος')}${para('dative','μήνιδι')}
+        ${para('accusative','μῆνιν')}${para('vocative','μῆνι')}
+      </table>
+    </div>
+    <div style="margin-top:auto;padding:28px 32px;background:${C.blueXL};border-radius:20px;border-left:6px solid ${C.blue}">
+      <div style="font-family:'DM Mono',monospace;font-size:22px;letter-spacing:.1em;color:${C.blue};margin-bottom:12px">✦ AI NOTE</div>
+      <div style="font-size:31px;line-height:1.4;color:${C.ink2}">Direct object of <i>ἄειδε</i> — Homer front-loads the theme: it is the <i>wrath</i> that is sung.</div>
+    </div>
+  </div>`;
+  return ipadShell('Iliad', 'Homer · Book Α', 'Ancient Greek', `${main}${side}`);
+}
+
+// 2 — Tutor: passage pane (left) + tutor chat (right) split view
+function ipadTutor() {
+  const left = `<div style="flex:1;padding:50px 56px;border-right:1.5px solid ${C.border}">
+    <div style="font-family:'DM Mono',monospace;font-size:25px;letter-spacing:.2em;text-transform:uppercase;color:${C.muted};margin-bottom:34px">Reading · Iliad Α.1</div>
+    <div style="font-family:${GAR};font-size:60px;line-height:1.64;color:${C.ink}">
+      <span class="kn-focus">μῆνιν</span> ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος οὐλομένην, ἣ μυρί᾽ Ἀχαιοῖς ἄλγε᾽ ἔθηκε,
+    </div>
+    <div style="margin-top:46px;font-size:34px;font-style:italic;line-height:1.5;color:${C.ink3};font-family:${GAR}">
+      "Sing, goddess, the wrath of Achilles son of Peleus, the accursed wrath…"
+    </div>
+  </div>`;
+  const right = `<div style="flex:1.05;max-width:760px;display:flex;flex-direction:column;padding:46px 50px;background:#FCF9F1">
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px">
+      ${modepill('Beginner')}${modepill('Grammar')}${modepill('Seminary')}${modepill('Scholar',true)}
+    </div>
+    <div style="align-self:flex-end;max-width:78%;background:${C.blue};color:#FBF7EE;border-radius:30px 30px 8px 30px;
+      padding:28px 34px;font-size:34px;line-height:1.35">Why is <i style="font-family:${GAR}">μῆνιν</i> accusative here, not nominative?</div>
+    <div class="card" style="align-self:flex-start;max-width:88%;margin-top:30px;padding:36px 40px;border-radius:30px 30px 30px 8px">
+      <div style="font-family:'DM Mono',monospace;font-size:23px;letter-spacing:.16em;text-transform:uppercase;color:${C.jade};margin-bottom:18px">✦ Tutor</div>
+      <div style="font-size:34px;line-height:1.46;color:${C.ink}">It is the <b>direct object</b> of the imperative <i style="font-family:${GAR}">ἄειδε</i> ("sing!"). Homer opens with the object for emphasis — the poem is <i>about</i> the wrath.</div>
+      <div style="margin-top:24px;padding:22px 28px;background:${C.amberXL};border-left:6px solid ${C.amber};border-radius:14px;font-size:31px;color:${C.ink2}">
+        <b style="font-family:${GAR}">μῆνις</b> → acc. sg. <b>μῆνιν</b>. A 3rd-declension feminine i-stem.</div>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:24px">
+      <span style="font-size:30px;padding:15px 26px;border-radius:18px;background:${C.jadeXL};color:${C.jade};border:1.5px solid rgba(30,92,56,.25)">Decline μῆνις in full</span>
+      <span style="font-size:30px;padding:15px 26px;border-radius:18px;background:${C.jadeXL};color:${C.jade};border:1.5px solid rgba(30,92,56,.25)">Scan this line</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:22px;padding:26px 34px;border-radius:999px">
+      <span style="flex:1;font-size:32px;color:${C.muted};font-style:italic">Ask about this passage…</span>
+      <span style="width:72px;height:72px;border-radius:50%;background:${C.jade};color:#fff;display:grid;place-items:center;font-size:36px">➤</span>
+    </div>
+  </div>`;
+  return ipadShell('Philology Tutor', 'Iliad Α.1 · Scholar mode', 'Gemini', `${left}${right}`);
+}
+
+// 3 — Review: stats rail (left) + large review card (right)
+function ipadReview() {
+  const stat = (n, l, col) => `<div><div style="font-family:${GAR};font-weight:600;font-size:72px;color:${col};line-height:1">${n}</div>
+    <div style="font-family:'DM Mono',monospace;font-size:24px;letter-spacing:.08em;color:${C.muted};margin-top:6px">${l}</div></div>`;
+  const rate = (t, c) => `<div style="flex:1;text-align:center;padding:30px 0;border-radius:22px;background:${c}1a;color:${c};
+    border:2px solid ${c}55;font-family:'DM Mono',monospace;font-size:30px;letter-spacing:.04em">${t}</div>`;
+  const rail = `<div style="flex:0 0 460px;border-right:1.5px solid ${C.border};padding:54px 54px;display:flex;flex-direction:column;gap:50px">
+    <div style="font-family:'DM Mono',monospace;font-size:24px;letter-spacing:.18em;text-transform:uppercase;color:${C.muted}">Today</div>
+    ${stat('12','due now', C.blue)}${stat('8','new words', C.jade)}${stat('47','day streak', C.amber)}${stat('92%','retention', C.gold)}
+    <div style="margin-top:auto">
+      <div style="height:14px;border-radius:14px;background:${C.parchment3};overflow:hidden"><div style="width:34%;height:100%;background:linear-gradient(90deg,${C.gold},${C.amber})"></div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:25px;color:${C.muted};margin-top:14px">4 of 12 reviewed</div>
+    </div>
+  </div>`;
+  const main = `<div style="flex:1;padding:60px 70px;display:flex;flex-direction:column">
+    <div class="card" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px;text-align:center">
+      <div style="font-family:'DM Mono',monospace;font-size:25px;letter-spacing:.2em;text-transform:uppercase;color:${C.muted};margin-bottom:44px">Recall the meaning</div>
+      <div style="font-family:${GAR};font-weight:600;font-size:150px;color:${C.ink};line-height:1">ἄειδε</div>
+      <div style="font-family:'DM Mono',monospace;font-size:30px;color:${C.muted};margin-top:20px">/ˈáːeide/</div>
+      <div style="width:110px;height:3px;background:${C.border};margin:52px 0"></div>
+      <div style="font-family:${GAR};font-size:60px;font-style:italic;color:${C.jade}">sing! · present imperative</div>
+      <div style="font-size:34px;color:${C.ink3};margin-top:16px">2nd sg. of <b style="font-family:${GAR}">ἀείδω</b></div>
+    </div>
+    <div style="display:flex;gap:20px;margin-top:40px">${rate('Again',C.ruby)}${rate('Hard',C.amber)}${rate('Good',C.blue)}${rate('Easy',C.jade)}</div>
+  </div>`;
+  return ipadShell('Review', 'Spaced repetition · FSRS-5', '🔥 47-day streak', `${rail}${main}`);
+}
+
+// 4 — Library: filter sidebar + 3-column corpus grid
+function ipadLibrary() {
+  const item = (title, author, lang, script, cov, col) => `
+    <div class="card" style="padding:34px 32px;display:flex;flex-direction:column">
+      <div style="font-family:${GAR};font-size:46px;color:${col};line-height:1.1;height:96px;overflow:hidden">${script}</div>
+      <div style="font-family:${GAR};font-weight:600;font-size:42px;color:${C.ink};margin-top:14px;line-height:1.05">${title}</div>
+      <div style="font-size:28px;color:${C.muted};margin-top:6px">${author}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px">
+        <span class="chip" style="background:${C.parchment2};color:${C.ink2};border-color:${C.border};font-size:23px">${lang}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:23px;color:${C.jade}">${cov}</span>
+      </div></div>`;
+  const navItem = (t, on) => `<div style="padding:20px 26px;border-radius:16px;font-size:33px;
+    ${on ? `background:${C.blue};color:#FBF7EE` : `color:${C.ink2}`}">${t}</div>`;
+  const rail = `<div style="flex:0 0 380px;border-right:1.5px solid ${C.border};padding:46px 40px;display:flex;flex-direction:column;gap:10px">
+    <div style="font-family:'DM Mono',monospace;font-size:24px;letter-spacing:.18em;text-transform:uppercase;color:${C.muted};margin-bottom:22px;padding:0 26px">Languages</div>
+    ${navItem('All texts', true)}${navItem('Ancient Greek')}${navItem('Koine Greek')}${navItem('Classical Latin')}${navItem('Biblical Hebrew')}${navItem('Sanskrit')}${navItem('Akkadian')}
+  </div>`;
+  const grid = `<div style="flex:1;min-width:0;padding:46px 52px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:30px;align-content:center">
+    ${item('Iliad','Homer','Greek','μῆνιν ἄειδε','● 98%',C.blue)}
+    ${item('Odyssey','Homer','Greek','ἄνδρα μοι ἔννεπε','● 90%',C.blue)}
+    ${item('Aeneid','Vergil','Latin','Arma virumque','● 95%',C.ruby)}
+    ${item('Gospel of John','SBLGNT','Koine','Ἐν ἀρχῇ ἦν','● full',C.jade)}
+    ${item('Genesis','OSHB','Hebrew','בְּרֵאשִׁית בָּרָא','● full',C.amber)}
+    ${item('De Bello Gallico','Caesar','Latin','Gallia est omnis','● 88%',C.ruby)}
+    ${item('Bhagavad Gītā','Vyāsa','Sanskrit','धर्मक्षेत्रे','● 70%',C.jade)}
+    ${item('Gilgamesh','Sîn-lēqi','Akkadian','𒅅𒁉 𒈠 𒅗','● 60%',C.gold)}
+    ${item('Republic','Plato','Greek','κατέβην χθὲς','● 82%',C.blue)}
+  </div>`;
+  return ipadShell('Library', '60+ curated texts · 11 languages', 'All languages', `${rail}${grid}`);
+}
+
+// 5 — AudioLab: word list (left) + large detail with waveform (right)
+function ipadAudio() {
+  const bars = Array.from({ length: 46 }, (_, i) => {
+    const base = Math.abs(Math.sin(i * 0.6)) * 0.7 + Math.abs(Math.cos(i * 0.27)) * 0.3;
+    const h = 14 + Math.round(base * 200);
+    return `<span style="display:inline-block;width:12px;height:${h}px;border-radius:7px;flex:0 0 auto;background:${i < 25 ? C.gold : C.parchment3}"></span>`;
+  }).join('');
+  const word = (g, gl, on) => `<div style="padding:26px 30px;border-radius:20px;display:flex;justify-content:space-between;align-items:baseline;
+    ${on ? `background:${C.amberXL};border:1.5px solid ${C.amber}55` : ''}">
+    <span style="font-family:${GAR};font-size:46px;color:${on ? C.ink : C.ink2}">${g}</span>
+    <span style="font-size:28px;color:${C.muted};font-style:italic">${gl}</span></div>`;
+  const rail = `<div style="flex:0 0 460px;border-right:1.5px solid ${C.border};padding:44px 36px;display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'DM Mono',monospace;font-size:24px;letter-spacing:.18em;text-transform:uppercase;color:${C.muted};margin-bottom:18px;padding:0 30px">Iliad Α · words</div>
+    ${word('μῆνιν','wrath',true)}${word('ἄειδε','sing')}${word('θεὰ','goddess')}${word('Ἀχιλῆος','of Achilles')}${word('οὐλομένην','accursed')}
+  </div>`;
+  const main = `<div style="flex:1;min-width:0;padding:56px 64px;display:flex;flex-direction:column;justify-content:center">
+    <div style="text-align:center">
+      <div style="font-family:${GAR};font-weight:600;font-size:150px;color:${C.ink};line-height:1">μῆνιν</div>
+      <div style="font-family:'DM Mono',monospace;font-size:42px;color:${C.amber};margin-top:20px">[ ˈmɛ̂ː.nin ]</div>
+    </div>
+    <div style="display:flex;gap:16px;justify-content:center;margin:46px 0 40px">${modepill('Restored',true)}${modepill('Erasmian')}${modepill('Modern')}</div>
+    <div class="card" style="padding:54px 50px">
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:7px;height:230px;overflow:hidden">${bars}</div>
+      <div style="display:flex;align-items:center;gap:34px;margin-top:48px">
+        <span style="width:120px;height:120px;border-radius:50%;background:${C.amber};color:#fff;display:grid;place-items:center;font-size:54px;box-shadow:0 20px 40px -16px ${C.amber}">▶</span>
+        <div style="flex:1"><div style="height:14px;border-radius:14px;background:${C.parchment3};overflow:hidden"><div style="width:52%;height:100%;background:${C.amber}"></div></div>
+          <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:25px;color:${C.muted};margin-top:14px"><span>0:01</span><span>0:02</span></div></div>
+        <span style="width:108px;height:108px;border-radius:50%;background:#F7E9E9;color:${C.ruby};border:2.5px solid ${C.ruby}55;display:grid;place-items:center;font-size:46px">●</span>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:33px;color:${C.ink3};margin-top:38px;font-style:italic">Record yourself, then compare against the model voice.</div>
+  </div>`;
+  return ipadShell('Pronunciation', 'AudioLab · Iliad Α.1', 'AudioLab', `${rail}${main}`);
+}
+
+// 6 — Languages: 3-column card grid
+function ipadLanguages() {
+  const card = (glyph, gfont, name, era, col) => `
+    <div class="card" style="padding:40px 36px;display:flex;flex-direction:column;align-items:flex-start;gap:22px">
+      <div style="width:118px;height:118px;border-radius:28px;display:grid;place-items:center;
+        background:${col}14;border:1.5px solid ${col}40;font-family:${gfont};font-size:64px;color:${col}">${glyph}</div>
+      <div><div style="font-family:${GAR};font-weight:600;font-size:44px;color:${C.ink};line-height:1.05">${name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:24px;color:${C.muted};margin-top:10px;letter-spacing:.03em">${era}</div></div>
+    </div>`;
+  const grid = `<div style="flex:1;min-width:0;padding:50px 56px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;align-content:center">
+    ${card('Ἀ', GAR, 'Ancient Greek', 'c. 1500–300 BC', C.blue)}
+    ${card('Α', GAR, 'Koine Greek', 'c. 300 BC–AD 300', C.blue)}
+    ${card('R', GAR, 'Classical Latin', 'c. 75 BC–AD 300', C.ruby)}
+    ${card('א', "'Noto Serif Hebrew',serif", 'Biblical Hebrew', 'c. 1000 BC–AD 100', C.amber)}
+    ${card('𐡀', "'Noto Sans Syriac',serif", 'Aramaic & Syriac', '3000 BC onward', C.gold)}
+    ${card('ⲁ', "'Noto Sans Coptic',serif", 'Coptic', '2nd–17th c. AD', C.jade)}
+    ${card('अ', "'Noto Serif Devanagari',serif", 'Sanskrit', 'c. 1500 BC–present', C.jade)}
+    ${card('𒀭', "'Noto Sans Cuneiform',serif", 'Akkadian & Hittite', 'c. 2500–100 BC', C.blue)}
+    ${card('𓂀', "'Noto Sans Egyptian Hieroglyphs',serif", 'Egyptian', 'c. 3200 BC–AD 400', C.amber)}
+  </div>`;
+  return ipadShell('Languages', '11 ancient languages · plus imports', '+ imports', grid);
+}
+
 const RENDER = { '01-reader':reader, '02-tutor':tutor, '03-review':review, '04-library':library, '05-audio':audio, '06-languages':languages };
+const IRENDER = { '01-reader':ipadReader, '02-tutor':ipadTutor, '03-review':ipadReview, '04-library':ipadLibrary, '05-audio':ipadAudio, '06-languages':ipadLanguages };
 
 /* ------------------------------------------------------------------ emit */
 // manifest consumed by capture.sh: "<dir> <width> <height>" per line
@@ -446,7 +703,7 @@ writeFileSync(join(ROOT, '.sizes'),
 
 let count = 0;
 for (const [pk, p] of Object.entries(PLATFORMS)) {
-  p.kind = pk.startsWith('ios') ? 'ios' : 'android';
+  p.kind = pk.startsWith('ios') ? 'ios' : pk.startsWith('ipad') ? 'ipad' : 'android';
   const dir = join(ROOT, pk);
   mkdirSync(dir, { recursive: true });
   for (const s of SCREENS) {
@@ -462,8 +719,9 @@ for (const [pk, p] of Object.entries(PLATFORMS)) {
   <div class="stand"><div class="phone-fit"><div class="phone">
     <span class="btn btn-l b-action"></span><span class="btn btn-l b-vup"></span><span class="btn btn-l b-vdn"></span>
     <span class="btn btn-r b-power"></span><span class="btn btn-r b-cam"></span>
+    <span class="cam"></span>
     <div class="bezel"><div class="screen">
-    ${RENDER[s.id]()}
+    ${(p.kind === 'ipad' ? IRENDER : RENDER)[s.id]()}
   </div></div></div></div></div>
 </div></body></html>`;
     writeFileSync(join(dir, `${s.id}.html`), html);
