@@ -15,9 +15,10 @@ palette with the real product type (Cormorant Garamond / Crimson Pro / DM Mono).
 | `05-audio`     | Hear it the way it sounded           | AudioLab: waveform, IPA, restored/Erasmian/modern traditions |
 | `06-languages` | Eleven ancient languages             | Language picker with native script samples for all 11 |
 
-Each panel is produced for both stores:
+Each panel is produced at the sizes App Store Connect and Play Console accept:
 
-- **`ios/*.png`** — 1290 × 2796 px (iPhone 6.9" display; also accepted for 6.7" / 6.5").
+- **`ios-6.7/*.png`** — 1284 × 2778 px (iPhone 6.7" display).
+- **`ios-6.5/*.png`** — 1242 × 2688 px (iPhone 6.5" display).
 - **`android/*.png`** — 1080 × 2400 px (9:20 portrait phone).
 
 Drop the PNGs straight into App Store Connect (Media Manager) and Google Play Console

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Renders the generated HTML panels to PNG at exact store dimensions using headless Chrome.
+# Sizes come from the .sizes manifest written by generate.mjs (single source of truth).
 #   node store/screenshots/generate.mjs && bash store/screenshots/capture.sh
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,6 +13,11 @@ shoot() { # html w h
     --screenshot="$png" "file://$html" >/dev/null 2>&1
 }
 
-for f in "$DIR"/ios/*.html;     do shoot "$f" 1290 2796; echo "ios/$(basename "$f" .html).png"; done
-for f in "$DIR"/android/*.html; do shoot "$f" 1080 2400; echo "android/$(basename "$f" .html).png"; done
+while read -r sub w h; do
+  [ -z "${sub:-}" ] && continue
+  for f in "$DIR/$sub"/*.html; do
+    shoot "$f" "$w" "$h"
+    echo "$sub/$(basename "$f" .html).png  ${w}×${h}"
+  done
+done < "$DIR/.sizes"
 echo "Done."

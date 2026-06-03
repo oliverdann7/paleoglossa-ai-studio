@@ -35,8 +35,9 @@ const C = {
    phone is scaled to fit. The phone content is authored once at a constant
    resolution, so both stores get pixel-identical UI, only the framing differs. */
 const PLATFORMS = {
-  ios: { w: 1290, h: 2796, scale: 0.885, capTop: 124, capName: 'iPhone 6.9"' },
-  android: { w: 1080, h: 2400, scale: 0.72, capTop: 100, capName: 'Android phone' },
+  'ios-6.7': { w: 1284, h: 2778, scale: 0.86, capTop: 120, capName: 'iPhone 6.7" (1284×2778)' },
+  'ios-6.5': { w: 1242, h: 2688, scale: 0.86, capTop: 110, capName: 'iPhone 6.5" (1242×2688)' },
+  android:   { w: 1080, h: 2400, scale: 0.72, capTop: 100, capName: 'Android phone (1080×2400)' },
 };
 
 const PHONE_W = 1080;
@@ -397,6 +398,10 @@ function homeOnly(){return `<div style="height:60px;flex:0 0 auto"></div><div cl
 const RENDER = { '01-reader':reader, '02-tutor':tutor, '03-review':review, '04-library':library, '05-audio':audio, '06-languages':languages };
 
 /* ------------------------------------------------------------------ emit */
+// manifest consumed by capture.sh: "<dir> <width> <height>" per line
+writeFileSync(join(ROOT, '.sizes'),
+  Object.entries(PLATFORMS).map(([k, p]) => `${k} ${p.w} ${p.h}`).join('\n') + '\n');
+
 let count = 0;
 for (const [pk, p] of Object.entries(PLATFORMS)) {
   const dir = join(ROOT, pk);
