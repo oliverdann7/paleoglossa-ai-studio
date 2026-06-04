@@ -200,7 +200,6 @@ export function validateCorpus(): string[] {
 export function runCorpusValidation(): { valid: boolean; messages: string[] } {
   const msgs = validateCorpus();
   if (msgs.length === 0) {
-    console.log(`✓ Corpus validation passed: ${CorpusDB.getTexts().length} texts checked`);
     return { valid: true, messages: ['All checks passed'] };
   }
   console.warn(`✗ Corpus validation found ${msgs.length} issue(s):`);

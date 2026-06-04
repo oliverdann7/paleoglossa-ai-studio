@@ -441,8 +441,6 @@ export const de = {
     'search.title': 'Corpus Search',
     'search.description':
       'Search across the entire corpus by lemma, inflected form, or morphology.',
-    'search.comingSoon':
-      'Cross-corpus search with morphology filters, KWC display, and lemma-aware matching — coming soon.',
     'search.experimental':
       'Cross-corpus search with morphology filters, KWC display, and lemma-aware matching — this feature searches your actual imported texts and library.',
     'nav.search': 'Search',
@@ -466,24 +464,14 @@ export const de = {
     'grammar.pathwayEmpty': 'Keine Lernpfad-Schritte gefunden.',
     'grammar.pathwayFooter':
       'Folge dem Lernpfad für eine strukturierte Einführung in die klassische Grammatik.',
-    'grammar.comingSoon':
-      'Grammar concept browser with dependency graphs, corpus examples, and SRS integration — coming soon.',
     'grammar.experimental':
       'Grammar concept browser with dependency graphs, corpus examples, and SRS integration — this feature uses your actual reading data to personalize learning paths.',
-    'tutor.comingSoon':
-      'Conversational AI tutor with context-aware answers, morphology quizzes, and composition feedback — coming soon.',
     'tutor.experimental':
       'Conversational AI tutor with context-aware answers — this feature uses your current text and vocabulary to provide personalized help.',
-    'syntax.comingSoon':
-      'Dependency tree visualization with PROIEL, Gorman, and Perseus treebank data — coming soon.',
     'syntax.experimental':
       'Dependency tree visualization — this feature creates syntax diagrams from the texts you are currently reading.',
-    'notebooks.comingSoon':
-      'Persistent notebooks with verse-anchored notes, tagging, and Markdown/PDF export — coming soon.',
     'notebooks.experimental':
       'Research notebooks with verse-anchored notes — this feature lets you create and organize notes connected to specific passages in your library.',
-    'manuscripts.comingSoon':
-      'Image + transcription alignment, variant apparatus, and TEI XML import — coming soon.',
     'manuscripts.experimental':
       'Manuscript & Epigraphy Lab — this feature lets you upload and analyze manuscript images alongside your texts.',
     'courses.experimental':
