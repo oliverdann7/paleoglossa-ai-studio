@@ -1,0 +1,4 @@
+# intermediate render artifacts — regenerate with generate.mjs
+ios-6.7/*.html
+ios-6.5/*.html
+android/*.html
