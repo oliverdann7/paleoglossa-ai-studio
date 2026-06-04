@@ -125,6 +125,34 @@ describe('vocabulary write queue', () => {
     expect(markWriteSuccess).not.toHaveBeenCalled();
   });
 
+  it('drops terminal (permission-denied) failures instead of re-queueing', async () => {
+    mockBatchCommit.mockRejectedValueOnce(new Error('permission-denied'));
+
+    await VocabularyService.setWordState('user1', 'λόγος', 'KNOWN' as any, 'grc');
+    await VocabularyService.flushPendingWrites();
+
+    // Not retryable → not preserved in the queue.
+    expect(getPendingVocabularyWriteCount()).toBe(0);
+  });
+
+  it('re-queues transient (unavailable) failures and drains them on a later flush', async () => {
+    mockBatchCommit.mockRejectedValueOnce(new Error('unavailable'));
+
+    await VocabularyService.setWordState('user1', 'λόγος', 'KNOWN' as any, 'grc');
+    await VocabularyService.flushPendingWrites();
+
+    // Transient failure → entry preserved for retry rather than silently dropped.
+    expect(markWriteFailure).toHaveBeenCalled();
+    expect(getPendingVocabularyWriteCount()).toBe(1);
+
+    // A subsequent flush (backoff retry / lifecycle flush) succeeds and drains it.
+    mockBatchCommit.mockResolvedValue(undefined);
+    await VocabularyService.flushPendingWrites();
+
+    expect(getPendingVocabularyWriteCount()).toBe(0);
+    expect(markWriteSuccess).toHaveBeenCalled();
+  });
+
   it('concurrent flush calls share the same in-flight promise', async () => {
     await VocabularyService.setWordState('user1', 'α', 'KNOWN' as any, 'grc');
 

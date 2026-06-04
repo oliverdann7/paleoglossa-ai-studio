@@ -34,6 +34,14 @@
       ]
     },
     {
+      "collectionGroup": "vocabulary",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "languageId", "order": "ASCENDING" },
+        { "fieldPath": "nextReview", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "reviewLogs",
       "queryScope": "COLLECTION",
       "fields": [

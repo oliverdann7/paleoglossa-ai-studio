@@ -15,6 +15,7 @@ import { calculateFSRS, FSRSState, FSRRating } from '../srs/fsrs.js';
 import { WordState } from '../constants/wordStates.js';
 import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
 import { reportPersistenceError } from '../errors/persistenceReporter.js';
+import { classifyFirestoreError } from '../errors/firestoreErrors.js';
 import { recordMilestone } from '../hooks/useBeginnerProgress.js';
 
 // Toggle to use FSRS algorithm
@@ -69,51 +70,73 @@ export class ReviewService {
   ): Promise<ReviewItem[]> {
     const vocabRef = collection(db, `users/${userId}/vocabulary`);
     const now = new Date().toISOString();
+    const REVIEWABLE = [WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN];
 
-    // Omit languageId from Firestore query — composite index (languageId + nextReview)
-    // doesn't exist; filter in-memory below instead.
-    const q = query(
-      vocabRef,
-      where('nextReview', '<=', now),
-      orderBy('nextReview', 'asc'),
-      limit(count * 3)
-    );
+    const toItem = (id: string, data: any): ReviewItem => ({
+      id,
+      term: data.term,
+      languageId: data.languageId || languageId || 'unknown',
+      userGloss: data.userGloss,
+      contexts: data.contexts,
+      notes: data.notes,
+      status: data.status,
+      srs: {
+        interval: data.interval || 0,
+        ease: data.ease || 2.5,
+        step: data.step || 0,
+        lastReviewed: data.lastReviewed || null,
+        nextReview: data.nextReview || now,
+        fsrsStability: data.fsrsStability ?? undefined,
+        fsrsDifficulty: data.fsrsDifficulty ?? undefined,
+      },
+      surface: data.surface,
+      morphology: data.morphology,
+      transliteration: data.transliteration,
+      textId: data.textId,
+      sentenceIndex: data.sentenceIndex,
+      sentenceTranslation: data.sentenceTranslation,
+    });
+
+    const collect = (snap: any, filterLang: boolean): ReviewItem[] => {
+      const items: ReviewItem[] = [];
+      snap.forEach((d: any) => {
+        const data = d.data();
+        if (!REVIEWABLE.includes(data.status)) return;
+        if (filterLang && languageId && data.languageId !== languageId) return;
+        items.push(toItem(d.id, data));
+      });
+      return items;
+    };
+
+    // Fast path: when a language is selected, push the filter to Firestore via
+    // the (languageId + nextReview) composite index (see firestore.indexes.json).
+    // If that index has not been deployed yet, Firestore throws FAILED_PRECONDITION
+    // and we fall back to the over-fetch + in-memory filter below.
+    if (languageId) {
+      try {
+        const snap = await getDocs(
+          query(
+            vocabRef,
+            where('languageId', '==', languageId),
+            where('nextReview', '<=', now),
+            orderBy('nextReview', 'asc'),
+            limit(count * 2)
+          )
+        );
+        return collect(snap, false).slice(0, count);
+      } catch (e) {
+        if (classifyFirestoreError(e).code !== 'FAILED_PRECONDITION') {
+          console.error('Error fetching due items (indexed)', e);
+        }
+        // index missing → fall through to the in-memory path
+      }
+    }
 
     try {
-      const snap = await getDocs(q);
-      const items: ReviewItem[] = [];
-      snap.forEach((doc) => {
-        const data = doc.data();
-        if ([WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN].includes(data.status)) {
-          // In-memory language filter if Firestore index not yet created
-          if (languageId && data.languageId !== languageId) return;
-          items.push({
-            id: doc.id,
-            term: data.term,
-            languageId: data.languageId || languageId || 'unknown',
-            userGloss: data.userGloss,
-            contexts: data.contexts,
-            notes: data.notes,
-            status: data.status,
-            srs: {
-              interval: data.interval || 0,
-              ease: data.ease || 2.5,
-              step: data.step || 0,
-              lastReviewed: data.lastReviewed || null,
-              nextReview: data.nextReview || now,
-              fsrsStability: data.fsrsStability ?? undefined,
-              fsrsDifficulty: data.fsrsDifficulty ?? undefined,
-            },
-            surface: data.surface,
-            morphology: data.morphology,
-            transliteration: data.transliteration,
-            textId: data.textId,
-            sentenceIndex: data.sentenceIndex,
-            sentenceTranslation: data.sentenceTranslation,
-          });
-        }
-      });
-      return items.slice(0, count);
+      const snap = await getDocs(
+        query(vocabRef, where('nextReview', '<=', now), orderBy('nextReview', 'asc'), limit(count * 3))
+      );
+      return collect(snap, true).slice(0, count);
     } catch (e) {
       console.error('Error fetching due items', e);
       return [];
