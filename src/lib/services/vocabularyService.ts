@@ -16,6 +16,7 @@ import { normalizeTimestamp } from '../utils.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
 import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/syncStatus.js';
 import { reportPersistenceError } from '../errors/persistenceReporter.js';
+import { classifyFirestoreError } from '../errors/firestoreErrors.js';
 import { ReadingContext, READING_CONTEXT_FIELDS } from '../review/readingContext.js';
 
 export type { SRSData };
@@ -61,9 +62,51 @@ let vocabWriteTimer: ReturnType<typeof setTimeout> | null = null;
 let flushInProgress: Promise<void> | null = null;
 const queueListeners = new Set<QueueListener>();
 
+// ── Retry/backoff for transient write failures ───────────────────────────────
+// On a transient Firestore failure (offline, unavailable, aborted, rate-limit)
+// the failed entries are re-queued and a flush is rescheduled with exponential
+// backoff instead of being silently dropped. The local KnowledgeMap stays the
+// UI source of truth meanwhile, and the lifecycle flushes (visibilitychange /
+// pagehide) provide additional retry opportunities.
+let vocabRetryTimer: ReturnType<typeof setTimeout> | null = null;
+let vocabRetryAttempt = 0;
+const VOCAB_MAX_RETRY_ATTEMPTS = 6;
+const VOCAB_RETRY_BASE_MS = 1000;
+const VOCAB_RETRY_MAX_MS = 60_000;
+
 function notifyQueueListeners() {
   const count = vocabWriteQueue.size;
   queueListeners.forEach((fn) => fn(count));
+}
+
+/**
+ * Re-insert entries that failed to commit back into the queue, merging with any
+ * newer writes that arrived during the flush (newer writes win). Does not
+ * re-count pending writes — these were already counted at enqueue time.
+ */
+function requeueFailedEntries(failed: [string, QueueEntry][]) {
+  for (const [key, entry] of failed) {
+    const current = vocabWriteQueue.get(key);
+    if (current) {
+      vocabWriteQueue.set(key, {
+        docRef: current.docRef,
+        payload: { ...entry.payload, ...current.payload },
+        isNew: entry.isNew || current.isNew,
+      });
+    } else {
+      vocabWriteQueue.set(key, entry);
+    }
+  }
+  notifyQueueListeners();
+}
+
+function scheduleVocabRetry() {
+  if (vocabRetryTimer) return; // a retry is already pending
+  const delay = Math.min(VOCAB_RETRY_BASE_MS * 2 ** vocabRetryAttempt, VOCAB_RETRY_MAX_MS);
+  vocabRetryTimer = setTimeout(() => {
+    vocabRetryTimer = null;
+    flushVocabWrites();
+  }, delay);
 }
 
 /** Returns the number of term writes currently queued but not yet sent. */
@@ -108,6 +151,9 @@ const flushVocabWrites = (): Promise<void> => {
     notifyQueueListeners();
 
     const chunkSize = 500;
+    const retryable: [string, QueueEntry][] = [];
+    let anySuccess = false;
+
     for (let i = 0; i < entries.length; i += chunkSize) {
       const chunk = entries.slice(i, i + chunkSize);
       const batch = writeBatch(db);
@@ -122,17 +168,39 @@ const flushVocabWrites = (): Promise<void> => {
 
       try {
         await batch.commit();
+        anySuccess = true;
         markWriteSuccess();
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        const { retryable: isRetryable } = classifyFirestoreError(e);
         console.error('Failed to commit vocabulary batch', e, 'code:', (e as any)?.code);
         markWriteFailure(msg);
-        reportPersistenceError(e, {
-          operation: 'vocabulary:flushBatch',
-          path: `users/{userId}/vocabulary/batch-${i}`,
-          category: 'vocabulary',
-          dataPreservedLocally: true,
-        });
+        // Re-queue transient failures (offline/unavailable/aborted/rate-limit)
+        // for backoff retry; drop terminal ones (e.g. permission-denied) since
+        // retrying cannot succeed. The local KnowledgeMap remains intact either way.
+        if (isRetryable && vocabRetryAttempt < VOCAB_MAX_RETRY_ATTEMPTS) {
+          retryable.push(...chunk);
+        } else {
+          reportPersistenceError(e, {
+            operation: 'vocabulary:flushBatch',
+            path: `users/{userId}/vocabulary/batch-${i}`,
+            category: 'vocabulary',
+            dataPreservedLocally: true,
+          });
+        }
+      }
+    }
+
+    if (retryable.length > 0) {
+      requeueFailedEntries(retryable);
+      vocabRetryAttempt += 1;
+      scheduleVocabRetry();
+    } else if (anySuccess || entries.length > 0) {
+      // A clean round (or a round with no retryable leftovers) resets backoff.
+      vocabRetryAttempt = 0;
+      if (vocabRetryTimer) {
+        clearTimeout(vocabRetryTimer);
+        vocabRetryTimer = null;
       }
     }
   };
