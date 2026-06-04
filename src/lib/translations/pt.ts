@@ -298,8 +298,6 @@ export const pt = {
 
     'search.title': 'Busca no Corpus',
     'search.description': 'Busque em todo o corpus por lema, forma flexionada ou morfologia.',
-    'search.comingSoon':
-      'Busca entre corpus com filtros morfológicos, exibição KWC e correspondência por lema — em breve.',
     'search.experimental':
       'Busca entre corpus com filtros morfológicos, exibição KWC e correspondência por lema — este recurso busca seus textos importados e biblioteca.',
     'search.placeholder': 'Buscar por lema, texto, glosa ou nota…',
@@ -480,24 +478,14 @@ export const pt = {
     'grammar.pathwayEmpty': 'Nenhuma etapa encontrada na trilha.',
     'grammar.pathwayFooter':
       'Siga a trilha para uma introdução estruturada à gramática clássica.',
-    'grammar.comingSoon':
-      'Navegador de conceitos gramaticais com gráficos de dependência, exemplos do corpus e integração SRS — em breve.',
     'grammar.experimental':
       'Navegador de conceitos gramaticais com gráficos de dependência, exemplos do corpus e integração SRS — este recurso usa seus dados de leitura reais para personalizar rotas de aprendizado.',
-    'tutor.comingSoon':
-      'Tutor de IA conversacional com respostas contextuais, quizzes de morfologia e feedback de composição — em breve.',
     'tutor.experimental':
       'Tutor de IA conversacional com respostas contextuais — este recurso usa seu texto e vocabulário atuais para fornecer ajuda personalizada.',
-    'syntax.comingSoon':
-      'Visualização de árvore de dependência com dados dos treebanks PROIEL, Gorman e Perseus — em breve.',
     'syntax.experimental':
       'Visualização de árvore de dependência — este recurso cria diagramas de sintaxe a partir dos textos que você está lendo.',
-    'notebooks.comingSoon':
-      'Cadernos persistentes com notas ancoradas em versículos, etiquetagem e exportação Markdown/PDF — em breve.',
     'notebooks.experimental':
       'Cadernos de pesquisa com notas ancoradas em versículos — este recurso permite criar e organizar notas conectadas a passagens específicas em sua biblioteca.',
-    'manuscripts.comingSoon':
-      'Alinhamento de imagem + transcrição, aparato de variantes e importação TEI XML — em breve.',
     'manuscripts.experimental':
       'Laboratório de Manuscritos & Epigrafia — este recurso permite enviar e analisar imagens de manuscritos junto com seus textos.',
     'courses.experimental':

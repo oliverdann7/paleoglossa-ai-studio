@@ -21,6 +21,7 @@ import { AIClient } from '../lib/services/aiClient.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
+import { useToast } from '../lib/hooks/useToast.js';
 import { WordState } from '../lib/constants/wordStates.js';
 import { ImportedSentence } from '../types/firestore.js';
 
@@ -38,6 +39,7 @@ export const Import = () => {
   const { activeLanguageId } = useActiveLanguage();
   const { canAccessLanguage } = useSubscription();
   const { refreshImports, knowledge } = useKnowledge(activeLanguageId);
+  const { addToast } = useToast();
   const onComplete = (text: ImportedText) => navigate(`/app/reader/${text.id}`);
   const [url, setUrl] = useState('');
   const [activeTab, setActiveTab] = useState<'paste' | 'file' | 'url' | 'ocr'>('paste');
@@ -132,7 +134,10 @@ export const Import = () => {
     if (!imageBase64 || !imageMimeType) return;
     // ~14 MB base64 limit — matches server MAX_IMAGE_BASE64_LENGTH
     if (imageBase64.length > 14 * 1024 * 1024) {
-      alert(t('import.imageTooLarge', 'Image is too large. Please use an image under 10 MB.'));
+      addToast(
+        t('import.imageTooLarge', 'Image is too large. Please use an image under 10 MB.'),
+        'warning'
+      );
       return;
     }
     setIsProcessing(true);
@@ -145,8 +150,9 @@ export const Import = () => {
       setImageMimeType(null);
     } catch (error: any) {
       console.error('OCR Extraction failed:', error);
-      alert(
-        t('import.errorImageExtract', 'Failed to extract text from image') + ': ' + error.message
+      addToast(
+        t('import.errorImageExtract', 'Failed to extract text from image') + ': ' + error.message,
+        'error'
       );
     } finally {
       setIsProcessing(false);
@@ -165,7 +171,7 @@ export const Import = () => {
       setUrl('');
     } catch (error: any) {
       console.error('Scrape failed:', error);
-      alert(t('import.errorUrlScrape', 'Failed to scrape URL') + ': ' + error.message);
+      addToast(t('import.errorUrlScrape', 'Failed to scrape URL') + ': ' + error.message, 'error');
     } finally {
       setIsProcessing(false);
       setProcessingStep('');
@@ -231,7 +237,7 @@ export const Import = () => {
       }
     } catch (error: any) {
       console.error('File upload failed:', error);
-      alert(t('import.errorUpload', 'Failed to upload file') + ': ' + error.message);
+      addToast(t('import.errorUpload', 'Failed to upload file') + ': ' + error.message, 'error');
       setIsProcessing(false);
       setProcessingStep('');
     }
@@ -327,8 +333,12 @@ export const Import = () => {
     if (!text.trim()) return;
 
     if (!canAccessLanguage(languageId)) {
-      alert(
-        t('import.errorLanguageLocked', 'This language is locked. Upgrade your plan to access it.')
+      addToast(
+        t(
+          'import.errorLanguageLocked',
+          'This language is locked. Upgrade your plan to access it.'
+        ),
+        'warning'
       );
       return;
     }
@@ -390,7 +400,10 @@ export const Import = () => {
       await ImportService.saveImport(user ? user.uid : null, rawRecord);
     } catch (saveError: any) {
       console.error('Import save failed:', saveError);
-      alert(t('import.errorSaveFailed', 'Failed to save import') + ': ' + saveError.message);
+      addToast(
+        t('import.errorSaveFailed', 'Failed to save import') + ': ' + saveError.message,
+        'error'
+      );
       setIsProcessing(false);
       setProcessingStep('');
       return;

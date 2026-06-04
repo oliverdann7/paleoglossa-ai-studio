@@ -228,8 +228,6 @@ export const tr = {
 
     'search.title': 'Külliyat Araması',
     'search.description': 'Tüm külliyatta lemma, çekimli form veya morfoloji ile arama yapın.',
-    'search.comingSoon':
-      'Morfoloji filtreleri, KWC görüntüsü ve lemma farkında eşleşme ile çapraz külliyat araması — yakında.',
     'search.experimental':
       'Morfoloji filtreleri, KWC görüntüsü ve lemma farkında eşleşme ile çapraz külliyat araması — bu özellik gerçek içe aktarılan metinlerinizi ve kütüphanenizi arar.',
 
@@ -245,24 +243,14 @@ export const tr = {
     'grammar.pathwayEmpty': 'Öğrenme yolu adımı bulunamadı.',
     'grammar.pathwayFooter':
       'Klasik dilbilgisine yapılandırılmış bir giriş için öğrenme yolunu takip edin.',
-    'grammar.comingSoon':
-      'Bağımlılık grafikleri, külliyat örnekleri ve SRS entegrasyonu ile dilbilgisi kavram tarayıcısı — yakında.',
     'grammar.experimental':
       'Bağımlılık grafikleri, külliyat örnekleri ve SRS entegrasyonu ile dilbilgisi kavram tarayıcısı — bu özellik öğrenme yollarını kişiselleştirmek için gerçek okuma verilerinizi kullanır.',
-    'tutor.comingSoon':
-      'Bağlam farkında yanıtlar, morfoloji testleri ve kompozisyon geri bildirimiyle konuşma tabanlı YZ özel ders — yakında.',
     'tutor.experimental':
       'Bağlam farkında yanıtlar içeren konuşma tabanlı YZ özel ders — bu özellik kişiselleştirilmiş yardım için mevcut metninizi ve kelime dağarcığınızı kullanır.',
-    'syntax.comingSoon':
-      'PROIEL, Gorman ve Perseus ağaç bankası verileriyle bağımlılık ağacı görselleştirmesi — yakında.',
     'syntax.experimental':
       'Bağımlılık ağacı görselleştirmesi — bu özellik şu anda okuduğunuz metinlerden sözdizim diyagramları oluşturur.',
-    'notebooks.comingSoon':
-      'Ayet bağlantılı notlar, etiketleme ve Markdown/PDF dışa aktarma ile kalıcı defterler — yakında.',
     'notebooks.experimental':
       'Ayet bağlantılı notlarla araştırma defterleri — bu özellik kütüphanenizdeki belirli pasajlarla bağlantılı notlar oluşturmanıza olanak tanır.',
-    'manuscripts.comingSoon':
-      'Görüntü + transkripsiyon hizalaması, varyant aparatı ve TEI XML içe aktarma — yakında.',
     'manuscripts.experimental':
       'El Yazması ve Epigraf Laboratuvarı — bu özellik el yazması görüntülerini metinlerinizle birlikte yüklemenize ve analiz etmenize olanak tanır.',
     'courses.experimental':

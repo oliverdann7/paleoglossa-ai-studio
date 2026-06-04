@@ -24,6 +24,7 @@ import { LANGUAGES } from '@/lib/constants/languages';
 import { WITNESSES, getApparatusForManuscript } from '../lib/data/criticalApparatus.js';
 import type { ApparatusLocus } from '../lib/data/criticalApparatus.js';
 import { CURATED_MANUSCRIPTS } from '../lib/data/manuscriptCatalog.js';
+import { useToast } from '../lib/hooks/useToast.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1049,6 +1050,7 @@ function ManuscriptDetail({
 
 export const Manuscripts = () => {
   const { t } = useTranslation();
+  const { addToast } = useToast();
 
   const [manuscripts, setManuscripts] = useState<Manuscript[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1155,7 +1157,7 @@ export const Manuscripts = () => {
       }
       setFormOpen(false);
     } catch (e: any) {
-      alert(e.message ?? 'Failed to save');
+      addToast(e.message ?? t('manuscripts.saveFailed', 'Failed to save'), 'error');
     } finally {
       setSaving(false);
     }
@@ -1167,7 +1169,7 @@ export const Manuscripts = () => {
       setManuscripts((prev) => prev.filter((m) => m.id !== id));
       setSelected(null);
     } catch (e: any) {
-      alert(e.message ?? 'Failed to delete');
+      addToast(e.message ?? t('manuscripts.deleteFailed', 'Failed to delete'), 'error');
     }
   };
 
