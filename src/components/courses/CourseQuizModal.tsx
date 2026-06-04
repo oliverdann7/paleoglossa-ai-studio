@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Loader2, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getApiUrl } from '../../lib/services/apiBaseUrl.js';
+import { gradeQuiz } from '../../lib/courses/quizScoring.js';
 
 interface QuizQuestion {
   question: string;
@@ -49,7 +50,8 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
   });
 
   const q = questions[currentQ];
-  const score = answers.filter(Boolean).length;
+  const grade = gradeQuiz(answers, questions.length);
+  const score = grade.score;
 
   const handleAnswer = (idx: number) => {
     if (selectedIndex !== null) return;
@@ -216,9 +218,9 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
               <div
                 className={cn(
                   'w-16 h-16 rounded-full flex items-center justify-center text-[28px] font-bold',
-                  score === questions.length
+                  grade.perfect
                     ? 'bg-emerald-100 text-emerald-700'
-                    : score >= questions.length * 0.6
+                    : grade.passed
                       ? 'bg-blue/10 text-blue'
                       : 'bg-amber-100 text-amber-700'
                 )}
@@ -227,22 +229,18 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
               </div>
               <div>
                 <p className="font-serif text-[18px] font-bold text-ink mb-1">
-                  {score === questions.length
-                    ? 'Perfect score!'
-                    : score >= questions.length * 0.6
-                      ? 'Good work!'
-                      : 'Keep reading!'}
+                  {grade.perfect ? 'Perfect score!' : grade.passed ? 'Good work!' : 'Keep reading!'}
                 </p>
                 <p className="text-[13px] text-muted">
                   You answered {score} of {questions.length} questions correctly.
                 </p>
               </div>
-              {score < Math.ceil(questions.length * 0.6) && (
+              {!grade.passed && (
                 <p className="text-[12px] text-amber-700 bg-amber-50 px-4 py-2 rounded-lg">
                   This text may be challenging. Consider reviewing vocabulary before re-reading.
                 </p>
               )}
-              {score === questions.length && (
+              {grade.perfect && (
                 <p className="text-[12px] text-emerald-700 bg-emerald-50 px-4 py-2 rounded-lg flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Excellent comprehension — try a more
                   challenging text next!
