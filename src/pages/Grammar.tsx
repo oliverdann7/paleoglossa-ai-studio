@@ -31,6 +31,7 @@ import { getApiUrl } from '../lib/services/apiBaseUrl.js';
 import { useGrammarMastery } from '../lib/hooks/useGrammarMastery.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
+import { logSilentFailure } from '../lib/utils/logSilent.js';
 
 interface Paradigm {
   caption: string;
@@ -736,7 +737,7 @@ function PrerequisiteGraph({
       .then((data) => {
         if (!stale) setGraph(data);
       })
-      .catch(() => {});
+      .catch((e) => logSilentFailure('Grammar.loadGraph', e));
     return () => {
       stale = true;
     };
@@ -933,7 +934,7 @@ export const Grammar = () => {
       .then((data: Concept | null) => {
         if (data) setSelected(data);
       })
-      .catch(() => {})
+      .catch((e) => logSilentFailure('Grammar.loadConcept', e))
       .finally(() => setIsLoadingDetail(false));
   };
 
@@ -986,7 +987,9 @@ export const Grammar = () => {
       if (!selected) return;
       const justMastered = await mastery.recordQuizResult(selected.id, selected.languageId, correct);
       if (justMastered) {
-        awardXP(XP_REWARDS.grammarConceptMastered).catch(() => {});
+        awardXP(XP_REWARDS.grammarConceptMastered).catch((e) =>
+          logSilentFailure('Grammar.awardXP', e)
+        );
       }
     },
     [selected, mastery, awardXP]

@@ -198,7 +198,7 @@ export const TEXT_JOHN_FULL: Text = {
   sourceStatus: 'complete',
   isComplete: true,
   isSample: false,
-  sentenceCount: 918,
+  sentenceCount: 878,
   sectionsPreview: [
     { id: "Jn-1",  label: "John 1"  },
     { id: "Jn-2",  label: "John 2"  },

@@ -11,6 +11,7 @@ import { db } from '../firebase.js';
 import { useAuth } from './useAuth.js';
 import type { GrammarConceptMastery } from '../../types/firestore.js';
 import { calculateSM2, type Rating, type SRSState } from '../srs/sm2.js';
+import { logSilentFailure } from '../utils/logSilent.js';
 
 const STORAGE_KEY = 'paleoglossa_grammar_mastery';
 const FIRESTORE_COLLECTION = 'grammarMastery';
@@ -79,7 +80,9 @@ async function syncFromFirestore(fsDb: Firestore | null, uid: string) {
     for (const [id, localMastery] of Object.entries(masteryMap)) {
       if (!remote[id]) {
         const docRef = doc(fsDb, 'users', uid, FIRESTORE_COLLECTION, id);
-        setDoc(docRef, { ...localMastery, lastStudiedAt: serverTimestamp() }).catch(() => {});
+        setDoc(docRef, { ...localMastery, lastStudiedAt: serverTimestamp() }).catch((e) =>
+          logSilentFailure('useGrammarMastery.pushLocal', e)
+        );
       }
     }
     if (changed) {

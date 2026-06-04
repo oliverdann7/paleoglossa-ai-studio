@@ -1,5 +1,6 @@
 import { db } from '../firebase.js';
 import { doc, getDoc, setDoc, increment } from 'firebase/firestore';
+import { logSilentFailure } from '../utils/logSilent.js';
 
 // ─── XP Configuration ───────────────────────────────────────────────────────
 
@@ -85,7 +86,8 @@ export const XPService = {
       const totalXP = data.totalXP ?? 0;
       const level = getLevelForXP(totalXP);
       return { totalXP, level: level.name, levelIndex: level.index };
-    } catch {
+    } catch (e) {
+      logSilentFailure('XPService.getXP', e);
       return DEFAULT_XP;
     }
   },
@@ -100,7 +102,8 @@ export const XPService = {
       const totalXP = snap.data()?.totalXP ?? amount;
       const level = getLevelForXP(totalXP);
       return { totalXP, level: level.name, levelIndex: level.index };
-    } catch {
+    } catch (e) {
+      logSilentFailure('XPService.awardXP', e);
       return null;
     }
   },
