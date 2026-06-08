@@ -10,11 +10,16 @@ import {
 } from '@/lib/services/authService';
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
+import { isCapacitor } from '@/lib/platform';
 
 export const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  // OAuth (Google/Apple) relies on signInWithRedirect, which cannot complete
+  // inside a native WebView — embedded user-agents are blocked by the providers.
+  // On native we show email/password only; the buttons would be dead-ends.
+  const isNative = isCapacitor();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -183,6 +188,8 @@ export const SignIn = () => {
               {t('auth.enterDetails', 'Enter your details to access your account.')}
             </p>
 
+            {!isNative && (
+              <>
             <button
               onClick={() => handleGoogleSignIn(false)}
               disabled={loading}
@@ -229,6 +236,8 @@ export const SignIn = () => {
               <span className="eyebrow">{t('auth.or', 'Or')}</span>
               <div className="h-px bg-bdr flex-1" />
             </div>
+              </>
+            )}
 
             {error && (
               <div className="mb-6 p-4 rounded-xl bg-rubyxl border border-ruby/20 flex items-start gap-3 text-ruby">
@@ -297,15 +306,17 @@ export const SignIn = () => {
               </button>
             </p>
 
-            <button
-              type="button"
-              onClick={() => handleGoogleSignIn(true)}
-              disabled={loading}
-              className="mt-4 w-full flex items-center justify-center gap-2 text-sm text-ink3 hover:text-ink transition-colors disabled:opacity-50"
-            >
-              <UserCircle className="w-4 h-4" />
-              {t('auth.useAnotherAccount', 'Use another account')}
-            </button>
+            {!isNative && (
+              <button
+                type="button"
+                onClick={() => handleGoogleSignIn(true)}
+                disabled={loading}
+                className="mt-4 w-full flex items-center justify-center gap-2 text-sm text-ink3 hover:text-ink transition-colors disabled:opacity-50"
+              >
+                <UserCircle className="w-4 h-4" />
+                {t('auth.useAnotherAccount', 'Use another account')}
+              </button>
+            )}
           </motion.div>
         </div>
       </div>
