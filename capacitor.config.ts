@@ -18,6 +18,13 @@ const config: CapacitorConfig = {
       iOSSpinnerStyle: 'small',
       spinnerColor: '#2563EB',
     },
+    FirebaseAuthentication: {
+      // We bridge native credentials into the Firebase JS SDK ourselves
+      // (signInWithCredential), so the plugin must not sign in to the
+      // native Firebase SDK separately.
+      skipNativeAuth: true,
+      providers: ['google.com', 'apple.com'],
+    },
   },
 };
 

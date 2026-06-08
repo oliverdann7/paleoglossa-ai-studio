@@ -50,6 +50,7 @@
     "release:check": "node scripts/check-release-readiness.mjs"
   },
   "dependencies": {
+    "@capacitor-firebase/authentication": "^8.3.0",
     "@capacitor/android": "^8.3.3",
     "@capacitor/app": "^8.1.0",
     "@capacitor/cli": "^8.3.3",

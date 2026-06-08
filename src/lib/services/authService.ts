@@ -1,11 +1,12 @@
 import {
   signInWithPopup,
-  signInWithRedirect,
   getRedirectResult,
   signInWithEmailAndPassword,
+  signInWithCredential,
   signOut as firebaseSignOut,
   GoogleAuthProvider,
 } from 'firebase/auth';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { auth, appleProvider } from '../firebase.js';
 import { isCapacitor } from '../platform.js';
 import { VocabularyService } from './vocabularyService.js';
@@ -20,10 +21,12 @@ export interface AuthResult {
  * Attempts to sign in with Google.
  *
  * On web the native `signInWithPopup` is used (same as before).  In
- * Capacitor environments where pop-ups are unavailable, Firebase Auth's
- * `signInWithRedirect` is used instead — the page navigates to the
- * OAuth provider, and the result is recovered by `handleRedirectResult`
- * when the user returns.
+ * Capacitor native builds, the `@capacitor-firebase/authentication`
+ * plugin performs the real native Google sign-in and returns an ID token,
+ * which is then bridged into the Firebase JS SDK via `signInWithCredential`
+ * so the web SDK auth state (used throughout the app) updates.  This
+ * replaces `signInWithRedirect`, which does not work inside a Capacitor
+ * WebView (the redirect never returns and the UI hangs).
  */
 export async function signInWithGoogle(promptAccountSelect = false): Promise<AuthResult> {
   const provider = new GoogleAuthProvider();
@@ -33,10 +36,12 @@ export async function signInWithGoogle(promptAccountSelect = false): Promise<Aut
 
   try {
     if (isCapacitor()) {
-      await signInWithRedirect(auth, provider);
-      // The page will navigate away — reaching this line means the
-      // redirect was initiated.  The result is handled by
-      // `handleRedirectResult` on the next page load.
+      const { credential } = await FirebaseAuthentication.signInWithGoogle();
+      const googleCredential = GoogleAuthProvider.credential(
+        credential?.idToken,
+        credential?.accessToken
+      );
+      await signInWithCredential(auth, googleCredential);
       return { success: true };
     }
 
@@ -50,12 +55,18 @@ export async function signInWithGoogle(promptAccountSelect = false): Promise<Aut
 /**
  * Attempts to sign in with Apple.
  *
- * Works like `signInWithGoogle` — popup on web, redirect in Capacitor.
+ * Works like `signInWithGoogle` — popup on web, native Sign in with Apple
+ * via the Capacitor plugin on native builds (bridged into the JS SDK).
  */
 export async function signInWithApple(): Promise<AuthResult> {
   try {
     if (isCapacitor()) {
-      await signInWithRedirect(auth, appleProvider);
+      const { credential } = await FirebaseAuthentication.signInWithApple();
+      const appleCredential = appleProvider.credential({
+        idToken: credential?.idToken ?? undefined,
+        rawNonce: credential?.nonce ?? undefined,
+      });
+      await signInWithCredential(auth, appleCredential);
       return { success: true };
     }
 
