@@ -49,6 +49,13 @@ export const db = initializeFirestore(
   app,
   {
     localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    // Firestore's default WebChannel streaming transport frequently fails to
+    // establish inside the iOS/Android Capacitor WebView (and behind some
+    // corporate proxies), leaving reads hanging indefinitely. Auto-detecting
+    // long-polling lets the SDK fall back to plain HTTP so post-login reads
+    // actually resolve on native — without this the app can get stuck on the
+    // loading spinner after a successful sign-in.
+    experimentalAutoDetectLongPolling: true,
   },
   firestoreDatabaseId || '(default)'
 );
