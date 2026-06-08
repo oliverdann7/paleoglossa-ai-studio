@@ -65,6 +65,28 @@ interface Recording {
   languageId: string;
 }
 
+/**
+ * Pick a MediaRecorder MIME type the current platform actually supports.
+ * iOS WKWebView (and Safari) cannot record WebM/Opus and will throw
+ * NotSupportedError if it's forced — they produce MP4/AAC instead. Probe in
+ * order of preference and fall back to the browser default (empty string).
+ */
+function pickRecordingMimeType(): string {
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/mp4;codecs=mp4a.40.2',
+    'audio/aac',
+  ];
+  if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported) {
+    for (const type of candidates) {
+      if (MediaRecorder.isTypeSupported(type)) return type;
+    }
+  }
+  return '';
+}
+
 function WaveformCanvas({
   audioUrl,
   isPlaying,
@@ -209,7 +231,8 @@ function RecorderWidget({
     try {
       stopCurrentPlayback();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+      const mimeType = pickRecordingMimeType();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
 
       recorder.ondataavailable = (e) => {
@@ -217,7 +240,9 @@ function RecorderWidget({
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const blob = new Blob(chunksRef.current, {
+          type: recorder.mimeType || mimeType || 'audio/mp4',
+        });
         const url = URL.createObjectURL(blob);
         const duration = (Date.now() - startTimeRef.current) / 1000;
         const rec: Recording = {

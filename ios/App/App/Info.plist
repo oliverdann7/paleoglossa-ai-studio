@@ -47,6 +47,8 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Paleoglossa uses the microphone so you can record your own pronunciation and compare it against native audio in the Audio Lab.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
