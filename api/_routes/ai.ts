@@ -1600,7 +1600,7 @@ Keep each section brief and learner-friendly. Focus on what helps a student read
     const response = await genAI.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: { temperature: 0.3, maxOutputTokens: 1024 },
+      config: { temperature: 0.3, maxOutputTokens: 1024, abortSignal: AbortSignal.timeout(30_000) },
     });
 
     const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';

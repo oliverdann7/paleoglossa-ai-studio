@@ -1469,6 +1469,7 @@ export const Reader = () => {
           languageId={currentLanguageId}
           author={text.author}
           period={text.period}
+          isRtl={isRtl}
           onClose={() => setShowContextPanel(false)}
         />
       )}
