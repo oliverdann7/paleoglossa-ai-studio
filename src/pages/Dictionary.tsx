@@ -19,12 +19,10 @@ import {
   findDictionaryEntry,
   searchDictionaryEntries,
 } from '@/lib/data/dictionary';
-import { getLanguageDisplayName } from '@/lib/constants/languages';
+import { getLanguageDisplayName, isRtlLanguage } from '@/lib/constants/languages';
 import { KWICPanel } from '../components/corpus/KWICPanel.js';
 import { frequencyTier } from '../lib/utils/frequencyTier.js';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
-
-const isRtlLanguage = (languageId: string) => ['hbo', 'arc', 'syr', 'egy'].includes(languageId);
 
 const entryPath = (entry: DictionaryEntry) =>
   `/app/dictionary/${encodeURIComponent(entry.languageId)}/${encodeURIComponent(entry.lemma)}`;

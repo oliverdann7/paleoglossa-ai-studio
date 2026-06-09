@@ -94,4 +94,50 @@ describe('validateImport', () => {
     const result = validateImport({ text: text(), sections: [empty] });
     expect(result.warnings.some((w) => w.includes('no tokens'))).toBe(true);
   });
+
+  it('fails cleanly on a payload missing its text', () => {
+    const result = validateImport({ text: null as any, sections: [] });
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.includes('missing its text'))).toBe(true);
+  });
+
+  it('fails cleanly when sections is not an array', () => {
+    const result = validateImport({ text: text(), sections: undefined as any });
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.includes('must be an array'))).toBe(true);
+  });
+
+  it('rejects duplicate section IDs', () => {
+    const result = validateImport({
+      text: text(),
+      sections: [section(), section()], // both default to id 'T1-1'
+    });
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.includes('Duplicate section ID'))).toBe(true);
+  });
+
+  it('rejects duplicate token IDs within a sentence', () => {
+    const dup = section();
+    dup.sentences[0].tokens[1] = { ...dup.sentences[0].tokens[0] } as any; // clone t0's id
+    const result = validateImport({ text: text(), sections: [dup] });
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.includes('Duplicate token ID'))).toBe(true);
+  });
+
+  it('warns on an unknown text direction', () => {
+    const result = validateImport({
+      text: text({ direction: 'sideways' as any }),
+      sections: [section()],
+    });
+    expect(result.isValid).toBe(true);
+    expect(result.warnings.some((w) => w.includes('Unknown text direction'))).toBe(true);
+  });
+
+  it('accepts valid rtl direction without a warning', () => {
+    const result = validateImport({
+      text: text({ direction: 'rtl' }),
+      sections: [section()],
+    });
+    expect(result.warnings.some((w) => w.includes('direction'))).toBe(false);
+  });
 });

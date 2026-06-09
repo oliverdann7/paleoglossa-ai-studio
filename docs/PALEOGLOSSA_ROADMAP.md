@@ -581,55 +581,62 @@ The Reader page should be extended (not rewritten) via:
 
 **Deliverable:** ✅ Users can listen to TTS with word-by-word highlighting, record themselves and compare with TTS, view IPA transcriptions, and switch between pronunciation traditions (restored/Erasmian/modern for Greek, restored/ecclesiastical for Latin, Tiberian/modern for Hebrew).
 
-### Phase 5b: Historical Context Panels (1-2 weeks)
+### Phase 5b: Historical Context Panels — ✅ Complete
 
-- [ ] `HistoricalContextPanel` component in `src/components/reader/`
-- [ ] AI-generated context via Gemini: geography, period, key figures, cultural background
-- [ ] Cached per text section to avoid repeated AI calls
-- [ ] Extend `Text` interface with optional `historicalContext` field (period, location, figures, backgroundNote)
-- [ ] Toggle in Reader sidebar — non-intrusive, per-section (not per-word)
+> **Reality check (2026-06-09):** shipped. The checkboxes below were stale; re-verified against the code.
 
-**Deliverable:** A user reading Acts 19 can open a side panel showing Ephesus context, Artemis cult background, and Roman provincial politics — transforming "decoding words" into "understanding the world."
+- [x] `HistoricalContextPanel` component (`src/components/reader/HistoricalContextPanel.tsx`) — modal dialog (`role="dialog"`, Escape-to-close, RTL-aware)
+- [x] AI-generated context via Gemini: geography, period, key figures, cultural background, literary context (`api/_routes/ai.ts` → `POST /api/ai/historical-context`, 30s timeout)
+- [x] Cached to avoid repeated AI calls — server-side 24h TTL cache **and** client-side persistent localStorage cache (`historicalContextService.ts`, 30-day TTL, survives reloads / works offline)
+- [ ] Extend `Text` interface with a first-class `historicalContext` field — **not done**; context is fetched on demand and cached, not stored on the `Text` model
+- [x] Toggle in Reader sidebar — non-intrusive, per-text (`src/pages/Reader.tsx`)
 
-### Phase 6: Manuscript & Epigraphy — Partially Complete
+**Deliverable:** ✅ A user reading a text can open a side panel showing geographic, period, cultural, and literary background — turning "decoding words" into "understanding the world."
 
-- [x] Manuscript model + page (`Manuscripts.tsx`, 1092 lines)
+### Phase 6: Manuscript & Epigraphy — Mostly Complete
+
+> **Reality check (2026-06-09):** the variant/apparatus/TC cluster and TEI import were marked unstarted but are in fact implemented; re-verified against the code.
+
+- [x] Manuscript model + page (`Manuscripts.tsx`)
 - [x] Manuscript viewer: image pan/zoom + IIIF manifest support
-- [ ] Line-level alignment
-- [ ] Critical apparatus display
-- [ ] TEI XML import
-- [ ] Manuscript browser with filtering
-- [ ] Variant apparatus explorer: tap a word in Reader to see variant readings across manuscripts
-- [ ] "Variants" tab in `LexDrawerPanel` for inline apparatus display
-- [ ] `VariantReading` data: witness, reading, type, scribal tendency explanation
-- [ ] Data sourcing: start with AI-generated apparatus notes for NT texts; investigate NA28/UBS licensing
-- [ ] Textual criticism exercises (gamified): identify earliest reading, spot harmonization, detect scribal errors
-- [ ] Exercise generation via Gemini from real apparatus data
-- [ ] Integration with XP/achievement system for TC exercise completions
+- [ ] Line-level alignment — **not done** (no diplomatic-line UI)
+- [x] Critical apparatus display (`src/lib/data/criticalApparatus`, apparatus tab in `Manuscripts.tsx`)
+- [x] TEI XML import (`api/_lib/teiParser.ts`, wired into `api/_routes/parse.ts`)
+- [~] Manuscript browser with filtering — list exists; no dedicated filter UI
+- [x] Variant apparatus explorer: tap a word in Reader to see variant readings (`VariantApparatusSection.tsx` in `LexDrawerPanel`)
+- [x] "Variants" tab in `LexDrawerPanel` for inline apparatus display
+- [x] `VariantReading` data: witness, reading, type, scribal tendency (`src/types/modules.ts`, `src/lib/data/textualVariants.ts`)
+- [x] Textual criticism exercises (`TCExerciseModal.tsx`, backed by curated `textualVariants.ts` data)
+- [ ] Exercise generation via Gemini from apparatus data — **not done**; exercises use curated static data, not AI generation
+- [ ] Integration with XP/achievement system for TC exercise completions — **not done**
 
-**Deliverable:** Basic manuscript viewing works. Remaining: line alignment, apparatus, TEI import, variant explorer, and gamified textual criticism exercises.
+**Deliverable:** ✅ Manuscript viewing, critical apparatus, TEI import, and the in-Reader variant explorer + TC exercises all work. Remaining: line-level alignment, AI-generated exercises, and XP integration.
 
-### Phase 7: Classroom & Courses — Partially Complete
+### Phase 7: Classroom & Courses — Mostly Complete
 
-- [x] Course model + page (`Courses.tsx`, 1257 lines)
+> **Reality check (2026-06-09):** teacher role and enrollment shipped (see CLAUDE.md "Complete"); re-verified against the code.
+
+- [x] Course model + page (`Courses.tsx`)
 - [x] Course creation with text assignment and reading lists
 - [x] Language-scoped course filtering (PR #235)
-- [ ] Teacher role via Firebase custom claims
-- [ ] Student enrollment flow
-- [ ] Assignment tracking with due dates
-- [ ] Teacher dashboard: per-student progress, completion rates
-- [ ] Fork/clone texts for course-specific annotations
+- [x] Teacher role via Firebase custom claims (`api/_routes/courses.ts` sets `teacher: true`; ownership-gated mutations)
+- [x] Student enrollment flow (`POST /api/courses/:courseId/join`)
+- [ ] Assignment tracking with due dates — **not done** (no `dueDate` on text assignments)
+- [~] Teacher dashboard: per-student progress, completion rates — roster endpoint exists; progress/completion incomplete
+- [ ] Fork/clone texts for course-specific annotations — **not done**
 
-**Deliverable:** Teachers can create courses, assign texts, and track student progress through the corpus.
+**Deliverable:** ✅ Teachers can create courses, assign texts, and enroll students. Remaining: due dates, full progress dashboard, and text forking.
 
 ### Phase 8: Production Hardening (ongoing)
 
-- [ ] Rate limiting on all API routes
-- [ ] Firestore security rules audit and hardening
-- [ ] Performance audit: chunk size, image optimization, lazy loading
-- [ ] Accessibility audit: ARIA labels, keyboard navigation, screen reader support
-- [ ] E2E tests with Playwright for critical flows (auth, reader, review)
-- [ ] Error reporting dashboard
+> **Reality check (2026-06-09):** rate limiting, rules hardening, perf audit, and E2E flows are in place; re-verified against the code.
+
+- [x] Rate limiting on all API routes (`api/_lib/rateLimiter.ts`; auth/ai/import/api limiters in `api/index.ts`)
+- [x] Firestore security rules audit and hardening (`firestore.rules` — deny-by-default, ownership/membership gating)
+- [x] Performance audit: chunk size, image optimization, lazy loading (`docs/performance-audit.md`; all pages `React.lazy`)
+- [~] Accessibility audit: ARIA labels, keyboard navigation, screen reader support — in progress; dialog semantics + a11y test coverage landing incrementally (`EmptyState.a11y.test.tsx`, `HistoricalContextPanel`). No full WCAG sweep / `jest-axe` yet.
+- [x] E2E tests with Playwright for critical flows (auth, reader, review) (`e2e/`)
+- [ ] Error reporting dashboard — Sentry is wired (passive); no custom dashboard
 - [x] Analytics: track feature usage to guide priorities (PostHog wired in `src/lib/analytics.ts`; events fired from Reader, LexDrawer, Review, Import, Auth, Subscription)
 - [x] Documentation: architecture docs, contribution guide, API reference (`docs/contributing.md`, `docs/api-reference.md`)
 

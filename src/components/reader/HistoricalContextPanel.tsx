@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   fetchHistoricalContext,
@@ -11,6 +11,7 @@ interface Props {
   languageId: string;
   author?: string;
   period?: string;
+  isRtl?: boolean;
   onClose: () => void;
 }
 
@@ -36,37 +37,68 @@ const SECTIONS: SectionConfig[] = [
   },
 ];
 
-export const HistoricalContextPanel = ({ textId, title, languageId, author, period, onClose }: Props) => {
+export const HistoricalContextPanel = ({
+  textId,
+  title,
+  languageId,
+  author,
+  period,
+  isRtl = false,
+  onClose,
+}: Props) => {
   const { t } = useTranslation();
   const [context, setContext] = useState<HistoricalContext | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [openSection, setOpenSection] = useState<string>('period');
+  // Bumping this re-runs the fetch effect — used by the Retry button.
+  const [attempt, setAttempt] = useState(0);
 
   // loading is true while both context and error are null
   const loading = context === null && error === null;
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
-    fetchHistoricalContext({ textId, title, languageId, author, period })
+    fetchHistoricalContext({ textId, title, languageId, author, period }, controller.signal)
       .then((data) => {
-        if (!cancelled) setContext(data);
+        if (!controller.signal.aborted) setContext(data);
       })
-      .catch(() => {
-        if (!cancelled)
-          setError(t('historicalContext.error', 'Could not load historical context.'));
+      .catch((err) => {
+        if (controller.signal.aborted || err?.name === 'AbortError') return;
+        setError(t('historicalContext.error', 'Could not load historical context.'));
       });
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
-  }, [textId, title, languageId, author, period, t]);
+  }, [textId, title, languageId, author, period, attempt, t]);
+
+  // Close on Escape — expected for a modal-style overlay.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  const retry = useCallback(() => {
+    setContext(null);
+    setError(null);
+    setAttempt((n) => n + 1);
+  }, []);
 
   return (
-    <div className="fixed inset-y-0 right-0 z-40 w-80 bg-parch shadow-xl border-l border-bdr flex flex-col">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="historical-context-title"
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className="fixed inset-y-0 right-0 z-40 w-80 bg-parch shadow-xl border-l border-bdr flex flex-col"
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-bdr bg-parch2">
-        <h2 className="font-serif text-base font-semibold text-ink">
+        <h2 id="historical-context-title" className="font-serif text-base font-semibold text-ink">
           {t('historicalContext.title', 'Historical Context')}
         </h2>
         <button
@@ -103,7 +135,15 @@ export const HistoricalContextPanel = ({ textId, title, languageId, author, peri
         )}
 
         {!loading && error && (
-          <div className="p-4 text-sm text-red-600">{error}</div>
+          <div className="p-4 flex flex-col items-start gap-3">
+            <p className="text-sm text-red-600">{error}</p>
+            <button
+              onClick={retry}
+              className="text-sm font-sans px-3 py-1.5 rounded-md border border-bdr bg-parch2 hover:bg-parch3 text-ink transition-colors"
+            >
+              {t('common.retry', 'Retry')}
+            </button>
+          </div>
         )}
 
         {!loading && context?._unavailable && (
