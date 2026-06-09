@@ -11,7 +11,14 @@
 # is missing and the **Archive step fails**.
 #
 # This script runs automatically because Xcode Cloud executes
-# `ci_scripts/ci_post_clone.sh` after cloning, before resolving dependencies.
+# `ci_post_clone.sh` after cloning, before resolving dependencies.
+#
+# LOCATION MATTERS: Xcode Cloud looks for `ci_scripts/` in the directory that
+# contains the Xcode project it builds — here `ios/App/` (sibling of
+# `App.xcodeproj`), NOT the repository root. If this folder lives at the repo
+# root the script is silently skipped and the Archive fails on the missing
+# `config.xml` / `public`. Do not move it. (The body still operates from the
+# repo root via $CI_PRIMARY_REPOSITORY_PATH below.)
 # ─────────────────────────────────────────────────────────────────────────────
 
 set -e
