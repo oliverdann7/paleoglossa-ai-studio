@@ -51,16 +51,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Only recover redirect results in Capacitor where signInWithRedirect is used.
     if (isCapacitor()) handleRedirectResult();
 
-    const unsub = onAuthStateChanged(auth, async (u) => {
+    const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
-      if (u) {
-        setDemoMode(false);
-        identifyAnalytics(u.uid, {
-          email: u.email || undefined,
-          displayName: u.displayName || undefined,
-        });
+      if (!u) {
+        resetAnalytics();
+        setLoading(false);
+        return;
+      }
 
-        // Load profile — this is the only thing blocking the loading spinner.
+      setDemoMode(false);
+      identifyAnalytics(u.uid, {
+        email: u.email || undefined,
+        displayName: u.displayName || undefined,
+      });
+
+      // Let the user into the app the instant Firebase Auth confirms them.
+      // Profile, stats and claims load in the background below, so a slow or
+      // blocked Firestore connection (e.g. inside the iOS WebView) can never
+      // trap the user on the loading spinner after a successful sign-in.
+      setLoading(false);
+
+      void (async () => {
+        // Load (or initialise) the user profile.
         try {
           const profileRef = doc(db, 'users', u.uid);
           const snap = await getDoc(profileRef);
@@ -107,9 +119,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Auth profile error', e);
         }
 
-        // Unblock UI immediately — claims refresh happens in the background.
-        setLoading(false);
-
         // Read cached claims first (instant, no network).
         try {
           const cachedResult = await u.getIdTokenResult(false);
@@ -118,38 +127,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           /* non-fatal */
         }
 
-        // Refresh admin claims in background — does not block rendering.
-        (async () => {
-          let serverAdmin = false;
+        // Refresh admin claims — does not block rendering.
+        let serverAdmin = false;
+        try {
+          const token = await u.getIdToken();
+          const resp = await fetch(getApiUrl('/api/admin/refresh-claims'), {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            serverAdmin = data.admin === true;
+          }
+        } catch {
+          /* non-fatal */
+        }
+        if (serverAdmin) {
           try {
-            const token = await u.getIdToken();
-            const resp = await fetch(getApiUrl('/api/admin/refresh-claims'), {
-              method: 'POST',
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            if (resp.ok) {
-              const data = await resp.json();
-              serverAdmin = data.admin === true;
-            }
+            const result = await u.getIdTokenResult(true);
+            const claimsData = result.claims as Record<string, unknown>;
+            claimsData.admin = true;
+            setClaimsState(claimsData);
           } catch {
-            /* non-fatal */
+            setClaimsState((prev) => ({ ...prev, admin: true }));
           }
-          if (serverAdmin) {
-            try {
-              const result = await u.getIdTokenResult(true);
-              const claimsData = result.claims as Record<string, unknown>;
-              claimsData.admin = true;
-              setClaimsState(claimsData);
-            } catch {
-              setClaimsState((prev) => ({ ...prev, admin: true }));
-            }
-          }
-        })();
-
-        return;
-      }
-      resetAnalytics();
-      setLoading(false);
+        }
+      })();
     });
     return () => unsub();
   }, [loadProfile]);
