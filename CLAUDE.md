@@ -178,7 +178,8 @@ For full morphology: add tokens directly to section definitions using the richly
 
 | File | Contents |
 |------|---------|
-| `docs/PALEOGLOSSA_ROADMAP.md` | 8-phase technical roadmap, API routes, data model plans |
+| `docs/PALEOGLOSSA_ROADMAP.md` | Technical roadmap; § 11 is the current audit-driven plan (2026-06) |
+| `docs/product-audit-2026-06.md` | Full product/engineering audit: scores, confirmed + refuted findings, quick wins |
 | `docs/reader-architecture.md` | Reader internals, token pipeline, knowledge state transitions |
 | `docs/ai-coding-guardrails.md` | AI safety, forbidden patterns, deployment checklist |
 | `docs/repo-health-audit.md` | Codebase quality assessment |
