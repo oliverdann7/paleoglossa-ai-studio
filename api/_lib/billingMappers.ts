@@ -43,3 +43,79 @@ export function languagesForPlan(planId: string): string[] {
   }
   return ['grc'];
 }
+
+/**
+ * Result of interpreting a subscription-bearing Stripe webhook event.
+ * `byUid` events (checkout completion) address a user document directly by
+ * uid; `byCustomer` events (subscription updates/deletions) must look the
+ * user up by their stored `stripeCustomerId`. The `update` payload is the
+ * field set to merge — the caller is expected to add a server-side
+ * `subscriptionUpdatedAt` timestamp before writing.
+ */
+export type SubscriptionWrite =
+  | { kind: 'byUid'; uid: string; update: Record<string, unknown> }
+  | { kind: 'byCustomer'; customerId: string; update: Record<string, unknown> }
+  | null;
+
+/**
+ * Translate one of the three subscription-lifecycle Stripe events into a
+ * plain write descriptor. Pure (no Stripe/Firestore), so the webhook routing
+ * logic can be unit-tested. Returns `null` for events we don't act on or that
+ * are missing the identifiers we need to target a user.
+ */
+export function buildSubscriptionWrite(
+  event: { type: string; data: { object: any } },
+  priceMap: Record<string, { monthly?: string; yearly?: string }>
+): SubscriptionWrite {
+  switch (event.type) {
+    case 'checkout.session.completed': {
+      const session = event.data.object;
+      const uid = session.client_reference_id || session.metadata?.userId;
+      if (!uid) return null;
+      const planId = session.metadata?.planId || 'basic_1';
+      return {
+        kind: 'byUid',
+        uid,
+        update: {
+          currentPlan: planId,
+          subscriptionStatus: 'active',
+          stripeCustomerId: session.customer,
+          stripeSubscriptionId: session.subscription,
+          selectedLanguageIds: languagesForPlan(planId),
+        },
+      };
+    }
+
+    case 'customer.subscription.updated': {
+      const subscription = event.data.object;
+      const customerId = subscription.customer;
+      if (!customerId) return null;
+      const priceId = subscription.items?.data?.[0]?.price?.id;
+      return {
+        kind: 'byCustomer',
+        customerId,
+        update: {
+          currentPlan: planIdFromPriceId(priceId, priceMap),
+          subscriptionStatus: mapStripeStatusToInternal(subscription.status),
+        },
+      };
+    }
+
+    case 'customer.subscription.deleted': {
+      const subscription = event.data.object;
+      const customerId = subscription.customer;
+      if (!customerId) return null;
+      return {
+        kind: 'byCustomer',
+        customerId,
+        update: {
+          currentPlan: 'free',
+          subscriptionStatus: 'canceled',
+        },
+      };
+    }
+
+    default:
+      return null;
+  }
+}
