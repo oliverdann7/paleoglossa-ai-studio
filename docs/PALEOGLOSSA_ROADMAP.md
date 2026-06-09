@@ -1,9 +1,12 @@
 # Paleoglossa: Technical Implementation Roadmap
 
-> **Audit date:** 2026-05-11 · **Updated:** 2026-05-29
+> **Audit date:** 2026-05-11 · **Updated:** 2026-06-10
 > **Target:** A serious platform for studying ancient languages through real texts.
 > **Current state:** React 19 + Vite 6 + Firebase/Firestore + Express 5 + Gemini AI.
 > **Guiding principle:** Extend what exists; build new modules only where gaps cannot be filled.
+>
+> **⭐ Current plan:** § 11 — "Make Paleoglossa amazing" (June 2026 audit-driven roadmap).
+> Full audit report: [`docs/product-audit-2026-06.md`](./product-audit-2026-06.md). Sections 1–10 below are the historical build record.
 
 ---
 
@@ -856,3 +859,95 @@ The items below track completed work and identify remaining gaps.
 | Low | Student enrollment + assignment tracking | 7 | Course creation works; classroom features stub |
 | Low | Parallel text word-level alignment | 1 | Sentence-level works; word alignment complex |
 | Low | E2E tests for reader critical path | 8 | Playwright setup exists; reader flow untested |
+
+---
+
+## 11. Make Paleoglossa amazing: a LingQ-pro learning loop with a Duolingo-grade beginning (2026-06-10)
+
+> Derived from the June 2026 full product & engineering audit (8 dimensions, adversarial verification — 9 findings confirmed, 8 refuted).
+> Full report with evidence, scores, and refuted-findings list: [`docs/product-audit-2026-06.md`](./product-audit-2026-06.md).
+>
+> **Verdict:** a deep, scholarly product with a broken cash register and a cold front door. The reading/SRS core is LingQ-class; the moat features (treebanks, manuscripts, Audio Lab, tutor, notebooks) are built but gated or buried. Weakest dimensions: monetization (4/10), onboarding (6/10), engagement (6/10).
+
+Effort key: **S** ≤ 1 day · **M** = days · **L** = 1–2+ weeks.
+
+### Phase 0 — "Fix what's broken" (1–2 sprints; do nothing else first)
+
+| # | What to build | Build on | Effort | Payoff |
+|---|---|---|---|---|
+| 0.1 | Replace client SDK with Admin SDK in all 3 webhook cases (`getAdminDb()` + `FieldValue.serverTimestamp()`) | `api/_routes/billing.ts` (the correct pattern already exists at the recordings/account cases) | S | Paid subscriptions reliably persist; no silent billing failures |
+| 0.2 | Webhook hardening: query users by `stripeCustomerId` (+ index) instead of scanning the collection; `event.id` idempotency keys; `api/__tests__/billing.test.ts` covering all 6 event types | `api/_routes/billing.ts`, `firestore.indexes.json`, extend `billingMappers.test.ts` | M | Webhooks scale past a few hundred users; Stripe retries can't double-write |
+| 0.3 | Validate `subscriptionStatus === 'active'` + `stripeSubscriptionId` before granting non-free AI quotas; default to free on mismatch and log a warning | `api/_routes/ai.ts` (`lookupUserPlan`), `api/_lib/aiUsage.ts` | S | Closes the plan-spoofing / AI-cost hole |
+| 0.4 | Server-side import quota: count `users/{uid}/imports`, return 429 at plan limit, upgrade CTA in UI | `src/lib/constants/plans.ts` (`importLimit`), `importService.ts`, `src/pages/Import.tsx` | M | Free tier actually has edges → conversion pressure |
+| 0.5 | Extend `checkAndIncrementUsage()` to translate/explain/ocr/tts; add `optionalAuth` + size-based quota to `/api/import/parse` | `api/_lib/aiUsage.ts`, `api/_routes/ai.ts`, `audio.ts`, `parse.ts` | M | Caps Gemini / Google-TTS cost-abuse vectors |
+| 0.6 | Demo-mode SRS parity: call `calculateSM2()` instead of ad-hoc interval math; round-trip test | `src/pages/Review.tsx:276-294`, `src/lib/srs/sm2.ts` | S | Demo users experience the real algorithm — honest trial |
+| 0.7 | SM-2 HARD-rating ease formula fix (`quality === 3` should decrement ease distinctly) + test | `src/lib/srs/sm2.ts` | S | Scheduling correctness for struggling words |
+| 0.8 | Bound boot queries: `limit()` + pagination on vocabulary/imports/readingProgress loads | `vocabularyService.ts`, `importService.ts`, `statsService.ts` | M | 50–80% faster boot for heavy users; lower Firestore bill |
+| 0.9 | Service worker `registerType: 'prompt'` + update toast; `viewport-fit=cover` + safe-area CSS for the Reader | `vite.config.ts`, `index.html`, `src/pages/Reader.tsx` | S | No mid-reading surprise reloads; no notch occlusion on iPhone |
+
+### Phase 1 — "Duolingo-grade first hour"
+
+| # | What to build | Build on | Effort | Payoff |
+|---|---|---|---|---|
+| 1.1 | **Day-One Lesson**: a 2–3 sentence A0 micro-text per flagship language (Greek, Latin, Hebrew first), 90% of vocabulary pre-seeded as known, auto-completing with a celebration modal; routed immediately after onboarding, before the full library | `src/data/corpus.ts` + ingestion pipeline for content; `Onboarding.tsx` `finish()`; celebration via `useToast` + `xpService.ts` | M | Guaranteed comprehension win in minute one — the single highest-leverage retention move |
+| 1.2 | **First-win streak**: initialize `streak: 1` at profile creation; streak chip always visible from day 0 | `statsService.ts:64`, `useStats.ts:22`, `Dashboard.tsx` | S | Day-one momentum; the confirmed onboarding gap, closed in hours |
+| 1.3 | **Daily goal that means something**: map the onboarding minutes commitment (5/10/20/60) to a word goal; one-time "Daily Goal Complete" celebration; raise goal-step priority in the study plan | `Onboarding.tsx` (CommitmentStep), `Dashboard.tsx`, `StudyPlanWidget.tsx` | S | The goal a user chose is the goal they're measured on |
+| 1.4 | **Guest-first lesson**: "Try Demo" on the Landing page drops straight into the Day-One Lesson (not the dashboard), with honest scope copy and a "make it permanent" nudge after ~15 min | `Landing.tsx`, `DemoModeBanner.tsx`, existing demo seeding | M | Zero-friction trial that ends in a win, not a tour |
+| 1.5 | **Fast first level-up**: show Level 1 / XP bar from zero activity; first level threshold low enough to hit in session one | `xpService.ts` (Novice→Master tiers already on-brand), `useXP.ts`, `Dashboard.tsx` | S | Visible progression on day one |
+| 1.6 | **Beginner Hub discoverability**: one-time "Your Beginner Hub is ready" dashboard card + 7-day sidebar highlight | `BeginnerHub.tsx`, `Navbar.tsx`, `useBeginnerProgress.ts` | S | The curriculum that already exists gets found |
+| 1.7 | **Returning-learner vocab import**: optional onboarding step to paste/upload a known-words CSV/JSON | `Onboarding.tsx` (KnownWordsStep), `vocabularyService.ts` | M | Migrating LingQ/Anki users skip the cold start |
+
+### Phase 2 — "LingQ-pro learning loop"
+
+| # | What to build | Build on | Effort | Payoff |
+|---|---|---|---|---|
+| 2.1 | **Audio on every review card** (confirmed top gap): `audioUrl?` on `ReviewCard`, fetched from the TTS API at card generation, URL cached on the vocab doc; play button + auto-play setting | `reviewCardFactory.ts`, `Review.tsx`, `api/_routes/audio.ts`, `useReaderTTS.ts` patterns | M | LingQ-premium parity; phonological memory enters the loop |
+| 2.2 | **Phrase selection ("lingQs for idioms")**: drag/long-press multi-token selection in the Reader; phrases saved as vocab items with lemma arrays + AI gloss; phrase cards in review | `ReadingPane.tsx`, `LexDrawerPanel.tsx`, `useKnowledge.ts` | L | Idiomatic/formulaic learning — essential for Homeric formulae, Hebrew construct chains |
+| 2.3 | **Known-words as the headline metric**: per-language counter on the Dashboard header + Statistics; interval-distribution/ease histograms in an "SRS Health" panel | `reviewService.ts`, `Statistics.tsx`, `useLanguageStats.ts` | M | LingQ's signature motivator: watching the number climb |
+| 2.4 | **Recognition-first card weighting + sentence mode**: weight card types by word state (LEARNING → recognition; KNOWN → production); user-selectable preset; lean on CLOZE/CONTEXT_TRANSLATION for a sentence-centric session mode | `reviewCardFactory.ts`, `Review.tsx` | M | Pedagogically correct progression; less frustration on new words |
+| 2.5 | **Session resume**: sessionId in sessionStorage, recover unrated cards on reload, "Resume session" prompt | `Review.tsx`, `reviewService.ts` reviewLog | M | Mobile-grade session stability |
+| 2.6 | **Wire the review reminders that already exist**: invoke `showReviewReminder(dueCount)` / `showStreakWarning()` (currently never called), gated by a setting | `notificationService.ts`, `Review.tsx`, `useStreakNotifications.ts` | S | Habit loop closes on web today, before native push lands |
+| 2.7 | **Paradigm tables in the reading flow**: surface the existing `ParadigmModal` from the lexicon drawer; binyan/shoresh for Hebrew, principal parts for Latin | `ParadigmModal.tsx` (built, unused in main flow), `LexDrawerPanel.tsx` | S | Morphology becomes explorable, not just labeled |
+| 2.8 | **Instant dictionary**: eager-load the bundled definition on drawer open; source-switcher search box; cache by (lemma, language, source) | `LexDrawerPanel.tsx`, `dictionaryResolver.ts` | S | LingQ-grade single-tap lookup latency |
+| 2.9 | **Offline depth**: Workbox runtime caching for `/api/dictionary/` + `/api/lemmas/`; migrate offline payloads localStorage → IndexedDB (idb-keyval + lz-string) | `vite.config.ts`, `offlineService.ts` | M | 100+ offline texts and offline lookups — train/plane reading |
+
+### Phase 3 — "Habit engine" (adult, scholarly — the scriptorium, not the owl)
+
+| # | What to build | Build on | Effort | Payoff |
+|---|---|---|---|---|
+| 3.1 | **Native push notifications** (confirmed top gap): `@capacitor/push-notifications`, FCM + APNs, review-due and streak-at-risk reminders at user-chosen times | `notificationService.ts`, `capacitor.config.ts`, `android/app/build.gradle` (google-services hook scaffolded) | L | The mechanism every retention mechanic below depends on, on mobile |
+| 3.2 | **The Daily Scriptorium**: reskin the existing daily path (script → reading → review) as a scriptorium session; an oil-lamp that "burns" as you progress and is "lit" each day | `dailyPathService.ts`, `BeginnerHub.tsx` / `DailyPath.tsx` | M | A ritual, not a checklist — on-brand habit framing |
+| 3.3 | **Lectio continua streak + "sabbatical" freezes**: scholarly-voice streak mechanics; surface the existing 2/month freezes as a one-tap "declare a sabbatical day" on the Dashboard | `useStats.ts`, `Settings.tsx`, `Dashboard.tsx` | S | The powerful retention tool currently buried in Settings |
+| 3.4 | **Marginalia (daily quests)**: 3 rotating daily tasks ("Review 10 cards", "Read 50 words", "Annotate one sentence"), +25 XP each, dashboard banner | `challengeService.ts`, `xpService.ts`, `StudyPlanWidget.tsx` | M | Daily variable reward without childishness |
+| 3.5 | **Laurels & colophons (milestones)**: toasts at 50/100/500/1000 known words; laurel modal at streak 7/30/100; session-end screen becomes a scribal colophon ("Explicit feliciter — 23 cards, 92%") with a shareable card | `Statistics.tsx` milestones, `Review.tsx` end screen, `useToast` | S | Dopamine, in Latin |
+| 3.6 | **Symposia (seasonal events)**: monthly featured challenge tied to the ancient calendar — a drama for the City Dionysia (March), a Saturnalia review marathon (December); themed per-language leaderboards | `Challenges.tsx` (9 challenges + tiers exist), `Community.tsx` | M | Time-limited engagement that flatters the audience instead of patronizing it |
+| 3.7 | **Hidden scholarly achievements**: 8–10 discoverables ("Nyktophilos: reviewed after midnight", "Polyglottos: 50 words in 5 languages") on the Profile | `users/{uid}/achievements`, `Profile.tsx`, `challengeService.ts` | S | Replayability for power users |
+| 3.8 | **Re-engagement emails + cron**: streak-at-risk (day 2), comeback ("your 312 words are waiting"), weekly digest; Vercel cron | `api/_lib/email.ts` (welcome/receipt templates exist), `vercel.json` | M | The only channel that reaches lapsed users without push permission |
+| 3.9 | **Home-screen widget**: streak + cards due, taps into Review | Capacitor widget plugin, `useStats.ts` | M/L | Glanceable daily trigger on the device home screen |
+
+### Phase 4 — "Content moat & growth"
+
+| # | What to build | Build on | Effort | Payoff |
+|---|---|---|---|---|
+| 4.1 | **Per-language graded ladders**: ingestion sprints adding an A0→C1 ladder for each of the 11 languages (extended sections for Akkadian/Sanskrit/etc. exist; the gaps are at the A0–A2 rungs); 3–5 classics per smaller language | `scripts/ingest-corpus-to-firestore.ts`, `scripts/corpus/importJson.ts`, static+Firestore merge live in `api/_routes/corpus.ts` | L (continuous) | Nobody else has graded readers in Ugaritic; this is the moat |
+| 4.2 | **Promote Syntax treebanks out of the experimental gate**: bulk-import PROIEL/UD annotations for ~20 flagship texts (Anabasis, Aeneid, Genesis, John), then lift the flag | `scripts/treebank/import-proiel.ts`, `src/lib/features.ts`, `Syntax.tsx`, Reader DependencyTree | M | A headline feature competitors structurally cannot copy |
+| 4.3 | **Promote Manuscripts**: seed the manuscripts collection with IIIF references for flagship texts; wire `VariantApparatusSection` to a Firestore variants collection | `manuscriptService.ts`, `Manuscripts.tsx`, manuscripts API routes | L | "Read the actual codex" — unmatched marketing and pedagogy |
+| 4.4 | **SEO foundation**: robots.txt, dynamic sitemap (landing + public library texts), OG/Twitter/JSON-LD meta via react-helmet-async, public scholar pages at `/scholars/{username}` | `index.html`, `Landing.tsx`, `publicTexts.ts`, `profileService.ts` | M | Currently invisible to search; ancient-language queries are low-competition, high-intent |
+| 4.5 | **Referral + achievement sharing**: referral codes, UTM capture at signup, "I read my first page of Homer" share-card images | `profileService.ts`, `AuthContext.tsx`, colophon share card from 3.5 | M | Organic growth in a niche that talks to itself (classics Twitter, seminaries, r/AncientGreek) |
+| 4.6 | **Conversion polish**: upgrade toast when the vocab cap blocks a save (currently silent), `VOCAB_LIMIT_BLOCKED` analytics, plan feature strings into i18n | `useKnowledge.ts`, `useVocabLimit.ts`, `plans.ts`, `Subscription.tsx` | S | The paywall moment finally has a door, not a wall |
+| 4.7 | **Native audio pipeline + iOS purchases**: GCS bucket + `corpus/{textId}/audio` refs, "native audio" Library badges, learner recording submissions; StoreKit 2 bridge for native subscriptions | `useReaderTTS.ts`, `ReaderAudioBar.tsx`, `Subscription.tsx` compliance gate, `features.isMobilePurchaseEnabled()` | L | Audio depth LingQ users expect; revenue from the iOS audience currently turned away |
+
+### Creative differentiators (no competitor has these)
+
+1. **"Read the Hand" — progressive paleography.** A Reader mode that fades the same verse from typeset text → diplomatic transcription → the actual IIIF manuscript facsimile, with tap zones aligned to tokens. Builds on `Manuscripts.tsx` + `manuscriptService.ts` + `ScriptLab`. Duolingo teaches you words; Paleoglossa teaches you to read Codex Sinaiticus.
+2. **"Collate This Verse" — apparatus criticus exercises.** Spot-the-variant drills between two manuscript witnesses; correct collations feed XP and grammar mastery. Builds on `VariantApparatusSection` + the variants collection from 4.3. Text criticism as a game, for the only audience on earth that wants that.
+3. **Pronunciation Time Machine.** Audio Lab toggle between reconstruction schemes — Classical/Koine/Byzantine Greek, Classical/Ecclesiastical Latin, Tiberian/reconstructed Hebrew — with minimal-pair ear-training cards flowing into the SRS (after 2.1 adds audio cards).
+4. **"Diagram like Dionysius Thrax" — treebank duels.** Drag-the-arc dependency exercises generated from PROIEL data; mistakes route into per-concept grammar-mastery decay. Turns the experimental treebank into the most rigorous grammar trainer in any language app.
+5. **AI Viva Voce.** After finishing a section, the philology tutor (existing `/api/ai/tutor/*` endpoints) conducts a 5-minute Socratic oral exam grounded in *that passage* and *your actual known-words map*, then writes the summary into a research notebook. The graduate-seminar experience, on demand.
+6. **Living Scholia — community commentary layers.** Research notebooks (the `visibility` field and text/token anchoring already exist) become publishable commentary layers togglable in the Reader — a crowdsourced apparatus of scholia per text, doubling as indexed SEO pages.
+7. **Etymology Constellation.** A cross-language cognate graph ("you already know 40% of this Sanskrit word's family from Greek") leveraging the cognate links already in `LexDrawerPanel` + `lemmaService.ts`. Uniquely valuable for users studying 3+ related ancient languages.
+8. **Lectionary & Fasti calendar mode.** Daily readings keyed to historical calendars — church lectionary for Koine/Latin/Syriac/Coptic, the parashah cycle for Hebrew, Roman fasti for Latin — as an alternative daily-path source in `dailyPathService.ts`. A habit trigger with two millennia of proven retention.
+
+### What NOT to do
+
+See `docs/product-audit-2026-06.md` § 6 for the full list (no mascot, no hearts/gems, no demotion leagues, no exercise-gating before reading, no paywalled lookups) and § 3 for the eight refuted audit findings that must not be re-reported as gaps.
