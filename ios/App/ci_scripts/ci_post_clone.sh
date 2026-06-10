@@ -30,7 +30,9 @@ cd "$CI_PRIMARY_REPOSITORY_PATH"
 # ── Install Node (Xcode Cloud images ship Homebrew) ────────────────────────────
 # package.json requires Node >= 22.
 brew install node@22
-export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
+# node@22 is keg-only; resolve the prefix instead of hardcoding /opt/homebrew
+# so the script also works on Intel runners (/usr/local).
+export PATH="$(brew --prefix node@22)/bin:$PATH"
 echo "▸ node $(node -v) / npm $(npm -v)"
 
 # ── Native build-time config ───────────────────────────────────────────────────
@@ -48,5 +50,21 @@ fi
 npm ci
 npx vite build --mode native-production
 npx cap sync ios
+
+# ── Keep SwiftPM resolution consistent with the synced manifest ────────────────
+# `cap sync` regenerates CapApp-SPM/Package.swift from the *installed* npm
+# package versions. If those drifted from the committed Package.swift (e.g. the
+# lockfile moved @capacitor/ios from 8.3.3 → 8.3.4), the committed
+# Package.resolved no longer matches the manifest and the Archive step fails
+# with "an out-of-date resolved file was detected … not allowed when automatic
+# dependency resolution is disabled". Xcode Cloud builds with automatic
+# resolution disabled, so the resolved file can be neither stale nor missing —
+# regenerate it to match the synced manifest before the Archive step runs.
+if ! git diff --quiet -- ios/App/CapApp-SPM/Package.swift; then
+  echo "▸ cap sync changed Package.swift — regenerating Package.resolved"
+  xcodebuild -resolvePackageDependencies \
+    -project ios/App/App.xcodeproj \
+    -scheme App
+fi
 
 echo "▸ ci_post_clone: web assets synced to ios/App/App/public"
