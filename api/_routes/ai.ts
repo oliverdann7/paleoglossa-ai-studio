@@ -17,7 +17,7 @@ import {
   type CourseQuizResult,
 } from '../_lib/aiPrompts.js';
 import { requireAuth, optionalAuth } from '../_lib/auth.js';
-import { checkAndIncrementUsage } from '../_lib/aiUsage.js';
+import { checkAndIncrementUsage, resolveEffectivePlan } from '../_lib/aiUsage.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 
@@ -97,7 +97,20 @@ async function lookupUserPlan(uid: string): Promise<string> {
     const snap = await adminDb_.doc('users/' + uid).get();
     if (!snap.exists) return 'free';
     const data = snap.data();
-    return (data?.currentPlan as string) || 'free';
+    const rawPlan = (data?.currentPlan as string) || 'free';
+    const effective = resolveEffectivePlan(
+      rawPlan,
+      data?.subscriptionStatus as string | undefined,
+      data?.stripeSubscriptionId as string | undefined
+    );
+    if (effective !== rawPlan) {
+      console.warn(
+        `[ai] user ${uid} claims plan "${rawPlan}" but subscription is not active ` +
+          `(status=${data?.subscriptionStatus ?? 'none'}, hasSubId=${Boolean(data?.stripeSubscriptionId)}); ` +
+          `granting "${effective}" quota instead`
+      );
+    }
+    return effective;
   } catch {
     return 'free';
   }
