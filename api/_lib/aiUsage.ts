@@ -33,6 +33,37 @@ export function getPlanAILimit(planId: string): number | 'all' {
   return PLAN_AI_LIMITS[planId] || 20;
 }
 
+/** Paid plans that grant AI quota above the free tier. */
+const PAID_PLANS = new Set(['basic_1', 'duo_2', 'full_all']);
+
+/**
+ * Resolve the plan a user is actually entitled to for quota purposes.
+ *
+ * A user document can claim any `currentPlan` — if it were trusted blindly, a
+ * spoofed or stale `currentPlan: 'full_all'` would unlock unlimited Gemini
+ * usage. So a paid plan is only honored when the subscription is genuinely
+ * active: `subscriptionStatus === 'active'` AND a non-empty
+ * `stripeSubscriptionId` is present (proof a real Stripe subscription backs
+ * it). Anything else — free plan, unknown plan, past_due/canceled status, or a
+ * missing subscription id — collapses to `'free'`.
+ *
+ * Pure (no Firestore) so it can be unit-tested. The caller is expected to log a
+ * warning when the resolved plan differs from the claimed one.
+ */
+export function resolveEffectivePlan(
+  rawPlan: string | undefined,
+  subscriptionStatus: string | undefined,
+  stripeSubscriptionId: string | undefined
+): string {
+  const plan = rawPlan || 'free';
+  if (!PAID_PLANS.has(plan)) return 'free';
+  const hasActiveSub =
+    subscriptionStatus === 'active' &&
+    typeof stripeSubscriptionId === 'string' &&
+    stripeSubscriptionId.length > 0;
+  return hasActiveSub ? plan : 'free';
+}
+
 /**
  * Checks whether the user has quota remaining for AI analysis today,
  * and increments the counter if quota exists.

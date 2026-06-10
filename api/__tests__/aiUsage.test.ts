@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkAndIncrementUsage, getPlanAILimit } from '../_lib/aiUsage';
+import { checkAndIncrementUsage, getPlanAILimit, resolveEffectivePlan } from '../_lib/aiUsage';
 
 describe('getPlanAILimit (real export)', () => {
   it('free plan has limit of 20', () => {
@@ -20,6 +20,41 @@ describe('getPlanAILimit (real export)', () => {
 
   it('unknown plan defaults to 20', () => {
     expect(getPlanAILimit('unknown')).toBe(20);
+  });
+});
+
+describe('resolveEffectivePlan — plan-spoofing guard', () => {
+  const ACTIVE = 'active';
+  const SUB = 'sub_123';
+
+  it('honors a paid plan with active status + a stripe subscription id', () => {
+    expect(resolveEffectivePlan('basic_1', ACTIVE, SUB)).toBe('basic_1');
+    expect(resolveEffectivePlan('duo_2', ACTIVE, SUB)).toBe('duo_2');
+    expect(resolveEffectivePlan('full_all', ACTIVE, SUB)).toBe('full_all');
+  });
+
+  it('downgrades a paid plan to free when status is not active', () => {
+    expect(resolveEffectivePlan('full_all', 'past_due', SUB)).toBe('free');
+    expect(resolveEffectivePlan('full_all', 'canceled', SUB)).toBe('free');
+    expect(resolveEffectivePlan('basic_1', undefined, SUB)).toBe('free');
+  });
+
+  it('downgrades a paid plan to free when no stripe subscription id is present', () => {
+    // The core spoofing case: a user doc with currentPlan: 'full_all' but no
+    // real Stripe subscription backing it must not unlock unlimited AI.
+    expect(resolveEffectivePlan('full_all', ACTIVE, undefined)).toBe('free');
+    expect(resolveEffectivePlan('full_all', ACTIVE, '')).toBe('free');
+    expect(resolveEffectivePlan('duo_2', ACTIVE, undefined)).toBe('free');
+  });
+
+  it('leaves the free plan as free regardless of other fields', () => {
+    expect(resolveEffectivePlan('free', ACTIVE, SUB)).toBe('free');
+    expect(resolveEffectivePlan('free', undefined, undefined)).toBe('free');
+  });
+
+  it('treats unknown / legacy plan ids as free', () => {
+    expect(resolveEffectivePlan('mystery_plan', ACTIVE, SUB)).toBe('free');
+    expect(resolveEffectivePlan(undefined, ACTIVE, SUB)).toBe('free');
   });
 });
 
