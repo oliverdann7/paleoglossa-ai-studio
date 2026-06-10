@@ -2,9 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>com.apple.developer.applesignin</key>
-	<array>
-		<string>Default</string>
-	</array>
+	<!--
+	  Sign in with Apple (com.apple.developer.applesignin) was removed on
+	  purpose: the native app gates ALL OAuth off (email-only sign-in —
+	  signInWithRedirect cannot complete inside the Capacitor WebView), so the
+	  entitlement was unused, and cloud-managed App Store distribution signing
+	  fails at export when the App ID doesn't have the capability enabled.
+	  Re-add it together with enabling the capability on the com.paleoglossa.app
+	  App ID when native Sign in with Apple actually ships.
+	-->
 </dict>
 </plist>
