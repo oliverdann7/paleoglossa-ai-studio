@@ -55,13 +55,16 @@ npx cap sync ios
 # `cap sync` regenerates CapApp-SPM/Package.swift from the *installed* npm
 # package versions. If those drifted from the committed Package.swift (e.g. the
 # lockfile moved @capacitor/ios from 8.3.3 → 8.3.4), the committed
-# Package.resolved no longer matches the manifest and Xcode Cloud fails
-# dependency resolution with "Package.resolved file is out of date".
-# Deleting the stale resolved file lets Xcode re-resolve; the result is still
-# deterministic because Capacitor pins the swift-pm dependency with `exact:`.
+# Package.resolved no longer matches the manifest and the Archive step fails
+# with "an out-of-date resolved file was detected … not allowed when automatic
+# dependency resolution is disabled". Xcode Cloud builds with automatic
+# resolution disabled, so the resolved file can be neither stale nor missing —
+# regenerate it to match the synced manifest before the Archive step runs.
 if ! git diff --quiet -- ios/App/CapApp-SPM/Package.swift; then
-  echo "▸ cap sync changed Package.swift — removing stale Package.resolved"
-  rm -f ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+  echo "▸ cap sync changed Package.swift — regenerating Package.resolved"
+  xcodebuild -resolvePackageDependencies \
+    -project ios/App/App.xcodeproj \
+    -scheme App
 fi
 
 echo "▸ ci_post_clone: web assets synced to ios/App/App/public"
