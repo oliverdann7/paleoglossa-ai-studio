@@ -3,11 +3,8 @@ import { requireAuth } from '../_lib/auth.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 import { sendPaymentReceiptEmail, sendPaymentFailedEmail } from '../_lib/email.js';
-import {
-  mapStripeStatusToInternal,
-  planIdFromPriceId,
-  languagesForPlan,
-} from '../_lib/billingMappers.js';
+import { buildSubscriptionWrite } from '../_lib/billingMappers.js';
+import type { Firestore } from 'firebase-admin/firestore';
 
 const router = Router();
 
@@ -188,6 +185,47 @@ for (const [planId, prices] of Object.entries(PRICE_IDS)) {
   }
 }
 
+/**
+ * Idempotency guard. Stripe retries webhooks (and may deliver the same event
+ * more than once), so we claim each `event.id` exactly once via a `create()`
+ * — which fails if the doc already exists. Returns `true` the first time an
+ * event is seen, `false` on any replay. Fails open (returns `true`) if the
+ * write errors for a non-duplicate reason, so a transient Firestore blip never
+ * silently drops a real billing event.
+ */
+async function claimWebhookEvent(
+  adminDb_: Firestore,
+  eventId: string,
+  eventType: string
+): Promise<boolean> {
+  try {
+    await adminDb_.doc(`stripeWebhookEvents/${eventId}`).create({
+      type: eventType,
+      processedAt: new Date().toISOString(),
+    });
+    return true;
+  } catch (e: any) {
+    // ALREADY_EXISTS (code 6) → genuine replay; anything else → fail open.
+    if (e?.code === 6 || /already exists/i.test(String(e?.message))) return false;
+    console.error('[webhook] idempotency claim failed (processing anyway):', e);
+    return true;
+  }
+}
+
+/**
+ * Resolve the user document for a Stripe customer via an indexed equality
+ * query instead of scanning the whole `users` collection. Returns `null` when
+ * no user is mapped to the customer.
+ */
+async function findUserByStripeCustomerId(adminDb_: Firestore, customerId: string) {
+  const snap = await adminDb_
+    .collection('users')
+    .where('stripeCustomerId', '==', customerId)
+    .limit(1)
+    .get();
+  return snap.empty ? null : snap.docs[0].ref;
+}
+
 router.post('/api/stripe/webhook', async (req: any, res: any) => {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -201,73 +239,62 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
     const rawBody = req.rawBody || JSON.stringify(req.body);
     const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
 
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object;
-        const userId = session.client_reference_id || session.metadata?.userId;
-        const planId = session.metadata?.planId || 'basic_1';
+    const adminDb_ = getAdminDb();
 
-        if (userId) {
-          const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
-          const { db } = await import('../../src/lib/firebase.js');
-          await setDoc(
-            doc(db, `users/${userId}`),
-            {
-              currentPlan: planId,
-              subscriptionStatus: 'active',
-              stripeCustomerId: session.customer,
-              stripeSubscriptionId: session.subscription,
-              selectedLanguageIds: languagesForPlan(planId),
-              subscriptionUpdatedAt: serverTimestamp(),
-            },
-            { merge: true }
-          );
-
-          // Send payment receipt email
-          const customerEmail = session.customer_email || session.customer_details?.email;
-          if (customerEmail) {
-            const planLabel = PLANS_BY_PRICE[session.metadata?.priceId || '']?.name || planId;
-            const amount = session.amount_total
-              ? `$${(session.amount_total / 100).toFixed(2)}`
-              : '';
-            sendPaymentReceiptEmail(customerEmail, planLabel, amount).catch(() => {});
-          }
-        }
-        break;
+    // Idempotency: Stripe retries deliveries, so claim each event id once.
+    // A genuine replay short-circuits before we touch any user document.
+    if (adminDb_) {
+      const fresh = await claimWebhookEvent(adminDb_, event.id, event.type);
+      if (!fresh) {
+        return res.status(200).json({ received: true, duplicate: true });
       }
+    }
 
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object;
-        const customerId = subscription.customer as string;
-        const status = subscription.status;
-        const items = subscription.items?.data || [];
-        const priceId = items[0]?.price?.id;
-
-        const planId = planIdFromPriceId(priceId, PRICE_IDS);
-        const subscriptionStatus = mapStripeStatusToInternal(status);
-
+    // Subscription-lifecycle events (checkout completed / subscription
+    // updated / deleted) all resolve to a single user write. Apply it via the
+    // Admin SDK with an indexed `stripeCustomerId` lookup — no client SDK, no
+    // full-collection scan.
+    const subWrite = buildSubscriptionWrite(event, PRICE_IDS);
+    if (subWrite) {
+      if (adminDb_) {
         try {
-          const { collection, getDocs, doc, setDoc, serverTimestamp } =
-            await import('firebase/firestore');
-          const { db } = await import('../../src/lib/firebase.js');
-          const usersSnap = await getDocs(collection(db, 'users'));
-          for (const userDoc of usersSnap.docs) {
-            const data = userDoc.data();
-            if (data.stripeCustomerId === customerId) {
-              await setDoc(
-                doc(db, `users/${userDoc.id}`),
-                {
-                  currentPlan: planId,
-                  subscriptionStatus,
-                  subscriptionUpdatedAt: serverTimestamp(),
-                },
-                { merge: true }
+          const { FieldValue } = await import('firebase-admin/firestore');
+          const update = {
+            ...subWrite.update,
+            subscriptionUpdatedAt: FieldValue.serverTimestamp(),
+          };
+          if (subWrite.kind === 'byUid') {
+            await adminDb_.doc(`users/${subWrite.uid}`).set(update, { merge: true });
+          } else {
+            const ref = await findUserByStripeCustomerId(adminDb_, subWrite.customerId);
+            if (ref) {
+              await ref.set(update, { merge: true });
+            } else {
+              console.warn(
+                `[webhook] no user found for stripeCustomerId ${subWrite.customerId} (${event.type})`
               );
-              break;
             }
           }
         } catch (e) {
-          console.error('Failed to update user subscription from webhook:', e);
+          console.error(`Failed to apply subscription write for ${event.type}:`, e);
+        }
+      } else {
+        console.error(`[webhook] Admin SDK unavailable; dropped ${event.type} for billing write`);
+      }
+    }
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        // User document already updated above; here we only fire the receipt.
+        const session = event.data.object;
+        const customerEmail = session.customer_email || session.customer_details?.email;
+        if (customerEmail) {
+          const planId = session.metadata?.planId || 'basic_1';
+          const planLabel = PLANS_BY_PRICE[session.metadata?.priceId || '']?.name || planId;
+          const amount = session.amount_total
+            ? `$${(session.amount_total / 100).toFixed(2)}`
+            : '';
+          sendPaymentReceiptEmail(customerEmail, planLabel, amount).catch(() => {});
         }
         break;
       }
@@ -277,9 +304,7 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
         const bookingId = pi.metadata?.bookingId;
         if (bookingId) {
           try {
-            const { getAdminDb } = await import('../_lib/firebaseAdmin.js');
             const { createLessonRoom } = await import('../_lib/dailyVideo.js');
-            const adminDb_ = getAdminDb();
             if (adminDb_) {
               const ref = adminDb_.doc(`bookings/${bookingId}`);
               const snap = await ref.get();
@@ -318,8 +343,6 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
         const bookingId = pi.metadata?.bookingId;
         if (bookingId) {
           try {
-            const { getAdminDb } = await import('../_lib/firebaseAdmin.js');
-            const adminDb_ = getAdminDb();
             if (adminDb_) {
               await adminDb_.doc(`bookings/${bookingId}`).set(
                 {
@@ -339,9 +362,7 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
       case 'account.updated': {
         const account = event.data.object as any;
         try {
-          const { getAdminDb } = await import('../_lib/firebaseAdmin.js');
           const { deriveConnectStatus } = await import('../_lib/stripeConnect.js');
-          const adminDb_ = getAdminDb();
           if (adminDb_) {
             const usersSnap = await adminDb_
               .collection('users')
@@ -368,34 +389,8 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
         break;
       }
 
-      case 'customer.subscription.deleted': {
-        const deletedSub = event.data.object;
-        const deletedCustomerId = deletedSub.customer as string;
-        try {
-          const { collection, getDocs, doc, setDoc, serverTimestamp } =
-            await import('firebase/firestore');
-          const { db } = await import('../../src/lib/firebase.js');
-          const usersSnap = await getDocs(collection(db, 'users'));
-          for (const userDoc of usersSnap.docs) {
-            const data = userDoc.data();
-            if (data.stripeCustomerId === deletedCustomerId) {
-              await setDoc(
-                doc(db, `users/${userDoc.id}`),
-                {
-                  currentPlan: 'free',
-                  subscriptionStatus: 'canceled',
-                  subscriptionUpdatedAt: serverTimestamp(),
-                },
-                { merge: true }
-              );
-              break;
-            }
-          }
-        } catch (e) {
-          console.error('Failed to cancel subscription from webhook:', e);
-        }
-        break;
-      }
+      // `customer.subscription.updated` and `customer.subscription.deleted`
+      // are fully handled by the unified subscription write above.
     }
 
     res.status(200).json({ received: true });
