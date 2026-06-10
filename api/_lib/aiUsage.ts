@@ -65,6 +65,37 @@ export function resolveEffectivePlan(
 }
 
 /**
+ * Look up a user's effective plan from Firestore, honoring a paid plan only
+ * when backed by an active Stripe subscription (see `resolveEffectivePlan`).
+ * Falls back to `'free'` when the Admin DB is unavailable or the lookup fails.
+ */
+export async function lookupEffectivePlan(uid: string): Promise<string> {
+  try {
+    const adminDb_ = getAdminDb();
+    if (!adminDb_) return 'free';
+    const snap = await adminDb_.doc('users/' + uid).get();
+    if (!snap.exists) return 'free';
+    const data = snap.data();
+    const rawPlan = (data?.currentPlan as string) || 'free';
+    const effective = resolveEffectivePlan(
+      rawPlan,
+      data?.subscriptionStatus as string | undefined,
+      data?.stripeSubscriptionId as string | undefined
+    );
+    if (effective !== rawPlan) {
+      console.warn(
+        `[plan] user ${uid} claims plan "${rawPlan}" but subscription is not active ` +
+          `(status=${data?.subscriptionStatus ?? 'none'}, hasSubId=${Boolean(data?.stripeSubscriptionId)}); ` +
+          `granting "${effective}" quota instead`
+      );
+    }
+    return effective;
+  } catch {
+    return 'free';
+  }
+}
+
+/**
  * Checks whether the user has quota remaining for AI analysis today,
  * and increments the counter if quota exists.
  *

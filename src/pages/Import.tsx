@@ -16,7 +16,12 @@ import {
 } from 'lucide-react';
 import { TextQualityBadge } from '../components/ui/TextQualityBadge.js';
 import { cn } from '@/lib/utils';
-import { ImportService, ImportedText, computeContentHash } from '../lib/services/importService.js';
+import {
+  ImportService,
+  ImportedText,
+  ImportQuotaStatus,
+  computeContentHash,
+} from '../lib/services/importService.js';
 import { AIClient } from '../lib/services/aiClient.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
@@ -58,6 +63,7 @@ export const Import = () => {
   const langSelectRef = useRef<HTMLDivElement>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [duplicateImport, setDuplicateImport] = useState<ImportedText | null>(null);
+  const [quotaBlocked, setQuotaBlocked] = useState<ImportQuotaStatus | null>(null);
   const [importHistory, setImportHistory] = useState<ImportedText[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [retryingId, setRetryingId] = useState<string | null>(null);
@@ -353,6 +359,24 @@ export const Import = () => {
     setProcessingStep(t('import.checkingDuplicate', 'Checking for duplicates...'));
     setAnalysisError(null);
     setDuplicateImport(null);
+    setQuotaBlocked(null);
+
+    // Server-side import quota — blocks at the plan limit with an upgrade CTA
+    if (user) {
+      const quota = await ImportService.checkImportQuota();
+      if (!quota.allowed) {
+        trackEvent(ANALYTICS_EVENTS.IMPORT_LIMIT_BLOCKED, {
+          languageId,
+          used: quota.used,
+          limit: quota.limit,
+          planId: quota.planId,
+        });
+        setQuotaBlocked(quota);
+        setIsProcessing(false);
+        setProcessingStep('');
+        return;
+      }
+    }
 
     // Duplicate detection
     if (user && !forceImport) {
@@ -844,6 +868,41 @@ export const Import = () => {
                         className="text-[11px] font-bold px-3 py-1.5 bg-parch3 text-ink border border-bdr rounded-lg hover:bg-parch2 transition-colors"
                       >
                         Import Anyway
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {quotaBlocked && (
+              <div className="mt-6 p-4 bg-amber/10 border border-amber/30 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="font-bold text-amber text-[13px] mb-1">
+                      {t('import.limitReachedTitle', 'Import Limit Reached')}
+                    </div>
+                    <p className="text-[12px] text-ink3">
+                      {t('import.limitReachedBody', {
+                        defaultValue:
+                          'You have used {{used}} of {{limit}} text imports on your plan. Upgrade to import more texts.',
+                        used: quotaBlocked.used,
+                        limit: quotaBlocked.limit,
+                      })}
+                    </p>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => navigate('/app/subscription')}
+                        className="text-[11px] font-bold px-3 py-1.5 bg-blue text-white rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        {t('import.upgradePlan', 'Upgrade Plan')}
+                      </button>
+                      <button
+                        onClick={() => setQuotaBlocked(null)}
+                        className="text-[11px] font-bold px-3 py-1.5 bg-parch3 text-ink border border-bdr rounded-lg hover:bg-parch2 transition-colors"
+                      >
+                        {t('common.dismiss', 'Dismiss')}
                       </button>
                     </div>
                   </div>

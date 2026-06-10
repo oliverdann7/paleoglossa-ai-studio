@@ -17,7 +17,7 @@ import {
   type CourseQuizResult,
 } from '../_lib/aiPrompts.js';
 import { requireAuth, optionalAuth } from '../_lib/auth.js';
-import { checkAndIncrementUsage, resolveEffectivePlan } from '../_lib/aiUsage.js';
+import { checkAndIncrementUsage, lookupEffectivePlan } from '../_lib/aiUsage.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 
@@ -90,31 +90,7 @@ const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
   hit: 'Hittite pronunciation is partially reconstructed from cuneiform spelling. Significant gaps remain.',
 };
 
-async function lookupUserPlan(uid: string): Promise<string> {
-  try {
-    const adminDb_ = getAdminDb();
-    if (!adminDb_) return 'free';
-    const snap = await adminDb_.doc('users/' + uid).get();
-    if (!snap.exists) return 'free';
-    const data = snap.data();
-    const rawPlan = (data?.currentPlan as string) || 'free';
-    const effective = resolveEffectivePlan(
-      rawPlan,
-      data?.subscriptionStatus as string | undefined,
-      data?.stripeSubscriptionId as string | undefined
-    );
-    if (effective !== rawPlan) {
-      console.warn(
-        `[ai] user ${uid} claims plan "${rawPlan}" but subscription is not active ` +
-          `(status=${data?.subscriptionStatus ?? 'none'}, hasSubId=${Boolean(data?.stripeSubscriptionId)}); ` +
-          `granting "${effective}" quota instead`
-      );
-    }
-    return effective;
-  } catch {
-    return 'free';
-  }
-}
+const lookupUserPlan = lookupEffectivePlan;
 
 router.post('/api/ai/analyze', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {

@@ -32,6 +32,7 @@ import availabilityRouter from './_routes/availability.js';
 import bookingsRouter from './_routes/bookings.js';
 import reviewsRouter from './_routes/reviews.js';
 import recommendationsRouter from './_routes/recommendations.js';
+import importsRouter from './_routes/imports.js';
 
 const app = express();
 
@@ -107,6 +108,7 @@ app.use(availabilityRouter);
 app.use(bookingsRouter);
 app.use(reviewsRouter);
 app.use(recommendationsRouter);
+app.use(importsRouter);
 
 // Global error handler — report to Sentry before returning 500
 app.use((err: any, req: any, res: any, next: any) => {

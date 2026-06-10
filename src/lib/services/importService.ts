@@ -10,7 +10,7 @@ import {
   where,
   serverTimestamp,
 } from 'firebase/firestore';
-import { apiFetch } from './apiFetch.js';
+import { apiFetch, ApiError } from './apiFetch.js';
 import { ImportedText as FSImportedText } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
@@ -32,7 +32,38 @@ const STORAGE_KEY = STORAGE_KEYS.IMPORTS;
 const importsCache = new Map<string, { data: ImportedText[]; at: number }>();
 const IMPORTS_CACHE_TTL = 5 * 60_000;
 
+export interface ImportQuotaStatus {
+  allowed: boolean;
+  used: number;
+  limit: number | 'all';
+  remaining: number | 'unlimited';
+  planId?: string;
+}
+
 export class ImportService {
+  /**
+   * Ask the server whether the user may create one more import on their plan.
+   * A 429 with code IMPORT_LIMIT_REACHED means the limit is hit; any other
+   * failure (offline, server error) fails open so a degraded quota check
+   * never blocks importing.
+   */
+  static async checkImportQuota(): Promise<ImportQuotaStatus> {
+    try {
+      return await apiFetch<ImportQuotaStatus>('/api/imports/quota');
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 429 && e.code === 'IMPORT_LIMIT_REACHED') {
+        return {
+          allowed: false,
+          used: e.body?.used ?? 0,
+          limit: e.body?.limit ?? 0,
+          remaining: 0,
+          planId: e.body?.planId,
+        };
+      }
+      return { allowed: true, used: 0, limit: 'all', remaining: 'unlimited' };
+    }
+  }
+
   static async getImports(userId: string | null): Promise<ImportedText[]> {
     if (!userId) {
       ImportService.dedupeImportsById();
