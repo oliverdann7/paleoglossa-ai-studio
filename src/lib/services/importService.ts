@@ -363,35 +363,28 @@ export class ImportService {
     }
   }
 
+  /**
+   * Fork a public text into the user's imports via the server, which enforces
+   * the plan's import quota and increments the public text's fork count.
+   *
+   * Returns the new import id, or null on generic failure. Rethrows the
+   * ApiError when the fork is blocked by the import quota
+   * (429 IMPORT_LIMIT_REACHED) so callers can show an upgrade CTA.
+   */
   static async forkPublic(userId: string, publicTextId: string): Promise<string | null> {
     if (!userId) return null;
 
     try {
-      // Get the public text
-      const publicRef = doc(db, 'publicTexts', publicTextId);
-      const snap = await getDoc(publicRef);
-
-      if (!snap.exists()) return null;
-
-      const data = snap.data();
-
-      // Create a copy in user's imports
-      const newId = `fork_${publicTextId}_${Date.now()}`;
       importsCache.delete(userId);
-      await setDoc(doc(db, `users/${userId}/imports`, newId), {
-        ...data,
-        id: newId,
-        title: `${data.title} (forked)`,
-        visibility: 'private',
-        forkedFrom: publicTextId,
-        authorId: data.authorId,
-        authorName: data.authorName,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        publishedAt: null,
-      });
-      return newId || null;
-    } catch {
+      const result = await apiFetch<{ id: string }>(
+        `/api/public/texts/${encodeURIComponent(publicTextId)}/fork`,
+        { method: 'POST' }
+      );
+      return result?.id || null;
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 429 && e.code === 'IMPORT_LIMIT_REACHED') {
+        throw e;
+      }
       return null;
     }
   }
