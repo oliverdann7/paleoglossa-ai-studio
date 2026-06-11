@@ -4,6 +4,8 @@ import multer from 'multer';
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import mammoth from 'mammoth';
 import { parseTeiXml } from '../_lib/teiParser.js';
+import { optionalAuth, type AuthenticatedRequest } from '../_lib/auth.js';
+import { enforceAiQuota, computeParseUnits } from '../_lib/aiUsage.js';
 
 const router = Router();
 
@@ -28,56 +30,101 @@ const upload = multer({
   },
 });
 
-router.post('/api/import/parse', upload.single('file'), async (req: any, res: any) => {
-  if (!req.file) {
-    return res
-      .status(400)
-      .json({ error: 'No file uploaded or file type not supported.', code: 'NO_FILE' });
-  }
+router.post(
+  '/api/import/parse',
+  optionalAuth as any,
+  upload.single('file'),
+  async (req: any, res: any) => {
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ error: 'No file uploaded or file type not supported.', code: 'NO_FILE' });
+    }
 
-  const { mimetype, buffer, originalname, size } = req.file;
+    const { mimetype, buffer, originalname, size } = req.file;
 
-  if (size === 0) {
-    return res.status(400).json({ error: 'The uploaded file is empty.', code: 'EMPTY_FILE' });
-  }
+    if (size === 0) {
+      return res.status(400).json({ error: 'The uploaded file is empty.', code: 'EMPTY_FILE' });
+    }
 
-  try {
-    let text = '';
-    const warnings: string[] = [];
+    // Size-based quota (roadmap § 11, 0.5): parsing costs 1 unit per started MB,
+    // so a 10 MB PDF consumes 10 daily-quota units. Anonymous requests pass
+    // through (rate-limited separately); fail-open semantics live in aiUsage.
+    const uid = (req as AuthenticatedRequest).user?.uid;
+    if (uid) {
+      const quota = await enforceAiQuota(uid, 'parse', size, computeParseUnits(size));
+      if (!quota.allowed) {
+        return res.status(429).json({
+          error: 'Daily usage limit reached. Upgrade your plan for more.',
+          code: 'QUOTA_EXCEEDED',
+          remaining: quota.remaining,
+          resetDate: quota.resetDate,
+          planLimit: quota.planLimit,
+        });
+      }
+    }
 
-    if (mimetype === 'application/pdf') {
-      const data = await pdfParse(buffer);
-      text = data.text.trim();
-      if (!text) {
-        warnings.push(
-          'PDF contained no extractable text. It may be a scanned image — try the Image OCR tab instead.'
-        );
+    try {
+      let text = '';
+      const warnings: string[] = [];
+
+      if (mimetype === 'application/pdf') {
+        const data = await pdfParse(buffer);
+        text = data.text.trim();
+        if (!text) {
+          warnings.push(
+            'PDF contained no extractable text. It may be a scanned image — try the Image OCR tab instead.'
+          );
+        }
+        if (data.numpages > 200) {
+          warnings.push(
+            `Large document (${data.numpages} pages). Only the first 100,000 characters will be analyzed.`
+          );
+        }
+      } else if (
+        mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ) {
+        const result = await mammoth.extractRawText({ buffer });
+        text = result.value.trim();
+        if (result.messages.length > 0) {
+          warnings.push('Some DOCX elements could not be converted to plain text.');
+        }
+        if (!text) {
+          warnings.push('The DOCX file appears to contain no text content.');
+        }
+      } else if (
+        mimetype === 'application/xml' ||
+        mimetype === 'text/xml' ||
+        originalname?.toLowerCase().endsWith('.xml')
+      ) {
+        const xmlString = buffer.toString('utf-8');
+        const teiResult = parseTeiXml(xmlString);
+        text = teiResult.text;
+        warnings.push(...teiResult.warnings);
+
+        const truncated = text.length > 100000;
+        if (truncated) {
+          warnings.push(
+            `Text was truncated to 100,000 characters (document contained ${text.length.toLocaleString()}).`
+          );
+        }
+
+        return res.status(200).json({
+          text: text.slice(0, 100000),
+          originalFilename: originalname,
+          mimeType: mimetype,
+          characterCount: Math.min(text.length, 100000),
+          truncated,
+          teiMetadata: {
+            title: teiResult.title,
+            author: teiResult.author,
+            languageHint: teiResult.languageHint,
+          },
+          warnings: warnings.length > 0 ? warnings : undefined,
+        });
+      } else {
+        text = buffer.toString('utf-8').trim();
       }
-      if (data.numpages > 200) {
-        warnings.push(
-          `Large document (${data.numpages} pages). Only the first 100,000 characters will be analyzed.`
-        );
-      }
-    } else if (
-      mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ) {
-      const result = await mammoth.extractRawText({ buffer });
-      text = result.value.trim();
-      if (result.messages.length > 0) {
-        warnings.push('Some DOCX elements could not be converted to plain text.');
-      }
-      if (!text) {
-        warnings.push('The DOCX file appears to contain no text content.');
-      }
-    } else if (
-      mimetype === 'application/xml' ||
-      mimetype === 'text/xml' ||
-      originalname?.toLowerCase().endsWith('.xml')
-    ) {
-      const xmlString = buffer.toString('utf-8');
-      const teiResult = parseTeiXml(xmlString);
-      text = teiResult.text;
-      warnings.push(...teiResult.warnings);
 
       const truncated = text.length > 100000;
       if (truncated) {
@@ -92,52 +139,29 @@ router.post('/api/import/parse', upload.single('file'), async (req: any, res: an
         mimeType: mimetype,
         characterCount: Math.min(text.length, 100000),
         truncated,
-        teiMetadata: {
-          title: teiResult.title,
-          author: teiResult.author,
-          languageHint: teiResult.languageHint,
-        },
         warnings: warnings.length > 0 ? warnings : undefined,
       });
-    } else {
-      text = buffer.toString('utf-8').trim();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message.toLowerCase() : '';
+      if (msg.includes('password') || msg.includes('encrypted')) {
+        return res.status(422).json({
+          error: 'This PDF is password-protected. Remove the password and try again.',
+          code: 'PDF_ENCRYPTED',
+        });
+      }
+      if (msg.includes('central directory') || msg.includes('zip')) {
+        return res.status(422).json({
+          error: 'The DOCX file appears to be corrupt or is not a valid Word document.',
+          code: 'DOCX_CORRUPT',
+        });
+      }
+      console.error('[import/parse] Unexpected error:', err);
+      return res
+        .status(500)
+        .json({ error: 'Failed to extract text from file.', code: 'PARSE_ERROR' });
     }
-
-    const truncated = text.length > 100000;
-    if (truncated) {
-      warnings.push(
-        `Text was truncated to 100,000 characters (document contained ${text.length.toLocaleString()}).`
-      );
-    }
-
-    return res.status(200).json({
-      text: text.slice(0, 100000),
-      originalFilename: originalname,
-      mimeType: mimetype,
-      characterCount: Math.min(text.length, 100000),
-      truncated,
-      warnings: warnings.length > 0 ? warnings : undefined,
-    });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message.toLowerCase() : '';
-    if (msg.includes('password') || msg.includes('encrypted')) {
-      return res.status(422).json({
-        error: 'This PDF is password-protected. Remove the password and try again.',
-        code: 'PDF_ENCRYPTED',
-      });
-    }
-    if (msg.includes('central directory') || msg.includes('zip')) {
-      return res.status(422).json({
-        error: 'The DOCX file appears to be corrupt or is not a valid Word document.',
-        code: 'DOCX_CORRUPT',
-      });
-    }
-    console.error('[import/parse] Unexpected error:', err);
-    return res
-      .status(500)
-      .json({ error: 'Failed to extract text from file.', code: 'PARSE_ERROR' });
   }
-});
+);
 
 // Multer error handler (file too large, unsupported type from fileFilter)
 router.use((err: unknown, _req: unknown, res: any, next: (e: unknown) => void) => {
