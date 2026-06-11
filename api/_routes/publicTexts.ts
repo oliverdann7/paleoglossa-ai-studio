@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireAuth } from '../_lib/auth.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
+import { checkImportQuotaForUser } from '../_lib/importQuota.js';
 
 const router = Router();
 
@@ -97,6 +98,17 @@ router.post(
       const publicSnap = await adminDb_.doc('publicTexts/' + textId).get();
       if (!publicSnap.exists)
         return res.status(404).json({ error: 'Text not found', code: 'NOT_FOUND' });
+
+      // Forks count against the same import quota as direct imports.
+      // checkImportQuotaForUser returns null when the check is degraded — fail open.
+      const quota = await checkImportQuotaForUser(userId);
+      if (quota && !quota.allowed) {
+        return res.status(429).json({
+          error: `Import limit reached (${quota.used}/${quota.limit} texts on your plan). Upgrade to fork more.`,
+          code: 'IMPORT_LIMIT_REACHED',
+          ...quota,
+        });
+      }
 
       const data = publicSnap.data()!;
       const newId = `fork_${textId}_${Date.now()}`;
