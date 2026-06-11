@@ -20,6 +20,7 @@ export const ANALYTICS_EVENTS = {
   REVIEW_COMPLETED: 'review_completed',
   IMPORT_STARTED: 'import_started',
   IMPORT_COMPLETED: 'import_completed',
+  IMPORT_LIMIT_BLOCKED: 'import_limit_blocked',
   AI_GLOSS_CACHE_HIT: 'ai_gloss_cache_hit',
   AI_GLOSS_CACHE_MISS: 'ai_gloss_cache_miss',
   AI_GLOSS_GENERATED: 'ai_gloss_generated',
