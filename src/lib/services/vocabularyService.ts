@@ -2,7 +2,6 @@ import { db } from '../firebase.js';
 import {
   doc,
   collection,
-  getDocs,
   serverTimestamp,
   writeBatch,
   increment,
@@ -18,6 +17,7 @@ import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/sy
 import { reportPersistenceError } from '../errors/persistenceReporter.js';
 import { classifyFirestoreError } from '../errors/firestoreErrors.js';
 import { ReadingContext, READING_CONTEXT_FIELDS } from '../review/readingContext.js';
+import { getDocsPaged } from './firestorePaging.js';
 
 export type { SRSData };
 
@@ -311,7 +311,7 @@ export class VocabularyService {
     }
 
     try {
-      const vocabSnap = await getDocs(collection(db, `users/${userId}/vocabulary`));
+      const vocabSnap = await getDocsPaged(collection(db, `users/${userId}/vocabulary`));
       const map: KnowledgeMap = {};
       vocabSnap.forEach((doc) => {
         const data = doc.data();
@@ -563,7 +563,7 @@ export class VocabularyService {
     if (metaSnap.exists() && (metaSnap.data()?.lemmaKeysMigrated ?? 0) >= 1) return;
 
     try {
-      const vocabSnap = await getDocs(collection(db, `users/${userId}/vocabulary`));
+      const vocabSnap = await getDocsPaged(collection(db, `users/${userId}/vocabulary`));
       const stateOrder = [
         WordState.NEW,
         WordState.SEEN,

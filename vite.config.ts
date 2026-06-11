@@ -35,7 +35,9 @@ export default defineConfig(({mode}) => {
       }),
       tailwindcss(),
       VitePWA({
-        registerType: 'autoUpdate',
+        // 'prompt' instead of 'autoUpdate': a new SW must never reload the app
+        // mid-reading-session — the user opts in via the UpdatePrompt toast.
+        registerType: 'prompt',
         includeAssets: ['icon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'mask-icon.svg'],
         manifest: {
           name: 'PalæoGlossa',

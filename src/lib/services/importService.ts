@@ -11,6 +11,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { apiFetch, ApiError } from './apiFetch.js';
+import { getDocsPaged } from './firestorePaging.js';
 import { ImportedText as FSImportedText } from '../../types/firestore.js';
 import { normalizeTimestamp } from '../utils.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
@@ -77,7 +78,7 @@ export class ImportService {
     }
 
     try {
-      const snap = await getDocs(collection(db, `users/${userId}/imports`));
+      const snap = await getDocsPaged(collection(db, `users/${userId}/imports`));
       const imports: ImportedText[] = [];
       snap.forEach((doc) => {
         const data = doc.data();
