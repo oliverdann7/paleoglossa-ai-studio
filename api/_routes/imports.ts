@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { requireAuth, type AuthenticatedRequest } from '../_lib/auth.js';
-import { getAdminDb } from '../_lib/firebaseAdmin.js';
-import { lookupEffectivePlan } from '../_lib/aiUsage.js';
-import { evaluateImportQuota } from '../_lib/importQuota.js';
+import { checkImportQuotaForUser } from '../_lib/importQuota.js';
 
 const router = Router();
 
@@ -22,35 +20,22 @@ router.get(
   async (req: AuthenticatedRequest, res: any) => {
     const uid = req.user!.uid;
 
-    try {
-      const adminDb_ = getAdminDb();
-      if (!adminDb_) {
-        return res
-          .status(200)
-          .json({ allowed: true, used: 0, limit: 'all', remaining: 'unlimited', planId: 'free' });
-      }
-
-      const planId = await lookupEffectivePlan(uid);
-      const countSnap = await adminDb_.collection(`users/${uid}/imports`).count().get();
-      const used = countSnap.data().count;
-      const quota = evaluateImportQuota(planId, used);
-
-      if (!quota.allowed) {
-        return res.status(429).json({
-          error: `Import limit reached (${quota.used}/${quota.limit} texts on your plan). Upgrade to import more.`,
-          code: 'IMPORT_LIMIT_REACHED',
-          ...quota,
-          planId,
-        });
-      }
-
-      return res.status(200).json({ ...quota, planId });
-    } catch (err) {
-      console.error('[imports/quota] check failed:', err);
+    const quota = await checkImportQuotaForUser(uid);
+    if (!quota) {
       return res
         .status(200)
         .json({ allowed: true, used: 0, limit: 'all', remaining: 'unlimited', planId: 'free' });
     }
+
+    if (!quota.allowed) {
+      return res.status(429).json({
+        error: `Import limit reached (${quota.used}/${quota.limit} texts on your plan). Upgrade to import more.`,
+        code: 'IMPORT_LIMIT_REACHED',
+        ...quota,
+      });
+    }
+
+    return res.status(200).json(quota);
   }
 );
 

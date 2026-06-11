@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Globe, Play, GitFork, BookOpen, Languages, Filter, Star, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImportService, ImportedText } from '../lib/services/importService.js';
+import { ApiError } from '../lib/services/apiFetch.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useToast } from '../lib/hooks/useToast.js';
 import { getLanguageDisplayName } from '../lib/constants/languages.js';
@@ -211,8 +212,19 @@ export function Discover() {
         } else {
           addToast(t('discover.forkFailed', 'Fork failed'), 'error');
         }
-      } catch {
-        addToast(t('discover.forkFailed', 'Fork failed'), 'error');
+      } catch (e) {
+        if (e instanceof ApiError && e.code === 'IMPORT_LIMIT_REACHED') {
+          addToast(
+            t(
+              'discover.forkLimitReached',
+              'Import limit reached — upgrade your plan to add more texts'
+            ),
+            'warning'
+          );
+          navigate('/app/subscription');
+        } else {
+          addToast(t('discover.forkFailed', 'Fork failed'), 'error');
+        }
       } finally {
         setIsForkingId(null);
       }

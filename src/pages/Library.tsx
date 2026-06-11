@@ -34,6 +34,8 @@ import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { EmptyState } from '../components/ui/index.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { ImportService } from '../lib/services/importService.js';
+import { ApiError } from '../lib/services/apiFetch.js';
+import { useToast } from '../lib/hooks/useToast.js';
 import { CorpusDB } from '../data/corpus.js';
 import { CoverageBadge } from '../components/library/CoverageBadge.js';
 import { TextQualityBadge } from '../components/ui/TextQualityBadge.js';
@@ -144,6 +146,7 @@ export const Library = () => {
     getWordInfoRef.current = getWordInfo;
   });
   const { t } = useTranslation();
+  const { addToast } = useToast();
 
   // ── Phase A state: raw texts (refetch only on tab / auth change) ─────
   const [rawTexts, setRawTexts] = useState<LibraryText[]>([]);
@@ -399,7 +402,18 @@ export const Library = () => {
       const newId = await ImportService.forkPublic(user.uid, textId);
       if (newId) navigate(`/app/reader/${newId}`);
     } catch (e) {
-      console.error('Error forking:', e);
+      if (e instanceof ApiError && e.code === 'IMPORT_LIMIT_REACHED') {
+        addToast(
+          t(
+            'library.forkLimitReached',
+            'Import limit reached — upgrade your plan to add more texts'
+          ),
+          'warning'
+        );
+        navigate('/app/subscription');
+      } else {
+        console.error('Error forking:', e);
+      }
     }
     setSharingId(null);
   };
