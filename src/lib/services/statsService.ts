@@ -62,7 +62,9 @@ export class StatsService {
       readToday: 0,
       readingTime: 0,
       lastActive: offsetDate.toISOString(),
-      streak: 0,
+      // First-win streak (roadmap § 11, 1.2): day one counts — a brand-new
+      // learner starts at streak 1, not 0, so the chip shows from minute one.
+      streak: 1,
       history: [],
       freezesTotal: 2,
       freezesUsed: 0,

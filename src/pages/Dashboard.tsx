@@ -622,32 +622,33 @@ export const Dashboard = () => {
               value={stats.streak > 0 ? `${stats.streak}d` : '—'}
             />
           </div>
-
-          {/* XP Progress */}
-          <div className="card p-5 mb-14">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{levelIcon}</span>
-                <span className="font-serif font-bold text-ink text-[16px]">{level}</span>
-              </div>
-              <span className="text-[13px] text-muted font-mono">{totalXP.toLocaleString()} XP</span>
-            </div>
-            <div className="w-full h-2.5 bg-blue/10 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-blue rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.round(progress * 100)}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              />
-            </div>
-            {nextLevel && (
-              <p className="text-[11px] text-muted mt-2">
-                {nextLevel.icon} {t('dashboard.nextLevel', 'Next')}: {nextLevel.name} — {(nextLevel.threshold - totalXP).toLocaleString()} XP to go
-              </p>
-            )}
-          </div>
         </>
       )}
+
+      {/* XP Progress — always visible, even at zero activity, so progression
+          is on screen from minute one (roadmap § 11, 1.5) */}
+      <div className="card p-5 mb-14">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">{levelIcon}</span>
+            <span className="font-serif font-bold text-ink text-[16px]">{level}</span>
+          </div>
+          <span className="text-[13px] text-muted font-mono">{totalXP.toLocaleString()} XP</span>
+        </div>
+        <div className="w-full h-2.5 bg-blue/10 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-blue rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.round(progress * 100)}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+        </div>
+        {nextLevel && (
+          <p className="text-[11px] text-muted mt-2">
+            {nextLevel.icon} {t('dashboard.nextLevel', 'Next')}: {nextLevel.name} — {(nextLevel.threshold - totalXP).toLocaleString()} XP to go
+          </p>
+        )}
+      </div>
 
       {/* Language Mastery — show when user has words in ≥ 1 language */}
       {hasAnyActivity &&

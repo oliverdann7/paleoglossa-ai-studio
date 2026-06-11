@@ -8,4 +8,5 @@ export const STORAGE_KEYS = {
   RECENT_PROGRESS: 'recent_reading_progress',
   TUTORIAL_COMPLETED: 'tutorialCompleted',
   REVIEW_TUTORIAL_COMPLETED: 'reviewTutorialCompleted',
+  DAILY_GOAL_CELEBRATED: 'paleoglossa_daily_goal_celebrated',
 } as const;

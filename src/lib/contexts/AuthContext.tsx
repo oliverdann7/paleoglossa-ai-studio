@@ -84,7 +84,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               readToday: 0,
               readingTime: 0,
               lastActive: now.toISOString(),
-              streak: 0,
+              // First-win streak (roadmap § 11, 1.2): day one counts.
+              streak: 1,
               freezesTotal: 2,
               freezesUsed: 0,
             };
