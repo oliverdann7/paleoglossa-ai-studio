@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { features } from './lib/features.js';
+import { UpdatePrompt } from './components/UpdatePrompt.js';
 
 const TutorDirectory = lazy(() =>
   import('./pages/marketplace/TutorDirectory.js').then((m) => ({ default: m.TutorDirectory }))
@@ -167,6 +168,7 @@ const PageFallback = () => (
 export default function App() {
   return (
     <Suspense fallback={<PageFallback />}>
+      <UpdatePrompt />
       <BrowserRouter>
         <Routes>
           {/* Marketing (Public) */}

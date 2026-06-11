@@ -1,5 +1,6 @@
 import { db } from '../firebase.js';
-import { doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { getDocsPaged } from './firestorePaging.js';
 import { normalizeTimestamp } from '../utils.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
 import { markWriteSuccess, markWriteFailure, markPendingWrite } from '../sync/syncStatus.js';
@@ -269,7 +270,7 @@ export class StatsService {
     }
 
     try {
-      const snap = await getDocs(collection(db, `users/${userId}/readingProgress`));
+      const snap = await getDocsPaged(collection(db, `users/${userId}/readingProgress`));
       const results: TextProgress[] = [];
       snap.forEach((doc) => {
         const data = doc.data();
