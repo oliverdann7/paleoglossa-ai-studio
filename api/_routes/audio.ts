@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { requireAuth } from '../_lib/auth.js';
+import { requireAuth, optionalAuth } from '../_lib/auth.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
+import { enforceAiQuota } from '../_lib/aiUsage.js';
 
 const router = Router();
 
@@ -37,7 +38,10 @@ const TTS_SUPPORTED_LANGUAGES: Record<string, { code: string; voice: string; not
   syr: { code: 'ar-XA', voice: 'ar-XA-Standard-A', note: 'Syriac (Western tradition)' },
 };
 
-const PRONUNCIATION_MODE_OVERRIDES: Record<string, Record<string, { voice: string; note: string }>> = {
+const PRONUNCIATION_MODE_OVERRIDES: Record<
+  string,
+  Record<string, { voice: string; note: string }>
+> = {
   grc: {
     restored: { voice: 'el-GR-Standard-A', note: 'Restored Classical Greek (5th–4th c. BCE)' },
     erasmian: { voice: 'el-GR-Standard-B', note: 'Erasmian academic pronunciation' },
@@ -73,7 +77,7 @@ const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
   hit: 'Hittite pronunciation is partially reconstructed from cuneiform spelling. Significant gaps remain.',
 };
 
-router.post('/api/audio/tts', async (req: any, res: any) => {
+router.post('/api/audio/tts', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, text, pronunciationMode } = req.body;
 
@@ -104,7 +108,8 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
       });
     }
 
-    const modeOverride = pronunciationMode && PRONUNCIATION_MODE_OVERRIDES[languageId]?.[pronunciationMode];
+    const modeOverride =
+      pronunciationMode && PRONUNCIATION_MODE_OVERRIDES[languageId]?.[pronunciationMode];
     const voice = modeOverride?.voice ?? langConfig.voice;
     const note = modeOverride?.note ?? langConfig.note;
 
@@ -121,7 +126,32 @@ router.post('/api/audio/tts', async (req: any, res: any) => {
     const cacheKey = `${languageId}::${pronunciationMode || 'default'}::${text}`;
     const cached = ttsCache.get(cacheKey);
     if (cached) {
-      return res.status(200).json({ audioUrl: cached, supported: true, cached: true, provider: `Google Cloud Text-to-Speech (${note})` });
+      return res
+        .status(200)
+        .json({
+          audioUrl: cached,
+          supported: true,
+          cached: true,
+          provider: `Google Cloud Text-to-Speech (${note})`,
+        });
+    }
+
+    // Quota applies only to uncached synthesis — cache hits are free
+    // (roadmap § 11, 0.5: cap Google-TTS cost-abuse vectors).
+    const uid = req.user?.uid;
+    if (uid) {
+      const quota = await enforceAiQuota(uid, 'tts', String(text).length);
+      if (!quota.allowed) {
+        return res.status(429).json({
+          audioUrl: null,
+          supported: true,
+          error: 'Daily AI usage limit reached. Upgrade your plan for more.',
+          code: 'QUOTA_EXCEEDED',
+          remaining: quota.remaining,
+          resetDate: quota.resetDate,
+          planLimit: quota.planLimit,
+        });
+      }
     }
 
     const requestBody = {

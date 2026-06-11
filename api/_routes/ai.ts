@@ -17,13 +17,15 @@ import {
   type CourseQuizResult,
 } from '../_lib/aiPrompts.js';
 import { requireAuth, optionalAuth } from '../_lib/auth.js';
-import { checkAndIncrementUsage, lookupEffectivePlan } from '../_lib/aiUsage.js';
+import { checkAndIncrementUsage, lookupEffectivePlan, enforceAiQuota } from '../_lib/aiUsage.js';
 import { getAdminDb } from '../_lib/firebaseAdmin.js';
 import type { AuthenticatedRequest } from '../_lib/auth.js';
 
 const router = Router();
 
-function resolveGeminiApiKey(req: { headers: Record<string, string | string[] | undefined> }): string | undefined {
+function resolveGeminiApiKey(req: {
+  headers: Record<string, string | string[] | undefined>;
+}): string | undefined {
   const userKey = req.headers['x-gemini-api-key'];
   if (userKey && typeof userKey === 'string' && userKey.trim()) return userKey.trim();
   return process.env.GEMINI_API_KEY;
@@ -92,6 +94,34 @@ const LANGUAGE_RECONSTRUCTION_NOTES: Record<string, string> = {
 
 const lookupUserPlan = lookupEffectivePlan;
 
+/**
+ * Charge one AI-quota unit for an authenticated request (roadmap § 11, 0.5).
+ * Sends a 429 and returns false when the user's daily limit is exhausted.
+ * Anonymous requests pass through — they are rate-limited separately and
+ * cannot be quota-tracked per user.
+ */
+async function chargeAiQuota(
+  req: AuthenticatedRequest,
+  res: any,
+  endpoint: string,
+  inputLength: number
+): Promise<boolean> {
+  const uid = req.user?.uid;
+  if (!uid) return true;
+  const quota = await enforceAiQuota(uid, endpoint, inputLength);
+  if (!quota.allowed) {
+    res.status(429).json({
+      error: 'Daily AI usage limit reached. Upgrade your plan for more.',
+      code: 'QUOTA_EXCEEDED',
+      remaining: quota.remaining,
+      resetDate: quota.resetDate,
+      planLimit: quota.planLimit,
+    });
+    return false;
+  }
+  return true;
+}
+
 router.post('/api/ai/analyze', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { languageId, rawText } = req.body;
@@ -125,20 +155,7 @@ router.post('/api/ai/analyze', optionalAuth as any, async (req: AuthenticatedReq
     let geminiAttempted = false;
     let aiWarnings: string[] = [];
 
-    const uid = req.user?.uid;
-    if (apiKey && uid) {
-      const planId = await lookupUserPlan(uid);
-      const quota = await checkAndIncrementUsage(uid, planId, 'analyze', rawText.length);
-      if (!quota.allowed) {
-        return res.status(429).json({
-          error: 'Daily AI analysis limit reached. Upgrade your plan for more.',
-          code: 'QUOTA_EXCEEDED',
-          remaining: quota.remaining,
-          resetDate: quota.resetDate,
-          planLimit: quota.planLimit,
-        });
-      }
-    }
+    if (apiKey && !(await chargeAiQuota(req, res, 'analyze', rawText.length))) return;
 
     if (apiKey) {
       geminiAttempted = true;
@@ -271,6 +288,8 @@ router.post('/api/ai/ocr', optionalAuth as any, async (req: AuthenticatedRequest
       });
     }
 
+    if (!(await chargeAiQuota(req, res, 'ocr', imageBase64.length))) return;
+
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });
     const langName = getLanguageName(languageId);
@@ -335,45 +354,50 @@ Rules:
   }
 });
 
-router.post('/api/ai/translate', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { languageId, tokens } = req.body;
+router.post(
+  '/api/ai/translate',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { languageId, tokens } = req.body;
 
-    if (!languageId || typeof languageId !== 'string') {
-      return res
-        .status(400)
-        .json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
-    }
-    if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
-      return res.status(400).json({
-        error: 'tokens must be a non-empty array of strings',
-        code: 'INVALID_INPUT',
-        field: 'tokens',
-      });
-    }
+      if (!languageId || typeof languageId !== 'string') {
+        return res
+          .status(400)
+          .json({ error: 'languageId is required', code: 'INVALID_INPUT', field: 'languageId' });
+      }
+      if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
+        return res.status(400).json({
+          error: 'tokens must be a non-empty array of strings',
+          code: 'INVALID_INPUT',
+          field: 'tokens',
+        });
+      }
 
-    const sentence = tokens.join(' ').trim();
-    if (!sentence) {
-      return res.status(400).json({
-        error: 'Sentence text is empty after joining tokens',
-        code: 'INVALID_INPUT',
-        field: 'tokens',
-      });
-    }
+      const sentence = tokens.join(' ').trim();
+      if (!sentence) {
+        return res.status(400).json({
+          error: 'Sentence text is empty after joining tokens',
+          code: 'INVALID_INPUT',
+          field: 'tokens',
+        });
+      }
 
-    const apiKey = resolveGeminiApiKey(req);
-    if (!apiKey) {
-      return res.status(200).json({
-        text: sentence,
-        confidence: null,
-        notes: 'Gemini API key not configured. Returning original text.',
-      });
-    }
+      const apiKey = resolveGeminiApiKey(req);
+      if (!apiKey) {
+        return res.status(200).json({
+          text: sentence,
+          confidence: null,
+          notes: 'Gemini API key not configured. Returning original text.',
+        });
+      }
 
-    const { GoogleGenAI } = await import('@google/genai');
-    const genAI = new GoogleGenAI({ apiKey });
+      if (!(await chargeAiQuota(req, res, 'translate', sentence.length))) return;
 
-    const prompt = `Translate the following ${getLanguageName(languageId)} sentence into fluent English.
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+
+      const prompt = `Translate the following ${getLanguageName(languageId)} sentence into fluent English.
 
 Rules:
 - Provide a natural, idiomatic English translation.
@@ -382,32 +406,33 @@ Rules:
 
 Sentence: ${sentence}`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-    });
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
 
-    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text
-      .replace(/^```(?:text)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
-    const notes = cleaned.includes('[')
-      ? 'Translation contains uncertain portions marked with brackets'
-      : undefined;
+      const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleaned = text
+        .replace(/^```(?:text)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
+      const notes = cleaned.includes('[')
+        ? 'Translation contains uncertain portions marked with brackets'
+        : undefined;
 
-    res.status(200).json({
-      text: cleaned || sentence,
-      confidence: cleaned ? null : null,
-      notes,
-    });
-  } catch (err: any) {
-    console.error('[ai/translate] Error:', err.message);
-    res
-      .status(500)
-      .json({ error: 'Translation failed', code: 'TRANSLATE_ERROR', text: '', confidence: null });
+      res.status(200).json({
+        text: cleaned || sentence,
+        confidence: cleaned ? null : null,
+        notes,
+      });
+    } catch (err: any) {
+      console.error('[ai/translate] Error:', err.message);
+      res
+        .status(500)
+        .json({ error: 'Translation failed', code: 'TRANSLATE_ERROR', text: '', confidence: null });
+    }
   }
-});
+);
 
 router.post('/api/ai/explain', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
@@ -417,10 +442,12 @@ router.post('/api/ai/explain', optionalAuth as any, async (req: AuthenticatedReq
       if (typeof v !== 'string') return '';
       // Filter out ASCII control characters (code points 0–31 and 127) without
       // embedding a regex literal with raw control chars (no-control-regex rule).
-      const clean = [...v].filter((c) => {
-        const n = c.charCodeAt(0);
-        return n > 0x1f && n !== 0x7f;
-      }).join('');
+      const clean = [...v]
+        .filter((c) => {
+          const n = c.charCodeAt(0);
+          return n > 0x1f && n !== 0x7f;
+        })
+        .join('');
       return clean.slice(0, maxLen);
     };
     const word = sanitize(req.body.word, 200);
@@ -451,11 +478,7 @@ router.post('/api/ai/explain', optionalAuth as any, async (req: AuthenticatedReq
       });
     }
 
-    if (
-      type !== 'phrase' &&
-      type !== 'gloss' &&
-      (!word.trim() || !lemma.trim())
-    ) {
+    if (type !== 'phrase' && type !== 'gloss' && (!word.trim() || !lemma.trim())) {
       return res.status(400).json({
         error: 'word and lemma are required for type=word, type=paradigm, or type=morphology',
         code: 'INVALID_INPUT',
@@ -469,6 +492,8 @@ router.post('/api/ai/explain', optionalAuth as any, async (req: AuthenticatedReq
         .status(200)
         .json({ explanation: 'AI explanation not available — Gemini API key not configured.' });
     }
+
+    if (!(await chargeAiQuota(req, res, 'explain', (word + lemma + phrase).length))) return;
 
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });
@@ -607,49 +632,53 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
   }
 });
 
-router.post('/api/ai/pronunciation', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { languageId, text, transliteration, pronunciationMode } = req.body;
+router.post(
+  '/api/ai/pronunciation',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { languageId, text, transliteration, pronunciationMode } = req.body;
 
-    if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({
-        guide: null,
-        reconstructionSystem: null,
-        warnings: ['languageId is required'],
-        code: 'INVALID_INPUT',
-      });
-    }
-    if (!text || typeof text !== 'string') {
-      return res.status(400).json({
-        guide: null,
-        reconstructionSystem: null,
-        warnings: ['text is required'],
-        code: 'INVALID_INPUT',
-      });
-    }
+      if (!languageId || typeof languageId !== 'string') {
+        return res.status(400).json({
+          guide: null,
+          reconstructionSystem: null,
+          warnings: ['languageId is required'],
+          code: 'INVALID_INPUT',
+        });
+      }
+      if (!text || typeof text !== 'string') {
+        return res.status(400).json({
+          guide: null,
+          reconstructionSystem: null,
+          warnings: ['text is required'],
+          code: 'INVALID_INPUT',
+        });
+      }
 
-    const note = LANGUAGE_RECONSTRUCTION_NOTES[languageId] || null;
-    const apiKey = resolveGeminiApiKey(req);
-    const langName = getLanguageName(languageId);
+      const note = LANGUAGE_RECONSTRUCTION_NOTES[languageId] || null;
+      const apiKey = resolveGeminiApiKey(req);
+      const langName = getLanguageName(languageId);
 
-    if (!apiKey) {
-      return res.status(200).json({
-        guide: null,
-        reconstructionSystem: null,
-        warnings: ['Gemini API key not configured. Pronunciation guide unavailable.'].concat(
-          note ? [note] : []
-        ),
-      });
-    }
+      if (!apiKey) {
+        return res.status(200).json({
+          guide: null,
+          reconstructionSystem: null,
+          warnings: ['Gemini API key not configured. Pronunciation guide unavailable.'].concat(
+            note ? [note] : []
+          ),
+        });
+      }
 
-    const { GoogleGenAI } = await import('@google/genai');
-    const genAI = new GoogleGenAI({ apiKey });
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
 
-    const modeInstruction = pronunciationMode && pronunciationMode !== 'default'
-      ? `\nPronunciation system: Use the "${pronunciationMode}" pronunciation tradition specifically.`
-      : '';
+      const modeInstruction =
+        pronunciationMode && pronunciationMode !== 'default'
+          ? `\nPronunciation system: Use the "${pronunciationMode}" pronunciation tradition specifically.`
+          : '';
 
-    const prompt = `You are a historical linguist specializing in ${langName}. Provide a pronunciation guide for this text.
+      const prompt = `You are a historical linguist specializing in ${langName}. Provide a pronunciation guide for this text.
 
 Text: "${text}"
 ${transliteration ? `Transliteration: "${transliteration}"` : ''}${modeInstruction}
@@ -667,44 +696,45 @@ Rules:
 - For languages with reconstructed pronunciation (Akkadian, Egyptian, Hittite), add prominent uncertainty notes.
 - If you cannot provide a guide, set guide to null and explain why in notes.`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-    });
-    const textResponse = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = textResponse
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+      const textResponse = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleaned = textResponse
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
 
-    let parsed: any;
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      parsed = null;
+      let parsed: any;
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch {
+        parsed = null;
+      }
+
+      const warnings: string[] = [];
+      if (!parsed?.guide) warnings.push('Could not generate pronunciation guide.');
+      if (note) warnings.push(note);
+      if (parsed?.notes) warnings.push(parsed.notes);
+
+      res.status(200).json({
+        guide: parsed?.guide || null,
+        phoneticApproximation: parsed?.phoneticApproximation || null,
+        ipaTranscription: parsed?.ipaTranscription || null,
+        reconstructionSystem: note ? 'reconstructed' : 'standard',
+        warnings: warnings.length > 0 ? warnings : undefined,
+      });
+    } catch (err: any) {
+      console.error('[ai/pronunciation] Error:', err.message);
+      res.status(200).json({
+        guide: null,
+        reconstructionSystem: null,
+        warnings: ['Pronunciation guide unavailable.'],
+      });
     }
-
-    const warnings: string[] = [];
-    if (!parsed?.guide) warnings.push('Could not generate pronunciation guide.');
-    if (note) warnings.push(note);
-    if (parsed?.notes) warnings.push(parsed.notes);
-
-    res.status(200).json({
-      guide: parsed?.guide || null,
-      phoneticApproximation: parsed?.phoneticApproximation || null,
-      ipaTranscription: parsed?.ipaTranscription || null,
-      reconstructionSystem: note ? 'reconstructed' : 'standard',
-      warnings: warnings.length > 0 ? warnings : undefined,
-    });
-  } catch (err: any) {
-    console.error('[ai/pronunciation] Error:', err.message);
-    res.status(200).json({
-      guide: null,
-      reconstructionSystem: null,
-      warnings: ['Pronunciation guide unavailable.'],
-    });
   }
-});
+);
 
 router.post('/api/ai/scrape', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
@@ -759,38 +789,46 @@ router.post('/api/ai/scrape', optionalAuth as any, async (req: AuthenticatedRequ
   }
 });
 
-router.post('/api/ai/metadata', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { languageId, rawText } = req.body;
+router.post(
+  '/api/ai/metadata',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { languageId, rawText } = req.body;
 
-    if (!languageId || typeof languageId !== 'string' || !rawText || typeof rawText !== 'string') {
-      return res.status(400).json({
-        error: 'languageId and rawText are required',
-        code: 'INVALID_INPUT',
-        difficulty: '',
-        tags: [],
-        summary: '',
-        warnings: ['Invalid input'],
-      });
-    }
+      if (
+        !languageId ||
+        typeof languageId !== 'string' ||
+        !rawText ||
+        typeof rawText !== 'string'
+      ) {
+        return res.status(400).json({
+          error: 'languageId and rawText are required',
+          code: 'INVALID_INPUT',
+          difficulty: '',
+          tags: [],
+          summary: '',
+          warnings: ['Invalid input'],
+        });
+      }
 
-    const apiKey = resolveGeminiApiKey(req);
-    if (!apiKey) {
-      return res.status(200).json({
-        difficulty: 'unknown',
-        tags: [],
-        summary: '',
-        period: '',
-        genre: '',
-        warnings: ['Gemini API key not configured. Metadata unavailable.'],
-      });
-    }
+      const apiKey = resolveGeminiApiKey(req);
+      if (!apiKey) {
+        return res.status(200).json({
+          difficulty: 'unknown',
+          tags: [],
+          summary: '',
+          period: '',
+          genre: '',
+          warnings: ['Gemini API key not configured. Metadata unavailable.'],
+        });
+      }
 
-    const { GoogleGenAI } = await import('@google/genai');
-    const genAI = new GoogleGenAI({ apiKey });
-    const langName = getLanguageName(languageId);
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+      const langName = getLanguageName(languageId);
 
-    const prompt = `Analyze the following ${langName} text and return ONLY valid JSON.
+      const prompt = `Analyze the following ${langName} text and return ONLY valid JSON.
 
 {
   "difficulty": "beginner|intermediate|advanced|unknown",
@@ -809,44 +847,45 @@ Rules:
 
 Text: ${rawText.slice(0, 5000)}`;
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-    });
-    const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = text
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
-
-    try {
-      const parsed = JSON.parse(cleaned);
-      res.status(200).json({
-        difficulty: parsed.difficulty || 'unknown',
-        tags: Array.isArray(parsed.tags) ? parsed.tags : [],
-        summary: parsed.summary || '',
-        period: parsed.period || undefined,
-        genre: parsed.genre || undefined,
-        warnings: undefined,
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
       });
-    } catch {
+      const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleaned = text
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
+
+      try {
+        const parsed = JSON.parse(cleaned);
+        res.status(200).json({
+          difficulty: parsed.difficulty || 'unknown',
+          tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+          summary: parsed.summary || '',
+          period: parsed.period || undefined,
+          genre: parsed.genre || undefined,
+          warnings: undefined,
+        });
+      } catch {
+        res.status(200).json({
+          difficulty: 'unknown',
+          tags: [],
+          summary: '',
+          warnings: ['AI returned unparseable metadata.'],
+        });
+      }
+    } catch (err: any) {
+      console.error('[ai/metadata] Error:', err.message);
       res.status(200).json({
         difficulty: 'unknown',
         tags: [],
         summary: '',
-        warnings: ['AI returned unparseable metadata.'],
+        warnings: ['Metadata generation failed.'],
       });
     }
-  } catch (err: any) {
-    console.error('[ai/metadata] Error:', err.message);
-    res.status(200).json({
-      difficulty: 'unknown',
-      tags: [],
-      summary: '',
-      warnings: ['Metadata generation failed.'],
-    });
   }
-});
+);
 
 router.post('/api/ai/quiz', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
   try {
@@ -1505,7 +1544,9 @@ router.post(
         parsed = JSON.parse(cleaned) as CourseQuizResult;
       } catch {
         console.error('[course-quiz] JSON parse failed. Raw:', cleaned.slice(0, 200));
-        return res.status(500).json({ error: 'Quiz generation failed — invalid AI response', code: 'PARSE_ERROR' });
+        return res
+          .status(500)
+          .json({ error: 'Quiz generation failed — invalid AI response', code: 'PARSE_ERROR' });
       }
 
       if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
@@ -1521,7 +1562,10 @@ router.post(
 );
 
 // In-process cache: textId → historical context
-const _historicalContextCache = new Map<string, { data: HistoricalContextResult; cachedAt: number }>();
+const _historicalContextCache = new Map<
+  string,
+  { data: HistoricalContextResult; cachedAt: number }
+>();
 const HISTORICAL_CONTEXT_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 interface HistoricalContextResult {
@@ -1532,41 +1576,44 @@ interface HistoricalContextResult {
   literaryContext: string;
 }
 
-router.post('/api/ai/historical-context', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { textId, title, languageId, author, period } = req.body;
+router.post(
+  '/api/ai/historical-context',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { textId, title, languageId, author, period } = req.body;
 
-    if (!title || typeof title !== 'string') {
-      return res.status(400).json({ error: 'title is required', code: 'INVALID_INPUT' });
-    }
-    if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
-    }
+      if (!title || typeof title !== 'string') {
+        return res.status(400).json({ error: 'title is required', code: 'INVALID_INPUT' });
+      }
+      if (!languageId || typeof languageId !== 'string') {
+        return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+      }
 
-    // Serve from cache if available
-    const cacheKey = textId || title;
-    const cached = _historicalContextCache.get(cacheKey);
-    if (cached && Date.now() - cached.cachedAt < HISTORICAL_CONTEXT_TTL) {
-      return res.status(200).json(cached.data);
-    }
+      // Serve from cache if available
+      const cacheKey = textId || title;
+      const cached = _historicalContextCache.get(cacheKey);
+      if (cached && Date.now() - cached.cachedAt < HISTORICAL_CONTEXT_TTL) {
+        return res.status(200).json(cached.data);
+      }
 
-    const apiKey = resolveGeminiApiKey(req);
-    if (!apiKey) {
-      return res.status(200).json({
-        geography: '',
-        period: '',
-        keyFigures: '',
-        culturalBackground: '',
-        literaryContext: '',
-        _unavailable: true,
-      });
-    }
+      const apiKey = resolveGeminiApiKey(req);
+      if (!apiKey) {
+        return res.status(200).json({
+          geography: '',
+          period: '',
+          keyFigures: '',
+          culturalBackground: '',
+          literaryContext: '',
+          _unavailable: true,
+        });
+      }
 
-    const langName = getLanguageName(languageId);
-    const authorLine = author ? `Author: ${author}` : '';
-    const periodLine = period ? `Period: ${period}` : '';
+      const langName = getLanguageName(languageId);
+      const authorLine = author ? `Author: ${author}` : '';
+      const periodLine = period ? `Period: ${period}` : '';
 
-    const prompt = `You are a classical philologist and historian. Provide concise historical background for a ${langName} text.
+      const prompt = `You are a classical philologist and historian. Provide concise historical background for a ${langName} text.
 
 Title: ${title}
 ${authorLine}
@@ -1584,34 +1631,41 @@ Return ONLY valid JSON with this exact structure — no markdown, no code fences
 
 Keep each section brief and learner-friendly. Focus on what helps a student reading this text.`;
 
-    const { GoogleGenAI } = await import('@google/genai');
-    const genAI = new GoogleGenAI({ apiKey });
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: { temperature: 0.3, maxOutputTokens: 1024, abortSignal: AbortSignal.timeout(30_000) },
-    });
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          temperature: 0.3,
+          maxOutputTokens: 1024,
+          abortSignal: AbortSignal.timeout(30_000),
+        },
+      });
 
-    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = raw
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
+      const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleaned = raw
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
 
-    let parsed: HistoricalContextResult;
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      return res.status(500).json({ error: 'Failed to parse AI response', code: 'PARSE_ERROR' });
+      let parsed: HistoricalContextResult;
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch {
+        return res.status(500).json({ error: 'Failed to parse AI response', code: 'PARSE_ERROR' });
+      }
+
+      _historicalContextCache.set(cacheKey, { data: parsed, cachedAt: Date.now() });
+      return res.status(200).json(parsed);
+    } catch (err: any) {
+      console.error('[historical-context] Error:', err.message);
+      return res
+        .status(500)
+        .json({ error: 'Failed to fetch historical context', code: 'AI_ERROR' });
     }
-
-    _historicalContextCache.set(cacheKey, { data: parsed, cachedAt: Date.now() });
-    return res.status(200).json(parsed);
-  } catch (err: any) {
-    console.error('[historical-context] Error:', err.message);
-    return res.status(500).json({ error: 'Failed to fetch historical context', code: 'AI_ERROR' });
   }
-});
+);
 
 // In-process cache: `${languageId}:${lemma}` → semantic context
 const _semanticContextCache = new Map<string, { data: SemanticContextResult; cachedAt: number }>();
@@ -1630,38 +1684,41 @@ interface SemanticContextResult {
   historicalEvolution: string;
 }
 
-router.post('/api/ai/semantic-context', optionalAuth as any, async (req: AuthenticatedRequest, res: any) => {
-  try {
-    const { lemma, languageId, gloss } = req.body;
+router.post(
+  '/api/ai/semantic-context',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { lemma, languageId, gloss } = req.body;
 
-    if (!lemma || typeof lemma !== 'string') {
-      return res.status(400).json({ error: 'lemma is required', code: 'INVALID_INPUT' });
-    }
-    if (!languageId || typeof languageId !== 'string') {
-      return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
-    }
+      if (!lemma || typeof lemma !== 'string') {
+        return res.status(400).json({ error: 'lemma is required', code: 'INVALID_INPUT' });
+      }
+      if (!languageId || typeof languageId !== 'string') {
+        return res.status(400).json({ error: 'languageId is required', code: 'INVALID_INPUT' });
+      }
 
-    const cacheKey = `${languageId}:${lemma}`;
-    const cached = _semanticContextCache.get(cacheKey);
-    if (cached && Date.now() - cached.cachedAt < SEMANTIC_CONTEXT_TTL) {
-      return res.status(200).json(cached.data);
-    }
+      const cacheKey = `${languageId}:${lemma}`;
+      const cached = _semanticContextCache.get(cacheKey);
+      if (cached && Date.now() - cached.cachedAt < SEMANTIC_CONTEXT_TTL) {
+        return res.status(200).json(cached.data);
+      }
 
-    const apiKey = resolveGeminiApiKey(req);
-    if (!apiKey) {
-      return res.status(200).json({
-        semanticDomain: '',
-        cognates: [],
-        usageNotes: '',
-        historicalEvolution: '',
-        _unavailable: true,
-      });
-    }
+      const apiKey = resolveGeminiApiKey(req);
+      if (!apiKey) {
+        return res.status(200).json({
+          semanticDomain: '',
+          cognates: [],
+          usageNotes: '',
+          historicalEvolution: '',
+          _unavailable: true,
+        });
+      }
 
-    const langName = getLanguageName(languageId);
-    const glossLine = gloss ? `Gloss: ${gloss}` : '';
+      const langName = getLanguageName(languageId);
+      const glossLine = gloss ? `Gloss: ${gloss}` : '';
 
-    const prompt = `You are a comparative philologist. Provide semantic and etymological context for the following word.
+      const prompt = `You are a comparative philologist. Provide semantic and etymological context for the following word.
 
 Language: ${langName}
 Lemma: ${lemma}
@@ -1682,34 +1739,35 @@ Rules:
 - Keep each field concise and learner-friendly.
 - Focus on what helps a student understand this word more deeply.`;
 
-    const { GoogleGenAI } = await import('@google/genai');
-    const genAI = new GoogleGenAI({ apiKey });
-    const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: { temperature: 0.3, maxOutputTokens: 800 },
-    });
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({ apiKey });
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: { temperature: 0.3, maxOutputTokens: 800 },
+      });
 
-    const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = raw
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
+      const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const cleaned = raw
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/i, '')
+        .trim();
 
-    let parsed: SemanticContextResult;
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      return res.status(500).json({ error: 'Failed to parse AI response', code: 'PARSE_ERROR' });
+      let parsed: SemanticContextResult;
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch {
+        return res.status(500).json({ error: 'Failed to parse AI response', code: 'PARSE_ERROR' });
+      }
+
+      _semanticContextCache.set(cacheKey, { data: parsed, cachedAt: Date.now() });
+      return res.status(200).json(parsed);
+    } catch (err: any) {
+      console.error('[semantic-context] Error:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch semantic context', code: 'AI_ERROR' });
     }
-
-    _semanticContextCache.set(cacheKey, { data: parsed, cachedAt: Date.now() });
-    return res.status(200).json(parsed);
-  } catch (err: any) {
-    console.error('[semantic-context] Error:', err.message);
-    return res.status(500).json({ error: 'Failed to fetch semantic context', code: 'AI_ERROR' });
   }
-});
+);
 
 // ─── Concept Summary ─────────────────────────────────────────────────────────
 // 24-hour in-process cache keyed by "{languageId}:{lemma}"
@@ -1790,7 +1848,9 @@ router.post(
     try {
       const { languageId, lemma, wordText, sentenceText } = req.body ?? {};
       if (!languageId || !lemma) {
-        return res.status(400).json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
+        return res
+          .status(400)
+          .json({ error: 'languageId and lemma are required', code: 'INVALID_INPUT' });
       }
 
       const cacheKey = `${languageId}:${lemma}:${wordText ?? ''}`;

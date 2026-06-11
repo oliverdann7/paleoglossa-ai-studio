@@ -103,13 +103,16 @@ export async function lookupEffectivePlan(uid: string): Promise<string> {
  * @param planId - The user's current plan ID (e.g. 'free', 'basic_1').
  * @param endpoint - The AI endpoint being called (e.g. 'analyze', 'translate', 'explain').
  * @param inputLength - Approximate length of the input text for estimation.
+ * @param units - Quota units this request consumes (default 1). Size-based
+ *   endpoints (e.g. file parsing) charge more units for larger inputs.
  * @returns QuotaResult with allowed/remaining/resetDate/planLimit.
  */
 export async function checkAndIncrementUsage(
   uid: string,
   planId: string,
   endpoint: string,
-  inputLength: number
+  inputLength: number,
+  units: number = 1
 ): Promise<QuotaResult> {
   const limit = getPlanAILimit(planId);
   const resetDate = getNextResetDate();
@@ -136,12 +139,12 @@ export async function checkAndIncrementUsage(
     const snap = await docRef.get();
 
     const currentCount: number = snap.exists ? snap.data()?.count || 0 : 0;
-    const newCount = currentCount + 1;
+    const newCount = currentCount + units;
 
     if (newCount > limit) {
       return {
         allowed: false,
-        remaining: 0,
+        remaining: Math.max(0, limit - currentCount),
         resetDate,
         planLimit: limit,
       };
@@ -153,7 +156,7 @@ export async function checkAndIncrementUsage(
         count: newCount,
         endpoints: {
           ...(snap.exists ? snap.data()?.endpoints || {} : {}),
-          [endpoint]: ((snap.exists ? snap.data()?.endpoints || {} : {})[endpoint] || 0) + 1,
+          [endpoint]: ((snap.exists ? snap.data()?.endpoints || {} : {})[endpoint] || 0) + units,
         },
         updatedAt: FieldValue.serverTimestamp(),
       },
@@ -171,6 +174,29 @@ export async function checkAndIncrementUsage(
     // On error, allow the request to proceed
     return { allowed: true, remaining: limit, resetDate, planLimit: limit };
   }
+}
+
+/**
+ * Quota units a file-parse request consumes, scaled by upload size:
+ * 1 unit per started megabyte (a 10 MB PDF costs 10 units). Pure for testing.
+ */
+export function computeParseUnits(sizeBytes: number): number {
+  return Math.max(1, Math.ceil(sizeBytes / 1_000_000));
+}
+
+/**
+ * One-call quota enforcement for authenticated requests: resolves the user's
+ * effective plan, then checks and increments usage. Same fail-open semantics
+ * as `checkAndIncrementUsage` (errors and missing Admin DB allow the request).
+ */
+export async function enforceAiQuota(
+  uid: string,
+  endpoint: string,
+  inputLength: number,
+  units: number = 1
+): Promise<QuotaResult> {
+  const planId = await lookupEffectivePlan(uid);
+  return checkAndIncrementUsage(uid, planId, endpoint, inputLength, units);
 }
 
 async function incrementUsage(uid: string, endpoint: string, inputLength: number): Promise<void> {

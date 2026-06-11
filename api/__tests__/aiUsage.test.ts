@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { checkAndIncrementUsage, getPlanAILimit, resolveEffectivePlan } from '../_lib/aiUsage';
+import {
+  checkAndIncrementUsage,
+  computeParseUnits,
+  getPlanAILimit,
+  resolveEffectivePlan,
+} from '../_lib/aiUsage';
 
 describe('getPlanAILimit (real export)', () => {
   it('free plan has limit of 20', () => {
@@ -115,6 +120,57 @@ describe('Quota check logic', () => {
     const result = checkQuota(undefined, 20);
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(20);
+  });
+});
+
+describe('computeParseUnits — size-based parse quota (0.5)', () => {
+  it('charges 1 unit for small files', () => {
+    expect(computeParseUnits(1)).toBe(1);
+    expect(computeParseUnits(500_000)).toBe(1);
+    expect(computeParseUnits(1_000_000)).toBe(1);
+  });
+
+  it('charges 1 unit per started megabyte', () => {
+    expect(computeParseUnits(1_000_001)).toBe(2);
+    expect(computeParseUnits(4_200_000)).toBe(5);
+    expect(computeParseUnits(9_999_999)).toBe(10);
+  });
+
+  it('a max-size upload (10 MiB multer cap) costs 11 units', () => {
+    expect(computeParseUnits(10 * 1024 * 1024)).toBe(11);
+  });
+
+  it('never charges less than 1 unit', () => {
+    expect(computeParseUnits(0)).toBe(1);
+  });
+});
+
+describe('Multi-unit quota check logic', () => {
+  // Mirrors the units math in checkAndIncrementUsage: a request is allowed
+  // only if currentCount + units stays within the limit.
+  function checkQuotaUnits(currentCount: number, limit: number, units: number) {
+    const newCount = currentCount + units;
+    if (newCount > limit) {
+      return { allowed: false, remaining: Math.max(0, limit - currentCount) };
+    }
+    return { allowed: true, remaining: limit - newCount };
+  }
+
+  it('a large parse can be blocked even when a 1-unit request would pass', () => {
+    // 15/20 used: one more analyze is fine, but an 8 MB parse (8 units) is not
+    expect(checkQuotaUnits(15, 20, 1).allowed).toBe(true);
+    expect(checkQuotaUnits(15, 20, 8).allowed).toBe(false);
+  });
+
+  it('reports remaining units (not zero) when a multi-unit request is blocked', () => {
+    const result = checkQuotaUnits(15, 20, 8);
+    expect(result.remaining).toBe(5);
+  });
+
+  it('allows a multi-unit request that exactly reaches the limit', () => {
+    const result = checkQuotaUnits(15, 20, 5);
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(0);
   });
 });
 
