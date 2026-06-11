@@ -7,7 +7,7 @@ import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { WordState } from '../lib/constants/wordStates.js';
 import { ReviewService, ReviewItem } from '../lib/services/reviewService.js';
-import { Rating } from '../lib/srs/sm2.js';
+import { Rating, calculateSM2 } from '../lib/srs/sm2.js';
 import type { SRSState } from '../lib/srs/sm2.js';
 import { CardType, ReviewCard, generateReviewCards } from '../lib/review/reviewCardFactory.js';
 import { useTranslation } from 'react-i18next';
@@ -268,41 +268,12 @@ export const Review = () => {
           // Award XP for completing a review card
           awardXP(XP_REWARDS.reviewCard).catch((e) => logSilentFailure('Review.awardXP', e));
         } else {
-          const nextReviewDate = new Date();
-          // Preserve the card's existing SRS values so HARD properly reduces ease
-          // and intervals grow across sessions rather than always starting from defaults.
-          const prevInterval = currentCard.srs?.interval ?? 0;
-          const prevEase = currentCard.srs?.ease ?? 2.5;
-          let interval = 0;
-          let ease = prevEase;
-          let step = currentCard.srs?.step ?? 0;
-
-          if (rating === 'AGAIN') {
-            interval = 0;
-            step = 0;
-          } else if (rating === 'GOOD') {
-            interval = Math.max(1, Math.round(prevInterval * ease));
-            step = step + 1;
-          } else if (rating === 'EASY') {
-            interval = Math.max(4, Math.round(prevInterval * ease * 1.3));
-            step = step + 1;
-            ease = Math.min(4, ease + 0.15);
-          } else {
-            // HARD: slight interval penalty, ease drops
-            interval = Math.max(1, Math.round(prevInterval * 1.2));
-            ease = Math.max(1.3, ease - 0.15);
-          }
-
-          nextReviewDate.setDate(nextReviewDate.getDate() + interval);
+          // Demo mode runs the same SM-2 algorithm as authenticated reviews
+          // (roadmap § 11, 0.6) — an honest trial of the real scheduler.
+          const nextState = calculateSM2(rating, currentCard.srs ?? null);
           await updateWordSRS(
             currentCard.term,
-            {
-              lastReviewed: new Date().toISOString(),
-              nextReview: nextReviewDate.toISOString(),
-              interval,
-              ease,
-              step,
-            },
+            nextState,
             rating === 'AGAIN' ? WordState.LEARNING : WordState.FAMILIAR,
             currentCard.languageId
           );
