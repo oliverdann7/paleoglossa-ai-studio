@@ -122,6 +122,48 @@ describe('SM-2 scheduling algorithm', () => {
     expect(a.ease).toBe(b.ease);
   });
 
+  it('HARD decays ease distinctly: lower than GOOD, lower than EASY', () => {
+    const base = makeState({ interval: 10, ease: 2.5, step: 3 });
+    const now = new Date('2025-06-01T00:00:00Z');
+    const hard = calculateSM2('HARD', base, now);
+    const good = calculateSM2('GOOD', base, now);
+    const easy = calculateSM2('EASY', base, now);
+    // HARD (q=3): ease 2.5 - 0.14 = 2.36; GOOD (q=4): unchanged; EASY (q=5): +0.1
+    expect(hard.ease).toBeCloseTo(2.36, 2);
+    expect(good.ease).toBeCloseTo(2.5, 2);
+    expect(easy.ease).toBeCloseTo(2.6, 2);
+    expect(hard.ease).toBeLessThan(good.ease);
+    expect(good.ease).toBeLessThan(easy.ease);
+    // ...and HARD schedules sooner than GOOD
+    expect(hard.interval).toBeLessThan(good.interval);
+  });
+
+  it('round-trips across sessions: feeding the output back grows intervals (demo parity)', () => {
+    // The demo-mode Review path persists calculateSM2 output verbatim and
+    // feeds it back on the next session — the state must round-trip cleanly.
+    const now = new Date('2025-06-01T00:00:00Z');
+    let state: SRSState | null = null;
+    const intervals: number[] = [];
+    for (const rating of ['GOOD', 'GOOD', 'GOOD', 'GOOD'] as const) {
+      state = calculateSM2(rating, state, now);
+      intervals.push(state.interval);
+    }
+    // 1 (step 1), 6 (step 2), then ×ease growth
+    expect(intervals[0]).toBe(1);
+    expect(intervals[1]).toBe(6);
+    expect(intervals[2]).toBeGreaterThan(intervals[1]);
+    expect(intervals[3]).toBeGreaterThan(intervals[2]);
+    expect(state!.step).toBe(4);
+
+    // A struggling word: repeated HARD keeps decaying ease toward the floor
+    let hardState: SRSState | null = state;
+    for (let i = 0; i < 10; i++) {
+      hardState = calculateSM2('HARD', hardState, now);
+    }
+    expect(hardState!.ease).toBeGreaterThanOrEqual(SM2_MIN_EASE);
+    expect(hardState!.ease).toBeLessThan(state!.ease);
+  });
+
   it('UTC date math avoids timezone shifts near midnight', () => {
     // Simulate UTC+14 timezone by using a Date that represents late local time
     const now = new Date('2025-01-15T23:00:00+14:00');
