@@ -107,8 +107,10 @@ export function StudyPlanWidget({
       });
     }
 
-    // 4. Daily goal nudge (lower priority, just a reminder)
-    if (!goalReached && wordsReadToday > 0) {
+    // 4. Daily goal — the goal the user chose at onboarding is the goal they
+    // are measured on (roadmap § 11, 1.3): visible from zero words, ranked
+    // above discovery so it never falls off the top-3.
+    if (!goalReached) {
       const remaining = dailyGoal - wordsReadToday;
       plan.push({
         id: 'goal',
@@ -119,7 +121,7 @@ export function StudyPlanWidget({
         }),
         action: t('studyPlan.readMore', 'Read More'),
         route: '/app/library',
-        priority: 30,
+        priority: 60,
         completed: false,
         color: 'text-amber bg-amber/5 border-amber/20',
       });

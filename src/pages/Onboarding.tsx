@@ -11,6 +11,7 @@ import { getLanguageById, LANGUAGES } from '../lib/data/languages.js';
 import { fetchOnboardingLemmas, invalidateRecommendations } from '../lib/services/recommendationApi.js';
 import { VocabularyService } from '../lib/services/vocabularyService.js';
 import { WordState } from '../lib/constants/wordStates.js';
+import { commitmentToDailyGoalWords } from '../lib/constants/dailyGoal.js';
 import { useVocabulary } from '../lib/hooks/useVocabulary.js';
 
 const FONT_BY_SCRIPT: Record<string, string> = {
@@ -251,7 +252,12 @@ export const Onboarding = () => {
   const finish = async (finalProfile: OnboardingProfile) => {
     finalProfile.completed = true;
     setFreeLanguage(finalProfile.languageId);
-    await updateSettings({ onboardingProfile: finalProfile });
+    // The minutes commitment the user just chose becomes the word goal they
+    // are measured on (roadmap § 11, 1.3).
+    await updateSettings({
+      onboardingProfile: finalProfile,
+      dailyGoalWords: commitmentToDailyGoalWords(finalProfile.dailyCommitment),
+    });
     trackEvent(ANALYTICS_EVENTS.ONBOARDING_COMPLETED, {
       languageId: finalProfile.languageId,
       level: finalProfile.level,

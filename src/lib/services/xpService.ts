@@ -12,6 +12,10 @@ export interface XPLevel {
 
 export const XP_LEVELS: XPLevel[] = [
   { name: 'Novice', threshold: 0, icon: '📜' },
+  // Reachable in session one (~50 words read + a handful of reviews) so the
+  // first level-up lands on day one (roadmap § 11, 1.5). Levels are always
+  // recomputed from totalXP at read time, so inserting a tier is safe.
+  { name: 'Initiate', threshold: 100, icon: '🪶' },
   { name: 'Apprentice', threshold: 500, icon: '📖' },
   { name: 'Scholar', threshold: 2000, icon: '🏛️' },
   { name: 'Philologist', threshold: 5000, icon: '🎓' },

@@ -227,6 +227,22 @@ export const Reader = () => {
 
   const { settings } = useSettings();
 
+  // One-time "Daily Goal Complete" celebration (roadmap § 11, 1.3) — fires
+  // the first time readToday crosses the goal each day, never again that day.
+  useEffect(() => {
+    const goal = settings.dailyGoalWords;
+    if (!goal || (stats.readToday || 0) < goal) return;
+    const today = new Date().toISOString().split('T')[0];
+    if (localStorage.getItem(STORAGE_KEYS.DAILY_GOAL_CELEBRATED) === today) return;
+    localStorage.setItem(STORAGE_KEYS.DAILY_GOAL_CELEBRATED, today);
+    addToast(
+      t('reader.dailyGoalComplete', 'Daily goal complete — {{count}} words read today! 🏛️', {
+        count: stats.readToday,
+      }),
+      'success'
+    );
+  }, [stats.readToday, settings.dailyGoalWords, addToast, t]);
+
   const isOnline = useOnlineStatus();
   const [selectedWord, setSelectedWord] = useState<
     (ReaderToken & { sentenceText?: string; sentenceIndex?: number }) | null

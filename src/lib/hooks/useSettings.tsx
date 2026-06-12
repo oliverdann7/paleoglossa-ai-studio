@@ -29,7 +29,9 @@ export interface Settings {
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  dailyGoalWords: 500,
+  // Matches settingsService DEFAULT_SETTINGS — a reachable goal for slow,
+  // lookup-heavy ancient-language reading (was 500, which nobody hit).
+  dailyGoalWords: 50,
   dailyGoalMinutes: 30,
   fontSize: 24,
   showTranslit: false,

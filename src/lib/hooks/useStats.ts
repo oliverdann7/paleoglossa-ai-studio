@@ -19,7 +19,8 @@ export const useStats = (languageId?: string) => {
     readToday: 0,
     readingTime: 0,
     lastActive: new Date().toISOString(),
-    streak: 0,
+    // First-win streak (roadmap § 11, 1.2): day one counts.
+    streak: 1,
     history: [],
     freezesTotal: 2,
     freezesUsed: 0,
