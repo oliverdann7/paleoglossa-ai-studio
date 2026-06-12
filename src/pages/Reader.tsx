@@ -1134,10 +1134,13 @@ export const Reader = () => {
   }
 
   return (
-    <div className="flex h-screen bg-[#FDFBF7] text-ink font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#FDFBF7] text-ink font-sans overflow-hidden pt-safe">
       {/* Offline banner */}
       {!isOnline && (
-        <div className="fixed top-0 inset-x-0 z-[100] bg-amber-500 text-white text-[12px] font-bold text-center py-1 px-4">
+        <div
+          className="fixed top-0 inset-x-0 z-[100] bg-amber-500 text-white text-[12px] font-bold text-center px-4 pb-1"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.25rem)' }}
+        >
           You're offline — reading from cached data. Word state changes will sync when reconnected.
         </div>
       )}

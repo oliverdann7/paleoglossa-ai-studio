@@ -214,6 +214,12 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  /* Top safe-area padding — with viewport-fit=cover the status bar / notch
+     otherwise overlaps fixed headers (Reader, full-screen pages) */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
   /* Hide scrollbar while keeping scroll behaviour (used on horizontal rails) */
   .no-scrollbar,
   .scrollbar-hide {
