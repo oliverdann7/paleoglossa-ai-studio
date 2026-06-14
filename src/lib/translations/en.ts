@@ -686,6 +686,8 @@ export const en = {
     'demo.createAccount': 'Create Account',
     'demo.export': 'Export data',
     'demo.exported': 'Exported!',
+    'demo.persistNudge':
+      'Enjoying the demo? Create a free account to keep your progress across devices.',
 
     'demo.migration.title': 'We found demo progress on this device.',
     'demo.migration.subtitle':

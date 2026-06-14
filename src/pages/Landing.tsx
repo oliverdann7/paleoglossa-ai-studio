@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { loadLanguage } from '../lib/i18n.js';
 import { PaleoIcon } from '../components/PaleoIcon.js';
 import { PLANS, type PlanId } from '../lib/constants/plans.js';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import { hasDayOneLesson } from '../data/dayOneLessons.js';
 
 const PLAN_I18N_KEY: Record<PlanId, string> = {
   free: 'free',
@@ -161,12 +163,20 @@ const BookStack = () => {
 export const Landing = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { setDemoMode } = useAuth();
 
   const onEnter = () => navigate('/auth/signup');
 
+  // Try Demo drops straight into the Day-One Lesson — a zero-friction trial that
+  // ends in a comprehension win, not a dashboard tour (roadmap § 11, 1.4).
   const onDemoMode = () => {
-    localStorage.setItem('paleoglossa_demo_mode', 'true');
-    navigate('/app');
+    setDemoMode(true);
+    const demoLanguageId = 'grc';
+    if (hasDayOneLesson(demoLanguageId)) {
+      navigate('/app/first-lesson', { state: { languageId: demoLanguageId } });
+    } else {
+      navigate('/app');
+    }
   };
 
   const handleLanguageChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -311,15 +321,16 @@ export const Landing = () => {
             {t('landing.pricingTitle', 'Simple, transparent pricing')}
           </h3>
           <p className="text-center text-ink2 text-[15px] mb-12 max-w-lg mx-auto">
-            {t('landing.pricingSubtitle', 'Start free. Upgrade when you need unlimited vocabulary saves and full AI analysis.')}
+            {t(
+              'landing.pricingSubtitle',
+              'Start free. Upgrade when you need unlimited vocabulary saves and full AI analysis.'
+            )}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {PLANS.map((plan) => {
               const planKey = PLAN_I18N_KEY[plan.id];
               const displayName = t(`plans.${planKey}.name`, plan.name);
-              const displayBadge = plan.badge
-                ? t(`plans.${planKey}.badge`, plan.badge)
-                : null;
+              const displayBadge = plan.badge ? t(`plans.${planKey}.badge`, plan.badge) : null;
               const featureCount = plan.features.length;
               const displayFeatures = Array.from({ length: Math.min(4, featureCount) }, (_, i) =>
                 t(`plans.${planKey}.feat${i + 1}`, plan.features[i])

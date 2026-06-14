@@ -10,4 +10,5 @@ export const STORAGE_KEYS = {
   REVIEW_TUTORIAL_COMPLETED: 'reviewTutorialCompleted',
   DAILY_GOAL_CELEBRATED: 'paleoglossa_daily_goal_celebrated',
   DAY_ONE_LESSON_COMPLETED: 'paleoglossa_day_one_lesson_completed',
+  DEMO_PERSIST_NUDGE_SHOWN: 'paleoglossa_demo_persist_nudge_shown',
 } as const;

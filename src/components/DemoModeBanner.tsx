@@ -1,15 +1,39 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
+import { useToast } from '../lib/hooks/useToast.js';
+import { STORAGE_KEYS } from '../lib/constants/storage.js';
 import { Download } from 'lucide-react';
+
+/** How long a guest explores before we nudge them to make it permanent (1.4). */
+const PERSIST_NUDGE_DELAY_MS = 15 * 60 * 1000;
 
 export function DemoModeBanner() {
   const { t } = useTranslation();
   const { isDemoMode } = useAuth();
+  const { addToast } = useToast();
   const [exported, setExported] = useState(false);
   const { exportData } = useKnowledge();
+
+  // After ~15 minutes of demo use, gently nudge the guest to create an account
+  // so their progress survives. Fires once per device.
+  useEffect(() => {
+    if (!isDemoMode) return;
+    if (localStorage.getItem(STORAGE_KEYS.DEMO_PERSIST_NUDGE_SHOWN) === 'true') return;
+    const timer = setTimeout(() => {
+      localStorage.setItem(STORAGE_KEYS.DEMO_PERSIST_NUDGE_SHOWN, 'true');
+      addToast(
+        t(
+          'demo.persistNudge',
+          'Enjoying the demo? Create a free account to keep your progress across devices.'
+        ),
+        'info'
+      );
+    }, PERSIST_NUDGE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [isDemoMode, addToast, t]);
 
   const handleExport = useCallback(async () => {
     try {
