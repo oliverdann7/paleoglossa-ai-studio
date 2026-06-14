@@ -686,6 +686,8 @@ export const en = {
     'demo.createAccount': 'Create Account',
     'demo.export': 'Export data',
     'demo.exported': 'Exported!',
+    'demo.persistNudge':
+      'Enjoying the demo? Create a free account to keep your progress across devices.',
 
     'demo.migration.title': 'We found demo progress on this device.',
     'demo.migration.subtitle':
@@ -840,5 +842,16 @@ export const en = {
     'rec.newGenre': 'Explore {{genre}}',
     'rec.newWords_reason': '{{count}} new words to learn',
     'rec.expand': 'Expand your vocabulary',
+    // Day-One Lesson (roadmap § 11, 1.1)
+    'dayOne.introTitle': 'Your first words',
+    'dayOne.introBody':
+      'A two-sentence taste of your new language. Tap through each word — by the end, you’ll read a full line and understand every part.',
+    'dayOne.begin': 'Begin',
+    'dayOne.progress': 'Word {{n}} of {{total}}',
+    'dayOne.tapContinue': 'Tap to continue',
+    'dayOne.doneTitle': 'You read your first sentences!',
+    'dayOne.doneBody': '{{count}} words are now in your vocabulary. +25 XP',
+    'dayOne.keepReading': 'Now read the real thing — every word builds on this.',
+    'dayOne.continue': 'Start reading',
   },
 };
