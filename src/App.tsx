@@ -88,6 +88,9 @@ const Settings = lazy(() =>
 const Onboarding = lazy(() =>
   import('./pages/Onboarding.js').then((module) => ({ default: module.Onboarding }))
 );
+const DayOneLesson = lazy(() =>
+  import('./pages/DayOneLesson.js').then((module) => ({ default: module.DayOneLesson }))
+);
 const Notes = lazy(() => import('./pages/Notes.js').then((module) => ({ default: module.Notes })));
 const BookmarksPage = lazy(() =>
   import('./pages/Bookmarks.js').then((module) => ({ default: module.Bookmarks }))
@@ -198,6 +201,7 @@ export default function App() {
           {/* App Core (Authenticated) */}
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="first-lesson" element={<DayOneLesson />} />
             <Route path="library" element={<Library />} />
             <Route path="beginner-hub" element={<BeginnerHub />} />
             <Route path="language/:langId" element={<Language />} />
@@ -217,9 +221,7 @@ export default function App() {
             <Route path="grammar/pathways" element={<GrammarPathways />} />
             <Route path="grammar/pathways/:pathwayId" element={<GrammarPathways />} />
             <Route path="tutor" element={<Tutor />} />
-            {features.isExperimentalEnabled() && (
-              <Route path="syntax" element={<Syntax />} />
-            )}
+            {features.isExperimentalEnabled() && <Route path="syntax" element={<Syntax />} />}
             {features.isExperimentalEnabled() && (
               <Route path="manuscripts" element={<Manuscripts />} />
             )}
@@ -249,9 +251,7 @@ export default function App() {
             {features.isMarketplaceEnabled() && (
               <Route path="tutors/:uid/book" element={<BookingCheckout />} />
             )}
-            {features.isMarketplaceEnabled() && (
-              <Route path="lessons" element={<MyLessons />} />
-            )}
+            {features.isMarketplaceEnabled() && <Route path="lessons" element={<MyLessons />} />}
             {features.isMarketplaceEnabled() && (
               <Route path="lessons/:bookingId" element={<LessonRoom />} />
             )}

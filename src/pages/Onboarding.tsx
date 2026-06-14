@@ -8,11 +8,15 @@ import { useAuth } from '../lib/hooks/useAuth.js';
 import { OnboardingProfile } from '../types/firestore.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 import { getLanguageById, LANGUAGES } from '../lib/data/languages.js';
-import { fetchOnboardingLemmas, invalidateRecommendations } from '../lib/services/recommendationApi.js';
+import {
+  fetchOnboardingLemmas,
+  invalidateRecommendations,
+} from '../lib/services/recommendationApi.js';
 import { VocabularyService } from '../lib/services/vocabularyService.js';
 import { WordState } from '../lib/constants/wordStates.js';
 import { commitmentToDailyGoalWords } from '../lib/constants/dailyGoal.js';
 import { useVocabulary } from '../lib/hooks/useVocabulary.js';
+import { hasDayOneLesson } from '../data/dayOneLessons.js';
 
 const FONT_BY_SCRIPT: Record<string, string> = {
   Greek: 'font-greek',
@@ -26,8 +30,15 @@ const fontForLanguage = (scripts: string[]): string =>
 const LanguageStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => void }) => {
   const { t } = useTranslation();
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-5xl w-full">
-      <h2 className="text-3xl font-serif mb-10 text-center">{t('onboarding.chooseLanguage', 'Choose your primary language')}</h2>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="max-w-5xl w-full"
+    >
+      <h2 className="text-3xl font-serif mb-10 text-center">
+        {t('onboarding.chooseLanguage', 'Choose your primary language')}
+      </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {LANGUAGES.map((lang) => {
           const font = fontForLanguage(lang.scripts);
@@ -39,7 +50,9 @@ const LanguageStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) =
               disabled={isComingSoon}
               className="group relative aspect-square border rounded-2xl hover:bg-parch3 hover:border-ink/40 hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-current disabled:hover:shadow-none"
             >
-              <span className={`${font} text-5xl sm:text-6xl leading-none transition-transform group-hover:scale-110`}>
+              <span
+                className={`${font} text-5xl sm:text-6xl leading-none transition-transform group-hover:scale-110`}
+              >
                 {lang.symbol}
               </span>
               <span className="font-serif text-sm sm:text-base opacity-80 text-center px-2">
@@ -62,11 +75,22 @@ const LevelStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => v
   const { t } = useTranslation();
   const levels = ['absolute-beginner', 'knows-alphabet', 'intermediate', 'advanced'];
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
-      <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseLevel', 'Experience level')}</h2>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="max-w-xl w-full"
+    >
+      <h2 className="text-3xl font-serif mb-8 text-center">
+        {t('onboarding.chooseLevel', 'Experience level')}
+      </h2>
       <div className="space-y-4">
         {levels.map((level) => (
-          <button key={level} onClick={() => onNext({ level: level as any })} className="w-full p-4 border rounded-xl hover:bg-parch3 transition-all text-left">
+          <button
+            key={level}
+            onClick={() => onNext({ level: level as any })}
+            className="w-full p-4 border rounded-xl hover:bg-parch3 transition-all text-left"
+          >
             {t(`onboarding.level.${level}`, level)}
           </button>
         ))}
@@ -79,11 +103,22 @@ const GoalStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>) => vo
   const { t } = useTranslation();
   const goals = ['biblical', 'classical', 'research', 'vocab', 'grammar'];
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
-      <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseGoal', 'What is your primary goal?')}</h2>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="max-w-xl w-full"
+    >
+      <h2 className="text-3xl font-serif mb-8 text-center">
+        {t('onboarding.chooseGoal', 'What is your primary goal?')}
+      </h2>
       <div className="space-y-4">
         {goals.map((goal) => (
-          <button key={goal} onClick={() => onNext({ goal: goal as any })} className="w-full p-4 border rounded-xl hover:bg-parch3 transition-all text-left">
+          <button
+            key={goal}
+            onClick={() => onNext({ goal: goal as any })}
+            className="w-full p-4 border rounded-xl hover:bg-parch3 transition-all text-left"
+          >
             {t(`onboarding.goal.${goal}`, goal)}
           </button>
         ))}
@@ -96,11 +131,22 @@ const CommitmentStep = ({ onNext }: { onNext: (data: Partial<OnboardingProfile>)
   const { t } = useTranslation();
   const commitments = [5, 10, 20, 60];
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl w-full">
-      <h2 className="text-3xl font-serif mb-8 text-center">{t('onboarding.chooseCommitment', 'Daily study time?')}</h2>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="max-w-xl w-full"
+    >
+      <h2 className="text-3xl font-serif mb-8 text-center">
+        {t('onboarding.chooseCommitment', 'Daily study time?')}
+      </h2>
       <div className="grid grid-cols-2 gap-4">
         {commitments.map((c) => (
-          <button key={c} onClick={() => onNext({ dailyCommitment: c })} className="p-4 border rounded-xl hover:bg-parch3 transition-all">
+          <button
+            key={c}
+            onClick={() => onNext({ dailyCommitment: c })}
+            className="p-4 border rounded-xl hover:bg-parch3 transition-all"
+          >
             {c} {t('onboarding.minutes', 'minutes')}
           </button>
         ))}
@@ -199,7 +245,9 @@ const KnownWordsStep = ({
           className="px-5 py-2 rounded-xl bg-ink text-parch hover:opacity-90"
         >
           {selected.size > 0
-            ? t('onboarding.markKnownCount', `Mark ${selected.size} known`, { count: selected.size })
+            ? t('onboarding.markKnownCount', `Mark ${selected.size} known`, {
+                count: selected.size,
+              })
             : t('onboarding.continue', 'Continue')}
         </button>
       </div>
@@ -263,8 +311,17 @@ export const Onboarding = () => {
       level: finalProfile.level,
       goal: finalProfile.goal,
     });
+    // Day-One Lesson (roadmap § 11, 1.1): flagship languages get a guaranteed
+    // first-comprehension win before the full library. Languages without a
+    // lesson, or absolute non-beginners, route straight to their start text.
     const lang = getLanguageById(finalProfile.languageId as any);
     const startTextId = lang?.recommendedStartTextId;
+    const wantsLesson =
+      finalProfile.level === 'absolute-beginner' || finalProfile.level === 'knows-alphabet';
+    if (wantsLesson && hasDayOneLesson(finalProfile.languageId)) {
+      navigate('/app/first-lesson', { state: { languageId: finalProfile.languageId } });
+      return;
+    }
     navigate(startTextId ? `/app/reader/${startTextId}` : '/app');
   };
 

@@ -7,6 +7,8 @@ export const ANALYTICS_EVENTS = {
   // Funnel events
   SIGNUP_COMPLETED: 'signup_completed',
   ONBOARDING_COMPLETED: 'onboarding_completed',
+  DAY_ONE_LESSON_STARTED: 'day_one_lesson_started',
+  DAY_ONE_LESSON_COMPLETED: 'day_one_lesson_completed',
   CHECKOUT_STARTED: 'checkout_started',
   CHECKOUT_COMPLETED: 'checkout_completed',
   FIRST_TEXT_OPENED: 'first_text_opened',
@@ -185,10 +187,7 @@ export function initAnalytics() {
 
 // ─── Safe tracked events ──────────────────────────────────────────────────────
 
-export function trackEvent(
-  event: AnalyticsEventName,
-  properties?: Record<string, unknown>
-) {
+export function trackEvent(event: AnalyticsEventName, properties?: Record<string, unknown>) {
   if (!privacyService.isAnalyticsEnabled()) return;
   try {
     const safeProps = properties ? sanitizeEventProperties(properties) : {};
