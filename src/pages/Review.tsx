@@ -17,6 +17,8 @@ import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
 import { ReviewTutorial } from '../components/review/ReviewTutorial.js';
+import { ReviewAudioButton } from '../components/review/ReviewAudioButton.js';
+import { isReviewAudioSupported } from '../components/review/reviewAudioSupport.js';
 import { logSilentFailure } from '../lib/utils/logSilent.js';
 
 interface ReviewSettings {
@@ -687,9 +689,20 @@ export const Review = () => {
             {currentCard.context}
           </p>
         )}
-        <h3 className="text-[28px] font-serif font-bold text-ink leading-snug mb-6">
-          {currentCard.question}
-        </h3>
+        <div className="flex items-start gap-3 mb-6">
+          <h3 className="text-[28px] font-serif font-bold text-ink leading-snug flex-1">
+            {currentCard.question}
+          </h3>
+          {isReviewAudioSupported(currentCard.languageId) &&
+            currentCard.question === currentCard.term && (
+              <ReviewAudioButton
+                text={currentCard.term}
+                languageId={currentCard.languageId}
+                label={t('review.hearPronunciation', 'Hear pronunciation')}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full text-blue bg-blue/10 hover:bg-blue/20 active:scale-95 transition-all shrink-0 mt-1"
+              />
+            )}
+        </div>
 
         {/* Morph hint */}
         {currentCard.morphHint && (
@@ -708,7 +721,19 @@ export const Review = () => {
                 <p className="text-[11px] uppercase tracking-widest text-muted font-bold mb-2">
                   {t('review.answer', 'Answer')}
                 </p>
-                <p className="text-[20px] font-serif font-medium text-jade">{currentCard.answer}</p>
+                <div className="flex items-center gap-3">
+                  <p className="text-[20px] font-serif font-medium text-jade">
+                    {currentCard.answer}
+                  </p>
+                  {isReviewAudioSupported(currentCard.languageId) &&
+                    currentCard.answer === currentCard.term && (
+                      <ReviewAudioButton
+                        text={currentCard.term}
+                        languageId={currentCard.languageId}
+                        label={t('review.hearPronunciation', 'Hear pronunciation')}
+                      />
+                    )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
