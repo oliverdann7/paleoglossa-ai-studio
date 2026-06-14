@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, memo } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useDragControls, type PanInfo } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
   BookOpen,
@@ -51,6 +51,7 @@ import {
   GLOSS_SOURCES,
 } from '@/lib/data/dictionary';
 import { useSettings } from '@/lib/hooks/useSettings';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { useLocalizedGloss } from '@/lib/hooks/useLocalizedGloss';
 import {
   getDictionariesForLanguage,
@@ -184,6 +185,19 @@ export const LexDrawerPanel = memo(
     const { t } = useTranslation();
     const { settings, updateSettings } = useSettings();
     const { user } = useAuth();
+
+    // ── Mobile bottom-sheet swipe-to-dismiss ─────────────────────────────────
+    // On phones the panel is a bottom sheet; let users flick it down to close,
+    // matching native sheet behaviour. Drag is started only from the grab
+    // handle/header (dragListener disabled) so the scrollable body stays free.
+    const isMobile = useIsMobile();
+    const dragControls = useDragControls();
+    const handleSheetDragEnd = (_e: unknown, info: PanInfo) => {
+      // Dismiss on a decisive downward flick or a drag past ~120px.
+      if (info.offset.y > 120 || info.velocity.y > 600) {
+        setSelectedWord(null);
+      }
+    };
 
     // Single source of truth for the language identifier used throughout this panel.
     const langId = text?.language || textLanguageId;
@@ -631,15 +645,28 @@ export const LexDrawerPanel = memo(
           initial={{ y: '100%', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
+          drag={isMobile ? 'y' : false}
+          dragControls={dragControls}
+          dragListener={false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.6 }}
+          onDragEnd={handleSheetDragEnd}
           data-testid="lex-drawer"
           role="dialog"
           aria-label="Word Analysis"
           className="md:!translate-y-0 fixed md:relative bottom-0 left-0 w-full md:w-[380px] max-h-[70vh] md:max-h-none md:h-full bg-[#FEFAF4] border-t md:border-t-0 md:border-l border-bdr flex flex-col shrink-0 z-50 md:z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-[-10px_0_40px_rgba(35,20,10,0.04)] rounded-t-3xl md:rounded-none"
         >
-          <div className="md:hidden flex justify-center pt-2 pb-1 bg-[#FEFAF4] rounded-t-3xl">
+          <div
+            className="md:hidden flex justify-center pt-2 pb-1 bg-[#FEFAF4] rounded-t-3xl touch-none cursor-grab active:cursor-grabbing"
+            onPointerDown={(e) => isMobile && dragControls.start(e)}
+            aria-hidden
+          >
             <div className="w-10 h-1 rounded-full bg-ink3/30" />
           </div>
-          <div className="h-14 border-b border-bdr flex items-center justify-between px-4 bg-[#FEFAF4] shrink-0 rounded-t-3xl md:rounded-none">
+          <div
+            className="h-14 border-b border-bdr flex items-center justify-between px-4 bg-[#FEFAF4] shrink-0 rounded-t-3xl md:rounded-none md:touch-auto"
+            onPointerDown={(e) => isMobile && dragControls.start(e)}
+          >
             <div className="eyebrow">{t('reader.wordAnalysis', 'Word Analysis')}</div>
             <button
               onClick={() => setSelectedWord(null)}
