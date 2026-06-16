@@ -220,6 +220,12 @@
     padding-top: env(safe-area-inset-top, 0px);
   }
 
+  /* Same as pt-safe but preserves the design's 2rem (p-8) top padding on top of
+     the inset — used by the landing header so the logo/nav clear the notch. */
+  .pt-safe-8 {
+    padding-top: calc(2rem + env(safe-area-inset-top, 0px));
+  }
+
   /* Hide scrollbar while keeping scroll behaviour (used on horizontal rails) */
   .no-scrollbar,
   .scrollbar-hide {

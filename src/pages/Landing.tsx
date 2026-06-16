@@ -188,7 +188,7 @@ export const Landing = () => {
 
   return (
     <div className="relative min-h-screen bg-parch text-ink font-sans overflow-hidden paper-texture">
-      <header className="absolute top-0 left-0 w-full p-8 flex justify-between items-center z-50">
+      <header className="absolute top-0 left-0 w-full px-8 pb-8 pt-safe-8 flex justify-between items-center z-50">
         <div className="flex items-center gap-2.5">
           <PaleoIcon className="w-8 h-8 flex-shrink-0" />
           <h1 className="text-xl font-serif font-semibold tracking-tight text-blue hidden sm:block">
