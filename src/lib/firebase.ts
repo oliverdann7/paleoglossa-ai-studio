@@ -1,11 +1,21 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
+import {
+  getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  inMemoryPersistence,
+  browserPopupRedirectResolver,
+  GoogleAuthProvider,
+  OAuthProvider,
+} from 'firebase/auth';
 import {
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { isCapacitor } from './platform.js';
 
 // Injected at build time by vite.config.ts — reads from firebase-applet-config.json
 // (AI Studio) or VITE_FIREBASE_* environment variables (Vercel / local dev).
@@ -59,7 +69,19 @@ export const db = initializeFirestore(
   },
   firestoreDatabaseId || '(default)'
 );
-export const auth = getAuth(app);
+// On native (Capacitor WKWebView) the default `getAuth()` resolves its
+// persistence layer lazily on the first auth call, and that probe can hang
+// inside the WebView — leaving sign-in stuck on the "Signing In…" spinner with
+// no error. Initialise persistence eagerly with an explicit fallback chain
+// (IndexedDB → localStorage → in-memory) so the first sign-in never blocks on
+// persistence resolution. `browserPopupRedirectResolver` keeps redirect/popup
+// OAuth working where it's available. Web keeps the standard `getAuth`.
+export const auth = isCapacitor()
+  ? initializeAuth(app, {
+      persistence: [indexedDBLocalPersistence, browserLocalPersistence, inMemoryPersistence],
+      popupRedirectResolver: browserPopupRedirectResolver,
+    })
+  : getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const appleProvider = new OAuthProvider('apple.com');
 export const storage = getStorage(app);
