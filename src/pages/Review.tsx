@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Award, Loader2, Brain, History, Target, Settings2 } from 'lucide-react';
@@ -10,6 +10,12 @@ import { ReviewService, ReviewItem } from '../lib/services/reviewService.js';
 import { Rating, calculateSM2 } from '../lib/srs/sm2.js';
 import type { SRSState } from '../lib/srs/sm2.js';
 import { CardType, ReviewCard, generateReviewCards } from '../lib/review/reviewCardFactory.js';
+import {
+  readSavedSession,
+  writeSavedSession,
+  clearSavedSession,
+  type SavedReviewSession,
+} from '../lib/review/reviewSession.js';
 import { useTranslation } from 'react-i18next';
 import type { WordInfo } from '../lib/services/vocabularyService.js';
 import { Timestamp } from 'firebase/firestore';
@@ -100,6 +106,12 @@ export const Review = () => {
     { lemma: string; rating: Rating; responseMs: number }[]
   >([]);
   const [isFinished, setIsFinished] = useState(false);
+
+  // Session resume: a snapshot from a prior interrupted session, offered on the
+  // start screen. `resumedRef` guards the async queue loader from clobbering a
+  // restored queue; `resumeDismissed` hides the prompt after "Start over".
+  const [resumeDismissed, setResumeDismissed] = useState(false);
+  const resumedRef = useRef(false);
 
   // Settings
   const [showSettings, setShowSettings] = useState(false);
@@ -216,6 +228,8 @@ export const Review = () => {
           enabledTypes: settings.enabledTypes,
           includeMorphology: settings.includeMorphology,
         });
+        // A resumed session owns the queue — don't overwrite it with a fresh load.
+        if (resumedRef.current) return;
         setQueue(cards.sort(() => Math.random() - 0.5));
       } catch (e) {
         console.error(e);
@@ -226,7 +240,24 @@ export const Review = () => {
     loadQueue();
   }, [user, isDemoMode, activeLanguageId, settings, textFilter]);
 
+  // The resumable snapshot offered on the start screen. Derived (not state) so
+  // it stays in sync with the active language without a setState-in-effect; a
+  // saved session only applies to its own language.
+  const resumable: SavedReviewSession | null = useMemo(() => {
+    if (isStarted || isFinished || resumeDismissed) return null;
+    return readSavedSession(activeLanguageId);
+  }, [isStarted, isFinished, resumeDismissed, activeLanguageId]);
+
+  // Mirror the live session to sessionStorage so a reload mid-review recovers.
+  useEffect(() => {
+    if (!isStarted || isFinished || queue.length === 0) return;
+    writeSavedSession({ languageId: activeLanguageId, queue, currentCardIndex, sessionResults });
+  }, [isStarted, isFinished, queue, currentCardIndex, sessionResults, activeLanguageId]);
+
   const handleStart = () => {
+    // Starting fresh supersedes any prior snapshot.
+    clearSavedSession();
+    resumedRef.current = false;
     setIsStarted(true);
     sessionStartRef.current = Date.now();
     setCardStartTime(Date.now());
@@ -235,6 +266,29 @@ export const Review = () => {
       cardCount: queue.length,
       textFilterActive,
     });
+  };
+
+  const handleResume = () => {
+    if (!resumable) return;
+    resumedRef.current = true;
+    setQueue(resumable.queue);
+    setCurrentCardIndex(resumable.currentCardIndex);
+    setSessionResults(resumable.sessionResults);
+    setIsRevealed(false);
+    setIsStarted(true);
+    setIsFinished(false);
+    sessionStartRef.current = Date.now();
+    setCardStartTime(Date.now());
+    trackEvent(ANALYTICS_EVENTS.REVIEW_STARTED, {
+      languageId: activeLanguageId,
+      cardCount: resumable.queue.length - resumable.currentCardIndex,
+      resumed: true,
+    });
+  };
+
+  const handleDiscardResume = () => {
+    clearSavedSession();
+    setResumeDismissed(true);
   };
 
   const onBack = () => navigate('/app');
@@ -296,6 +350,7 @@ export const Review = () => {
           accuracyPercent: Math.round(acc * 100),
           durationMs: Date.now() - sessionStartRef.current,
         });
+        clearSavedSession();
         setIsFinished(true);
         return;
       }
@@ -459,6 +514,38 @@ export const Review = () => {
           </button>
         </div>
 
+        {resumable && (
+          <div className="card p-5 mb-8 border border-blue/30 bg-blue/5">
+            <div className="flex items-start gap-3">
+              <History className="w-5 h-5 text-blue mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-[15px] font-bold text-ink mb-1">
+                  {t('review.resumeTitle', 'Resume your session?')}
+                </h3>
+                <p className="text-[13px] text-ink2 mb-4">
+                  {t('review.resumeDesc', 'You have {{count}} cards left from an unfinished review.', {
+                    count: resumable.queue.length - resumable.currentCardIndex,
+                  })}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={handleResume}
+                    className="px-4 py-2 bg-blue text-white font-bold rounded-xl text-[14px] hover:bg-blue/90 active:scale-[0.98] transition-all"
+                  >
+                    {t('review.resume', 'Resume')}
+                  </button>
+                  <button
+                    onClick={handleDiscardResume}
+                    className="px-4 py-2 text-ink2 hover:text-ink font-medium text-[14px] transition-colors"
+                  >
+                    {t('review.startOver', 'Start over')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <Brain className="w-8 h-8 text-blue" />
@@ -607,6 +694,8 @@ export const Review = () => {
 
           <button
             onClick={() => {
+              clearSavedSession();
+              resumedRef.current = false;
               setIsStarted(false);
               setIsFinished(false);
               setQueue([]);
