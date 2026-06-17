@@ -33,3 +33,6 @@ scripts/corpus/ingest/.cache/
 # Corpus ingestion source downloads (Macula TSVs, TEI/plaintext dumps — fetched by maintainer)
 scripts/corpus/ingest/.sources/
 scripts/corpus/.john-lex-macula.generated.ts
+
+# Local iOS archive/export artifacts (CLI TestFlight builds)
+build-ios/

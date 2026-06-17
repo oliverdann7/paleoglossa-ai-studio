@@ -17,6 +17,31 @@ export interface AuthResult {
 }
 
 /**
+ * Rejects with a synthetic `auth/network-request-failed` error if the wrapped
+ * promise does not settle in time. Firebase Auth calls can hang indefinitely
+ * inside the Capacitor WKWebView (persistence/transport stalls), trapping the
+ * UI on a spinner with no feedback. A timeout converts that dead-end into an
+ * actionable error the user can retry.
+ */
+function withAuthTimeout<T>(promise: Promise<T>, ms = 25000): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject({ code: 'auth/network-request-failed' });
+    }, ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
+/**
  * Attempts to sign in with Google.
  *
  * On web the native `signInWithPopup` is used (same as before).  In
@@ -71,7 +96,7 @@ export async function signInWithApple(): Promise<AuthResult> {
  */
 export async function signInWithEmail(email: string, password: string): Promise<AuthResult> {
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    await withAuthTimeout(signInWithEmailAndPassword(auth, email, password));
     return { success: true };
   } catch (err: any) {
     return mapFirebaseError(err);
@@ -123,7 +148,7 @@ export async function signOut(): Promise<void> {
  */
 export async function fetchSignInMethods(email: string): Promise<string[]> {
   const { fetchSignInMethodsForEmail } = await import('firebase/auth');
-  return fetchSignInMethodsForEmail(auth, email);
+  return withAuthTimeout(fetchSignInMethodsForEmail(auth, email), 10000);
 }
 
 function mapFirebaseError(err: any): AuthResult {
