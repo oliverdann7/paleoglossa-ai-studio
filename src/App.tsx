@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { features } from './lib/features.js';
 import { UpdatePrompt } from './components/UpdatePrompt.js';
+import { isCapacitor } from './lib/platform.js';
 
 const TutorDirectory = lazy(() =>
   import('./pages/marketplace/TutorDirectory.js').then((m) => ({ default: m.TutorDirectory }))
@@ -171,7 +172,11 @@ const PageFallback = () => (
 export default function App() {
   return (
     <Suspense fallback={<PageFallback />}>
-      <UpdatePrompt />
+      {/* The service worker is registered by UpdatePrompt's useRegisterSW hook.
+          On native (Capacitor) a SW only serves a stale precached bundle from a
+          previous build — trapping the WebView on old JS — so it must never be
+          registered there. Native assets are already local; no SW is needed. */}
+      {!isCapacitor() && <UpdatePrompt />}
       <BrowserRouter>
         <Routes>
           {/* Marketing (Public) */}
