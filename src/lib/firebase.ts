@@ -2,7 +2,6 @@ import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   initializeAuth,
-  indexedDBLocalPersistence,
   browserLocalPersistence,
   inMemoryPersistence,
   browserPopupRedirectResolver,
@@ -13,6 +12,7 @@ import {
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
+  memoryLocalCache,
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { isCapacitor } from './platform.js';
@@ -55,30 +55,37 @@ if (missing.length > 0) {
 
 const app = initializeApp(firebaseConfig);
 
+// IndexedDB is broken inside the iOS Capacitor WKWebView: open/transaction
+// requests can hang forever without firing success/error. That's the confirmed
+// root cause of the native sign-in hang — the network request succeeds (raw
+// fetch returns 200 in ~1s), but Firebase Auth's follow-up write of the session
+// to IndexedDB never completes, so `signInWithEmailAndPassword` never resolves.
+// On native we therefore avoid IndexedDB entirely: Auth persists to localStorage
+// (synchronous, reliable in WKWebView) and Firestore uses an in-memory cache.
+// Web keeps the richer IndexedDB-backed persistence.
+const native = isCapacitor();
+
 export const db = initializeFirestore(
   app,
   {
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    localCache: native
+      ? memoryLocalCache()
+      : persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
     // Firestore's default WebChannel streaming transport frequently fails to
     // establish inside the iOS/Android Capacitor WebView (and behind some
     // corporate proxies), leaving reads hanging indefinitely. Auto-detecting
     // long-polling lets the SDK fall back to plain HTTP so post-login reads
-    // actually resolve on native — without this the app can get stuck on the
-    // loading spinner after a successful sign-in.
+    // actually resolve on native.
     experimentalAutoDetectLongPolling: true,
   },
   firestoreDatabaseId || '(default)'
 );
-// On native (Capacitor WKWebView) the default `getAuth()` resolves its
-// persistence layer lazily on the first auth call, and that probe can hang
-// inside the WebView — leaving sign-in stuck on the "Signing In…" spinner with
-// no error. Initialise persistence eagerly with an explicit fallback chain
-// (IndexedDB → localStorage → in-memory) so the first sign-in never blocks on
-// persistence resolution. `browserPopupRedirectResolver` keeps redirect/popup
-// OAuth working where it's available. Web keeps the standard `getAuth`.
-export const auth = isCapacitor()
+
+export const auth = native
   ? initializeAuth(app, {
-      persistence: [indexedDBLocalPersistence, browserLocalPersistence, inMemoryPersistence],
+      // localStorage first — IndexedDB persistence hangs in the WKWebView and
+      // would trap sign-in on the spinner forever.
+      persistence: [browserLocalPersistence, inMemoryPersistence],
       popupRedirectResolver: browserPopupRedirectResolver,
     })
   : getAuth(app);
