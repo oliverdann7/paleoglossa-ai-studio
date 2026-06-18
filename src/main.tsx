@@ -12,6 +12,16 @@
  * readable message into #root instead, turning a silent hang into something
  * actionable on-device.
  */
+// Make Vite's chunk/CSS preloading non-fatal. Inside the iOS Capacitor
+// WKWebView the preload <link> error event can fire spuriously (or for real),
+// which otherwise rejects the dynamic import with "Unable to preload CSS for …"
+// and dead-ends the whole app. Preventing the default lets the import fall
+// through to actually fetching the chunk, so a flaky preload never blocks boot
+// or lazy-route navigation. (Primary CSS is also un-split — see vite.config.)
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault();
+});
+
 function escapeHtml(s: string): string {
   return s.replace(
     /[<>&]/g,
