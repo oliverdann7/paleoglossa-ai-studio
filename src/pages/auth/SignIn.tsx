@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, AlertCircle, UserCircle } from 'lucide-react';
@@ -25,15 +25,52 @@ export const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── TEMP on-device diagnostics (build 11) ─────────────────────────────────
+  // No tethered device available, so surface what happens during sign-in right
+  // on screen. `heartbeat` proves whether the JS event loop is alive during a
+  // hang (if it keeps ticking the loop is alive → a pending promise; if it
+  // freezes the loop is blocked). Remove once the native sign-in hang is fixed.
+  const [dbg, setDbg] = useState<string[]>([]);
+  const [heartbeat, setHeartbeat] = useState(0);
+  const t0 = useRef<number>(0);
+  const dlog = (m: string) =>
+    setDbg((d) => [...d.slice(-14), `+${((performance.now() - t0.current) / 1000).toFixed(1)}s ${m}`]);
+
+  useEffect(() => {
+    if (!loading) return;
+    const id = setInterval(() => setHeartbeat((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [loading]);
+
+  useEffect(() => {
+    const onErr = (e: ErrorEvent) => dlog(`window.error: ${e.message}`);
+    const onRej = (e: PromiseRejectionEvent) => {
+      const r = e.reason as { message?: string; code?: string } | undefined;
+      dlog(`unhandledrejection: ${r?.code ?? ''} ${r?.message ?? String(e.reason)}`);
+    };
+    window.addEventListener('error', onErr);
+    window.addEventListener('unhandledrejection', onRej);
+    return () => {
+      window.removeEventListener('error', onErr);
+      window.removeEventListener('unhandledrejection', onRej);
+    };
+  }, []);
+
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || '/app';
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    t0.current = performance.now();
+    setDbg([]);
+    setHeartbeat(0);
+    dlog('tap → calling signInWithEmail');
     setLoading(true);
     setError(null);
     try {
       const result = await signInWithEmail(email, password);
+      dlog(`signInWithEmail returned: ${JSON.stringify(result)}`);
       if (result.success) {
+        dlog('success → navigate ' + from);
         navigate(from, { replace: true });
         return;
       }
@@ -76,9 +113,11 @@ export const SignIn = () => {
       } else {
         setError(result.error ?? 'Sign in failed');
       }
-    } catch {
+    } catch (err) {
+      dlog(`threw: ${String((err as { message?: string })?.message ?? err)}`);
       setError(t('auth.invalidCredentials', 'Incorrect email or password. Please try again.'));
     } finally {
+      dlog('finally → setLoading(false)');
       setLoading(false);
     }
   };
@@ -243,6 +282,18 @@ export const SignIn = () => {
               <div className="mb-6 p-4 rounded-xl bg-rubyxl border border-ruby/20 flex items-start gap-3 text-ruby">
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                 <p className="text-sm font-medium">{error}</p>
+              </div>
+            )}
+
+            {/* TEMP diagnostics (build 11) — remove once native sign-in is fixed */}
+            {(loading || dbg.length > 0) && (
+              <div className="mb-6 p-3 rounded-xl bg-ink/5 border border-bdr text-[11px] leading-snug font-mono text-ink2 break-words">
+                <div className="font-bold mb-1">
+                  diag · heartbeat {heartbeat}s {loading ? '(loop alive if counting)' : ''}
+                </div>
+                {dbg.map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
               </div>
             )}
 
