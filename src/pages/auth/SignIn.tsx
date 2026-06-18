@@ -11,6 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
 import { isCapacitor } from '@/lib/platform';
+import { auth } from '@/lib/firebase';
 
 export const SignIn = () => {
   const navigate = useNavigate();
@@ -66,6 +67,40 @@ export const SignIn = () => {
     dlog('tap → calling signInWithEmail');
     setLoading(true);
     setError(null);
+
+    // ── TEMP probes (build 12): is it the WebView network layer or the SDK? ──
+    // Raw fetch to the exact endpoint the SDK calls. If this also hangs, the
+    // WKWebView network layer is the problem; if it returns fast, the SDK is.
+    void (async () => {
+      const s = performance.now();
+      try {
+        const r = await fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${auth.config.apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, returnSecureToken: true }),
+          }
+        );
+        dlog(`raw IT fetch → HTTP ${r.status} in ${((performance.now() - s) / 1000).toFixed(1)}s`);
+      } catch (err) {
+        dlog(
+          `raw IT fetch ERR in ${((performance.now() - s) / 1000).toFixed(1)}s: ${String((err as Error)?.message ?? err)}`
+        );
+      }
+    })();
+    // Basic connectivity (opaque, no-cors): does ANY external request resolve?
+    void (async () => {
+      const s = performance.now();
+      try {
+        await fetch('https://www.google.com/generate_204', { mode: 'no-cors' });
+        dlog(`connectivity ok in ${((performance.now() - s) / 1000).toFixed(1)}s`);
+      } catch (err) {
+        dlog(
+          `connectivity ERR in ${((performance.now() - s) / 1000).toFixed(1)}s: ${String((err as Error)?.message ?? err)}`
+        );
+      }
+    })();
     try {
       const result = await signInWithEmail(email, password);
       dlog(`signInWithEmail returned: ${JSON.stringify(result)}`);
