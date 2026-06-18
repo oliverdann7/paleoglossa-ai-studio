@@ -524,6 +524,13 @@ export const en = {
     'review.cardTypes': 'Card Types',
     'review.cardsPerSession': 'Cards per session',
     'review.includeMorphology': 'Include morphology/parsing cards',
+    'review.cardWeighting': 'Card balance',
+    'review.weighting.adaptive': 'Adaptive (recommended)',
+    'review.weighting.recognition': 'Recognition first',
+    'review.weighting.production': 'Production first',
+    'review.weighting.balanced': 'Balanced mix',
+    'review.weighting.help':
+      'Adaptive favors recognition for new words and production for words you know well.',
     'review.settings': 'Settings',
     'review.title': 'Review',
     'review.subtitle': 'Reinforce your vocabulary with spaced repetition',
