@@ -19,6 +19,10 @@ export const en = {
     'dashboard.reviewPerformance': 'Review performance',
     'dashboard.wordsReadToday': 'Words read today',
     'dashboard.dayStreak': 'Day Streak',
+    'dashboard.beginnerHubReadyTitle': 'Your Beginner Hub is ready',
+    'dashboard.beginnerHubReadyDesc':
+      'A guided path through scripts, first readings, and reviews — built for absolute beginners.',
+    'dashboard.beginnerHubReadyCta': 'Open Beginner Hub',
     'dashboard.cardsDue': 'Cards Due',
     'dashboard.allClear': 'All Clear',
     'dashboard.memoryFresh': 'Your memory is currently in optimal state.',
@@ -273,6 +277,7 @@ export const en = {
     'level.advanced': 'Advanced',
 
     'common.backToLibrary': 'Back to Library',
+    'common.dismiss': 'Dismiss',
 
     'vocab.title': 'Vocabulary',
     'vocab.search': 'Search words...',

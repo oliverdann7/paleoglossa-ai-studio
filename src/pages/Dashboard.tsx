@@ -10,6 +10,8 @@ import {
   BookOpen,
   PlusCircle,
   MessageCircle,
+  GraduationCap,
+  X,
 } from 'lucide-react';
 import { CorpusDB } from '../data/corpus.js';
 import { getLangForLemma } from '../lib/data/dictionary.js';
@@ -39,6 +41,7 @@ import { StudyHeatmap } from '../components/StudyHeatmap.js';
 import { VocabFrequencyGoals } from '../components/VocabFrequencyGoals.js';
 import { ReviewForecast } from '../components/ReviewForecast.js';
 import { useXP } from '../lib/hooks/useXP.js';
+import { useBeginnerHubDiscovery } from '../lib/hooks/useBeginnerHubDiscovery.js';
 
 const RTL_LANGS = new Set([
   'hbo',
@@ -94,6 +97,17 @@ export const Dashboard = () => {
       to: '/app/library',
     };
   }, [isOnboardingComplete, settings.onboardingProfile]);
+
+  // One-time Beginner Hub discoverability (roadmap § 11, 1.6). The curriculum
+  // already exists but is easy to miss; surface it once for self-identified
+  // beginners and start the 7-day sidebar-highlight window.
+  const isAbsoluteBeginner =
+    isOnboardingComplete && settings.onboardingProfile?.level === 'absolute-beginner';
+  const beginnerHub = useBeginnerHubDiscovery();
+  const showBeginnerHubCard = !!isAbsoluteBeginner && beginnerHub.showCard;
+  useEffect(() => {
+    if (showBeginnerHubCard) beginnerHub.markSeen();
+  }, [showBeginnerHubCard, beginnerHub]);
 
   const [readingProgress, setReadingProgress] = useState<any[]>([]);
   const [progressLoaded, setProgressLoaded] = useState(false);
@@ -251,8 +265,47 @@ export const Dashboard = () => {
             </button>
           </div>
         )}
+        {/* One-time Beginner Hub discovery card (roadmap 1.6) */}
+        {showBeginnerHubCard && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="card p-6 mb-8 border-blue/30 bg-blue/5 relative flex flex-wrap items-center gap-4"
+          >
+            <button
+              onClick={beginnerHub.dismiss}
+              aria-label={t('common.dismiss', 'Dismiss')}
+              className="absolute top-3 right-3 p-1 text-muted hover:text-ink transition-colors"
+            >
+              <X className="w-4 h-4" aria-hidden />
+            </button>
+            <div className="shrink-0 w-11 h-11 rounded-xl bg-blue/12 flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-blue" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-serif text-[18px] text-ink">
+                {t('dashboard.beginnerHubReadyTitle', 'Your Beginner Hub is ready')}
+              </h3>
+              <p className="text-[14px] text-ink3">
+                {t(
+                  'dashboard.beginnerHubReadyDesc',
+                  'A guided path through scripts, first readings, and reviews — built for absolute beginners.'
+                )}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                beginnerHub.dismiss();
+                navigate('/app/beginner-hub');
+              }}
+              className="btn-primary shrink-0"
+            >
+              {t('dashboard.beginnerHubReadyCta', 'Open Beginner Hub')}
+            </button>
+          </motion.div>
+        )}
         {/* Personalized Recommendation */}
-        {recommendedNextStep && (
+        {recommendedNextStep && !showBeginnerHubCard && (
           <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0 flex-1">
               <h3 className="font-serif text-[18px] text-ink">{recommendedNextStep.title}</h3>
