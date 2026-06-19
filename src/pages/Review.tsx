@@ -1,7 +1,16 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, Award, Loader2, Brain, History, Target, Settings2 } from 'lucide-react';
+import {
+  ChevronLeft,
+  Loader2,
+  Brain,
+  History,
+  Target,
+  Settings2,
+  ScrollText,
+  Clock,
+} from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
@@ -58,6 +67,15 @@ const SETTINGS_KEY = 'paleoglossa_review_settings';
 const toDateStr = (v: string | Timestamp): string =>
   typeof v === 'string' ? v : v.toDate().toISOString();
 
+/** Format an elapsed duration as `m:ss` (or `s s` under a minute) for the colophon. */
+function formatDuration(ms: number): string {
+  const totalSeconds = Math.max(0, Math.round(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes === 0) return `${seconds}s`;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
 function loadSettings(): ReviewSettings {
   try {
     const stored = localStorage.getItem(SETTINGS_KEY);
@@ -113,6 +131,8 @@ export const Review = () => {
     { lemma: string; rating: Rating; responseMs: number }[]
   >([]);
   const [isFinished, setIsFinished] = useState(false);
+  // Elapsed time of the just-finished session, frozen for the colophon screen.
+  const [sessionDurationMs, setSessionDurationMs] = useState(0);
 
   // Session resume: a snapshot from a prior interrupted session, offered on the
   // start screen. `resumedRef` guards the async queue loader from clobbering a
@@ -350,15 +370,17 @@ export const Review = () => {
         const finalResults = [...sessionResults, result];
         const correct = finalResults.filter((r) => r.rating !== 'AGAIN').length;
         const acc = finalResults.length > 0 ? correct / finalResults.length : 0;
+        const durationMs = Date.now() - sessionStartRef.current;
         recordReviewSession(Math.round(acc * 100));
         trackEvent(ANALYTICS_EVENTS.REVIEW_COMPLETED, {
           languageId: activeLanguageId,
           cardsReviewed: finalResults.length,
           correctCount: correct,
           accuracyPercent: Math.round(acc * 100),
-          durationMs: Date.now() - sessionStartRef.current,
+          durationMs,
         });
         clearSavedSession();
+        setSessionDurationMs(durationMs);
         setIsFinished(true);
         return;
       }
@@ -367,7 +389,18 @@ export const Review = () => {
       setIsRevealed(false);
       setCardStartTime(Date.now());
     },
-    [queue, currentCardIndex, cardStartTime, isDemoMode, user, updateWordSRS, sessionResults, recordReviewSession, activeLanguageId, awardXP]
+    [
+      queue,
+      currentCardIndex,
+      cardStartTime,
+      isDemoMode,
+      user,
+      updateWordSRS,
+      sessionResults,
+      recordReviewSession,
+      activeLanguageId,
+      awardXP,
+    ]
   );
 
   const handleReveal = () => setIsRevealed(true);
@@ -564,9 +597,13 @@ export const Review = () => {
                   {t('review.resumeTitle', 'Resume your session?')}
                 </h3>
                 <p className="text-[13px] text-ink2 mb-4">
-                  {t('review.resumeDesc', 'You have {{count}} cards left from an unfinished review.', {
-                    count: resumable.queue.length - resumable.currentCardIndex,
-                  })}
+                  {t(
+                    'review.resumeDesc',
+                    'You have {{count}} cards left from an unfinished review.',
+                    {
+                      count: resumable.queue.length - resumable.currentCardIndex,
+                    }
+                  )}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -693,24 +730,33 @@ export const Review = () => {
     );
   }
 
-  // ── Finished Screen ─────────────────────────────────────────────────
+  // ── Finished Screen — the scribal colophon (roadmap § 11, 3.5) ───────
   if (isFinished) {
     return (
       <div className="p-6 md:p-12 max-w-lg mx-auto font-sans min-h-screen flex items-center justify-center">
         <div className="text-center w-full">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Award className="w-10 h-10 text-emerald-600" />
+          <div className="w-20 h-20 bg-amber/10 ring-1 ring-amber/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ScrollText className="w-9 h-9 text-amber" />
           </div>
-          <h2 className="text-[28px] font-serif font-bold text-ink mb-2">
-            {t('review.sessionComplete', 'Session Complete!')}
+          <h2 className="text-[30px] font-serif font-bold text-ink mb-1 tracking-tight">
+            {t('review.colophonTitle', 'Explicit feliciter')}
           </h2>
-          <p className="text-ink2 mb-8">
-            {t('review.greatWork', 'Great work! You reviewed {{count}} cards.', {
-              count: sessionResults.length,
-            })}
+          <p className="text-ink2 mb-6 italic font-serif">
+            {t('review.colophonSubtitle', 'Here ends the session, happily.')}
           </p>
 
-          <div className="flex justify-center gap-8 mb-8">
+          {/* Colophon line — the scribe's signing-off note, in the manuscript voice. */}
+          <div className="card p-4 mb-8 border border-amber/20 bg-parch2/40">
+            <p className="text-[14px] text-ink2 font-serif">
+              {t('review.colophonLine', '{{count}} cards · {{accuracy}}% · {{duration}}', {
+                count: sessionResults.length,
+                accuracy: Math.round(accuracy * 100),
+                duration: formatDuration(sessionDurationMs),
+              })}
+            </p>
+          </div>
+
+          <div className="flex justify-center gap-8 mb-6">
             <div className="text-center">
               <div className="text-[32px] font-bold text-jade">{correctCount}</div>
               <div className="text-[11px] text-muted uppercase tracking-widest font-bold">
@@ -731,6 +777,12 @@ export const Review = () => {
                 {t('review.accuracy', 'Accuracy')}
               </div>
             </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-1.5 text-[12px] text-muted mb-8">
+            <Clock className="w-3.5 h-3.5" />
+            <span className="font-bold uppercase tracking-widest">{t('review.time', 'Time')}</span>
+            <span className="text-ink2 font-bold ml-1">{formatDuration(sessionDurationMs)}</span>
           </div>
 
           <button
@@ -894,7 +946,9 @@ export const Review = () => {
                 className="py-4 md:py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.again', 'Again')}</span>
-                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>1</span>
+                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>
+                  1
+                </span>
               </button>
               <button
                 onClick={() => handleRate('HARD')}
@@ -903,7 +957,9 @@ export const Review = () => {
                 className="py-4 md:py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.hard', 'Hard')}</span>
-                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>2</span>
+                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>
+                  2
+                </span>
               </button>
               <button
                 onClick={() => handleRate('GOOD')}
@@ -912,7 +968,9 @@ export const Review = () => {
                 className="py-4 md:py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.good', 'Good')}</span>
-                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>3</span>
+                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>
+                  3
+                </span>
               </button>
               <button
                 onClick={() => handleRate('EASY')}
@@ -921,7 +979,9 @@ export const Review = () => {
                 className="py-4 md:py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.easy', 'Easy')}</span>
-                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>4</span>
+                <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>
+                  4
+                </span>
               </button>
             </div>
           </div>

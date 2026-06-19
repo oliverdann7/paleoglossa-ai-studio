@@ -567,6 +567,12 @@ export const en = {
     'review.parsingShort': 'Parsing',
     'review.answer': 'Answer',
     'review.showAnswer': 'Show Answer',
+    'review.colophonTitle': 'Explicit feliciter',
+    'review.colophonSubtitle': 'Here ends the session, happily.',
+    'review.colophonLine': '{{count}} cards · {{accuracy}}% · {{duration}}',
+    'review.time': 'Time',
+
+    'milestones.knownWords': '🏛️ {{count}} words known — explicit feliciter!',
 
     'library.chooseLanguage': 'Choose a language to explore, or browse all texts below.',
     'library.yourLanguages': 'Your Languages',
