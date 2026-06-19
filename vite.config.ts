@@ -111,8 +111,9 @@ export default defineConfig(({mode}) => {
               }
             },
             {
-              // Cache read-only API routes (corpus texts, dictionary lookups) for offline use
-              urlPattern: /\/api\/(corpus|texts|dictionary)\//i,
+              // Cache read-only API routes (corpus texts, dictionary, lemma &
+              // paradigm lookups, lexicon proxy) for offline reading + lookups
+              urlPattern: /\/api\/(corpus|texts|dictionary|lemmas|paradigms|lexicon-lookup)\//i,
               handler: 'StaleWhileRevalidate',
               options: {
                 cacheName: 'api-read-cache',

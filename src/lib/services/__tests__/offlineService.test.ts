@@ -1,14 +1,19 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { clear as idbClear } from 'idb-keyval';
 import { OfflineService } from '../offlineService';
 
 /**
- * Offline reading + the pending-write sync queue are persisted in
- * localStorage. This layer was untested; these cases lock in the round-trip,
- * dedup, removal and corruption-resilience behaviour the reader depends on
- * when the network is unavailable.
+ * Offline reading + the pending-write sync queue. Text metadata and the sync
+ * queue persist synchronously in localStorage; the heavy reading payloads live
+ * (compressed) in IndexedDB. These cases lock in the round-trip, dedup,
+ * removal, corruption-resilience and legacy-migration behaviour the reader
+ * depends on when the network is unavailable.
  */
 describe('OfflineService', () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(async () => {
+    localStorage.clear();
+    await idbClear();
+  });
 
   it('caches text metadata and reports it as offline', () => {
     OfflineService.setOfflineText('Caesar-BG-1', 'De Bello Gallico', 'lat');
@@ -27,22 +32,23 @@ describe('OfflineService', () => {
     expect(OfflineService.getOfflineTexts()).toHaveLength(1);
   });
 
-  it('removes a text and its payload', () => {
+  it('removes a text and its payload', async () => {
     OfflineService.setOfflineText('Jn-1', 'John', 'grc-koine');
-    OfflineService.saveOfflinePayload('Jn-1', {
+    await OfflineService.saveOfflinePayload('Jn-1', {
       textId: 'Jn-1',
       title: 'John',
       languageId: 'grc-koine',
       sentences: [{ tokens: [{ text: 'Ἐν', lemma: 'ἐν', type: 'word' }], translation: 'In' }],
       source: 'corpus',
     });
-    OfflineService.removeOfflineText('Jn-1');
+    await OfflineService.removeOfflineText('Jn-1');
     expect(OfflineService.isOfflineText('Jn-1')).toBe(false);
-    expect(OfflineService.getOfflinePayload('Jn-1')).toBeNull();
+    expect(await OfflineService.getOfflinePayload('Jn-1')).toBeNull();
+    expect(await OfflineService.listPayloadIds()).toEqual([]);
   });
 
-  it('round-trips an offline payload', () => {
-    OfflineService.saveOfflinePayload('Caesar-BG-1', {
+  it('round-trips an offline payload through IndexedDB (compressed)', async () => {
+    await OfflineService.saveOfflinePayload('Caesar-BG-1', {
       textId: 'Caesar-BG-1',
       title: 'De Bello Gallico',
       languageId: 'lat',
@@ -51,9 +57,32 @@ describe('OfflineService', () => {
       ],
       source: 'corpus',
     });
-    const payload = OfflineService.getOfflinePayload('Caesar-BG-1');
+    const payload = await OfflineService.getOfflinePayload('Caesar-BG-1');
     expect(payload?.sentences[0].tokens[0].text).toBe('Gallia');
     expect(payload?.cachedAt).toBeTruthy();
+    expect(await OfflineService.listPayloadIds()).toEqual(['Caesar-BG-1']);
+  });
+
+  it('migrates a legacy localStorage payload into IndexedDB', async () => {
+    const legacy = {
+      textId: 'Aen-1',
+      title: 'Aeneid',
+      languageId: 'lat',
+      sentences: [
+        { tokens: [{ text: 'Arma', lemma: 'arma', type: 'word' }], translation: 'Arms' },
+      ],
+      source: 'corpus',
+      cachedAt: '2026-01-01T00:00:00.000Z',
+    };
+    localStorage.setItem('paleoglossa_offline_payloads_Aen-1', JSON.stringify(legacy));
+
+    await OfflineService.migrateLegacyPayloads();
+
+    // Legacy key reclaimed, payload now served from IndexedDB.
+    expect(localStorage.getItem('paleoglossa_offline_payloads_Aen-1')).toBeNull();
+    const payload = await OfflineService.getOfflinePayload('Aen-1');
+    expect(payload?.sentences[0].tokens[0].text).toBe('Arma');
+    expect(payload?.cachedAt).toBe('2026-01-01T00:00:00.000Z');
   });
 
   it('queues pending writes and clears them', () => {
