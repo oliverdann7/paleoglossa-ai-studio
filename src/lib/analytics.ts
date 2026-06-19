@@ -20,6 +20,7 @@ export const ANALYTICS_EVENTS = {
   WORD_STATE_CHANGED: 'word_state_changed',
   REVIEW_STARTED: 'review_started',
   REVIEW_COMPLETED: 'review_completed',
+  KNOWN_WORD_MILESTONE: 'known_word_milestone',
   IMPORT_STARTED: 'import_started',
   IMPORT_COMPLETED: 'import_completed',
   IMPORT_LIMIT_BLOCKED: 'import_limit_blocked',

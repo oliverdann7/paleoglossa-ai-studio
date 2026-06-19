@@ -11,6 +11,10 @@ import { isTrackedWordState } from '../constants/plans.js';
 import { usePublishVocabLimit } from '../contexts/VocabLimitContext.js';
 import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
 import type { ReadingContext } from '../review/readingContext.js';
+import { useTranslation } from 'react-i18next';
+import { useToast } from './useToast.js';
+import { checkKnownWordMilestone } from '../services/milestoneService.js';
+import { trackEvent, ANALYTICS_EVENTS } from '../analytics.js';
 
 export const useKnowledge = (languageId?: string) => {
   const vocab = useVocabulary();
@@ -19,6 +23,8 @@ export const useKnowledge = (languageId?: string) => {
   const { user } = useAuth();
   const userId = user ? user.uid : null;
   const [userImports, setUserImports] = useState<any[]>([]);
+  const { t } = useTranslation();
+  const { addToast } = useToast();
 
   // Vocab limit — computed from the already-loaded knowledge map, no extra Firestore reads.
   // Pass the current languageId so the limit is scoped to the active language.
@@ -74,8 +80,7 @@ export const useKnowledge = (languageId?: string) => {
       //   3. The word is currently NOT tracked (NEW or IGNORED)
       //   4. The new state IS tracked (SEEN/LEARNING/FAMILIAR/KNOWN)
       //   5. The limit has been reached
-      const isNewTracked =
-        !isTrackedWordState(previousState) && isTrackedWordState(state);
+      const isNewTracked = !isTrackedWordState(previousState) && isTrackedWordState(state);
       if (
         isNewTracked &&
         vocabLimit.isEnabled &&
@@ -90,12 +95,24 @@ export const useKnowledge = (languageId?: string) => {
       vocab.setWordState(lemma, state, langId, context, extra);
       if (state === WordState.KNOWN && previousState !== WordState.KNOWN) {
         statsHook.updateStatsState((s) => ({ ...s, totalKnown: s.totalKnown + 1 }));
+        // Known-word laurels (roadmap § 11, 3.5): celebrate 50/100/500/1000.
+        const newKnown = (statsHook.stats.totalKnown ?? 0) + 1;
+        const milestone = checkKnownWordMilestone(langId, newKnown);
+        if (milestone !== null) {
+          addToast(
+            t('milestones.knownWords', '🏛️ {{count}} words known — explicit feliciter!', {
+              count: milestone,
+            }),
+            'success'
+          );
+          trackEvent(ANALYTICS_EVENTS.KNOWN_WORD_MILESTONE, { languageId: langId, milestone });
+        }
       } else if (state !== WordState.KNOWN && previousState === WordState.KNOWN) {
         statsHook.updateStatsState((s) => ({ ...s, totalKnown: Math.max(0, s.totalKnown - 1) }));
       }
       return true;
     },
-    [vocab, statsHook, vocabLimit]
+    [vocab, statsHook, vocabLimit, addToast, t]
   );
 
   // Guarded markPageAsSeen: filters out words that would exceed the free-language
