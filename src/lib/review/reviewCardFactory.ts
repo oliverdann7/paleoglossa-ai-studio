@@ -26,10 +26,21 @@ export interface ReviewCard {
   status: string;
 }
 
+/**
+ * How card types are weighted within a session (roadmap § 11, 2.4).
+ * - `adaptive` (default): bias by the word's knowledge state — early states lean
+ *   on recognition (cheaper retrieval, less frustration on new words), KNOWN words
+ *   lean on production (active recall, the harder direction).
+ * - `recognition` / `production`: force one direction regardless of state.
+ * - `balanced`: the historical uniform-random behaviour.
+ */
+export type CardWeighting = 'adaptive' | 'recognition' | 'production' | 'balanced';
+
 export interface CardGenerationOptions {
   enabledTypes: CardType[];
   maxCards?: number;
   includeMorphology: boolean;
+  weighting?: CardWeighting;
 }
 
 const DEFAULT_OPTIONS: CardGenerationOptions = {
@@ -40,7 +51,84 @@ const DEFAULT_OPTIONS: CardGenerationOptions = {
     CardType.PARSE,
   ],
   includeMorphology: true,
+  weighting: 'adaptive',
 };
+
+/**
+ * Recognition cards present the form (or a context) and ask for the meaning or
+ * an identification — the easier retrieval direction. Everything else is
+ * production: recalling/producing the form or a full grammatical parse.
+ */
+const RECOGNITION_TYPES: ReadonlySet<CardType> = new Set([
+  CardType.FORM_TO_MEANING,
+  CardType.LEMMA_RECOGNITION,
+  CardType.CLOZE,
+  CardType.CONTEXT_TRANSLATION,
+]);
+
+export function isRecognitionCard(type: CardType): boolean {
+  return RECOGNITION_TYPES.has(type);
+}
+
+const FAVORED_WEIGHT = 3;
+const BASE_WEIGHT = 1;
+
+/**
+ * Resolve whether recognition should be favored for a given word state under the
+ * `adaptive` preset. Unknown/blank states default to recognition (the safe choice
+ * for a word we know little about). Returns null when neither is favored (balanced).
+ */
+function adaptiveFavorsRecognition(state: string | undefined): boolean | null {
+  switch ((state || '').toUpperCase()) {
+    case 'NEW':
+    case 'SEEN':
+    case 'LEARNING':
+      return true;
+    case 'KNOWN':
+      return false;
+    case 'FAMILIAR':
+      return null; // balanced — straddling recognition and production
+    default:
+      return true;
+  }
+}
+
+/**
+ * Weight a single card type for the given word state and preset. Higher weight =
+ * more likely to be drawn. Pure and exported for testing.
+ */
+export function cardTypeWeight(
+  type: CardType,
+  state: string | undefined,
+  preset: CardWeighting
+): number {
+  if (preset === 'balanced') return BASE_WEIGHT;
+
+  const recognition = isRecognitionCard(type);
+  let favorRecognition: boolean | null;
+  if (preset === 'recognition') favorRecognition = true;
+  else if (preset === 'production') favorRecognition = false;
+  else favorRecognition = adaptiveFavorsRecognition(state); // adaptive
+
+  if (favorRecognition === null) return BASE_WEIGHT;
+  return recognition === favorRecognition ? FAVORED_WEIGHT : BASE_WEIGHT;
+}
+
+/** Weighted random pick over candidate card types. */
+function pickWeighted(
+  candidates: CardType[],
+  state: string | undefined,
+  preset: CardWeighting
+): CardType {
+  const weights = candidates.map((t) => cardTypeWeight(t, state, preset));
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < candidates.length; i++) {
+    r -= weights[i];
+    if (r < 0) return candidates[i];
+  }
+  return candidates[candidates.length - 1];
+}
 
 function findGloss(term: string, _languageId: string, item: any): string | null {
   if (item.userGloss && item.userGloss !== 'Definition missing') return item.userGloss;
@@ -128,7 +216,10 @@ export function generateReviewCard(
   const available = candidates.filter((t) => opts.enabledTypes.includes(t));
   if (available.length === 0) return null;
 
-  const type = available[Math.floor(Math.random() * available.length)];
+  // Weight the draw by word state + preset (roadmap § 11, 2.4) instead of a
+  // uniform pick, so LEARNING words skew toward recognition and KNOWN words
+  // toward production.
+  const type = pickWeighted(available, item.status, opts.weighting ?? 'adaptive');
 
   let question = term;
   let answer = gloss || '';

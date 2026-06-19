@@ -31,15 +31,18 @@ import { UserProfileCard } from './UserProfileCard.js';
 import { SyncStatusBadge } from './SyncStatusBadge.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { features } from '../lib/features.js';
+import { useBeginnerHubDiscovery } from '../lib/hooks/useBeginnerHubDiscovery.js';
 
 interface NavItemProps {
   icon: React.ElementType;
   label: string;
   isActive?: boolean;
   to: string;
+  /** Draws attention to a newly-relevant destination (roadmap 1.6). */
+  highlight?: boolean;
 }
 
-const DesktopNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
+const DesktopNavItem = ({ icon: Icon, label, isActive, to, highlight }: NavItemProps) => (
   <Link
     to={to}
     className={cn(
@@ -57,6 +60,12 @@ const DesktopNavItem = ({ icon: Icon, label, isActive, to }: NavItemProps) => (
       strokeWidth={isActive ? 2 : 1.5}
     />
     <span>{label}</span>
+    {highlight && !isActive && (
+      <span className="relative ml-auto flex h-2 w-2" aria-hidden>
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-blue" />
+      </span>
+    )}
   </Link>
 );
 
@@ -96,6 +105,7 @@ export const Navbar = () => {
   const path = location.pathname;
   const { t } = useTranslation();
   const { isAdmin } = useSubscription();
+  const { highlightNav: highlightBeginnerHub } = useBeginnerHubDiscovery();
 
   return (
     <>
@@ -132,6 +142,7 @@ export const Navbar = () => {
             label={t('nav.beginnerHub', 'Beginner Hub')}
             isActive={path === '/app/beginner-hub'}
             to="/app/beginner-hub"
+            highlight={highlightBeginnerHub}
           />
           <DesktopNavItem
             icon={BookOpen}

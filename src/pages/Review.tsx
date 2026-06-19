@@ -9,7 +9,12 @@ import { WordState } from '../lib/constants/wordStates.js';
 import { ReviewService, ReviewItem } from '../lib/services/reviewService.js';
 import { Rating, calculateSM2 } from '../lib/srs/sm2.js';
 import type { SRSState } from '../lib/srs/sm2.js';
-import { CardType, ReviewCard, generateReviewCards } from '../lib/review/reviewCardFactory.js';
+import {
+  CardType,
+  CardWeighting,
+  ReviewCard,
+  generateReviewCards,
+} from '../lib/review/reviewCardFactory.js';
 import {
   readSavedSession,
   writeSavedSession,
@@ -31,6 +36,7 @@ interface ReviewSettings {
   enabledTypes: CardType[];
   maxCards: number;
   includeMorphology: boolean;
+  cardWeighting: CardWeighting;
 }
 
 const DEFAULT_SETTINGS: ReviewSettings = {
@@ -44,6 +50,7 @@ const DEFAULT_SETTINGS: ReviewSettings = {
   ],
   maxCards: 30,
   includeMorphology: true,
+  cardWeighting: 'adaptive',
 };
 
 const SETTINGS_KEY = 'paleoglossa_review_settings';
@@ -227,6 +234,7 @@ export const Review = () => {
         const cards = generateReviewCards(items, {
           enabledTypes: settings.enabledTypes,
           includeMorphology: settings.includeMorphology,
+          weighting: settings.cardWeighting,
         });
         // A resumed session owns the queue — don't overwrite it with a fresh load.
         if (resumedRef.current) return;
@@ -471,6 +479,39 @@ export const Review = () => {
               }}
               className="w-full accent-blue"
             />
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-ink mb-2 block" htmlFor="card-weighting">
+              {t('review.cardWeighting', 'Card balance')}
+            </label>
+            <select
+              id="card-weighting"
+              value={settings.cardWeighting}
+              onChange={(e) => {
+                const updated = { ...settings, cardWeighting: e.target.value as CardWeighting };
+                setSettings(updated);
+                saveSettings(updated);
+              }}
+              className="w-full p-3 bg-parch2/50 border border-bdr rounded-xl text-ink focus:outline-none focus:border-blue transition-all"
+            >
+              <option value="adaptive">
+                {t('review.weighting.adaptive', 'Adaptive (recommended)')}
+              </option>
+              <option value="recognition">
+                {t('review.weighting.recognition', 'Recognition first')}
+              </option>
+              <option value="production">
+                {t('review.weighting.production', 'Production first')}
+              </option>
+              <option value="balanced">{t('review.weighting.balanced', 'Balanced mix')}</option>
+            </select>
+            <p className="text-[12px] text-ink2 mt-1.5 leading-snug">
+              {t(
+                'review.weighting.help',
+                'Adaptive favors recognition for new words and production for words you know well.'
+              )}
+            </p>
           </div>
 
           <div>

@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { generateReviewCard, generateReviewCards, CardType } from './reviewCardFactory.js';
+import {
+  generateReviewCard,
+  generateReviewCards,
+  CardType,
+  cardTypeWeight,
+  isRecognitionCard,
+} from './reviewCardFactory.js';
 
 const baseItem = {
   id: 'λύω',
@@ -210,6 +216,67 @@ describe('PARSE with per-token morphology', () => {
     if (card) {
       expect(card.type).toBe(CardType.PARSE);
     }
+  });
+});
+
+describe('card weighting (roadmap 2.4)', () => {
+  it('classifies recognition vs production card types', () => {
+    expect(isRecognitionCard(CardType.FORM_TO_MEANING)).toBe(true);
+    expect(isRecognitionCard(CardType.LEMMA_RECOGNITION)).toBe(true);
+    expect(isRecognitionCard(CardType.CLOZE)).toBe(true);
+    expect(isRecognitionCard(CardType.CONTEXT_TRANSLATION)).toBe(true);
+    expect(isRecognitionCard(CardType.MEANING_TO_FORM)).toBe(false);
+    expect(isRecognitionCard(CardType.PARSE)).toBe(false);
+  });
+
+  it('adaptive: LEARNING words weight recognition above production', () => {
+    const recog = cardTypeWeight(CardType.FORM_TO_MEANING, 'LEARNING', 'adaptive');
+    const prod = cardTypeWeight(CardType.MEANING_TO_FORM, 'LEARNING', 'adaptive');
+    expect(recog).toBeGreaterThan(prod);
+  });
+
+  it('adaptive: KNOWN words weight production above recognition', () => {
+    const recog = cardTypeWeight(CardType.FORM_TO_MEANING, 'KNOWN', 'adaptive');
+    const prod = cardTypeWeight(CardType.MEANING_TO_FORM, 'KNOWN', 'adaptive');
+    expect(prod).toBeGreaterThan(recog);
+  });
+
+  it('adaptive: FAMILIAR words are balanced (equal weight)', () => {
+    const recog = cardTypeWeight(CardType.FORM_TO_MEANING, 'FAMILIAR', 'adaptive');
+    const prod = cardTypeWeight(CardType.MEANING_TO_FORM, 'FAMILIAR', 'adaptive');
+    expect(recog).toBe(prod);
+  });
+
+  it('adaptive: unknown/blank state defaults to favoring recognition', () => {
+    const recog = cardTypeWeight(CardType.FORM_TO_MEANING, undefined, 'adaptive');
+    const prod = cardTypeWeight(CardType.MEANING_TO_FORM, '', 'adaptive');
+    expect(recog).toBeGreaterThan(prod);
+  });
+
+  it('recognition / production presets override word state', () => {
+    // recognition preset favors recognition even for KNOWN words
+    expect(cardTypeWeight(CardType.FORM_TO_MEANING, 'KNOWN', 'recognition')).toBeGreaterThan(
+      cardTypeWeight(CardType.MEANING_TO_FORM, 'KNOWN', 'recognition')
+    );
+    // production preset favors production even for brand-new words
+    expect(cardTypeWeight(CardType.MEANING_TO_FORM, 'NEW', 'production')).toBeGreaterThan(
+      cardTypeWeight(CardType.FORM_TO_MEANING, 'NEW', 'production')
+    );
+  });
+
+  it('balanced preset weights every type equally', () => {
+    const types = [CardType.FORM_TO_MEANING, CardType.MEANING_TO_FORM, CardType.PARSE];
+    const weights = types.map((t) => cardTypeWeight(t, 'LEARNING', 'balanced'));
+    expect(new Set(weights).size).toBe(1);
+  });
+
+  it('still produces a valid card when only one type is enabled regardless of weighting', () => {
+    const card = generateReviewCard(
+      { ...baseItem, status: 'KNOWN' },
+      { enabledTypes: [CardType.FORM_TO_MEANING], includeMorphology: true, weighting: 'adaptive' }
+    );
+    expect(card).not.toBeNull();
+    expect(card!.type).toBe(CardType.FORM_TO_MEANING);
   });
 });
 
