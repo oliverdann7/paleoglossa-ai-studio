@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom';
+// jsdom has no IndexedDB; offlineService payloads live there in real builds.
+import 'fake-indexeddb/auto';
 
 if (typeof localStorage !== 'object' || typeof localStorage.getItem !== 'function') {
   const store: Record<string, string> = {};
