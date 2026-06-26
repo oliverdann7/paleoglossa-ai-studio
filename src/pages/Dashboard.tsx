@@ -42,6 +42,7 @@ import { VocabFrequencyGoals } from '../components/VocabFrequencyGoals.js';
 import { ReviewForecast } from '../components/ReviewForecast.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { useBeginnerHubDiscovery } from '../lib/hooks/useBeginnerHubDiscovery.js';
+import { useToast } from '../lib/hooks/useToast.js';
 
 const RTL_LANGS = new Set([
   'hbo',
@@ -66,11 +67,12 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const { settings } = useSettings();
   const { activeLanguageId } = useActiveLanguage();
-  const { knowledge, stats, getAllProgress, userImports, isLoading } =
+  const { knowledge, stats, getAllProgress, userImports, isLoading, declareSabbatical } =
     useKnowledge(activeLanguageId);
   const langStats = useLanguageStats(knowledge);
   const { t } = useTranslation();
   const { totalXP, level, levelIcon, progress, nextLevel } = useXP();
+  const { addToast } = useToast();
 
   const isOnboardingComplete = settings.onboardingProfile?.completed;
 
@@ -241,6 +243,23 @@ export const Dashboard = () => {
   const dailyGoal = settings.dailyGoalWords > 0 ? settings.dailyGoalWords : 500;
   const dailyProgress = Math.min(1, (stats.readToday ?? 0) / dailyGoal);
 
+  const freezesTotal = stats.freezesTotal ?? 2;
+  const freezesUsed = stats.freezesUsed ?? 0;
+  const freezesRemaining = freezesTotal - freezesUsed;
+
+  // One-time celebration toast when the user hits their daily word goal (roadmap § 11, 1.3).
+  const DAILY_GOAL_KEY = 'paleoglossa_daily_goal_done';
+  useEffect(() => {
+    if ((stats.readToday ?? 0) < dailyGoal || dailyGoal === 0) return;
+    const today = new Date().toDateString();
+    if (localStorage.getItem(DAILY_GOAL_KEY) === today) return;
+    localStorage.setItem(DAILY_GOAL_KEY, today);
+    addToast(
+      t('dashboard.dailyGoalComplete', 'Daily goal complete — well done, Scholar!'),
+      'success'
+    );
+  }, [stats.readToday, dailyGoal, addToast, t]);
+
   if (isLoading) return <DashboardSkeleton />;
 
   return (
@@ -381,8 +400,48 @@ export const Dashboard = () => {
                 </div>
               </div>
             )}
+            {/* Known-words headline metric (roadmap § 11, 2.3) */}
+            {knownCount > 0 && (
+              <div
+                className="card px-4 py-3 flex items-center gap-3 border-bdr shadow-sm cursor-pointer hover:shadow-md transition-all"
+                onClick={() => navigate('/app/statistics')}
+              >
+                <Brain className="w-5 h-5 text-blue shrink-0" />
+                <div>
+                  <div className="text-[13px] font-bold text-ink leading-none">
+                    {knownCount.toLocaleString()}
+                  </div>
+                  <div className="eyebrow text-[8px] mt-0.5">
+                    {t('vocab.known', 'Words Known')}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
+        {/* Sabbatical freeze one-tap (roadmap § 11, 3.3) */}
+        {stats.streak > 0 && freezesRemaining > 0 && (
+          <div className="hidden md:flex justify-end mt-2">
+            <button
+              className="text-[11px] text-muted hover:text-ink3 transition-colors flex items-center gap-1"
+              onClick={() => {
+                const ok = declareSabbatical();
+                if (ok) {
+                  addToast(
+                    t(
+                      'dashboard.sabbaticalDeclared',
+                      `Sabbatical declared — your streak is safe. ${freezesRemaining - 1} freeze${freezesRemaining - 1 !== 1 ? 's' : ''} remaining this month.`
+                    ),
+                    'info'
+                  );
+                }
+              }}
+            >
+              📜 {t('dashboard.declareSabbatical', 'Declare a sabbatical day')}
+              <span className="text-[10px] opacity-60 ml-1">({freezesRemaining} left)</span>
+            </button>
+          </div>
+        )}
 
         {/* Mobile stat strip — compact horizontal scroll */}
         <div className="flex md:hidden gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
