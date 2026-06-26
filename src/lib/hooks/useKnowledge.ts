@@ -153,7 +153,7 @@ export const useKnowledge = (languageId?: string) => {
     addReadWords: statsHook.addReadWords,
     incrementReadingTime: statsHook.incrementReadingTime,
     recordReviewSession: statsHook.recordReviewSession,
-    freezeStreak: statsHook.freezeStreak,
+    declareSabbatical: statsHook.declareSabbatical,
     userImports,
     refreshImports,
     exportData,
