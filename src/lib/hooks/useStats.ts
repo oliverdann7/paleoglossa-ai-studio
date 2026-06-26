@@ -205,12 +205,21 @@ export const useStats = (languageId?: string) => {
     [updateStatsState]
   );
 
+  /** Declare a sabbatical day: consume one freeze to protect today's streak. */
+  const freezeStreak = useCallback(() => {
+    updateStatsState((prev) => ({
+      ...prev,
+      freezesUsed: (prev.freezesUsed ?? 0) + 1,
+    }));
+  }, [updateStatsState]);
+
   return {
     stats: stats || DEFAULT_STATS,
     addReadWords,
     incrementReadingTime,
     recordReviewSession,
     updateStatsState,
+    freezeStreak,
     isLoading,
     error,
   };
