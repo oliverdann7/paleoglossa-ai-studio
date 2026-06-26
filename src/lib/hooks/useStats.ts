@@ -205,11 +205,27 @@ export const useStats = (languageId?: string) => {
     [updateStatsState]
   );
 
+  // Proactively consume one streak freeze for today (roadmap § 11, 3.3).
+  // Sets lastActive to now so tomorrow's calculation sees a 1-day gap (streak++)
+  // rather than a multi-day gap that burns a retroactive freeze.
+  const declareSabbatical = useCallback((): boolean => {
+    const freezesTotal = latestStatsRef.current?.freezesTotal ?? 2;
+    const freezesUsed = latestStatsRef.current?.freezesUsed ?? 0;
+    if (freezesUsed >= freezesTotal) return false;
+    updateStatsState((prev) => ({
+      ...prev,
+      freezesUsed: (prev.freezesUsed ?? 0) + 1,
+      lastActive: new Date().toISOString(),
+    }));
+    return true;
+  }, [updateStatsState]);
+
   return {
     stats: stats || DEFAULT_STATS,
     addReadWords,
     incrementReadingTime,
     recordReviewSession,
+    declareSabbatical,
     updateStatsState,
     isLoading,
     error,
