@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
@@ -12,6 +12,7 @@ import {
   MessageCircle,
   GraduationCap,
   X,
+  Snowflake,
 } from 'lucide-react';
 import { CorpusDB } from '../data/corpus.js';
 import { getLangForLemma } from '../lib/data/dictionary.js';
@@ -73,6 +74,19 @@ export const Dashboard = () => {
   const { t } = useTranslation();
   const { totalXP, level, levelIcon, progress, nextLevel } = useXP();
   const { addToast } = useToast();
+
+  const freezesAvailable = (stats.freezesTotal ?? 2) - (stats.freezesUsed ?? 0);
+  const canSabbatical = stats.streak > 0 && freezesAvailable > 0;
+
+  const handleSabbatical = useCallback(() => {
+    const ok = declareSabbatical();
+    if (ok) {
+      addToast(
+        t('dashboard.sabbaticalDeclared', 'Sabbatical declared — your streak is protected today.'),
+        'success'
+      );
+    }
+  }, [declareSabbatical, addToast, t]);
 
   const isOnboardingComplete = settings.onboardingProfile?.completed;
 
@@ -363,6 +377,18 @@ export const Dashboard = () => {
                     {t('dashboard.dayStreak', 'Day Streak')}
                   </div>
                 </div>
+                {canSabbatical && (
+                  <button
+                    onClick={handleSabbatical}
+                    title={t('dashboard.sabbaticalTitle', 'Declare a sabbatical day')}
+                    className="ml-1 flex flex-col items-center gap-0.5 text-blue/70 hover:text-blue transition-colors"
+                  >
+                    <Snowflake className="w-4 h-4" />
+                    <span className="text-[8px] font-bold leading-none tabular-nums">
+                      {freezesAvailable}/{stats.freezesTotal ?? 2}
+                    </span>
+                  </button>
+                )}
               </div>
             )}
             <div className="card px-4 py-3 flex items-center gap-3 border-bdr shadow-sm">
@@ -456,6 +482,18 @@ export const Dashboard = () => {
                   {t('dashboard.days', 'days')}
                 </span>
               </div>
+              {canSabbatical && (
+                <button
+                  onClick={handleSabbatical}
+                  title={t('dashboard.sabbaticalTitle', 'Declare a sabbatical day')}
+                  className="flex flex-col items-center gap-0.5 text-blue/70 active:scale-90 transition-transform"
+                >
+                  <Snowflake className="w-3.5 h-3.5" />
+                  <span className="text-[8px] font-bold leading-none tabular-nums">
+                    {freezesAvailable}/{stats.freezesTotal ?? 2}
+                  </span>
+                </button>
+              )}
             </div>
           )}
           <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">

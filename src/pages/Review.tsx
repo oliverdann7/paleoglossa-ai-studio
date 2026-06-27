@@ -37,6 +37,7 @@ import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
 import { ReviewTutorial } from '../components/review/ReviewTutorial.js';
+import { checkAndUnlock } from '../lib/services/achievementService.js';
 import { ReviewAudioButton } from '../components/review/ReviewAudioButton.js';
 import { isReviewAudioSupported } from '../components/review/reviewAudioSupport.js';
 import { logSilentFailure } from '../lib/utils/logSilent.js';
@@ -372,6 +373,13 @@ export const Review = () => {
         const acc = finalResults.length > 0 ? correct / finalResults.length : 0;
         const durationMs = Date.now() - sessionStartRef.current;
         recordReviewSession(Math.round(acc * 100));
+        if (user?.uid) {
+          checkAndUnlock(user.uid, 'review_session', {
+            accuracy: Math.round(acc * 100),
+            cardCount: finalResults.length,
+            hour: new Date().getHours(),
+          });
+        }
         trackEvent(ANALYTICS_EVENTS.REVIEW_COMPLETED, {
           languageId: activeLanguageId,
           cardsReviewed: finalResults.length,

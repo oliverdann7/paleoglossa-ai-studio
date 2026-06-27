@@ -17,6 +17,7 @@ import { normalizeTimestamp } from '../utils.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
 import { markWriteSuccess, markWriteFailure, markPendingWrite } from '../sync/syncStatus.js';
 import { reportPersistenceError } from '../errors/persistenceReporter.js';
+import { checkAndUnlock } from './achievementService.js';
 
 export async function computeContentHash(text: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -201,6 +202,8 @@ export class ImportService {
         updatedAt: serverTimestamp(),
       });
       markWriteSuccess();
+      // Fire-and-forget achievement check for first import.
+      checkAndUnlock(userId, 'import_text', {});
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       console.error('Import Save Error:', e);

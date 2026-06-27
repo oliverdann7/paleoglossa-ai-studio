@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft, UserPlus, UserCheck, Users, Loader2 } from 'lucide-react';
+import { BookOpen, Flame, GraduationCap, Globe, Lock, Settings, ArrowLeft, UserPlus, UserCheck, Users, Loader2, Trophy } from 'lucide-react';
+import {
+  ACHIEVEMENTS,
+  getUnlocked,
+  UnlockedAchievement,
+} from '../lib/services/achievementService.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import {
   fetchOwnProfile,
@@ -37,6 +42,12 @@ export const ProfilePage = () => {
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<UnlockedAchievement[]>([]);
+
+  useEffect(() => {
+    if (!userId || !isOwnProfile) return;
+    getUnlocked(userId).then(setUnlockedAchievements).catch(() => {});
+  }, [userId, isOwnProfile]);
 
   useEffect(() => {
     if (!userId) return;
@@ -318,6 +329,66 @@ export const ProfilePage = () => {
                 </div>
               </button>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Achievements (own profile only) ─────────────────────────────── */}
+      {isOwnProfile && (
+        <section className="card p-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Trophy className="w-5 h-5 text-amber-500" />
+            <h2 className="text-[18px] font-serif font-semibold text-ink">Achievements</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {ACHIEVEMENTS.map((def) => {
+              const unlocked = unlockedAchievements.find((u) => u.id === def.id);
+              return (
+                <div
+                  key={def.id}
+                  className={`rounded-xl border p-4 flex gap-3 ${
+                    unlocked
+                      ? 'border-amber-200 bg-amber-50/60'
+                      : 'border-bdr bg-parch2 opacity-60'
+                  }`}
+                >
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[18px] ${
+                      unlocked ? 'bg-amber-100' : 'bg-parch3'
+                    }`}
+                  >
+                    {unlocked ? '🏛️' : '?'}
+                  </div>
+                  <div className="min-w-0">
+                    {unlocked ? (
+                      <>
+                        <div className="font-serif text-[14px] font-semibold text-ink leading-tight">
+                          {def.name}
+                        </div>
+                        <div className="text-[11px] text-muted italic mb-1">
+                          {def.transliteration}
+                        </div>
+                        <div className="text-[12px] text-ink2 leading-snug">{def.description}</div>
+                        <div className="text-[10px] text-muted mt-1">
+                          {new Date(unlocked.unlockedAt).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-serif text-[14px] font-semibold text-ink3 leading-tight">
+                          ???
+                        </div>
+                        <div className="text-[12px] text-muted italic mt-0.5">{def.hint}</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
