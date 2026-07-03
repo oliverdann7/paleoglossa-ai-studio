@@ -9,6 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: []  # runs independently; CI workflow handles checks on PRs
+    timeout-minutes: 15  # fail fast if the Vercel CLI ever prompts interactively again
 
     steps:
       - uses: actions/checkout@v5
