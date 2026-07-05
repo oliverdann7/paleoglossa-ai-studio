@@ -12,6 +12,16 @@
  * readable message into #root instead, turning a silent hang into something
  * actionable on-device.
  */
+// Make Vite's chunk/CSS preloading non-fatal. Inside the iOS Capacitor
+// WKWebView the preload <link> error event can fire spuriously (or for real),
+// which otherwise rejects the dynamic import with "Unable to preload CSS for …"
+// and dead-ends the whole app. Preventing the default lets the import fall
+// through to actually fetching the chunk, so a flaky preload never blocks boot
+// or lazy-route navigation. (Primary CSS is also un-split — see vite.config.)
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault();
+});
+
 function escapeHtml(s: string): string {
   return s.replace(
     /[<>&]/g,
@@ -36,4 +46,33 @@ function showBootError(err: unknown): void {
     </div>`;
 }
 
-import('./bootstrap.js').catch(showBootError);
+/**
+ * On native (Capacitor) a service worker is pure liability: it precaches the
+ * web bundle and then serves that stale copy from the WebView cache, so a new
+ * TestFlight build's JavaScript never actually runs — the app stays frozen on an
+ * old bundle no matter how many builds ship. Native assets are already local in
+ * the app binary, so there is nothing for a SW to accelerate. Tear down any SW
+ * (and its caches) left behind by an earlier build before booting. New native
+ * builds never register one (see App.tsx), so this only needs to run once per
+ * device to recover from a previously-installed SW.
+ */
+async function purgeServiceWorkerOnNative(): Promise<void> {
+  const win = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
+  if (!win.Capacitor?.isNativePlatform?.()) return;
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if (typeof caches !== 'undefined') {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {
+    /* best-effort — never block boot on cache teardown */
+  }
+}
+
+void purgeServiceWorkerOnNative().finally(() => {
+  import('./bootstrap.js').catch(showBootError);
+});
