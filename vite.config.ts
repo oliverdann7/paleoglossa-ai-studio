@@ -185,6 +185,13 @@ export default defineConfig(({mode}) => {
       }
     },
     build: {
+      // Bundle all CSS into a single stylesheet linked from index.html instead
+      // of per-chunk CSS files. Vite's async-chunk CSS *preload* step
+      // (__vitePreload) fails inside the iOS Capacitor WKWebView — the
+      // stylesheet <link> error event fires and the dynamic import rejects with
+      // "Unable to preload CSS for …", so the app never boots on native. A
+      // single eagerly-linked stylesheet removes the preload step entirely.
+      cssCodeSplit: false,
       rollupOptions: {
         output: {
           manualChunks(id) {
