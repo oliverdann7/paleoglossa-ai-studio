@@ -1,5 +1,8 @@
-// @ts-ignore — jsdom 29 types resolve at runtime; declaration gap in some tsconfig setups
-import { JSDOM } from 'jsdom';
+// jsdom is loaded lazily inside parseTeiXml: a static import puts it (and its
+// large dependency tree) in api/index.ts's eager init graph, where an
+// incompatible transitive dep once crashed every serverless invocation
+// (ERR_REQUIRE_ESM under Vercel's Node launcher — the July 2026 API outage).
+// Parsing failures must stay contained to the /api/parse route.
 
 export interface TeiParseResult {
   text: string;
@@ -102,10 +105,13 @@ function extractLanguage(doc: Document): string | undefined {
   return langUsage?.getAttribute('ident') ?? undefined;
 }
 
-export function parseTeiXml(xmlString: string): TeiParseResult {
+export async function parseTeiXml(xmlString: string): Promise<TeiParseResult> {
   const warnings: string[] = [];
 
-  let dom: JSDOM;
+  // @ts-ignore — jsdom ships no bundled types; resolves at runtime
+  const { JSDOM } = await import('jsdom');
+
+  let dom: InstanceType<typeof JSDOM>;
   try {
     dom = new JSDOM(xmlString, { contentType: 'application/xml' });
   } catch (e: any) {
