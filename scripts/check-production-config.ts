@@ -246,6 +246,16 @@ function printDiagnosticNotes(): void {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+// Vercel preview/development builds have no env vars (all secrets are scoped
+// to the Production environment), so enforcing production config there would
+// fail every PR preview. Only production deploys are gated.
+if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') {
+  console.log(
+    `Skipping production config check: VERCEL_ENV=${process.env.VERCEL_ENV} (only production builds are gated).`
+  );
+  process.exit(0);
+}
+
 const target = process.argv[2] ?? 'all';
 
 if (target === 'all' || target === 'web') checkWeb();

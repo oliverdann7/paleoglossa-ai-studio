@@ -1,8 +1,7 @@
 import express from 'express';
 import { initServerSentry, captureServerException } from './_lib/sentry.js';
 import { correlationIdMiddleware } from './_lib/observability.js';
-import { aiRateLimit, apiRateLimit, authRateLimit, importRateLimit } from './_lib/rateLimiter.js';
-import { searchLimiter } from './_lib/rateLimits.js';
+import { aiRateLimit, apiRateLimit, authRateLimit, importRateLimit, searchRateLimit } from './_lib/rateLimiter.js';
 import { logError } from './_lib/errorLog.js';
 
 initServerSentry();
@@ -68,6 +67,23 @@ app.post('/api/test', (_req: any, res: any) => {
   res.status(200).json({ ok: true, message: 'Test route works' });
 });
 
+// Liveness probe — used by the post-deploy smoke check in deploy.yml. Kept
+// above the rate limiters so monitors never consume the general quota, and
+// dependency-free so it answers even when downstream config is broken.
+app.get('/api/health', (_req: any, res: any) => {
+  res.status(200).json({
+    ok: true,
+    time: new Date().toISOString(),
+    adminConfigured: Boolean(
+      process.env.FIREBASE_SERVICE_ACCOUNT_JSON ||
+        (process.env.FIREBASE_PROJECT_ID &&
+          process.env.FIREBASE_CLIENT_EMAIL &&
+          process.env.FIREBASE_PRIVATE_KEY)
+    ),
+    geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+  });
+});
+
 // ── Rate limiting (applied before domain routers) ────────────────────────────
 // Auth endpoints: strict (10 req/min) — slow brute-force
 app.use('/api/auth', authRateLimit);
@@ -77,7 +93,7 @@ app.use('/api/ai', aiRateLimit);
 app.use('/api/ai/analyze', importRateLimit);
 app.use('/api/ai/ocr', importRateLimit);
 // Search endpoints
-app.use('/api/search', searchLimiter);
+app.use('/api/search', searchRateLimit);
 // All other API routes: 120 req/min general limit
 app.use('/api', apiRateLimit);
 
