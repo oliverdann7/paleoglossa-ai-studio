@@ -41,7 +41,8 @@ jobs:
       - name: Smoke-check production API
         run: |
           for i in $(seq 1 10); do
-            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 15 https://paleoglossa.com/api/health || echo 000)
+            # -L: the apex domain 307-redirects to www — follow it or a healthy API reads as a 307 failure
+            code=$(curl -sL -o /tmp/health.json -w '%{http_code}' --max-time 15 https://paleoglossa.com/api/health || echo 000)
             if [ "$code" = "200" ] && grep -q '"ok":true' /tmp/health.json; then
               echo "API healthy:"; cat /tmp/health.json
               exit 0
