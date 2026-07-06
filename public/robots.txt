@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /auth/
+
+Sitemap: https://paleoglossa.com/sitemap.xml

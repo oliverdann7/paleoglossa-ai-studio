@@ -121,3 +121,10 @@ export const authRateLimit = rateLimiter({ windowMs: 60_000, max: 10 });
 
 /** Import/OCR — expensive operations, tighter cap (5 req/min). */
 export const importRateLimit = rateLimiter({ windowMs: 60_000, max: 5 });
+
+/** Search — read-heavy but Firestore has limits (60 req/min). */
+export const searchRateLimit = rateLimiter({
+  windowMs: 60_000,
+  max: 60,
+  message: 'Search rate limit exceeded. Please slow down.',
+});

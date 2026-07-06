@@ -34,3 +34,21 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: --prod
           working-directory: ./
+
+      # The API once shipped dead for weeks (every /api/* route returned
+      # FUNCTION_INVOCATION_FAILED) with nothing failing in CI. Probe the live
+      # function after every production deploy so that can never be silent again.
+      - name: Smoke-check production API
+        run: |
+          for i in $(seq 1 10); do
+            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 15 https://paleoglossa.com/api/health || echo 000)
+            if [ "$code" = "200" ] && grep -q '"ok":true' /tmp/health.json; then
+              echo "API healthy:"; cat /tmp/health.json
+              exit 0
+            fi
+            echo "Attempt $i: /api/health returned $code — retrying in 15s"
+            sleep 15
+          done
+          echo "::error::Production API is unhealthy after deploy — /api/health kept failing"
+          cat /tmp/health.json 2>/dev/null || true
+          exit 1

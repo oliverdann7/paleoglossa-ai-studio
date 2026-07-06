@@ -56,7 +56,7 @@ npm run e2e          # playwright test
 ## Feature status — stubs vs complete
 
 ### Complete
-- Text reader (scroll + page modes), knowledge states, SM-2 SRS reviews
+- Text reader (scroll + page modes), knowledge states, FSRS-5 SRS reviews (`src/lib/srs/fsrs.ts`)
 - AI word/phrase/paradigm explanations (Gemini 2.0 Flash)
 - Text import (paste, file, URL, OCR), reading progress/streaks
 - Auth (Google + Email + guest), Firestore sync
