@@ -51,6 +51,13 @@ npm ci
 npx vite build --mode native-production
 npx cap sync ios
 
+# ── Native Google Sign-In URL scheme ────────────────────────────────────────────
+# Derives the com.googleusercontent.apps.* callback scheme from
+# VITE_GOOGLE_IOS_CLIENT_ID (set it in the Xcode Cloud environment, or via the
+# seeded .env.native-production) and injects it into Info.plist. No-ops when
+# unset — the app then ships with the Google button hidden on native.
+sh scripts/ios-google-scheme.sh
+
 # ── Keep SwiftPM resolution consistent with the synced manifest ────────────────
 # `cap sync` regenerates CapApp-SPM/Package.swift from the *installed* npm
 # package versions. If those drifted from the committed Package.swift (e.g. the

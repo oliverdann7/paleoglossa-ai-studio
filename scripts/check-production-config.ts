@@ -166,6 +166,12 @@ function checkNative(): void {
         'Missing VITE_API_BASE_URL: native app may call the wrong backend — all API calls will fail.',
     },
     {
+      name: 'VITE_GOOGLE_IOS_CLIENT_ID',
+      severity: 'warning',
+      consequence:
+        'Native Google Sign-In unavailable — the Google button is hidden on iOS (Apple + email only).',
+    },
+    {
       name: 'VITE_ENABLE_MOBILE_PURCHASES',
       severity: 'warning',
       consequence: 'In-app purchase flag unset — Stripe checkout may be shown incorrectly on iOS/Android.',

@@ -1,6 +1,5 @@
 import {
   signInWithPopup,
-  signInWithRedirect,
   getRedirectResult,
   signInWithEmailAndPassword,
   signInWithCredential,
@@ -36,6 +35,45 @@ export interface AuthResult {
 }
 
 /**
+ * iOS OAuth client id for native Google Sign-In. Public configuration (client
+ * ids ship inside every app bundle by design), baked in at build time from
+ * `.env.native-production`. Empty on web builds and when not yet configured.
+ */
+const GOOGLE_IOS_CLIENT_ID: string =
+  (import.meta.env.VITE_GOOGLE_IOS_CLIENT_ID as string | undefined) ?? '';
+
+/**
+ * Whether Google Sign-In can work in this environment. Always true on web
+ * (popup flow); on native it requires the iOS client id to have been baked
+ * into the build — without it the native Google SDK cannot be configured, so
+ * the button should not be offered.
+ */
+export function isGoogleSignInAvailable(): boolean {
+  return !isCapacitor() || GOOGLE_IOS_CLIENT_ID.length > 0;
+}
+
+let socialLoginInit: Promise<void> | null = null;
+
+/**
+ * Lazily import and initialize the native social-login plugin exactly once.
+ * Apple needs no configuration on iOS (it authorizes against the app's own
+ * bundle id); Google is only initialized when a client id was baked in.
+ */
+async function getSocialLogin() {
+  const { SocialLogin } = await import('@capgo/capacitor-social-login');
+  if (!socialLoginInit) {
+    socialLoginInit = SocialLogin.initialize({
+      apple: {},
+      ...(GOOGLE_IOS_CLIENT_ID
+        ? { google: { iOSClientId: GOOGLE_IOS_CLIENT_ID, mode: 'online' as const } }
+        : {}),
+    });
+  }
+  await socialLoginInit;
+  return SocialLogin;
+}
+
+/**
  * Rejects with a synthetic `auth/network-request-failed` error if the wrapped
  * promise does not settle in time. Firebase Auth calls can hang indefinitely
  * inside the Capacitor WKWebView (persistence/transport stalls), trapping the
@@ -63,27 +101,23 @@ function withAuthTimeout<T>(promise: Promise<T>, ms = 25000): Promise<T> {
 /**
  * Attempts to sign in with Google.
  *
- * On web the native `signInWithPopup` is used (same as before).  In
- * Capacitor environments where pop-ups are unavailable, Firebase Auth's
- * `signInWithRedirect` is used instead — the page navigates to the
- * OAuth provider, and the result is recovered by `handleRedirectResult`
- * when the user returns.
+ * On web, Firebase's `signInWithPopup` is used. On native (Capacitor) neither
+ * popup nor redirect can complete inside the WebView (providers block embedded
+ * user-agents), so the native Google Sign-In sheet runs via
+ * `@capgo/capacitor-social-login`, and the returned OpenID Connect id token is
+ * exchanged for a Firebase session with `signInWithCredential` (keeps the
+ * existing Firebase JS SDK as the source of truth — no v12 upgrade).
  */
 export async function signInWithGoogle(promptAccountSelect = false): Promise<AuthResult> {
-  const provider = new GoogleAuthProvider();
-  if (promptAccountSelect) {
-    provider.setCustomParameters({ prompt: 'select_account' });
-  }
-
   try {
     if (isCapacitor()) {
-      await signInWithRedirect(auth, provider);
-      // The page will navigate away — reaching this line means the
-      // redirect was initiated.  The result is handled by
-      // `handleRedirectResult` on the next page load.
-      return { success: true };
+      return await signInWithGoogleNative();
     }
 
+    const provider = new GoogleAuthProvider();
+    if (promptAccountSelect) {
+      provider.setCustomParameters({ prompt: 'select_account' });
+    }
     await signInWithPopup(auth, provider);
     return { success: true };
   } catch (err: any) {
@@ -91,13 +125,51 @@ export async function signInWithGoogle(promptAccountSelect = false): Promise<Aut
   }
 }
 
+async function signInWithGoogleNative(): Promise<AuthResult> {
+  if (!GOOGLE_IOS_CLIENT_ID) {
+    // Build shipped without an iOS client id — the button is hidden in this
+    // case, so this is only reachable programmatically.
+    return { success: false, errorCode: 'auth/operation-not-allowed', error: 'auth.networkError' };
+  }
+
+  const SocialLogin = await getSocialLogin();
+
+  let idToken: string | null | undefined;
+  try {
+    const login = await SocialLogin.login({
+      provider: 'google',
+      options: { scopes: ['email', 'profile'] },
+    });
+    idToken = (login.result as { idToken?: string | null })?.idToken;
+  } catch (err: any) {
+    // User-cancelled the native sheet — not an error worth surfacing.
+    const msg = String(err?.message ?? err ?? '');
+    if (/cancel/i.test(msg)) {
+      return { success: false };
+    }
+    throw err;
+  }
+
+  if (!idToken) {
+    return {
+      success: false,
+      errorCode: 'auth/invalid-credential',
+      error: 'auth.invalidCredentials',
+    };
+  }
+
+  const credential = GoogleAuthProvider.credential(idToken);
+  await withAuthTimeout(signInWithCredential(auth, credential));
+  return { success: true };
+}
+
 /**
  * Attempts to sign in with Apple.
  *
  * On web, Firebase's `signInWithPopup` is used. On native (Capacitor) the web
  * redirect flow cannot complete inside the WebView, so we run Apple's native
- * authorization sheet via `@capacitor-community/apple-sign-in`, then exchange
- * the returned identity token for a Firebase session with `signInWithCredential`
+ * authorization sheet via `@capgo/capacitor-social-login`, then exchange the
+ * returned identity token for a Firebase session with `signInWithCredential`
  * (keeps the existing Firebase JS SDK as the source of truth — no v12 upgrade).
  */
 export async function signInWithApple(): Promise<AuthResult> {
@@ -114,20 +186,18 @@ export async function signInWithApple(): Promise<AuthResult> {
 }
 
 async function signInWithAppleNative(): Promise<AuthResult> {
-  const { SignInWithApple } = await import('@capacitor-community/apple-sign-in');
+  const SocialLogin = await getSocialLogin();
+  // Apple embeds SHA-256(nonce) in the identity token; Firebase verifies it
+  // against the raw value passed to the credential (see makeAppleNonce).
   const { raw, hashed } = await makeAppleNonce();
 
-  let identityToken: string | undefined;
+  let identityToken: string | null | undefined;
   try {
-    const result = await SignInWithApple.authorize({
-      // The native flow authorizes against the app's own bundle id; the
-      // redirectURI is unused for native but required by the type.
-      clientId: 'com.paleoglossa.app',
-      redirectURI: 'https://paleoglossa-reader.firebaseapp.com/__/auth/handler',
-      scopes: 'email name',
-      nonce: hashed,
+    const login = await SocialLogin.login({
+      provider: 'apple',
+      options: { scopes: ['email', 'name'], nonce: hashed },
     });
-    identityToken = result.response?.identityToken;
+    identityToken = (login.result as { idToken?: string | null })?.idToken;
   } catch (err: any) {
     // User-cancelled the native sheet — not an error worth surfacing.
     const msg = String(err?.message ?? err ?? '');

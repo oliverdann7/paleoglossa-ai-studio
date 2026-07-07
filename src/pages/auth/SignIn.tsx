@@ -7,6 +7,7 @@ import {
   signInWithGoogle,
   signInWithApple,
   fetchSignInMethods,
+  isGoogleSignInAvailable,
 } from '@/lib/services/authService';
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
@@ -16,10 +17,12 @@ export const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  // OAuth (Google/Apple) relies on signInWithRedirect, which cannot complete
-  // inside a native WebView — embedded user-agents are blocked by the providers.
-  // On native we show email/password only; the buttons would be dead-ends.
+  // On native, OAuth runs through native SDK sheets (see authService) instead
+  // of the web popup/redirect flows that providers block inside a WebView.
+  // Apple works everywhere; Google additionally needs an iOS client id baked
+  // into the build — the button is hidden when it's absent.
   const isNative = isCapacitor();
+  const showGoogle = isGoogleSignInAvailable();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -188,10 +191,10 @@ export const SignIn = () => {
               {t('auth.enterDetails', 'Enter your details to access your account.')}
             </p>
 
-            {/* Google uses Firebase's web popup/redirect, which can't complete
-                inside the native WebView — web only. Apple runs natively on
-                Capacitor (see authService) so it's shown everywhere. */}
-            {!isNative && (
+            {/* Both providers run native SDK sheets on Capacitor (see
+                authService). Google is hidden only when the build shipped
+                without VITE_GOOGLE_IOS_CLIENT_ID. */}
+            {showGoogle && (
               <button
                 onClick={() => handleGoogleSignIn(false)}
                 disabled={loading}
