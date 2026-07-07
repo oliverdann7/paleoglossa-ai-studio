@@ -136,6 +136,7 @@ See `.env.example` for the full list. Required for local dev:
 | `@vitejs/plugin-react` | 4.x | Breaking changes in v6 |
 | `typescript` | 5.x | Breaking changes in v6 |
 | `lucide-react` | 0.469 | v1 renames icons |
+| `jsdom` | 26.x | 27+ pulls ESM-only `@exodus/bytes`, which Vercel's Node launcher cannot `require()` — took down every `/api/*` route (July 2026 outage) |
 
 ---
 

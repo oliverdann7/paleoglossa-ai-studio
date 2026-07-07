@@ -98,7 +98,7 @@ router.post(
         originalname?.toLowerCase().endsWith('.xml')
       ) {
         const xmlString = buffer.toString('utf-8');
-        const teiResult = parseTeiXml(xmlString);
+        const teiResult = await parseTeiXml(xmlString);
         text = teiResult.text;
         warnings.push(...teiResult.warnings);
 
