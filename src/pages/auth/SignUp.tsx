@@ -4,19 +4,23 @@ import { motion } from 'motion/react';
 import { ArrowRight, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { signInWithGoogle, signInWithApple, fetchSignInMethods } from '@/lib/services/authService';
+import {
+  signInWithGoogle,
+  signInWithApple,
+  fetchSignInMethods,
+  isGoogleSignInAvailable,
+} from '@/lib/services/authService';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firebase';
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
-import { isCapacitor } from '@/lib/platform';
 
 export const SignUp = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  // OAuth (Google/Apple) relies on signInWithRedirect, which cannot complete
-  // inside a native WebView. On native we show email sign-up only.
-  const isNative = isCapacitor();
+  // On native, OAuth runs through native SDK sheets (see authService). Apple
+  // works everywhere; Google needs an iOS client id baked into the build.
+  const showGoogle = isGoogleSignInAvailable();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -188,8 +192,7 @@ export const SignUp = () => {
               {t('auth.signUpDesc', 'Sign up to start reading and translating.')}
             </p>
 
-            {!isNative && (
-              <>
+            {showGoogle && (
             <button
               onClick={handleGoogleSignUp}
               disabled={loading}
@@ -217,6 +220,7 @@ export const SignUp = () => {
                 ? t('auth.pleaseWait', 'Please Wait...')
                 : t('auth.signUpGoogle', 'Sign up with Google')}
             </button>
+            )}
 
             <button
               onClick={handleAppleSignUp}
@@ -236,8 +240,6 @@ export const SignUp = () => {
               <span className="eyebrow">{t('auth.or', 'Or')}</span>
               <div className="h-px bg-bdr flex-1" />
             </div>
-              </>
-            )}
 
             {error && (
               <div className="mb-6 p-4 rounded-xl bg-rubyxl border border-ruby/20 flex items-start gap-3 text-ruby">
