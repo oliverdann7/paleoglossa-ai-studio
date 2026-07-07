@@ -345,8 +345,10 @@ export const Library = () => {
   );
 
   const getCefrClass = (level: string) => {
-    if (level?.startsWith('A')) return 'cefr-a';
-    if (level?.startsWith('B')) return 'cefr-b';
+    // Imported texts carry user/AI-supplied levels that may not be strings
+    const lv = typeof level === 'string' ? level : '';
+    if (lv.startsWith('A')) return 'cefr-a';
+    if (lv.startsWith('B')) return 'cefr-b';
     return 'cefr-c';
   };
 

@@ -109,7 +109,7 @@ export function MorphologyTooltip({ word, lemma, gloss, morphology, x, y, visibl
                 ))}
               </div>
             )}
-            {!gloss && fields.length === 0 && morphology && (
+            {!gloss && fields.length === 0 && typeof morphology === 'string' && morphology && (
               <div className="text-[10px] text-parch/50 font-mono">{morphology}</div>
             )}
           </div>

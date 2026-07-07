@@ -211,7 +211,8 @@ export const Syntax = () => {
             <h2 className="text-[26px] font-serif font-light text-ink tracking-tight">
               Syntax &amp; Treebank Viewer
             </h2>
-            {syntaxResult?.source?.startsWith('treebank:') ? (
+            {typeof syntaxResult?.source === 'string' &&
+            syntaxResult.source.startsWith('treebank:') ? (
               <p className="text-[10px] font-bold text-emerald-600 tracking-wider uppercase">
                 {syntaxResult.source.replace('treebank:', '')} Treebank · Human-verified
               </p>

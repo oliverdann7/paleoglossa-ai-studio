@@ -703,6 +703,10 @@ export const en = {
     'community.errorTitle': 'Something went wrong',
     'community.errorDesc': 'Could not load scholars. Please try again.',
 
+    'updatePrompt.message': 'A new version of PalæoGlossa is available.',
+    'updatePrompt.update': 'Update',
+    'updatePrompt.later': 'Later',
+
     'demo.banner': 'Demo mode: your progress is saved only on this device.',
     'demo.signIn': 'Sign In',
     'demo.createAccount': 'Create Account',

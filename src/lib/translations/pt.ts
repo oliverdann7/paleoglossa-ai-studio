@@ -782,6 +782,10 @@ export const pt = {
     'deleteAccount.tos': 'Termos de Serviço',
     'deleteAccount.viewTerms': 'Ver termos',
 
+    'updatePrompt.message': 'Uma nova versão do PalæoGlossa está disponível.',
+    'updatePrompt.update': 'Atualizar',
+    'updatePrompt.later': 'Depois',
+
     'demo.banner': 'Modo demonstração: seu progresso é salvo apenas neste dispositivo.',
     'demo.signIn': 'Entrar',
     'demo.createAccount': 'Criar Conta',
