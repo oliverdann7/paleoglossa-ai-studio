@@ -78,7 +78,7 @@ export interface LibraryText {
 }
 
 const DEFAULT_TEXT_METADATA: Record<string, Partial<LibraryText>> = {
-  'Jn-1': {
+  'Jn-full': {
     date: '1st c. CE',
     period: 'Hellenistic / Roman',
     genre: 'Gospel',
@@ -255,7 +255,7 @@ export class LibraryService {
           title: t.title,
           author: t.author || 'Ancient Text',
           language: t.language || 'grc',
-          level: t.level || (t.id === 'Jn-1' ? 'A1' : t.id === 'Gen' ? 'A2' : 'B1'),
+          level: t.level || (t.id === 'Gen' ? 'A2' : 'B1'),
           date: metadata.date,
           period: metadata.period,
           genre: metadata.genre,
@@ -275,7 +275,7 @@ export class LibraryService {
           },
           sectionsPreview: t.sectionsPreview,
           tags: [metadata.genre || 'Text', metadata.corpusType || 'other'],
-          totalWords: 0,
+          totalWords: t.wordCount ?? 0,
           sourceType: 'corpus',
           rawTextReference: t,
         };
@@ -383,7 +383,10 @@ export class LibraryService {
 
       if (tx.sourceType === 'corpus') {
         const allTokens = getCorpusTokens(tx.rawTextReference);
-        totalWords = allTokens.length;
+        // Remote-section texts bundle no tokens — keep the declared word count.
+        if (allTokens.length > 0 || !tx.rawTextReference?.remoteSections) {
+          totalWords = allTokens.length;
+        }
         allTokens.forEach((tok: any) => {
           const info = getWordInfo(tok.lemma);
           if (tok.lemma) uniqueLemmas.add(tok.lemma);

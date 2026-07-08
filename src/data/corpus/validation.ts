@@ -114,6 +114,14 @@ export function validateCorpus(): string[] {
       );
     }
 
+    // Texts with remoteSections ship only metadata in the bundle — their
+    // sections live in the served corpus (static /corpus-data JSON or
+    // Firestore), where the ingestion pipeline enforces this same completeness
+    // gate (validateTextAnnotations) at emit time. The bundled-section checks
+    // below would all read "missing" for them, so skip; the served JSON is
+    // covered by validation.test.ts instead.
+    if (text.remoteSections) continue;
+
     // Every section referenced in sectionsPreview exists
     for (const preview of text.sectionsPreview || []) {
       const section = CorpusDB.getSection(preview.id);

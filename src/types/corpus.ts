@@ -116,6 +116,16 @@ export interface Text {
   isComplete?: boolean;
   isSample?: boolean;
   sentenceCount?: number;
+  /** Total word-token count. Needed for texts whose tokens are not bundled (remoteSections). */
+  wordCount?: number;
+  /**
+   * The text's sections are served from the ingested corpus (static
+   * /corpus-data JSON or Firestore, via corpusService) instead of the JS
+   * bundle — only this metadata record is bundled. The Reader loads sections
+   * asynchronously, and validateCorpus skips bundled-section checks; the
+   * ingestion pipeline enforces the same completeness gate at emit time.
+   */
+  remoteSections?: boolean;
   sectionsPreview?: { id: string; label: string }[];
 }
 

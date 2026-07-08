@@ -56,7 +56,7 @@ export const LANGUAGES: Language[] = [
     writingSystem: 'Greek Alphabet',
     description: 'The language of Homer, Plato, and the New Testament.',
     sampleText: 'μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος',
-    recommendedStartTextId: 'Jn-1',
+    recommendedStartTextId: 'Jn-full',
     corpusStatus: 'available',
     supportsMorphology: true,
     supportsTransliteration: true,
@@ -85,7 +85,7 @@ export const LANGUAGES: Language[] = [
     description:
       'The common Greek spoken and written during the Hellenistic period, the Roman Empire, and the early Byzantine Empire.',
     sampleText: 'Ἐν ἀρχῇ ἦν ὁ λόγος',
-    recommendedStartTextId: 'Jn-1',
+    recommendedStartTextId: 'Jn-full',
     corpusStatus: 'available',
     supportsMorphology: true,
     supportsTransliteration: true,

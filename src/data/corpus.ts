@@ -152,33 +152,6 @@ export const UGARITIC_CORPUS: Corpus = {
   attribution: [ATTRIBUTIONS["project-gutenberg"]],
 };
 
-export const TEXT_JOHN_1: Text = {
-  id: "Jn-1",
-  corpusId: "SBLGNT",
-  title: "ΚΑΤΑ ΙΩΑΝΝΗΝ",
-  canonicalRef: "John 1",
-  author: "John",
-  language: "grc-koine",
-  direction: "ltr",
-  level: "A1",
-  period: '1st century CE',
-  genre: 'gospel',
-  corpusType: 'biblical',
-  tags: ['New Testament', 'Johannine', 'theology'],
-  hasMorphology: true,
-  hasTranslation: true,
-  hasTransliteration: true,
-  hasSyntax: true,
-  sourceStatus: 'excerpt',
-  isComplete: false,
-  isSample: true,
-  sentenceCount: 18,
-  sectionsPreview: [
-    { id: "Jn-1-1", label: "John 1:1-5" },
-    { id: "Jn-1-2", label: "John 1:6-18" },
-  ],
-};
-
 export const TEXT_JOHN_FULL: Text = {
   id: "Jn-full",
   corpusId: "SBLGNT",
@@ -192,7 +165,7 @@ export const TEXT_JOHN_FULL: Text = {
   genre: 'gospel',
   corpusType: 'biblical',
   tags: ['New Testament', 'Johannine', 'theology'],
-  hasMorphology: false,
+  hasMorphology: true,
   hasTranslation: true,
   hasTransliteration: false,
   sourceStatus: 'complete',
@@ -729,32 +702,6 @@ export const TEXT_GRC_MINI_STORIES: Text = {
     { id: "GrcMini-8", label: "The bread and the fish" },
     { id: "GrcMini-9", label: "The storm" },
     { id: "GrcMini-10", label: "The lost son" },
-  ],
-};
-
-export const TEXT_GRC_MARK: Text = {
-  id: "GrcMk",
-  corpusId: "SBLGNT",
-  title: "Κατὰ Μάρκον",
-  canonicalRef: "Mark 1",
-  author: "Mark",
-  language: "grc-koine",
-  direction: "ltr",
-  level: "A2",
-  period: '1st century CE',
-  genre: 'gospel',
-  corpusType: 'biblical',
-  tags: ['New Testament', 'Synoptic', 'narrative'],
-  hasMorphology: false,
-  hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'excerpt',
-  isComplete: false,
-  isSample: true,
-  sentenceCount: 27,
-  sectionsPreview: [
-    { id: "GrcMk-1a", label: "Mark 1:1–13 — John the Baptist and the baptism of Jesus" },
-    { id: "GrcMk-1b", label: "Mark 1:14–45 — The kingdom at hand; call of the disciples" },
   ],
 };
 
@@ -4730,6 +4677,7 @@ import {
 import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HEB_JONAH_4, HEB_PSALM_91 } from "./corpus/hebrew-beginner.js";
 import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS_3, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
 import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
+import { TEXT_MATTHEW_FULL, TEXT_MARK_FULL, TEXT_LUKE_FULL } from "./corpus/synoptic-gospels-full.js";
 import { ALL_LATIN_CLASSICS_SECTIONS, LAT_HORACE_ODES_1_1, LAT_HORACE_ODES_1_9, LAT_HORACE_ODES_1_11, LAT_LIVY_PRAEF, LAT_LIVY_1_1, LAT_SALLUST_CAT, LAT_TACITUS_ANN } from "./corpus/latin-classics.js";
 import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOPHOCLES_ANT, GRC_PLUTARCH_ALEX, GRC_LUCIAN_CHARON } from "./corpus/greek-classics.js";
 import { ALL_GREEK_NT_EXTENDED_SECTIONS } from "./corpus/greek-nt-extended.js";
@@ -4755,7 +4703,9 @@ let _lemmaIndexCache: Map<string, Array<{ sentence: any; sectionId: string; text
 function getAllEnhancedTexts() {
   if (!_textsCache) {
     _textsCache = [
-      TEXT_JOHN_1,
+      TEXT_MATTHEW_FULL,
+      TEXT_MARK_FULL,
+      TEXT_LUKE_FULL,
       TEXT_JOHN_FULL,
       TEXT_GENESIS,
       TEXT_AENEID_1,
@@ -4790,7 +4740,6 @@ function getAllEnhancedTexts() {
       TEXT_BASIL,
       // Beginner texts
       TEXT_GRC_MINI_STORIES,
-      TEXT_GRC_MARK,
       TEXT_LAT_MINI_STORIES,
       TEXT_LAT_VG_JOHN,
       TEXT_LAT_CATO,

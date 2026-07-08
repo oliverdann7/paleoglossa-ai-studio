@@ -95,7 +95,9 @@ export const Reader = () => {
           }
         }
       });
-      return () => { active = false; };
+      return () => {
+        active = false;
+      };
     }
 
     // Synchronous offline fallback for import texts (no async path running)
@@ -118,12 +120,18 @@ export const Reader = () => {
       });
     }
 
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [textId, user]);
 
   // Load sections from API for Firestore-sourced corpus texts
   useEffect(() => {
-    if (!localText?._firestoreCorpus || !localText.sectionsPreview?.length) return;
+    if (
+      (!localText?._firestoreCorpus && !localText?.remoteSections) ||
+      !localText.sectionsPreview?.length
+    )
+      return;
     let cancelled = false;
     const loadSections = async () => {
       const chapters: ReaderChapter[] = [];
@@ -164,7 +172,9 @@ export const Reader = () => {
         }));
         chapters.push({
           id: section.id,
-          title: section.label,
+          // Prefer the curated preview label — served labels are raw book
+          // codes (e.g. "MAT 1") for pipeline-ingested texts.
+          title: preview.label || section.label,
           sentences,
           translation: sentences
             .map((s) => s.translation)
@@ -191,7 +201,7 @@ export const Reader = () => {
     markPageAsSeen,
     stats,
     addReadWords,
-  // incrementReadingTime,
+    // incrementReadingTime,
     setWordNote,
     incrementEncounter,
     updateGloss,
@@ -416,8 +426,8 @@ export const Reader = () => {
   const chapters: ReaderChapter[] = useMemo(() => {
     const textId = text?.id;
 
-    // Firestore-sourced corpus text — sections loaded asynchronously
-    if (text?._firestoreCorpus) {
+    // Ingested-corpus text (Firestore or static /corpus-data) — sections loaded asynchronously
+    if (text?._firestoreCorpus || text?.remoteSections) {
       return firestoreChapters;
     }
 
@@ -490,7 +500,7 @@ export const Reader = () => {
               pos: tok.pos || undefined,
               morphology:
                 typeof tok.morphology === 'object' && tok.morphology !== null
-                  ? (tok.morphology.partOfSpeech || tok.pos || '')
+                  ? tok.morphology.partOfSpeech || tok.pos || ''
                   : tok.morphology || tok.pos || '',
               morphologyRaw:
                 typeof tok.morphology === 'object' && tok.morphology !== null
@@ -613,9 +623,7 @@ export const Reader = () => {
     if (!showSyntax) return null;
     const sentence = chapter?.sentences?.[currentSentenceIndex];
     if (!sentence?.tokens) return null;
-    const hasAnnotations = sentence.tokens.some(
-      (t: any) => t.deprel != null || t.head != null
-    );
+    const hasAnnotations = sentence.tokens.some((t: any) => t.deprel != null || t.head != null);
     if (!hasAnnotations) return null;
     return sentence.tokens
       .filter((t: ReaderToken) => t.type !== 'punctuation' && t.type !== 'whitespace')
@@ -697,7 +705,9 @@ export const Reader = () => {
     if (prevTrackedTextRef.current === textId) return;
     prevTrackedTextRef.current = textId;
     const allTokens = chapters.flatMap((ch) => ch.sentences).flatMap((s) => s.tokens || []);
-    const contentTokens = allTokens.filter((t) => t.type !== 'punctuation' && t.type !== 'whitespace');
+    const contentTokens = allTokens.filter(
+      (t) => t.type !== 'punctuation' && t.type !== 'whitespace'
+    );
     trackEvent(ANALYTICS_EVENTS.READER_OPENED, {
       languageId: currentLanguageId,
       textId,
@@ -1065,7 +1075,15 @@ export const Reader = () => {
         textId,
       });
     },
-    [incrementEncounter, setWordContext, currentLanguageId, readingMode, setSentenceIndex, getWordInfo, textId]
+    [
+      incrementEncounter,
+      setWordContext,
+      currentLanguageId,
+      readingMode,
+      setSentenceIndex,
+      getWordInfo,
+      textId,
+    ]
   );
 
   const handleWordContextMenu = useCallback((token: ReaderToken, x: number, y: number) => {
@@ -1163,13 +1181,13 @@ export const Reader = () => {
         className="flex-1 flex flex-col relative z-20 overflow-hidden"
         style={!isOnline ? { paddingTop: 28 } : undefined}
       >
-      <ReaderProgressHeader
-        readToday={stats.readToday}
-        dailyGoalWords={settings.dailyGoalWords}
-        onBack={() => navigate('/app/library')}
-        text={text}
-        sourceType={text?.sourceType === 'import' ? 'paste' : undefined}
-      />
+        <ReaderProgressHeader
+          readToday={stats.readToday}
+          dailyGoalWords={settings.dailyGoalWords}
+          onBack={() => navigate('/app/library')}
+          text={text}
+          sourceType={text?.sourceType === 'import' ? 'paste' : undefined}
+        />
 
         <ReaderToolbar
           chapters={chapters}
@@ -1191,7 +1209,10 @@ export const Reader = () => {
           readingTimeMinutes={readingTimeMinutes}
           onReviewText={handleReviewText}
           showSyntax={showSyntax}
-          onToggleSyntax={() => { setShowSyntax((s) => !s); setSyntaxTokenIdx(null); }}
+          onToggleSyntax={() => {
+            setShowSyntax((s) => !s);
+            setSyntaxTokenIdx(null);
+          }}
           hasSyntax={!!text?.hasSyntax}
         />
         <button
@@ -1199,8 +1220,18 @@ export const Reader = () => {
           className="fixed bottom-56 right-6 z-30 w-12 h-12 bg-parch3 text-ink rounded-full shadow-lg flex items-center justify-center hover:bg-amber-100 transition-all active:scale-95 border border-bdr"
           title={t('reader.historicalContext', 'Historical Context')}
         >
-          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            viewBox="0 0 24 24"
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
             <path d="M12 6v6l4 2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -1343,7 +1374,9 @@ export const Reader = () => {
                 Dependency Tree
               </p>
               <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
-                {(chapter?.sentences?.[currentSentenceIndex]?.tokens as any)?.[0]?.treebankSource || 'Treebank'} · Human-verified
+                {(chapter?.sentences?.[currentSentenceIndex]?.tokens as any)?.[0]?.treebankSource ||
+                  'Treebank'}{' '}
+                · Human-verified
               </span>
             </div>
             <DependencyTree

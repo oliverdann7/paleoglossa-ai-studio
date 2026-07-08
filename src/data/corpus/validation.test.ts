@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import {
   validateCorpus,
@@ -86,6 +87,43 @@ describe('corpus production data', () => {
     expect(validateTextAnnotations({ id: 'Jn-full' }, sections)).toEqual([]);
   });
 
+  it('remote-section texts (synoptic gospels) match their served corpus-data JSON and pass the completeness gate', () => {
+    // validateCorpus skips bundled-section checks for remoteSections texts, so
+    // lock the equivalent invariants against the emitted JSON they point at.
+    const remoteTexts = CorpusDB.getTexts().filter((t) => t.remoteSections);
+    expect(remoteTexts.map((t) => t.id)).toEqual(
+      expect.arrayContaining([
+        'grc-koine-matthew-full',
+        'grc-koine-mark-full',
+        'grc-koine-luke-full',
+      ])
+    );
+    for (const stub of remoteTexts) {
+      const raw = readFileSync(`public/corpus-data/${stub.id}.json`, 'utf-8');
+      const { text, sections } = JSON.parse(raw);
+      expect(text.id, `${stub.id} served id`).toBe(stub.id);
+      expect(text.sourceStatus, `${stub.id} served sourceStatus`).toBe('complete');
+      // Every token in the served text has real POS + gloss + lemma.
+      expect(validateTextAnnotations({ id: stub.id }, sections)).toEqual([]);
+      // The bundled stub's previews resolve 1:1 to served sections.
+      expect(
+        (stub.sectionsPreview ?? []).map((p) => p.id),
+        `${stub.id} preview ids`
+      ).toEqual(sections.map((s: { id: string }) => s.id));
+      const sentenceCount = sections.reduce(
+        (n: number, s: { sentences: unknown[] }) => n + s.sentences.length,
+        0
+      );
+      expect(stub.sentenceCount, `${stub.id} sentenceCount`).toBe(sentenceCount);
+      const wordCount = sections.reduce(
+        (n: number, s: { sentences: { tokens: unknown[] }[] }) =>
+          n + s.sentences.reduce((m, sn) => m + sn.tokens.length, 0),
+        0
+      );
+      expect(stub.wordCount, `${stub.id} wordCount`).toBe(wordCount);
+    }
+  });
+
   it('every section reachable via sectionsPreview conforms to the TextSection schema', () => {
     const texts = CorpusDB.getTexts();
     const allIssues: string[] = [];
@@ -120,6 +158,9 @@ describe('complete vs excerpt labeling', () => {
     // in the allowlist. A new short "complete" text fails here until vetted.
     const violations = CorpusDB.getTexts()
       .filter((t) => t.isComplete || t.sourceStatus === 'complete')
+      // Remote-section texts bundle no sections — their real sentence counts
+      // are locked against the served JSON in the remote-section test above.
+      .filter((t) => !t.remoteSections)
       .filter((t) => actualSentenceCount(t.id) < SHORT_COMPLETE_THRESHOLD)
       .filter((t) => !COMPLETE_SHORT_WORKS.has(t.id))
       .map((t) => t.id);
@@ -136,15 +177,37 @@ describe('complete vs excerpt labeling', () => {
   it('reclassifies opening-selection excerpts of larger works as excerpt + sample', () => {
     const reclassified = [
       // Biblical chapter/book excerpts
-      'Jn-1', 'Gen', 'Anab-1', 'Iliad-1', 'Aeneid-1', 'GrcMk',
-      'LXX-Gen-1', 'LXX-Exod-12', 'LXX-Isa-6', 'LXX-Prov-1', 'LXX-Jonah-1',
+      'Gen',
+      'Anab-1',
+      'Iliad-1',
+      'Aeneid-1',
+      'LXX-Gen-1',
+      'LXX-Exod-12',
+      'LXX-Isa-6',
+      'LXX-Prov-1',
+      'LXX-Jonah-1',
       // Classics — opening selections of huge works
-      'Livy-AUC', 'Sall-Cat', 'Tac-Ann', 'Hdt-Hist', 'Thuc-Hist',
-      'Soph-Ant', 'Plut-Alex', 'Lucian-Char', 'Aesop-1',
+      'Livy-AUC',
+      'Sall-Cat',
+      'Tac-Ann',
+      'Hdt-Hist',
+      'Thuc-Hist',
+      'Soph-Ant',
+      'Plut-Alex',
+      'Lucian-Char',
+      'Aesop-1',
       // Patristics / beginner — opening sections of larger works
-      '1Clem-1', 'Did-1', 'Athan-Inc-1', 'Chrys-Jn-1', 'Hermas-Vis-1',
-      'Basil-Hex-1', 'Ign-Eph', 'Justin-Apol', 'Polyc-Phil',
-      'Lat-Vg-Jn', 'Lat-Cato',
+      '1Clem-1',
+      'Did-1',
+      'Athan-Inc-1',
+      'Chrys-Jn-1',
+      'Hermas-Vis-1',
+      'Basil-Hex-1',
+      'Ign-Eph',
+      'Justin-Apol',
+      'Polyc-Phil',
+      'Lat-Vg-Jn',
+      'Lat-Cato',
     ];
     for (const id of reclassified) {
       const t = CorpusDB.getText(id);
