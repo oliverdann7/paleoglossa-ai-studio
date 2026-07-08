@@ -30,7 +30,8 @@ export const de = {
     'reader.userImportedWord': 'User imported word',
     'reader.errorTranslating': 'Error translating text.',
     'reader.sentenceSaved': 'Sentence saved to your vocabulary!',
-    'reader.addToReview': 'Add to Review',
+    'reader.markAsKnown': 'Als bekannt markieren',
+    'reader.ignoreWord': 'Ignorieren',
     'reader.dataSource': 'Data Source',
     'reader.aiInsights': 'AI Insights',
     'reader.askAiAboutWord': 'Ask AI About This Word',
@@ -245,11 +246,13 @@ export const de = {
     'dashboard.importOwnDesc':
       'Füge einen Text ein oder lade ihn hoch, um ihn mit dem vollständigen Lesewerkzeug zu analysieren.',
     'dashboard.exploreLibrary': 'Bibliothek erkunden',
-    'dashboard.exploreLibraryDesc': 'Durchstöbere kuratierte antike Texte aus unserem wachsenden Korpus.',
+    'dashboard.exploreLibraryDesc':
+      'Durchstöbere kuratierte antike Texte aus unserem wachsenden Korpus.',
     'dashboard.buildLexicon': 'Lexikon aufbauen',
     'dashboard.buildLexiconDesc':
       'Verfolge Wörter, die du begegnest, und wiederhole sie mit dem Lernkartensystem.',
-    'dashboard.noVocab': 'Noch kein Vokabular gespeichert. Beginne zu lesen, um dein Lexikon aufzubauen.',
+    'dashboard.noVocab':
+      'Noch kein Vokabular gespeichert. Beginne zu lesen, um dein Lexikon aufzubauen.',
     'dashboard.items': 'Einträge',
     'dashboard.complete': 'vollständig',
     'library.searchPlaceholder': 'Search texts, corpora, authors, genres...',
@@ -339,7 +342,8 @@ export const de = {
     'sub.paymentSuccess': 'Zahlung erfolgreich! Dein Tarif wurde aktiviert.',
     'sub.paymentCanceled': 'Zahlung abgebrochen. Keine Änderungen vorgenommen.',
     'sub.currentPlan': 'Tarif {{name}}',
-    'sub.choosePlan': 'Alle Sprachen sind in jedem Plan offen. Upgrade für unbegrenzte Wortspeicherungen.',
+    'sub.choosePlan':
+      'Alle Sprachen sind in jedem Plan offen. Upgrade für unbegrenzte Wortspeicherungen.',
     'sub.saveYearly': '~17% sparen',
     'sub.recommended': 'Empfohlen',
     'sub.redirecting': 'Weiterleitung...',
