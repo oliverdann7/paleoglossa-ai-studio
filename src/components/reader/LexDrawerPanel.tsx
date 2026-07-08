@@ -15,6 +15,7 @@ import {
   Check,
   CheckCircle,
   ExternalLink,
+  EyeOff,
   AlertCircle,
   MessageCircle,
   Languages,
@@ -256,16 +257,9 @@ export const LexDrawerPanel = memo(
     const [noteSaved, setNoteSaved] = useState(false);
     const { saveNote, isSaving: isSavingNote } = useNotebook({ skipFetch: true });
 
-    const [reviewAdded, setReviewAdded] = useState(false);
     const [glossSaved, setGlossSaved] = useState(false);
     const glossTimerRef = useRef<number>(0);
     const noteSavedTimerRef = useRef<number>(0);
-    // Tracks the current selectedWord lemma so the reviewAdded timeout can avoid
-    // clearing a *different* word that was opened while the timer was running (L-2).
-    const selectedWordLemmaRef = useRef<string | null>(null);
-    useEffect(() => {
-      selectedWordLemmaRef.current = selectedWord?.lemma ?? null;
-    });
 
     // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
     const wordInfo = useMemo(
@@ -611,7 +605,6 @@ export const LexDrawerPanel = memo(
     useEffect(() => {
       setResearchNoteInput(''); // eslint-disable-line react-hooks/set-state-in-effect
       setNoteSaved(false);
-      setReviewAdded(false);
       setGlossSaved(false);
       if (glossTimerRef.current) {
         clearTimeout(glossTimerRef.current);
@@ -753,21 +746,92 @@ export const LexDrawerPanel = memo(
                 <span>{t('reader.yourKnowledge', 'Your Knowledge')}</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {[
-                  WordState.NEW,
-                  WordState.SEEN,
-                  WordState.LEARNING,
-                  WordState.FAMILIAR,
-                  WordState.KNOWN,
-                  WordState.IGNORED,
-                ].map((state) => {
-                  const normalizedWordState = normalizeWordState(wordInfo?.state);
-                  const isActive =
-                    normalizedWordState === state ||
-                    (normalizedWordState === WordState.NEW &&
-                      state === WordState.NEW &&
-                      !knowledge[normalizeLemmaKey(selectedWord.lemma)]);
+                {[WordState.NEW, WordState.SEEN, WordState.LEARNING, WordState.FAMILIAR].map(
+                  (state) => {
+                    const normalizedWordState = normalizeWordState(wordInfo?.state);
+                    const isActive =
+                      normalizedWordState === state ||
+                      (normalizedWordState === WordState.NEW &&
+                        state === WordState.NEW &&
+                        !knowledge[normalizeLemmaKey(selectedWord.lemma)]);
 
+                    return (
+                      <button
+                        key={state}
+                        data-testid={`state-button-${state}`}
+                        onClick={() => {
+                          const extra = buildReadingContext(selectedWord, text);
+                          const fromState = wordInfo?.state;
+                          const saved = setWordState(
+                            selectedWord.lemma,
+                            state,
+                            langId,
+                            selectedWord.sentenceText,
+                            extra
+                          );
+                          if (saved !== false) {
+                            trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
+                              languageId: langId,
+                              fromState,
+                              toState: state,
+                              lemmaLength: selectedWord.lemma?.length || 0,
+                              textId: text?.id,
+                            });
+                            setSelectedWord(null);
+                          }
+                        }}
+                        className={cn(
+                          'flex-1 min-w-[70px] py-2 md:py-3 rounded-xl border flex flex-col items-center gap-1 transition-all',
+                          isActive
+                            ? 'shadow-sm transform scale-105'
+                            : 'bg-white border-bdr/50 hover:bg-parch opacity-60 hover:opacity-100'
+                        )}
+                        style={
+                          isActive
+                            ? {
+                                backgroundColor: safeStateColors(state).bg,
+                                borderColor: safeStateColors(state).border,
+                              }
+                            : {}
+                        }
+                      >
+                        <div
+                          className="w-2.5 h-2.5 rounded-full mb-0.5 border border-black/10"
+                          style={{
+                            backgroundColor:
+                              safeStateColors(state).border === 'transparent'
+                                ? '#EAE5D9'
+                                : safeStateColors(state).border,
+                          }}
+                        />
+                        <span className="text-[8px] font-bold tracking-widest uppercase text-ink">
+                          {t(`vocab.${safeStateLabel(state).toLowerCase()}`, safeStateLabel(state))}
+                        </span>
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+
+              <div className="mt-4 flex flex-col gap-2">
+                {[
+                  {
+                    state: WordState.KNOWN,
+                    label: t('reader.markAsKnown', 'Mark as Known'),
+                    icon: <CheckCircle className="w-5 h-5" />,
+                    activeClass: 'bg-blue text-white shadow-md',
+                    inactiveClass: 'bg-blue text-white shadow-md hover:shadow-xl',
+                  },
+                  {
+                    state: WordState.IGNORED,
+                    label: t('reader.ignoreWord', 'Ignore'),
+                    icon: <EyeOff className="w-5 h-5" />,
+                    activeClass: 'bg-parch3 text-ink border border-bdr shadow-md',
+                    inactiveClass:
+                      'bg-white text-ink3 border border-bdr/60 hover:bg-parch hover:text-ink',
+                  },
+                ].map(({ state, label, icon, activeClass, inactiveClass }) => {
+                  const isActive = normalizeWordState(wordInfo?.state) === state;
                   return (
                     <button
                       key={state}
@@ -794,89 +858,15 @@ export const LexDrawerPanel = memo(
                         }
                       }}
                       className={cn(
-                        'flex-1 min-w-[70px] py-2 md:py-3 rounded-xl border flex flex-col items-center gap-1 transition-all',
-                        isActive
-                          ? 'shadow-sm transform scale-105'
-                          : 'bg-white border-bdr/50 hover:bg-parch opacity-60 hover:opacity-100'
+                        'w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98]',
+                        isActive ? cn(activeClass, 'ring-2 ring-blue/30') : inactiveClass
                       )}
-                      style={
-                        isActive
-                          ? {
-                              backgroundColor: safeStateColors(state).bg,
-                              borderColor: safeStateColors(state).border,
-                            }
-                          : {}
-                      }
                     >
-                      <div
-                        className="w-2.5 h-2.5 rounded-full mb-0.5 border border-black/10"
-                        style={{
-                          backgroundColor:
-                            safeStateColors(state).border === 'transparent'
-                              ? '#EAE5D9'
-                              : safeStateColors(state).border,
-                        }}
-                      />
-                      <span className="text-[8px] font-bold tracking-widest uppercase text-ink">
-                        {t(`vocab.${safeStateLabel(state).toLowerCase()}`, safeStateLabel(state))}
-                      </span>
+                      {icon}
+                      {label}
                     </button>
                   );
                 })}
-              </div>
-
-              <div className="mt-4">
-                <button
-                  onClick={() => {
-                    if (reviewAdded) return;
-                    const extra = buildReadingContext(selectedWord, text);
-                    const fromState = wordInfo?.state;
-                    const saved = setWordState(
-                      selectedWord.lemma,
-                      WordState.LEARNING,
-                      langId,
-                      selectedWord.sentenceText,
-                      extra
-                    );
-                    if (saved !== false) {
-                      trackEvent(ANALYTICS_EVENTS.WORD_STATE_CHANGED, {
-                        languageId: langId,
-                        fromState,
-                        toState: WordState.LEARNING,
-                        lemmaLength: selectedWord.lemma?.length || 0,
-                        textId: text?.id,
-                      });
-                      if (!wordInfo?.userGloss && definitionLookup?.definition) {
-                        updateGloss(selectedWord.lemma, definitionLookup.definition, langId);
-                      }
-                      setReviewAdded(true);
-                      const capturedLemma = selectedWord.lemma;
-                      setTimeout(() => {
-                        setReviewAdded(false);
-                        // L-2: only clear the panel if the user hasn't moved to a different word
-                        if (selectedWordLemmaRef.current === capturedLemma) {
-                          setSelectedWord(null);
-                        }
-                      }, 1800);
-                    }
-                  }}
-                  className={cn(
-                    'w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all active:scale-[0.98]',
-                    reviewAdded ? 'bg-green-600 text-white' : 'bg-blue text-white'
-                  )}
-                >
-                  {reviewAdded ? (
-                    <>
-                      <CheckCircle className="w-5 h-5" />
-                      {t('reader.addedToReview', 'Added to Review!')}
-                    </>
-                  ) : (
-                    <>
-                      <BookMarked className="w-5 h-5" />
-                      {t('reader.addToReview', 'Add to Review')}
-                    </>
-                  )}
-                </button>
               </div>
             </div>
 

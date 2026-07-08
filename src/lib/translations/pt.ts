@@ -114,7 +114,8 @@ export const pt = {
     'reader.sentenceSaved': 'Frase salva no seu vocabulário!',
     'reader.wordAnalysis': 'Análise de Palavra',
     'reader.yourGlossPlaceholder': 'Insira sua própria glosa...',
-    'reader.addToReview': 'Adicionar à Revisão',
+    'reader.markAsKnown': 'Marcar como Conhecida',
+    'reader.ignoreWord': 'Ignorar',
     'reader.dataSource': 'Fonte de Dados',
     'reader.aiInsights': 'Insights de IA',
     'reader.askAiAboutWord': 'Perguntar à IA sobre esta palavra',
@@ -264,7 +265,8 @@ export const pt = {
     'sub.paymentSuccess': 'Pagamento bem-sucedido! Seu plano foi ativado.',
     'sub.paymentCanceled': 'Pagamento cancelado. Nenhuma alteração foi feita.',
     'sub.currentPlan': 'Plano {{name}}',
-    'sub.choosePlan': 'Todos os idiomas abertos em cada plano. Atualize para salvamentos ilimitados.',
+    'sub.choosePlan':
+      'Todos os idiomas abertos em cada plano. Atualize para salvamentos ilimitados.',
     'sub.saveYearly': 'Economize ~17%',
     'sub.recommended': 'Recomendado',
     'sub.redirecting': 'Redirecionando...',
@@ -507,8 +509,7 @@ export const pt = {
     'grammar.corpusExamples': 'Encontrado no corpus',
     'grammar.readInContext': 'Ler no contexto',
     'grammar.pathwayEmpty': 'Nenhuma etapa encontrada na trilha.',
-    'grammar.pathwayFooter':
-      'Siga a trilha para uma introdução estruturada à gramática clássica.',
+    'grammar.pathwayFooter': 'Siga a trilha para uma introdução estruturada à gramática clássica.',
     'grammar.experimental':
       'Navegador de conceitos gramaticais com gráficos de dependência, exemplos do corpus e integração SRS — este recurso usa seus dados de leitura reais para personalizar rotas de aprendizado.',
     'tutor.experimental':
