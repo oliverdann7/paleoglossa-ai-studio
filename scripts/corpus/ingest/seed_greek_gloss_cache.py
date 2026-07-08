@@ -20,6 +20,45 @@ from pathlib import Path
 TSV = Path("scripts/corpus/ingest/.sources/macula-greek.tsv")
 CACHE = Path("scripts/corpus/ingest/.cache")
 
+# Curated lemma-keyed glosses for tokens Macula (SBLGNT) ships without a gloss —
+# mostly SBLGNT variant readings and the bracketed shorter ending of Mark. Keys
+# must match glossFill's lookup exactly (`<lang>::<lemma>`, accents included).
+# Standard short lexicon glosses (BDAG/Abbott-Smith style); reviewed by hand.
+CURATED_LEMMA_GLOSSES = {
+    "ἱνατί": "why?; for what reason?",
+    "πνίγω": "to choke; strangle",
+    "μέχρι(ς)": "until; as far as",
+    "διαστέλλομαι": "to order; give strict orders",
+    "γαμέω": "to marry",
+    "μοιχάομαι": "to commit adultery",
+    "τρύπημα": "hole; eye (of a needle)",
+    "ἑκατονταπλασίων": "a hundredfold",
+    "ἐπανάγω": "to return; put out (to sea)",
+    "παροψίς": "dish; plate",
+    "ἀπέναντι": "opposite; in front of",
+    "δύνω": "to set (of the sun); sink",
+    "ὀργίζομαι": "to be angry; be moved with indignation",
+    "ἀγαθοποιέω": "to do good",
+    "ἀρέσκω": "to please",
+    "ἀποκεφαλίζω": "to behead",
+    "προσκολλάομαι": "to be joined to; cleave to",
+    "ὁμοιάζω": "to resemble; be like",
+    "ἀποκυλίω": "to roll away",
+    "συντόμως": "briefly; promptly",
+    "ἀνατολή": "rising; east, dawn",
+    "δύσις": "setting (of the sun); west",
+    "ἐξαποστέλλω": "to send out; send forth",
+    "ἄφθαρτος": "imperishable; incorruptible",
+    "Ἰωβήλ": "Obed (father of Jesse)",
+    "ἀναπτύσσω": "to unroll; open (a scroll)",
+    "προσαναλίσκω": "to spend besides; spend wholly",
+    "μόγις": "hardly; with difficulty",
+    "δεκαοκτώ": "eighteen",
+    "ἀποδεκατόω": "to tithe; give a tenth of",
+    "ἀπολαμβάνω": "to receive back; receive in full",
+    "διαπραγματεύομαι": "to gain by trading; earn by business",
+}
+
 
 def norm(s: str) -> str:
     s = unicodedata.normalize("NFD", s)
@@ -57,6 +96,12 @@ def main() -> None:
             if ck in cache:
                 continue
             gloss = counter.most_common(1)[0][0]
+            cache[ck] = {"gloss": gloss, "source": "bundled", "aiGenerated": False}
+            added += 1
+        for lemma, gloss in CURATED_LEMMA_GLOSSES.items():
+            ck = f"{lang}::{lemma}"
+            if ck in cache:
+                continue
             cache[ck] = {"gloss": gloss, "source": "bundled", "aiGenerated": False}
             added += 1
         path.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")

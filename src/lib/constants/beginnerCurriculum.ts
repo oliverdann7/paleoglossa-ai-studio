@@ -34,8 +34,8 @@ export interface CurriculumUnit {
  */
 const GREEK_CURRICULUM: CurriculumUnit[] = [
   { id: 'grc-1', textId: 'GrcMini', title: 'Greek Mini-Stories', level: 'A1', estimatedMinutes: 10 },
-  { id: 'grc-2', textId: 'Jn-1', title: 'Gospel of John, chapter 1', level: 'A1', estimatedMinutes: 10 },
-  { id: 'grc-3', textId: 'GrcMk', title: 'Gospel of Mark', level: 'A2', estimatedMinutes: 12 },
+  { id: 'grc-2', textId: 'Jn-full', title: 'Gospel of John', level: 'A1', estimatedMinutes: 10 },
+  { id: 'grc-3', textId: 'grc-koine-mark-full', title: 'Gospel of Mark', level: 'A2', estimatedMinutes: 12 },
   { id: 'grc-4', textId: 'LXX-Jonah-1', title: 'Jonah (Septuagint)', level: 'A2', estimatedMinutes: 12 },
   { id: 'grc-5', textId: 'Did-1', title: 'The Didache', level: 'A2', estimatedMinutes: 12 },
   { id: 'grc-6', textId: 'Anab-1', title: 'Xenophon, Anabasis', level: 'B1', estimatedMinutes: 15 },

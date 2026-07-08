@@ -3,9 +3,12 @@ import { MorphologyService } from './morphologyService.js';
 
 describe('MorphologyService', () => {
   it('resolves Greek token analysis', () => {
-    const greek = MorphologyService.getTokenAnalysis('jn2');
+    // an53 = ἀδελφῷ in Anabasis 1.1 (dative singular) — a listed text with
+    // full inline morphology. (The old John sample text is no longer listed;
+    // Jn-full tokens carry POS-only lexicon morphology.)
+    const greek = MorphologyService.getTokenAnalysis('an53');
     expect(greek).toBeTruthy();
-    expect(greek?.languageId).toBe('grc-koine');
+    expect(greek?.languageId).toBe('grc');
     expect(greek?.morphology.case).toBe('dative');
     expect(greek?.morphology.number).toBe('singular');
   });

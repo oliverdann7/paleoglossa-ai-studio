@@ -1,6 +1,6 @@
 import { Text, TextSection } from '../types/corpus.js';
 import {
-  TEXT_JOHN_1,
+  TEXT_JOHN_FULL,
   GENESIS_1,
   TEXT_GENESIS,
   AENEID_1_1,
@@ -197,13 +197,13 @@ export const getMockSections = () => {
 const generateMocks = () => {
   const baseMap: Record<string, { text: Text; section: TextSection }[]> = {
     grc: [
-      { text: TEXT_JOHN_1, section: JOHN_1_1 },
+      { text: TEXT_JOHN_FULL, section: JOHN_1_1 },
       { text: TEXT_ILIAD, section: ILIAD_1_1 },
       { text: TEXT_ANABASIS, section: ANABASIS_1_1 },
       { text: TEXT_ODYSSEY, section: ODYSSEY_1_1 },
       { text: TEXT_AESOP, section: AESOP_1_1 },
     ],
-    'grc-koine': [{ text: TEXT_JOHN_1, section: JOHN_1_1 }],
+    'grc-koine': [{ text: TEXT_JOHN_FULL, section: JOHN_1_1 }],
     hbo: [{ text: TEXT_GENESIS, section: GENESIS_1 }],
     lat: [{ text: TEXT_AENEID_1, section: AENEID_1_1 }],
     syr: [{ text: TEXT_SYRIAC_JOHN, section: SYRIAC_JOHN_1_1 }],
