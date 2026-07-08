@@ -295,7 +295,8 @@ export class ReviewService {
       logSnap.forEach((d) => {
         const data = d.data();
         if (data.languageId !== languageId) return;
-        const logDate = data.timestamp?.split('T')[0];
+        const logDate =
+          typeof data.timestamp === 'string' ? data.timestamp.split('T')[0] : undefined;
         if (logDate === today) {
           reviewedToday++;
           if (data.wasCorrect) correctToday++;

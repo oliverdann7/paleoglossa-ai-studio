@@ -48,6 +48,8 @@ export const Language = () => {
     const isExcerpt = text.isSample || text.sourceStatus === 'excerpt';
     const isPartial = text.sourceStatus === 'partial' && !text.isSample;
     const isComplete = text.sourceStatus === 'complete' || text.isComplete;
+    // text is untyped Firestore/corpus data — level may not be a string
+    const level = typeof text.level === 'string' ? text.level : '';
 
     return (
       <div
@@ -69,14 +71,14 @@ export const Language = () => {
           <span
             className={cn(
               'text-[11px] uppercase tracking-wider font-bold px-2 py-1 rounded shrink-0',
-              text.level?.startsWith('A')
+              level.startsWith('A')
                 ? 'bg-green-100 text-green-800'
-                : text.level?.startsWith('B')
+                : level.startsWith('B')
                   ? 'bg-blue/10 text-blue'
                   : 'bg-purple-100 text-purple-800'
             )}
           >
-            {text.level || '?'}
+            {level || '?'}
           </span>
         </div>
 

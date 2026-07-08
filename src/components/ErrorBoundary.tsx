@@ -47,7 +47,37 @@ export class ErrorBoundary extends Component<Props, State> {
         sessionStorage.setItem('chunk-error-reload', '1');
         window.location.reload();
       }
+    } else {
+      // Render crashes on stale PWA clients (the SW serves an old precached
+      // bundle until the user accepts the update toast) are unfixable by
+      // re-rendering — activate any waiting SW and reload once per session.
+      const alreadyReloaded = sessionStorage.getItem('render-error-reload');
+      if (!alreadyReloaded) {
+        sessionStorage.setItem('render-error-reload', '1');
+        void ErrorBoundary.activateWaitingSWAndReload();
+      }
     }
+  }
+
+  /** If a new service worker is installed-but-waiting, activate it so the
+   *  reload actually serves fresh assets instead of the stale precache. */
+  private static async activateWaitingSWAndReload() {
+    try {
+      const reg = await navigator.serviceWorker?.getRegistration();
+      if (reg?.waiting) {
+        const reloadOnControl = () => window.location.reload();
+        navigator.serviceWorker.addEventListener('controllerchange', reloadOnControl, {
+          once: true,
+        });
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        // Fallback in case controllerchange never fires
+        setTimeout(reloadOnControl, 2000);
+        return;
+      }
+    } catch {
+      // fall through to plain reload
+    }
+    window.location.reload();
   }
 
   private handleReload = () => {
@@ -56,7 +86,10 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   private handleRetry = () => {
-    this.setState({ hasError: false, error: undefined, isChunkError: false });
+    // A full reload (after activating any waiting SW) beats resetting state:
+    // re-rendering the same broken tree crashes again immediately.
+    sessionStorage.removeItem('render-error-reload');
+    void ErrorBoundary.activateWaitingSWAndReload();
   };
 
   render() {
