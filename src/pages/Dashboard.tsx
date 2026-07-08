@@ -13,6 +13,7 @@ import {
   GraduationCap,
   X,
   Snowflake,
+  ArrowRight,
 } from 'lucide-react';
 import { CorpusDB } from '../data/corpus.js';
 import { getLangForLemma } from '../lib/data/dictionary.js';
@@ -331,9 +332,10 @@ export const Dashboard = () => {
                 beginnerHub.dismiss();
                 navigate('/app/beginner-hub');
               }}
-              className="btn-primary shrink-0"
+              className="px-4 py-2 rounded-xl bg-ink text-parch hover:opacity-90 whitespace-nowrap shrink-0"
             >
               {t('dashboard.beginnerHubReadyCta', 'Open Beginner Hub')}
+              <ArrowRight className="inline w-4 h-4 ml-1" />
             </button>
           </motion.div>
         )}
