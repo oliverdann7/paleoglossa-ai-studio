@@ -6,9 +6,14 @@ import { useTranslation } from 'react-i18next';
 export const ReaderTutorial = ({
   currentStep,
   onDismiss,
+  drawerOpen = false,
 }: {
   currentStep: number;
   onDismiss: () => void;
+  /** True while the word-analysis bottom sheet is open. On phones the sheet
+   *  covers the bottom of the screen, so the coach mark would sit exactly on
+   *  top of the "Mark as Known" button it is pointing the user at. */
+  drawerOpen?: boolean;
 }) => {
   const { t } = useTranslation();
   if (currentStep > 4 || currentStep === 0) return null;
@@ -37,10 +42,14 @@ export const ReaderTutorial = ({
   return (
     <AnimatePresence>
       <motion.div
+        key="reader-tutorial"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="fixed bottom-24 right-8 w-72 bg-parch text-ink p-5 rounded-2xl shadow-xl border border-bdr z-[100]"
+        className={cn(
+          'fixed bottom-24 right-8 w-72 bg-parch text-ink p-5 rounded-2xl shadow-xl border border-bdr z-[100]',
+          drawerOpen && 'hidden md:block'
+        )}
       >
         <button onClick={onDismiss} className="absolute top-4 right-4 text-muted hover:text-ink">
           <X className="w-4 h-4" />

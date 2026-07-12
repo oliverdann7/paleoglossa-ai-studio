@@ -1510,7 +1510,11 @@ export const Reader = () => {
         />
       )}
 
-      <ReaderTutorial currentStep={tutorialStep} onDismiss={dismissTutorial} />
+      <ReaderTutorial
+        currentStep={tutorialStep}
+        onDismiss={dismissTutorial}
+        drawerOpen={!!selectedWord || !!selectedSentence}
+      />
 
       {showContextPanel && text && (
         <HistoricalContextPanel

@@ -635,6 +635,7 @@ export const LexDrawerPanel = memo(
     return (
       <AnimatePresence>
         <motion.div
+          key="lex-drawer"
           initial={{ y: '100%', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
