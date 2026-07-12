@@ -191,7 +191,7 @@ function PathwayDetail({ pathwayId }: { pathwayId: string }) {
     let stale = false;
     fetch(getApiUrl(`/api/grammar/pathways/${encodeURIComponent(pathwayId)}`))
       .then((r) => r.json())
-      .then((data) => { if (!stale) setPathway(data); })
+      .then((data) => { if (!stale) setPathway(Array.isArray(data?.steps) ? data : null); })
       .catch(() => { if (!stale) setPathway(null); })
       .finally(() => { if (!stale) setLoading(false); });
     return () => { stale = true; };
