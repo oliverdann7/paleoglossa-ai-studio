@@ -153,6 +153,7 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
   return (
     <AnimatePresence>
       <motion.div
+        key="sentence-analysis"
         initial={{ x: 380, y: 0 }}
         animate={{ x: 0, y: 0 }}
         exit={{ x: 380, y: 0 }}
