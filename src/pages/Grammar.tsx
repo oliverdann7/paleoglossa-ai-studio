@@ -735,7 +735,7 @@ function PrerequisiteGraph({
     fetch(getApiUrl(`/api/grammar/graph${langParam}`))
       .then((r) => r.json())
       .then((data) => {
-        if (!stale) setGraph(data);
+        if (!stale) setGraph(Array.isArray(data?.nodes) && Array.isArray(data?.edges) ? data : null);
       })
       .catch((e) => logSilentFailure('Grammar.loadGraph', e));
     return () => {
@@ -919,7 +919,9 @@ export const Grammar = () => {
       .then((r) => r.json())
       .then((data) => {
         if (stale) return;
-        setConcepts(data);
+        // API error bodies (429 rate-limit, 5xx) are JSON objects, not arrays —
+        // storing one crashes every consumer of `concepts` (.forEach/.filter).
+        setConcepts(Array.isArray(data) ? data : []);
         setIsLoading(false);
       })
       .catch(() => { if (!stale) setIsLoading(false); });
@@ -932,7 +934,7 @@ export const Grammar = () => {
     fetch(getApiUrl(`/api/grammar/concepts/${concept.id}`))
       .then((r) => r.json())
       .then((data: Concept | null) => {
-        if (data) setSelected(data);
+        if (data && typeof (data as Concept).id === 'string') setSelected(data);
       })
       .catch((e) => logSilentFailure('Grammar.loadConcept', e))
       .finally(() => setIsLoadingDetail(false));
