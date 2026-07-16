@@ -4681,6 +4681,12 @@ import { TEXT_MATTHEW_FULL, TEXT_MARK_FULL, TEXT_LUKE_FULL } from "./corpus/syno
 import { ALL_NT_FULL_TEXTS } from "./corpus/nt-full.js";
 import { ALL_PESHITTA_FULL_TEXTS } from "./corpus/peshitta-full.js";
 import { ALL_LATIN_FATHERS_FULL_TEXTS } from "./corpus/latin-fathers-full.js";
+import { ALL_LXX_FULL_TEXTS } from "./corpus/lxx-full.js";
+import { ALL_GREEK_CLASSICS_FULL_TEXTS } from "./corpus/greek-classics-full.js";
+import { ALL_LATIN_CLASSICS_FULL_TEXTS } from "./corpus/latin-classics-full.js";
+import { ALL_PATRISTICS_FULL_TEXTS } from "./corpus/patristics-full.js";
+import { ALL_HEBREW_BIBLE_FULL_TEXTS } from "./corpus/hebrew-bible-full.js";
+import { ALL_ANE_FULL_TEXTS } from "./corpus/ane-full.js";
 import { ALL_LATIN_CLASSICS_SECTIONS, LAT_HORACE_ODES_1_1, LAT_HORACE_ODES_1_9, LAT_HORACE_ODES_1_11, LAT_LIVY_PRAEF, LAT_LIVY_1_1, LAT_SALLUST_CAT, LAT_TACITUS_ANN } from "./corpus/latin-classics.js";
 import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOPHOCLES_ANT, GRC_PLUTARCH_ALEX, GRC_LUCIAN_CHARON } from "./corpus/greek-classics.js";
 import { ALL_GREEK_NT_EXTENDED_SECTIONS } from "./corpus/greek-nt-extended.js";
@@ -4713,6 +4719,12 @@ function getAllEnhancedTexts() {
       ...ALL_NT_FULL_TEXTS,
       ...ALL_PESHITTA_FULL_TEXTS,
       ...ALL_LATIN_FATHERS_FULL_TEXTS,
+      ...ALL_LXX_FULL_TEXTS,
+      ...ALL_GREEK_CLASSICS_FULL_TEXTS,
+      ...ALL_LATIN_CLASSICS_FULL_TEXTS,
+      ...ALL_PATRISTICS_FULL_TEXTS,
+      ...ALL_HEBREW_BIBLE_FULL_TEXTS,
+      ...ALL_ANE_FULL_TEXTS,
       TEXT_GENESIS,
       TEXT_AENEID_1,
       TEXT_PSALM_23,
