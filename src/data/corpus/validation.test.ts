@@ -163,6 +163,70 @@ describe('corpus production data', () => {
     }
   });
 
+  it('samples hidden from the Library are exactly those superseded by a surfaced full text', () => {
+    // A sample may be libraryHidden ONLY if its whole work is served and
+    // surfaced (remoteSections stub or a bundled complete text). Samples whose
+    // work has no commercial-safe source (see ingest/REMAINING.md) must stay
+    // visible — they are the app's only offering of that work.
+    const HIDDEN_TO_FULL: Record<string, string> = {
+      'LXX-Gen-1': 'grc-lxx-genesis-full',
+      'LXX-Exod-12': 'grc-lxx-exodus-full',
+      'LXX-Isa-6': 'grc-lxx-isaiah-full',
+      'LXX-Prov-1': 'grc-lxx-proverbs-full',
+      'LXX-Jonah-1': 'grc-lxx-jonah-full',
+      'Iliad-1': 'grc-homer-iliad-full',
+      'Odyssey-1': 'grc-homer-odyssey-full',
+      'Anab-1': 'grc-xenophon-anabasis-full',
+      'Plato-Apology-1': 'grc-plato-apology-full',
+      'Aesop-1': 'grc-aesop-fables-full',
+      'Hdt-Hist': 'grc-herodotus-histories-full',
+      'Thuc-Hist': 'grc-thucydides-history-full',
+      'Soph-Ant': 'grc-sophocles-antigone-full',
+      'Plut-Alex': 'grc-plutarch-alexander-full',
+      'Lucian-Char': 'grc-lucian-charon-full',
+      'Aeneid-1': 'lat-vergil-aeneid-full',
+      'Cic-Catilina-1': 'lat-cicero-in-catilinam-full',
+      'Ovid-Metamorphoses-1': 'lat-ovid-metamorphoses-full',
+      'Livy-AUC': 'lat-livy-ab-urbe-condita-full',
+      'Sall-Cat': 'lat-sallust-catilinae-full',
+      'Tac-Ann': 'lat-tacitus-annals-full',
+      'Lat-Cato': 'lat-disticha-catonis-full',
+      'Lat-Vg-Jn': 'lat-vulgate-john-full',
+      '1Clem-1': 'grc-patristic-1-clement-full',
+      'Did-1': 'grc-patristic-didache-full',
+      'Ign-Eph': 'grc-patristic-ignatius-ephesians-full',
+      'Polyc-Phil': 'grc-patristic-polycarp-philippians-full',
+      'Justin-Apol': 'grc-patristic-justin-apology-full',
+      'Hermas-Vis-1': 'grc-patristic-hermas-shepherd-full',
+      'Athan-Inc-1': 'grc-patristic-athanasius-incarnation-full',
+      'Cop-Jn-1': 'cop-john-full',
+      'Arc-Gen-1': 'arc-targum-onkelos-genesis-full',
+      'Akk-Gilg-1': 'akk-gilgamesh-full',
+      'Akk-Gilg-full': 'akk-gilgamesh-full',
+      'San-Gita-1': 'san-bhagavad-gita-full',
+      'Syr-Jn-1': 'syr-peshitta-john-full',
+      Gen: 'hbo-genesis-full',
+    };
+    const MUST_STAY_VISIBLE = ['Basil-Hex-1', 'Chrys-Jn-1', 'Egy-Ptah-1', 'Hit-Annals-1', 'Uga-Baal-1'];
+
+    for (const [sampleId, fullId] of Object.entries(HIDDEN_TO_FULL)) {
+      const sample = CorpusDB.getText(sampleId);
+      expect(sample, `${sampleId} must remain resolvable by id`).toBeTruthy();
+      expect(sample?.libraryHidden, `${sampleId} hidden from Library`).toBe(true);
+      const full = CorpusDB.getText(fullId);
+      expect(full, `${sampleId} hidden but full ${fullId} missing`).toBeTruthy();
+      expect(full?.libraryHidden, `${fullId} must be visible`).toBeFalsy();
+    }
+    for (const id of MUST_STAY_VISIBLE) {
+      const t = CorpusDB.getText(id);
+      expect(t, `missing ${id}`).toBeTruthy();
+      expect(t?.libraryHidden, `${id} has no full counterpart — must stay visible`).toBeFalsy();
+    }
+    // No stray hidden texts beyond the vetted map.
+    const hidden = CorpusDB.getTexts().filter((t) => t.libraryHidden).map((t) => t.id).sort();
+    expect(hidden).toEqual(Object.keys(HIDDEN_TO_FULL).sort());
+  });
+
   it('every section reachable via sectionsPreview conforms to the TextSection schema', () => {
     const texts = CorpusDB.getTexts();
     const allIssues: string[] = [];

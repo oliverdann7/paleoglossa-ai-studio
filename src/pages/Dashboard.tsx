@@ -225,7 +225,7 @@ export const Dashboard = () => {
   }, [readingProgress, userImports]);
 
   const suggestedText = useMemo(() => {
-    const builtInTexts = CorpusDB.getTexts();
+    const builtInTexts = CorpusDB.getTexts().filter((t) => !t.libraryHidden);
     const startedIds = new Set(readingProgress.map((p: any) => p.textId));
 
     const smart = pickDashboardRecommendation(

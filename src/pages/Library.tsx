@@ -258,7 +258,7 @@ export const Library = () => {
   ]);
 
   // ── Language card data ───────────────────────────────────────────────
-  const corpusTexts = useMemo(() => CorpusDB.getTexts(), []);
+  const corpusTexts = useMemo(() => CorpusDB.getTexts().filter((t) => !t.libraryHidden), []);
   const langStats = useMemo(() => {
     return LANGUAGES.map((lang) => {
       const langCorpus = corpusTexts.filter((t) => t.language === lang.id);

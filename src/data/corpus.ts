@@ -4641,6 +4641,33 @@ const splitTextSection = (base: TextSection, id: string, label: string, part: Sp
   };
 };
 
+/**
+ * Bundled samples/excerpts whose WHOLE work is now served from
+ * `public/corpus-data/` and surfaced via a `remoteSections` stub. They are
+ * hidden from browse surfaces (Library, language pages, recommendations) so
+ * the shelves offer the full work instead of an excerpt duplicate, but remain
+ * resolvable by id for the beginner curriculum, deep links, and existing
+ * reading progress. Samples with NO served full counterpart (Basil-Hex-1,
+ * Chrys-Jn-1, Egy-Ptah-1, Hit-Annals-1, Uga-Baal-1 — see ingest/REMAINING.md)
+ * are NOT listed here and stay visible.
+ */
+const SUPERSEDED_BY_SERVED_FULL = new Set<string>([
+  // Septuagint
+  'LXX-Gen-1', 'LXX-Exod-12', 'LXX-Isa-6', 'LXX-Prov-1', 'LXX-Jonah-1',
+  // Greek classics
+  'Iliad-1', 'Odyssey-1', 'Anab-1', 'Plato-Apology-1', 'Aesop-1',
+  'Hdt-Hist', 'Thuc-Hist', 'Soph-Ant', 'Plut-Alex', 'Lucian-Char',
+  // Latin classics
+  'Aeneid-1', 'Cic-Catilina-1', 'Ovid-Metamorphoses-1', 'Livy-AUC',
+  'Sall-Cat', 'Tac-Ann', 'Lat-Cato', 'Lat-Vg-Jn',
+  // Greek patristics
+  '1Clem-1', 'Did-1', 'Ign-Eph', 'Polyc-Phil', 'Justin-Apol',
+  'Hermas-Vis-1', 'Athan-Inc-1',
+  // Other languages
+  'Cop-Jn-1', 'Arc-Gen-1', 'Akk-Gilg-1', 'Akk-Gilg-full', 'San-Gita-1',
+  'Syr-Jn-1', 'Gen',
+]);
+
 const enhanceText = (text: Text): Text => {
   const sectionsPreview = SECTION_PREVIEW_OVERRIDES[text.id] || text.sectionsPreview;
   // Derive sentenceCount from the actual sections so the displayed count can never
@@ -4653,6 +4680,7 @@ const enhanceText = (text: Text): Text => {
     ...text,
     sectionsPreview,
     sentenceCount: derived || text.sentenceCount,
+    libraryHidden: text.libraryHidden || SUPERSEDED_BY_SERVED_FULL.has(text.id) || undefined,
   };
 };
 

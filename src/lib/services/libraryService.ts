@@ -241,7 +241,9 @@ export class LibraryService {
 
     // 1. Built-in Corpus
     if (!source || source === 'corpus') {
-      const builtIn = CorpusDB.getTexts();
+      // libraryHidden = superseded by a served full text — the shelf offers
+      // the whole work instead of the excerpt duplicate.
+      const builtIn = CorpusDB.getTexts().filter((t) => !t.libraryHidden);
       builtIn.forEach((t) => {
         const corpus = CorpusDB.getCorpusOverview(t.corpusId);
         const attribution = t.sourceAttributionId
