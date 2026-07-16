@@ -20,7 +20,7 @@ export const Language = () => {
   const languageInfo = getLanguageById(langId || '');
 
   const allTexts = useMemo(() => {
-    return CorpusDB.getTexts().filter((t) => t.language === langId);
+    return CorpusDB.getTexts().filter((t) => t.language === langId && !t.libraryHidden);
   }, [langId]);
 
   if (!languageInfo) {

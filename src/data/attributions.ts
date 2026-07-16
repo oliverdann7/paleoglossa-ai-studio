@@ -109,6 +109,22 @@ export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
 
   // ─── Ingestion-pipeline sources (full-text corpus expansion) ────────────────
 
+  syrnt: {
+    id: 'syrnt',
+    sourceName: 'SyrNT (SEDRA Peshitta New Testament)',
+    sourceUrl: 'https://github.com/PatristicTextArchive/syrnt',
+    dataType: 'morphology',
+    licenseName: 'MIT',
+    licenseUrl: 'https://github.com/PatristicTextArchive/syrnt/blob/master/LICENSE',
+    attributionText:
+      'Peshitta New Testament text and morphological annotations from the SyrNT dataset, a SEDRA database export by George A. Kiraz and James W. Bennett.',
+    requiresAttribution: true,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false,
+    notes:
+      'Text public domain; annotations MIT via SyrNT. SEDRA English meanings are non-commercial and are NOT ingested. Used by sources/syrnt.ts.',
+  },
   'macula-greek': {
     id: 'macula-greek',
     sourceName: 'Macula Greek (Clear Bible)',

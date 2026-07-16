@@ -1,7 +1,9 @@
 # Remaining corpus texts (5) — completion handoff
 
 40 of ~45 partial/sample bundled texts have been completed and are served from
-`public/corpus-data/` (see the manifest and PR). These **5** could not be
+`public/corpus-data/` (see the manifest and PR) — and since 2026-07-16 every
+served text is also surfaced in the Library via a bundled `remoteSections`
+metadata stub (`src/data/corpus/*-full.ts`). These **5** could not be
 completed autonomously: an exhaustive search (~50 attempts across ~18 providers:
 First1KGreek, Perseus, Bibliotheca Augustana, el/en/de/sa/fr Wikisource, the
 Patristic Text Archive, GCS-retrodigitized, ToposText, CLTK, ORACC, eBL,

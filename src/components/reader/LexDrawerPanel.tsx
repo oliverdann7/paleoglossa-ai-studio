@@ -105,7 +105,13 @@ interface LexDrawerPanelProps {
   textLanguageId: string;
   exampleSentences: LemmaSentenceEntry[];
   playTTS: (text: string, lang: string) => void;
-  text?: { corpusId?: string; language?: string; id?: string; analysisStatus?: string };
+  text?: {
+    corpusId?: string;
+    language?: string;
+    id?: string;
+    analysisStatus?: string;
+    sourceAttributionId?: string;
+  };
   currentSentenceIndex?: number;
 }
 
@@ -269,10 +275,16 @@ export const LexDrawerPanel = memo(
     );
 
     const sourceInfo = useMemo(() => {
-      if (!text?.corpusId) return null;
-      const corpus = CorpusDB.getCorpusOverview(text.corpusId);
-      if (!corpus?.sourceAttributionId) return null;
-      const attribution = ATTRIBUTIONS[corpus.sourceAttributionId];
+      // Prefer the text's own attribution (e.g. Macula Greek, SyrNT/SEDRA) —
+      // it credits the actual text+morphology source; the corpus-level record
+      // is only a fallback for texts that don't carry one.
+      const attributionId =
+        text?.sourceAttributionId ??
+        (text?.corpusId
+          ? CorpusDB.getCorpusOverview(text.corpusId)?.sourceAttributionId
+          : undefined);
+      if (!attributionId) return null;
+      const attribution = ATTRIBUTIONS[attributionId];
       if (!attribution) return null;
       return {
         name: attribution.sourceName,

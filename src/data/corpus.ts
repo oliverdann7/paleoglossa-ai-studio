@@ -4641,6 +4641,33 @@ const splitTextSection = (base: TextSection, id: string, label: string, part: Sp
   };
 };
 
+/**
+ * Bundled samples/excerpts whose WHOLE work is now served from
+ * `public/corpus-data/` and surfaced via a `remoteSections` stub. They are
+ * hidden from browse surfaces (Library, language pages, recommendations) so
+ * the shelves offer the full work instead of an excerpt duplicate, but remain
+ * resolvable by id for the beginner curriculum, deep links, and existing
+ * reading progress. Samples with NO served full counterpart (Basil-Hex-1,
+ * Chrys-Jn-1, Egy-Ptah-1, Hit-Annals-1, Uga-Baal-1 — see ingest/REMAINING.md)
+ * are NOT listed here and stay visible.
+ */
+const SUPERSEDED_BY_SERVED_FULL = new Set<string>([
+  // Septuagint
+  'LXX-Gen-1', 'LXX-Exod-12', 'LXX-Isa-6', 'LXX-Prov-1', 'LXX-Jonah-1',
+  // Greek classics
+  'Iliad-1', 'Odyssey-1', 'Anab-1', 'Plato-Apology-1', 'Aesop-1',
+  'Hdt-Hist', 'Thuc-Hist', 'Soph-Ant', 'Plut-Alex', 'Lucian-Char',
+  // Latin classics
+  'Aeneid-1', 'Cic-Catilina-1', 'Ovid-Metamorphoses-1', 'Livy-AUC',
+  'Sall-Cat', 'Tac-Ann', 'Lat-Cato', 'Lat-Vg-Jn',
+  // Greek patristics
+  '1Clem-1', 'Did-1', 'Ign-Eph', 'Polyc-Phil', 'Justin-Apol',
+  'Hermas-Vis-1', 'Athan-Inc-1',
+  // Other languages
+  'Cop-Jn-1', 'Arc-Gen-1', 'Akk-Gilg-1', 'Akk-Gilg-full', 'San-Gita-1',
+  'Syr-Jn-1', 'Gen',
+]);
+
 const enhanceText = (text: Text): Text => {
   const sectionsPreview = SECTION_PREVIEW_OVERRIDES[text.id] || text.sectionsPreview;
   // Derive sentenceCount from the actual sections so the displayed count can never
@@ -4653,6 +4680,7 @@ const enhanceText = (text: Text): Text => {
     ...text,
     sectionsPreview,
     sentenceCount: derived || text.sentenceCount,
+    libraryHidden: text.libraryHidden || SUPERSEDED_BY_SERVED_FULL.has(text.id) || undefined,
   };
 };
 
@@ -4678,6 +4706,15 @@ import { ALL_HEBREW_BEGINNER_SECTIONS, HEB_JONAH_1, HEB_JONAH_2, HEB_JONAH_3, HE
 import { ALL_HEBREW_EXTENDED_SECTIONS, HEB_GENESIS_1, HEB_GENESIS_2, HEB_GENESIS_3, HEB_PSALM_23 } from "./corpus/hebrew-extended.js";
 import { ALL_GREEK_MARK_SECTIONS, GRC_MARK_1A, GRC_MARK_1B } from "./corpus/greek-mark.js";
 import { TEXT_MATTHEW_FULL, TEXT_MARK_FULL, TEXT_LUKE_FULL } from "./corpus/synoptic-gospels-full.js";
+import { ALL_NT_FULL_TEXTS } from "./corpus/nt-full.js";
+import { ALL_PESHITTA_FULL_TEXTS } from "./corpus/peshitta-full.js";
+import { ALL_LATIN_FATHERS_FULL_TEXTS } from "./corpus/latin-fathers-full.js";
+import { ALL_LXX_FULL_TEXTS } from "./corpus/lxx-full.js";
+import { ALL_GREEK_CLASSICS_FULL_TEXTS } from "./corpus/greek-classics-full.js";
+import { ALL_LATIN_CLASSICS_FULL_TEXTS } from "./corpus/latin-classics-full.js";
+import { ALL_PATRISTICS_FULL_TEXTS } from "./corpus/patristics-full.js";
+import { ALL_HEBREW_BIBLE_FULL_TEXTS } from "./corpus/hebrew-bible-full.js";
+import { ALL_ANE_FULL_TEXTS } from "./corpus/ane-full.js";
 import { ALL_LATIN_CLASSICS_SECTIONS, LAT_HORACE_ODES_1_1, LAT_HORACE_ODES_1_9, LAT_HORACE_ODES_1_11, LAT_LIVY_PRAEF, LAT_LIVY_1_1, LAT_SALLUST_CAT, LAT_TACITUS_ANN } from "./corpus/latin-classics.js";
 import { ALL_GREEK_CLASSICS_SECTIONS, GRC_HERODOTUS_1, GRC_THUCYDIDES_1, GRC_SOPHOCLES_ANT, GRC_PLUTARCH_ALEX, GRC_LUCIAN_CHARON } from "./corpus/greek-classics.js";
 import { ALL_GREEK_NT_EXTENDED_SECTIONS } from "./corpus/greek-nt-extended.js";
@@ -4707,6 +4744,15 @@ function getAllEnhancedTexts() {
       TEXT_MARK_FULL,
       TEXT_LUKE_FULL,
       TEXT_JOHN_FULL,
+      ...ALL_NT_FULL_TEXTS,
+      ...ALL_PESHITTA_FULL_TEXTS,
+      ...ALL_LATIN_FATHERS_FULL_TEXTS,
+      ...ALL_LXX_FULL_TEXTS,
+      ...ALL_GREEK_CLASSICS_FULL_TEXTS,
+      ...ALL_LATIN_CLASSICS_FULL_TEXTS,
+      ...ALL_PATRISTICS_FULL_TEXTS,
+      ...ALL_HEBREW_BIBLE_FULL_TEXTS,
+      ...ALL_ANE_FULL_TEXTS,
       TEXT_GENESIS,
       TEXT_AENEID_1,
       TEXT_PSALM_23,

@@ -126,6 +126,13 @@ export interface Text {
    * ingestion pipeline enforces the same completeness gate at emit time.
    */
   remoteSections?: boolean;
+  /**
+   * Excluded from browse/discovery surfaces (Library shelves, language pages,
+   * dashboard recommendations) because a served full text supersedes it.
+   * The text stays resolvable by id — Reader deep links, the beginner
+   * curriculum, and existing reading progress keep working.
+   */
+  libraryHidden?: boolean;
   sectionsPreview?: { id: string; label: string }[];
 }
 

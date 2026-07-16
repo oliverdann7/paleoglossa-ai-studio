@@ -87,7 +87,7 @@ describe('corpus production data', () => {
     expect(validateTextAnnotations({ id: 'Jn-full' }, sections)).toEqual([]);
   });
 
-  it('remote-section texts (synoptic gospels) match their served corpus-data JSON and pass the completeness gate', () => {
+  it('remote-section texts match their served corpus-data JSON and pass the completeness gate', () => {
     // validateCorpus skips bundled-section checks for remoteSections texts, so
     // lock the equivalent invariants against the emitted JSON they point at.
     const remoteTexts = CorpusDB.getTexts().filter((t) => t.remoteSections);
@@ -96,15 +96,28 @@ describe('corpus production data', () => {
         'grc-koine-matthew-full',
         'grc-koine-mark-full',
         'grc-koine-luke-full',
+        // Whole Greek NT (Acts–Revelation), Macula-annotated, complete
+        'grc-koine-acts-full',
+        'grc-koine-revelation-full',
+        // Peshitta NT with SEDRA morphology (partial: no gloss layer)
+        'syr-peshitta-matthew-full',
+        'syr-peshitta-revelation-full',
+        // Latin Church Fathers (partial: dictionary glosses only)
+        'lat-augustine-confessiones-full',
+        'lat-tertullian-apologeticum-full',
       ])
     );
     for (const stub of remoteTexts) {
       const raw = readFileSync(`public/corpus-data/${stub.id}.json`, 'utf-8');
       const { text, sections } = JSON.parse(raw);
       expect(text.id, `${stub.id} served id`).toBe(stub.id);
-      expect(text.sourceStatus, `${stub.id} served sourceStatus`).toBe('complete');
-      // Every token in the served text has real POS + gloss + lemma.
-      expect(validateTextAnnotations({ id: stub.id }, sections)).toEqual([]);
+      // The bundled stub must not overstate the served data: statuses match,
+      // and a `complete` claim is re-verified against every served token.
+      expect(text.sourceStatus, `${stub.id} served sourceStatus`).toBe(stub.sourceStatus);
+      if (stub.sourceStatus === 'complete') {
+        // Every token in the served text has real POS + gloss + lemma.
+        expect(validateTextAnnotations({ id: stub.id }, sections)).toEqual([]);
+      }
       // The bundled stub's previews resolve 1:1 to served sections.
       expect(
         (stub.sectionsPreview ?? []).map((p) => p.id),
@@ -122,6 +135,96 @@ describe('corpus production data', () => {
       );
       expect(stub.wordCount, `${stub.id} wordCount`).toBe(wordCount);
     }
+  });
+
+  it('Peshitta remote texts carry full morphology (real POS + lemma on every token)', () => {
+    // They ship `partial` (no commercial-safe English gloss layer exists for
+    // Syriac), but the SEDRA morphology itself must be complete — that is the
+    // dataset's contract. Guards against a regression in the syrnt adapter.
+    const peshitta = CorpusDB.getTexts().filter(
+      (t) => t.remoteSections && t.id.startsWith('syr-peshitta-')
+    );
+    expect(peshitta.length).toBe(27);
+    for (const stub of peshitta) {
+      const raw = readFileSync(`public/corpus-data/${stub.id}.json`, 'utf-8');
+      const { sections } = JSON.parse(raw) as {
+        sections: { sentences: { tokens: { lemma: string; morphology?: { partOfSpeech?: string } }[] }[] }[];
+      };
+      let bad = 0;
+      for (const sec of sections) {
+        for (const sent of sec.sentences) {
+          for (const tok of sent.tokens) {
+            const pos = tok.morphology?.partOfSpeech;
+            if (!pos || pos === 'unknown' || !tok.lemma || tok.lemma.trim() === '') bad++;
+          }
+        }
+      }
+      expect(bad, `${stub.id} tokens without POS/lemma`).toBe(0);
+    }
+  });
+
+  it('samples hidden from the Library are exactly those superseded by a surfaced full text', () => {
+    // A sample may be libraryHidden ONLY if its whole work is served and
+    // surfaced (remoteSections stub or a bundled complete text). Samples whose
+    // work has no commercial-safe source (see ingest/REMAINING.md) must stay
+    // visible — they are the app's only offering of that work.
+    const HIDDEN_TO_FULL: Record<string, string> = {
+      'LXX-Gen-1': 'grc-lxx-genesis-full',
+      'LXX-Exod-12': 'grc-lxx-exodus-full',
+      'LXX-Isa-6': 'grc-lxx-isaiah-full',
+      'LXX-Prov-1': 'grc-lxx-proverbs-full',
+      'LXX-Jonah-1': 'grc-lxx-jonah-full',
+      'Iliad-1': 'grc-homer-iliad-full',
+      'Odyssey-1': 'grc-homer-odyssey-full',
+      'Anab-1': 'grc-xenophon-anabasis-full',
+      'Plato-Apology-1': 'grc-plato-apology-full',
+      'Aesop-1': 'grc-aesop-fables-full',
+      'Hdt-Hist': 'grc-herodotus-histories-full',
+      'Thuc-Hist': 'grc-thucydides-history-full',
+      'Soph-Ant': 'grc-sophocles-antigone-full',
+      'Plut-Alex': 'grc-plutarch-alexander-full',
+      'Lucian-Char': 'grc-lucian-charon-full',
+      'Aeneid-1': 'lat-vergil-aeneid-full',
+      'Cic-Catilina-1': 'lat-cicero-in-catilinam-full',
+      'Ovid-Metamorphoses-1': 'lat-ovid-metamorphoses-full',
+      'Livy-AUC': 'lat-livy-ab-urbe-condita-full',
+      'Sall-Cat': 'lat-sallust-catilinae-full',
+      'Tac-Ann': 'lat-tacitus-annals-full',
+      'Lat-Cato': 'lat-disticha-catonis-full',
+      'Lat-Vg-Jn': 'lat-vulgate-john-full',
+      '1Clem-1': 'grc-patristic-1-clement-full',
+      'Did-1': 'grc-patristic-didache-full',
+      'Ign-Eph': 'grc-patristic-ignatius-ephesians-full',
+      'Polyc-Phil': 'grc-patristic-polycarp-philippians-full',
+      'Justin-Apol': 'grc-patristic-justin-apology-full',
+      'Hermas-Vis-1': 'grc-patristic-hermas-shepherd-full',
+      'Athan-Inc-1': 'grc-patristic-athanasius-incarnation-full',
+      'Cop-Jn-1': 'cop-john-full',
+      'Arc-Gen-1': 'arc-targum-onkelos-genesis-full',
+      'Akk-Gilg-1': 'akk-gilgamesh-full',
+      'Akk-Gilg-full': 'akk-gilgamesh-full',
+      'San-Gita-1': 'san-bhagavad-gita-full',
+      'Syr-Jn-1': 'syr-peshitta-john-full',
+      Gen: 'hbo-genesis-full',
+    };
+    const MUST_STAY_VISIBLE = ['Basil-Hex-1', 'Chrys-Jn-1', 'Egy-Ptah-1', 'Hit-Annals-1', 'Uga-Baal-1'];
+
+    for (const [sampleId, fullId] of Object.entries(HIDDEN_TO_FULL)) {
+      const sample = CorpusDB.getText(sampleId);
+      expect(sample, `${sampleId} must remain resolvable by id`).toBeTruthy();
+      expect(sample?.libraryHidden, `${sampleId} hidden from Library`).toBe(true);
+      const full = CorpusDB.getText(fullId);
+      expect(full, `${sampleId} hidden but full ${fullId} missing`).toBeTruthy();
+      expect(full?.libraryHidden, `${fullId} must be visible`).toBeFalsy();
+    }
+    for (const id of MUST_STAY_VISIBLE) {
+      const t = CorpusDB.getText(id);
+      expect(t, `missing ${id}`).toBeTruthy();
+      expect(t?.libraryHidden, `${id} has no full counterpart — must stay visible`).toBeFalsy();
+    }
+    // No stray hidden texts beyond the vetted map.
+    const hidden = CorpusDB.getTexts().filter((t) => t.libraryHidden).map((t) => t.id).sort();
+    expect(hidden).toEqual(Object.keys(HIDDEN_TO_FULL).sort());
   });
 
   it('every section reachable via sectionsPreview conforms to the TextSection schema', () => {

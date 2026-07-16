@@ -1,0 +1,219 @@
+/**
+ * Full Apostolic Fathers / Greek patristics (PD editions; partial). Basil's
+ * Hexaemeron and Chrysostom's homilies remain excerpt-only: their Greek text is
+ * TLG-locked with no commercial-safe machine-readable source (see REMAINING.md).
+ *
+ * Only these metadata records are bundled — the section data lives in the
+ * file-served corpus (`public/corpus-data/<textId>.json`, emitted by
+ * `scripts/corpus/ingest/run-manifest.ts --emit-local`) and is fetched by the
+ * Reader through `corpusService` (`remoteSections` on the Text type).
+ * Generated from the served JSON; counts locked by validation.test.ts.
+ */
+import type { Text } from '../../types/corpus.js';
+
+
+export const TEXT_1_CLEMENT_FULL: Text = {
+  id: 'grc-patristic-1-clement-full',
+  corpusId: 'PATRISTIC_GREEK',
+  title: 'Κλήμεντος πρὸς Κορινθίους',
+  canonicalRef: 'Κλήμεντος πρὸς Κορινθίους',
+  author: 'Clement of Rome',
+  language: 'grc-koine',
+  direction: 'ltr',
+  level: 'B2',
+  period: 'c. 96 CE',
+  genre: 'epistle',
+  corpusType: 'patristic',
+  tags: ['Apostolic Fathers', 'Rome', 'church order'],
+  sourceAttributionId: 'patristic-texts',
+  hasMorphology: false,
+  hasTranslation: false,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 468,
+  wordCount: 9835,
+  remoteSections: true,
+  sectionsPreview: [
+    { id: 'grc-patristic-1-clement-full-1', label: 'Κλήμεντος πρὸς Κορινθίους' },
+  ],
+};
+
+export const TEXT_DIDACHE_FULL: Text = {
+  id: 'grc-patristic-didache-full',
+  corpusId: 'PATRISTIC_GREEK',
+  title: 'Διδαχὴ τῶν Δώδεκα Ἀποστόλων',
+  canonicalRef: 'Διδαχὴ τῶν Δώδεκα Ἀποστόλων',
+  author: 'The Twelve Apostles',
+  language: 'grc-koine',
+  direction: 'ltr',
+  level: 'A2',
+  period: '1st–2nd century CE',
+  genre: 'catechetical',
+  corpusType: 'patristic',
+  tags: ['Apostolic Fathers', 'ethics', 'liturgy'],
+  sourceAttributionId: 'patristic-texts',
+  hasMorphology: false,
+  hasTranslation: false,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 108,
+  wordCount: 2191,
+  remoteSections: true,
+  sectionsPreview: [
+    { id: 'grc-patristic-didache-full-1', label: 'Διδαχή' },
+  ],
+};
+
+export const TEXT_IGNATIUS_EPHESIANS_FULL: Text = {
+  id: 'grc-patristic-ignatius-ephesians-full',
+  corpusId: 'PATRISTIC_GREEK',
+  title: 'Πρὸς Ἐφεσίους',
+  canonicalRef: 'Πρὸς Ἐφεσίους',
+  author: 'Ignatius of Antioch',
+  language: 'grc-koine',
+  direction: 'ltr',
+  level: 'B1',
+  period: 'c. 107 CE',
+  genre: 'epistle',
+  corpusType: 'patristic',
+  tags: ['Apostolic Fathers', 'martyrdom', 'ecclesiology'],
+  sourceAttributionId: 'patristic-texts',
+  hasMorphology: false,
+  hasTranslation: false,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 404,
+  wordCount: 7752,
+  remoteSections: true,
+  sectionsPreview: [
+    { id: 'grc-patristic-ignatius-ephesians-full-1', label: 'Ἰγνάτιος' },
+  ],
+};
+
+export const TEXT_POLYCARP_PHILIPPIANS_FULL: Text = {
+  id: 'grc-patristic-polycarp-philippians-full',
+  corpusId: 'PATRISTIC_GREEK',
+  title: 'Πρὸς Φιλιππησίους',
+  canonicalRef: 'Πρὸς Φιλιππησίους',
+  author: 'Polycarp of Smyrna',
+  language: 'grc-koine',
+  direction: 'ltr',
+  level: 'B1',
+  period: 'c. 110 CE',
+  genre: 'epistle',
+  corpusType: 'patristic',
+  tags: ['Apostolic Fathers', 'pastoral', 'Smyrna'],
+  sourceAttributionId: 'patristic-texts',
+  hasMorphology: false,
+  hasTranslation: false,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 60,
+  wordCount: 1580,
+  remoteSections: true,
+  sectionsPreview: [
+    { id: 'grc-patristic-polycarp-philippians-full-1', label: 'Πολύκαρπος πρὸς Φιλιππησίους' },
+  ],
+};
+
+export const TEXT_JUSTIN_APOLOGY_FULL: Text = {
+  id: 'grc-patristic-justin-apology-full',
+  corpusId: 'PATRISTIC_GREEK',
+  title: 'Ἀπολογία Α′',
+  canonicalRef: 'Ἀπολογία Α′',
+  author: 'Justin Martyr',
+  language: 'grc-koine',
+  direction: 'ltr',
+  level: 'B1',
+  period: 'c. 155 CE',
+  genre: 'apologetics',
+  corpusType: 'patristic',
+  tags: ['apologetics', 'Rome', 'philosophy'],
+  sourceAttributionId: 'patristic-texts',
+  hasMorphology: false,
+  hasTranslation: false,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 501,
+  wordCount: 14440,
+  remoteSections: true,
+  sectionsPreview: [
+    { id: 'grc-patristic-justin-apology-full-1', label: 'Ἀπολογία' },
+  ],
+};
+
+export const TEXT_HERMAS_SHEPHERD_FULL: Text = {
+  id: 'grc-patristic-hermas-shepherd-full',
+  corpusId: 'PATRISTIC_GREEK',
+  title: 'Ποιμὴν τοῦ Ἑρμᾶ',
+  canonicalRef: 'Ποιμὴν τοῦ Ἑρμᾶ',
+  author: 'Hermas',
+  language: 'grc-koine',
+  direction: 'ltr',
+  level: 'B1',
+  period: '2nd century CE',
+  genre: 'apocalyptic',
+  corpusType: 'patristic',
+  tags: ['Apostolic Fathers', 'vision', 'ethics'],
+  sourceAttributionId: 'patristic-texts',
+  hasMorphology: false,
+  hasTranslation: false,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 1407,
+  wordCount: 28563,
+  remoteSections: true,
+  sectionsPreview: [
+    { id: 'grc-patristic-hermas-shepherd-full-1', label: 'Ποιμήν' },
+  ],
+};
+
+export const TEXT_ATHANASIUS_INCARNATION_FULL: Text = {
+  id: 'grc-patristic-athanasius-incarnation-full',
+  corpusId: 'PATRISTIC_GREEK',
+  title: 'Περὶ τῆς Ἐνανθρωπήσεως τοῦ Λόγου',
+  canonicalRef: 'Περὶ τῆς Ἐνανθρωπήσεως τοῦ Λόγου',
+  author: 'Athanasius of Alexandria',
+  language: 'grc-koine',
+  direction: 'ltr',
+  level: 'C1',
+  period: 'c. 318 CE',
+  genre: 'theological treatise',
+  corpusType: 'patristic',
+  tags: ['Christology', 'Alexandria', 'apologetics'],
+  sourceAttributionId: 'patristic-texts',
+  hasMorphology: false,
+  hasTranslation: false,
+  hasTransliteration: false,
+  sourceStatus: 'partial',
+  isComplete: false,
+  isSample: false,
+  sentenceCount: 1018,
+  wordCount: 19786,
+  remoteSections: true,
+  sectionsPreview: [
+    { id: 'grc-patristic-athanasius-incarnation-full-1', label: 'Περὶ τῆς ἐνανθρωπήσεως τοῦ Λόγου' },
+  ],
+};
+
+export const ALL_PATRISTICS_FULL_TEXTS: Text[] = [
+  TEXT_1_CLEMENT_FULL,
+  TEXT_DIDACHE_FULL,
+  TEXT_IGNATIUS_EPHESIANS_FULL,
+  TEXT_POLYCARP_PHILIPPIANS_FULL,
+  TEXT_JUSTIN_APOLOGY_FULL,
+  TEXT_HERMAS_SHEPHERD_FULL,
+  TEXT_ATHANASIUS_INCARNATION_FULL,
+];
