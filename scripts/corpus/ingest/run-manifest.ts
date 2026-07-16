@@ -24,6 +24,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { buildMaculaSections } from './sources/macula.js';
 import { buildMaculaHebrewSections } from './sources/macula-hebrew.js';
+import { buildSyrntSections } from './sources/syrnt.js';
 import { parseTeiWork } from './sources/tei.js';
 import { parsePlaintextWork } from './sources/plaintext.js';
 import { segmentWork } from './segment.js';
@@ -75,6 +76,12 @@ function buildSections(entry: ManifestEntry, sourcesDir: string): TextSection[] 
     return entry.source === 'macula'
       ? buildMaculaSections(tsv, opts)
       : buildMaculaHebrewSections(tsv, opts);
+  }
+
+  if (entry.source === 'syrnt') {
+    if (!filePath || !existsSync(filePath)) return null;
+    const raw = readFileSync(filePath, 'utf-8');
+    return buildSyrntSections(raw, { book: entry.book!, textId: entry.textId });
   }
 
   if (entry.source === 'tei' || entry.source === 'plaintext') {

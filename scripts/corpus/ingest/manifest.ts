@@ -25,7 +25,7 @@
  * records WHICH bundled excerpt it supersedes in `notes` (`supersedes <id>`).
  */
 
-export type ManifestSource = 'macula' | 'macula-hebrew' | 'tei' | 'plaintext' | 'work';
+export type ManifestSource = 'macula' | 'macula-hebrew' | 'tei' | 'plaintext' | 'work' | 'syrnt';
 
 export interface ManifestEntry {
   textId: string;
@@ -111,16 +111,6 @@ const stagedEntries: ManifestEntry[] = [
     attribution: 'public-domain-edition',
     status: 'active',
     notes: 'Public-domain Gita dataset (gita/gita, Unlicense); supersedes San-Gita-1. Ships partial (no bundled Sanskrit gloss source — full text + on-click AI).',
-  },
-  {
-    textId: 'syr-peshitta-john-full',
-    language: 'syr',
-    title: 'Peshitta — Gospel of John',
-    source: 'plaintext',
-    file: 'pd/syriac-john.txt',
-    attribution: 'public-domain-edition',
-    status: 'active',
-    notes: 'Supersedes Syr-Jn-1. Peshitta NT text from PatristicTextArchive/syrnt (MIT; text public domain). Ships partial (no bundled Syriac gloss source — full text + on-click AI).',
   },
   {
     textId: 'cop-shenoute-selection-full',
@@ -226,6 +216,48 @@ const patristicsEntries: ManifestEntry[] = [
   { textId: 'grc-patristic-athanasius-incarnation-full', language: 'grc-koine', title: 'On the Incarnation', author: 'Athanasius', source: 'plaintext', file: 'pd/athanasius-incarnation.txt', attribution: 'patristic-texts', status: 'active', notes: 'Supersedes Athan-Inc-1. PD Greek; ships partial until reviewed.' },
 ];
 
+// ─── Peshitta New Testament (Syriac, with SEDRA morphology) ──────────────────
+// SyrNT export (github.com/PatristicTextArchive/syrnt, MIT; text public
+// domain): every word carries lexeme, root, POS, and full morphology, so the
+// whole NT ingests with real morphology and NO AI. Only the English gloss
+// layer is absent (SEDRA's English meanings are non-commercial and are NOT
+// used), so books ship `partial` — morphology-complete, meanings on-click.
+
+const PESHITTA_BOOKS: [code: string, title: string][] = [
+  ['Matt', 'Matthew'], ['Mark', 'Mark'], ['Luke', 'Luke'], ['John', 'John'],
+  ['Acts', 'Acts'], ['Rom', 'Romans'], ['1Cor', '1 Corinthians'], ['2Cor', '2 Corinthians'],
+  ['Gal', 'Galatians'], ['Eph', 'Ephesians'], ['Phil', 'Philippians'], ['Col', 'Colossians'],
+  ['1Thess', '1 Thessalonians'], ['2Thess', '2 Thessalonians'], ['1Tim', '1 Timothy'], ['2Tim', '2 Timothy'],
+  ['Titus', 'Titus'], ['Phlm', 'Philemon'], ['Heb', 'Hebrews'], ['James', 'James'],
+  ['1Peter', '1 Peter'], ['2Peter', '2 Peter'], ['1John', '1 John'], ['2John', '2 John'],
+  ['3John', '3 John'], ['Jude', 'Jude'], ['Rev', 'Revelation'],
+];
+
+const peshittaEntries: ManifestEntry[] = PESHITTA_BOOKS.map(([book, title]) => ({
+  textId: `syr-peshitta-${slug(title)}-full`,
+  language: 'syr',
+  title: `Peshitta — ${title}`,
+  source: 'syrnt' as const,
+  file: 'syrnt/all-ordered.txt',
+  book,
+  attribution: 'syrnt',
+  status: 'active' as const,
+  notes:
+    (book === 'John' ? 'Supersedes Syr-Jn-1. ' : '') +
+    'Peshitta NT with full SEDRA morphology (SyrNT, MIT). Ships partial — morphology-complete, no commercial-safe English gloss layer (on-click AI).',
+}));
+
+// ─── Latin Church Fathers ─────────────────────────────────────────────────────
+// Public-domain editions (The Latin Library). Text-only → dictionary gloss-fill;
+// ship partial until a commercially-licensed treebank fills morphology.
+
+const latinPatristicsEntries: ManifestEntry[] = [
+  { textId: 'lat-augustine-confessiones-full', language: 'lat', title: 'Confessiones', author: 'Augustine of Hippo', source: 'plaintext', file: 'pd/augustine-confessiones.txt', attribution: 'public-domain-edition', status: 'active', notes: 'PD Latin text (The Latin Library), 13 books; ships partial until morphology is filled.' },
+  { textId: 'lat-tertullian-apologeticum-full', language: 'lat', title: 'Apologeticum', author: 'Tertullian', source: 'plaintext', file: 'pd/tertullian-apologeticum.txt', attribution: 'public-domain-edition', status: 'active', notes: 'PD Latin text (The Latin Library); ships partial until morphology is filled.' },
+  { textId: 'lat-jerome-vita-pauli-full', language: 'lat', title: 'Vita S. Pauli Primi Eremitae', author: 'Jerome', source: 'plaintext', file: 'pd/jerome-vita-pauli.txt', attribution: 'public-domain-edition', status: 'active', notes: 'PD Latin text (The Latin Library); ships partial until morphology is filled.' },
+  { textId: 'lat-jerome-vita-malchi-full', language: 'lat', title: 'Vita Malchi Monachi Captivi', author: 'Jerome', source: 'plaintext', file: 'pd/jerome-vita-malchi.txt', attribution: 'public-domain-edition', status: 'active', notes: 'PD Latin text (The Latin Library); ships partial until morphology is filled.' },
+];
+
 // ─── Ancient Near Eastern & other-language works ─────────────────────────────
 
 const aneEntries: ManifestEntry[] = [
@@ -259,6 +291,8 @@ export const MANIFEST: ManifestEntry[] = [
   ...greekClassicsEntries,
   ...latinClassicsEntries,
   ...patristicsEntries,
+  ...peshittaEntries,
+  ...latinPatristicsEntries,
   ...aneEntries,
   ...stagedEntries,
 ];

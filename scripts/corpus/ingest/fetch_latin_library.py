@@ -37,6 +37,15 @@ WORKS = [
      [f"https://www.thelatinlibrary.com/livy/liv.{i}.shtml" for i in (1, 2, 3, 4, 5)], False),
     ("tacitus-annals.txt", "Annales",
      [f"https://www.thelatinlibrary.com/tacitus/tac.ann{i}.shtml" for i in range(1, 7)], False),
+    # ── Latin Church Fathers ──
+    ("augustine-confessiones.txt", "Confessiones — Liber",
+     [f"https://www.thelatinlibrary.com/augustine/conf{i}.shtml" for i in range(1, 14)], False),
+    ("tertullian-apologeticum.txt", "Apologeticum",
+     ["https://www.thelatinlibrary.com/tertullian/tertullian.apol.shtml"], False),
+    ("jerome-vita-pauli.txt", "Vita S. Pauli",
+     ["https://www.thelatinlibrary.com/jerome/vitapauli.html"], False),
+    ("jerome-vita-malchi.txt", "Vita Malchi",
+     ["https://www.thelatinlibrary.com/jerome/vitamalchus.html"], False),
 ]
 
 NAV = re.compile(r"(?i)(the latin library|the classics page|^latin$|thelatinlibrary)")
@@ -85,7 +94,11 @@ def to_sentences(text: str, is_verse: bool) -> list[str]:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    # Optional filters: substrings of output filenames (e.g. "augustine jerome").
+    only = sys.argv[1:]
     for fname, base_label, urls, is_verse in WORKS:
+        if only and not any(o in fname for o in only):
+            continue
         out_lines: list[str] = []
         total = 0
         for i, url in enumerate(urls, 1):

@@ -87,7 +87,7 @@ describe('corpus production data', () => {
     expect(validateTextAnnotations({ id: 'Jn-full' }, sections)).toEqual([]);
   });
 
-  it('remote-section texts (synoptic gospels) match their served corpus-data JSON and pass the completeness gate', () => {
+  it('remote-section texts match their served corpus-data JSON and pass the completeness gate', () => {
     // validateCorpus skips bundled-section checks for remoteSections texts, so
     // lock the equivalent invariants against the emitted JSON they point at.
     const remoteTexts = CorpusDB.getTexts().filter((t) => t.remoteSections);
@@ -96,15 +96,28 @@ describe('corpus production data', () => {
         'grc-koine-matthew-full',
         'grc-koine-mark-full',
         'grc-koine-luke-full',
+        // Whole Greek NT (Acts–Revelation), Macula-annotated, complete
+        'grc-koine-acts-full',
+        'grc-koine-revelation-full',
+        // Peshitta NT with SEDRA morphology (partial: no gloss layer)
+        'syr-peshitta-matthew-full',
+        'syr-peshitta-revelation-full',
+        // Latin Church Fathers (partial: dictionary glosses only)
+        'lat-augustine-confessiones-full',
+        'lat-tertullian-apologeticum-full',
       ])
     );
     for (const stub of remoteTexts) {
       const raw = readFileSync(`public/corpus-data/${stub.id}.json`, 'utf-8');
       const { text, sections } = JSON.parse(raw);
       expect(text.id, `${stub.id} served id`).toBe(stub.id);
-      expect(text.sourceStatus, `${stub.id} served sourceStatus`).toBe('complete');
-      // Every token in the served text has real POS + gloss + lemma.
-      expect(validateTextAnnotations({ id: stub.id }, sections)).toEqual([]);
+      // The bundled stub must not overstate the served data: statuses match,
+      // and a `complete` claim is re-verified against every served token.
+      expect(text.sourceStatus, `${stub.id} served sourceStatus`).toBe(stub.sourceStatus);
+      if (stub.sourceStatus === 'complete') {
+        // Every token in the served text has real POS + gloss + lemma.
+        expect(validateTextAnnotations({ id: stub.id }, sections)).toEqual([]);
+      }
       // The bundled stub's previews resolve 1:1 to served sections.
       expect(
         (stub.sectionsPreview ?? []).map((p) => p.id),
@@ -121,6 +134,32 @@ describe('corpus production data', () => {
         0
       );
       expect(stub.wordCount, `${stub.id} wordCount`).toBe(wordCount);
+    }
+  });
+
+  it('Peshitta remote texts carry full morphology (real POS + lemma on every token)', () => {
+    // They ship `partial` (no commercial-safe English gloss layer exists for
+    // Syriac), but the SEDRA morphology itself must be complete — that is the
+    // dataset's contract. Guards against a regression in the syrnt adapter.
+    const peshitta = CorpusDB.getTexts().filter(
+      (t) => t.remoteSections && t.id.startsWith('syr-peshitta-')
+    );
+    expect(peshitta.length).toBe(27);
+    for (const stub of peshitta) {
+      const raw = readFileSync(`public/corpus-data/${stub.id}.json`, 'utf-8');
+      const { sections } = JSON.parse(raw) as {
+        sections: { sentences: { tokens: { lemma: string; morphology?: { partOfSpeech?: string } }[] }[] }[];
+      };
+      let bad = 0;
+      for (const sec of sections) {
+        for (const sent of sec.sentences) {
+          for (const tok of sent.tokens) {
+            const pos = tok.morphology?.partOfSpeech;
+            if (!pos || pos === 'unknown' || !tok.lemma || tok.lemma.trim() === '') bad++;
+          }
+        }
+      }
+      expect(bad, `${stub.id} tokens without POS/lemma`).toBe(0);
     }
   });
 
