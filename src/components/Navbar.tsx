@@ -109,7 +109,10 @@ export const Navbar = () => {
 
   return (
     <>
-      <nav aria-label="Main navigation" className="hidden md:flex fixed left-0 top-0 h-full w-[220px] border-r border-bdr bg-parch2 flex-col z-50 overflow-y-auto">
+      {/* No overflow on the nav itself: a scroll container clips descendants on both
+          axes, which would trap the LanguageSwitcher dropdown inside the 220px rail.
+          Only the link list below scrolls. */}
+      <nav aria-label="Main navigation" className="hidden md:flex fixed left-0 top-0 h-full w-[220px] border-r border-bdr bg-parch2 flex-col z-50">
         <div className="p-5 flex flex-col gap-1">
           <Link to="/app" className="flex items-center gap-2.5">
             <PaleoIcon className="w-7 h-7 flex-shrink-0" />
@@ -135,7 +138,9 @@ export const Navbar = () => {
           </button>
         </div>
 
-        <div className="flex flex-col gap-1 flex-1 px-2">
+        {/* min-h-0 is required: a flex item defaults to min-height:auto, which would
+            keep this from shrinking and stop overflow-y-auto ever engaging. */}
+        <div className="flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto px-2">
           <div className="nav-label px-3 mb-1 mt-2">{t('nav.study', 'Study')}</div>
           <DesktopNavItem
             icon={Sparkles}

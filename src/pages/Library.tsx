@@ -14,7 +14,6 @@ import {
   GitBranch,
   Languages,
   ShieldCheck,
-  Volume2,
   Globe,
   Share2,
   Lock,
@@ -918,12 +917,8 @@ export const Library = () => {
                               icon: BookOpen,
                               active: text.availableTools.translation,
                             },
-                            {
-                              key: 'audio' as const,
-                              label: t('library.toolAudio', 'Audio'),
-                              icon: Volume2,
-                              active: text.availableTools.audio,
-                            },
+                            // No AUDIO badge: nothing sets hasAudio, so it would render
+                            // permanently dimmed on every card. Restore once a writer exists.
                             {
                               key: 'syntax' as const,
                               label: t('library.toolSyntax', 'Syntax'),

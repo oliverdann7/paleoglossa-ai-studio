@@ -152,6 +152,31 @@ export const UGARITIC_CORPUS: Corpus = {
   attribution: [ATTRIBUTIONS["project-gutenberg"]],
 };
 
+/**
+ * Paleoglossa-authored material — graded readers and vocabulary lists we wrote
+ * ourselves. Exists because these texts previously borrowed a host corpus's id
+ * (SBLGNT, OSHB, …), which made them inherit that corpus's shelf AND its
+ * license, so the Library advertised e.g. "SBLGNT License" on our own writing.
+ *
+ * `language: "mul"` (ISO 639-2, "multiple languages") is load-bearing, not
+ * cosmetic: morphologyService.getCorpusSource() resolves a language's morphology
+ * credit with `.find(c => c.language === languageId)` over every corpus. A
+ * per-language in-house corpus could win that lookup and re-credit an entire
+ * external corpus to Paleoglossa — the same class of bug this fixes. "mul"
+ * matches no LANGUAGES id, so it can never be selected there. Shelving is
+ * unaffected: the Library filters by language before it groups by corpus.
+ */
+export const PALEOGLOSSA_CORPUS: Corpus = {
+  id: "PALEOGLOSSA",
+  title: "Paleoglossa Originals",
+  description: "Graded readers and vocabulary lists written by Paleoglossa",
+  language: "mul",
+  sourceAttributionId: "paleoglossa-original",
+  licenseSummary: "© Paleoglossa",
+  importStatus: "complete",
+  attribution: [ATTRIBUTIONS["paleoglossa-original"]],
+};
+
 export const TEXT_JOHN_FULL: Text = {
   id: "Jn-full",
   corpusId: "SBLGNT",
@@ -673,7 +698,7 @@ export const TEXT_AESOP: Text = {
 
 export const TEXT_GRC_MINI_STORIES: Text = {
   id: "GrcMini",
-  corpusId: "SBLGNT",
+  corpusId: "PALEOGLOSSA",
   title: "Ἑλληνικαὶ Διηγήσεις",
   canonicalRef: "Greek Mini-Stories",
   author: "Paleoglossa",
@@ -820,7 +845,7 @@ export const TEXT_HEB_GENESIS: Text = {
 
 export const TEXT_HEB_MINI_STORIES: Text = {
   id: "HebMini",
-  corpusId: "OSHB",
+  corpusId: "PALEOGLOSSA",
   title: "סִפּוּרִים קְצָרִים",
   canonicalRef: "Hebrew Mini-Stories",
   author: "Paleoglossa",
@@ -846,7 +871,7 @@ export const TEXT_HEB_MINI_STORIES: Text = {
 
 export const TEXT_ARC_MINI_STORIES: Text = {
   id: "ArcMini",
-  corpusId: "ARAMAIC_TARGUM",
+  corpusId: "PALEOGLOSSA",
   title: "סִפּוּרִין קַצִּירִין",
   canonicalRef: "Aramaic Mini-Stories",
   author: "Paleoglossa",
@@ -871,7 +896,7 @@ export const TEXT_ARC_MINI_STORIES: Text = {
 
 export const TEXT_SYR_MINI_STORIES: Text = {
   id: "SyrMini",
-  corpusId: "SYRIAC_PESHITTA",
+  corpusId: "PALEOGLOSSA",
   title: "ܬܫܥܝܬܐ ܙܥܘܪ̈ܝܬܐ",
   canonicalRef: "Syriac Mini-Stories",
   author: "Paleoglossa",
@@ -896,7 +921,7 @@ export const TEXT_SYR_MINI_STORIES: Text = {
 
 export const TEXT_COP_MINI_STORIES: Text = {
   id: "CopMini",
-  corpusId: "COPTIC_SAHIDIC",
+  corpusId: "PALEOGLOSSA",
   title: "ⲛⲉϣⲁϫⲉ ⲛⲕⲟⲩⲓ",
   canonicalRef: "Coptic Mini-Stories",
   author: "Paleoglossa",
@@ -921,7 +946,7 @@ export const TEXT_COP_MINI_STORIES: Text = {
 
 export const TEXT_SAN_MINI_STORIES: Text = {
   id: "SanMini",
-  corpusId: "SANSKRIT_MAHABHARATA",
+  corpusId: "PALEOGLOSSA",
   title: "लघुकथाः",
   canonicalRef: "Sanskrit Mini-Stories",
   author: "Paleoglossa",
@@ -5102,6 +5127,7 @@ export const CorpusDB = {
     if (corpusId === "ANCIENT_GREEK") return ANCIENT_GREEK_CORPUS;
     if (corpusId === "LXX") return LXX_CORPUS;
     if (corpusId === "PATRISTIC_GREEK") return PATRISTIC_CORPUS;
+    if (corpusId === "PALEOGLOSSA") return PALEOGLOSSA_CORPUS;
     return null;
   },
   findSentencesWithLemma: (

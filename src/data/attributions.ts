@@ -17,6 +17,21 @@ import type { SourceAttribution } from '../types/corpus.js';
  * obligation to keep the data shareable; the gate warns rather than blocks.
  */
 export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
+  // ─── In-house material ─────────────────────────────────────────────────────
+  'paleoglossa-original': {
+    id: 'paleoglossa-original',
+    sourceName: 'Paleoglossa',
+    sourceUrl: 'https://paleoglossa.com',
+    dataType: 'text',
+    licenseName: '© Paleoglossa',
+    attributionText: 'Original material written by Paleoglossa.',
+    requiresAttribution: false,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false,
+    notes:
+      'Not an external source. Exists so in-house texts (graded readers, vocabulary lists) do not inherit their host corpus’s license via the corpus fallback in libraryService.ts — which was advertising e.g. "SBLGNT License" on material we wrote ourselves. Passes isCommercialSafe() trivially: we own it.',
+  },
   'sblgnt-text': {
     id: 'sblgnt-text',
     sourceName: 'SBL Greek New Testament',

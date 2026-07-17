@@ -48,7 +48,6 @@ describe('corpus production data', () => {
     'Text "uga-vocab" has isSample=false but sourceStatus is "undefined"',
     'Text "san-vocab" has isSample=false but sourceStatus is "undefined"',
     'Text "egy-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Corpus "" referenced by text "uga-vocab" does not exist',
     // Completeness-gate baseline: texts currently marked complete but whose
     // tokens are not fully POS-tagged + glossed. Tracked for systematic
     // backfill — when a text's annotation gap closes, update or remove its

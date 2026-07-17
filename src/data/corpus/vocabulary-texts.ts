@@ -50,7 +50,7 @@ const VOCAB_COMMON_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_GRC: Text = {
   id: 'grc-vocab',
-  corpusId: 'ANCIENT_GREEK',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Ancient Greek Words',
   language: 'grc',
   direction: 'ltr',
@@ -95,7 +95,7 @@ const VOCAB_KOINE_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_GRC_KOINE: Text = {
   id: 'grc-koine-vocab',
-  corpusId: 'SBLGNT',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Koine Greek Words',
   language: 'grc-koine',
   direction: 'ltr',
@@ -145,7 +145,7 @@ const VOCAB_LATIN_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_LAT: Text = {
   id: 'lat-vocab',
-  corpusId: 'LATIN_CLASSIC',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Latin Words',
   language: 'lat',
   direction: 'ltr',
@@ -192,7 +192,7 @@ const VOCAB_HEBREW_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_HEB: Text = {
   id: 'heb-vocab',
-  corpusId: 'OSHB',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Biblical Hebrew Words',
   language: 'hbo',
   direction: 'rtl',
@@ -234,7 +234,7 @@ const VOCAB_SYRIAC_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_SYR: Text = {
   id: 'syr-vocab',
-  corpusId: 'SYRIAC_PESHITTA',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Syriac Words',
   language: 'syr',
   direction: 'rtl',
@@ -276,7 +276,7 @@ const VOCAB_COPTIC_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_COP: Text = {
   id: 'cop-vocab',
-  corpusId: 'COPTIC_SAHIDIC',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Coptic Words',
   language: 'cop',
   direction: 'ltr',
@@ -318,7 +318,7 @@ const VOCAB_ARAMAIC_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_ARC: Text = {
   id: 'arc-vocab',
-  corpusId: 'ARAMAIC_TARGUM',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Aramaic Words',
   language: 'arc',
   direction: 'rtl',
@@ -360,7 +360,7 @@ const VOCAB_AKKADIAN_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_AKK: Text = {
   id: 'akk-vocab',
-  corpusId: 'AKKADIAN_GILGAMESH',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Akkadian Words',
   language: 'akk',
   direction: 'ltr',
@@ -402,7 +402,7 @@ const VOCAB_HITTITE_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_HIT: Text = {
   id: 'hit-vocab',
-  corpusId: 'HITTITE_ANNALS',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Hittite Words',
   language: 'hit',
   direction: 'ltr',
@@ -444,7 +444,7 @@ const VOCAB_UGARITIC_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_UGA: Text = {
   id: 'uga-vocab',
-  corpusId: '',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Ugaritic Words',
   language: 'uga',
   direction: 'ltr',
@@ -486,7 +486,7 @@ const VOCAB_SANSKRIT_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_SAN: Text = {
   id: 'san-vocab',
-  corpusId: 'SANSKRIT_MAHABHARATA',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Sanskrit Words',
   language: 'san',
   direction: 'ltr',
@@ -528,7 +528,7 @@ const VOCAB_EGYPTIAN_WORDS = (langPrefix: string) => [
 
 export const TEXT_VOCAB_EGY: Text = {
   id: 'egy-vocab',
-  corpusId: 'EGYPTIAN_TEXTS',
+  corpusId: 'PALEOGLOSSA',
   title: '100 Most Common Egyptian Words',
   language: 'egy',
   direction: 'ltr',
