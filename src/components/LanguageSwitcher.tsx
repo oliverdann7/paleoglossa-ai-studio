@@ -62,7 +62,9 @@ export function LanguageSwitcher() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.12 }}
-            className="absolute right-0 top-full mt-2 w-64 bg-white border border-bdr rounded-xl shadow-xl z-50 overflow-hidden"
+            // left-0, not right-0: the anchor is only ~188px wide inside the 220px
+            // rail, so a right-pinned w-64 panel would hang ~52px off the viewport.
+            className="absolute left-0 top-full mt-2 w-64 bg-white border border-bdr rounded-xl shadow-xl z-50 overflow-hidden"
           >
             <div className="p-1.5">
               {availableLanguages.map((lang) => {
