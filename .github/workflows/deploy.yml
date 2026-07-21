@@ -26,14 +26,15 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Vercel's API enforces a minimum CLI version (47.2.2 as of 2026-07), which
+      # the unmaintained amondnet/vercel-action bundled too old a CLI to meet —
+      # so invoke the CLI directly at @latest. ORG/PROJECT env vars replace
+      # `vercel link`; --yes keeps it non-interactive.
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: --prod
-          working-directory: ./
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: npx vercel@latest deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
 
       # The API once shipped dead for weeks (every /api/* route returned
       # FUNCTION_INVOCATION_FAILED) with nothing failing in CI. Probe the live
