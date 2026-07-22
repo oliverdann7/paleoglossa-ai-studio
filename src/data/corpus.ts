@@ -1077,62 +1077,6 @@ export const TEXT_HEB_RUTH: Text = {
   ],
 };
 
-export const TEXT_CICERO_CATILINA: Text = {
-  id: "Cic-Catilina-1",
-  corpusId: "LATIN_CLASSIC",
-  title: "In Catilinam",
-  canonicalRef: "Oration 1",
-  author: "Marcus Tullius Cicero",
-  language: "lat",
-  direction: "ltr",
-  level: "B1",
-  period: '1st century BCE',
-  genre: 'oratory',
-  corpusType: 'classical',
-  tags: ['rhetoric', 'Roman Republic', 'politics'],
-  hasMorphology: false,
-  hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'partial',
-  isComplete: false,
-  isSample: false,
-  sentenceCount: 48,
-  sectionsPreview: [
-    { id: "Cic-Cat-1", label: "1.1–4 — Opening Invocation and Denunciation" },
-    { id: "Cic-Cat-2", label: "1.5–10 — The Conspiracy Exposed" },
-    { id: "Cic-Cat-3", label: "1.11–20 — The Evidence of Treachery" },
-    { id: "Cic-Cat-4", label: "1.21–33 — The Final Warning" },
-  ],
-};
-
-export const TEXT_OVID_METAMORPHOSES: Text = {
-  id: "Ovid-Metamorphoses-1",
-  corpusId: "LATIN_CLASSIC",
-  title: "Metamorphoses",
-  canonicalRef: "Book 1",
-  author: "Publius Ovidius Naso",
-  language: "lat",
-  direction: "ltr",
-  level: "B2",
-  period: '1st century CE',
-  genre: 'epic poetry',
-  corpusType: 'classical',
-  tags: ['Augustan', 'mythology', 'transformation'],
-  hasMorphology: false,
-  hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'partial',
-  isComplete: false,
-  isSample: false,
-  sentenceCount: 48,
-  sectionsPreview: [
-    { id: "Ovid-Met-1", label: "Book 1.1–20 — Invocation and Chaos" },
-    { id: "Ovid-Met-2", label: "Book 1.20–50 — The Four Ages of Humanity" },
-    { id: "Ovid-Met-3", label: "Book 1.50–75 — Giants and the Rise of Evil" },
-    { id: "Ovid-Met-4", label: "Book 1.75–100 — Lycaon's Impiety and Divine Judgment" },
-  ],
-};
-
 export const TEXT_CAESAR_BG: Text = {
   id: "Caesar-BG-1",
   corpusId: "LATIN_CLASSIC",
@@ -1159,35 +1103,6 @@ export const TEXT_CAESAR_BG: Text = {
     { id: "Caes-BG-2", label: "2.5–15 — The Helvetian Movement and First Contact" },
     { id: "Caes-BG-3", label: "15–29 — Pursuit and Germanic Threat" },
     { id: "Caes-BG-4", label: "29–54 — The Final Battle and Victory" },
-  ],
-};
-
-export const TEXT_PLATO_APOLOGY: Text = {
-  id: "Plato-Apology-1",
-  corpusId: "ANCIENT_GREEK",
-  title: "Ἀπολογία",
-  canonicalRef: "Apology",
-  author: "Plato",
-  language: "grc",
-  direction: "ltr",
-  level: "B1",
-  period: '4th century BCE',
-  genre: 'philosophical dialogue',
-  corpusType: 'classical',
-  tags: ['Socrates', 'philosophy', 'trial'],
-  hasMorphology: false,
-  hasTranslation: true,
-  hasTransliteration: false,
-  sourceStatus: 'partial',
-  isComplete: false,
-  isSample: false,
-  sentenceCount: 68,
-  sectionsPreview: [
-    { id: "Plato-Apol-1", label: "17a–24b — Introduction and Defense Against Old Accusers" },
-    { id: "Plato-Apol-2", label: "20e–24b — The Oracle and Socratic Mission" },
-    { id: "Plato-Apol-3", label: "24c–28a — Response to the Charges" },
-    { id: "Plato-Apol-4", label: "28d–35d — The Purpose and Value of the Examined Life" },
-    { id: "Plato-Apol-5", label: "38b–42a — The Verdict and Socrates' Final Words" },
   ],
 };
 
@@ -4680,10 +4595,10 @@ const SUPERSEDED_BY_SERVED_FULL = new Set<string>([
   // Septuagint
   'LXX-Gen-1', 'LXX-Exod-12', 'LXX-Isa-6', 'LXX-Prov-1', 'LXX-Jonah-1',
   // Greek classics
-  'Iliad-1', 'Odyssey-1', 'Anab-1', 'Plato-Apology-1', 'Aesop-1',
+  'Iliad-1', 'Odyssey-1', 'Anab-1', 'Aesop-1',
   'Hdt-Hist', 'Thuc-Hist', 'Soph-Ant', 'Plut-Alex', 'Lucian-Char',
   // Latin classics
-  'Aeneid-1', 'Cic-Catilina-1', 'Ovid-Metamorphoses-1', 'Livy-AUC',
+  'Aeneid-1', 'Livy-AUC',
   'Sall-Cat', 'Tac-Ann', 'Lat-Cato', 'Lat-Vg-Jn',
   // Greek patristics
   '1Clem-1', 'Did-1', 'Ign-Eph', 'Polyc-Phil', 'Justin-Apol',
@@ -4712,10 +4627,7 @@ const enhanceText = (text: Text): Text => {
 import { getMockTexts, getMockSections } from "./mockTexts.js";
 import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections.js";
 import { ALL_TREEBANK_SECTIONS } from "./corpus/treebank-sections.js";
-import { CICERO_CATILINA_1, CICERO_CATILINA_2, CICERO_CATILINA_3, CICERO_CATILINA_4 } from "./corpus/cicero-catilina.js";
-import { OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_METAMORPHOSES_4 } from "./corpus/ovid-metamorphoses.js";
 import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4 } from "./corpus/caesar-bellum-gallicum.js";
-import { PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLATO_APOLOGY_5 } from "./corpus/plato-apology.js";
 import { LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1 } from "./corpus/lxx-septuagint.js";
 import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1, IGNATIUS_EPHESIANS_1, JUSTIN_MARTYR_APOLOGY_1, POLYCARP_PHILIPPIANS_1 } from "./corpus/patristics.js";
 import { ALL_GREEK_MINI_STORIES, GRC_MINI_1, GRC_MINI_2, GRC_MINI_3, GRC_MINI_4, GRC_MINI_5 } from "./corpus/greek-mini-stories.js";
@@ -4841,9 +4753,6 @@ function getAllEnhancedTexts() {
       TEXT_LUCIAN,
       // Classical authors (curated multi-section readings)
       TEXT_CAESAR_BG,
-      TEXT_CICERO_CATILINA,
-      TEXT_OVID_METAMORPHOSES,
-      TEXT_PLATO_APOLOGY,
       // Greco-Roman extended
       TEXT_VOCAB_GRC,
       TEXT_VOCAB_GRC_KOINE,
@@ -4878,10 +4787,7 @@ function getLemmaIndex() {
     COPTIC_JOHN_1_1, ARAMAIC_GENESIS_1_1, AKKADIAN_GILGAMESH_1_1,
     SANSKRIT_GITA_1_1, HITTITE_ANNALS_1_1, EGYPTIAN_PTAHHOTEP_1_1,
     ANABASIS_1_1, ILIAD_1_1, ODYSSEY_1_1, AESOP_1_1,
-    CICERO_CATILINA_1, CICERO_CATILINA_2, CICERO_CATILINA_3, CICERO_CATILINA_4,
-    OVID_METAMORPHOSES_1, OVID_METAMORPHOSES_2, OVID_METAMORPHOSES_3, OVID_METAMORPHOSES_4,
     CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4,
-    PLATO_APOLOGY_1, PLATO_APOLOGY_2, PLATO_APOLOGY_3, PLATO_APOLOGY_4, PLATO_APOLOGY_5,
     LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1,
     CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1,
     ...ALL_EXPANDED_SECTIONS,
@@ -4985,23 +4891,10 @@ export const CorpusDB = {
     if (sectionId === "Iliad-1-1") return ILIAD_1_1;
     if (sectionId === "Odyssey-1-1") return ODYSSEY_1_1;
     if (sectionId === "Aesop-1-1") return AESOP_1_1;
-    if (sectionId === "Cic-Cat-1") return CICERO_CATILINA_1;
-    if (sectionId === "Cic-Cat-2") return CICERO_CATILINA_2;
-    if (sectionId === "Cic-Cat-3") return CICERO_CATILINA_3;
-    if (sectionId === "Cic-Cat-4") return CICERO_CATILINA_4;
-    if (sectionId === "Ovid-Met-1") return OVID_METAMORPHOSES_1;
-    if (sectionId === "Ovid-Met-2") return OVID_METAMORPHOSES_2;
-    if (sectionId === "Ovid-Met-3") return OVID_METAMORPHOSES_3;
-    if (sectionId === "Ovid-Met-4") return OVID_METAMORPHOSES_4;
     if (sectionId === "Caes-BG-1") return CAESAR_BELLUM_GALLICUM_1;
     if (sectionId === "Caes-BG-2") return CAESAR_BELLUM_GALLICUM_2;
     if (sectionId === "Caes-BG-3") return CAESAR_BELLUM_GALLICUM_3;
     if (sectionId === "Caes-BG-4") return CAESAR_BELLUM_GALLICUM_4;
-    if (sectionId === "Plato-Apol-1") return PLATO_APOLOGY_1;
-    if (sectionId === "Plato-Apol-2") return PLATO_APOLOGY_2;
-    if (sectionId === "Plato-Apol-3") return PLATO_APOLOGY_3;
-    if (sectionId === "Plato-Apol-4") return PLATO_APOLOGY_4;
-    if (sectionId === "Plato-Apol-5") return PLATO_APOLOGY_5;
 
 
     // Beginner sections
