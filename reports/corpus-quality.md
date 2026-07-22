@@ -1,24 +1,39 @@
 # Corpus Quality Report
 
-Generated at: 2026-07-16T16:59:54.359Z
+Generated at: 2026-07-22T12:23:05.813Z
 
-## Summary
+## Summary (bundled corpus)
 
 | Language | Texts | Tokens | Gloss % | POS % | Lemma % | Morph % | Status |
 |---|---|---|---|---|---|---|---|
-| grc-koine | 46 | 19947 | 100% | 100% | 100% | 0% | needs_work |
+| grc-koine | 58 | 19947 | 100% | 100% | 100% | 0% | needs_work |
 | syr | 30 | 86 | 100% | 83% | 100% | 0% | needs_work |
-| lat | 16 | 3126 | 70% | 69% | 100% | 11% | needs_work |
-| hbo | 9 | 1672 | 100% | 99% | 100% | 1% | needs_work |
-| cop | 3 | 127 | 100% | 88% | 100% | 0% | needs_work |
-| arc | 3 | 130 | 100% | 88% | 100% | 0% | needs_work |
-| akk | 4 | 286 | 100% | 95% | 100% | 0% | needs_work |
-| san | 3 | 159 | 100% | 91% | 100% | 0% | needs_work |
+| lat | 22 | 2173 | 100% | 99% | 100% | 16% | needs_work |
+| grc | 10 | 1332 | 100% | 98% | 100% | 7% | needs_work |
+| grc-class | 10 | 539 | 100% | 100% | 100% | 0% | needs_work |
+| hbo | 12 | 1672 | 100% | 99% | 100% | 1% | needs_work |
+| cop | 4 | 127 | 100% | 88% | 100% | 0% | needs_work |
+| arc | 4 | 130 | 100% | 88% | 100% | 0% | needs_work |
+| akk | 5 | 286 | 100% | 95% | 100% | 0% | needs_work |
+| san | 4 | 159 | 100% | 91% | 100% | 0% | needs_work |
 | hit | 2 | 49 | 100% | 69% | 100% | 0% | needs_work |
 | egy | 2 | 83 | 100% | 82% | 100% | 0% | needs_work |
 | uga | 2 | 38 | 100% | 61% | 100% | 0% | needs_work |
-| grc | 6 | 1978 | 67% | 66% | 100% | 5% | needs_work |
-| grc-class | 5 | 539 | 100% | 100% | 100% | 0% | needs_work |
+
+## Served corpus (full works in public/corpus-data)
+
+| Language | Texts | Sentences | Tokens | Gloss % | Lemma % | POS % | Morph % | Translation % |
+|---|---|---|---|---|---|---|---|---|
+| lat | 12 | 24571 | 428274 | 46% | 46% | 0% | 0% | 0% |
+| grc-class | 5 | 12742 | 376311 | 50% | 50% | 0% | 0% | 0% |
+| grc-koine | 38 | 16851 | 321700 | 86% | 86% | 38% | 38% | 0% |
+| grc | 5 | 10718 | 273150 | 50% | 50% | 0% | 0% | 0% |
+| syr | 27 | 7957 | 109640 | 57% | 100% | 100% | 100% | 0% |
+| hbo | 3 | 1666 | 35187 | 100% | 100% | 100% | 100% | 0% |
+| cop | 1 | 879 | 27447 | 25% | 25% | 0% | 0% | 0% |
+| akk | 1 | 2546 | 27118 | 16% | 16% | 0% | 0% | 0% |
+| arc | 1 | 1533 | 21697 | 21% | 21% | 0% | 0% | 0% |
+| san | 1 | 701 | 6356 | 14% | 14% | 0% | 0% | 0% |
 
 ## Top missing POS lemmas
 
@@ -37,11 +52,18 @@ Generated at: 2026-07-16T16:59:54.359Z
 - ܡܝܐ (1)
 
 ### lat
-- et (24)
-- in (23)
-- non (19)
-- est (15)
-- nihil (13)
+- vir (1)
+- femina (1)
+- deus (1)
+- terra (1)
+- caelum (1)
+
+### grc
+- ἄνθρωπος (1)
+- θεός (1)
+- οἶκος (1)
+- λόγος (1)
+- ὕδωρ (1)
 
 ### hbo
 - אָדָם (1)
@@ -98,11 +120,4 @@ Generated at: 2026-07-16T16:59:54.359Z
 - 𐎎𐎍𐎋 (1)
 - 𐎁𐎐 (1)
 - 𐎃𐎐 (1)
-
-### grc
-- δε (16)
-- γαρ (16)
-- οτι (16)
-- και (14)
-- η (14)
 
