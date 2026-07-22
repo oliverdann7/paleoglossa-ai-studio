@@ -168,8 +168,8 @@ export const TEXT_PLATO_APOLOGY_FULL: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 292,
-  wordCount: 7677,
+  sentenceCount: 290,
+  wordCount: 7635,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-plato-apology-full-1', label: 'Ἀπολογία 1' },
