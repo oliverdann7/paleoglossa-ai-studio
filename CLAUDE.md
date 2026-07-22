@@ -75,7 +75,7 @@ var on in dev to work on them; promote a surface out of the gate once its conten
 | Feature | File(s) | What's missing |
 |---------|---------|----------------|
 | Syntax treebank | `api/_routes/syntax.ts`, `api/_lib/treebankIndex.ts`, `scripts/treebank/import-proiel.ts` | Reader + PROIEL importer exist; `src/data/treebanks/` ships only `sample-proiel.json`. Run the importer against full PROIEL/Gorman/Perseus drops to populate. |
-| Manuscripts | `src/components/reader/Manuscripts.tsx`, `api/_routes/manuscripts.ts` | CRUD + IIIF viewer work; no curated manuscript catalog seeded yet. |
+| Manuscripts | `src/pages/Manuscripts.tsx`, `api/_routes/manuscripts.ts`, `src/lib/data/manuscriptCatalog.ts` | CRUD + IIIF viewer work; `CURATED_MANUSCRIPTS` seeds 9 hand-verified Vatican DigiVatLib manifests. Remaining gap is catalog breadth, not absence. |
 
 ---
 
@@ -153,13 +153,16 @@ See `.env.example` for the full list. Required for local dev:
 ## Test coverage gaps (known)
 
 These areas have no tests — add them when touching the feature:
-- Stripe webhook handling (`api/_routes/billing.ts`)
-- Gemini rate-limiting / quota-exceeded fallback paths
-- RTL language rendering (Hebrew, Syriac, Arabic)
+- Stripe webhook handling (`api/_routes/billing.ts`; only the mappers are tested)
+- Gemini quota-exceeded fallback paths (rate limiter + usage tracking are tested)
 - PDF/DOCX import edge cases (`src/lib/importers/`)
-- Offline service worker + Firestore sync
-- Accessibility (no `jest-axe` anywhere yet)
-- Course quiz progression logic
+- Service worker itself (offline service + sync status have unit tests)
+- Marketplace, Community/Challenges, and AudioLab pages
+
+Closed since this list was written (keep growing coverage, but these exist):
+RTL data (`src/lib/data/__tests__/rtl.test.ts`), course quiz progression
+(`src/lib/courses/__tests__/quizScoring.test.ts`), offline/sync services,
+first a11y test (`src/components/ui/__tests__/EmptyState.a11y.test.tsx`).
 
 ---
 

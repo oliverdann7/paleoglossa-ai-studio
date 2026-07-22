@@ -55,10 +55,10 @@ describe('ingestion manifest — coverage of bundled excerpts', () => {
     // Septuagint
     'LXX-Gen-1', 'LXX-Exod-12', 'LXX-Isa-6', 'LXX-Prov-1', 'LXX-Jonah-1',
     // Greek classics
-    'Iliad-1', 'Odyssey-1', 'Anab-1', 'Plato-Apology-1', 'Aesop-1',
+    'Iliad-1', 'Odyssey-1', 'Anab-1', 'Aesop-1',
     'Hdt-Hist', 'Thuc-Hist', 'Soph-Ant', 'Plut-Alex', 'Lucian-Char',
     // Latin classics
-    'Aeneid-1', 'Cic-Catilina-1', 'Ovid-Metamorphoses-1', 'Livy-AUC',
+    'Aeneid-1', 'Livy-AUC',
     'Sall-Cat', 'Tac-Ann', 'Lat-Cato', 'Lat-Vg-Jn',
     // Patristics
     '1Clem-1', 'Did-1', 'Ign-Eph', 'Polyc-Phil', 'Justin-Apol',
@@ -76,6 +76,23 @@ describe('ingestion manifest — coverage of bundled excerpts', () => {
   it('every superseded id is a real bundled text', () => {
     for (const id of SUPERSEDED_BY_NOTE) {
       expect(CorpusDB.getText(id), `${id} not found in bundle`).toBeTruthy();
+    }
+  });
+
+  // These bundled excerpts were deleted outright (inauthentic content); their
+  // ids survive only as Reader redirects. The manifest still records the
+  // supersedes note, but the ids must NOT resolve as bundled texts.
+  const RETIRED_TO_REDIRECT = ['Plato-Apology-1', 'Cic-Catilina-1', 'Ovid-Metamorphoses-1'];
+
+  it.each(RETIRED_TO_REDIRECT)('retired "%s" has a superseding full-text target', (id) => {
+    expect(allNotes).toContain(`Supersedes ${id}`);
+  });
+
+  it('retired ids are redirected, not bundled', async () => {
+    const { TEXT_ID_REDIRECTS } = await import('../../../../src/lib/constants/textRedirects.js');
+    for (const id of RETIRED_TO_REDIRECT) {
+      expect(CorpusDB.getText(id), `${id} must stay deleted`).toBeFalsy();
+      expect(TEXT_ID_REDIRECTS[id], `${id} missing a Reader redirect`).toBeTruthy();
     }
   });
 });

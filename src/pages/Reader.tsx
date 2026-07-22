@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { TEXT_ID_REDIRECTS } from '../lib/constants/textRedirects.js';
 import { useTranslation } from 'react-i18next';
 import { CorpusDB } from '../data/corpus.js';
 import { corpusService } from '../lib/services/corpusService.js';
@@ -39,6 +40,16 @@ import { recordMilestone } from '../lib/hooks/useBeginnerProgress.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
 export const Reader = () => {
+  const { textId } = useParams();
+  // Retired bundled texts redirect to their authentic served full works.
+  const redirectTarget = textId ? TEXT_ID_REDIRECTS[textId] : undefined;
+  if (redirectTarget) {
+    return <Navigate to={`/app/reader/${redirectTarget}`} replace />;
+  }
+  return <ReaderInner />;
+};
+
+const ReaderInner = () => {
   const { textId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();

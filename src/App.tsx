@@ -263,7 +263,14 @@ export default function App() {
           </Route>
 
           {/* Admin */}
-          <Route path="/admin/import" element={<AppLayout />}>
+          <Route
+            path="/admin/import"
+            element={
+              <RequireAdmin>
+                <AppLayout />
+              </RequireAdmin>
+            }
+          >
             <Route index element={<Import />} />
           </Route>
           <Route

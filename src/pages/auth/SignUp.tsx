@@ -14,10 +14,24 @@ import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firebase';
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { hasDayOneLesson } from '@/data/dayOneLessons';
 
 export const SignUp = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { setDemoMode } = useAuth();
+
+  // Same zero-friction trial as the landing "Try Demo" — no account needed.
+  const onTryDemo = () => {
+    setDemoMode(true);
+    const demoLanguageId = 'grc';
+    if (hasDayOneLesson(demoLanguageId)) {
+      navigate('/app/first-lesson', { state: { languageId: demoLanguageId } });
+    } else {
+      navigate('/app');
+    }
+  };
   // On native, OAuth runs through native SDK sheets (see authService). Apple
   // works everywhere; Google needs an iOS client id baked into the build.
   const showGoogle = isGoogleSignInAvailable();
@@ -313,6 +327,15 @@ export const SignUp = () => {
                 className="font-bold text-blue hover:text-ink transition-colors"
               >
                 {t('auth.signIn', 'Sign In')}
+              </button>
+            </p>
+            <p className="mt-3 text-center text-sm text-ink3">
+              {t('auth.justExploring', 'Just exploring?')}{' '}
+              <button
+                onClick={onTryDemo}
+                className="font-bold text-blue hover:text-ink transition-colors"
+              >
+                {t('auth.tryDemo', 'Try the demo')}
               </button>
             </p>
           </motion.div>

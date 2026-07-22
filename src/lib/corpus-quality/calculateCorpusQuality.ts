@@ -4,6 +4,7 @@ export interface CorpusQualityMetrics {
   texts: number;
   sections: number;
   sentences: number;
+  sentencesWithTranslation: number;
   tokens: number;
   tokensWithGloss: number;
   tokensWithPos: number;
@@ -11,6 +12,20 @@ export interface CorpusQualityMetrics {
   tokensWithMorphBeyondPos: number;
   unknownPosTokens: number;
   missingLemmas: Record<string, number>;
+}
+
+/** Minimal structural view of a section — satisfied both by bundled
+ * TextSection objects and by the served /corpus-data JSON records. */
+export interface SectionLike {
+  sentences: Array<{
+    translation?: string;
+    tokens: Array<{
+      surface?: string;
+      lemma?: string;
+      gloss?: string;
+      morphology?: { partOfSpeech?: string };
+    }>;
+  }>;
 }
 
 export interface LanguageQualityReport {
@@ -52,14 +67,12 @@ function determineStatus(
   return 'poor';
 }
 
-function computeLanguageMetrics(language: string): CorpusQualityMetrics {
-  const allTexts = CorpusDB.getTexts();
-  const langTexts = allTexts.filter((t) => t.language === language);
-
-  const metrics: CorpusQualityMetrics = {
+export function createEmptyMetrics(): CorpusQualityMetrics {
+  return {
     texts: 0,
     sections: 0,
     sentences: 0,
+    sentencesWithTranslation: 0,
     tokens: 0,
     tokensWithGloss: 0,
     tokensWithPos: 0,
@@ -68,49 +81,57 @@ function computeLanguageMetrics(language: string): CorpusQualityMetrics {
     unknownPosTokens: 0,
     missingLemmas: {},
   };
+}
 
+export function accumulateSection(metrics: CorpusQualityMetrics, section: SectionLike): void {
+  metrics.sections++;
+
+  for (const sentence of section.sentences) {
+    metrics.sentences++;
+    if (isMeaningful(sentence.translation)) metrics.sentencesWithTranslation++;
+    for (const token of sentence.tokens) {
+      if (!token.surface && !token.lemma) continue;
+      metrics.tokens++;
+
+      if (isMeaningful(token.gloss)) metrics.tokensWithGloss++;
+      if (isMeaningful(token.lemma)) metrics.tokensWithLemma++;
+
+      const hasPos = isMeaningful(token.morphology?.partOfSpeech);
+      if (hasPos) {
+        metrics.tokensWithPos++;
+      } else {
+        metrics.unknownPosTokens++;
+        const lemma = token.lemma || token.surface || '';
+        metrics.missingLemmas[lemma] = (metrics.missingLemmas[lemma] || 0) + 1;
+      }
+
+      const morphKeys = Object.keys(token.morphology ?? {});
+      if (morphKeys.length > 1 || (morphKeys.length === 1 && morphKeys[0] !== 'partOfSpeech')) {
+        metrics.tokensWithMorphBeyondPos++;
+      }
+    }
+  }
+}
+
+function computeLanguageMetrics(language: string): CorpusQualityMetrics {
+  const allTexts = CorpusDB.getTexts();
+  const langTexts = allTexts.filter((t) => t.language === language);
+
+  const metrics = createEmptyMetrics();
   metrics.texts = langTexts.length;
 
   for (const text of langTexts) {
     for (const preview of text.sectionsPreview ?? []) {
       const section = CorpusDB.getSection(preview.id);
       if (!section) continue;
-      metrics.sections++;
-
-      for (const sentence of section.sentences) {
-        metrics.sentences++;
-        for (const token of sentence.tokens) {
-          if (!token.surface && !token.lemma) continue;
-          metrics.tokens++;
-
-          if (isMeaningful(token.gloss)) metrics.tokensWithGloss++;
-          if (isMeaningful(token.lemma)) metrics.tokensWithLemma++;
-
-          const hasPos = isMeaningful(token.morphology?.partOfSpeech);
-          if (hasPos) {
-            metrics.tokensWithPos++;
-          } else {
-            metrics.unknownPosTokens++;
-            const lemma = token.lemma || token.surface;
-            metrics.missingLemmas[lemma] = (metrics.missingLemmas[lemma] || 0) + 1;
-          }
-
-          const morphKeys = Object.keys(token.morphology ?? {});
-          if (
-            morphKeys.length > 1 ||
-            (morphKeys.length === 1 && morphKeys[0] !== 'partOfSpeech')
-          ) {
-            metrics.tokensWithMorphBeyondPos++;
-          }
-        }
-      }
+      accumulateSection(metrics, section);
     }
   }
 
   return metrics;
 }
 
-function pct(val: number, total: number): number {
+export function pct(val: number, total: number): number {
   return total > 0 ? Math.round((val / total) * 100) : 0;
 }
 

@@ -176,7 +176,6 @@ describe('corpus production data', () => {
       'Iliad-1': 'grc-homer-iliad-full',
       'Odyssey-1': 'grc-homer-odyssey-full',
       'Anab-1': 'grc-xenophon-anabasis-full',
-      'Plato-Apology-1': 'grc-plato-apology-full',
       'Aesop-1': 'grc-aesop-fables-full',
       'Hdt-Hist': 'grc-herodotus-histories-full',
       'Thuc-Hist': 'grc-thucydides-history-full',
@@ -184,8 +183,6 @@ describe('corpus production data', () => {
       'Plut-Alex': 'grc-plutarch-alexander-full',
       'Lucian-Char': 'grc-lucian-charon-full',
       'Aeneid-1': 'lat-vergil-aeneid-full',
-      'Cic-Catilina-1': 'lat-cicero-in-catilinam-full',
-      'Ovid-Metamorphoses-1': 'lat-ovid-metamorphoses-full',
       'Livy-AUC': 'lat-livy-ab-urbe-condita-full',
       'Sall-Cat': 'lat-sallust-catilinae-full',
       'Tac-Ann': 'lat-tacitus-annals-full',
@@ -224,6 +221,18 @@ describe('corpus production data', () => {
     // No stray hidden texts beyond the vetted map.
     const hidden = CorpusDB.getTexts().filter((t) => t.libraryHidden).map((t) => t.id).sort();
     expect(hidden).toEqual(Object.keys(HIDDEN_TO_FULL).sort());
+  });
+
+  it('retired text ids redirect to texts that still resolve', async () => {
+    // Plato/Cicero/Ovid bundled excerpts were removed (inauthentic content);
+    // their ids live on as Reader redirects to the authentic served works.
+    const { TEXT_ID_REDIRECTS } = await import('../../lib/constants/textRedirects.js');
+    for (const [retiredId, fullId] of Object.entries(TEXT_ID_REDIRECTS)) {
+      expect(CorpusDB.getText(retiredId), `${retiredId} must stay deleted`).toBeFalsy();
+      const full = CorpusDB.getText(fullId);
+      expect(full, `redirect target ${fullId} missing`).toBeTruthy();
+      expect(full?.libraryHidden, `redirect target ${fullId} must be visible`).toBeFalsy();
+    }
   });
 
   it('every section reachable via sectionsPreview conforms to the TextSection schema', () => {

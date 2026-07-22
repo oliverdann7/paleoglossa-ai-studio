@@ -709,10 +709,12 @@ export const LexDrawerPanel = memo(
                 </div>
               )}
               <div className="flex flex-col items-center gap-1">
-                <span className="text-[18px] font-serif text-blue font-semibold tracking-wide">
-                  From '
-                  <bdi className={isHebrewFont ? 'font-hebrew' : ''}>{selectedWord.lemma}</bdi>'
-                </span>
+                {selectedWord.lemma?.trim() && (
+                  <span className="text-[18px] font-serif text-blue font-semibold tracking-wide">
+                    From '
+                    <bdi className={isHebrewFont ? 'font-hebrew' : ''}>{selectedWord.lemma}</bdi>'
+                  </span>
+                )}
                 {wordFrequency !== null &&
                   wordFrequency > 0 &&
                   (() => {
