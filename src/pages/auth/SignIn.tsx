@@ -12,11 +12,25 @@ import {
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
 import { isCapacitor } from '@/lib/platform';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { hasDayOneLesson } from '@/data/dayOneLessons';
 
 export const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { setDemoMode } = useAuth();
+
+  // Same zero-friction trial as the landing "Try Demo" — no account needed.
+  const onTryDemo = () => {
+    setDemoMode(true);
+    const demoLanguageId = 'grc';
+    if (hasDayOneLesson(demoLanguageId)) {
+      navigate('/app/first-lesson', { state: { languageId: demoLanguageId } });
+    } else {
+      navigate('/app');
+    }
+  };
   // On native, OAuth runs through native SDK sheets (see authService) instead
   // of the web popup/redirect flows that providers block inside a WebView.
   // Apple works everywhere; Google additionally needs an iOS client id baked
@@ -307,6 +321,15 @@ export const SignIn = () => {
                 className="font-bold text-blue hover:text-ink transition-colors"
               >
                 {t('auth.signUp', 'Sign Up')}
+              </button>
+            </p>
+            <p className="mt-3 text-center text-sm text-ink3">
+              {t('auth.justExploring', 'Just exploring?')}{' '}
+              <button
+                onClick={onTryDemo}
+                className="font-bold text-blue hover:text-ink transition-colors"
+              >
+                {t('auth.tryDemo', 'Try the demo')}
               </button>
             </p>
 
