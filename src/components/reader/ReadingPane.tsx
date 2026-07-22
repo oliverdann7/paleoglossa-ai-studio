@@ -439,7 +439,7 @@ export function ReadingPane({
       <div
         className={cn(
           'mx-auto transition-all w-full',
-          showParallel ? 'max-w-screen-xl lg:grid grid-cols-2 gap-8 items-center' : 'max-w-3xl'
+          showParallel ? 'max-w-screen-xl lg:grid grid-cols-2 gap-8 items-start' : 'max-w-3xl'
         )}
       >
         {/* Metadata strip — always visible so the user knows exactly what they're reading */}
@@ -727,6 +727,14 @@ export function ReadingPane({
 
         {showParallel && (
           <div className="col-span-1 pt-8 lg:pt-0 pb-16">
+            {visibleSentences.every((s) => !s.translation && !s.parallel) && (
+              <p className="text-[13px] font-sans text-muted italic mb-4">
+                {t(
+                  'reader.noStoredTranslation',
+                  'This text ships without a stored translation — use "Ask AI to Translate" on any sentence.'
+                )}
+              </p>
+            )}
             {visibleSentences.map((sentence, idx) => {
               // Note: sIdx computed but not needed for parallel view
               const isActivePageMode =
