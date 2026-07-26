@@ -279,7 +279,7 @@ export function Challenges() {
   const completedCount = Object.keys(completionMap).length;
 
   return (
-    <div className="p-6 md:p-12 max-w-4xl mx-auto min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-4xl mx-auto min-h-screen">
       <header className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Trophy className="w-6 h-6 text-gold" />

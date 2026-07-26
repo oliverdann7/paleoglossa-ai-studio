@@ -6,8 +6,6 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { AuthContext, UserProfile, UserStats } from './AuthContextInstance.js';
 import { identifyAnalytics, resetAnalytics, trackEvent, ANALYTICS_EVENTS } from '../analytics.js';
 import { getApiUrl } from '../services/apiBaseUrl.js';
-import { handleRedirectResult } from '../services/authService.js';
-import { isCapacitor } from '../platform.js';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -48,9 +46,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [loadProfile]);
 
   useEffect(() => {
-    // Only recover redirect results in Capacitor where signInWithRedirect is used.
-    if (isCapacitor()) handleRedirectResult();
-
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       if (!u) {

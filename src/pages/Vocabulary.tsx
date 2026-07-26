@@ -29,6 +29,7 @@ import { apiFetch } from '../lib/services/apiFetch.js';
 import { useToast } from '../lib/hooks/useToast.js';
 import { ReviewForecast } from '../components/ReviewForecast.js';
 import { logSilentFailure } from '../lib/utils/logSilent.js';
+import { downloadFile } from '../lib/services/downloadService.js';
 
 const PAGE_SIZE = 50;
 
@@ -64,12 +65,7 @@ function exportToCSV(
   );
   const csv = [header.join(','), ...rows].join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  void downloadFile(filename, blob);
 }
 
 function exportToAnki(
@@ -96,12 +92,7 @@ function exportToAnki(
     });
   const content = [...header, ...rows].join('\n');
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  void downloadFile(filename, blob);
 }
 
 const STATE_CYCLE: WordState[] = [
@@ -288,7 +279,7 @@ export const Vocabulary = () => {
   const pagedWords = filteredWords.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
   return (
-    <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-5xl mx-auto font-sans min-h-screen">
       {/* Header */}
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>

@@ -98,7 +98,7 @@ export const Subscription = () => {
   };
 
   return (
-    <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen pb-24">
+    <div className="p-6 md:p-12 pt-safe-page max-w-5xl mx-auto font-sans min-h-screen pb-24">
       {success === 'true' && (
         <div className="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-[14px] font-medium text-center">
           {t('sub.paymentSuccess')}
@@ -110,11 +110,14 @@ export const Subscription = () => {
         </div>
       )}
 
+      {/* App Store 3.1.1: no purchase steering, no pricing, no external-checkout
+          references in the native apps — plans render as a feature comparison
+          only, with a neutral notice. */}
       {isNative && (
         <div className="mb-8 p-4 bg-parch2 border border-bdr rounded-xl text-ink2 text-[14px] flex items-center justify-center gap-3">
           <Info className="w-5 h-5 text-ink3" />
           {t('sub.mobileSubscriptionNotice', {
-            defaultValue: 'Subscription management is currently available on the web.',
+            defaultValue: 'Upgrading is not available in this app.',
           })}
         </div>
       )}
@@ -132,6 +135,7 @@ export const Subscription = () => {
         </p>
       </header>
 
+      {!isNative && (
       <div className="flex justify-center mb-10">
         <div className="bg-parch2 p-1 border border-bdr rounded-xl inline-flex gap-1 shadow-sm">
           <button
@@ -159,6 +163,7 @@ export const Subscription = () => {
           </button>
         </div>
       </div>
+      )}
 
       {/* Plan Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
@@ -189,10 +194,12 @@ export const Subscription = () => {
 
               <div className="mb-4 mt-1">
                 <h3 className="font-serif text-[20px] font-medium text-ink mb-1">{plan.name}</h3>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[28px] font-serif">${price}</span>
-                  <span className="text-muted font-sans text-sm">{label}</span>
-                </div>
+                {!isNative && (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[28px] font-serif">${price}</span>
+                    <span className="text-muted font-sans text-sm">{label}</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3 mb-6 flex-1">
@@ -211,6 +218,7 @@ export const Subscription = () => {
                 ))}
               </div>
 
+              {!isNative && (
               <button
                 onClick={() => handleChoosePlan(plan.id)}
                 disabled={isDisabled}
@@ -236,6 +244,7 @@ export const Subscription = () => {
                 )}
                 {!isDisabled && !isLoading && <ArrowRight className="w-4 h-4" />}
               </button>
+              )}
             </div>
           );
         })}

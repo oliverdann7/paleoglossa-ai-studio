@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { ReaderSentence } from '@/types/reader';
+import { getApiUrl } from '../services/apiBaseUrl.js';
 
 const TTS_LANG_MAP: Record<string, string> = {
   grc: 'el-GR',
@@ -88,7 +89,7 @@ export function useReaderTTS({
     if (!text) return;
 
     fetchingRef.current.add(next);
-    fetch('/api/audio/tts', {
+    fetch(getApiUrl('/api/audio/tts'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ languageId: currentLanguageId, text }),
@@ -163,7 +164,7 @@ export function useReaderTTS({
         if (text && !fetchingRef.current.has(sentenceIdx)) {
           fetchingRef.current.add(sentenceIdx);
           try {
-            const res = await fetch('/api/audio/tts', {
+            const res = await fetch(getApiUrl('/api/audio/tts'), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ languageId: currentLanguageId, text }),

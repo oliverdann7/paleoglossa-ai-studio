@@ -54,7 +54,7 @@ export const Notes = () => {
   };
 
   return (
-    <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-5xl mx-auto font-sans min-h-screen">
       <header className="mb-10">
         <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
           {t('notes.title', 'My Notes')}

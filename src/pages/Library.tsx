@@ -420,7 +420,7 @@ export const Library = () => {
   };
 
   return (
-    <div className="p-6 md:p-12 max-w-7xl mx-auto font-sans min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-7xl mx-auto font-sans min-h-screen">
       <header className="mb-8 flex justify-between items-end">
         <div>
           <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">

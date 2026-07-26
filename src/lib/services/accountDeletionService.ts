@@ -6,6 +6,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { getAnalytics, setUserId } from 'firebase/analytics';
+import { getApiUrl } from './apiBaseUrl.js';
 
 export interface ReauthOptions {
   password?: string; // For email/password users
@@ -86,7 +87,7 @@ export async function deleteUserAccount(confirmationText: string): Promise<void>
   try {
     // Call backend API to delete all Firestore data
     const idToken = await currentUser.getIdToken();
-    const response = await fetch('/api/account/delete', {
+    const response = await fetch(getApiUrl('/api/account/delete'), {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

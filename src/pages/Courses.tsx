@@ -40,6 +40,7 @@ import { KnowledgeMap } from '../lib/services/vocabularyService.js';
 import { CourseQuizModal } from '../components/courses/CourseQuizModal.js';
 import { PreDrillModal, DrillLemma } from '../components/courses/PreDrillModal.js';
 import { StatsService } from '../lib/services/statsService.js';
+import { downloadFile } from '../lib/services/downloadService.js';
 
 type View = 'list' | 'detail' | 'create' | 'edit';
 
@@ -515,12 +516,7 @@ function CourseDetail({
     });
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${course.title.replace(/\s+/g, '-')}-roster.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    void downloadFile(`${course.title.replace(/\s+/g, '-')}-roster.csv`, blob);
   };
 
   // Sync reading progress to course member doc (enrolled students and owner)
@@ -1174,7 +1170,7 @@ export const Courses = () => {
   };
 
   return (
-    <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-5xl mx-auto font-sans min-h-screen">
       {/* Header */}
       <header className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-3">

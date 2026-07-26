@@ -459,7 +459,7 @@ export const Review = () => {
     };
 
     return (
-      <div className="p-6 md:p-12 max-w-lg mx-auto font-sans min-h-screen">
+      <div className="p-6 md:p-12 pt-safe-page max-w-lg mx-auto font-sans min-h-screen">
         <div className="flex items-center gap-3 mb-8">
           <button
             onClick={() => setShowSettings(false)}
@@ -580,7 +580,7 @@ export const Review = () => {
   // ── Start Screen ─────────────────────────────────────────────────────
   if (!isStarted) {
     return (
-      <div className="p-6 md:p-12 max-w-2xl mx-auto font-sans min-h-screen">
+      <div className="p-6 md:p-12 pt-safe-page max-w-2xl mx-auto font-sans min-h-screen">
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={onBack}
@@ -741,7 +741,7 @@ export const Review = () => {
   // ── Finished Screen — the scribal colophon (roadmap § 11, 3.5) ───────
   if (isFinished) {
     return (
-      <div className="p-6 md:p-12 max-w-lg mx-auto font-sans min-h-screen flex items-center justify-center">
+      <div className="p-6 md:p-12 pt-safe-page max-w-lg mx-auto font-sans min-h-screen flex items-center justify-center">
         <div className="text-center w-full">
           <div className="w-20 h-20 bg-amber/10 ring-1 ring-amber/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <ScrollText className="w-9 h-9 text-amber" />

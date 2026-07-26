@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth.js';
 import { SettingsService } from '../services/settingsService.js';
+import { syncStatusBarWithTheme } from '../services/statusBarService.js';
 export interface Settings {
   dailyGoalWords: number;
   dailyGoalMinutes: number;
@@ -71,6 +72,7 @@ export const useSettings = () => {
 
   useEffect(() => {
     document.documentElement.className = `theme-${settings.theme}`;
+    syncStatusBarWithTheme(settings.theme);
   }, [settings.theme]);
 
   const updateSettings = useCallback(

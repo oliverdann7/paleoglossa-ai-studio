@@ -33,6 +33,7 @@ import {
 import { apiFetch } from '../../lib/services/apiFetch.js';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { downloadFile } from '../../lib/services/downloadService.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -829,12 +830,7 @@ function CorpusQualityTab({
   const exportJson = useCallback(() => {
     if (!data) return;
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `corpus-quality-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    void downloadFile(`corpus-quality-${new Date().toISOString().slice(0, 10)}.json`, blob);
   }, [data]);
 
   const exportMarkdown = useCallback(() => {
@@ -852,12 +848,7 @@ function CorpusQualityTab({
       md += `- ${lang.language} (${lang.status}) — Gloss: ${lang.glossCoverage}%, POS: ${lang.posCoverage}%, Morph: ${lang.morphCoverage}%\n`;
     }
     const blob = new Blob([md], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `corpus-quality-${new Date().toISOString().slice(0, 10)}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
+    void downloadFile(`corpus-quality-${new Date().toISOString().slice(0, 10)}.md`, blob);
   }, [data]);
 
   if (loading) {

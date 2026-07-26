@@ -6,6 +6,7 @@ import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useToast } from '../lib/hooks/useToast.js';
 import { STORAGE_KEYS } from '../lib/constants/storage.js';
 import { Download } from 'lucide-react';
+import { downloadFile } from '../lib/services/downloadService.js';
 
 /** How long a guest explores before we nudge them to make it permanent (1.4). */
 const PERSIST_NUDGE_DELAY_MS = 15 * 60 * 1000;
@@ -39,14 +40,7 @@ export function DemoModeBanner() {
     try {
       const data = await exportData();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `paleoglossa-demo-data-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      void downloadFile(`paleoglossa-demo-data-${new Date().toISOString().split('T')[0]}.json`, blob);
       setExported(true);
       setTimeout(() => setExported(false), 3000);
     } catch {

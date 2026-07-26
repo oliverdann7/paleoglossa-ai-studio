@@ -26,6 +26,8 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { apiFetch } from '../lib/services/apiFetch.js';
 import { formatDistanceToNow } from 'date-fns';
+import { downloadFile } from '../lib/services/downloadService.js';
+import { isCapacitor } from '../lib/platform.js';
 
 interface Notebook {
   id: string;
@@ -130,6 +132,19 @@ function exportNotebookPdf(title: string, notes: Note[]) {
 ${notesSections}
 <div class="footer">Exported from Paleoglossa</div>
 </body></html>`;
+
+  if (isCapacitor()) {
+    // WKWebView returns null from window.open('', '_blank') (and can blank the
+    // main WebView), so the print-window flow is impossible on native. Hand the
+    // printable HTML to the system share sheet instead — from there the user
+    // can print, save as PDF, or send it on.
+    void downloadFile(
+      `${title.replace(/\s+/g, '-').toLowerCase()}.html`,
+      new Blob([html], { type: 'text/html' }),
+      'text/html'
+    );
+    return;
+  }
 
   const win = window.open('', '_blank');
   if (win) {
@@ -465,12 +480,7 @@ function NoteViewer({
   const exportMd = () => {
     const header = note.tags.length > 0 ? `---\ntags: [${note.tags.join(', ')}]\n---\n\n` : '';
     const blob = new Blob([header + note.content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `note-${note.id.slice(0, 8)}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
+    void downloadFile(`note-${note.id.slice(0, 8)}.md`, blob);
   };
 
   return (
@@ -601,12 +611,7 @@ export const NotebookDetail = () => {
       })
       .join('\n\n---\n\n');
     const blob = new Blob([`# ${notebook.title}\n\n${body}`], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${notebook.title.replace(/\s+/g, '-').toLowerCase()}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
+    void downloadFile(`${notebook.title.replace(/\s+/g, '-').toLowerCase()}.md`, blob);
   }, [notebook, notes]);
 
   const handleCreate = async (content: string, tags: string[]) => {

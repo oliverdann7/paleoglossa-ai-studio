@@ -49,6 +49,10 @@
 	<false/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Paleoglossa uses the microphone so you can record your own pronunciation and compare it against native audio in the Audio Lab.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Paleoglossa uses the camera to photograph pages of text for OCR import.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Paleoglossa accesses your photo library so you can import photographed pages for OCR and set a profile picture.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

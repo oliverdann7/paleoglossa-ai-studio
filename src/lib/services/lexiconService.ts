@@ -1,3 +1,4 @@
+import { getApiUrl } from './apiBaseUrl.js';
 /**
  * Client-side proxy for the server-side /api/lexicon-lookup endpoint.
  *
@@ -28,8 +29,7 @@ export async function lookupLexicon(
   if (cache.has(key)) return cache.get(key) ?? null;
 
   try {
-    const response = await fetch(
-      `/api/lexicon-lookup/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}`
+    const response = await fetch(getApiUrl(`/api/lexicon-lookup/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}`)
     );
     if (!response.ok) {
       cache.set(key, null);

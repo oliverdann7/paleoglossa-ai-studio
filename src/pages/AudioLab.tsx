@@ -205,6 +205,7 @@ function RecorderWidget({
   ttsAudioUrl: string | null;
 }) {
   const [isRecording, setIsRecording] = useState(false);
+  const [micError, setMicError] = useState<string | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -229,6 +230,7 @@ function RecorderWidget({
 
   const startRecording = async () => {
     try {
+      setMicError(null);
       stopCurrentPlayback();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = pickRecordingMimeType();
@@ -266,8 +268,15 @@ function RecorderWidget({
       timerRef.current = setInterval(() => {
         setRecordingSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
       }, 500);
-    } catch {
-      // microphone access denied
+    } catch (err: any) {
+      // Surface the failure — a silent Record button reads as a broken app,
+      // especially on native where the OS permission dialog may never appear.
+      const denied = err?.name === 'NotAllowedError' || err?.name === 'SecurityError';
+      setMicError(
+        denied
+          ? 'Microphone access was denied. Enable the microphone for Paleoglossa in your device settings and try again.'
+          : 'Recording could not start — no microphone was found or it is in use by another app.'
+      );
     }
   };
 
@@ -344,6 +353,12 @@ function RecorderWidget({
           </button>
         )}
       </div>
+
+      {micError && (
+        <div className="p-3 bg-red-50 rounded-xl border border-red-200">
+          <span className="text-[13px] text-red-700">{micError}</span>
+        </div>
+      )}
 
       {isRecording && (
         <div className="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-200">
@@ -528,7 +543,7 @@ export const AudioLab = () => {
   };
 
   return (
-    <div className="p-6 md:p-12 max-w-5xl mx-auto font-sans min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-5xl mx-auto font-sans min-h-screen">
       <h2 className="text-[28px] font-serif font-bold text-ink mb-2">Pronunciation Lab</h2>
       <p className="text-ink2 text-[15px] mb-8">
         Listen, record, and compare — master ancient pronunciation.

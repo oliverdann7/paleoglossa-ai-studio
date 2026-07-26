@@ -1,9 +1,10 @@
+import { getApiUrl } from './apiBaseUrl.js';
 import { SyntaxTree } from '../../types/modules.js';
 
 export class SyntaxService {
   static async getTree(textId: string, sentenceIndex: number): Promise<SyntaxTree | null> {
     try {
-      const response = await fetch(`/api/syntax/${encodeURIComponent(textId)}/${sentenceIndex}`);
+      const response = await fetch(getApiUrl(`/api/syntax/${encodeURIComponent(textId)}/${sentenceIndex}`));
       if (!response.ok) return null;
       return response.json();
     } catch {
@@ -13,7 +14,7 @@ export class SyntaxService {
 
   static async getTreesForText(textId: string): Promise<SyntaxTree[]> {
     try {
-      const response = await fetch(`/api/syntax?textId=${encodeURIComponent(textId)}`);
+      const response = await fetch(getApiUrl(`/api/syntax?textId=${encodeURIComponent(textId)}`));
       if (!response.ok) return [];
       return response.json();
     } catch {
