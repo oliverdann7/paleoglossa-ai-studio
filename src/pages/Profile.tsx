@@ -134,7 +134,7 @@ export const ProfilePage = () => {
 
   if (isPrivate) {
     return (
-      <div className="p-6 md:p-12 max-w-2xl mx-auto font-sans min-h-screen flex flex-col items-center justify-center gap-6 text-center">
+      <div className="p-6 md:p-12 pt-safe-page max-w-2xl mx-auto font-sans min-h-screen flex flex-col items-center justify-center gap-6 text-center">
         <div className="w-16 h-16 rounded-full bg-parch2 border border-bdr flex items-center justify-center">
           <Lock className="w-7 h-7 text-muted" />
         </div>
@@ -155,7 +155,7 @@ export const ProfilePage = () => {
   }
 
   return (
-    <div className="p-6 md:p-12 max-w-3xl mx-auto font-sans min-h-screen pb-24">
+    <div className="p-6 md:p-12 pt-safe-page max-w-3xl mx-auto font-sans min-h-screen pb-24">
       {/* Back link */}
       <button
         onClick={() => navigate(-1)}

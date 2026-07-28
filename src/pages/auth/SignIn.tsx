@@ -8,6 +8,7 @@ import {
   signInWithApple,
   fetchSignInMethods,
   isGoogleSignInAvailable,
+  isAppleSignInAvailable,
 } from '@/lib/services/authService';
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
@@ -33,10 +34,12 @@ export const SignIn = () => {
   };
   // On native, OAuth runs through native SDK sheets (see authService) instead
   // of the web popup/redirect flows that providers block inside a WebView.
-  // Apple works everywhere; Google additionally needs an iOS client id baked
-  // into the build — the button is hidden when it's absent.
+  // Each provider button is hidden when its platform config is absent
+  // (Google needs a client id baked into native builds; Apple's native sheet
+  // exists only on iOS — Android has no Apple web-flow configured).
   const isNative = isCapacitor();
   const showGoogle = isGoogleSignInAvailable();
+  const showApple = isAppleSignInAvailable();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -238,6 +241,7 @@ export const SignIn = () => {
               </button>
             )}
 
+            {showApple && (
             <button
               onClick={handleAppleSignIn}
               disabled={loading}
@@ -250,6 +254,7 @@ export const SignIn = () => {
                 ? t('auth.pleaseWait', 'Please Wait...')
                 : t('auth.continueApple', 'Continue with Apple')}
             </button>
+            )}
 
             <div className="flex items-center gap-4 mb-6">
               <div className="h-px bg-bdr flex-1" />

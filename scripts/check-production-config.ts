@@ -12,7 +12,16 @@
  * Never prints actual secret values — only "set" or "MISSING".
  */
 
+import { loadEnv } from 'vite';
+
 type Severity = 'critical' | 'warning';
+
+// Resolve env the same way the builds do: web/server from `.env` (+ production
+// overrides), native from `.env.native-production` (vite --mode native-production).
+// process.env always wins so CI-provided values are never shadowed by files.
+const webFileEnv = loadEnv('production', process.cwd(), '');
+const nativeFileEnv = loadEnv('native-production', process.cwd(), '');
+let activeEnv: Record<string, string | undefined> = { ...webFileEnv, ...process.env };
 
 interface CheckItem {
   name: string;
@@ -24,12 +33,12 @@ interface CheckItem {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function present(name: string): boolean {
-  const val = process.env[name];
+  const val = activeEnv[name];
   return typeof val === 'string' && val.trim().length > 0;
 }
 
 function featureEnabled(flag: string): boolean {
-  return present(flag) && process.env[flag]?.toLowerCase() !== 'false';
+  return present(flag) && activeEnv[flag]?.toLowerCase() !== 'false';
 }
 
 let failures = 0;
@@ -59,6 +68,7 @@ function check(item: CheckItem): void {
 
 function checkWeb(): void {
   console.log('\n── Web / Vercel ─────────────────────────────────────────────');
+  activeEnv = { ...webFileEnv, ...process.env };
 
   const web: CheckItem[] = [
     {
@@ -137,6 +147,7 @@ function checkWeb(): void {
 
 function checkNative(): void {
   console.log('\n── Native / Capacitor ───────────────────────────────────────');
+  activeEnv = { ...nativeFileEnv, ...process.env };
 
   const native: CheckItem[] = [
     {
@@ -190,6 +201,7 @@ function checkNative(): void {
 
 function checkServer(): void {
   console.log('\n── Server / Admin SDK ───────────────────────────────────────');
+  activeEnv = { ...webFileEnv, ...process.env };
 
   // Admin SDK: either service account JSON, or individual vars
   const hasJson = present('FIREBASE_SERVICE_ACCOUNT_JSON');

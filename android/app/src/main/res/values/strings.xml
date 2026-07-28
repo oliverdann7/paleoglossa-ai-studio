@@ -3,5 +3,5 @@
     <string name="app_name">Paleoglossa</string>
     <string name="title_activity_main">Paleoglossa</string>
     <string name="package_name">com.paleoglossa.app</string>
-    <string name="custom_url_scheme">com.paleoglossa.app</string>
+    <string name="custom_url_scheme">paleoglossa</string>
 </resources>

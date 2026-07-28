@@ -38,6 +38,7 @@ import { uploadAvatar, updateUserProfile } from '../lib/services/profileService.
 import { privacyService } from '../lib/services/privacyService.js';
 import { optInAnalytics, optOutAnalytics } from '../lib/analytics.js';
 import { setErrorReportingEnabled } from '../lib/sentry.js';
+import { downloadFile } from '../lib/services/downloadService.js';
 
 export const Settings = () => {
   const navigate = useNavigate();
@@ -146,12 +147,7 @@ export const Settings = () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `paleoglossa-export-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    void downloadFile(`paleoglossa-export-${new Date().toISOString().split('T')[0]}.json`, blob);
   };
 
   const handleReset = async () => {
@@ -195,7 +191,7 @@ export const Settings = () => {
     .slice(0, 2);
 
   return (
-    <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen pb-24">
+    <div className="p-6 md:p-12 pt-safe-page max-w-4xl mx-auto font-sans min-h-screen pb-24">
       <header className="mb-10">
         <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2 flex items-center gap-3">
           <SettingsIcon className="w-8 h-8 text-muted" /> {t('settings.title', 'Preferences')}

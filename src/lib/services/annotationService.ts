@@ -1,4 +1,5 @@
 import { getAuth } from 'firebase/auth';
+import { getApiUrl } from './apiBaseUrl.js';
 
 export interface TokenAnnotation {
   id: string;
@@ -24,7 +25,7 @@ async function authHeaders(): Promise<Record<string, string>> {
 export const AnnotationService = {
   async list(lemma: string, languageId: string): Promise<TokenAnnotation[]> {
     const params = new URLSearchParams({ lemma, languageId });
-    const res = await fetch(`/api/annotations?${params}`);
+    const res = await fetch(getApiUrl(`/api/annotations?${params}`));
     if (!res.ok) return [];
     const data = await res.json();
     return data.annotations ?? [];
@@ -32,7 +33,7 @@ export const AnnotationService = {
 
   async create(lemma: string, wordText: string, languageId: string, gloss: string): Promise<TokenAnnotation> {
     const headers = await authHeaders();
-    const res = await fetch('/api/annotations', {
+    const res = await fetch(getApiUrl('/api/annotations'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify({ lemma, wordText, languageId, gloss }),
@@ -46,7 +47,7 @@ export const AnnotationService = {
 
   async delete(annotationId: string): Promise<void> {
     const headers = await authHeaders();
-    const res = await fetch(`/api/annotations/${annotationId}`, {
+    const res = await fetch(getApiUrl(`/api/annotations/${annotationId}`), {
       method: 'DELETE',
       headers,
     });
@@ -55,7 +56,7 @@ export const AnnotationService = {
 
   async upvote(annotationId: string): Promise<{ upvoted: boolean; upvotes: number }> {
     const headers = await authHeaders();
-    const res = await fetch(`/api/annotations/${annotationId}/upvote`, {
+    const res = await fetch(getApiUrl(`/api/annotations/${annotationId}/upvote`), {
       method: 'POST',
       headers,
     });

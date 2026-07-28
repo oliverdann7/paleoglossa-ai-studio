@@ -278,7 +278,7 @@ export const Dashboard = () => {
   if (isLoading) return <DashboardSkeleton />;
 
   return (
-    <div className="p-6 md:p-12 max-w-6xl mx-auto font-sans min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-6xl mx-auto font-sans min-h-screen">
       <header className="mb-8 md:mb-10">
         {/* Onboarding CTA */}
         {!isOnboardingComplete && (

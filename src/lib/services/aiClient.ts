@@ -1,3 +1,4 @@
+import { getApiUrl } from './apiBaseUrl.js';
 import { z } from 'zod';
 import { ImportedSentence } from '../../types/firestore.js';
 import { apiFetch } from './apiFetch.js';
@@ -211,8 +212,7 @@ export class AIClient {
   ): Promise<{ value: string } | null> {
     try {
       const type = this.glossCacheType(targetLanguage);
-      const response = await fetch(
-        `/api/lexical-cache/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}/${encodeURIComponent(type)}`
+      const response = await fetch(getApiUrl(`/api/lexical-cache/${encodeURIComponent(languageId)}/${encodeURIComponent(lemma)}/${encodeURIComponent(type)}`)
       );
       if (!response.ok) return null;
       return (await response.json()) as { value: string };
@@ -229,7 +229,7 @@ export class AIClient {
     targetLanguage?: string
   ): Promise<void> {
     try {
-      await fetch('/api/lexical-cache', {
+      await fetch(getApiUrl('/api/lexical-cache'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

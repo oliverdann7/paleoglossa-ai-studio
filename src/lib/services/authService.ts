@@ -1,6 +1,5 @@
 import {
   signInWithPopup,
-  getRedirectResult,
   signInWithEmailAndPassword,
   signInWithCredential,
   signOut as firebaseSignOut,
@@ -8,7 +7,7 @@ import {
   OAuthProvider,
 } from 'firebase/auth';
 import { auth, appleProvider } from '../firebase.js';
-import { isCapacitor } from '../platform.js';
+import { isCapacitor, capacitorPlatform } from '../platform.js';
 import { VocabularyService } from './vocabularyService.js';
 
 /**
@@ -35,21 +34,38 @@ export interface AuthResult {
 }
 
 /**
- * iOS OAuth client id for native Google Sign-In. Public configuration (client
+ * OAuth client ids for native Google Sign-In. Public configuration (client
  * ids ship inside every app bundle by design), baked in at build time from
  * `.env.native-production`. Empty on web builds and when not yet configured.
+ * iOS uses the iOS OAuth client; Android's Credential Manager flow validates
+ * the id token against the *web* OAuth client (client_type 3).
  */
 const GOOGLE_IOS_CLIENT_ID: string =
   (import.meta.env.VITE_GOOGLE_IOS_CLIENT_ID as string | undefined) ?? '';
+const GOOGLE_WEB_CLIENT_ID: string =
+  (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string | undefined) ?? '';
 
 /**
  * Whether Google Sign-In can work in this environment. Always true on web
- * (popup flow); on native it requires the iOS client id to have been baked
- * into the build — without it the native Google SDK cannot be configured, so
- * the button should not be offered.
+ * (popup flow); on native it requires the platform's client id to have been
+ * baked into the build — without it the native Google SDK cannot be
+ * configured, so the button should not be offered.
  */
 export function isGoogleSignInAvailable(): boolean {
-  return !isCapacitor() || GOOGLE_IOS_CLIENT_ID.length > 0;
+  if (!isCapacitor()) return true;
+  return capacitorPlatform() === 'android'
+    ? GOOGLE_WEB_CLIENT_ID.length > 0
+    : GOOGLE_IOS_CLIENT_ID.length > 0;
+}
+
+/**
+ * Whether Apple Sign-In can work in this environment. Web uses the popup
+ * flow; the native authorization sheet exists only on iOS. Android would
+ * need Apple's web-flow (service id + redirect URL + backend handling),
+ * which is not configured — the button must be hidden there.
+ */
+export function isAppleSignInAvailable(): boolean {
+  return !isCapacitor() || capacitorPlatform() === 'ios';
 }
 
 let socialLoginInit: Promise<void> | null = null;
@@ -57,16 +73,24 @@ let socialLoginInit: Promise<void> | null = null;
 /**
  * Lazily import and initialize the native social-login plugin exactly once.
  * Apple needs no configuration on iOS (it authorizes against the app's own
- * bundle id); Google is only initialized when a client id was baked in.
+ * bundle id) but must be omitted on Android, where the plugin rejects an
+ * empty apple config; Google is only initialized when the platform's client
+ * id was baked in.
  */
 async function getSocialLogin() {
   const { SocialLogin } = await import('@capgo/capacitor-social-login');
   if (!socialLoginInit) {
-    socialLoginInit = SocialLogin.initialize({
-      apple: {},
-      ...(GOOGLE_IOS_CLIENT_ID
+    const android = capacitorPlatform() === 'android';
+    const google = android
+      ? GOOGLE_WEB_CLIENT_ID
+        ? { google: { webClientId: GOOGLE_WEB_CLIENT_ID, mode: 'online' as const } }
+        : {}
+      : GOOGLE_IOS_CLIENT_ID
         ? { google: { iOSClientId: GOOGLE_IOS_CLIENT_ID, mode: 'online' as const } }
-        : {}),
+        : {};
+    socialLoginInit = SocialLogin.initialize({
+      ...(android ? {} : { apple: {} }),
+      ...google,
     });
   }
   await socialLoginInit;
@@ -126,9 +150,9 @@ export async function signInWithGoogle(promptAccountSelect = false): Promise<Aut
 }
 
 async function signInWithGoogleNative(): Promise<AuthResult> {
-  if (!GOOGLE_IOS_CLIENT_ID) {
-    // Build shipped without an iOS client id — the button is hidden in this
-    // case, so this is only reachable programmatically.
+  if (!isGoogleSignInAvailable()) {
+    // Build shipped without this platform's client id — the button is hidden
+    // in this case, so this is only reachable programmatically.
     return { success: false, errorCode: 'auth/operation-not-allowed', error: 'auth.networkError' };
   }
 
@@ -186,6 +210,11 @@ export async function signInWithApple(): Promise<AuthResult> {
 }
 
 async function signInWithAppleNative(): Promise<AuthResult> {
+  if (!isAppleSignInAvailable()) {
+    // Android: no Apple web-flow configured — the button is hidden there, so
+    // this is only reachable programmatically.
+    return { success: false, errorCode: 'auth/operation-not-allowed', error: 'auth.networkError' };
+  }
   const SocialLogin = await getSocialLogin();
   // Apple embeds SHA-256(nonce) in the identity token; Firebase verifies it
   // against the raw value passed to the credential (see makeAppleNonce).
@@ -224,23 +253,6 @@ export async function signInWithEmail(email: string, password: string): Promise<
   try {
     await withAuthTimeout(signInWithEmailAndPassword(auth, email, password));
     return { success: true };
-  } catch (err: any) {
-    return mapFirebaseError(err);
-  }
-}
-
-/**
- * Called once on app mount (inside AuthProvider) to recover a pending
- * `signInWithRedirect` result.  Must be awaited before the app claims
- * the user is still loading.
- */
-export async function handleRedirectResult(): Promise<AuthResult> {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result) {
-      return { success: true };
-    }
-    return { success: false };
   } catch (err: any) {
     return mapFirebaseError(err);
   }

@@ -9,6 +9,7 @@ import {
   signInWithApple,
   fetchSignInMethods,
   isGoogleSignInAvailable,
+  isAppleSignInAvailable,
 } from '@/lib/services/authService';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firebase';
@@ -32,9 +33,12 @@ export const SignUp = () => {
       navigate('/app');
     }
   };
-  // On native, OAuth runs through native SDK sheets (see authService). Apple
-  // works everywhere; Google needs an iOS client id baked into the build.
+  // On native, OAuth runs through native SDK sheets (see authService). Each
+  // provider button is hidden when its platform config is absent (Google
+  // needs a client id baked into native builds; Apple's native sheet exists
+  // only on iOS).
   const showGoogle = isGoogleSignInAvailable();
+  const showApple = isAppleSignInAvailable();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -236,6 +240,7 @@ export const SignUp = () => {
             </button>
             )}
 
+            {showApple && (
             <button
               onClick={handleAppleSignUp}
               disabled={loading}
@@ -248,6 +253,7 @@ export const SignUp = () => {
                 ? t('auth.pleaseWait', 'Please Wait...')
                 : t('auth.signUpApple', 'Sign up with Apple')}
             </button>
+            )}
 
             <div className="flex items-center gap-4 mb-6">
               <div className="h-px bg-bdr flex-1" />

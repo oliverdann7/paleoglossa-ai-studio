@@ -1,3 +1,5 @@
+import { getApiUrl } from './apiBaseUrl.js';
+
 export interface HistoricalContext {
   geography: string;
   period: string;
@@ -74,7 +76,7 @@ export async function fetchHistoricalContext(
     return persisted;
   }
 
-  const res = await fetch('/api/ai/historical-context', {
+  const res = await fetch(getApiUrl('/api/ai/historical-context'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(opts),

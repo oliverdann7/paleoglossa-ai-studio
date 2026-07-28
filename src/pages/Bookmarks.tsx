@@ -68,7 +68,7 @@ export const Bookmarks = () => {
   }
 
   return (
-    <div className="p-6 md:p-12 max-w-3xl mx-auto">
+    <div className="p-6 md:p-12 pt-safe-page max-w-3xl mx-auto">
       <header className="mb-10">
         <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2 flex items-center gap-3">
           <Bookmark className="w-7 h-7 text-amber" strokeWidth={1.5} />

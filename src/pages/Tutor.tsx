@@ -237,7 +237,7 @@ export const Tutor = () => {
   // ── Session list ────────────────────────────────────────────────────
   if (showSessionsList) {
     return (
-      <div className="p-6 md:p-12 max-w-2xl mx-auto font-sans min-h-screen">
+      <div className="p-6 md:p-12 pt-safe-page max-w-2xl mx-auto font-sans min-h-screen">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-[28px] font-serif font-bold text-ink">Tutor</h2>

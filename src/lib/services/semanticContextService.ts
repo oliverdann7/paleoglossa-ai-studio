@@ -1,3 +1,5 @@
+import { getApiUrl } from './apiBaseUrl.js';
+
 export interface SemanticCognate {
   language: string;
   word: string;
@@ -24,7 +26,7 @@ export async function fetchSemanticContext(opts: {
   const hit = _cache.get(key);
   if (hit) return hit;
 
-  const res = await fetch('/api/ai/semantic-context', {
+  const res = await fetch(getApiUrl('/api/ai/semantic-context'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(opts),

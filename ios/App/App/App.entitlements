@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<!--
-	  Native Sign in with Apple (@capacitor-community/apple-sign-in). REQUIRES
+	  Native Sign in with Apple (@capgo/capacitor-social-login). REQUIRES
 	  the "Sign in with Apple" capability to be enabled on the com.paleoglossa.app
 	  App ID in the Apple Developer portal — otherwise App Store distribution
 	  signing fails at archive/export. Enable it there before building.

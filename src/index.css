@@ -226,6 +226,18 @@
     padding-top: calc(2rem + env(safe-area-inset-top, 0px));
   }
 
+  /* Standard /app page root ("p-6 md:p-12"): keep the design padding and add
+     the safe-area inset on top so page headers clear the notch / status bar
+     in the native apps. Identical to p-6 / md:p-12 on web (inset = 0). */
+  .pt-safe-page {
+    padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+  }
+  @media (min-width: 768px) {
+    .pt-safe-page {
+      padding-top: calc(3rem + env(safe-area-inset-top, 0px));
+    }
+  }
+
   /* Hide scrollbar while keeping scroll behaviour (used on horizontal rails) */
   .no-scrollbar,
   .scrollbar-hide {

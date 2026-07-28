@@ -383,7 +383,7 @@ export function GrammarPathways() {
   const { pathwayId } = useParams<{ pathwayId?: string }>();
 
   return (
-    <div className="p-6 md:p-12 max-w-4xl mx-auto min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-4xl mx-auto min-h-screen">
       {!pathwayId && (
         <header className="mb-8">
           <div className="flex items-center gap-3 mb-2">

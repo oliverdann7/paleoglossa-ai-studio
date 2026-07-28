@@ -356,7 +356,7 @@ function ConceptDetail({
   }, [concept.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="p-6 md:p-12 max-w-3xl mx-auto font-sans min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-3xl mx-auto font-sans min-h-screen">
       <button
         onClick={onBack}
         className="text-muted hover:text-ink flex items-center gap-1 mb-6 transition-colors text-[13px]"
@@ -1017,7 +1017,7 @@ export const Grammar = () => {
     );
 
   return (
-    <div className="p-6 md:p-12 max-w-4xl mx-auto font-sans min-h-screen">
+    <div className="p-6 md:p-12 pt-safe-page max-w-4xl mx-auto font-sans min-h-screen">
       <header className="mb-6 flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue">

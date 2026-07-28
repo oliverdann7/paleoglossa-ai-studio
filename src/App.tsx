@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { features } from './lib/features.js';
 import { UpdatePrompt } from './components/UpdatePrompt.js';
+import { NativeAppBridge } from './components/NativeAppBridge.js';
 import { isCapacitor } from './lib/platform.js';
 
 const TutorDirectory = lazy(() =>
@@ -178,6 +179,7 @@ export default function App() {
           registered there. Native assets are already local; no SW is needed. */}
       {!isCapacitor() && <UpdatePrompt />}
       <BrowserRouter>
+        {isCapacitor() && <NativeAppBridge />}
         <Routes>
           {/* Marketing (Public) */}
           <Route path="/" element={<Landing />} />

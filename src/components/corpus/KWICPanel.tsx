@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Download, ChevronDown, ChevronRight, BookOpen, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorpusDB } from '@/data/corpus';
+import { downloadFile } from '../../lib/services/downloadService.js';
 
 interface Props {
   lemma: string;
@@ -116,12 +117,7 @@ export function KWICPanel({ lemma, languageId, maxResults = 200 }: Props) {
     }
     const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `kwic_${lemma}_${Date.now()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    void downloadFile(`kwic_${lemma}_${Date.now()}.csv`, blob);
   };
 
   if (totalHits === 0) {
