@@ -19,6 +19,39 @@ export interface AssembleResult extends IngestedText {
   complete: boolean;
 }
 
+/**
+ * A capability flag is earned, not declared: `hasMorphology` requires ≥90% of
+ * tokens to carry a real POS, `hasTranslation` requires ≥90% of sentences to
+ * carry a translation. (The 2026-08 audit found `hasMorphology: true` on 38
+ * served texts with 0% POS — flags must always be derived from the data.)
+ */
+const CAPABILITY_COVERAGE_THRESHOLD = 0.9;
+
+export function computeCapabilityFlags(sections: TextSection[]): {
+  hasMorphology: boolean;
+  hasTranslation: boolean;
+} {
+  let tokens = 0;
+  let tagged = 0;
+  let sentences = 0;
+  let translated = 0;
+  for (const section of sections) {
+    for (const sentence of section.sentences) {
+      sentences++;
+      if (sentence.translation && sentence.translation.trim() !== '') translated++;
+      for (const token of sentence.tokens) {
+        tokens++;
+        const pos = token.morphology?.partOfSpeech;
+        if (pos && pos !== 'unknown') tagged++;
+      }
+    }
+  }
+  return {
+    hasMorphology: tokens > 0 && tagged / tokens >= CAPABILITY_COVERAGE_THRESHOLD,
+    hasTranslation: sentences > 0 && translated / sentences >= CAPABILITY_COVERAGE_THRESHOLD,
+  };
+}
+
 export function assembleText(
   textId: string,
   language: string,
@@ -35,8 +68,7 @@ export function assembleText(
     id: textId,
     corpusId: meta.corpusId ?? `${language.toUpperCase()}_FIRESTORE`,
     language,
-    hasMorphology: true,
-    hasTranslation: sections.some((s) => s.sentences.some((sn) => !!sn.translation)),
+    ...computeCapabilityFlags(sections),
     ...meta,
     sourceStatus: complete ? 'complete' : 'partial',
     isComplete: complete,

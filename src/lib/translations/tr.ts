@@ -823,7 +823,7 @@ export const tr = {
     'plans.duo.feat4': 'YZ morfoloji ve gloss analizi',
     'plans.duo.feat5': 'Genel kütüphane paylaşımı',
     'plans.duo.feat6': 'Öncelikli destek',
-    'plans.full.feat1': 'Tüm 11 dildeki tüm metinlere erişim',
+    'plans.full.feat1': 'Tüm 12 dildeki tüm metinlere erişim',
     'plans.full.feat2': 'Her dilde sınırsız kelime kaydetme',
     'plans.full.feat3': 'Sınırsız metin içe aktarma',
     'plans.full.feat4': 'Sınırsız YZ morfoloji analizi',

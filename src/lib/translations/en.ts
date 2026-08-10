@@ -877,7 +877,7 @@ export const en = {
     'plans.duo.feat4': 'AI morphology & gloss analysis',
     'plans.duo.feat5': 'Public library sharing',
     'plans.duo.feat6': 'Priority support',
-    'plans.full.feat1': 'Access to all curated texts in all 11 languages',
+    'plans.full.feat1': 'Access to all curated texts in all 12 languages',
     'plans.full.feat2': 'Unlimited vocabulary saves in every language',
     'plans.full.feat3': 'Unlimited text imports',
     'plans.full.feat4': 'Unlimited AI morphology & gloss analysis',

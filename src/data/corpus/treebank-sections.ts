@@ -12,7 +12,7 @@
  * Treebank (CC BY-SA 3.0).
  */
 
-import type { TextSection } from '../../types/corpus.js';
+import type { Text, TextSection } from '../../types/corpus.js';
 
 // ─── Ancient Greek: John 1:1 (PROIEL-style) ───────────────────────────────────
 
@@ -185,3 +185,46 @@ export const ALL_TREEBANK_SECTIONS: TextSection[] = [
   TREEBANK_GRC_JN1,
   TREEBANK_LAT_CAES1,
 ];
+
+// ─── Parent texts ─────────────────────────────────────────────────────────────
+// The demo sections above carry the corpus's densest annotation layer (full
+// morphology + UD head/deprel) but were unreachable until these Text records
+// existed: CorpusDB only surfaces sections through a text's sectionsPreview.
+// They are libraryHidden — one-sentence demos are Syntax-page material, not
+// Library reading — and validation.test.ts allowlists them as vetted hidden.
+
+export const TEXT_TREEBANK_DEMO_GRC: Text = {
+  id: 'grc-treebank-demo',
+  corpusId: 'PALEOGLOSSA',
+  title: 'Syntax Demo — John 1:1',
+  language: 'grc-koine',
+  direction: 'ltr',
+  level: 'A2',
+  corpusType: 'biblical',
+  hasMorphology: true,
+  hasTranslation: true,
+  hasSyntax: true,
+  sourceStatus: 'excerpt',
+  isSample: true,
+  libraryHidden: true,
+  sentenceCount: 1,
+  sectionsPreview: [{ id: 'TB-grc-Jn1', label: 'John 1:1 (PROIEL)' }],
+};
+
+export const TEXT_TREEBANK_DEMO_LAT: Text = {
+  id: 'lat-treebank-demo',
+  corpusId: 'PALEOGLOSSA',
+  title: 'Syntax Demo — Caesar BG 1.1',
+  language: 'lat',
+  direction: 'ltr',
+  level: 'A2',
+  corpusType: 'classical',
+  hasMorphology: true,
+  hasTranslation: true,
+  hasSyntax: true,
+  sourceStatus: 'excerpt',
+  isSample: true,
+  libraryHidden: true,
+  sentenceCount: 1,
+  sectionsPreview: [{ id: 'TB-lat-Caes1', label: 'Caesar BG 1.1 (PLDT)' }],
+};

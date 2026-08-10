@@ -32,7 +32,7 @@ export const TEXT_LXX_GENESIS: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 1569,
-  wordCount: 32602,
+  wordCount: 32314,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-lxx-genesis-full-1', label: 'Γένεσις' },
@@ -60,7 +60,7 @@ export const TEXT_LXX_EXODUS: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 977,
-  wordCount: 24657,
+  wordCount: 24508,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-lxx-exodus-full-1', label: 'Ἔξοδος' },
@@ -88,7 +88,7 @@ export const TEXT_LXX_ISAIAH: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 2271,
-  wordCount: 42912,
+  wordCount: 35539,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-lxx-isaiah-full-1', label: 'Ἠσαΐας' },
@@ -116,7 +116,7 @@ export const TEXT_LXX_PROVERBS: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 925,
-  wordCount: 13718,
+  wordCount: 12224,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-lxx-proverbs-full-1', label: 'Παροιμίαι' },
@@ -144,7 +144,7 @@ export const TEXT_LXX_JONAH: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 82,
-  wordCount: 1548,
+  wordCount: 1290,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-lxx-jonah-full-1', label: 'Ἰωνᾶς' },

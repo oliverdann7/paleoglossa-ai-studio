@@ -168,13 +168,22 @@ first a11y test (`src/components/ui/__tests__/EmptyState.a11y.test.tsx`).
 
 ## Adding a corpus text
 
+**Full works / bulk content** go through the ingestion pipeline, never the bundle:
+
+1. Add a target to `scripts/corpus/ingest/manifest.ts` + a `SourceAttribution` in `src/data/attributions.ts` (license gate)
+2. Drop the source file in `.sources/` and run `npx tsx scripts/corpus/ingest/run-manifest.ts --only <textId> --emit-local` (static JSON in `public/corpus-data/`) or push to Firestore
+3. Add a bundled `remoteSections` metadata stub (see `src/data/corpus/*-full.ts`) — its `sentenceCount`/`wordCount` are locked against the served JSON by `validation.test.ts`
+4. After regenerating served JSON, run `npx tsx scripts/corpus/clean-served-corpus.ts` (junk-token strip, truthful capability flags, index rebuild)
+
+**Small curated samples** (beginner excerpts, hand-annotated) live in the bundle:
+
 1. Add sentences to `src/data/corpus/expanded-sections.ts` using the `sent()` helper
 2. Register section(s) in `CorpusDB.getSection()` in `src/data/corpus.ts`
 3. Update the `Text` definition with new section IDs in `sectionsPreview`
 4. Set `sourceStatus`, `isSample`, `sentenceCount` appropriately
 5. Run `npm run type-check && npm run lint && npm run build`
 
-For full morphology: add tokens directly to section definitions using the richly-tokenized format already in `corpus.ts`.
+For full morphology in bundled samples: use the richly-tokenized format (see `caesar-bellum-gallicum.ts`'s `w()` builder) — the plain `sent()` helper emits POS-only tokens.
 
 ---
 

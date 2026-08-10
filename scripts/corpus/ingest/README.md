@@ -26,7 +26,7 @@ segment → annotate → glossFill → assemble → pushFirestore
 | glossFill | `glossFill.ts` | Fill any remaining empty gloss from bundled dictionaries (`getDefinitionWithFallbacks`), then batch Gemini for the residue. Caches per `{language, lemma}`. |
 | assemble | `assemble.ts` | Build `Text` + `TextSection[]`, run the **shared** completeness gate (`validateTextAnnotations`). Passes → `complete`; gaps → `partial`. |
 | pushFirestore | `pushFirestore.ts` | Write to `corpus/{textId}` (+ sections), matching the shapes `api/_routes/corpus.ts` reads. Carries `sourceAttributionId` + `direction`. `--dry-run` needs no credentials. |
-| emitLocal | `emitLocal.ts` | Alternative sink to Firestore: write one `{ text, sections }` JSON to `api/_data/corpus/<textId>.json`. **No credentials needed.** Served by `api/_lib/localCorpus.ts` via the same `/api/corpus/*` endpoints, so the Reader renders it like any remote text — without bloating the eager `corpus` JS bundle. Use `--emit-local`. |
+| emitLocal | `emitLocal.ts` | Alternative sink to Firestore: write one `{ text, sections }` JSON to `public/corpus-data/<textId>.json` (plus a rebuilt `index.json`). **No credentials needed.** Served as a static CDN asset fetched directly by the client (`corpusService`), so the Reader renders it like any remote text — without bloating the eager `corpus` JS bundle or the serverless deploy. Use `--emit-local`. |
 
 The completeness gate (`src/data/corpus/validation.ts` → `validateTextAnnotations`)
 is the same check the bundled corpus uses: a text only becomes `complete` when
@@ -124,17 +124,23 @@ Flags: `--only <lang|textId>`, `--allow-noncommercial`, `--sources-dir <path>`,
 FIREBASE_SERVICE_ACCOUNT_JSON="$(cat sa.json)" \
   npm run ingest:manifest -- --only grc-koine
 
-# B) Local file-served (no credentials; committed JSON read on the server on
-#    demand; ideal for a curated high-value subset). Writes api/_data/corpus/*.json:
+# B) Local file-served (no credentials; committed static JSON fetched by the
+#    client; ideal for a curated high-value subset). Writes public/corpus-data/*.json:
 tsx scripts/corpus/ingest/run-manifest.ts --only grc-koine-mark-full --emit-local
 tsx scripts/corpus/ingest/run-manifest.ts --only hbo-genesis-full     --emit-local
 ```
 
-`--emit-local` is how the seeded full books (Mark, Genesis, Jonah, Ruth) ship in
-the app today, fully annotated from Macula with no AI and **zero bundle cost**
-(the JSON is server-side, not in the SPA chunk). Vercel ships the files via the
-`functions.includeFiles` entry in `vercel.json`. The whole Bible would be ~150 MB
-of JSON — past that subset, use Firestore (option A) rather than committing it.
+`--emit-local` is how the served full works ship in the app today, with **zero
+bundle cost** (the JSON is a static CDN asset under `public/corpus-data/`, not
+in the SPA chunk; each text also gets a bundled `remoteSections` metadata stub
+whose counts validation.test.ts locks against the emitted JSON). The committed
+corpus already weighs ~330 MB — for new bulk texts prefer Firestore (option A)
+rather than growing the repo and the native app payloads further.
+
+After hand-editing or regenerating any served JSON, run the maintenance pass
+(`npx tsx scripts/corpus/clean-served-corpus.ts`) — it strips junk tokens,
+recomputes the `hasMorphology`/`hasTranslation` capability flags from the
+actual tokens, and rebuilds `index.json`.
 
 To actually write, drop `--dry-run` and provide `FIREBASE_SERVICE_ACCOUNT_JSON`:
 

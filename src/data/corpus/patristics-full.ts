@@ -33,7 +33,7 @@ export const TEXT_1_CLEMENT_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 468,
-  wordCount: 9835,
+  wordCount: 9830,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-patristic-1-clement-full-1', label: 'Κλήμεντος πρὸς Κορινθίους' },
@@ -89,7 +89,7 @@ export const TEXT_IGNATIUS_EPHESIANS_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 404,
-  wordCount: 7752,
+  wordCount: 7748,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-patristic-ignatius-ephesians-full-1', label: 'Ἰγνάτιος' },
@@ -145,7 +145,7 @@ export const TEXT_JUSTIN_APOLOGY_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 501,
-  wordCount: 14440,
+  wordCount: 14434,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-patristic-justin-apology-full-1', label: 'Ἀπολογία' },
@@ -173,7 +173,7 @@ export const TEXT_HERMAS_SHEPHERD_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 1407,
-  wordCount: 28563,
+  wordCount: 28547,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-patristic-hermas-shepherd-full-1', label: 'Ποιμήν' },
@@ -201,7 +201,7 @@ export const TEXT_ATHANASIUS_INCARNATION_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 1018,
-  wordCount: 19786,
+  wordCount: 19782,
   remoteSections: true,
   sectionsPreview: [
     { id: 'grc-patristic-athanasius-incarnation-full-1', label: 'Περὶ τῆς ἐνανθρωπήσεως τοῦ Λόγου' },

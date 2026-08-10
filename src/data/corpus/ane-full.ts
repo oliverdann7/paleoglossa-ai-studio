@@ -32,7 +32,7 @@ export const TEXT_COPTIC_JOHN_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 879,
-  wordCount: 27447,
+  wordCount: 26655,
   remoteSections: true,
   sectionsPreview: [
     { id: 'cop-john-full-1', label: 'ⲒⲰⲀⲚⲚⲎⲤ 1' },
@@ -80,49 +80,10 @@ export const TEXT_TARGUM_ONKELOS_GENESIS_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 1533,
-  wordCount: 21697,
+  wordCount: 21524,
   remoteSections: true,
   sectionsPreview: [
     { id: 'arc-targum-onkelos-genesis-full-1', label: 'תרגום אונקלוס בראשית' },
-  ],
-};
-
-export const TEXT_GILGAMESH_FULL: Text = {
-  id: 'akk-gilgamesh-full',
-  corpusId: 'AKKADIAN_GILGAMESH',
-  title: 'Epic of Gilgamesh',
-  canonicalRef: 'Gilgameš — Tablet I – Gilgameš — Tablet XII',
-  author: 'Sin-leqi-unninni',
-  language: 'akk',
-  direction: 'ltr',
-  level: 'B1',
-  period: 'Standard Babylonian',
-  genre: 'epic poetry',
-  corpusType: 'classical',
-  tags: ['Mesopotamia', 'mythology', 'Enkidu'],
-  sourceAttributionId: 'ebl',
-  hasMorphology: false,
-  hasTranslation: false,
-  hasTransliteration: false,
-  sourceStatus: 'partial',
-  isComplete: false,
-  isSample: false,
-  sentenceCount: 2546,
-  wordCount: 27118,
-  remoteSections: true,
-  sectionsPreview: [
-    { id: 'akk-gilgamesh-full-1', label: 'Gilgameš — Tablet I' },
-    { id: 'akk-gilgamesh-full-2', label: 'Gilgameš — Tablet II' },
-    { id: 'akk-gilgamesh-full-3', label: 'Gilgameš — Tablet III' },
-    { id: 'akk-gilgamesh-full-4', label: 'Gilgameš — Tablet IV' },
-    { id: 'akk-gilgamesh-full-5', label: 'Gilgameš — Tablet V' },
-    { id: 'akk-gilgamesh-full-6', label: 'Gilgameš — Tablet VI' },
-    { id: 'akk-gilgamesh-full-7', label: 'Gilgameš — Tablet VII' },
-    { id: 'akk-gilgamesh-full-8', label: 'Gilgameš — Tablet VIII' },
-    { id: 'akk-gilgamesh-full-9', label: 'Gilgameš — Tablet IX' },
-    { id: 'akk-gilgamesh-full-10', label: 'Gilgameš — Tablet X' },
-    { id: 'akk-gilgamesh-full-11', label: 'Gilgameš — Tablet XI' },
-    { id: 'akk-gilgamesh-full-12', label: 'Gilgameš — Tablet XII' },
   ],
 };
 
@@ -174,6 +135,5 @@ export const TEXT_BHAGAVAD_GITA_FULL: Text = {
 export const ALL_ANE_FULL_TEXTS: Text[] = [
   TEXT_COPTIC_JOHN_FULL,
   TEXT_TARGUM_ONKELOS_GENESIS_FULL,
-  TEXT_GILGAMESH_FULL,
   TEXT_BHAGAVAD_GITA_FULL,
 ];

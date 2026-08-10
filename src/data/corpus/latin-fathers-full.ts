@@ -35,7 +35,7 @@ export const TEXT_AUGUSTINE_CONFESSIONES: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 3994,
-  wordCount: 79290,
+  wordCount: 79268,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-augustine-confessiones-full-1', label: 'Confessiones — Liber 1' },
@@ -75,7 +75,7 @@ export const TEXT_TERTULLIAN_APOLOGETICUM: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 1431,
-  wordCount: 20591,
+  wordCount: 20554,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-tertullian-apologeticum-full-1', label: 'Apologeticum' },
@@ -131,7 +131,7 @@ export const TEXT_JEROME_VITA_MALCHI: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 174,
-  wordCount: 2060,
+  wordCount: 2034,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-jerome-vita-malchi-full-1', label: 'Vita Malchi' },

@@ -1651,7 +1651,7 @@ export const TEXT_HERODOTUS: Text = {
   title: "Ἱστορίαι",
   canonicalRef: "Histories I.1–5",
   author: "Herodotus of Halicarnassus",
-  language: "grc-class",
+  language: "grc",
   direction: "ltr",
   level: "B1",
   period: '5th century BCE',
@@ -1676,7 +1676,7 @@ export const TEXT_THUCYDIDES: Text = {
   title: "Ἱστορία τοῦ Πελοποννησιακοῦ Πολέμου",
   canonicalRef: "I.1–3",
   author: "Thucydides",
-  language: "grc-class",
+  language: "grc",
   direction: "ltr",
   level: "C1",
   period: '5th century BCE',
@@ -1701,7 +1701,7 @@ export const TEXT_SOPHOCLES: Text = {
   title: "Ἀντιγόνη",
   canonicalRef: "Antigone 1–99",
   author: "Sophocles",
-  language: "grc-class",
+  language: "grc",
   direction: "ltr",
   level: "C1",
   period: '5th century BCE',
@@ -1726,7 +1726,7 @@ export const TEXT_PLUTARCH: Text = {
   title: "Ἀλέξανδρος",
   canonicalRef: "Life of Alexander 1–4",
   author: "Plutarch",
-  language: "grc-class",
+  language: "grc",
   direction: "ltr",
   level: "B2",
   period: '1st–2nd century CE',
@@ -1751,7 +1751,7 @@ export const TEXT_LUCIAN: Text = {
   title: "Χάρων ἢ Ἐπισκοποῦντες",
   canonicalRef: "Charon 1–8",
   author: "Lucian of Samosata",
-  language: "grc-class",
+  language: "grc",
   direction: "ltr",
   level: "B2",
   period: '2nd century CE',
@@ -4604,7 +4604,11 @@ const SUPERSEDED_BY_SERVED_FULL = new Set<string>([
   '1Clem-1', 'Did-1', 'Ign-Eph', 'Polyc-Phil', 'Justin-Apol',
   'Hermas-Vis-1', 'Athan-Inc-1',
   // Other languages
-  'Cop-Jn-1', 'Arc-Gen-1', 'Akk-Gilg-1', 'Akk-Gilg-full', 'San-Gita-1',
+  // (Akk-Gilg-1 / Akk-Gilg-full are NOT listed: their served counterpart
+  // akk-gilgamesh-full was quarantined — corrupt token stream, see
+  // scripts/corpus/clean-served-corpus.ts — so the curated excerpts are
+  // again the app's only Gilgamesh offering and must stay visible.)
+  'Cop-Jn-1', 'Arc-Gen-1', 'San-Gita-1',
   'Syr-Jn-1', 'Gen',
 ]);
 
@@ -4626,7 +4630,7 @@ const enhanceText = (text: Text): Text => {
 
 import { getMockTexts, getMockSections } from "./mockTexts.js";
 import { ALL_EXPANDED_SECTIONS } from "./corpus/expanded-sections.js";
-import { ALL_TREEBANK_SECTIONS } from "./corpus/treebank-sections.js";
+import { ALL_TREEBANK_SECTIONS, TEXT_TREEBANK_DEMO_GRC, TEXT_TREEBANK_DEMO_LAT } from "./corpus/treebank-sections.js";
 import { CAESAR_BELLUM_GALLICUM_1, CAESAR_BELLUM_GALLICUM_2, CAESAR_BELLUM_GALLICUM_3, CAESAR_BELLUM_GALLICUM_4 } from "./corpus/caesar-bellum-gallicum.js";
 import { LXX_GENESIS_1_1, LXX_GENESIS_1_2, LXX_PSALM_1_1, LXX_PSALM_33_1, LXX_EXODUS_12_1, LXX_ISAIAH_6_1, LXX_PROVERBS_1_1, LXX_PSALM_50_1, LXX_JONAH_1_1 } from "./corpus/lxx-septuagint.js";
 import { CLEMENT_1, DIDACHE_1, DIDACHE_2, ATHANASIUS_INCARNATION_1, CHRYSOSTOM_HOMILY_1, HERMAS_VISION_1, BASIL_HEXAEMERON_1, IGNATIUS_EPHESIANS_1, JUSTIN_MARTYR_APOLOGY_1, POLYCARP_PHILIPPIANS_1 } from "./corpus/patristics.js";
@@ -4690,6 +4694,8 @@ function getAllEnhancedTexts() {
       ...ALL_PATRISTICS_FULL_TEXTS,
       ...ALL_HEBREW_BIBLE_FULL_TEXTS,
       ...ALL_ANE_FULL_TEXTS,
+      TEXT_TREEBANK_DEMO_GRC,
+      TEXT_TREEBANK_DEMO_LAT,
       TEXT_GENESIS,
       TEXT_AENEID_1,
       TEXT_PSALM_23,

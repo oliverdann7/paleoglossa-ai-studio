@@ -772,7 +772,7 @@ export const es = {
     'plans.duo.feat4': 'Análisis de morfología e glosas con IA',
     'plans.duo.feat5': 'Compartir biblioteca públicamente',
     'plans.duo.feat6': 'Soporte prioritario',
-    'plans.full.feat1': 'Acceso a todos los textos curados en los 11 idiomas',
+    'plans.full.feat1': 'Acceso a todos los textos curados en los 12 idiomas',
     'plans.full.feat2': 'Guardado ilimitado de vocabulario en todos los idiomas',
     'plans.full.feat3': 'Importaciones de texto ilimitadas',
     'plans.full.feat4': 'Análisis ilimitado de morfología con IA',

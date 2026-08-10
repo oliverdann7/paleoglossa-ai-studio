@@ -12,11 +12,17 @@
  */
 
 import { tokenizeSentence } from '../../../src/data/corpus/helpers/textHelpers.js';
+import { isJunkToken } from './clean.js';
 import type { Sentence, TextSection, WorkInput } from './types.js';
 
 /** Tokenise one raw sentence into a canonical, not-yet-annotated `Sentence`. */
-export function segmentSentence(id: string, src: string, translation?: string): Sentence {
-  const raw = tokenizeSentence(id, src);
+export function segmentSentence(
+  id: string,
+  src: string,
+  translation?: string,
+  languageId = ''
+): Sentence {
+  const raw = tokenizeSentence(id, src).filter((t) => !isJunkToken(t.surface, languageId));
   return {
     id,
     translation,
@@ -43,6 +49,8 @@ export function segmentWork(work: WorkInput): TextSection[] {
     label: section.label,
     nextSectionId: section.nextSectionId,
     previousSectionId: section.previousSectionId,
-    sentences: section.sentences.map((s) => segmentSentence(s.id, s.src, s.translation)),
+    sentences: section.sentences
+      .map((s) => segmentSentence(s.id, s.src, s.translation, work.language))
+      .filter((s) => s.tokens.length > 0),
   }));
 }

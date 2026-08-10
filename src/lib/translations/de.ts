@@ -769,7 +769,7 @@ export const de = {
     'plans.duo.feat4': 'KI-Morphologie & Glossen-Analyse',
     'plans.duo.feat5': 'Öffentliche Bibliotheksteilung',
     'plans.duo.feat6': 'Prioritäts-Support',
-    'plans.full.feat1': 'Zugang zu allen kuratierten Texten in allen 11 Sprachen',
+    'plans.full.feat1': 'Zugang zu allen kuratierten Texten in allen 12 Sprachen',
     'plans.full.feat2': 'Unbegrenzte Vokabelspeicherungen in jeder Sprache',
     'plans.full.feat3': 'Unbegrenzte Textimporte',
     'plans.full.feat4': 'Unbegrenzte KI-Morphologie & Glossen-Analyse',
