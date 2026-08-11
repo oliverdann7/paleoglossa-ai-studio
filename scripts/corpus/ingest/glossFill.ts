@@ -20,7 +20,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
 import { getDefinitionWithFallbacks } from '../../../src/lib/data/dictionary.js';
-import { getLanguageName } from '../../../api/_lib/aiPrompts.js';
+import { getLanguageName, GEMINI_MODEL } from '../../../api/_lib/aiPrompts.js';
 import type { TextSection } from './types.js';
 
 export interface GlossCacheEntry {
@@ -74,7 +74,7 @@ export function createGeminiGlossResolver(apiKey: string): AiGlossResolver {
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });
     const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODEL,
       contents: glossPrompt(languageId, lemma, surface),
     });
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';

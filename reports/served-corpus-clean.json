@@ -568,8 +568,8 @@
     "sentenceCount": 48,
     "wordCount": 1081,
     "hasMorphology": true,
-    "hasTranslation": false,
-    "changed": false
+    "hasTranslation": true,
+    "changed": true
   },
   {
     "id": "hbo-ruth-full",
@@ -668,7 +668,7 @@
     "wordCount": 10732,
     "hasMorphology": true,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-tacitus-annals-full",

@@ -20,7 +20,7 @@
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
-import { buildSentenceAnalysisPrompt } from '../../../api/_lib/aiPrompts.js';
+import { buildSentenceAnalysisPrompt, GEMINI_MODEL } from '../../../api/_lib/aiPrompts.js';
 import type { Morphology, Sentence } from '../../../src/types/corpus.js';
 
 // ── Cache ────────────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ export function createGeminiSentenceResolver(apiKey: string): AiSentenceResolver
     const { GoogleGenAI } = await import('@google/genai');
     const genAI = new GoogleGenAI({ apiKey });
     const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODEL,
       contents: buildSentenceAnalysisPrompt(sentenceText, languageId, 'scholar'),
     });
     const raw = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';

@@ -1,4 +1,14 @@
 /**
+ * Gemini model for every AI surface (server routes + offline corpus tooling).
+ * `gemini-flash-latest` is Google's rolling alias for the current Flash tier —
+ * the previously pinned gemini-2.0-flash was RETIRED by Google (404 "no longer
+ * available", observed 2026-08), which silently broke every AI feature. The
+ * alias survives model retirements; override via GEMINI_MODEL if a pin is
+ * ever needed.
+ */
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
+
+/**
  * Language-specific instructions for the AI analysis prompt.
  * Each entry gives the AI context about the language's script, morphology,
  * and common pitfalls to improve analysis quality.

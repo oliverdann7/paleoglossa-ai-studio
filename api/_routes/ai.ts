@@ -15,6 +15,7 @@ import {
   buildCourseQuizPrompt,
   type SentenceAnalysisResult,
   type CourseQuizResult,
+  GEMINI_MODEL,
 } from '../_lib/aiPrompts.js';
 import { requireAuth, optionalAuth } from '../_lib/auth.js';
 import { checkAndIncrementUsage, lookupEffectivePlan, enforceAiQuota } from '../_lib/aiUsage.js';
@@ -188,7 +189,7 @@ Text to analyze:
 ${rawText.slice(0, 20000)}`;
 
         const response = await genAI.models.generateContent({
-          model: 'gemini-2.0-flash',
+          model: GEMINI_MODEL,
           contents: prompt,
         });
 
@@ -310,7 +311,7 @@ Rules:
     let response: any;
     try {
       response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: [
           {
             role: 'user',
@@ -407,7 +408,7 @@ Rules:
 Sentence: ${sentence}`;
 
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: prompt,
       });
 
@@ -601,7 +602,7 @@ Keep the response focused and learner-friendly. Use plain text with clear sectio
     }
 
     const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODEL,
       contents: prompt,
     });
 
@@ -697,7 +698,7 @@ Rules:
 - If you cannot provide a guide, set guide to null and explain why in notes.`;
 
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: prompt,
       });
       const textResponse = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -848,7 +849,7 @@ Rules:
 Text: ${rawText.slice(0, 5000)}`;
 
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: prompt,
       });
       const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -933,7 +934,7 @@ Rules:
 - Do not include markdown. Return ONLY the JSON.`;
 
     const response = await genAI.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODEL,
       contents: prompt,
     });
     const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -1244,7 +1245,7 @@ router.post(
       const { GoogleGenAI } = await import('@google/genai');
       const genAI = new GoogleGenAI({ apiKey });
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: prompt,
       });
       const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -1458,7 +1459,7 @@ router.post(
         mode as 'beginner' | 'scholar'
       );
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: prompt,
       });
 
@@ -1529,7 +1530,7 @@ router.post(
 
       const prompt = buildCourseQuizPrompt(textSnippet, languageId, count);
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: prompt,
       });
 
@@ -1634,7 +1635,7 @@ Keep each section brief and learner-friendly. Focus on what helps a student read
       const { GoogleGenAI } = await import('@google/genai');
       const genAI = new GoogleGenAI({ apiKey });
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           temperature: 0.3,
@@ -1742,7 +1743,7 @@ Rules:
       const { GoogleGenAI } = await import('@google/genai');
       const genAI = new GoogleGenAI({ apiKey });
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: { temperature: 0.3, maxOutputTokens: 800 },
       });
@@ -1821,7 +1822,7 @@ Keep the summary informative but accessible. Do not use jargon without explanati
 
     const model = genAI.models;
     const result = await model.generateContent({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODEL,
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
     });
 
@@ -1883,7 +1884,7 @@ Write 2–4 sentences of apparatus-style commentary on any known manuscript vari
 If no significant variants are known for this specific lemma in this language, say so briefly. Write in the style of a textual criticism handbook entry — precise, scholarly, non-redundant. Do not add bullet points; prose only.`;
 
       const response = await genAI.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: GEMINI_MODEL,
         contents: prompt,
       });
 
