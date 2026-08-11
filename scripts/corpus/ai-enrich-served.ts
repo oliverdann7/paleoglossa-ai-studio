@@ -40,6 +40,7 @@ const flag = (name: string) => process.argv.includes(`--${name}`);
 const onlyText = arg('text');
 const onlyLanguage = arg('language');
 const limit = Number(arg('limit') ?? Infinity);
+const concurrency = Number(arg('concurrency') ?? 4);
 const translateOnly = flag('translate-only');
 const dryRun = flag('dry-run');
 
@@ -71,8 +72,33 @@ let cacheHits = 0;
 let morphFilled = 0;
 let glossFilled = 0;
 let translationsSet = 0;
+let quotaExhausted = false;
+
+/** One resolver call with 429/503 backoff. Sets quotaExhausted on persistent daily-quota failure. */
+async function resolveWithRetry(
+  languageId: string,
+  text: string
+): Promise<AiSentenceAnalysis | null> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      return await resolver!(languageId, text);
+    } catch (err) {
+      const status = (err as { status?: number }).status;
+      if (status === 429 || status === 503) {
+        const wait = Math.min(60_000, 2_000 * 2 ** attempt);
+        await new Promise((r) => setTimeout(r, wait));
+        continue;
+      }
+      throw err;
+    }
+  }
+  // 5 consecutive rate-limit failures ≈ daily quota, not a burst — stop cleanly.
+  quotaExhausted = true;
+  return null;
+}
 
 for (const file of readdirSync(DIR).sort()) {
+  if (quotaExhausted) break;
   if (!file.endsWith('.json') || file === 'index.json') continue;
   const path = join(DIR, file);
   const record = JSON.parse(readFileSync(path, 'utf-8')) as ServedRecord;
@@ -83,34 +109,54 @@ for (const file of readdirSync(DIR).sort()) {
   const cache = loadAiCache(cachePath);
   let changed = false;
 
-  outer: for (const section of record.sections) {
+  // Collect this text's pending sentences, bounded by the remaining call budget.
+  const pending: { sentence: Sentence; key: string }[] = [];
+  for (const section of record.sections) {
     for (const sentence of section.sentences) {
       const need = sentenceNeedsWork(sentence);
       if (!need.morph && !need.translation) continue;
-      if (calls >= limit) break outer;
-
       const key = `${record.text.language}::${sentence.id}`;
-      let analysis: AiSentenceAnalysis | undefined = cache[key];
-      if (analysis) {
+      if (cache[key]) {
         cacheHits++;
-      } else {
-        if (dryRun || !resolver) {
-          calls++; // dry-run: count what a real run would spend
-          continue;
-        }
-        const resolved = await resolver(record.text.language, sentenceText(sentence));
+        const r = applyAnalysis(sentence, cache[key]);
+        morphFilled += r.morphFilled;
+        glossFilled += r.glossFilled;
+        if (r.translationSet) translationsSet++;
+        if (r.morphFilled || r.glossFilled || r.translationSet) changed = true;
+        continue;
+      }
+      if (calls + pending.length >= limit) break;
+      pending.push({ sentence, key });
+    }
+  }
+
+  if (dryRun || !resolver) {
+    calls += pending.length; // dry-run: count what a real run would spend
+  } else if (pending.length > 0) {
+    console.log(`${record.text.id}: ${pending.length} sentences to resolve…`);
+    let cursor = 0;
+    const worker = async () => {
+      while (!quotaExhausted) {
+        const i = cursor++;
+        if (i >= pending.length) return;
+        const { sentence, key } = pending[i];
+        const resolved = await resolveWithRetry(record.text.language, sentenceText(sentence));
         calls++;
         if (!resolved) continue;
         cache[key] = resolved;
-        analysis = resolved;
+        const r = applyAnalysis(sentence, resolved);
+        morphFilled += r.morphFilled;
+        glossFilled += r.glossFilled;
+        if (r.translationSet) translationsSet++;
+        if (r.morphFilled || r.glossFilled || r.translationSet) changed = true;
+        if (calls % 100 === 0) {
+          // Periodic checkpoint so an interrupted run loses at most ~100 calls.
+          saveAiCache(cachePath, cache);
+          console.log(`  …${calls} calls (${translationsSet} translations, ${morphFilled} morph)`);
+        }
       }
-
-      const r = applyAnalysis(sentence, analysis);
-      morphFilled += r.morphFilled;
-      glossFilled += r.glossFilled;
-      if (r.translationSet) translationsSet++;
-      if (r.morphFilled || r.glossFilled || r.translationSet) changed = true;
-    }
+    };
+    await Promise.all(Array.from({ length: concurrency }, worker));
   }
 
   if (changed && !dryRun) {
@@ -118,6 +164,9 @@ for (const file of readdirSync(DIR).sort()) {
     saveAiCache(cachePath, cache);
     console.log(`${record.text.id}: updated`);
   }
+}
+if (quotaExhausted) {
+  console.log('\nSTOPPED: persistent rate-limiting (daily API quota likely exhausted). Re-run later — the cache resumes exactly where this left off.');
 }
 
 console.log(
