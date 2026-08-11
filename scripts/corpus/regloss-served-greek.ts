@@ -15,7 +15,7 @@
  *
  * Usage: npx tsx scripts/corpus/regloss-served-greek.ts [--dry-run]
  */
-import { readdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
+import { readdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
 const TSV = 'scripts/corpus/ingest/.sources/macula-greek.tsv';

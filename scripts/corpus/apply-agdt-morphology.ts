@@ -89,7 +89,7 @@ function decodePostag(postag: string): Morphology | undefined {
   if (!pos) return undefined;
   const m: Morphology = { partOfSpeech: pos };
   const set = (field: keyof Morphology, table: Record<string, string>, ch?: string) => {
-    if (ch && table[ch]) (m as Record<string, string>)[field] = table[ch];
+    if (ch && table[ch]) (m as unknown as Record<string, string>)[field] = table[ch];
   };
   set('person', PERSON, postag[1]);
   set('number', NUMBER, postag[2]);
