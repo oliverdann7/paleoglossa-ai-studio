@@ -2,66 +2,66 @@
   {
     "id": "arc-targum-onkelos-genesis-full",
     "language": "arc",
-    "tokensRemoved": 173,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 1533,
     "wordCount": 21524,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "cop-john-full",
     "language": "cop",
-    "tokensRemoved": 792,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 879,
     "wordCount": 26655,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-aesop-fables-full",
     "language": "grc",
-    "tokensRemoved": 2457,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 987,
     "wordCount": 4738,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-herodotus-histories-full",
     "language": "grc",
-    "tokensRemoved": 4578,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 6858,
     "wordCount": 185558,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-homer-iliad-full",
     "language": "grc",
-    "tokensRemoved": 6,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 3846,
     "wordCount": 111966,
-    "hasMorphology": false,
+    "hasMorphology": true,
     "hasTranslation": false,
     "changed": true
   },
   {
     "id": "grc-homer-odyssey-full",
     "language": "grc",
-    "tokensRemoved": 30,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 3381,
     "wordCount": 87522,
-    "hasMorphology": false,
+    "hasMorphology": true,
     "hasTranslation": false,
     "changed": true
   },
@@ -354,90 +354,90 @@
   {
     "id": "grc-lucian-charon-full",
     "language": "grc",
-    "tokensRemoved": 23,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 220,
     "wordCount": 4766,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-lxx-exodus-full",
     "language": "grc-koine",
-    "tokensRemoved": 149,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 977,
     "wordCount": 24508,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-lxx-genesis-full",
     "language": "grc-koine",
-    "tokensRemoved": 288,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 1569,
     "wordCount": 32314,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-lxx-isaiah-full",
     "language": "grc-koine",
-    "tokensRemoved": 7373,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 2271,
     "wordCount": 35539,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-lxx-jonah-full",
     "language": "grc-koine",
-    "tokensRemoved": 258,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 82,
     "wordCount": 1290,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-lxx-proverbs-full",
     "language": "grc-koine",
-    "tokensRemoved": 1494,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 925,
     "wordCount": 12224,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-patristic-1-clement-full",
     "language": "grc-koine",
-    "tokensRemoved": 5,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 468,
     "wordCount": 9830,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-patristic-athanasius-incarnation-full",
     "language": "grc-koine",
-    "tokensRemoved": 4,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 1018,
     "wordCount": 19782,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-patristic-didache-full",
@@ -448,40 +448,40 @@
     "wordCount": 2191,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-patristic-hermas-shepherd-full",
     "language": "grc-koine",
-    "tokensRemoved": 16,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 1407,
     "wordCount": 28547,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-patristic-ignatius-ephesians-full",
     "language": "grc-koine",
-    "tokensRemoved": 4,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 404,
     "wordCount": 7748,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-patristic-justin-apology-full",
     "language": "grc-koine",
-    "tokensRemoved": 6,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 501,
     "wordCount": 14434,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-patristic-polycarp-philippians-full",
@@ -492,29 +492,29 @@
     "wordCount": 1580,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-plato-apology-full",
     "language": "grc",
-    "tokensRemoved": 190,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 290,
     "wordCount": 7445,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-plutarch-alexander-full",
     "language": "grc",
-    "tokensRemoved": 3,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 717,
     "wordCount": 19877,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-sophocles-antigone-full",
@@ -525,29 +525,29 @@
     "wordCount": 7659,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-thucydides-history-full",
     "language": "grc",
-    "tokensRemoved": 3598,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 4261,
     "wordCount": 150249,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-xenophon-anabasis-full",
     "language": "grc",
-    "tokensRemoved": 1474,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 2214,
     "wordCount": 57322,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "hbo-genesis-full",
@@ -585,24 +585,24 @@
   {
     "id": "lat-augustine-confessiones-full",
     "language": "lat",
-    "tokensRemoved": 22,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 3994,
     "wordCount": 79268,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-cicero-in-catilinam-full",
     "language": "lat",
-    "tokensRemoved": 1,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 762,
     "wordCount": 12743,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-disticha-catonis-full",
@@ -613,18 +613,18 @@
     "wordCount": 2090,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-jerome-vita-malchi-full",
     "language": "lat",
-    "tokensRemoved": 26,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 174,
     "wordCount": 2034,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-jerome-vita-pauli-full",
@@ -635,7 +635,7 @@
     "wordCount": 2455,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-livy-ab-urbe-condita-full",
@@ -646,73 +646,73 @@
     "wordCount": 87981,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-ovid-metamorphoses-full",
     "language": "lat",
-    "tokensRemoved": 2426,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 2938,
     "wordCount": 78078,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-sallust-catilinae-full",
     "language": "lat",
-    "tokensRemoved": 450,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 808,
     "wordCount": 10732,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-tacitus-annals-full",
     "language": "lat",
-    "tokensRemoved": 18,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 3374,
     "wordCount": 48640,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-tertullian-apologeticum-full",
     "language": "lat",
-    "tokensRemoved": 37,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 1431,
     "wordCount": 20554,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-vergil-aeneid-full",
     "language": "lat",
-    "tokensRemoved": 1985,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 3039,
     "wordCount": 63799,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-vulgate-john-full",
     "language": "lat",
-    "tokensRemoved": 858,
+    "tokensRemoved": 0,
     "sentencesRemoved": 0,
     "sentenceCount": 1315,
     "wordCount": 14077,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "san-bhagavad-gita-full",
@@ -723,7 +723,7 @@
     "wordCount": 6356,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "syr-peshitta-1-corinthians-full",
