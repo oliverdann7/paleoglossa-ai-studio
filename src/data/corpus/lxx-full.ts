@@ -35,7 +35,17 @@ export const TEXT_LXX_GENESIS: Text = {
   wordCount: 32314,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-lxx-genesis-full-1', label: 'Γένεσις' },
+    { id: 'grc-lxx-genesis-full-1', label: "Part 1" },
+    { id: 'grc-lxx-genesis-full-2', label: "Part 2" },
+    { id: 'grc-lxx-genesis-full-3', label: "Part 3" },
+    { id: 'grc-lxx-genesis-full-4', label: "Part 4" },
+    { id: 'grc-lxx-genesis-full-5', label: "Part 5" },
+    { id: 'grc-lxx-genesis-full-6', label: "Part 6" },
+    { id: 'grc-lxx-genesis-full-7', label: "Part 7" },
+    { id: 'grc-lxx-genesis-full-8', label: "Part 8" },
+    { id: 'grc-lxx-genesis-full-9', label: "Part 9" },
+    { id: 'grc-lxx-genesis-full-10', label: "Part 10" },
+    { id: 'grc-lxx-genesis-full-11', label: "Part 11" },
   ],
 };
 
@@ -63,7 +73,13 @@ export const TEXT_LXX_EXODUS: Text = {
   wordCount: 24508,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-lxx-exodus-full-1', label: 'Ἔξοδος' },
+    { id: 'grc-lxx-exodus-full-1', label: "Part 1" },
+    { id: 'grc-lxx-exodus-full-2', label: "Part 2" },
+    { id: 'grc-lxx-exodus-full-3', label: "Part 3" },
+    { id: 'grc-lxx-exodus-full-4', label: "Part 4" },
+    { id: 'grc-lxx-exodus-full-5', label: "Part 5" },
+    { id: 'grc-lxx-exodus-full-6', label: "Part 6" },
+    { id: 'grc-lxx-exodus-full-7', label: "Part 7" },
   ],
 };
 
@@ -91,7 +107,22 @@ export const TEXT_LXX_ISAIAH: Text = {
   wordCount: 35539,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-lxx-isaiah-full-1', label: 'Ἠσαΐας' },
+    { id: 'grc-lxx-isaiah-full-1', label: "Part 1" },
+    { id: 'grc-lxx-isaiah-full-2', label: "Part 2" },
+    { id: 'grc-lxx-isaiah-full-3', label: "Part 3" },
+    { id: 'grc-lxx-isaiah-full-4', label: "Part 4" },
+    { id: 'grc-lxx-isaiah-full-5', label: "Part 5" },
+    { id: 'grc-lxx-isaiah-full-6', label: "Part 6" },
+    { id: 'grc-lxx-isaiah-full-7', label: "Part 7" },
+    { id: 'grc-lxx-isaiah-full-8', label: "Part 8" },
+    { id: 'grc-lxx-isaiah-full-9', label: "Part 9" },
+    { id: 'grc-lxx-isaiah-full-10', label: "Part 10" },
+    { id: 'grc-lxx-isaiah-full-11', label: "Part 11" },
+    { id: 'grc-lxx-isaiah-full-12', label: "Part 12" },
+    { id: 'grc-lxx-isaiah-full-13', label: "Part 13" },
+    { id: 'grc-lxx-isaiah-full-14', label: "Part 14" },
+    { id: 'grc-lxx-isaiah-full-15', label: "Part 15" },
+    { id: 'grc-lxx-isaiah-full-16', label: "Part 16" },
   ],
 };
 
@@ -119,7 +150,13 @@ export const TEXT_LXX_PROVERBS: Text = {
   wordCount: 12224,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-lxx-proverbs-full-1', label: 'Παροιμίαι' },
+    { id: 'grc-lxx-proverbs-full-1', label: "Part 1" },
+    { id: 'grc-lxx-proverbs-full-2', label: "Part 2" },
+    { id: 'grc-lxx-proverbs-full-3', label: "Part 3" },
+    { id: 'grc-lxx-proverbs-full-4', label: "Part 4" },
+    { id: 'grc-lxx-proverbs-full-5', label: "Part 5" },
+    { id: 'grc-lxx-proverbs-full-6', label: "Part 6" },
+    { id: 'grc-lxx-proverbs-full-7', label: "Part 7" },
   ],
 };
 

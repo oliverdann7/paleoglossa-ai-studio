@@ -351,7 +351,11 @@ export const TEXT_ANTIGONE_FULL: Text = {
   wordCount: 7659,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-sophocles-antigone-full-1', label: 'Ἀντιγόνη' },
+    { id: 'grc-sophocles-antigone-full-1', label: "Part 1" },
+    { id: 'grc-sophocles-antigone-full-2', label: "Part 2" },
+    { id: 'grc-sophocles-antigone-full-3', label: "Part 3" },
+    { id: 'grc-sophocles-antigone-full-4', label: "Part 4" },
+    { id: 'grc-sophocles-antigone-full-5', label: "Part 5" },
   ],
 };
 
@@ -379,7 +383,11 @@ export const TEXT_PLUTARCH_ALEXANDER_FULL: Text = {
   wordCount: 19877,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-plutarch-alexander-full-1', label: 'Ἀλέξανδρος' },
+    { id: 'grc-plutarch-alexander-full-1', label: "Part 1" },
+    { id: 'grc-plutarch-alexander-full-2', label: "Part 2" },
+    { id: 'grc-plutarch-alexander-full-3', label: "Part 3" },
+    { id: 'grc-plutarch-alexander-full-4', label: "Part 4" },
+    { id: 'grc-plutarch-alexander-full-5', label: "Part 5" },
   ],
 };
 

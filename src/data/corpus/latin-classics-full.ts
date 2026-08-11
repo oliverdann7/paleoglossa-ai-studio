@@ -179,7 +179,12 @@ export const TEXT_SALLUST_FULL: Text = {
   wordCount: 10732,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'lat-sallust-catilinae-full-1', label: 'Bellum Catilinae' },
+    { id: 'lat-sallust-catilinae-full-1', label: "Part 1" },
+    { id: 'lat-sallust-catilinae-full-2', label: "Part 2" },
+    { id: 'lat-sallust-catilinae-full-3', label: "Part 3" },
+    { id: 'lat-sallust-catilinae-full-4', label: "Part 4" },
+    { id: 'lat-sallust-catilinae-full-5', label: "Part 5" },
+    { id: 'lat-sallust-catilinae-full-6', label: "Part 6" },
   ],
 };
 
@@ -271,7 +276,15 @@ export const TEXT_VULGATE_JOHN_FULL: Text = {
   wordCount: 14077,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'lat-vulgate-john-full-1', label: 'Evangelium secundum Ioannem' },
+    { id: 'lat-vulgate-john-full-1', label: "Part 1" },
+    { id: 'lat-vulgate-john-full-2', label: "Part 2" },
+    { id: 'lat-vulgate-john-full-3', label: "Part 3" },
+    { id: 'lat-vulgate-john-full-4', label: "Part 4" },
+    { id: 'lat-vulgate-john-full-5', label: "Part 5" },
+    { id: 'lat-vulgate-john-full-6', label: "Part 6" },
+    { id: 'lat-vulgate-john-full-7', label: "Part 7" },
+    { id: 'lat-vulgate-john-full-8', label: "Part 8" },
+    { id: 'lat-vulgate-john-full-9', label: "Part 9" },
   ],
 };
 

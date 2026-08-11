@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T08:07:37.220Z",
+  "generatedAt": "2026-08-11T08:11:59.415Z",
   "totalLanguages": 12,
   "totalTexts": 166,
   "totalTokens": 26640,
@@ -655,7 +655,7 @@
       "language": "grc",
       "metrics": {
         "texts": 10,
-        "sections": 130,
+        "sections": 138,
         "sentences": 23460,
         "sentencesWithTranslation": 0,
         "tokens": 637102,
@@ -68434,7 +68434,7 @@
       "language": "lat",
       "metrics": {
         "texts": 12,
-        "sections": 64,
+        "sections": 86,
         "sentences": 24571,
         "sentencesWithTranslation": 0,
         "tokens": 422451,
@@ -141340,7 +141340,7 @@
       "language": "grc-koine",
       "metrics": {
         "texts": 38,
-        "sections": 251,
+        "sections": 311,
         "sentences": 16851,
         "sentencesWithTranslation": 0,
         "tokens": 312103,
@@ -175774,7 +175774,7 @@
       "language": "arc",
       "metrics": {
         "texts": 1,
-        "sections": 1,
+        "sections": 50,
         "sentences": 1533,
         "sentencesWithTranslation": 0,
         "tokens": 21524,

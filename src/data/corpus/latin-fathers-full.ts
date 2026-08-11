@@ -78,7 +78,16 @@ export const TEXT_TERTULLIAN_APOLOGETICUM: Text = {
   wordCount: 20554,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'lat-tertullian-apologeticum-full-1', label: 'Apologeticum' },
+    { id: 'lat-tertullian-apologeticum-full-1', label: "Part 1" },
+    { id: 'lat-tertullian-apologeticum-full-2', label: "Part 2" },
+    { id: 'lat-tertullian-apologeticum-full-3', label: "Part 3" },
+    { id: 'lat-tertullian-apologeticum-full-4', label: "Part 4" },
+    { id: 'lat-tertullian-apologeticum-full-5', label: "Part 5" },
+    { id: 'lat-tertullian-apologeticum-full-6', label: "Part 6" },
+    { id: 'lat-tertullian-apologeticum-full-7', label: "Part 7" },
+    { id: 'lat-tertullian-apologeticum-full-8', label: "Part 8" },
+    { id: 'lat-tertullian-apologeticum-full-9', label: "Part 9" },
+    { id: 'lat-tertullian-apologeticum-full-10', label: "Part 10" },
   ],
 };
 
