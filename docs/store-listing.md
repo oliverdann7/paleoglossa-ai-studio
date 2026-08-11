@@ -44,9 +44,9 @@ Caesar, Gilgamesh, or the Bhagavad Gita — and instantly see lemma,
 morphology, paradigm tables, and AI-powered translation.
 
 KEY FEATURES
-- 11 ancient languages: Ancient Greek, Koine Greek, Biblical Hebrew,
-  Classical Latin, Septuagint, Syriac, Coptic, Aramaic, Akkadian,
-  Sanskrit, Hittite, and Egyptian.
+- 12 ancient languages: Ancient Greek, Koine Greek, Biblical Hebrew,
+  Classical Latin, Syriac, Coptic, Aramaic, Akkadian, Sanskrit,
+  Egyptian, Hittite, and Ugaritic.
 - Immersive reader with knowledge states (NEW → LEARNING → KNOWN)
   that follow you across every text in the corpus.
 - FSRS-5 spaced repetition built around the words you actually

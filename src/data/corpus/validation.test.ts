@@ -35,28 +35,11 @@ describe('corpus production data', () => {
    * When you fix one of these, REMOVE it from this list. Do not add new
    * entries to silence regressions.
    */
-  const KNOWN_VALIDATE_CORPUS_ERRORS = new Set<string>([
-    'Text "grc-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "grc-koine-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "lat-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "heb-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "syr-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "cop-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "arc-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "akk-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "hit-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "uga-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "san-vocab" has isSample=false but sourceStatus is "undefined"',
-    'Text "egy-vocab" has isSample=false but sourceStatus is "undefined"',
-    // Completeness-gate baseline: texts currently marked complete but whose
-    // tokens are not fully POS-tagged + glossed. Tracked for systematic
-    // backfill — when a text's annotation gap closes, update or remove its
-    // entry here. The gate prevents NEW under-annotated texts from landing
-    // under sourceStatus: 'complete'.
-    //
-    // Jn-full was backfilled from Macula Greek (JN_LEX_MACULA in john-full.ts);
-    // it now annotates every token and is no longer baselined.
-  ]);
+  // 2026-08: the baseline is EMPTY — the last 12 entries (the `*-vocab`
+  // texts, which shipped without a sourceStatus) were fixed by reflagging
+  // them as excerpt+sample in vocabulary-texts.ts. Keep it empty: new
+  // validation errors must be fixed, not baselined.
+  const KNOWN_VALIDATE_CORPUS_ERRORS = new Set<string>([]);
 
   it('introduces no new validateCorpus regressions over the known baseline', () => {
     const errors = validateCorpus();
@@ -197,13 +180,21 @@ describe('corpus production data', () => {
       'Athan-Inc-1': 'grc-patristic-athanasius-incarnation-full',
       'Cop-Jn-1': 'cop-john-full',
       'Arc-Gen-1': 'arc-targum-onkelos-genesis-full',
-      'Akk-Gilg-1': 'akk-gilgamesh-full',
-      'Akk-Gilg-full': 'akk-gilgamesh-full',
       'San-Gita-1': 'san-bhagavad-gita-full',
       'Syr-Jn-1': 'syr-peshitta-john-full',
       Gen: 'hbo-genesis-full',
     };
-    const MUST_STAY_VISIBLE = ['Basil-Hex-1', 'Chrys-Jn-1', 'Egy-Ptah-1', 'Hit-Annals-1', 'Uga-Baal-1'];
+    // Akk-Gilg-1/Akk-Gilg-full rejoined this list when akk-gilgamesh-full was
+    // quarantined (corrupt token stream; awaiting clean eBL re-ingest).
+    const MUST_STAY_VISIBLE = [
+      'Basil-Hex-1',
+      'Chrys-Jn-1',
+      'Egy-Ptah-1',
+      'Hit-Annals-1',
+      'Uga-Baal-1',
+      'Akk-Gilg-1',
+      'Akk-Gilg-full',
+    ];
 
     for (const [sampleId, fullId] of Object.entries(HIDDEN_TO_FULL)) {
       const sample = CorpusDB.getText(sampleId);
@@ -218,9 +209,12 @@ describe('corpus production data', () => {
       expect(t, `missing ${id}`).toBeTruthy();
       expect(t?.libraryHidden, `${id} has no full counterpart — must stay visible`).toBeFalsy();
     }
+    // One-sentence Syntax-page demos (full UD annotation): reachable from the
+    // Syntax tool, deliberately not Library reading material.
+    const HIDDEN_DEMOS = ['grc-treebank-demo', 'lat-treebank-demo'];
     // No stray hidden texts beyond the vetted map.
     const hidden = CorpusDB.getTexts().filter((t) => t.libraryHidden).map((t) => t.id).sort();
-    expect(hidden).toEqual(Object.keys(HIDDEN_TO_FULL).sort());
+    expect(hidden).toEqual([...Object.keys(HIDDEN_TO_FULL), ...HIDDEN_DEMOS].sort());
   });
 
   it('retired text ids redirect to texts that still resolve', async () => {

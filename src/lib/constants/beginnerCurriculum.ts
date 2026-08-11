@@ -9,7 +9,8 @@
  * `useBeginnerProgress`).
  *
  * Units reference corpus text IDs directly, so they are unaffected by the
- * `grc` / `grc-koine` / `grc-class` language-tag split used elsewhere.
+ * `grc` / `grc-koine` language-tag split used elsewhere. (The former
+ * `grc-class` tag was merged into `grc` in the 2026-08 corpus cleanup.)
  *
  * Currently only Greek (`grc`) is fully sequenced — see WS1 in
  * `.claude/plans`. Other languages fall back to the generic recommendation.

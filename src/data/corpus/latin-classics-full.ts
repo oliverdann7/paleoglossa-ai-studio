@@ -32,7 +32,7 @@ export const TEXT_AENEID_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 3039,
-  wordCount: 65784,
+  wordCount: 63799,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-vergil-aeneid-full-1', label: 'Aeneis 1' },
@@ -71,7 +71,7 @@ export const TEXT_CICERO_CATILINAM_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 762,
-  wordCount: 12744,
+  wordCount: 12743,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-cicero-in-catilinam-full-1', label: 'In Catilinam 1' },
@@ -102,7 +102,7 @@ export const TEXT_OVID_METAMORPHOSES_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 2938,
-  wordCount: 80504,
+  wordCount: 78078,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-ovid-metamorphoses-full-1', label: 'Metamorphoses 1' },
@@ -176,10 +176,15 @@ export const TEXT_SALLUST_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 808,
-  wordCount: 11182,
+  wordCount: 10732,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'lat-sallust-catilinae-full-1', label: 'Bellum Catilinae' },
+    { id: 'lat-sallust-catilinae-full-1', label: "Part 1" },
+    { id: 'lat-sallust-catilinae-full-2', label: "Part 2" },
+    { id: 'lat-sallust-catilinae-full-3', label: "Part 3" },
+    { id: 'lat-sallust-catilinae-full-4', label: "Part 4" },
+    { id: 'lat-sallust-catilinae-full-5', label: "Part 5" },
+    { id: 'lat-sallust-catilinae-full-6', label: "Part 6" },
   ],
 };
 
@@ -204,7 +209,7 @@ export const TEXT_TACITUS_ANNALS_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 3374,
-  wordCount: 48658,
+  wordCount: 48640,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-tacitus-annals-full-1', label: 'Annales 1' },
@@ -268,10 +273,18 @@ export const TEXT_VULGATE_JOHN_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 1315,
-  wordCount: 14935,
+  wordCount: 14077,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'lat-vulgate-john-full-1', label: 'Evangelium secundum Ioannem' },
+    { id: 'lat-vulgate-john-full-1', label: "Part 1" },
+    { id: 'lat-vulgate-john-full-2', label: "Part 2" },
+    { id: 'lat-vulgate-john-full-3', label: "Part 3" },
+    { id: 'lat-vulgate-john-full-4', label: "Part 4" },
+    { id: 'lat-vulgate-john-full-5', label: "Part 5" },
+    { id: 'lat-vulgate-john-full-6', label: "Part 6" },
+    { id: 'lat-vulgate-john-full-7', label: "Part 7" },
+    { id: 'lat-vulgate-john-full-8', label: "Part 8" },
+    { id: 'lat-vulgate-john-full-9', label: "Part 9" },
   ],
 };
 

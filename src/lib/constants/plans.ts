@@ -139,7 +139,7 @@ export const PLANS: Plan[] = [
     aiAnalysisLimit: 'all',
     aiLimited: false,
     features: [
-      'Access to all curated texts in all 11 languages',
+      'Access to all curated texts in all 12 languages',
       'Unlimited vocabulary saves in every language',
       'Unlimited text imports',
       'Unlimited AI morphology & gloss analysis',

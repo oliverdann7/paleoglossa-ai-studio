@@ -29,7 +29,7 @@ interface IndexItem {
 }
 
 /** Rebuild index.json from all per-text records in the dir. */
-function rebuildIndex(dir: string): void {
+export function rebuildIndex(dir: string): void {
   const items: IndexItem[] = [];
   for (const file of readdirSync(dir)) {
     if (!file.endsWith('.json') || file === 'index.json') continue;

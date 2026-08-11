@@ -47,8 +47,11 @@ function sentenceSurface(sentence: Sentence): string {
 
 export const Syntax = () => {
   const { activeLanguageId } = useActiveLanguage();
+  // remoteSections stubs bundle no sentences (their sections are served JSON),
+  // so resolving them synchronously below would yield an empty page — offer
+  // only texts whose sections actually live in the bundle.
   const texts = useMemo(
-    () => CorpusDB.getTextsByLanguage(activeLanguageId),
+    () => CorpusDB.getTextsByLanguage(activeLanguageId).filter((t) => !t.remoteSections),
     [activeLanguageId]
   );
 

@@ -181,11 +181,11 @@ const greekClassicsEntries: ManifestEntry[] = [
   { textId: 'grc-xenophon-anabasis-full', language: 'grc', title: 'Anabasis', author: 'Xenophon', source: 'plaintext', file: 'pd/anabasis.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Anab-1. PD Greek text; ships partial until morphology is filled.' },
   { textId: 'grc-plato-apology-full', language: 'grc', title: 'Apology', author: 'Plato', source: 'plaintext', file: 'pd/plato-apology.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Plato-Apology-1 (bundled partial). PD Greek text; ships partial until morphology is filled.' },
   { textId: 'grc-aesop-fables-full', language: 'grc', title: "Aesop's Fables", author: 'Aesop', source: 'plaintext', file: 'pd/aesop.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Aesop-1. PD Greek text; ships partial until morphology is filled.' },
-  { textId: 'grc-herodotus-histories-full', language: 'grc-class', title: 'Histories', author: 'Herodotus', source: 'plaintext', file: 'pd/herodotus.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Hdt-Hist. PD Greek text; ships partial until morphology is filled.' },
-  { textId: 'grc-thucydides-history-full', language: 'grc-class', title: 'History of the Peloponnesian War', author: 'Thucydides', source: 'plaintext', file: 'pd/thucydides.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Thuc-Hist. PD Greek text; ships partial until morphology is filled.' },
-  { textId: 'grc-sophocles-antigone-full', language: 'grc-class', title: 'Antigone', author: 'Sophocles', source: 'plaintext', file: 'pd/antigone.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Soph-Ant. PD Greek text; ships partial until morphology is filled.' },
-  { textId: 'grc-plutarch-alexander-full', language: 'grc-class', title: 'Life of Alexander', author: 'Plutarch', source: 'plaintext', file: 'pd/plutarch-alexander.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Plut-Alex. PD Greek text; ships partial until morphology is filled.' },
-  { textId: 'grc-lucian-charon-full', language: 'grc-class', title: 'Charon', author: 'Lucian', source: 'plaintext', file: 'pd/lucian-charon.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Lucian-Char. PD Greek text; ships partial until morphology is filled.' },
+  { textId: 'grc-herodotus-histories-full', language: 'grc', title: 'Histories', author: 'Herodotus', source: 'plaintext', file: 'pd/herodotus.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Hdt-Hist. PD Greek text; ships partial until morphology is filled.' },
+  { textId: 'grc-thucydides-history-full', language: 'grc', title: 'History of the Peloponnesian War', author: 'Thucydides', source: 'plaintext', file: 'pd/thucydides.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Thuc-Hist. PD Greek text; ships partial until morphology is filled.' },
+  { textId: 'grc-sophocles-antigone-full', language: 'grc', title: 'Antigone', author: 'Sophocles', source: 'plaintext', file: 'pd/antigone.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Soph-Ant. PD Greek text; ships partial until morphology is filled.' },
+  { textId: 'grc-plutarch-alexander-full', language: 'grc', title: 'Life of Alexander', author: 'Plutarch', source: 'plaintext', file: 'pd/plutarch-alexander.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Plut-Alex. PD Greek text; ships partial until morphology is filled.' },
+  { textId: 'grc-lucian-charon-full', language: 'grc', title: 'Charon', author: 'Lucian', source: 'plaintext', file: 'pd/lucian-charon.txt', attribution: 'perseus-texts', status: 'active', notes: 'Supersedes Lucian-Char. PD Greek text; ships partial until morphology is filled.' },
 ];
 
 // ─── Classical & late Latin literature ───────────────────────────────────────
@@ -273,8 +273,9 @@ const aneEntries: ManifestEntry[] = [
     source: 'plaintext',
     file: 'pd/gilgamesh.txt',
     attribution: 'ebl',
-    status: 'active',
-    notes: 'Supersedes Akk-Gilg-1. Reconstructed SB transliteration (12 tablets) from the electronic Babylonian Library (eBL, CC BY-SA). Ships partial (no bundled Akkadian gloss source — full text + on-click AI).',
+    status: 'blocked',
+    notes: 'Supersedes Akk-Gilg-1 (once re-ingested). Reconstructed SB transliteration (12 tablets) from the electronic Babylonian Library (eBL, CC BY-SA).',
+    blockedReason: 'QUARANTINED 2026-08: the previous pd/gilgamesh.txt mixed English translation + editorial apparatus into the Akkadian token stream (94% of tokens contained Latin characters) and the emitted JSON was pulled from the served corpus. Re-activate only with a clean Akkadian-only transliteration export from eBL.',
   },
 ];
 

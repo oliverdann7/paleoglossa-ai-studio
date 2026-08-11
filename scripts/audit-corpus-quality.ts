@@ -5,6 +5,7 @@ import {
   pct,
   type CorpusQualityMetrics,
 } from '../src/lib/corpus-quality/calculateCorpusQuality.js';
+import { isJunkToken } from './corpus/ingest/clean.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -24,11 +25,14 @@ interface ServedLanguageReport {
   lemmaCoverage: number;
   morphCoverage: number;
   translationCoverage: number;
+  /** Editorial noise (apparatus sigla, bare verse numbers, …) per ingest/clean.ts rules. */
+  junkTokens: number;
 }
 
 function auditServedCorpus(dir: string): ServedLanguageReport[] {
   if (!fs.existsSync(dir)) return [];
   const byLanguage = new Map<string, CorpusQualityMetrics>();
+  const junkByLanguage = new Map<string, number>();
 
   for (const file of fs.readdirSync(dir).sort()) {
     if (!file.endsWith('.json') || file === 'index.json') continue;
@@ -40,9 +44,16 @@ function auditServedCorpus(dir: string): ServedLanguageReport[] {
       byLanguage.set(language, metrics);
     }
     metrics.texts++;
+    let junk = junkByLanguage.get(language) ?? 0;
     for (const section of record.sections ?? []) {
       accumulateSection(metrics, section);
+      for (const sentence of section.sentences ?? []) {
+        for (const token of sentence.tokens ?? []) {
+          if (isJunkToken(token.surface ?? '', language)) junk++;
+        }
+      }
     }
+    junkByLanguage.set(language, junk);
   }
 
   return Array.from(byLanguage.entries())
@@ -54,6 +65,7 @@ function auditServedCorpus(dir: string): ServedLanguageReport[] {
       lemmaCoverage: pct(metrics.tokensWithLemma, metrics.tokens),
       morphCoverage: pct(metrics.tokensWithMorphBeyondPos, metrics.tokens),
       translationCoverage: pct(metrics.sentencesWithTranslation, metrics.sentences),
+      junkTokens: junkByLanguage.get(language) ?? 0,
     }))
     .sort((a, b) => b.metrics.tokens - a.metrics.tokens);
 }
@@ -79,9 +91,9 @@ for (const lang of report.languages) {
   mdReport += `| ${lang.language} | ${lang.metrics.texts} | ${lang.metrics.tokens} | ${lang.glossCoverage}% | ${lang.posCoverage}% | ${lang.lemmaCoverage}% | ${lang.morphCoverage}% | ${lang.status} |\n`;
 }
 
-mdReport += `\n## Served corpus (full works in public/corpus-data)\n\n| Language | Texts | Sentences | Tokens | Gloss % | Lemma % | POS % | Morph % | Translation % |\n|---|---|---|---|---|---|---|---|---|\n`;
+mdReport += `\n## Served corpus (full works in public/corpus-data)\n\n| Language | Texts | Sentences | Tokens | Gloss % | Lemma % | POS % | Morph % | Translation % | Junk |\n|---|---|---|---|---|---|---|---|---|---|\n`;
 for (const lang of servedReports) {
-  mdReport += `| ${lang.language} | ${lang.metrics.texts} | ${lang.metrics.sentences} | ${lang.metrics.tokens} | ${lang.glossCoverage}% | ${lang.lemmaCoverage}% | ${lang.posCoverage}% | ${lang.morphCoverage}% | ${lang.translationCoverage}% |\n`;
+  mdReport += `| ${lang.language} | ${lang.metrics.texts} | ${lang.metrics.sentences} | ${lang.metrics.tokens} | ${lang.glossCoverage}% | ${lang.lemmaCoverage}% | ${lang.posCoverage}% | ${lang.morphCoverage}% | ${lang.translationCoverage}% | ${lang.junkTokens} |\n`;
 }
 
 mdReport += `\n## Top missing POS lemmas\n\n`;
@@ -101,6 +113,16 @@ if (process.argv.includes('--check')) {
   for (const lang of report.languages) {
     if (lang.metrics.tokens === 0) {
       console.error(`Language ${lang.language} has 0 tokens.`);
+      hasFailure = true;
+    }
+  }
+  // The served corpus was junk-scrubbed in 2026-08 (clean-served-corpus.ts);
+  // any junk token in a new emit is a pipeline regression.
+  for (const lang of servedReports) {
+    if (lang.junkTokens > 0) {
+      console.error(
+        `Served corpus regression: language ${lang.language} has ${lang.junkTokens} junk tokens (apparatus/verse-number noise). Run scripts/corpus/clean-served-corpus.ts.`
+      );
       hasFailure = true;
     }
   }

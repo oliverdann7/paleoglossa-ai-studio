@@ -33,10 +33,13 @@ export const TEXT_1_CLEMENT_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 468,
-  wordCount: 9835,
+  wordCount: 9830,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-patristic-1-clement-full-1', label: 'Κλήμεντος πρὸς Κορινθίους' },
+    { id: 'grc-patristic-1-clement-full-1', label: "Part 1" },
+    { id: 'grc-patristic-1-clement-full-2', label: "Part 2" },
+    { id: 'grc-patristic-1-clement-full-3', label: "Part 3" },
+    { id: 'grc-patristic-1-clement-full-4', label: "Part 4" },
   ],
 };
 
@@ -89,10 +92,12 @@ export const TEXT_IGNATIUS_EPHESIANS_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 404,
-  wordCount: 7752,
+  wordCount: 7748,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-patristic-ignatius-ephesians-full-1', label: 'Ἰγνάτιος' },
+    { id: 'grc-patristic-ignatius-ephesians-full-1', label: "Part 1" },
+    { id: 'grc-patristic-ignatius-ephesians-full-2', label: "Part 2" },
+    { id: 'grc-patristic-ignatius-ephesians-full-3', label: "Part 3" },
   ],
 };
 
@@ -145,10 +150,13 @@ export const TEXT_JUSTIN_APOLOGY_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 501,
-  wordCount: 14440,
+  wordCount: 14434,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-patristic-justin-apology-full-1', label: 'Ἀπολογία' },
+    { id: 'grc-patristic-justin-apology-full-1', label: "Part 1" },
+    { id: 'grc-patristic-justin-apology-full-2', label: "Part 2" },
+    { id: 'grc-patristic-justin-apology-full-3', label: "Part 3" },
+    { id: 'grc-patristic-justin-apology-full-4', label: "Part 4" },
   ],
 };
 
@@ -173,10 +181,19 @@ export const TEXT_HERMAS_SHEPHERD_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 1407,
-  wordCount: 28563,
+  wordCount: 28547,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-patristic-hermas-shepherd-full-1', label: 'Ποιμήν' },
+    { id: 'grc-patristic-hermas-shepherd-full-1', label: "Part 1" },
+    { id: 'grc-patristic-hermas-shepherd-full-2', label: "Part 2" },
+    { id: 'grc-patristic-hermas-shepherd-full-3', label: "Part 3" },
+    { id: 'grc-patristic-hermas-shepherd-full-4', label: "Part 4" },
+    { id: 'grc-patristic-hermas-shepherd-full-5', label: "Part 5" },
+    { id: 'grc-patristic-hermas-shepherd-full-6', label: "Part 6" },
+    { id: 'grc-patristic-hermas-shepherd-full-7', label: "Part 7" },
+    { id: 'grc-patristic-hermas-shepherd-full-8', label: "Part 8" },
+    { id: 'grc-patristic-hermas-shepherd-full-9', label: "Part 9" },
+    { id: 'grc-patristic-hermas-shepherd-full-10', label: "Part 10" },
   ],
 };
 
@@ -201,10 +218,16 @@ export const TEXT_ATHANASIUS_INCARNATION_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 1018,
-  wordCount: 19786,
+  wordCount: 19782,
   remoteSections: true,
   sectionsPreview: [
-    { id: 'grc-patristic-athanasius-incarnation-full-1', label: 'Περὶ τῆς ἐνανθρωπήσεως τοῦ Λόγου' },
+    { id: 'grc-patristic-athanasius-incarnation-full-1', label: "Part 1" },
+    { id: 'grc-patristic-athanasius-incarnation-full-2', label: "Part 2" },
+    { id: 'grc-patristic-athanasius-incarnation-full-3', label: "Part 3" },
+    { id: 'grc-patristic-athanasius-incarnation-full-4', label: "Part 4" },
+    { id: 'grc-patristic-athanasius-incarnation-full-5', label: "Part 5" },
+    { id: 'grc-patristic-athanasius-incarnation-full-6', label: "Part 6" },
+    { id: 'grc-patristic-athanasius-incarnation-full-7', label: "Part 7" },
   ],
 };
 

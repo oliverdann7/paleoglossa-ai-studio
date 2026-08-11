@@ -882,7 +882,7 @@ export const pt = {
     'plans.duo.feat4': 'Análise de morfologia e glossas com IA',
     'plans.duo.feat5': 'Compartilhamento público de biblioteca',
     'plans.duo.feat6': 'Suporte prioritário',
-    'plans.full.feat1': 'Acesso a todos os textos curados em todos os 11 idiomas',
+    'plans.full.feat1': 'Acesso a todos os textos curados em todos os 12 idiomas',
     'plans.full.feat2': 'Salvamento ilimitado de vocabulário em todos os idiomas',
     'plans.full.feat3': 'Importações de texto ilimitadas',
     'plans.full.feat4': 'Análise de morfologia ilimitada com IA',

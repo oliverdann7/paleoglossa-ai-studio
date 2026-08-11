@@ -739,7 +739,7 @@ export const zh = {
     'plans.duo.feat4': 'AI形态分析与注释',
     'plans.duo.feat5': '公共图书馆共享',
     'plans.duo.feat6': '优先支持',
-    'plans.full.feat1': '访问全部11种语言的所有精选文本',
+    'plans.full.feat1': '访问全部12种语言的所有精选文本',
     'plans.full.feat2': '在每种语言中无限保存词汇',
     'plans.full.feat3': '无限文本导入',
     'plans.full.feat4': '无限AI形态分析',

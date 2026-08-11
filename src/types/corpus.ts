@@ -61,12 +61,16 @@ export interface Token {
   deprel?: string;
   /** Treebank source identifier, e.g. "PROIEL", "Gorman", "Pedalion" */
   treebankSource?: string;
+  /** Set to 'ai-generated' when morphology was filled by the offline AI stage (never overwrites treebank data). */
+  morphSource?: string;
 }
 
 export interface Sentence {
   id: string;
   tokens: Token[];
   translation?: string; // e.g. ESV, if allowed, or Berean
+  /** Provenance of `translation`, e.g. 'ai-generated'; absent = curated/source-aligned. */
+  translationSource?: string;
 }
 
 export type SourceStatus = 'complete' | 'partial' | 'excerpt' | 'stub' | 'needs_import';
