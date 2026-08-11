@@ -52,7 +52,7 @@
     "wordCount": 111966,
     "hasMorphology": true,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-homer-odyssey-full",
@@ -63,7 +63,7 @@
     "wordCount": 87522,
     "hasMorphology": true,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "grc-koine-1-corinthians-full",
@@ -666,9 +666,9 @@
     "sentencesRemoved": 0,
     "sentenceCount": 808,
     "wordCount": 10732,
-    "hasMorphology": false,
+    "hasMorphology": true,
     "hasTranslation": false,
-    "changed": false
+    "changed": true
   },
   {
     "id": "lat-tacitus-annals-full",

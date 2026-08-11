@@ -16,16 +16,37 @@
  */
 import { readFileSync, writeFileSync } from 'fs';
 
-const AGDT_DIR = 'scripts/corpus/ingest/.sources/agdt';
 const DIR = 'public/corpus-data';
 const dryRun = process.argv.includes('--dry-run');
 
-const TEXTS: Record<string, string[]> = {
-  'grc-homer-iliad-full': ['tlg0012.tlg001.perseus-grc1.tb.xml'],
-  'grc-homer-odyssey-full': ['tlg0012.tlg002.perseus-grc1.tb.xml'],
-  'grc-sophocles-antigone-full': ['tlg0011.tlg002.perseus-grc2.tb.xml'],
-  'grc-herodotus-histories-full': ['tlg0016.tlg001.perseus-grc1.1.tb.xml'],
-  'grc-thucydides-history-full': ['tlg0003.tlg001.perseus-grc1.1.tb.xml'],
+interface TextConfig {
+  dir: string;
+  files: string[];
+  /** Token-level provenance stamp. AGDT = Greek treebank, LDT = Latin treebank. */
+  source: 'AGDT' | 'LDT';
+  /** Stable-sort words by cite URN first — ONLY for files shipped in annotator-batch order (Homer). */
+  sort?: boolean;
+  /** The treebank is a mid-work excerpt: segment by book and locate each segment before aligning. */
+  anchored?: boolean;
+}
+
+const AGDT_DIR = 'scripts/corpus/ingest/.sources/agdt';
+const LDT_DIR = 'scripts/corpus/ingest/.sources/ldt';
+
+const TEXTS: Record<string, TextConfig> = {
+  'grc-homer-iliad-full': { dir: AGDT_DIR, files: ['tlg0012.tlg001.perseus-grc1.tb.xml'], source: 'AGDT', sort: true },
+  'grc-homer-odyssey-full': { dir: AGDT_DIR, files: ['tlg0012.tlg002.perseus-grc1.tb.xml'], source: 'AGDT', sort: true },
+  'grc-sophocles-antigone-full': { dir: AGDT_DIR, files: ['tlg0011.tlg002.perseus-grc2.tb.xml'], source: 'AGDT' },
+  'grc-herodotus-histories-full': { dir: AGDT_DIR, files: ['tlg0016.tlg001.perseus-grc1.1.tb.xml'], source: 'AGDT' },
+  'grc-thucydides-history-full': { dir: AGDT_DIR, files: ['tlg0003.tlg001.perseus-grc1.1.tb.xml'], source: 'AGDT' },
+  'lat-cicero-in-catilinam-full': { dir: LDT_DIR, files: ['phi0474.phi013.perseus-lat1.tb.xml'], source: 'LDT' },
+  'lat-sallust-catilinae-full': { dir: LDT_DIR, files: ['phi0631.phi001.perseus-lat1.tb.xml'], source: 'LDT' },
+  'lat-vergil-aeneid-full': { dir: LDT_DIR, files: ['phi0690.phi003.perseus-lat1.tb.xml'], source: 'LDT', anchored: true },
+  'lat-ovid-metamorphoses-full': { dir: LDT_DIR, files: ['phi0959.phi006.perseus-lat1.tb.xml'], source: 'LDT', anchored: true },
+  // NOTE: phi1351.phi005 looked like Tacitus Annales but its text is the
+  // HISTORIES ("Initium mihi operis Servius Galba iterum…" = Hist. 1.1);
+  // LDT v2.1 has no Annales treebank, so lat-tacitus-annals-full stays
+  // treebank-less until another licensed source covers it.
 };
 
 // ── Postag decoding (AGDT 1.1, 9 positional slots) ──────────────────────────
@@ -44,7 +65,7 @@ const MOOD: Record<string, string> = {
   i: 'indicative', s: 'subjunctive', o: 'optative', n: 'infinitive',
   m: 'imperative', p: 'participle',
 };
-const VOICE: Record<string, string> = { a: 'active', p: 'passive', m: 'middle', e: 'middle-passive' };
+const VOICE: Record<string, string> = { a: 'active', p: 'passive', m: 'middle', e: 'middle-passive', d: 'deponent' };
 const GENDER: Record<string, string> = { m: 'masculine', f: 'feminine', n: 'neuter' };
 const CASE: Record<string, string> = {
   n: 'nominative', g: 'genitive', d: 'dative', a: 'accusative', v: 'vocative', l: 'locative',
@@ -111,14 +132,22 @@ function compareCite(a: number[], b: number[]): number {
   return 0;
 }
 
-function parseAgdt(paths: string[]): TbWord[] {
+function parseAgdt(dir: string, paths: string[]): TbWord[] {
   const words: TbWord[] = [];
   const attr = (tag: string, name: string) =>
     new RegExp(`\\b${name}="([^"]*)"`).exec(tag)?.[1] ?? '';
   for (const p of paths) {
-    const xml = readFileSync(`${AGDT_DIR}/${p}`, 'utf-8');
+    const xml = readFileSync(`${dir}/${p}`, 'utf-8');
     let lastCite: number[] = [0];
-    for (const tag of xml.match(/<word [^>]*\/>/g) ?? []) {
+    // Walk sentences and words in file order: LDT word tags carry no cite, but
+    // their parent <sentence> has a subdoc ("6.1", "1.1-1.2") we can inherit.
+    for (const tag of xml.match(/<sentence [^>]*>|<word [^>]*\/>/g) ?? []) {
+      if (tag.startsWith('<sentence')) {
+        const subdoc = attr(tag, 'subdoc');
+        const m = /([0-9]+(?:\.[0-9]+)*)/.exec(subdoc);
+        if (m) lastCite = m[1].split('.').map(Number);
+        continue;
+      }
       if (tag.includes('artificial=') || tag.includes('insertion_id=')) continue;
       const cite = parseCite(tag) ?? lastCite;
       lastCite = cite;
@@ -127,10 +156,16 @@ function parseAgdt(paths: string[]): TbWord[] {
       if (!form || !postag || postag[0] === 'u') continue; // punctuation-words
       const morph = decodePostag(postag);
       if (!morph) continue;
-      words.push({ form, lemma: attr(tag, 'lemma'), morph, cite });
+      // LDT lemmas carry homograph-disambiguation digits (omnis1, homo1).
+      const lemma = attr(tag, 'lemma').replace(/\d+$/, '');
+      words.push({ form, lemma, morph, cite });
     }
   }
-  // Stable sort restores document order while preserving intra-line word order.
+  return words;
+}
+
+/** Stable sort restoring document order while preserving intra-line word order. */
+function sortByCite(words: TbWord[]): TbWord[] {
   return words
     .map((w, idx) => ({ w, idx }))
     .sort((a, b) => compareCite(a.w.cite, b.w.cite) || a.idx - b.idx)
@@ -145,6 +180,9 @@ function cmpKey(s: string): string {
     .replace(/[̀-ͯͅ]/g, '')
     .toLowerCase()
     .replace(/ς/g, 'σ')
+    // Latin editions split on u/v and i/j orthography (uultus vs vultus).
+    .replace(/v/g, 'u')
+    .replace(/j/g, 'i')
     .replace(/[^\p{L}]/gu, '');
 }
 
@@ -161,7 +199,11 @@ interface ServedRecord {
 
 const RESYNC_WINDOW = 12;
 
-function align(ours: ServedToken[], theirs: TbWord[]): { matched: number; annotated: number } {
+function align(
+  ours: ServedToken[],
+  theirs: TbWord[],
+  source: 'AGDT' | 'LDT'
+): { matched: number; annotated: number } {
   let i = 0;
   let j = 0;
   let matched = 0;
@@ -173,7 +215,7 @@ function align(ours: ServedToken[], theirs: TbWord[]): { matched: number; annota
       const w = theirs[j];
       if (!t.morphology?.partOfSpeech || t.morphology.partOfSpeech === 'unknown') {
         t.morphology = { ...w.morph };
-        t.treebankSource = 'AGDT';
+        t.treebankSource = source;
         if (!t.lemma || t.lemma.trim() === '') t.lemma = w.lemma;
         annotated++;
       }
@@ -203,18 +245,124 @@ function align(ours: ServedToken[], theirs: TbWord[]): { matched: number; annota
   return { matched, annotated };
 }
 
+// ── Anchoring ────────────────────────────────────────────────────────────────
+// Several LDT files are mid-work excerpts (the Aeneid treebank covers Book 6),
+// so each contiguous treebank segment must first be LOCATED in our token
+// stream: slide a 12-form probe over our tokens and take the best-scoring
+// offset. Segments are cut where the book number (cite[0]) changes.
+
+const PROBE = 12;
+const MIN_PROBE_HITS = 9;
+const BAG_WINDOW = 18;
+
+function findAnchor(ourKeys: string[], theirs: TbWord[]): number {
+  const probe = theirs.slice(0, Math.min(PROBE, theirs.length)).map((w) => cmpKey(w.form));
+  const need = Math.min(MIN_PROBE_HITS, probe.length);
+  // Fast pass: exact positional match.
+  let best = -1;
+  let bestScore = 0;
+  for (let o = 0; o + probe.length <= ourKeys.length; o++) {
+    let score = 0;
+    for (let k = 0; k < probe.length; k++) if (ourKeys[o + k] === probe[k]) score++;
+    if (score > bestScore) {
+      bestScore = score;
+      best = o;
+      if (score === probe.length) return best;
+    }
+  }
+  if (bestScore >= need) return best;
+  // Insertion-tolerant pass: count probe forms present anywhere in a small window.
+  const probeSet = new Set(probe);
+  best = -1;
+  bestScore = 0;
+  for (let o = 0; o + BAG_WINDOW <= ourKeys.length; o++) {
+    let score = 0;
+    const seen = new Set<string>();
+    for (let k = 0; k < BAG_WINDOW; k++) {
+      const key = ourKeys[o + k];
+      if (probeSet.has(key) && !seen.has(key)) {
+        seen.add(key);
+        score++;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = o;
+    }
+  }
+  return bestScore >= need ? best : -1;
+}
+
+/**
+ * Cut segments where the treebank's coverage is discontinuous: a change of
+ * book (cite[0]) or a jump in line/chapter (cite[1]) larger than the aligner's
+ * resync window — excerpt treebanks like Ovid's cover scattered selections
+ * (1.1–1.2, then 1.163–…) that must each be anchored separately.
+ */
+const MAX_LINE_JUMP = 8;
+
+function segmentByBook(words: TbWord[]): TbWord[][] {
+  if (words.length === 0 || (words[0].cite.length < 2 && words.every((w) => w.cite.length < 2))) {
+    return [words];
+  }
+  const segments: TbWord[][] = [];
+  let current: TbWord[] = [];
+  let prev: number[] | undefined;
+  for (const w of words) {
+    const discontinuous =
+      prev !== undefined &&
+      (w.cite[0] !== prev[0] ||
+        (w.cite.length > 1 && prev.length > 1 && Math.abs((w.cite[1] ?? 0) - (prev[1] ?? 0)) > MAX_LINE_JUMP));
+    if (discontinuous && current.length > 0) {
+      segments.push(current);
+      current = [];
+    }
+    prev = w.cite;
+    current.push(w);
+  }
+  if (current.length > 0) segments.push(current);
+  // Merge fragments too small to anchor reliably into their predecessor.
+  const merged: TbWord[][] = [];
+  for (const seg of segments) {
+    if (merged.length > 0 && seg.length < 40) merged[merged.length - 1].push(...seg);
+    else merged.push(seg);
+  }
+  return merged;
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
-for (const [textId, files] of Object.entries(TEXTS)) {
+for (const [textId, cfg] of Object.entries(TEXTS)) {
   const path = `${DIR}/${textId}.json`;
   const record = JSON.parse(readFileSync(path, 'utf-8')) as ServedRecord;
   const flat: ServedToken[] = [];
   for (const sec of record.sections) for (const sn of sec.sentences) flat.push(...sn.tokens);
-  const tb = parseAgdt(files);
-  const { matched, annotated } = align(flat, tb);
+  let tb = parseAgdt(cfg.dir, cfg.files);
+  if (cfg.sort) tb = sortByCite(tb);
+  let matched = 0;
+  let annotated = 0;
+  let unanchored = 0;
+  if (cfg.anchored) {
+    const ourKeys = flat.map((t) => cmpKey(t.surface));
+    for (const segment of segmentByBook(tb)) {
+      const anchor = findAnchor(ourKeys, segment);
+      if (anchor < 0) {
+        unanchored += segment.length;
+        continue;
+      }
+      const r = align(flat.slice(anchor), segment, cfg.source);
+      matched += r.matched;
+      annotated += r.annotated;
+    }
+  } else {
+    const r = align(flat, tb, cfg.source);
+    matched = r.matched;
+    annotated = r.annotated;
+  }
   const pct = ((matched / Math.min(flat.length, tb.length)) * 100).toFixed(1);
   console.log(
-    `${textId}: ${tb.length} treebank words vs ${flat.length} tokens → matched ${matched} (${pct}% of overlap), annotated ${annotated}`
+    `${textId}: ${tb.length} treebank words vs ${flat.length} tokens → matched ${matched} (${pct}% of overlap), annotated ${annotated}` +
+      (unanchored ? `, ${unanchored} words in unanchored segments` : '')
   );
   if (annotated > 0 && !dryRun) writeFileSync(path, JSON.stringify(record), 'utf-8');
 }
