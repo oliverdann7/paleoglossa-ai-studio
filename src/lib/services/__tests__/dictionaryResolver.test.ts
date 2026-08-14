@@ -60,6 +60,24 @@ describe('dictionaryResolver.resolveMeaning', () => {
     expect(result?.aiGenerated).toBe(true);
     expect(result?.definition).toBe('amor');
     expect(getWordGloss).toHaveBeenCalledWith('grc', 'λόγον', 'λόγος', 'pt');
+    // The gloss is already in the learner's language — flagged so the UI
+    // never runs it through a second translation pass.
+    expect(result?.localizedTo).toBe('pt');
+  });
+
+  test('ai source with a regional target language flags the bare code', async () => {
+    const result = await resolveMeaning('λόγος', 'grc', 'ai', { targetLanguage: 'pt-BR' });
+    expect(result?.localizedTo).toBe('pt');
+  });
+
+  test('ai source without a target language yields an English (unflagged) gloss', async () => {
+    const result = await resolveMeaning('λόγος', 'grc', 'ai', { surface: 'λόγον' });
+    expect(result?.localizedTo).toBeUndefined();
+  });
+
+  test('ai source with an English target language is not flagged as localized', async () => {
+    const result = await resolveMeaning('λόγος', 'grc', 'ai', { targetLanguage: 'en' });
+    expect(result?.localizedTo).toBeUndefined();
   });
 
   test('external-link source has no inline meaning', async () => {

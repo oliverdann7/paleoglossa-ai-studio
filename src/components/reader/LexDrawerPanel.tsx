@@ -53,7 +53,7 @@ import {
 } from '@/lib/data/dictionary';
 import { useSettings } from '@/lib/hooks/useSettings';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
-import { useLocalizedGloss } from '@/lib/hooks/useLocalizedGloss';
+import { useLocalizedGloss, getLocalizableUiLang } from '@/lib/hooks/useLocalizedGloss';
 import {
   getDictionariesForLanguage,
   getDictionarySource,
@@ -189,9 +189,13 @@ export const LexDrawerPanel = memo(
     text,
     currentSentenceIndex,
   }: LexDrawerPanelProps) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { settings, updateSettings } = useSettings();
     const { user } = useAuth();
+
+    // The learner's chosen interface language ('pt', 'de', …) or null for
+    // English — every dictionary source renders its meaning in this language.
+    const uiGlossLang = getLocalizableUiLang(i18n.language);
 
     // ── Mobile bottom-sheet swipe-to-dismiss ─────────────────────────────────
     // On phones the panel is a bottom sheet; let users flick it down to close,
@@ -244,7 +248,12 @@ export const LexDrawerPanel = memo(
     const [aiWordInsight, setAiWordInsight] = useState<string | null>(null);
     const [isParadigmOpen, setIsParadigmOpen] = useState(false);
 
-    const [aiFallbackGloss, setAiFallbackGloss] = useState<string | null>(null);
+    // AI fallback gloss + the UI language it was generated in, so an already-
+    // localised gloss is never sent through a second translation pass.
+    const [aiFallbackGloss, setAiFallbackGloss] = useState<{
+      text: string;
+      lang: string | null;
+    } | null>(null);
     const [wiktionaryResult, setWiktionaryResult] = useState<WiktionaryLookupResult | null>(null);
     const [isWiktionaryLoading, setIsWiktionaryLoading] = useState(false);
     const wiktionaryLemmaRef = useRef<string | null>(null);
@@ -356,19 +365,22 @@ export const LexDrawerPanel = memo(
       if (isAiWordLoading || !selectedWord) return;
       setIsAiWordLoading(true);
       try {
+        // Ask for the gloss directly in the learner's language (cached per language).
         const glossResult = await AIClient.getWordGloss(
           langId,
           selectedWord.text,
-          selectedWord.lemma
+          selectedWord.lemma,
+          uiGlossLang ?? undefined
         );
         const success = isUsefulGloss(glossResult);
         if (success) {
-          setAiFallbackGloss(glossResult);
+          setAiFallbackGloss({ text: glossResult, lang: uiGlossLang });
           await AIClient.saveGlossToCache(
             langId,
             selectedWord.lemma,
             selectedWord.text,
-            glossResult
+            glossResult,
+            uiGlossLang ?? undefined
           );
         }
         trackEvent(ANALYTICS_EVENTS.AI_GLOSS_GENERATED, {
@@ -462,6 +474,9 @@ export const LexDrawerPanel = memo(
       (async () => {
         const result = await resolveMeaning(selectedWord.lemma, langId, selectedSourceId, {
           surface: selectedWord.text,
+          // AI source answers directly in the learner's language — one call,
+          // cached per UI language, no second translation pass.
+          targetLanguage: uiGlossLang ?? undefined,
         });
         if (cancelled) return;
         setSourceMeaning(result);
@@ -470,7 +485,7 @@ export const LexDrawerPanel = memo(
       return () => {
         cancelled = true;
       };
-    }, [selectedWord?.lemma, selectedWord?.text, selectedSourceId, langId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [selectedWord?.lemma, selectedWord?.text, selectedSourceId, langId, uiGlossLang]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Unified "what meaning do we show" — the saved translation wins, then the
     // chosen source, then the auto-resolved fallbacks. English text here; the
@@ -490,6 +505,7 @@ export const LexDrawerPanel = memo(
           label: sourceMeaning.sourceLabel,
           url: sourceMeaning.sourceUrl,
           aiGenerated: sourceMeaning.aiGenerated,
+          alreadyLocalized: !!sourceMeaning.localizedTo && sourceMeaning.localizedTo === uiGlossLang,
         };
       }
       if (definitionLookup?.definition && definitionLookup.source !== GLOSS_SOURCES.USER_GLOSS) {
@@ -509,7 +525,12 @@ export const LexDrawerPanel = memo(
         }
       }
       if (aiFallbackGloss) {
-        return { text: aiFallbackGloss, label: t('reader.aiGloss', 'AI gloss'), aiGenerated: true };
+        return {
+          text: aiFallbackGloss.text,
+          label: t('reader.aiGloss', 'AI gloss'),
+          aiGenerated: true,
+          alreadyLocalized: !!aiFallbackGloss.lang && aiFallbackGloss.lang === uiGlossLang,
+        };
       }
       return null;
     }, [
@@ -520,20 +541,23 @@ export const LexDrawerPanel = memo(
       lexiconResult,
       wiktionaryResult,
       aiFallbackGloss,
+      uiGlossLang,
       t,
     ]);
 
-    const shouldLocalize = !!baseMeaning && !baseMeaning.isUserGloss;
+    const shouldLocalize = !!baseMeaning && !baseMeaning.isUserGloss && !baseMeaning.alreadyLocalized;
     const localizedMeaning = useLocalizedGloss(
       shouldLocalize ? selectedWord?.lemma : undefined,
       langId,
       shouldLocalize ? baseMeaning!.text : null
     );
     const displayMeaningText = baseMeaning
-      ? baseMeaning.isUserGloss
+      ? baseMeaning.isUserGloss || baseMeaning.alreadyLocalized
         ? baseMeaning.text
         : localizedMeaning.text
       : '';
+    // True when what's on screen is in the learner's chosen language.
+    const meaningIsLocalized = !!baseMeaning?.alreadyLocalized || localizedMeaning.localized;
 
     const handleSaveAsTranslation = () => {
       if (!selectedWord || !displayMeaningText) return;
@@ -938,7 +962,7 @@ export const LexDrawerPanel = memo(
                       {localizedMeaning.loading && (
                         <Loader2 className="w-3 h-3 animate-spin text-muted" />
                       )}
-                      {localizedMeaning.localized && (
+                      {meaningIsLocalized && (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue">
                           <Languages className="w-3 h-3" />
                           {localizedMeaning.uiLang.toUpperCase()}
