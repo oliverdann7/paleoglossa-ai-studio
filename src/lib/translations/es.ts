@@ -659,6 +659,14 @@ export const es = {
     'auth.creatingAcc': 'Creando Cuenta...',
     'auth.createAccBtn': 'Crear Cuenta',
     'auth.alreadyHave': '¿Ya tienes una cuenta?',
+    'auth.googleAccountExists':
+      'Este correo está vinculado a una cuenta de Google. Inicia sesión con Google arriba.',
+    'auth.googleAccountExistsWeb':
+      'Este correo está vinculado a una cuenta de Google, con la que esta aplicación no puede iniciar sesión. Inicia sesión en paleoglossa.com.',
+    'auth.emailInUseGoogle':
+      'Este correo ya está vinculado a una cuenta de Google. Inicia sesión con Google.',
+    'auth.emailInUseGoogleWeb':
+      'Este correo ya está vinculado a una cuenta de Google, con la que esta aplicación no puede iniciar sesión. Inicia sesión en paleoglossa.com.',
 
     'nav.community': 'Comunidad',
     'nav.discover': 'Descubrir',

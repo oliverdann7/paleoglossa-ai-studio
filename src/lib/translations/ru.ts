@@ -648,6 +648,12 @@ export const ru = {
     'auth.creatingAcc': 'Создание аккаунта...',
     'auth.createAccBtn': 'Создать аккаунт',
     'auth.alreadyHave': 'Уже есть аккаунт?',
+    'auth.googleAccountExists': 'Эта почта связана с аккаунтом Google. Войдите через Google выше.',
+    'auth.googleAccountExistsWeb':
+      'Эта почта связана с аккаунтом Google, через который это приложение не может выполнить вход. Войдите на paleoglossa.com.',
+    'auth.emailInUseGoogle': 'Эта почта уже связана с аккаунтом Google. Войдите через Google.',
+    'auth.emailInUseGoogleWeb':
+      'Эта почта уже связана с аккаунтом Google, через который это приложение не может выполнить вход. Войдите на paleoglossa.com.',
 
     'nav.community': 'Сообщество',
     'nav.discover': 'Открыть',

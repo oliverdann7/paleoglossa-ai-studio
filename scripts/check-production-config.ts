@@ -12,6 +12,8 @@
  * Never prints actual secret values — only "set" or "MISSING".
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { loadEnv } from 'vite';
 
 type Severity = 'critical' | 'warning';
@@ -131,12 +133,14 @@ function checkWeb(): void {
     {
       name: 'RESEND_API_KEY',
       severity: 'warning',
-      consequence: 'Transactional email is disabled — no welcome, receipt, or failed-payment emails.',
+      consequence:
+        'Transactional email is disabled — no welcome, receipt, or failed-payment emails.',
     },
     {
       name: 'SENTRY_DSN',
       severity: 'warning',
-      consequence: 'Server-side error monitoring is disabled — API errors will not be reported to Sentry.',
+      consequence:
+        'Server-side error monitoring is disabled — API errors will not be reported to Sentry.',
     },
   ];
 
@@ -180,21 +184,65 @@ function checkNative(): void {
       name: 'VITE_GOOGLE_IOS_CLIENT_ID',
       severity: 'warning',
       consequence:
-        'Native Google Sign-In unavailable — the Google button is hidden on iOS (Apple + email only).',
+        'Google Sign-In hidden on iOS (Apple + email only) — see isGoogleSignInAvailable.',
+    },
+    {
+      name: 'VITE_GOOGLE_WEB_CLIENT_ID',
+      severity: 'warning',
+      consequence:
+        'Google Sign-In hidden on Android — its Credential Manager flow validates the id token against the *web* OAuth client, not an Android one. Android has no Apple button either, so the app ships email-only.',
     },
     {
       name: 'VITE_ENABLE_MOBILE_PURCHASES',
       severity: 'warning',
-      consequence: 'In-app purchase flag unset — Stripe checkout may be shown incorrectly on iOS/Android.',
+      consequence:
+        'In-app purchase flag unset — Stripe checkout may be shown incorrectly on iOS/Android.',
     },
     {
       name: 'VITE_ENABLE_COMMUNITY',
       severity: 'warning',
-      consequence: 'Community features flag unset — social features may be shown without moderation.',
+      consequence:
+        'Community features flag unset — social features may be shown without moderation.',
     },
   ];
 
   native.forEach(check);
+  reportExampleDrift();
+}
+
+/**
+ * Flags variables that the committed `.env.native-production.example` defines
+ * but the local `.env.native-production` leaves empty or omits entirely.
+ *
+ * This drift is invisible and expensive: the example carries the real public
+ * OAuth client ids, and Xcode Cloud seeds the env file *from* it
+ * (ios/App/ci_scripts/ci_post_clone.sh), so a cloud build and a local build of
+ * the very same commit can ship different sign-in buttons. It cost a release
+ * cycle once — hence the generic check rather than one more named variable.
+ */
+function reportExampleDrift(): void {
+  const examplePath = path.join(process.cwd(), '.env.native-production.example');
+  if (!fs.existsSync(examplePath)) return;
+
+  const exampleVars = new Map<string, string>();
+  for (const line of fs.readFileSync(examplePath, 'utf8').split('\n')) {
+    const match = /^\s*(VITE_[A-Z0-9_]+)\s*=(.*)$/.exec(line);
+    if (match && match[2].trim().length > 0) exampleVars.set(match[1], match[2].trim());
+  }
+
+  // present() resolves file + process.env, so a value supplied only by the CI
+  // environment (rather than the file) correctly counts as not drifted.
+  const drifted = [...exampleVars.keys()].filter((name) => !present(name));
+  if (drifted.length === 0) return;
+
+  console.warn('\n  ⚠ .env.native-production is missing values its .example provides:');
+  for (const name of drifted) console.warn(`      ${name}`);
+  console.warn(
+    '    → Local native builds will differ from Xcode Cloud builds, which seed\n' +
+      '      the env file from the example. Copy these lines across before\n' +
+      '      building a release locally.'
+  );
+  warnings++;
 }
 
 // ── Server / Admin SDK checks ─────────────────────────────────────────────────
@@ -212,7 +260,9 @@ function checkServer(): void {
   const hasAdminSdk = hasJson || hasIndividual;
 
   if (!hasAdminSdk) {
-    console.error('  ✗ MISSING  FIREBASE_SERVICE_ACCOUNT_JSON (or FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY)');
+    console.error(
+      '  ✗ MISSING  FIREBASE_SERVICE_ACCOUNT_JSON (or FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY)'
+    );
     console.error('             → Missing Admin SDK config: authenticated API routes may fail.');
     failures++;
   } else if (hasJson) {
@@ -225,7 +275,8 @@ function checkServer(): void {
     {
       name: 'GEMINI_API_KEY',
       severity: 'warning',
-      consequence: 'AI analysis, translation, tutor, OCR, and pronunciation routes will return 503.',
+      consequence:
+        'AI analysis, translation, tutor, OCR, and pronunciation routes will return 503.',
     },
     {
       name: 'STRIPE_SECRET_KEY',

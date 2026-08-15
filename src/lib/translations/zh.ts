@@ -633,6 +633,12 @@ export const zh = {
     'auth.creatingAcc': '正在创建账户...',
     'auth.createAccBtn': '创建账户',
     'auth.alreadyHave': '已有账户？',
+    'auth.googleAccountExists': '该邮箱已关联 Google 账户。请使用上方的 Google 登录。',
+    'auth.googleAccountExistsWeb':
+      '该邮箱已关联 Google 账户，本应用无法通过它登录。请前往 paleoglossa.com 登录。',
+    'auth.emailInUseGoogle': '该邮箱已关联 Google 账户。请改用 Google 登录。',
+    'auth.emailInUseGoogleWeb':
+      '该邮箱已关联 Google 账户，本应用无法通过它登录。请前往 paleoglossa.com 登录。',
 
     'nav.community': '社区',
     'nav.discover': '发现',

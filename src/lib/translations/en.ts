@@ -712,6 +712,17 @@ export const en = {
     'auth.creatingAcc': 'Creating Account...',
     'auth.createAccBtn': 'Create Account',
     'auth.alreadyHave': 'Already have an account?',
+    // Account-conflict messages. The "…Web" variants are used when the Google
+    // button is not rendered (native builds without this platform's OAuth
+    // client id) — pointing at an absent button would be a dead end.
+    'auth.googleAccountExists':
+      'This email is linked to a Google account. Please sign in with Google above.',
+    'auth.googleAccountExistsWeb':
+      'This email is linked to a Google account, which this app cannot sign in with. Please sign in at paleoglossa.com.',
+    'auth.emailInUseGoogle':
+      'This email is already linked to a Google account. Please sign in with Google instead.',
+    'auth.emailInUseGoogleWeb':
+      'This email is already linked to a Google account, which this app cannot sign in with. Please sign in at paleoglossa.com.',
 
     'nav.community': 'Community',
     'nav.discover': 'Discover',
