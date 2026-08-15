@@ -9,6 +9,16 @@ import { AIClient } from '../services/aiClient.js';
  */
 const LOCALIZABLE_UI_LANGS = new Set(['pt', 'es', 'fr', 'de', 'ru', 'tr', 'zh']);
 
+/**
+ * The gloss language to request for a given i18n locale: the bare language
+ * code (e.g. `pt` for `pt-BR`) when we can produce localised glosses for it,
+ * or `null` for English and unsupported locales (English glosses are native).
+ */
+export function getLocalizableUiLang(i18nLanguage: string | undefined): string | null {
+  const lang = (i18nLanguage || 'en').split('-')[0];
+  return LOCALIZABLE_UI_LANGS.has(lang) ? lang : null;
+}
+
 export interface LocalizedGlossState {
   /** Best available text: the English gloss immediately, localised when ready. */
   text: string;
@@ -27,6 +37,9 @@ export interface LocalizedGlossState {
  * English — asynchronously fetches a localised gloss (cache-first via the
  * server lexical cache, else an AI translation that is cached for next time)
  * and swaps it in. English remains the fallback if localisation fails.
+ *
+ * The localised gloss is fetched even when no English gloss exists, so words
+ * missing from the bundled lexica still get a meaning in the chosen language.
  */
 export function useLocalizedGloss(
   lemma: string | undefined,
@@ -45,7 +58,7 @@ export function useLocalizedGloss(
     setLocalizedText(null); // eslint-disable-line react-hooks/set-state-in-effect
     setLoading(false);
 
-    if (!lemma || !englishGloss || !needsLocalization) return;
+    if (!lemma || !needsLocalization) return;
 
     let cancelled = false;
     setLoading(true);

@@ -20,6 +20,11 @@ export interface ResolvedMeaning {
   sourceUrl?: string;
   /** True when the text was produced by AI and should be flagged as such. */
   aiGenerated?: boolean;
+  /**
+   * UI-language code (e.g. `pt`) when `definition` is already written in the
+   * learner's language — callers must not run it through a second translation.
+   */
+  localizedTo?: string;
 }
 
 /**
@@ -77,6 +82,7 @@ export async function resolveMeaning(
     }
 
     case 'ai': {
+      const targetLang = opts?.targetLanguage?.split('-')[0];
       const text = await AIClient.getWordGloss(
         languageId,
         opts?.surface || lemma,
@@ -90,6 +96,7 @@ export async function resolveMeaning(
         sourceLabel: source.name,
         sourceUrl: url,
         aiGenerated: true,
+        ...(targetLang && targetLang !== 'en' ? { localizedTo: targetLang } : {}),
       };
     }
 

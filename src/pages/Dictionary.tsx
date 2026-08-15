@@ -367,6 +367,7 @@ function LocalizedDefinition({ entry }: { entry: DictionaryEntry }) {
   );
   const langLabel = UI_LANGUAGE_LABELS[uiLang];
   if (!langLabel) return null; // English UI or unsupported language — nothing to add.
+  if (!loading && !text) return null; // No gloss in any language — nothing to show.
 
   return (
     <div className="mt-4 pt-4 border-t border-bdr/30">
