@@ -654,6 +654,14 @@ export const fr = {
     'auth.creatingAcc': 'Création du compte...',
     'auth.createAccBtn': 'Créer un compte',
     'auth.alreadyHave': 'Vous avez déjà un compte ?',
+    'auth.googleAccountExists':
+      'Cette adresse e-mail est liée à un compte Google. Connectez-vous avec Google ci-dessus.',
+    'auth.googleAccountExistsWeb':
+      'Cette adresse e-mail est liée à un compte Google, avec lequel cette application ne peut pas vous connecter. Connectez-vous sur paleoglossa.com.',
+    'auth.emailInUseGoogle':
+      'Cette adresse e-mail est déjà liée à un compte Google. Connectez-vous plutôt avec Google.',
+    'auth.emailInUseGoogleWeb':
+      'Cette adresse e-mail est déjà liée à un compte Google, avec lequel cette application ne peut pas vous connecter. Connectez-vous sur paleoglossa.com.',
 
     'nav.community': 'Communauté',
     'nav.discover': 'Découvrir',

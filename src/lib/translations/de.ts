@@ -653,6 +653,14 @@ export const de = {
     'auth.creatingAcc': 'Konto wird erstellt...',
     'auth.createAccBtn': 'Konto erstellen',
     'auth.alreadyHave': 'Bereits ein Konto?',
+    'auth.googleAccountExists':
+      'Diese E-Mail-Adresse ist mit einem Google-Konto verknüpft. Bitte melde dich oben mit Google an.',
+    'auth.googleAccountExistsWeb':
+      'Diese E-Mail-Adresse ist mit einem Google-Konto verknüpft, mit dem sich diese App nicht anmelden kann. Bitte melde dich auf paleoglossa.com an.',
+    'auth.emailInUseGoogle':
+      'Diese E-Mail-Adresse ist bereits mit einem Google-Konto verknüpft. Bitte melde dich stattdessen mit Google an.',
+    'auth.emailInUseGoogleWeb':
+      'Diese E-Mail-Adresse ist bereits mit einem Google-Konto verknüpft, mit dem sich diese App nicht anmelden kann. Bitte melde dich auf paleoglossa.com an.',
 
     'nav.community': 'Gemeinschaft',
     'nav.discover': 'Entdecken',

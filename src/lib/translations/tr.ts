@@ -663,6 +663,14 @@ export const tr = {
     'auth.creatingAcc': 'Hesap Oluşturuluyor...',
     'auth.createAccBtn': 'Hesap Oluştur',
     'auth.alreadyHave': 'Zaten bir hesabınız var mı?',
+    'auth.googleAccountExists':
+      'Bu e-posta bir Google hesabına bağlı. Lütfen yukarıdan Google ile giriş yapın.',
+    'auth.googleAccountExistsWeb':
+      'Bu e-posta, bu uygulamanın giriş yapamadığı bir Google hesabına bağlı. Lütfen paleoglossa.com adresinden giriş yapın.',
+    'auth.emailInUseGoogle':
+      'Bu e-posta zaten bir Google hesabına bağlı. Lütfen bunun yerine Google ile giriş yapın.',
+    'auth.emailInUseGoogleWeb':
+      'Bu e-posta, bu uygulamanın giriş yapamadığı bir Google hesabına bağlı. Lütfen paleoglossa.com adresinden giriş yapın.',
 
     'nav.community': 'Topluluk',
     'nav.discover': 'Keşfet',
