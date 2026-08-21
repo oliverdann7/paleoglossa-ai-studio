@@ -1,0 +1,272 @@
+/* ── Paleoglossa social kit ─────────────────────────────────────────────────
+   Shared design tokens + card chrome for every Instagram asset.
+   Colours mirror src/index.css @theme so the feed matches the product.       */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400&family=Noto+Serif+Hebrew:wght@400;500;600&family=Noto+Serif+Devanagari:wght@400;600&family=Noto+Sans+Syriac:wght@400;600&family=Noto+Sans+Coptic&family=Noto+Sans+Cuneiform&family=Noto+Sans+Egyptian+Hieroglyphs&family=Noto+Sans+Ugaritic&family=Noto+Sans+Imperial+Aramaic&display=swap');
+
+:root {
+  --parch: #f8f3e8;
+  --parch2: #f0e9d5;
+  --parch3: #e4d8be;
+  --bdr: #cfc0a0;
+  --ink: #1a1410;
+  --ink2: #3d3020;
+  --ink3: #6b5c48;
+  --muted: #7a6a52;
+  --gold: #b8842a;
+  --blue: #1e3d6e;
+  --jade: #1e5c38;
+  --amber: #a06820;
+  --ruby: #8c1c1c;
+
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --body: 'Crimson Pro', Georgia, serif;
+  --mono: 'DM Mono', ui-monospace, monospace;
+  --grk: 'Gentium Book Plus', 'Cormorant Garamond', Georgia, serif;
+  --heb: 'Noto Serif Hebrew', serif;
+  --syr: 'Noto Sans Syriac', serif;
+  --cop: 'Noto Sans Coptic', serif;
+  --dev: 'Noto Serif Devanagari', serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #58514a;
+  padding: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+/* ── Card chrome ─────────────────────────────────────────────────────────── */
+
+.card {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  background:
+    radial-gradient(115% 80% at 50% -8%, rgba(255, 255, 255, 0.85), transparent 62%),
+    radial-gradient(85% 65% at 106% 104%, rgba(190, 158, 112, 0.34), transparent 66%),
+    radial-gradient(60% 45% at -8% 96%, rgba(190, 158, 112, 0.18), transparent 70%),
+    repeating-linear-gradient(93deg, rgba(150, 120, 80, 0.032) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(3deg, rgba(150, 120, 80, 0.02) 0 1px, transparent 1px 7px),
+    var(--parch);
+}
+
+.post {
+  width: 1080px;
+  height: 1350px;
+  padding: 96px 92px 84px;
+}
+.square {
+  width: 1080px;
+  height: 1080px;
+  padding: 90px;
+}
+
+/* Double scribal rule, drawn inside the safe area */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 44px;
+  border: 1px solid rgba(184, 132, 42, 0.42);
+  pointer-events: none;
+}
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 51px;
+  border: 1px solid rgba(184, 132, 42, 0.16);
+  pointer-events: none;
+}
+
+/* ── Repeating furniture ─────────────────────────────────────────────────── */
+
+.kicker {
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.kicker::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(184, 132, 42, 0.55), rgba(184, 132, 42, 0));
+}
+.kicker .num {
+  color: var(--gold);
+}
+
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+  padding: 24px 0;
+}
+
+.sig {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-family: var(--mono);
+  font-size: 19px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding-top: 26px;
+  border-top: 1px solid rgba(184, 132, 42, 0.3);
+}
+.sig .pi {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 10px;
+  background: var(--blue);
+  color: var(--parch);
+  font-family: var(--grk);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 3px;
+}
+.sig .dot {
+  color: var(--gold);
+}
+.sig .url {
+  margin-left: auto;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: none;
+}
+
+/* ── Type ────────────────────────────────────────────────────────────────── */
+
+h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 92px;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+h1 em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--blue);
+}
+h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 62px;
+  line-height: 1.08;
+  color: var(--ink);
+}
+p.lede {
+  font-family: var(--body);
+  font-size: 34px;
+  line-height: 1.5;
+  color: var(--ink2);
+  max-width: 27ch;
+}
+p.note {
+  font-family: var(--body);
+  font-style: italic;
+  font-size: 30px;
+  line-height: 1.45;
+  color: var(--ink3);
+}
+.grk {
+  font-family: var(--grk);
+}
+.heb {
+  font-family: var(--heb);
+  direction: rtl;
+}
+.syr {
+  font-family: var(--syr);
+  direction: rtl;
+}
+.cop {
+  font-family: var(--cop);
+}
+.dev {
+  font-family: var(--dev);
+}
+
+.rule {
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), rgba(184, 132, 42, 0.06));
+  border-radius: 2px;
+}
+
+.tagstrip {
+  font-family: var(--mono);
+  font-size: 21px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.tagstrip span.sep {
+  color: rgba(184, 132, 42, 0.5);
+}
+
+.chip {
+  font-family: var(--mono);
+  font-size: 20px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  color: var(--blue);
+  background: rgba(30, 61, 110, 0.06);
+  white-space: nowrap;
+}
+
+.panel {
+  background: linear-gradient(180deg, #fefaf4, #f6efe0);
+  border: 1px solid var(--bdr);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 26px 46px -24px rgba(35, 20, 10, 0.3),
+    0 2px 6px rgba(35, 20, 10, 0.06);
+}
+
+/* ── The mark, inline so it inherits colour ──────────────────────────────── */
+.pimark {
+  display: block;
+  overflow: visible;
+}
+.pimark .letter {
+  fill: var(--blue);
+}
+.pimark .baseline {
+  fill: var(--gold);
+}

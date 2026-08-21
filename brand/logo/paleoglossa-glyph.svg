@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="94 130 324 278" role="img" aria-label="Paleoglossa glyph">
+  <title>Paleoglossa — pi glyph with manuscript rule</title>
+  <!-- Letterform: recolour with `fill` on the group -->
+  <g fill="#1E3D6E">
+    <rect x="94" y="130" width="324" height="48" rx="11"/>
+    <path d="M148 178h44v126c0 24 10 34 32 38l14 3v23H102v-23l14-3c22-4 32-14 32-38z"/>
+    <path d="M320 178h44v126c0 24 10 34 32 38l14 3v23H274v-23l14-3c22-4 32-14 32-38z"/>
+  </g>
+  <!-- Manuscript baseline rule -->
+  <rect x="102" y="392" width="308" height="16" rx="8" fill="#B8842A"/>
+</svg>

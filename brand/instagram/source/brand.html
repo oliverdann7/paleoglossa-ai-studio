@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Paleoglossa — logo &amp; profile assets</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <style>
+      .plain::before,
+      .plain::after {
+        display: none;
+      }
+
+      /* ── Profile avatar (Instagram crops this to a circle) ──────────────── */
+      #avatar-1080 {
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+      #avatar-1080 .pimark {
+        width: 620px;
+      }
+
+      /* ── Lockups ────────────────────────────────────────────────────────── */
+      .seal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--blue);
+        border-radius: 24%;
+      }
+      .seal .pimark .letter {
+        fill: var(--parch);
+      }
+
+      .wordmark {
+        font-family: var(--serif);
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink);
+        line-height: 1;
+      }
+      .tagline {
+        font-family: var(--mono);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      #lockup-horizontal,
+      #lockup-dark {
+        width: 1600px;
+        height: 460px;
+        padding: 0;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        gap: 56px;
+      }
+      #lockup-horizontal .seal,
+      #lockup-dark .seal {
+        width: 196px;
+        height: 196px;
+        flex: 0 0 196px;
+      }
+      #lockup-horizontal .seal .pimark,
+      #lockup-dark .seal .pimark {
+        width: 118px;
+      }
+      #lockup-horizontal .wordmark,
+      #lockup-dark .wordmark {
+        font-size: 104px;
+      }
+      #lockup-horizontal .tagline,
+      #lockup-dark .tagline {
+        font-size: 24px;
+        margin-top: 22px;
+      }
+
+      #lockup-dark {
+        background: #151b23;
+      }
+      #lockup-dark .seal {
+        background: var(--parch);
+      }
+      #lockup-dark .seal .pimark .letter {
+        fill: var(--blue);
+      }
+      #lockup-dark .seal .pimark .baseline {
+        fill: #b8842a;
+      }
+      #lockup-dark .wordmark {
+        color: #f2ece0;
+      }
+      #lockup-dark .tagline {
+        color: #9aa7b8;
+      }
+
+      #lockup-stacked {
+        width: 1080px;
+        height: 1080px;
+        padding: 0;
+        align-items: center;
+        justify-content: center;
+        gap: 66px;
+      }
+      #lockup-stacked .seal {
+        width: 312px;
+        height: 312px;
+      }
+      #lockup-stacked .seal .pimark {
+        width: 188px;
+      }
+      #lockup-stacked .wordmark {
+        font-size: 92px;
+        text-align: center;
+      }
+      #lockup-stacked .tagline {
+        font-size: 25px;
+        margin-top: 28px;
+        text-align: center;
+      }
+
+      /* ── Story template (9:16) ──────────────────────────────────────────── */
+      #story-template {
+        width: 1080px;
+        height: 1920px;
+        padding: 150px 92px 130px;
+      }
+      #story-template::before {
+        inset: 60px;
+      }
+      #story-template::after {
+        inset: 68px;
+      }
+      #story-template .slot {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 44px;
+      }
+      #story-template .ghost {
+        border: 2px dashed rgba(184, 132, 42, 0.45);
+        border-radius: 18px;
+        padding: 54px 40px;
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 24px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      /* ── Story-highlight covers ─────────────────────────────────────────── */
+      .hl {
+        width: 640px;
+        height: 640px;
+        padding: 0;
+        align-items: center;
+        justify-content: center;
+      }
+      .hl .g {
+        font-family: var(--grk);
+        font-size: 250px;
+        font-weight: 700;
+        line-height: 0.78;
+        color: var(--blue);
+      }
+      .hl .lab {
+        font-family: var(--mono);
+        font-size: 26px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-top: 34px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Profile picture — Instagram crops to a circle, so nothing sits near the corners -->
+    <section class="card square plain" id="avatar-1080">
+      <svg class="pimark" viewBox="94 130 324 278" xmlns="http://www.w3.org/2000/svg">
+        <g class="letter">
+          <rect x="94" y="130" width="324" height="48" rx="11" />
+          <path d="M148 178h44v126c0 24 10 34 32 38l14 3v23H102v-23l14-3c22-4 32-14 32-38z" />
+          <path d="M320 178h44v126c0 24 10 34 32 38l14 3v23H274v-23l14-3c22-4 32-14 32-38z" />
+        </g>
+        <rect class="baseline" x="102" y="392" width="308" height="16" rx="8" />
+      </svg>
+    </section>
+
+    <section class="card plain" id="lockup-horizontal">
+      <div class="seal">
+        <svg class="pimark" viewBox="94 130 324 278" xmlns="http://www.w3.org/2000/svg">
+          <g class="letter">
+            <rect x="94" y="130" width="324" height="48" rx="11" />
+            <path d="M148 178h44v126c0 24 10 34 32 38l14 3v23H102v-23l14-3c22-4 32-14 32-38z" />
+            <path d="M320 178h44v126c0 24 10 34 32 38l14 3v23H274v-23l14-3c22-4 32-14 32-38z" />
+          </g>
+          <rect class="baseline" x="102" y="392" width="308" height="16" rx="8" />
+        </svg>
+      </div>
+      <div>
+        <div class="wordmark">Paleoglossa</div>
+        <div class="tagline">Read the ancient world, word by word</div>
+      </div>
+    </section>
+
+    <section class="card plain" id="lockup-stacked">
+      <div class="seal">
+        <svg class="pimark" viewBox="94 130 324 278" xmlns="http://www.w3.org/2000/svg">
+          <g class="letter">
+            <rect x="94" y="130" width="324" height="48" rx="11" />
+            <path d="M148 178h44v126c0 24 10 34 32 38l14 3v23H102v-23l14-3c22-4 32-14 32-38z" />
+            <path d="M320 178h44v126c0 24 10 34 32 38l14 3v23H274v-23l14-3c22-4 32-14 32-38z" />
+          </g>
+          <rect class="baseline" x="102" y="392" width="308" height="16" rx="8" />
+        </svg>
+      </div>
+      <div>
+        <div class="wordmark">Paleoglossa</div>
+        <div class="tagline">Read the ancient world, word by word</div>
+      </div>
+    </section>
+
+    <section class="card plain" id="lockup-dark">
+      <div class="seal">
+        <svg class="pimark" viewBox="94 130 324 278" xmlns="http://www.w3.org/2000/svg">
+          <g class="letter">
+            <rect x="94" y="130" width="324" height="48" rx="11" />
+            <path d="M148 178h44v126c0 24 10 34 32 38l14 3v23H102v-23l14-3c22-4 32-14 32-38z" />
+            <path d="M320 178h44v126c0 24 10 34 32 38l14 3v23H274v-23l14-3c22-4 32-14 32-38z" />
+          </g>
+          <rect class="baseline" x="102" y="392" width="308" height="16" rx="8" />
+        </svg>
+      </div>
+      <div>
+        <div class="wordmark">Paleoglossa</div>
+        <div class="tagline">Read the ancient world, word by word</div>
+      </div>
+    </section>
+
+    <section class="card" id="story-template">
+      <div class="kicker"><span class="num">ΠΠ</span>&nbsp;&nbsp;Section title</div>
+      <div class="slot">
+        <div class="ghost">Headline — Cormorant Garamond 600, 88px</div>
+        <div class="ghost">Ancient-text line — Gentium Book Plus, 62px</div>
+        <div class="ghost">Body — Crimson Pro, 34px</div>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <section class="card hl plain" id="highlight-read">
+      <div style="text-align: center">
+        <div class="g grk">Α</div>
+        <div class="lab">Read</div>
+      </div>
+    </section>
+
+    <section class="card hl plain" id="highlight-learn">
+      <div style="text-align: center">
+        <div class="g grk">Β</div>
+        <div class="lab">Learn</div>
+      </div>
+    </section>
+
+    <section class="card hl plain" id="highlight-listen">
+      <div style="text-align: center">
+        <div class="g grk">Γ</div>
+        <div class="lab">Listen</div>
+      </div>
+    </section>
+  </body>
+</html>

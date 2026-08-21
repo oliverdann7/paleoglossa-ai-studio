@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Paleoglossa — Instagram launch set</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <style>
+      /* ── 01 manifesto ───────────────────────────────────────────────────── */
+      #p01-manifesto .pimark {
+        width: 318px;
+      }
+
+      /* ── 02 word of the day ─────────────────────────────────────────────── */
+      #p02-menis .line {
+        font-family: var(--grk);
+        font-size: 66px;
+        line-height: 1.42;
+        color: var(--ink2);
+      }
+      #p02-menis .hot {
+        color: var(--blue);
+        background: rgba(30, 61, 110, 0.1);
+        box-shadow: 0 3px 0 var(--gold);
+        border-radius: 5px;
+        padding: 0 8px;
+      }
+      #p02-menis .pop {
+        margin-top: 46px;
+        padding: 34px 38px 32px;
+        position: relative;
+      }
+      #p02-menis .pop::before {
+        content: '';
+        position: absolute;
+        top: -14px;
+        left: 96px;
+        width: 26px;
+        height: 26px;
+        transform: rotate(45deg);
+        background: #fefaf4;
+        border-left: 1px solid var(--bdr);
+        border-top: 1px solid var(--bdr);
+      }
+      #p02-menis .headword {
+        font-family: var(--grk);
+        font-size: 62px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      #p02-menis .gloss {
+        font-family: var(--body);
+        font-size: 33px;
+        color: var(--ink2);
+        margin-top: 4px;
+      }
+      #p02-menis .morphrow {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 26px;
+      }
+      #p02-menis .src {
+        font-family: var(--mono);
+        font-size: 18px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-top: 26px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(207, 192, 160, 0.7);
+      }
+
+      /* ── 03 four scripts ────────────────────────────────────────────────── */
+      #p03-logos .stage {
+        gap: 62px;
+      }
+      #p03-logos .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 34px;
+      }
+      #p03-logos .row {
+        display: grid;
+        grid-template-columns: 168px 1fr;
+        align-items: baseline;
+        gap: 24px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid rgba(207, 192, 160, 0.6);
+      }
+      #p03-logos .row:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+      #p03-logos .lang {
+        font-family: var(--mono);
+        font-size: 19px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+      #p03-logos .txt {
+        font-size: 52px;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+
+      /* ── 04 language grid ───────────────────────────────────────────────── */
+      #p04-languages .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+      }
+      #p04-languages .cell {
+        padding: 24px 20px 22px;
+        border: 1px solid rgba(207, 192, 160, 0.85);
+        border-radius: 16px;
+        background: rgba(254, 250, 244, 0.62);
+        text-align: center;
+      }
+      #p04-languages .glyph {
+        font-size: 60px;
+        line-height: 1.05;
+        color: var(--blue);
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #p04-languages .nm {
+        font-family: var(--mono);
+        font-size: 17px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink3);
+        margin-top: 10px;
+      }
+
+      /* ── 05 knowledge states ────────────────────────────────────────────── */
+      #p05-states .states {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      #p05-states .st {
+        display: grid;
+        grid-template-columns: 22px 250px 1fr;
+        align-items: center;
+        gap: 26px;
+        padding: 22px 28px;
+        border-radius: 14px;
+        background: rgba(254, 250, 244, 0.66);
+        border: 1px solid rgba(207, 192, 160, 0.7);
+      }
+      #p05-states .swatch {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+      }
+      #p05-states .nm {
+        font-family: var(--mono);
+        font-size: 25px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink);
+      }
+      #p05-states .ds {
+        font-family: var(--body);
+        font-size: 27px;
+        color: var(--ink3);
+      }
+
+      /* ── 06 spaced repetition ───────────────────────────────────────────── */
+      #p06-srs .sched {
+        display: flex;
+        align-items: flex-end;
+        gap: 20px;
+        margin-top: 10px;
+      }
+      #p06-srs .bar {
+        flex: 1;
+        border-radius: 10px 10px 4px 4px;
+        background: linear-gradient(180deg, var(--blue), #2c5390);
+        position: relative;
+      }
+      #p06-srs .bar span {
+        position: absolute;
+        bottom: -46px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 20px;
+        color: var(--ink3);
+        letter-spacing: 0.08em;
+      }
+      #p06-srs .schedwrap {
+        padding: 44px 44px 84px;
+        margin-top: 12px;
+      }
+
+      /* ── 07 hebrew ──────────────────────────────────────────────────────── */
+      #p07-bereshit .verse {
+        font-family: var(--heb);
+        direction: rtl;
+        font-size: 76px;
+        line-height: 1.75;
+        color: var(--ink);
+        text-align: right;
+      }
+      #p07-bereshit .hot {
+        color: var(--blue);
+        background: rgba(30, 61, 110, 0.1);
+        box-shadow: 0 3px 0 var(--gold);
+        border-radius: 5px;
+        padding: 0 8px;
+      }
+      #p07-bereshit .pop {
+        margin-top: 44px;
+        padding: 32px 38px;
+      }
+      #p07-bereshit .headword {
+        font-family: var(--heb);
+        direction: rtl;
+        text-align: left;
+        font-size: 56px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      #p07-bereshit .gloss {
+        font-family: var(--body);
+        font-size: 32px;
+        color: var(--ink2);
+        margin-top: 6px;
+      }
+      #p07-bereshit .morphrow {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+      }
+
+      /* ── 08 quiz ────────────────────────────────────────────────────────── */
+      #p08-quiz .q {
+        font-family: var(--grk);
+        font-size: 138px;
+        font-weight: 700;
+        color: var(--blue);
+        line-height: 1;
+      }
+      #p08-quiz .opts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 8px;
+      }
+      #p08-quiz .opt {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 26px 30px;
+        border-radius: 14px;
+        border: 1px solid rgba(207, 192, 160, 0.9);
+        background: rgba(254, 250, 244, 0.7);
+        font-family: var(--body);
+        font-size: 32px;
+        color: var(--ink2);
+      }
+      #p08-quiz .opt b {
+        font-family: var(--mono);
+        font-size: 24px;
+        color: var(--gold);
+        font-weight: 500;
+      }
+
+      /* ── 09 audio lab ───────────────────────────────────────────────────── */
+      #p09-audio .wavewrap {
+        padding: 40px 44px;
+        display: flex;
+        flex-direction: column;
+        gap: 34px;
+      }
+      #p09-audio .track {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+      #p09-audio .tlabel {
+        font-family: var(--mono);
+        font-size: 18px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        width: 118px;
+        flex: 0 0 118px;
+      }
+      #p09-audio .wave {
+        flex: 1;
+        height: 92px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      #p09-audio .wave i {
+        flex: 1;
+        border-radius: 3px;
+        display: block;
+      }
+
+      /* ── 10 free to start ───────────────────────────────────────────────── */
+      #p10-start .facts {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      #p10-start .fact {
+        display: flex;
+        align-items: baseline;
+        gap: 28px;
+        padding: 30px 0;
+        border-bottom: 1px solid rgba(207, 192, 160, 0.65);
+      }
+      #p10-start .fact:last-child {
+        border-bottom: 0;
+      }
+      #p10-start .n {
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 74px;
+        line-height: 1;
+        color: var(--blue);
+        width: 168px;
+        flex: 0 0 168px;
+      }
+      #p10-start .n small {
+        font-size: 34px;
+        letter-spacing: 0.02em;
+      }
+      #p10-start .d {
+        font-family: var(--body);
+        font-size: 31px;
+        line-height: 1.4;
+        color: var(--ink2);
+      }
+      #p10-start .cta {
+        margin-top: 8px;
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 50px;
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ══ 01 · MANIFESTO ══════════════════════════════════════════════════ -->
+    <section class="card post" id="p01-manifesto">
+      <div class="kicker"><span class="num">01</span>&nbsp;&nbsp;Paleoglossa</div>
+      <div class="stage">
+        <svg class="pimark" viewBox="94 130 324 278" xmlns="http://www.w3.org/2000/svg">
+          <g class="letter">
+            <rect x="94" y="130" width="324" height="48" rx="11" />
+            <path d="M148 178h44v126c0 24 10 34 32 38l14 3v23H102v-23l14-3c22-4 32-14 32-38z" />
+            <path d="M320 178h44v126c0 24 10 34 32 38l14 3v23H274v-23l14-3c22-4 32-14 32-38z" />
+          </g>
+          <rect class="baseline" x="102" y="392" width="308" height="16" rx="8" />
+        </svg>
+        <h1>Read the ancient&nbsp;world,<br /><em>word by word.</em></h1>
+        <p class="lede">
+          Homer, the Hebrew Bible, Cicero, the Peshitta — in the original, with the help you
+          actually need on the page.
+        </p>
+      </div>
+      <div class="tagstrip" style="margin-bottom: 34px">
+        12 languages <span class="sep">·</span> real texts <span class="sep">·</span> free to start
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 02 · WORD OF THE DAY ════════════════════════════════════════════ -->
+    <section class="card post" id="p02-menis">
+      <div class="kicker"><span class="num">02</span>&nbsp;&nbsp;Word of the day</div>
+      <div class="stage">
+        <div>
+          <div class="tagstrip" style="margin-bottom: 26px">
+            Homer <span class="sep">·</span> Iliad 1.1
+          </div>
+          <div class="line grk">
+            <span class="hot">Μῆνιν</span> ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος
+          </div>
+          <div class="panel pop">
+            <div class="headword grk">μῆνις</div>
+            <div class="gloss">wrath — the settled, ruinous anger of a god or a hero</div>
+            <div class="morphrow">
+              <span class="chip">noun</span>
+              <span class="chip">feminine</span>
+              <span class="chip">singular</span>
+              <span class="chip">accusative</span>
+            </div>
+            <div class="src">Morphology · Ancient Greek Dependency Treebank</div>
+          </div>
+        </div>
+        <p class="note">
+          The first word of European literature is an accusative. Homer names the rage before he
+          names the man.
+        </p>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 03 · FOUR SCRIPTS ═══════════════════════════════════════════════ -->
+    <section class="card post" id="p03-logos">
+      <div class="kicker"><span class="num">03</span>&nbsp;&nbsp;John 1.1</div>
+      <div class="stage">
+        <h2>One verse.<br />Four scripts.<br />All readable.</h2>
+        <div class="stack">
+          <div class="row">
+            <div class="lang">Greek</div>
+            <div class="txt grk">Ἐν ἀρχῇ ἦν ὁ λόγος</div>
+          </div>
+          <div class="row">
+            <div class="lang">Latin</div>
+            <div class="txt">In principio erat Verbum</div>
+          </div>
+          <div class="row">
+            <div class="lang">Syriac</div>
+            <div class="txt syr">ܒܪܫܝܬ ܐܝܬܘܗܝ ܗܘܐ ܡܠܬܐ</div>
+          </div>
+          <div class="row">
+            <div class="lang">Coptic</div>
+            <div class="txt cop">ϧⲉⲛ ⲧⲁⲣⲭⲏ ⲛⲉ ⲡⲓⲥⲁϫⲓ ⲡⲉ</div>
+          </div>
+        </div>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 04 · THE LANGUAGES ══════════════════════════════════════════════ -->
+    <section class="card post" id="p04-languages">
+      <div class="kicker"><span class="num">04</span>&nbsp;&nbsp;The shelf</div>
+      <div class="stage">
+        <h2>Twelve languages.<br />One reader.</h2>
+        <div class="grid">
+          <div class="cell"><div class="glyph grk">α</div><div class="nm">Ancient Greek</div></div>
+          <div class="cell"><div class="glyph grk">Ω</div><div class="nm">Koine Greek</div></div>
+          <div class="cell"><div class="glyph heb">א</div><div class="nm">Bib. Hebrew</div></div>
+          <div class="cell"><div class="glyph">V</div><div class="nm">Latin</div></div>
+          <div class="cell"><div class="glyph syr">ܣ</div><div class="nm">Syriac</div></div>
+          <div class="cell"><div class="glyph cop">ⲱ</div><div class="nm">Coptic</div></div>
+          <div class="cell">
+            <div class="glyph" style="font-family: 'Noto Sans Imperial Aramaic', serif">𐡀</div>
+            <div class="nm">Aramaic</div>
+          </div>
+          <div class="cell">
+            <div class="glyph" style="font-family: 'Noto Sans Cuneiform', serif; font-size: 48px">
+              𒀭
+            </div>
+            <div class="nm">Akkadian</div>
+          </div>
+          <div class="cell"><div class="glyph dev">अ</div><div class="nm">Sanskrit</div></div>
+          <div class="cell">
+            <div
+              class="glyph"
+              style="font-family: 'Noto Sans Egyptian Hieroglyphs', serif; font-size: 50px"
+            >
+              𓅓
+            </div>
+            <div class="nm">Egyptian</div>
+          </div>
+          <div class="cell">
+            <div class="glyph" style="font-family: 'Noto Sans Cuneiform', serif; font-size: 48px">
+              𒉈
+            </div>
+            <div class="nm">Hittite</div>
+          </div>
+          <div class="cell">
+            <div class="glyph" style="font-family: 'Noto Sans Ugaritic', serif; font-size: 52px">
+              𐎁
+            </div>
+            <div class="nm">Ugaritic</div>
+          </div>
+        </div>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 05 · KNOWLEDGE STATES ═══════════════════════════════════════════ -->
+    <section class="card post" id="p05-states">
+      <div class="kicker"><span class="num">05</span>&nbsp;&nbsp;How it works</div>
+      <div class="stage">
+        <h2>Every word you meet<br />gets a memory.</h2>
+        <div class="states">
+          <div class="st">
+            <div class="swatch" style="background: #cfc0a0"></div>
+            <div class="nm">New</div>
+            <div class="ds">You have never met it. Highlighted on the page.</div>
+          </div>
+          <div class="st">
+            <div class="swatch" style="background: #b8842a"></div>
+            <div class="nm">Seen</div>
+            <div class="ds">Looked up once. Still unfamiliar.</div>
+          </div>
+          <div class="st">
+            <div class="swatch" style="background: #a06820"></div>
+            <div class="nm">Learning</div>
+            <div class="ds">In your review queue, coming back on schedule.</div>
+          </div>
+          <div class="st">
+            <div class="swatch" style="background: #1e5c38"></div>
+            <div class="nm">Familiar</div>
+            <div class="ds">Mostly recalled. Reviews stretch further apart.</div>
+          </div>
+          <div class="st">
+            <div class="swatch" style="background: #1e3d6e"></div>
+            <div class="nm">Known</div>
+            <div class="ds">It reads like your own language. No highlight.</div>
+          </div>
+        </div>
+        <p class="note">
+          Read a page and the page reads you back: your vocabulary map updates as you go.
+        </p>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 06 · SPACED REPETITION ══════════════════════════════════════════ -->
+    <section class="card post" id="p06-srs">
+      <div class="kicker"><span class="num">06</span>&nbsp;&nbsp;Review</div>
+      <div class="stage">
+        <h2>Reviews timed to the day<br />you would have forgotten.</h2>
+        <div class="panel schedwrap">
+          <div class="sched" style="height: 300px">
+            <div class="bar" style="height: 14%"><span>1d</span></div>
+            <div class="bar" style="height: 24%"><span>3d</span></div>
+            <div class="bar" style="height: 38%"><span>9d</span></div>
+            <div class="bar" style="height: 56%"><span>26d</span></div>
+            <div class="bar" style="height: 78%"><span>71d</span></div>
+            <div class="bar" style="height: 100%"><span>6mo</span></div>
+          </div>
+        </div>
+        <p class="lede" style="max-width: 38ch">
+          Paleoglossa schedules vocabulary with <strong>FSRS&nbsp;5</strong> — a model of how memory
+          actually decays, not a fixed ladder of intervals.
+        </p>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 07 · HEBREW ═════════════════════════════════════════════════════ -->
+    <section class="card post" id="p07-bereshit">
+      <div class="kicker"><span class="num">07</span>&nbsp;&nbsp;Right to left</div>
+      <div class="stage">
+        <div>
+          <div class="tagstrip" style="margin-bottom: 30px; justify-content: flex-end">
+            Genesis 1.1 <span class="sep">·</span> Biblical Hebrew
+          </div>
+          <div class="verse">
+            בְּרֵאשִׁ֖ית <span class="hot">בָּרָ֣א</span> אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ
+          </div>
+          <div class="panel pop">
+            <div class="headword">בָּרָא</div>
+            <div class="gloss">he created — the verb the Bible reserves for God alone</div>
+            <div class="morphrow">
+              <span class="chip">verb</span>
+              <span class="chip">qal</span>
+              <span class="chip">perfect</span>
+              <span class="chip">3rd · m · sg</span>
+            </div>
+          </div>
+        </div>
+        <p class="note">
+          Full pointing, full right-to-left layout, tap any word for its root and parsing.
+        </p>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 08 · QUIZ ═══════════════════════════════════════════════════════ -->
+    <section class="card post" id="p08-quiz">
+      <div class="kicker"><span class="num">08</span>&nbsp;&nbsp;Parse it</div>
+      <div class="stage">
+        <div style="text-align: center">
+          <div class="q grk">τῇ πόλει</div>
+          <div class="rule" style="width: 220px; margin: 34px auto 0"></div>
+        </div>
+        <h2 style="text-align: center; font-size: 54px">Which case is it?</h2>
+        <div class="opts">
+          <div class="opt"><b>A</b> Nominative</div>
+          <div class="opt"><b>B</b> Genitive</div>
+          <div class="opt"><b>C</b> Dative</div>
+          <div class="opt"><b>D</b> Accusative</div>
+        </div>
+        <p class="note" style="text-align: center">
+          Answer in the comments — no scrolling to the back of the book.
+        </p>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 09 · AUDIO LAB ══════════════════════════════════════════════════ -->
+    <section class="card post" id="p09-audio">
+      <div class="kicker"><span class="num">09</span>&nbsp;&nbsp;Audio lab</div>
+      <div class="stage">
+        <h2>Hear it. Say it.<br />See the difference.</h2>
+        <div class="panel wavewrap">
+          <div class="track">
+            <div class="tlabel">Model</div>
+            <div class="wave" id="wave-a"></div>
+          </div>
+          <div style="height: 1px; background: rgba(207, 192, 160, 0.7)"></div>
+          <div class="track">
+            <div class="tlabel">You</div>
+            <div class="wave" id="wave-b"></div>
+          </div>
+        </div>
+        <div class="tagstrip">
+          Restored Classical <span class="sep">·</span> Reconstructed Koine
+          <span class="sep">·</span> Erasmian <span class="sep">·</span> Tiberian
+        </div>
+        <p class="lede" style="max-width: 32ch">
+          Play a line, record yourself over it, and compare the two waveforms side by side — with IPA
+          underneath.
+        </p>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">paleoglossa.com</span>
+      </div>
+    </section>
+
+    <!-- ══ 10 · FREE TO START ══════════════════════════════════════════════ -->
+    <section class="card post" id="p10-start">
+      <div class="kicker"><span class="num">10</span>&nbsp;&nbsp;Begin</div>
+      <div class="stage">
+        <h2>Start reading today,<br />for nothing.</h2>
+        <div class="facts">
+          <div class="fact">
+            <div class="n">12</div>
+            <div class="d">languages open on the free plan — nothing in the library is locked.</div>
+          </div>
+          <div class="fact">
+            <div class="n">90<small>+</small></div>
+            <div class="d">complete works, from the Iliad to the Peshitta, tokenised word by word.</div>
+          </div>
+          <div class="fact">
+            <div class="n">0<small>&nbsp;ads</small></div>
+            <div class="d">No ads, no streak guilt, no dark patterns. Just the text and you.</div>
+          </div>
+        </div>
+        <div class="cta">paleoglossa.com</div>
+      </div>
+      <div class="sig">
+        <div class="pi">Π</div>
+        Paleoglossa <span class="url">Read the ancient world, word by word</span>
+      </div>
+    </section>
+
+    <script>
+      // Deterministic pseudo-waveforms for card 09
+      const shape = (n, seed, amp) => {
+        let x = seed;
+        return Array.from({ length: n }, (_, i) => {
+          x = (x * 1103515245 + 12345) % 2147483648;
+          const env = Math.sin((Math.PI * i) / n) ** 0.7;
+          return Math.max(0.08, ((x / 2147483648) * 0.65 + 0.35) * env * amp);
+        });
+      };
+      const paint = (id, seed, colour, amp) => {
+        const el = document.getElementById(id);
+        shape(58, seed, amp).forEach((h) => {
+          const i = document.createElement('i');
+          i.style.height = Math.round(h * 92) + 'px';
+          i.style.background = colour;
+          el.appendChild(i);
+        });
+      };
+      paint('wave-a', 20260821, '#1E3D6E', 1);
+      paint('wave-b', 77112233, '#B8842A', 0.82);
+    </script>
+  </body>
+</html>
