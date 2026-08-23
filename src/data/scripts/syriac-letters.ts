@@ -2,9 +2,10 @@ import type { ScriptSign } from '../../types/scripts.js';
 
 // The 22 letters of the Syriac alphabet (Estrangela script) plus key vowel
 // diacritics. Syriac is an abjad written right-to-left. Letter forms change
-// based on position (initial, medial, final), but this primer focuses on the
-// isolated/final forms used as reference shapes.
-export const SYRIAC_LETTERS: ScriptSign[] = [
+// based on position (initial, medial, final); the positional `forms` are
+// derived below with zero-width joiners so the font renders each contextual
+// shape (Surayt-style alphabet teaching).
+const SYRIAC_LETTERS_BASE: ScriptSign[] = [
   // ── Consonants (22 letters) ───────────────────────────────────────────────
   {
     id: 'syr-alap',
@@ -279,3 +280,21 @@ export const SYRIAC_LETTERS: ScriptSign[] = [
     frequency: 27,
   },
 ];
+
+// Positional forms via zero-width joiners: the font shapes the contextual
+// glyph automatically (letters that never join leftward simply keep their
+// isolated shape in "initial"/"medial").
+const ZWJ = '\u200d';
+
+export const SYRIAC_LETTERS: ScriptSign[] = SYRIAC_LETTERS_BASE.map((sign) =>
+  sign.type === 'consonant' && sign.unicode
+    ? {
+        ...sign,
+        forms: {
+          initial: sign.unicode + ZWJ,
+          medial: ZWJ + sign.unicode + ZWJ,
+          final: ZWJ + sign.unicode,
+        },
+      }
+    : sign
+);

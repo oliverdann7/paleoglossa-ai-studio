@@ -335,6 +335,7 @@ export const TEXT_SYRIAC_JOHN: Text = {
     { id: "Syr-Jn-1-1", label: "John 1:1" },
     { id: "Syr-Jn-1-2", label: "John 1:2–5" },
     { id: "Syr-Jn-1-3", label: "John 1:6–14" },
+    { id: "Syr-Jn-2", label: "John 1:6–14 — The Word Became Flesh" },
   ],
 };
 
@@ -362,6 +363,7 @@ export const TEXT_COPTIC_JOHN: Text = {
     { id: "Cop-Jn-1-1", label: "John 1:1" },
     { id: "Cop-Jn-1-2", label: "John 1:1-5" },
     { id: "Cop-Jn-1-3", label: "John 1:6-18" },
+    { id: "Cop-Jn-2", label: "John 1:6–14 — The True Light" },
   ],
 };
 
@@ -390,6 +392,7 @@ export const TEXT_ARAMAIC_GENESIS: Text = {
     { id: "Arc-Gen-1-2", label: "Genesis 1:1-5" },
     { id: "Arc-Gen-1-3", label: "Genesis 1:6-18" },
     { id: "Arc-Gen-1-4", label: "Genesis 1:19-31" },
+    { id: "Arc-Gen-2", label: "Genesis 1:3–5 — Let There Be Light" },
   ],
 };
 
@@ -498,6 +501,8 @@ export const TEXT_SANSKRIT_GITA: Text = {
     { id: "San-Gita-1-2", label: "Bhagavad Gita 1.2-6" },
     { id: "San-Gita-1-3", label: "Bhagavad Gita 1.7-1.26" },
     { id: "San-Gita-1-4", label: "Bhagavad Gita 1.27-1.47" },
+    { id: "San-Gita-2", label: "Chapter 2.1–10 — Arjuna's Grief" },
+    { id: "San-Gita-3", label: "Chapter 3.1–5 — The Yoga of Action" },
   ],
 };
 
@@ -525,6 +530,7 @@ export const TEXT_HITTITE_ANNALS: Text = {
     { id: "Hit-Annals-1-1", label: "Year 1: Introduction" },
     { id: "Hit-Annals-1-2", label: "Year 1: Campaign against Arzawa" },
     { id: "Hit-Annals-1-3", label: "Years 2–5: Campaigns" },
+    { id: "Hit-Annals-2", label: "Year 2 — Campaigns in the North" },
   ],
 };
 
@@ -552,6 +558,8 @@ export const TEXT_EGYPTIAN_PTAHHOTEP: Text = {
     { id: "Egy-Ptah-1-1", label: "Maxim 1 (Opening)" },
     { id: "Egy-Ptah-1-2", label: "Maxim 1 (continued)" },
     { id: "Egy-Ptah-1-3", label: "Maxim 1 (more)" },
+    { id: "Egy-Ptah-2", label: "Maxims 3–5 — On Pride and Speech" },
+    { id: "Egy-Ptah-3", label: "Maxims 6–9 — On Greed and Generosity" },
   ],
 };
 
@@ -578,7 +586,243 @@ export const TEXT_UGARITIC_BAAL: Text = {
   sectionsPreview: [
     { id: "Uga-Baal-1-1", label: "Baal's Victory over Yamm (KTU 1.2.iv)" },
     { id: "Uga-Baal-1-2", label: "El and Asherah (KTU 1.4.i–ii)" },
+    { id: "Uga-Baal-1-3", label: "KTU 1.1 — The Feast of El" },
+    { id: "Uga-Baal-1-4", label: "KTU 1.2 — The Challenge of Yam" },
   ],
+};
+
+// ── Previously-orphaned curated sections, surfaced as texts (2026-08) ──────
+
+export const TEXT_EGYPTIAN_SINUHE: Text = {
+  id: "Egy-Sin",
+  corpusId: "EGYPTIAN_TEXTS",
+  title: "The Tale of Sinuhe",
+  canonicalRef: "Papyrus Berlin 3022",
+  author: "Anonymous",
+  language: "egy",
+  direction: "ltr",
+  level: "B2",
+  period: 'Middle Kingdom (c. 1900 BCE)',
+  genre: 'narrative',
+  corpusType: 'classical',
+  tags: ['Egypt', 'literature', 'exile'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 4,
+  sectionsPreview: [{ id: "Egy-Sin-1", label: "The Beginning of the Tale" }],
+};
+
+export const TEXT_HITTITE_PRAYER: Text = {
+  id: "Hit-Prayer",
+  corpusId: "HITTITE_ANNALS",
+  title: "Plague Prayers of Mursili II",
+  canonicalRef: "CTH 378",
+  author: "Mursili II",
+  language: "hit",
+  direction: "ltr",
+  level: "B2",
+  period: 'Late Bronze Age (c. 1320 BCE)',
+  genre: 'prayer',
+  corpusType: 'inscription',
+  tags: ['Anatolia', 'religion', 'plague'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 5,
+  sectionsPreview: [{ id: "Hit-Prayer-1", label: "Plague Prayer of Mursili II — Opening" }],
+};
+
+export const TEXT_SANSKRIT_HITOPADESA: Text = {
+  id: "San-Hito",
+  corpusId: "SANSKRIT_MAHABHARATA",
+  title: "हितोपदेशः",
+  canonicalRef: "Hitopadesha, Mitralabha",
+  author: "Narayana",
+  language: "san",
+  direction: "ltr",
+  level: "A2",
+  period: 'c. 12th century CE',
+  genre: 'fables',
+  corpusType: 'classical',
+  tags: ['fables', 'wisdom', 'beginner-friendly'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 3,
+  sectionsPreview: [{ id: "San-Hito-1", label: "Mitralabha — The Winning of Friends" }],
+};
+
+export const TEXT_COPTIC_THOMAS: Text = {
+  id: "Cop-Thom",
+  corpusId: "COPTIC_SAHIDIC",
+  title: "ⲡⲉⲩⲁⲅⲅⲉⲗⲓⲟⲛ ⲡⲕⲁⲧⲁ ⲑⲱⲙⲁⲥ",
+  canonicalRef: "Gospel of Thomas (Nag Hammadi II,2)",
+  author: "Anonymous",
+  language: "cop",
+  direction: "ltr",
+  level: "B2",
+  period: '3rd–4th century CE',
+  genre: 'sayings gospel',
+  corpusType: 'biblical',
+  tags: ['Nag Hammadi', 'Sahidic', 'sayings'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 4,
+  sectionsPreview: [{ id: "Cop-Thom-1", label: "Logion 1–4 — The Hidden Sayings" }],
+};
+
+export const TEXT_ARAMAIC_DANIEL: Text = {
+  id: "Arc-Dan",
+  corpusId: "ARAMAIC_TARGUM",
+  title: "דָּנִיֵּאל",
+  canonicalRef: "Daniel 2 (Aramaic)",
+  author: "Anonymous",
+  language: "arc",
+  direction: "rtl",
+  level: "B2",
+  period: '2nd century BCE',
+  genre: 'apocalyptic',
+  corpusType: 'biblical',
+  tags: ['Biblical Aramaic', 'Daniel', 'court tales'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 3,
+  sectionsPreview: [{ id: "Arc-Dan-1", label: "Daniel 2:1–5 — Nebuchadnezzar's Dream" }],
+};
+
+export const TEXT_SYRIAC_GENESIS: Text = {
+  id: "Syr-Gen",
+  corpusId: "SYRIAC_PESHITTA",
+  title: "ܣܦܪܐ ܕܒܪܝܬܐ",
+  canonicalRef: "Peshitta Genesis 1",
+  author: "Anonymous",
+  language: "syr",
+  direction: "rtl",
+  level: "A2",
+  period: '2nd century CE',
+  genre: 'scripture',
+  corpusType: 'biblical',
+  tags: ['Peshitta', 'Old Testament', 'creation'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 3,
+  sectionsPreview: [{ id: "Syr-Gen-1", label: "Genesis 1:1–5 — Creation" }],
+};
+
+// ── Advanced (B2/C1) curated excerpts (see corpus/advanced-readings.ts) ───
+
+export const TEXT_HEB_ISAIAH_40: Text = {
+  id: "Heb-Isa40",
+  corpusId: "OSHB",
+  title: "יְשַׁעְיָהוּ מ",
+  canonicalRef: "Isaiah 40:1–5",
+  author: "Isaiah",
+  language: "hbo",
+  direction: "rtl",
+  level: "C1",
+  period: '6th century BCE',
+  genre: 'prophetic poetry',
+  corpusType: 'biblical',
+  tags: ['prophets', 'poetry', 'comfort'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 7,
+  sectionsPreview: [{ id: "Heb-Isa40-1", label: "Isaiah 40:1–5 — Comfort My People" }],
+};
+
+export const TEXT_AKK_ENUMA_ELISH: Text = {
+  id: "Akk-Enuma",
+  corpusId: "AKKADIAN_GILGAMESH",
+  title: "Enūma Eliš",
+  canonicalRef: "Enūma Eliš Tablet I 1–8",
+  author: "Anonymous",
+  language: "akk",
+  direction: "ltr",
+  level: "C1",
+  period: 'Standard Babylonian (c. 1100 BCE)',
+  genre: 'epic poetry',
+  corpusType: 'classical',
+  tags: ['Mesopotamia', 'creation myth', 'Marduk'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 8,
+  sectionsPreview: [{ id: "Akk-Enuma-1", label: "Tablet I 1–8 — When on High" }],
+};
+
+export const TEXT_SAN_UPANISHAD: Text = {
+  id: "San-Upan",
+  corpusId: "SANSKRIT_MAHABHARATA",
+  title: "ईशोपनिषत्",
+  canonicalRef: "Īśā Upaniṣad 1–2",
+  author: "Anonymous",
+  language: "san",
+  direction: "ltr",
+  level: "C1",
+  period: 'c. 500 BCE',
+  genre: 'philosophical verse',
+  corpusType: 'classical',
+  tags: ['Upanishads', 'Vedanta', 'philosophy'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 3,
+  sectionsPreview: [{ id: "San-Upan-1", label: "Īśā Upaniṣad 1–2" }],
+};
+
+export const TEXT_SYR_PSALM_23: Text = {
+  id: "Syr-Ps23",
+  corpusId: "SYRIAC_PESHITTA",
+  title: "ܡܙܡܘܪܐ ܟܓ",
+  canonicalRef: "Peshitta Psalm 23:1–3",
+  author: "David",
+  language: "syr",
+  direction: "rtl",
+  level: "B2",
+  period: '2nd century CE (Peshitta)',
+  genre: 'psalm',
+  corpusType: 'biblical',
+  tags: ['Peshitta', 'Psalms', 'poetry'],
+  hasMorphology: true,
+  hasTranslation: true,
+  hasTransliteration: false,
+  sourceStatus: 'excerpt',
+  isComplete: false,
+  isSample: true,
+  sentenceCount: 5,
+  sectionsPreview: [{ id: "Syr-Ps23-1", label: "Psalm 23:1–3 — The Lord Is My Shepherd" }],
 };
 
 export const TEXT_ANABASIS: Text = {
@@ -968,6 +1212,125 @@ export const TEXT_SAN_MINI_STORIES: Text = {
     { id: "SanMini-1", label: "Bhagavad-Gītā opening" },
   ],
 };
+
+// ── "First Reader" A1 texts for the smaller-corpus languages ──────────────
+// Original Paleoglossa compositions (see corpus/first-readers.ts): the very
+// first connected sentences a learner reads after the alphabet course.
+
+const firstReaderText = (
+  id: string,
+  language: string,
+  title: string,
+  label: string,
+  opts: { direction?: 'ltr' | 'rtl'; hasTransliteration?: boolean } = {}
+): Text => ({
+  id,
+  corpusId: "PALEOGLOSSA",
+  title,
+  canonicalRef: title,
+  author: "Paleoglossa",
+  language,
+  direction: opts.direction ?? 'ltr',
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'first reader', 'practice'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: opts.hasTransliteration ?? false,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 12,
+  sectionsPreview: [{ id: `${id}-1`, label }],
+});
+
+export const TEXT_AKK_FIRST_READER = firstReaderText(
+  "AkkFirst",
+  "akk",
+  "Akkadian First Reader",
+  "The King and the City",
+  { hasTransliteration: true }
+);
+export const TEXT_EGY_FIRST_READER = firstReaderText(
+  "EgyFirst",
+  "egy",
+  "Egyptian First Reader",
+  "The King and the Scribe",
+  { hasTransliteration: true }
+);
+export const TEXT_HIT_FIRST_READER = firstReaderText(
+  "HitFirst",
+  "hit",
+  "Hittite First Reader",
+  "Father, Mother, King",
+  { hasTransliteration: true }
+);
+export const TEXT_UGA_FIRST_READER = firstReaderText(
+  "UgaFirst",
+  "uga",
+  "Ugaritic First Reader",
+  "El, Baal, and the King"
+);
+export const TEXT_COP_FIRST_READER = firstReaderText(
+  "CopFirst",
+  "cop",
+  "Coptic First Reader",
+  "God, Man, and the Light"
+);
+export const TEXT_ARC_FIRST_READER = firstReaderText(
+  "ArcFirst",
+  "arc",
+  "Aramaic First Reader",
+  "The King and the Scribe",
+  { direction: 'rtl' }
+);
+/**
+ * Surayt-inspired themed dialogues in Biblical Aramaic (original content;
+ * see corpus/aramaic-dialogues.ts). Dual-script: every token carries a
+ * Latin transliteration.
+ */
+export const TEXT_ARC_DIALOGUES: Text = {
+  id: "ArcDialogues",
+  corpusId: "PALEOGLOSSA",
+  title: "Aramaic Dialogues",
+  canonicalRef: "Aramaic Dialogues",
+  author: "Paleoglossa",
+  language: "arc",
+  direction: "rtl",
+  level: "A1",
+  period: 'modern adaptation',
+  genre: 'graded reader',
+  corpusType: 'vocabulary',
+  tags: ['beginner', 'dialogues', 'practice'],
+  hasMorphology: false,
+  hasTranslation: true,
+  hasTransliteration: true,
+  sourceStatus: 'complete',
+  isComplete: true,
+  isSample: false,
+  sentenceCount: 23,
+  sectionsPreview: [
+    { id: "ArcDlg-1", label: "Dialogue 1 — Greetings" },
+    { id: "ArcDlg-2", label: "Dialogue 2 — My Family" },
+    { id: "ArcDlg-3", label: "Dialogue 3 — At the Market" },
+  ],
+};
+
+export const TEXT_SYR_FIRST_READER = firstReaderText(
+  "SyrFirst",
+  "syr",
+  "Syriac First Reader",
+  "The King and the Servant",
+  { direction: 'rtl' }
+);
+export const TEXT_SAN_FIRST_READER = firstReaderText(
+  "SanFirst",
+  "san",
+  "Sanskrit First Reader",
+  "Rama Goes to the Forest"
+);
 
 export const TEXT_HEB_PS23: Text = {
   id: "Heb-Ps23",
@@ -4671,6 +5034,9 @@ import { ALL_HITTITE_EXTENDED_SECTIONS } from "./corpus/hittite-extended.js";
 import { ALL_UGARITIC_EXTENDED_SECTIONS } from "./corpus/ugaritic-extended.js";
 import { ALL_SANSKRIT_EXTENDED_SECTIONS } from "./corpus/sanskrit-extended.js";
 import { ALL_EGYPTIAN_EXTENDED_SECTIONS } from "./corpus/egyptian-extended.js";
+import { ALL_FIRST_READER_SECTIONS } from "./corpus/first-readers.js";
+import { ALL_ADVANCED_READING_SECTIONS } from "./corpus/advanced-readings.js";
+import { ALL_ARAMAIC_DIALOGUE_SECTIONS } from "./corpus/aramaic-dialogues.js";
 
 // Module-level caches — corpus data is static at runtime
 let _textsCache: ReturnType<typeof enhanceText>[] | null = null;
@@ -4707,8 +5073,18 @@ function getAllEnhancedTexts() {
       TEXT_HAMMURABI_CODE,
       TEXT_SANSKRIT_GITA,
       TEXT_HITTITE_ANNALS,
+      TEXT_HITTITE_PRAYER,
       TEXT_EGYPTIAN_PTAHHOTEP,
+      TEXT_EGYPTIAN_SINUHE,
       TEXT_UGARITIC_BAAL,
+      TEXT_SANSKRIT_HITOPADESA,
+      TEXT_COPTIC_THOMAS,
+      TEXT_ARAMAIC_DANIEL,
+      TEXT_SYRIAC_GENESIS,
+      TEXT_HEB_ISAIAH_40,
+      TEXT_AKK_ENUMA_ELISH,
+      TEXT_SAN_UPANISHAD,
+      TEXT_SYR_PSALM_23,
       TEXT_ANABASIS,
       TEXT_ILIAD,
       TEXT_ODYSSEY,
@@ -4728,6 +5104,15 @@ function getAllEnhancedTexts() {
       TEXT_HERMAS,
       TEXT_BASIL,
       // Beginner texts
+      TEXT_AKK_FIRST_READER,
+      TEXT_EGY_FIRST_READER,
+      TEXT_HIT_FIRST_READER,
+      TEXT_UGA_FIRST_READER,
+      TEXT_COP_FIRST_READER,
+      TEXT_ARC_FIRST_READER,
+      TEXT_ARC_DIALOGUES,
+      TEXT_SYR_FIRST_READER,
+      TEXT_SAN_FIRST_READER,
       TEXT_GRC_MINI_STORIES,
       TEXT_LAT_MINI_STORIES,
       TEXT_LAT_VG_JOHN,
@@ -4821,6 +5206,9 @@ function getLemmaIndex() {
     ...ALL_UGARITIC_EXTENDED_SECTIONS,
     ...ALL_SANSKRIT_EXTENDED_SECTIONS,
     ...ALL_EGYPTIAN_EXTENDED_SECTIONS,
+    ...ALL_FIRST_READER_SECTIONS,
+    ...ALL_ADVANCED_READING_SECTIONS,
+    ...ALL_ARAMAIC_DIALOGUE_SECTIONS,
     GRC_VOCAB_SECTION,
     GRC_KOINE_VOCAB_SECTION,
     LAT_VOCAB_SECTION,
@@ -5001,6 +5389,12 @@ export const CorpusDB = {
     if (sanskritExtMatch) return sanskritExtMatch;
     const egyptianExtMatch = ALL_EGYPTIAN_EXTENDED_SECTIONS.find(s => s.id === sectionId);
     if (egyptianExtMatch) return egyptianExtMatch;
+    const firstReaderMatch = ALL_FIRST_READER_SECTIONS.find(s => s.id === sectionId);
+    if (firstReaderMatch) return firstReaderMatch;
+    const advancedReadingMatch = ALL_ADVANCED_READING_SECTIONS.find(s => s.id === sectionId);
+    if (advancedReadingMatch) return advancedReadingMatch;
+    const aramaicDlgMatch = ALL_ARAMAIC_DIALOGUE_SECTIONS.find(s => s.id === sectionId);
+    if (aramaicDlgMatch) return aramaicDlgMatch;
     if (sectionId === "san-voc-1") return SAN_VOCAB_SECTION;
     if (sectionId === "egy-voc-1") return EGY_VOCAB_SECTION;
     

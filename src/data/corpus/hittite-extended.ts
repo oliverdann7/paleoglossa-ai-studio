@@ -22,7 +22,7 @@ const HIT_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: 
 
 export const HIT_ANNALS_2: TextSection = {
   id: 'Hit-Annals-2',
-  textId: 'Hit-Annals',
+  textId: 'Hit-Annals-1',
   sequence: 2,
   label: 'Year 2 — Campaigns in the North',
   sentences: [

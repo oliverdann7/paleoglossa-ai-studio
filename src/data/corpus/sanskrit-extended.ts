@@ -133,7 +133,7 @@ export const SAN_LEXICON: Record<string, { lemma: string; gloss: string; partOfS
 
 export const SAN_GITA_2: TextSection = {
   id: 'San-Gita-2',
-  textId: 'San-Gita',
+  textId: 'San-Gita-1',
   sequence: 2,
   label: "Chapter 2.1–10 — Arjuna's Grief",
   sentences: [
@@ -198,7 +198,7 @@ export const SAN_GITA_2: TextSection = {
 
 export const SAN_GITA_3: TextSection = {
   id: 'San-Gita-3',
-  textId: 'San-Gita',
+  textId: 'San-Gita-1',
   sequence: 3,
   label: 'Chapter 3.1–5 — The Yoga of Action',
   sentences: [

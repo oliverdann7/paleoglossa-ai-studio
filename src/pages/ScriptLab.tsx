@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Shuffle, Check, X, BookOpen } from 'lucide-react';
 import { getLanguageById } from '../lib/constants/languages.js';
 import { recordMilestone } from '../lib/hooks/useBeginnerProgress.js';
+import { getAlphabetCourse } from '../data/scripts/alphabet-courses.js';
+import { AlphabetCourseView } from '../components/scripts/AlphabetCourseView.js';
 import type { ScriptSign } from '../types/scripts.js';
 import { AKKADIAN_SIGNS } from '../data/scripts/akkadian-signs.js';
 import { EGYPTIAN_SIGNS } from '../data/scripts/egyptian-signs.js';
@@ -32,13 +34,13 @@ const SIGN_MAP: Record<string, ScriptSign[]> = {
   san: SANSKRIT_LETTERS,
 };
 
-type Tab = 'signs' | 'practice' | 'read';
+type Tab = 'learn' | 'signs' | 'practice' | 'read';
 
 export const ScriptLab = () => {
   const { langId } = useParams<{ langId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<Tab>('signs');
+  const [activeTab, setActiveTab] = useState<Tab>('learn');
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [quizIndex, setQuizIndex] = useState(0);
@@ -48,6 +50,7 @@ export const ScriptLab = () => {
 
   const language = getLanguageById(langId || '');
   const signs = langId ? SIGN_MAP[langId] : undefined;
+  const course = langId ? getAlphabetCourse(langId) : null;
 
   useEffect(() => {
     if (langId) recordMilestone(langId, 'scriptOpened');
@@ -143,7 +146,7 @@ export const ScriptLab = () => {
       <p className="text-muted text-sm mb-6">{language.writingSystem}</p>
 
       <div className="flex gap-1 mb-6 border-b border-bdr">
-        {(['signs', 'practice', 'read'] as Tab[]).map((tab) => (
+        {([...(course ? (['learn'] as Tab[]) : []), 'signs', 'practice', 'read'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => {
@@ -158,12 +161,17 @@ export const ScriptLab = () => {
                 : 'border-transparent text-muted hover:text-ink'
             }`}
           >
+            {tab === 'learn' && t('scriptLab.learn', 'Learn')}
             {tab === 'signs' && t('scriptLab.signs', 'Signs')}
             {tab === 'practice' && t('scriptLab.practice', 'Practice')}
             {tab === 'read' && t('scriptLab.read', 'Read')}
           </button>
         ))}
       </div>
+
+      {activeTab === 'learn' && course && (
+        <AlphabetCourseView langId={langId!} course={course} signs={signs} />
+      )}
 
       {activeTab === 'signs' && (
         <div>

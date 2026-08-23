@@ -20,6 +20,15 @@ export const COMPLETE_SHORT_WORKS = new Set<string>([
   'ArcMini',
   'SanMini',
   'HebMini',
+  // "First Reader" A1 originals (whole graded-reader compositions, 12 sentences each)
+  'AkkFirst',
+  'EgyFirst',
+  'HitFirst',
+  'UgaFirst',
+  'CopFirst',
+  'ArcFirst',
+  'SyrFirst',
+  'SanFirst',
 ]);
 
 /** A `complete` text below this many sentences must be in COMPLETE_SHORT_WORKS. */
