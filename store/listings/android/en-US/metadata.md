@@ -19,10 +19,8 @@ KEY FEATURES
 • Word-by-word reader — tap any word for lemma, gloss, morphology, paradigm tables, and AI-generated philological notes.
 • Spaced repetition — FSRS-5 algorithm schedules every word you mark for review at the optimal interval.
 • AI philology tutor — six difficulty modes from beginner to scholar, conversation history, contextual quizzes.
-• Treebank syntax viewer — visualize dependency trees from PROIEL, Gorman, and Perseus data.
 • Grammar pathways — tiered progression through morphology, syntax, and rhetoric with prerequisite tracking.
 • Pronunciation lab — restored, Erasmian, and modern reading traditions with audio playback.
-• Manuscript & epigraphy lab — pan and zoom IIIF manifests from major libraries.
 • Research notebooks — capture cross-text notes with backlinks, export to Markdown or PDF.
 • Imports — paste, file, URL, or OCR; supports PDF, EPUB, plain text, and TEI XML.
 • Multi-device sync — Firebase-backed, picks up where you left off across web, tablet, and phone.
@@ -47,7 +45,7 @@ support@paleoglossa.com
 https://paleoglossa.com
 
 ## Privacy policy
-https://paleoglossa.com/legal/privacy
+https://paleoglossa.com/privacy
 
 ## Content rating
 Everyone — biblical and classical texts may include mature themes (flagged as "Infrequent/mild references" in the IARC questionnaire).

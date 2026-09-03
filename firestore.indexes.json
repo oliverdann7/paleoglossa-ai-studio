@@ -63,6 +63,15 @@
         { "fieldPath": "textId", "order": "ASCENDING" },
         { "fieldPath": "lastReadAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "tokenAnnotations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "languageId", "order": "ASCENDING" },
+        { "fieldPath": "lemma", "order": "ASCENDING" },
+        { "fieldPath": "upvotes", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
