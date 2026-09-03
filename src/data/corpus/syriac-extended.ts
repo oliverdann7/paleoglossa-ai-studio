@@ -36,7 +36,7 @@ const SYR_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: 
 
 export const SYR_JOHN_2: TextSection = {
   id: 'Syr-Jn-2',
-  textId: 'Syr-Jn',
+  textId: 'Syr-Jn-1',
   sequence: 2,
   label: 'John 1:6–14 — The Word Became Flesh',
   sentences: [

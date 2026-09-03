@@ -103,7 +103,7 @@ export const ARC_LEXICON: Record<string, { lemma: string; gloss: string; partOfS
 
 export const ARC_GENESIS_2: TextSection = {
   id: 'Arc-Gen-2',
-  textId: 'Arc-Gen',
+  textId: 'Arc-Gen-1',
   sequence: 2,
   label: 'Targum Onkelos Genesis 1:3–5 — Let There Be Light',
   sentences: [

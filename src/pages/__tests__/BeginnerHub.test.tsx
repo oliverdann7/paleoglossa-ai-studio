@@ -169,11 +169,15 @@ describe('BeginnerHub', () => {
 });
 
 describe('BeginnerHub — ScriptLab links', () => {
-  it('active language with hasScriptLearning shows a ScriptLab link', () => {
+  it('active language with hasScriptLearning shows the alphabet-course link', () => {
     renderHub();
     const activeLang = getAvailableLanguages().find((l) => l.id === 'grc');
     if (activeLang?.hasScriptLearning) {
-      const found = screen.queryByText((content) => content.includes('{{script}}'));
+      // Languages with an alphabet course show its title; others fall back to
+      // the generic "Learn the {{script}} script" label.
+      const found =
+        screen.queryByText('The Greek Alphabet') ??
+        screen.queryByText((content) => content.includes('{{script}}'));
       expect(found).not.toBeNull();
     }
   });

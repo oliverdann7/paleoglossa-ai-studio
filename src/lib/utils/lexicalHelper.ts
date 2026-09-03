@@ -19,6 +19,8 @@ export interface LexicalHint {
   gloss: string;
   partOfSpeech?: string;
   confidence?: number;
+  /** Latin transliteration shown alongside the original script (dual-script reading). */
+  transliteration?: string;
 }
 
 const PUNCT_RE = /^[\s.,;·:!?()"«»—–׃]+|[\s.,;·:!?()"«»—–׃]+$/g;
@@ -44,6 +46,7 @@ export function sentLex(
         lemma: hint?.lemma || normalized,
         gloss: hint?.gloss || '',
         morphology: { partOfSpeech: hint?.partOfSpeech || 'unknown' },
+        transliteration: hint?.transliteration,
         punctBefore: '',
         punctAfter: punctAfter.trim() ? punctAfter + ' ' : ' ',
       };

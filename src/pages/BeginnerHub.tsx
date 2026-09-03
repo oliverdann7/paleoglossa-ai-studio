@@ -17,6 +17,8 @@ import { CorpusDB } from '../data/corpus.js';
 import { getLanguageIcon, getLanguageById } from '../lib/constants/languages.js';
 import { GUIDED_TIERS } from '../lib/constants/beginnerPaths.js';
 import { getBeginnerCurriculum, getCurrentUnit } from '../lib/constants/beginnerCurriculum.js';
+import { getAlphabetCourse } from '../data/scripts/alphabet-courses.js';
+import { useAlphabetProgress } from '../lib/hooks/useAlphabetProgress.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import type { GuidedTier } from '../lib/constants/beginnerPaths.js';
 import { useBeginnerProgress } from '../lib/hooks/useBeginnerProgress.js';
@@ -38,6 +40,7 @@ export const BeginnerHub = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getProgress, markMilestone, advanceCurriculum } = useBeginnerProgress();
+  const { getCompleted: getCompletedAlphabetLessons } = useAlphabetProgress();
   const { settings } = useSettings();
   const { activeLanguageId } = useActiveLanguage();
 
@@ -284,27 +287,53 @@ export const BeginnerHub = () => {
                       </div>
                     </div>
 
-                    {/* Script lab link */}
-                    {lang.hasScriptLearning && (
-                      <Link
-                        to={`/app/language/${lang.id}/script-lab`}
-                        onClick={() => markMilestone(lang.id, 'scriptOpened')}
-                        className="flex items-center gap-3 p-3 bg-sand border border-bdr rounded-xl hover:border-blue/30 transition-colors"
-                      >
-                        <GraduationCap className="w-5 h-5 text-purple-500 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-ink">
-                            {t('beginnerHub.learnScript', 'Learn the {{script}} script', {
-                              script: lang.writingSystem,
-                            })}
-                          </div>
-                          <div className="text-[11px] text-muted">
-                            {t('beginnerHub.learnScriptDesc', 'Practice signs and reading')}
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted shrink-0" />
-                      </Link>
-                    )}
+                    {/* Alphabet course / script lab link */}
+                    {lang.hasScriptLearning &&
+                      (() => {
+                        const course = getAlphabetCourse(lang.id);
+                        const doneLessons = course
+                          ? course.lessons.filter((l) =>
+                              getCompletedAlphabetLessons(lang.id).includes(l.id)
+                            ).length
+                          : 0;
+                        const totalLessons = course?.lessons.length ?? 0;
+                        return (
+                          <Link
+                            to={`/app/language/${lang.id}/script-lab`}
+                            onClick={() => markMilestone(lang.id, 'scriptOpened')}
+                            className="flex items-center gap-3 p-3 bg-sand border border-bdr rounded-xl hover:border-blue/30 transition-colors"
+                          >
+                            <GraduationCap className="w-5 h-5 text-purple-500 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-ink">
+                                {course
+                                  ? course.title
+                                  : t('beginnerHub.learnScript', 'Learn the {{script}} script', {
+                                      script: lang.writingSystem,
+                                    })}
+                              </div>
+                              <div className="text-[11px] text-muted">
+                                {course
+                                  ? t(
+                                      'beginnerHub.alphabetCourseDesc',
+                                      'Step-by-step lessons — {{done}}/{{total}} complete',
+                                      { done: doneLessons, total: totalLessons }
+                                    )
+                                  : t('beginnerHub.learnScriptDesc', 'Practice signs and reading')}
+                              </div>
+                            </div>
+                            {course && totalLessons > 0 && (
+                              <div className="w-16 h-1.5 bg-parch3 rounded-full overflow-hidden shrink-0">
+                                <div
+                                  className="h-full bg-purple-500 rounded-full transition-all"
+                                  style={{ width: `${(doneLessons / totalLessons) * 100}%` }}
+                                />
+                              </div>
+                            )}
+                            <ChevronRight className="w-4 h-4 text-muted shrink-0" />
+                          </Link>
+                        );
+                      })()}
 
                     {/* Language page link */}
                     <Link

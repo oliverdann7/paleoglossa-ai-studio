@@ -74,7 +74,7 @@ export const COP_LEXICON: Record<string, { lemma: string; gloss: string; partOfS
 
 export const COP_JOHN_2: TextSection = {
   id: 'Cop-Jn-2',
-  textId: 'Cop-Jn',
+  textId: 'Cop-Jn-1',
   sequence: 2,
   label: 'John 1:6–14 — The True Light',
   sentences: [

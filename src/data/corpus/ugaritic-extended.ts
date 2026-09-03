@@ -20,8 +20,8 @@ const UGA_LEXICON: Record<string, { lemma: string; gloss: string; partOfSpeech: 
 };
 
 export const UGA_BAAL_1_1: TextSection = {
-  id: 'Uga-Baal-1-1',
-  textId: 'Uga-Baal',
+  id: 'Uga-Baal-1-3',
+  textId: 'Uga-Baal-1',
   sequence: 1,
   label: 'KTU 1.1 — The Feast of El',
   sentences: [
@@ -47,8 +47,8 @@ export const UGA_BAAL_1_1: TextSection = {
 };
 
 export const UGA_BAAL_1_2: TextSection = {
-  id: 'Uga-Baal-1-2',
-  textId: 'Uga-Baal',
+  id: 'Uga-Baal-1-4',
+  textId: 'Uga-Baal-1',
   sequence: 2,
   label: 'KTU 1.2 — The Challenge of Yam',
   sentences: [

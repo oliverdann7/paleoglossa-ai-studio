@@ -56,7 +56,7 @@ export const EGY_LEXICON: Record<string, { lemma: string; gloss: string; partOfS
 
 export const EGY_PTAHHOTEP_2: TextSection = {
   id: 'Egy-Ptah-2',
-  textId: 'Egy-Ptah',
+  textId: 'Egy-Ptah-1',
   sequence: 2,
   label: 'Maxims 3–5 — On Pride and Speech',
   sentences: [
@@ -83,7 +83,7 @@ export const EGY_PTAHHOTEP_2: TextSection = {
 
 export const EGY_PTAHHOTEP_3: TextSection = {
   id: 'Egy-Ptah-3',
-  textId: 'Egy-Ptah',
+  textId: 'Egy-Ptah-1',
   sequence: 3,
   label: 'Maxims 6–9 — On Greed and Generosity',
   sentences: [
