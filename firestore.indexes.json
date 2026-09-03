@@ -45,13 +45,6 @@
       "collectionGroup": "reviewLogs",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "reviewLogs",
-      "queryScope": "COLLECTION",
-      "fields": [
         { "fieldPath": "vocabItemId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
