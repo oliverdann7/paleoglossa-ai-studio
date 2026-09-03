@@ -102,19 +102,21 @@ check('iOS LaunchScreen storyboard configured', () => {
   return plist.includes('UILaunchStoryboardName');
 });
 
+// The iOS target does not link the Firebase iOS SDK: Firebase runs in the
+// WebView via the JS SDK, and native Google Sign-In takes its client id from
+// VITE_GOOGLE_IOS_CLIENT_ID (see scripts/ios-google-scheme.sh). Xcode Cloud
+// archives and TestFlight builds validate without the plist, so it is not a
+// submission gate.
 check(
-  'iOS GoogleService-Info.plist present (Firebase native config)',
+  'iOS GoogleService-Info.plist (optional — Firebase iOS SDK is not linked)',
   () => {
     if (fileExists('ios/App/App/GoogleService-Info.plist')) {
       return { ok: true, detail: 'present' };
     }
-    if (fileExists('ios/App/App/GoogleService-Info.plist.example')) {
-      return {
-        ok: false,
-        detail: 'template present — replace with real file from Firebase Console',
-      };
-    }
-    return { ok: false, detail: 'missing — download from Firebase Console' };
+    return {
+      ok: true,
+      detail: 'absent — not required; native Google Sign-In uses VITE_GOOGLE_IOS_CLIENT_ID',
+    };
   },
   'external'
 );

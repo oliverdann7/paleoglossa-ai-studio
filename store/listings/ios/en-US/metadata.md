@@ -22,10 +22,8 @@ KEY FEATURES
 • Word-by-word reader — tap any word for lemma, gloss, morphology, paradigm tables, and AI-generated philological notes.
 • Spaced repetition — FSRS-5 algorithm schedules every word you mark for review at the optimal interval.
 • AI philology tutor — six difficulty modes from beginner to scholar, conversation history, contextual quizzes.
-• Treebank syntax viewer — visualize dependency trees from PROIEL, Gorman, and Perseus data.
 • Grammar pathways — tiered progression through morphology, syntax, and rhetoric with prerequisite tracking.
 • Pronunciation lab — restored, Erasmian, and modern reading traditions with audio playback.
-• Manuscript & epigraphy lab — pan and zoom IIIF manifests from major libraries.
 • Research notebooks — capture cross-text notes with backlinks, export to Markdown or PDF.
 • Imports — paste, file, URL, or OCR; supports PDF, EPUB, plain text, and TEI XML.
 • Multi-device sync — Firebase-backed, picks up where you left off across web, iPad, and iPhone.
@@ -47,7 +45,7 @@ https://paleoglossa.com/support
 https://paleoglossa.com
 
 ## Privacy Policy URL
-https://paleoglossa.com/legal/privacy
+https://paleoglossa.com/privacy
 
 ## Copyright
 © 2026 Paleoglossa
@@ -62,4 +60,4 @@ Reference
 4+ (no objectionable material; biblical and classical texts may contain mature themes — flagged as "Infrequent/Mild Mature/Suggestive Themes" if reviewer requires).
 
 ## What's New in Version 1.0.0
-Initial App Store release. Eleven ancient languages, sixty+ curated texts, FSRS spaced repetition, AI tutor, treebank syntax viewer, pronunciation lab, IIIF manuscript viewer, and Firebase-backed cloud sync.
+Initial App Store release. Eleven ancient languages, sixty+ curated texts, FSRS spaced repetition, AI tutor, grammar pathways, pronunciation lab, research notebooks, and Firebase-backed cloud sync.
