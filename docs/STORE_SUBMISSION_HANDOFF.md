@@ -5,8 +5,19 @@ document covers the last-mile steps that require credentials, devices, or
 external accounts and therefore cannot be committed.
 
 Run `npm run release:check` at any time to audit what's done and what's
-pending. Currently: **17 of 20 in-repo items pass**; the 3 unresolved
-items below are by design.
+pending. Every repo-local item passes once `npm run build` has produced
+`dist/`; the external items below need your credentials and are by design
+not in the repo.
+
+Firestore composite indexes live in `firestore.indexes.json` and are **not**
+deployed by CI. After changing that file run:
+
+```bash
+firebase deploy --only firestore:indexes --project paleoglossa-reader
+```
+
+(The `tokenAnnotations` index was missing in production and the annotations
+endpoint returned 500 until it was added.)
 
 ---
 
@@ -28,7 +39,11 @@ items below are by design.
 
 Both files are gitignored on purpose — they include project-scoped keys.
 
-**iOS:**
+**iOS (optional):** the iOS target does not link the Firebase iOS SDK —
+Firebase runs inside the WebView via the JS SDK and native Google Sign-In
+reads `VITE_GOOGLE_IOS_CLIENT_ID` from `.env.native-production`. Xcode Cloud
+archives and TestFlight builds validate without the plist. Only add it if a
+native Firebase plugin is introduced later:
 
 1. Firebase Console → Project Settings → General → "Add app" → iOS.
 2. Bundle ID: `com.paleoglossa.app`.
