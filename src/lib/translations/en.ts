@@ -723,6 +723,19 @@ export const en = {
       'This email is already linked to a Google account. Please sign in with Google instead.',
     'auth.emailInUseGoogleWeb':
       'This email is already linked to a Google account, which this app cannot sign in with. Please sign in at paleoglossa.com.',
+    // Sign-in failure messages. authService returns these keys; keep them in
+    // sync with AUTH_ERROR_DEFAULTS there (other locales fall back to these).
+    'auth.networkError': 'Network error. Please check your connection and try again.',
+    'auth.invalidCredentials': 'Incorrect email or password. Please try again.',
+    'auth.tooManyRequests':
+      'Too many failed attempts. Please wait a moment and try again, or reset your password.',
+    'auth.userDisabled': 'This account has been disabled. Please contact support.',
+    'auth.invalidEmail': 'Please enter a valid email address.',
+    'auth.weakPassword': 'Password should be at least 6 characters.',
+    'auth.emailInUse': 'An account with this email already exists. Please sign in instead.',
+    'auth.providerUnavailable':
+      'This sign-in method is not available in this build. Please use email sign-in or visit paleoglossa.com.',
+    'auth.signInFailed': 'Sign in failed. Please try again.',
 
     'nav.community': 'Community',
     'nav.discover': 'Discover',

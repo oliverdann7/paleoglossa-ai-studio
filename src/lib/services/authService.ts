@@ -29,8 +29,84 @@ async function makeAppleNonce(): Promise<{ raw: string; hashed: string }> {
 
 export interface AuthResult {
   success: boolean;
+  /** i18n key describing the failure (see AUTH_ERROR_DEFAULTS). Absent on user cancellation. */
   error?: string;
   errorCode?: string;
+  /**
+   * Underlying provider/SDK error (code + message), for diagnostics only.
+   * Surfaced in small print under the banner so a TestFlight screenshot is
+   * enough to root-cause a failure that only reproduces on a device.
+   */
+  detail?: string;
+}
+
+/**
+ * English defaults for every i18n key an `AuthResult.error` can carry. Pages
+ * render errors through `describeAuthError`, so a locale that lacks a key can
+ * never leak the raw key ("auth.networkError") into the UI — which is exactly
+ * what TestFlight build 59 showed after a failed native Google sign-in.
+ */
+export const AUTH_ERROR_DEFAULTS: Record<string, string> = {
+  'auth.networkError': 'Network error. Please check your connection and try again.',
+  'auth.invalidCredentials': 'Incorrect email or password. Please try again.',
+  'auth.tooManyRequests':
+    'Too many failed attempts. Please wait a moment and try again, or reset your password.',
+  'auth.userDisabled': 'This account has been disabled. Please contact support.',
+  'auth.invalidEmail': 'Please enter a valid email address.',
+  'auth.weakPassword': 'Password should be at least 6 characters.',
+  'auth.emailInUse': 'An account with this email already exists. Please sign in instead.',
+  'auth.popupBlocked':
+    'Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in.',
+  'auth.providerUnavailable':
+    'This sign-in method is not available in this build. Please use email sign-in or visit paleoglossa.com.',
+  'auth.signInFailed': 'Sign in failed. Please try again.',
+};
+
+type Translate = (key: string, defaultValue: string) => string;
+
+/**
+ * Human-readable message for a failed `AuthResult`. Translates known keys
+ * (falling back to the English default) and passes anything else through.
+ */
+export function describeAuthError(t: Translate, result: AuthResult): string {
+  const key = result.error ?? 'auth.signInFailed';
+  const fallback = AUTH_ERROR_DEFAULTS[key];
+  return fallback ? t(key, fallback) : key;
+}
+
+/**
+ * Whether a rejection from the native social-login sheet means the user
+ * dismissed it. `@capgo/capacitor-social-login` marks these with
+ * `code: 'USER_CANCELLED'`, but the message it carries is the raw platform
+ * description — on iOS "The operation couldn't be completed.
+ * (com.apple.AuthenticationServices.AuthorizationError error 1001.)" — which
+ * contains no "cancel" at all. Build 59 showed that string to the user as an
+ * error, so the code (and the ASAuthorizationError.canceled value 1001) are
+ * checked explicitly.
+ */
+export function isUserCancellation(err: unknown): boolean {
+  const e = err as { code?: unknown; message?: unknown } | null | undefined;
+  if (e?.code === 'USER_CANCELLED') return true;
+  const msg = String(e?.message ?? err ?? '');
+  return /cancel/i.test(msg) || /AuthorizationError error 1001\b/.test(msg);
+}
+
+function errorDetail(err: unknown): string | undefined {
+  const e = err as
+    | { code?: unknown; message?: unknown; customData?: { message?: unknown } }
+    | null
+    | undefined;
+  const code = typeof e?.code === 'string' ? e.code : '';
+  const message = typeof e?.message === 'string' ? e.message : '';
+  // Firebase's own message is the generic "Firebase: Error (auth/…)"; the
+  // transport failure that caused it ("TypeError: Load failed") lives in
+  // customData.message and is what actually explains a network error.
+  const cause = typeof e?.customData?.message === 'string' ? e.customData.message : '';
+  const text = [code, message, cause && cause !== message ? cause : '']
+    .filter(Boolean)
+    .join(': ')
+    .trim();
+  return text ? text.slice(0, 300) : undefined;
 }
 
 /**
@@ -107,7 +183,12 @@ async function getSocialLogin() {
 function withAuthTimeout<T>(promise: Promise<T>, ms = 25000): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
-      reject({ code: 'auth/network-request-failed' });
+      // Distinguishable from a real fetch failure in `detail`, so a device
+      // screenshot tells a hang apart from a rejected request.
+      reject({
+        code: 'auth/network-request-failed',
+        message: `Firebase Auth did not respond within ${Math.round(ms / 1000)}s`,
+      });
     }, ms);
     promise.then(
       (value) => {
@@ -153,7 +234,11 @@ async function signInWithGoogleNative(): Promise<AuthResult> {
   if (!isGoogleSignInAvailable()) {
     // Build shipped without this platform's client id — the button is hidden
     // in this case, so this is only reachable programmatically.
-    return { success: false, errorCode: 'auth/operation-not-allowed', error: 'auth.networkError' };
+    return {
+      success: false,
+      errorCode: 'auth/operation-not-allowed',
+      error: 'auth.providerUnavailable',
+    };
   }
 
   const SocialLogin = await getSocialLogin();
@@ -167,8 +252,7 @@ async function signInWithGoogleNative(): Promise<AuthResult> {
     idToken = (login.result as { idToken?: string | null })?.idToken;
   } catch (err: any) {
     // User-cancelled the native sheet — not an error worth surfacing.
-    const msg = String(err?.message ?? err ?? '');
-    if (/cancel/i.test(msg)) {
+    if (isUserCancellation(err)) {
       return { success: false };
     }
     throw err;
@@ -213,7 +297,11 @@ async function signInWithAppleNative(): Promise<AuthResult> {
   if (!isAppleSignInAvailable()) {
     // Android: no Apple web-flow configured — the button is hidden there, so
     // this is only reachable programmatically.
-    return { success: false, errorCode: 'auth/operation-not-allowed', error: 'auth.networkError' };
+    return {
+      success: false,
+      errorCode: 'auth/operation-not-allowed',
+      error: 'auth.providerUnavailable',
+    };
   }
   const SocialLogin = await getSocialLogin();
   // Apple embeds SHA-256(nonce) in the identity token; Firebase verifies it
@@ -229,15 +317,18 @@ async function signInWithAppleNative(): Promise<AuthResult> {
     identityToken = (login.result as { idToken?: string | null })?.idToken;
   } catch (err: any) {
     // User-cancelled the native sheet — not an error worth surfacing.
-    const msg = String(err?.message ?? err ?? '');
-    if (/cancel/i.test(msg) || err?.code === '1001') {
+    if (isUserCancellation(err)) {
       return { success: false };
     }
     throw err;
   }
 
   if (!identityToken) {
-    return { success: false, errorCode: 'auth/invalid-credential', error: 'auth.invalidCredentials' };
+    return {
+      success: false,
+      errorCode: 'auth/invalid-credential',
+      error: 'auth.invalidCredentials',
+    };
   }
 
   const provider = new OAuthProvider('apple.com');
@@ -290,18 +381,28 @@ export async function fetchSignInMethods(email: string): Promise<string[]> {
 }
 
 function mapFirebaseError(err: any): AuthResult {
-  const code = err.code as string;
+  const code = err?.code as string | undefined;
 
   // User-cancelled flows are not errors.
-  if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+  if (
+    code === 'auth/popup-closed-by-user' ||
+    code === 'auth/cancelled-popup-request' ||
+    isUserCancellation(err)
+  ) {
     return { success: false };
   }
+
+  const detail = errorDetail(err);
+  // Keep the raw failure in the console (Safari Web Inspector / Xcode) —
+  // native sign-in problems are otherwise invisible.
+  console.error('[auth] sign-in failed:', detail ?? err);
 
   if (code === 'auth/popup-blocked') {
     return {
       success: false,
       errorCode: code,
       error: 'auth.popupBlocked',
+      detail,
     };
   }
 
@@ -321,6 +422,7 @@ function mapFirebaseError(err: any): AuthResult {
   return {
     success: false,
     errorCode: code,
-    error: known[code] || err.message,
+    error: (code && known[code]) || 'auth.signInFailed',
+    detail,
   };
 }
