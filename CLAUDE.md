@@ -200,5 +200,6 @@ For full morphology in bundled samples: use the richly-tokenized format (see `ca
 | `docs/offline-pwa-audit.md` | PWA / service worker strategy |
 | `docs/dependency-security-audit.md` | Package vulnerability notes |
 | `docs/premium-ui-audit.md` | Visual polish & accessibility review |
+| `docs/LAUNCH_PLAYBOOK.md` | Launch + marketing plan of record (2026-09): hardening gaps, conversion fixes, growth surface, UGC/boost playbook, 30-day calendar |
 | `SECURITY_NOTES.md` | Security threat model |
 | `firebase-blueprint.json` | Firestore collection schema |

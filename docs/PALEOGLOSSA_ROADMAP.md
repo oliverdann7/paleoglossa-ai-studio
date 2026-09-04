@@ -929,6 +929,8 @@ Effort key: **S** ≤ 1 day · **M** = days · **L** = 1–2+ weeks.
 
 ### Phase 4 — "Content moat & growth"
 
+> Launch/growth plan of record (2026-09-04): [`docs/LAUNCH_PLAYBOOK.md`](LAUNCH_PLAYBOOK.md) — it sequences 4.4–4.6 behind the still-open cost-control items from `app-audit-2026-07.md` and adds the marketing playbook.
+
 | # | What to build | Build on | Effort | Payoff |
 |---|---|---|---|---|
 | 4.1 | **Per-language graded ladders**: ingestion sprints adding an A0→C1 ladder for each of the 11 languages (extended sections for Akkadian/Sanskrit/etc. exist; the gaps are at the A0–A2 rungs); 3–5 classics per smaller language | `scripts/ingest-corpus-to-firestore.ts`, `scripts/corpus/importJson.ts`, static+Firestore merge live in `api/_routes/corpus.ts` | L (continuous) | Nobody else has graded readers in Ugaritic; this is the moat |
