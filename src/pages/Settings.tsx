@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Camera,
   Check,
@@ -39,6 +39,8 @@ import { privacyService } from '../lib/services/privacyService.js';
 import { optInAnalytics, optOutAnalytics } from '../lib/analytics.js';
 import { setErrorReportingEnabled } from '../lib/sentry.js';
 import { downloadFile } from '../lib/services/downloadService.js';
+import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
+import { LanguageOptionGrid } from '../components/ActiveLanguagePicker.js';
 
 export const Settings = () => {
   const navigate = useNavigate();
@@ -47,6 +49,7 @@ export const Settings = () => {
   const { subscription, setDesiredSecondLanguage } = useSubscription();
   const allLanguages = getAvailableLanguages();
   const { user, profile, refreshProfile } = useAuth();
+  const { currentLanguage } = useActiveLanguage();
 
   // ── Privacy State ────────────────────────────────────────────────────────
   const [analyticsEnabled, setAnalyticsEnabled] = useState(privacyService.isAnalyticsEnabled());
@@ -205,6 +208,31 @@ export const Settings = () => {
       </header>
 
       <div className="space-y-8">
+        {/* ── Study Language ─────────────────────────────────────────────── */}
+        <section className="card p-8" data-testid="settings-study-language">
+          <h3 className="font-serif text-[20px] text-ink mb-2 pb-4 border-b border-bdr flex items-center gap-2">
+            <Languages className="w-5 h-5 text-muted" />
+            {t('language.studyLanguage', 'Study language')}
+          </h3>
+          <p className="text-[13px] text-muted mb-5">
+            {t(
+              'settings.studyLanguageDesc',
+              'The language you are learning right now. Library, Words and Review all follow this choice.'
+            )}
+            {currentLanguage && (
+              <>
+                {' '}
+                <span className="font-semibold text-ink">
+                  {t('settings.currentlyStudying', 'Currently: {{name}}', {
+                    name: currentLanguage.name,
+                  })}
+                </span>
+              </>
+            )}
+          </p>
+          <LanguageOptionGrid />
+        </section>
+
         {/* ── Privacy ────────────────────────────────────────────────────── */}
         <section className="card p-8">
           <h3 className="font-serif text-[20px] text-ink mb-6 pb-4 border-b border-bdr flex items-center gap-2">
@@ -276,6 +304,12 @@ export const Settings = () => {
             <Languages className="w-5 h-5 text-muted" />
             {t('settings.languageSlots', 'Language Slots')}
           </h3>
+          <p className="text-[13px] text-muted mb-5">
+            {t(
+              'settings.languageSlotsDesc',
+              'Slots decide which languages get unlimited vocabulary saves on your plan. To switch the language you are studying, use Study language above.'
+            )}
+          </p>
 
           <div className="space-y-3">
             {/* Free plan: general cap notice */}
@@ -288,12 +322,12 @@ export const Settings = () => {
                   You can read any language, but only <strong>25 words per language</strong> can be
                   saved. Upgrade to unlock unlimited saves in one or more languages.
                 </p>
-                <a
-                  href="/app/subscription"
+                <Link
+                  to="/app/subscription"
                   className="mt-3 inline-block text-[11px] font-bold text-white bg-blue px-3 py-1.5 rounded-lg hover:bg-blue/80 transition-colors"
                 >
                   View plans →
-                </a>
+                </Link>
               </div>
             )}
 
@@ -388,12 +422,12 @@ export const Settings = () => {
                       ))}
                   </div>
                 )}
-                <a
-                  href="/app/subscription"
+                <Link
+                  to="/app/subscription"
                   className="mt-3 block text-center text-[11px] font-bold text-white bg-blue px-3 py-2 rounded-lg hover:bg-blue/80 transition-colors"
                 >
                   Upgrade to Duo — unlock a second language →
-                </a>
+                </Link>
               </div>
             )}
           </div>
@@ -1039,15 +1073,15 @@ export const Settings = () => {
 
         {/* ── Footer Links ───────────────────────────────────────────────── */}
         <section className="flex justify-center gap-6 text-[13px] text-muted pb-12">
-          <a href="/privacy" className="hover:text-ink transition-colors underline">
+          <Link to="/privacy" className="hover:text-ink transition-colors underline">
             Privacy
-          </a>
-          <a href="/terms" className="hover:text-ink transition-colors underline">
+          </Link>
+          <Link to="/terms" className="hover:text-ink transition-colors underline">
             Terms
-          </a>
-          <a href="/support" className="hover:text-ink transition-colors underline">
+          </Link>
+          <Link to="/support" className="hover:text-ink transition-colors underline">
             Support
-          </a>
+          </Link>
         </section>
       </div>
     </div>

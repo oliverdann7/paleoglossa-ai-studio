@@ -143,6 +143,67 @@ export class ReviewService {
     }
   }
 
+  /**
+   * Every reviewable word (LEARNING / FAMILIAR / KNOWN) regardless of its due
+   * date — the "practice ahead" queue offered when nothing is due yet. Words
+   * that are actually due are listed first so a short session still covers them.
+   */
+  static async getReviewableItems(
+    userId: string,
+    count: number = 50,
+    languageId?: string
+  ): Promise<ReviewItem[]> {
+    const vocabRef = collection(db, `users/${userId}/vocabulary`);
+    const now = new Date().toISOString();
+    const REVIEWABLE: string[] = [WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN];
+
+    const collect = (snap: any, filterLang: boolean): ReviewItem[] => {
+      const items: ReviewItem[] = [];
+      snap.forEach((d: any) => {
+        const data = d.data();
+        if (!REVIEWABLE.includes(data.status)) return;
+        if (filterLang && languageId && data.languageId !== languageId) return;
+        items.push({
+          id: d.id,
+          term: data.term,
+          languageId: data.languageId || languageId || 'unknown',
+          userGloss: data.userGloss,
+          contexts: data.contexts,
+          notes: data.notes,
+          status: data.status,
+          srs: {
+            interval: data.interval || 0,
+            ease: data.ease || 2.5,
+            step: data.step || 0,
+            lastReviewed: data.lastReviewed || null,
+            nextReview: data.nextReview || now,
+            fsrsStability: data.fsrsStability ?? undefined,
+            fsrsDifficulty: data.fsrsDifficulty ?? undefined,
+          },
+          surface: data.surface,
+          morphology: data.morphology,
+          transliteration: data.transliteration,
+          textId: data.textId,
+          sentenceIndex: data.sentenceIndex,
+          sentenceTranslation: data.sentenceTranslation,
+        });
+      });
+      return items.sort((a, b) => a.srs.nextReview.localeCompare(b.srs.nextReview));
+    };
+
+    // A single-field equality filter needs no composite index, so this path
+    // never hits FAILED_PRECONDITION the way the due-items query can.
+    try {
+      const snap = languageId
+        ? await getDocs(query(vocabRef, where('languageId', '==', languageId), limit(count * 3)))
+        : await getDocs(query(vocabRef, limit(count * 3)));
+      return collect(snap, false).slice(0, count);
+    } catch (e) {
+      console.error('Error fetching reviewable items', e);
+      return [];
+    }
+  }
+
   static async logReview(
     userId: string,
     item: ReviewItem,

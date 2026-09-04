@@ -23,6 +23,7 @@ import {
 import { useSubscription } from '@/lib/contexts/SubscriptionContext';
 import { features } from '@/lib/features';
 import { signOut } from '@/lib/services/authService';
+import { ActiveLanguageChip } from '@/components/ActiveLanguagePicker';
 
 interface MoreCardProps {
   icon: React.ElementType;
@@ -77,6 +78,12 @@ export const More = () => {
       </div>
 
       <div className="px-4 pt-5 pb-8 max-w-lg mx-auto">
+        {/* The study language is the single most consequential setting on
+            mobile, and the sidebar switcher does not exist here — so it leads. */}
+        <div className="mb-6">
+          <ActiveLanguageChip variant="row" />
+        </div>
+
         <Section title={t('more.study', 'Study')}>
           <MoreCard icon={Sparkles} label={t('nav.beginnerHub', 'Beginner Hub')} to="/app/beginner-hub" />
           <MoreCard icon={Search} label={t('nav.search', 'Search')} to="/app/search" />

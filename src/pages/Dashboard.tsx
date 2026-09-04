@@ -7,9 +7,6 @@ import {
   Library,
   Sparkles,
   BookMarked,
-  BookOpen,
-  PlusCircle,
-  MessageCircle,
   GraduationCap,
   X,
   Snowflake,
@@ -45,6 +42,7 @@ import { ReviewForecast } from '../components/ReviewForecast.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { useBeginnerHubDiscovery } from '../lib/hooks/useBeginnerHubDiscovery.js';
 import { useToast } from '../lib/hooks/useToast.js';
+import { ActiveLanguageChip } from '../components/ActiveLanguagePicker.js';
 
 const RTL_LANGS = new Set([
   'hbo',
@@ -90,30 +88,6 @@ export const Dashboard = () => {
   }, [declareSabbatical, addToast, t]);
 
   const isOnboardingComplete = settings.onboardingProfile?.completed;
-
-  // Personalized Recommendation
-  const recommendedNextStep = useMemo(() => {
-    if (!isOnboardingComplete) return null;
-    const profile = settings.onboardingProfile!;
-
-    if (profile.level === 'absolute-beginner')
-      return {
-        title: 'Beginner Path',
-        desc: 'Start with the basics.',
-        to: '/app/beginner-hub',
-      };
-    if (profile.goal === 'biblical')
-      return {
-        title: 'Biblical Texts',
-        desc: 'Explore foundational texts.',
-        to: '/app/library',
-      };
-    return {
-      title: 'Explore Library',
-      desc: 'Continue your journey.',
-      to: '/app/library',
-    };
-  }, [isOnboardingComplete, settings.onboardingProfile]);
 
   // One-time Beginner Hub discoverability (roadmap § 11, 1.6). The curriculum
   // already exists but is easy to miss; surface it once for self-identified
@@ -339,18 +313,6 @@ export const Dashboard = () => {
             </button>
           </motion.div>
         )}
-        {/* Personalized Recommendation */}
-        {recommendedNextStep && !showBeginnerHubCard && (
-          <div className="card p-6 mb-8 border-blue/20 bg-blue/5 flex flex-wrap items-center justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <h3 className="font-serif text-[18px] text-ink">{recommendedNextStep.title}</h3>
-              <p className="text-[14px] text-ink3">{recommendedNextStep.desc}</p>
-            </div>
-            <button onClick={() => navigate(recommendedNextStep.to)} className="btn-primary shrink-0">
-              {t('common.getStarted', 'Get Started')}
-            </button>
-          </div>
-        )}
         {/* Greeting row */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="min-w-0">
@@ -364,6 +326,11 @@ export const Dashboard = () => {
             <p className="font-body text-[14px] md:text-[16px] text-muted italic mt-0.5 hidden md:block">
               {t(subtitleKey, subtitleDefault)}
             </p>
+            {/* Mobile: the study language is switchable right from the greeting.
+                Desktop has the sidebar switcher, so this is hidden there. */}
+            <div className="mt-3 md:hidden">
+              <ActiveLanguageChip />
+            </div>
           </div>
 
           {/* Desktop stat chips */}
@@ -471,116 +438,6 @@ export const Dashboard = () => {
           </div>
         )}
 
-        {/* Mobile stat strip — compact horizontal scroll */}
-        <div className="flex md:hidden gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
-          {stats.streak > 0 && (
-            <div className="shrink-0 flex items-center gap-2 bg-amber/10 border border-amber/20 rounded-xl px-3 py-2">
-              <span className="text-base">🔥</span>
-              <div>
-                <span className="text-[15px] font-bold text-amber leading-none">
-                  {stats.streak}
-                </span>
-                <span className="text-[10px] text-amber/60 ml-1">
-                  {t('dashboard.days', 'days')}
-                </span>
-              </div>
-              {canSabbatical && (
-                <button
-                  onClick={handleSabbatical}
-                  title={t('dashboard.sabbaticalTitle', 'Declare a sabbatical day')}
-                  className="flex flex-col items-center gap-0.5 text-blue/70 active:scale-90 transition-transform"
-                >
-                  <Snowflake className="w-3.5 h-3.5" />
-                  <span className="text-[8px] font-bold leading-none tabular-nums">
-                    {freezesAvailable}/{stats.freezesTotal ?? 2}
-                  </span>
-                </button>
-              )}
-            </div>
-          )}
-          <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">
-            <ProgressRing progress={dailyProgress} size={24} />
-            <div>
-              <span className="text-[14px] font-bold text-ink leading-none">
-                {stats.readToday} / {dailyGoal}
-              </span>
-              <div className="text-[10px] text-muted leading-none mt-0.5">
-                {t('dashboard.wordsToday', 'words today')}
-              </div>
-            </div>
-          </div>
-          {stats.lastAccuracy !== undefined && stats.lastAccuracy > 0 && (
-            <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">
-              <span
-                className={cn(
-                  'text-[15px] font-bold',
-                  stats.lastAccuracy >= 90
-                    ? 'text-green-600'
-                    : stats.lastAccuracy >= 70
-                      ? 'text-amber-600'
-                      : 'text-red-500'
-                )}
-              >
-                {stats.lastAccuracy}%
-              </span>
-              <div className="text-[10px] text-muted leading-none">
-                {t('dashboard.accuracy', 'accuracy')}
-              </div>
-            </div>
-          )}
-          <div className="shrink-0 flex items-center gap-2 bg-parch2 border border-bdr rounded-xl px-3 py-2">
-            <Brain className="w-4 h-4 text-blue" />
-            <div>
-              <span className="text-[14px] font-bold text-ink leading-none">{knownCount}</span>
-              <div className="text-[10px] text-muted leading-none mt-0.5">
-                {t('vocab.known', 'known')}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Quick Actions */}
-        <div className="grid grid-cols-4 gap-2 mt-4 md:hidden">
-          {[
-            {
-              icon: BookOpen,
-              label: t('nav.library', 'Library'),
-              to: '/app/library',
-              color: 'text-blue bg-blue/10',
-            },
-            {
-              icon: Brain,
-              label: t('nav.review', 'Review'),
-              to: '/app/review',
-              color: 'text-purple-600 bg-purple-50',
-            },
-            {
-              icon: PlusCircle,
-              label: t('nav.import', 'Import'),
-              to: '/app/import',
-              color: 'text-emerald-600 bg-emerald-50',
-            },
-            {
-              icon: MessageCircle,
-              label: t('nav.tutor', 'Tutor'),
-              to: '/app/tutor',
-              color: 'text-rose-500 bg-rose-50',
-            },
-          ].map(({ icon: Icon, label, to, color }) => (
-            <button
-              key={to}
-              onClick={() => navigate(to)}
-              className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-parch2 border border-bdr active:scale-95 transition-transform"
-            >
-              <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', color)}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-semibold text-ink3 leading-tight text-center">
-                {label}
-              </span>
-            </button>
-          ))}
-        </div>
       </header>
 
       {/* ── Today's Study Plan ─────────────────────────────────────── */}
