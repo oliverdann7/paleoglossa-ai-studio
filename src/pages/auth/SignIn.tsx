@@ -9,6 +9,7 @@ import {
   fetchSignInMethods,
   isGoogleSignInAvailable,
   isAppleSignInAvailable,
+  describeAuthError,
 } from '@/lib/services/authService';
 import { useTranslation } from 'react-i18next';
 import { PaleoIcon } from '@/components/PaleoIcon';
@@ -44,6 +45,9 @@ export const SignIn = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Raw provider/SDK error under the banner — the only way to diagnose a
+  // failure that reproduces solely on a TestFlight device.
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || '/app';
 
@@ -51,6 +55,7 @@ export const SignIn = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
     try {
       const result = await signInWithEmail(email, password);
       if (result.success) {
@@ -103,7 +108,8 @@ export const SignIn = () => {
           t('auth.networkError', 'Network error. Please check your connection and try again.')
         );
       } else {
-        setError(result.error ?? 'Sign in failed');
+        setError(describeAuthError(t, result));
+        setErrorDetail(result.detail ?? null);
       }
     } catch {
       setError(t('auth.invalidCredentials', 'Incorrect email or password. Please try again.'));
@@ -116,6 +122,7 @@ export const SignIn = () => {
     if (loading) return;
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
     try {
       const result = await signInWithApple();
       if (result.success) {
@@ -130,7 +137,8 @@ export const SignIn = () => {
           )
         );
       } else if (result.error) {
-        setError(result.error);
+        setError(describeAuthError(t, result));
+        setErrorDetail(result.detail ?? null);
       }
     } finally {
       setLoading(false);
@@ -141,6 +149,7 @@ export const SignIn = () => {
     if (loading) return;
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
     try {
       const result = await signInWithGoogle(promptAccountSelect);
       if (result.success) {
@@ -155,7 +164,8 @@ export const SignIn = () => {
           )
         );
       } else if (result.error) {
-        setError(result.error);
+        setError(describeAuthError(t, result));
+        setErrorDetail(result.detail ?? null);
       }
     } finally {
       setLoading(false);
@@ -276,9 +286,17 @@ export const SignIn = () => {
             )}
 
             {error && (
-              <div className="mb-6 p-4 rounded-xl bg-rubyxl border border-ruby/20 flex items-start gap-3 text-ruby">
+              <div
+                role="alert"
+                className="mb-6 p-4 rounded-xl bg-rubyxl border border-ruby/20 flex items-start gap-3 text-ruby"
+              >
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                <p className="text-sm font-medium">{error}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{error}</p>
+                  {errorDetail && (
+                    <p className="mt-1 text-xs opacity-70 break-words font-mono">{errorDetail}</p>
+                  )}
+                </div>
               </div>
             )}
 

@@ -4,7 +4,6 @@ import {
   initializeAuth,
   browserLocalPersistence,
   inMemoryPersistence,
-  browserPopupRedirectResolver,
   GoogleAuthProvider,
   OAuthProvider,
 } from 'firebase/auth';
@@ -86,7 +85,11 @@ export const auth = native
       // localStorage first — IndexedDB persistence hangs in the WKWebView and
       // would trap sign-in on the spinner forever.
       persistence: [browserLocalPersistence, inMemoryPersistence],
-      popupRedirectResolver: browserPopupRedirectResolver,
+      // No popup/redirect resolver on native: OAuth runs through the native
+      // Google/Apple sheets (authService) and never through Firebase's
+      // popup or redirect flows, so the resolver — which wires the auth
+      // iframe against authDomain — is dead weight inside the WebView. This
+      // matches Firebase's own guidance for Capacitor/Ionic apps.
     })
   : getAuth(app);
 export const googleProvider = new GoogleAuthProvider();

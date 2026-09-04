@@ -10,6 +10,7 @@ import {
   fetchSignInMethods,
   isGoogleSignInAvailable,
   isAppleSignInAvailable,
+  describeAuthError,
 } from '@/lib/services/authService';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '@/lib/firebase';
@@ -44,6 +45,7 @@ export const SignUp = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   const createUserProfile = async (uid: string, emailStr: string, name: string) => {
     try {
@@ -61,6 +63,7 @@ export const SignUp = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await createUserProfile(cred.user.uid, email, fullName);
@@ -120,6 +123,7 @@ export const SignUp = () => {
     if (loading) return;
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
     try {
       const result = await signInWithGoogle();
       if (result.success) {
@@ -131,7 +135,8 @@ export const SignUp = () => {
           'Popup was blocked by your browser. Please allow popups or open this app in a new tab/window to sign in with Google.'
         );
       } else if (result.error) {
-        setError(result.error);
+        setError(describeAuthError(t, result));
+        setErrorDetail(result.detail ?? null);
       }
     } finally {
       setLoading(false);
@@ -142,6 +147,7 @@ export const SignUp = () => {
     if (loading) return;
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
     try {
       const result = await signInWithApple();
       if (result.success) {
@@ -156,7 +162,8 @@ export const SignUp = () => {
           )
         );
       } else if (result.error) {
-        setError(result.error);
+        setError(describeAuthError(t, result));
+        setErrorDetail(result.detail ?? null);
       }
     } finally {
       setLoading(false);
@@ -274,9 +281,17 @@ export const SignUp = () => {
             )}
 
             {error && (
-              <div className="mb-6 p-4 rounded-xl bg-rubyxl border border-ruby/20 flex items-start gap-3 text-ruby">
+              <div
+                role="alert"
+                className="mb-6 p-4 rounded-xl bg-rubyxl border border-ruby/20 flex items-start gap-3 text-ruby"
+              >
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                <p className="text-sm font-medium">{error}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{error}</p>
+                  {errorDetail && (
+                    <p className="mt-1 text-xs opacity-70 break-words font-mono">{errorDetail}</p>
+                  )}
+                </div>
               </div>
             )}
 
