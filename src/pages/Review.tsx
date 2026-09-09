@@ -10,11 +10,15 @@ import {
   Settings2,
   ScrollText,
   Clock,
+  BookOpen,
+  GraduationCap,
+  Zap,
+  CalendarClock,
 } from 'lucide-react';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
-import { WordState } from '../lib/constants/wordStates.js';
+import { WordState, normalizeWordState } from '../lib/constants/wordStates.js';
 import { ReviewService, ReviewItem } from '../lib/services/reviewService.js';
 import { Rating, calculateSM2 } from '../lib/srs/sm2.js';
 import type { SRSState } from '../lib/srs/sm2.js';
@@ -77,6 +81,20 @@ function formatDuration(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
+type Translate = (key: string, fallback: string, options?: Record<string, unknown>) => string;
+
+/** Human-readable "when is the next card due" for the empty start screen. */
+function formatNextDue(date: Date, t: Translate): string {
+  const diffMs = date.getTime() - Date.now();
+  const hours = Math.ceil(diffMs / 3_600_000);
+  if (hours <= 1) return t('review.dueWithinHour', 'within the hour');
+  if (hours < 24) return t('review.dueInHours', 'in {{count}} hours', { count: hours });
+  const days = Math.round(hours / 24);
+  if (days === 1) return t('review.dueTomorrow', 'tomorrow');
+  if (days < 14) return t('review.dueInDays', 'in {{count}} days', { count: days });
+  return date.toLocaleDateString();
+}
+
 function loadSettings(): ReviewSettings {
   try {
     const stored = localStorage.getItem(SETTINGS_KEY);
@@ -95,7 +113,12 @@ export const Review = () => {
   const [searchParams] = useSearchParams();
   const { user, isDemoMode } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
-  const { knowledge, updateWordSRS, recordReviewSession } = useKnowledge(activeLanguageId);
+  const {
+    knowledge,
+    updateWordSRS,
+    recordReviewSession,
+    isLoading: knowledgeLoading,
+  } = useKnowledge(activeLanguageId);
   const { t } = useTranslation();
   const { awardXP } = useXP();
 
@@ -145,6 +168,37 @@ export const Review = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState<ReviewSettings>(loadSettings);
 
+  // "Practice ahead": review every scheduled word, not only the ones due now.
+  // Offered on the start screen when the due queue is empty so the tab is
+  // never a dead end for a learner who has words but no fading memories yet.
+  const [practiceAhead, setPracticeAhead] = useState(false);
+  // Bumped when a session ends so the next start screen reloads the queue
+  // against the updated schedule instead of re-offering the cards just rated.
+  const [reloadKey, setReloadKey] = useState(0);
+
+  // Local view of the schedule for the active language — drives the empty
+  // states (nothing due vs. no words at all) without another Firestore read.
+  const scheduled = useMemo(() => {
+    const now = new Date();
+    let count = 0;
+    let nextDue: Date | null = null;
+    for (const info of Object.values(knowledge)) {
+      if (!info || typeof info !== 'object') continue;
+      const state = normalizeWordState((info as WordInfo).state);
+      if (state !== WordState.LEARNING && state !== WordState.FAMILIAR && state !== WordState.KNOWN)
+        continue;
+      const lang = (info as WordInfo).languageId || '';
+      if (lang && lang !== activeLanguageId) continue;
+      count++;
+      const next = (info as WordInfo).srs?.nextReview;
+      if (next) {
+        const d = new Date(toDateStr(next));
+        if (d > now && (!nextDue || d < nextDue)) nextDue = d;
+      }
+    }
+    return { count, nextDue };
+  }, [knowledge, activeLanguageId]);
+
   const sessionStartRef = useRef<number>(0);
 
   // Analytics
@@ -191,7 +245,9 @@ export const Review = () => {
       try {
         let items: ReviewItem[] = [];
         if (!isDemoMode && user) {
-          items = await ReviewService.getDueItems(user.uid, settings.maxCards, activeLanguageId);
+          items = practiceAhead
+            ? await ReviewService.getReviewableItems(user.uid, settings.maxCards, activeLanguageId)
+            : await ReviewService.getDueItems(user.uid, settings.maxCards, activeLanguageId);
           if (textFilter) {
             items = items.filter((item) => textFilter.lemmas.has(item.term));
           }
@@ -212,6 +268,7 @@ export const Review = () => {
               return !lang || lang === activeLanguageId;
             })
             .filter(([, info]: [string, WordInfo]) => {
+              if (practiceAhead) return true;
               if (!info.srs?.nextReview) return true;
               return new Date(toDateStr(info.srs.nextReview)) <= new Date();
             })
@@ -250,6 +307,7 @@ export const Review = () => {
           if (textFilter) {
             items = items.filter((item) => textFilter.lemmas.has(item.term));
           }
+          items = items.slice(0, settings.maxCards);
         }
 
         const cards = generateReviewCards(items, {
@@ -267,7 +325,7 @@ export const Review = () => {
       }
     };
     loadQueue();
-  }, [user, isDemoMode, activeLanguageId, settings, textFilter]);
+  }, [user, isDemoMode, activeLanguageId, settings, textFilter, practiceAhead, reloadKey]);
 
   // The resumable snapshot offered on the start screen. Derived (not state) so
   // it stays in sync with the active language without a setState-in-effect; a
@@ -294,6 +352,7 @@ export const Review = () => {
       languageId: activeLanguageId,
       cardCount: queue.length,
       textFilterActive,
+      practiceAhead,
     });
   };
 
@@ -579,6 +638,13 @@ export const Review = () => {
 
   // ── Start Screen ─────────────────────────────────────────────────────
   if (!isStarted) {
+    const dueCount = reviewSummary?.dueCount || 0;
+    // Practice-ahead sessions start from the loaded queue; scheduled sessions
+    // from the due count, matching the previous behaviour.
+    const canStart = practiceAhead ? queue.length > 0 : dueCount > 0;
+    // The empty-state cards read the local schedule; hold them until both the
+    // Firestore summary and the vocabulary map are in, or they flash "no words".
+    const scheduleReady = !isLoading && !!reviewSummary && !knowledgeLoading;
     return (
       <div className="p-6 md:p-12 pt-safe-page max-w-2xl mx-auto font-sans min-h-screen">
         <div className="flex items-center justify-between mb-8">
@@ -721,19 +787,119 @@ export const Review = () => {
           </div>
         )}
 
+        {/* Empty-queue guidance: the tab must never be a dead end. */}
+        {scheduleReady && dueCount === 0 && !practiceAhead && scheduled.count > 0 && (
+          <div
+            className="card p-5 mb-6 border border-bdr bg-parch2/40"
+            data-testid="review-nothing-due"
+          >
+            <div className="flex items-start gap-3">
+              <CalendarClock className="w-5 h-5 text-blue mt-0.5 shrink-0" aria-hidden />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[15px] font-bold text-ink mb-1">
+                  {t('review.nothingDueTitle', 'Nothing is due right now')}
+                </h3>
+                <p className="text-[13px] text-ink2 leading-relaxed">
+                  {t(
+                    'review.nothingDueDesc',
+                    'You have {{count}} words in your schedule. Spaced repetition waits until a memory starts to fade, but you can practice ahead whenever you like.',
+                    { count: scheduled.count }
+                  )}
+                </p>
+                {scheduled.nextDue && (
+                  <p className="text-[12px] text-muted mt-2">
+                    {t('review.nextDue', 'Next review: {{when}}', {
+                      when: formatNextDue(scheduled.nextDue, t),
+                    })}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {scheduleReady && dueCount === 0 && scheduled.count === 0 && (
+          <div
+            className="card p-5 mb-6 border border-bdr bg-parch2/40"
+            data-testid="review-no-words"
+          >
+            <div className="flex items-start gap-3">
+              <BookOpen className="w-5 h-5 text-blue mt-0.5 shrink-0" aria-hidden />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[15px] font-bold text-ink mb-1">
+                  {t('review.noWordsTitle', 'No words to review yet')}
+                </h3>
+                <p className="text-[13px] text-ink2 leading-relaxed mb-4">
+                  {t(
+                    'review.noWordsDesc',
+                    'Reviews are built from the words you mark while reading. Open a text, tap a word and choose Learning or Known — it will show up here on its schedule.'
+                  )}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => navigate('/app/library')}
+                    className="px-4 py-2 bg-blue text-white font-bold rounded-xl text-[14px] hover:bg-blue/90 active:scale-[0.98] transition-all inline-flex items-center gap-2"
+                  >
+                    <BookOpen className="w-4 h-4" aria-hidden />
+                    {t('review.openLibrary', 'Open the Library')}
+                  </button>
+                  <button
+                    onClick={() => navigate('/app/vocabulary')}
+                    className="px-4 py-2 text-ink2 hover:text-ink font-medium text-[14px] transition-colors inline-flex items-center gap-2"
+                  >
+                    <GraduationCap className="w-4 h-4" aria-hidden />
+                    {t('review.seeWords', 'See my words')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {practiceAhead && (
+          <div className="mb-4 flex items-center justify-between gap-3 px-4 py-2.5 bg-amber/10 border border-amber/30 rounded-xl">
+            <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-amber-800">
+              <Zap className="w-4 h-4" aria-hidden />
+              {t('review.practicingAhead', 'Practicing ahead of schedule')}
+            </span>
+            <button
+              onClick={() => setPracticeAhead(false)}
+              className="text-[12px] font-semibold text-ink2 hover:text-ink underline-offset-2 hover:underline"
+            >
+              {t('review.backToDue', 'Only due words')}
+            </button>
+          </div>
+        )}
+
         <button
           onClick={handleStart}
-          disabled={isLoading || (reviewSummary?.dueCount || 0) === 0}
+          disabled={isLoading || !canStart}
+          data-testid="review-start"
           className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
           {isLoading
             ? t('review.loading', 'Loading…')
-            : (reviewSummary?.dueCount || 0) === 0
-              ? t('review.allCaughtUp', 'All caught up!')
-              : t('review.startWithCount', 'Start Review ({{count}} cards)', {
-                  count: queue.length,
-                })}
+            : practiceAhead
+              ? t('review.practiceWithCount', 'Practice {{count}} cards', { count: queue.length })
+              : dueCount === 0
+                ? scheduled.count > 0 || knowledgeLoading
+                  ? t('review.allCaughtUp', 'All caught up!')
+                  : t('review.nothingYet', 'Nothing to review yet')
+                : t('review.startWithCount', 'Start Review ({{count}} cards)', {
+                    count: queue.length,
+                  })}
         </button>
+
+        {scheduleReady && dueCount === 0 && !practiceAhead && scheduled.count > 0 && (
+          <button
+            onClick={() => setPracticeAhead(true)}
+            data-testid="review-practice-ahead"
+            className="w-full py-3.5 mt-3 bg-white border border-bdr text-ink font-bold rounded-2xl text-[15px] hover:border-blue/40 hover:bg-parch active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2"
+          >
+            <Zap className="w-4 h-4 text-amber" aria-hidden />
+            {t('review.practiceAhead', 'Practice ahead')}
+          </button>
+        )}
       </div>
     );
   }
@@ -802,6 +968,8 @@ export const Review = () => {
               setQueue([]);
               setCurrentCardIndex(0);
               setSessionResults([]);
+              setPracticeAhead(false);
+              setReloadKey((k) => k + 1);
             }}
             className="w-full py-4 bg-blue text-white font-bold rounded-2xl hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg"
           >

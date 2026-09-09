@@ -779,6 +779,184 @@ export const LexDrawerPanel = memo(
               </div>
             </div>
 
+            {(text?.analysisStatus === 'raw' || text?.analysisStatus === 'needs_ai') && (
+              <div className="mb-5 p-3 bg-amber/8 border border-amber/20 rounded-xl flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber shrink-0 mt-0.5" />
+                <p className="text-[12px] text-ink3 leading-relaxed">
+                  Raw text only — meanings and morphology are limited. Run AI analysis to complete
+                  this lesson.
+                </p>
+              </div>
+            )}
+
+            <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-panel">
+              <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
+                <span>{t('reader.meaning', 'Meaning')}</span>
+                <Link
+                  to={getDictionaryPath(selectedWord.lemma, langId)}
+                  className="inline-flex items-center gap-1 hover:text-ink transition-colors"
+                >
+                  <BookOpen className="w-3" />
+                  <span className="normal-case tracking-normal text-[11px]">Entry</span>
+                </Link>
+              </div>
+              {/* Dictionary source picker — only sources valid for this language. */}
+              {inlineDictionaries.length > 1 && (
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {inlineDictionaries.map((src) => (
+                    <button
+                      key={src.id}
+                      onClick={() => handleSelectSource(src.id)}
+                      className={cn(
+                        'px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors',
+                        selectedSourceId === src.id
+                          ? 'bg-blue text-white border-blue'
+                          : 'bg-white text-ink3 border-bdr/50 hover:border-blue/40'
+                      )}
+                    >
+                      {src.shortName}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="mb-4">
+                {baseMeaning ? (
+                  <>
+                    {/* The gloss is what a reader opened the panel for — it gets
+                        display-size serif type, second only to the headword. */}
+                    <div
+                      data-testid="word-meaning"
+                      className="font-serif text-[26px] md:text-[28px] font-semibold text-ink leading-snug"
+                    >
+                      {displayMeaningText}
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {baseMeaning.aiGenerated && (
+                        <SourceBadge trust={getSourceTrust('ai_fallback')} />
+                      )}
+                      <span className="text-[11px] text-muted">{baseMeaning.label}</span>
+                      {localizedMeaning.loading && (
+                        <Loader2 className="w-3 h-3 animate-spin text-muted" />
+                      )}
+                      {meaningIsLocalized && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue">
+                          <Languages className="w-3 h-3" />
+                          {localizedMeaning.uiLang.toUpperCase()}
+                        </span>
+                      )}
+                      {baseMeaning.url && (
+                        <a
+                          href={baseMeaning.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-muted hover:text-blue transition-colors inline-flex items-center gap-0.5"
+                        >
+                          {t('reader.source', 'Source')}
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                    {!baseMeaning.isUserGloss && (
+                      <button
+                        onClick={handleSaveAsTranslation}
+                        data-testid="save-as-translation"
+                        className={cn(
+                          'mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors',
+                          glossSaved
+                            ? 'bg-green-600 text-white'
+                            : 'bg-blue/10 text-blue hover:bg-blue/20'
+                        )}
+                      >
+                        {glossSaved ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            {t('reader.saved', 'Saved')}
+                          </>
+                        ) : (
+                          <>
+                            <BookMarked className="w-3.5 h-3.5" />
+                            {t('reader.saveAsTranslation', 'Save as my translation')}
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </>
+                ) : isSourceMeaningLoading || isWiktionaryLoading || isLexiconLoading ? (
+                  <span className="text-muted italic text-[16px] inline-flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin inline-block" />
+                    {t('reader.lookingUp', 'Looking up definition…')}
+                  </span>
+                ) : (
+                  // No definition found — show compact metadata and action buttons.
+                  <div>
+                    {descriptiveFallback && (
+                      <span className="block text-ink2 text-[14px] leading-snug mb-2">
+                        {descriptiveFallback}
+                      </span>
+                    )}
+                    <span className="block text-muted text-[13px] italic mb-2">
+                      {t('reader.noDefinitionFound', 'No definition found in local lexicons.')}
+                    </span>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        onClick={() => {
+                          setAiFallbackGloss(null);
+                          handleFetchGloss();
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue/8 border border-blue/20 text-[12px] font-medium text-blue hover:bg-blue/15 transition-colors"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        {t('reader.retryAi', 'Retry AI definition')}
+                      </button>
+                      <Link
+                        to={getDictionaryPath(selectedWord.lemma, langId)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-parch border border-bdr/40 text-[12px] font-medium text-ink3 hover:text-blue hover:border-blue/30 transition-colors"
+                      >
+                        <BookOpen className="w-3 h-3" />
+                        {t('reader.viewDictionary', 'Dictionary entry')}
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-bdr/20">
+                <div className="text-tiny uppercase font-bold text-muted mb-2 tracking-widest flex items-center gap-2">
+                  <span>{t('reader.yourGloss', 'Your Gloss / Translation')}</span>
+                  {glossSaved && (
+                    <span className="text-green-600 font-normal normal-case tracking-normal text-[10px] inline-flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />
+                      {t('reader.saved', 'Saved')}
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  data-testid="gloss-input"
+                  className="w-full bg-white border border-bdr/50 rounded-lg px-3 py-2 text-sm focus:border-blue outline-none"
+                  placeholder={t('reader.yourGlossPlaceholder', 'Enter your own gloss...')}
+                  value={wordInfo?.userGloss || ''}
+                  onChange={(e) => {
+                    updateGloss(selectedWord.lemma, e.target.value, langId);
+                    setGlossSaved(true);
+                    trackEvent(ANALYTICS_EVENTS.WORD_GLOSS_SAVED, {
+                      languageId: langId,
+                      lemmaLength: selectedWord.lemma?.length || 0,
+                      glossLength: e.target.value.length,
+                      textId: text?.id,
+                    });
+                    if (!localStorage.getItem('paleoglossa_first_word')) {
+                      localStorage.setItem('paleoglossa_first_word', '1');
+                      trackEvent(ANALYTICS_EVENTS.FIRST_WORD_SAVED, { languageId: langId });
+                    }
+                    if (glossTimerRef.current) clearTimeout(glossTimerRef.current);
+                    glossTimerRef.current = window.setTimeout(() => setGlossSaved(false), 2000);
+                  }}
+                />
+              </div>
+            </div>
+
             {/* Your Knowledge */}
             <div className="mb-6">
               <div className="eyebrow mb-3 flex items-center justify-between text-ink">
@@ -906,177 +1084,6 @@ export const LexDrawerPanel = memo(
                     </button>
                   );
                 })}
-              </div>
-            </div>
-
-            {(text?.analysisStatus === 'raw' || text?.analysisStatus === 'needs_ai') && (
-              <div className="mb-5 p-3 bg-amber/8 border border-amber/20 rounded-xl flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber shrink-0 mt-0.5" />
-                <p className="text-[12px] text-ink3 leading-relaxed">
-                  Raw text only — meanings and morphology are limited. Run AI analysis to complete
-                  this lesson.
-                </p>
-              </div>
-            )}
-
-            <div className="mb-10 p-5 bg-parch/40 border border-bdr/30 rounded-panel">
-              <div className="eyebrow mb-4 flex items-center justify-between text-blue font-bold">
-                <span>{t('reader.meaning', 'Meaning')}</span>
-                <Link
-                  to={getDictionaryPath(selectedWord.lemma, langId)}
-                  className="inline-flex items-center gap-1 hover:text-ink transition-colors"
-                >
-                  <BookOpen className="w-3" />
-                  <span className="normal-case tracking-normal text-[11px]">Entry</span>
-                </Link>
-              </div>
-              {/* Dictionary source picker — only sources valid for this language. */}
-              {inlineDictionaries.length > 1 && (
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {inlineDictionaries.map((src) => (
-                    <button
-                      key={src.id}
-                      onClick={() => handleSelectSource(src.id)}
-                      className={cn(
-                        'px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors',
-                        selectedSourceId === src.id
-                          ? 'bg-blue text-white border-blue'
-                          : 'bg-white text-ink3 border-bdr/50 hover:border-blue/40'
-                      )}
-                    >
-                      {src.shortName}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className="font-body text-[18px] md:text-[20px] text-ink font-medium mb-4 leading-snug">
-                {baseMeaning ? (
-                  <>
-                    <div>{displayMeaningText}</div>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      {baseMeaning.aiGenerated && (
-                        <SourceBadge trust={getSourceTrust('ai_fallback')} />
-                      )}
-                      <span className="text-[11px] text-muted">{baseMeaning.label}</span>
-                      {localizedMeaning.loading && (
-                        <Loader2 className="w-3 h-3 animate-spin text-muted" />
-                      )}
-                      {meaningIsLocalized && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue">
-                          <Languages className="w-3 h-3" />
-                          {localizedMeaning.uiLang.toUpperCase()}
-                        </span>
-                      )}
-                      {baseMeaning.url && (
-                        <a
-                          href={baseMeaning.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-muted hover:text-blue transition-colors inline-flex items-center gap-0.5"
-                        >
-                          {t('reader.source', 'Source')}
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-                    {!baseMeaning.isUserGloss && (
-                      <button
-                        onClick={handleSaveAsTranslation}
-                        data-testid="save-as-translation"
-                        className={cn(
-                          'mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors',
-                          glossSaved
-                            ? 'bg-green-600 text-white'
-                            : 'bg-blue/10 text-blue hover:bg-blue/20'
-                        )}
-                      >
-                        {glossSaved ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            {t('reader.saved', 'Saved')}
-                          </>
-                        ) : (
-                          <>
-                            <BookMarked className="w-3.5 h-3.5" />
-                            {t('reader.saveAsTranslation', 'Save as my translation')}
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </>
-                ) : isSourceMeaningLoading || isWiktionaryLoading || isLexiconLoading ? (
-                  <span className="text-muted italic text-[16px] inline-flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin inline-block" />
-                    {t('reader.lookingUp', 'Looking up definition…')}
-                  </span>
-                ) : (
-                  // No definition found — show compact metadata and action buttons.
-                  <div>
-                    {descriptiveFallback && (
-                      <span className="block text-ink2 text-[14px] leading-snug mb-2">
-                        {descriptiveFallback}
-                      </span>
-                    )}
-                    <span className="block text-muted text-[13px] italic mb-2">
-                      {t('reader.noDefinitionFound', 'No definition found in local lexicons.')}
-                    </span>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => {
-                          setAiFallbackGloss(null);
-                          handleFetchGloss();
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue/8 border border-blue/20 text-[12px] font-medium text-blue hover:bg-blue/15 transition-colors"
-                      >
-                        <Sparkles className="w-3 h-3" />
-                        {t('reader.retryAi', 'Retry AI definition')}
-                      </button>
-                      <Link
-                        to={getDictionaryPath(selectedWord.lemma, langId)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-parch border border-bdr/40 text-[12px] font-medium text-ink3 hover:text-blue hover:border-blue/30 transition-colors"
-                      >
-                        <BookOpen className="w-3 h-3" />
-                        {t('reader.viewDictionary', 'Dictionary entry')}
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-bdr/20">
-                <div className="text-tiny uppercase font-bold text-muted mb-2 tracking-widest flex items-center gap-2">
-                  <span>{t('reader.yourGloss', 'Your Gloss / Translation')}</span>
-                  {glossSaved && (
-                    <span className="text-green-600 font-normal normal-case tracking-normal text-[10px] inline-flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" />
-                      {t('reader.saved', 'Saved')}
-                    </span>
-                  )}
-                </div>
-                <input
-                  type="text"
-                  data-testid="gloss-input"
-                  className="w-full bg-white border border-bdr/50 rounded-lg px-3 py-2 text-sm focus:border-blue outline-none"
-                  placeholder={t('reader.yourGlossPlaceholder', 'Enter your own gloss...')}
-                  value={wordInfo?.userGloss || ''}
-                  onChange={(e) => {
-                    updateGloss(selectedWord.lemma, e.target.value, langId);
-                    setGlossSaved(true);
-                    trackEvent(ANALYTICS_EVENTS.WORD_GLOSS_SAVED, {
-                      languageId: langId,
-                      lemmaLength: selectedWord.lemma?.length || 0,
-                      glossLength: e.target.value.length,
-                      textId: text?.id,
-                    });
-                    if (!localStorage.getItem('paleoglossa_first_word')) {
-                      localStorage.setItem('paleoglossa_first_word', '1');
-                      trackEvent(ANALYTICS_EVENTS.FIRST_WORD_SAVED, { languageId: langId });
-                    }
-                    if (glossTimerRef.current) clearTimeout(glossTimerRef.current);
-                    glossTimerRef.current = window.setTimeout(() => setGlossSaved(false), 2000);
-                  }}
-                />
               </div>
             </div>
 

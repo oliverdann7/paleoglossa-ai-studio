@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { WordInfo } from '../lib/services/vocabularyService.js';
 import { WordState, normalizeWordState, safeStateLabel } from '../lib/constants/wordStates.js';
-import { getTokenInfo } from '../lib/data/dictionary.js';
+import { getTokenInfo, getGlossWithFallbacks } from '../lib/data/dictionary.js';
 import { useTranslation } from 'react-i18next';
 import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { apiFetch } from '../lib/services/apiFetch.js';
@@ -44,6 +44,23 @@ const SORT_LABELS: Record<SortKey, string> = {
 };
 
 const RTL_LANGS = new Set(['hbo', 'Biblical Hebrew', 'arc', 'Aramaic', 'syr', 'Syriac', 'Hebrew', 'egy']);
+
+// Lexicon fallback lookups walk the whole dictionary index, so remember the
+// answer per lemma — the list re-derives on every knowledge change.
+const glossCache = new Map<string, string>();
+function lexiconGloss(lemma: string, languageId: string): string {
+  const key = `${languageId}:${lemma}`;
+  const cached = glossCache.get(key);
+  if (cached !== undefined) return cached;
+  let gloss: string;
+  try {
+    gloss = getGlossWithFallbacks(lemma, languageId) ?? '';
+  } catch {
+    gloss = '';
+  }
+  glossCache.set(key, gloss);
+  return gloss;
+}
 
 function exportToCSV(
   words: {
@@ -143,8 +160,14 @@ export const Vocabulary = () => {
         const wordInfo = typeof info === 'object' ? (info as WordInfo) : ({ state: info } as unknown as WordInfo);
         const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview as any) : new Date();
         const tokenInfo = getTokenInfo(lemma);
-        const definition = wordInfo.userGloss || tokenInfo?.gloss || '';
         const langId = wordInfo.languageId || tokenInfo?.language || '';
+        // Meaning priority: the learner's own gloss, then the bundled token
+        // gloss, then the per-language lexicons (same chain the reader uses).
+        const definition =
+          wordInfo.userGloss ||
+          tokenInfo?.gloss ||
+          (langId && langId !== 'unknown' ? lexiconGloss(lemma, langId) : '') ||
+          '';
         const langDisplay = langId ? getLanguageDisplayName(langId) || langId : getLanguageDisplayName('grc') || 'Greek';
 
         return {
@@ -275,22 +298,24 @@ export const Vocabulary = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [showExportMenu]);
 
+  const hasWords = allWords.length > 0;
+  const isFiltered = activeFilter !== 'All' || searchQuery.trim() !== '' || selectedLang !== 'all';
   const totalPages = Math.ceil(filteredWords.length / PAGE_SIZE);
   const pagedWords = filteredWords.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
   return (
     <div className="p-6 md:p-12 pt-safe-page max-w-5xl mx-auto font-sans min-h-screen">
       {/* Header */}
-      <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <header className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5 md:gap-6">
         <div>
-          <h2 className="text-[32px] font-serif font-light text-ink tracking-tight mb-2">
+          <h2 className="text-[28px] md:text-[32px] font-serif font-light text-ink tracking-tight mb-1 md:mb-2">
             {t('vocab.title', 'Vocabulary')}
           </h2>
           <p className="font-body text-[15px] italic text-ink2">
             {t('vocab.personalCollection', `Your personal collection of {{count}} tracked words`, { count: allWords.length })}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Export dropdown */}
           <div className="relative" ref={exportMenuRef}>
             <button
@@ -365,11 +390,11 @@ export const Vocabulary = () => {
         </div>
       </div>
 
-      {/* Review forecast */}
-      <ReviewForecast knowledge={knowledge} className="mb-8" />
+      {/* Review forecast — only meaningful once something is scheduled */}
+      {hasWords && <ReviewForecast knowledge={knowledge} className="mb-8" />}
 
       {/* Language tabs */}
-      {availableLanguages.length > 1 && (
+      {hasWords && availableLanguages.length > 1 && (
         <div className="flex gap-2 flex-wrap mb-6">
           <button
             onClick={() => setSelectedLang('all')}
@@ -401,6 +426,7 @@ export const Vocabulary = () => {
       )}
 
       {/* Filters + search + sort */}
+      {hasWords && (
       <div className="flex flex-col gap-4 mb-8 card p-4 bg-parch2/30 border-bdr/50 shadow-sm">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2">
@@ -471,6 +497,7 @@ export const Vocabulary = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* Word list */}
       <div className="flex flex-col gap-3 pb-20">
@@ -543,40 +570,69 @@ export const Vocabulary = () => {
                   </span>
                 )}
 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Always visible on touch screens (no hover), hover-revealed on desktop. */}
+                <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
                   <button
                     onClick={() => navigate(`/app/dictionary/${encodeURIComponent(word.languageId || 'grc')}/${encodeURIComponent(word.term)}`)}
-                    className="p-1.5 rounded text-muted hover:text-blue hover:bg-blue/5 transition-colors"
+                    className="p-2 md:p-1.5 rounded text-muted hover:text-blue hover:bg-blue/5 transition-colors"
                     title={t('vocab.openDictionary', 'Open dictionary')}
+                    aria-label={t('vocab.openDictionary', 'Open dictionary')}
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-4 h-4" aria-hidden />
                   </button>
                   <button
                     onClick={() => handleDelete(word.id)}
-                    className="p-1.5 rounded text-ruby/40 hover:text-ruby hover:bg-ruby/5 transition-colors"
-                    title="Remove from vocabulary"
+                    className="p-2 md:p-1.5 rounded text-ruby/40 hover:text-ruby hover:bg-ruby/5 transition-colors"
+                    title={t('vocab.removeWord', 'Remove from vocabulary')}
+                    aria-label={t('vocab.removeWord', 'Remove from vocabulary')}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" aria-hidden />
                   </button>
                 </div>
               </div>
             </motion.div>
           ))
-        ) : (
+        ) : !hasWords ? (
+          /* Nothing tracked yet — explain where words come from and send the
+             learner to the reader, which is the only place words get marked. */
           <EmptyState
             illustration="amphora"
-            heading={t('vocab.noWordsFound', 'No Words Found')}
+            heading={t('vocab.emptyHeading', 'Your word list starts in the reader')}
             description={t(
-              'vocab.noWordsFoundDesc',
-              'Read texts or import vocabulary to begin building your personal lexicon.'
+              'vocab.emptyDesc',
+              'Open any text, tap a word, and choose Seen, Learning or Known. Every word you mark is collected here with its meaning and review schedule.'
             )}
             action={
               <button
                 onClick={() => navigate('/app/library')}
-                className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 transition-opacity"
+                data-testid="vocab-open-reader"
+                className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2"
               >
-                {t('vocab.browseLibrary', 'Browse the library')}
+                <BookOpen className="w-4 h-4" aria-hidden />
+                {t('vocab.openReader', 'Open a text')}
               </button>
+            }
+          />
+        ) : (
+          /* Words exist but none match the active filter / search. */
+          <EmptyState
+            compact
+            illustration="amphora"
+            heading={t('vocab.noWordsFound', 'No Words Found')}
+            description={t('vocab.noMatchDesc', 'No words match this filter or search.')}
+            action={
+              isFiltered ? (
+                <button
+                  onClick={() => {
+                    setActiveFilter('All');
+                    setSearchQuery('');
+                    setSelectedLang('all');
+                  }}
+                  className="px-6 py-2.5 bg-ink text-white font-bold rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  {t('vocab.clearFilters', 'Clear filters')}
+                </button>
+              ) : undefined
             }
           />
         )}

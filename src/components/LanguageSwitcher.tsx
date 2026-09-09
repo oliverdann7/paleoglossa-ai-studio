@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Infinity as InfinityIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -144,13 +145,13 @@ export function LanguageSwitcher() {
               })}
             </div>
             <div className="border-t border-bdr/40 p-2">
-              <a
-                href="/app/subscription"
+              <Link
+                to="/app/subscription"
                 className="block w-full text-center text-[11px] font-bold text-blue hover:underline py-1"
                 onClick={() => setOpen(false)}
               >
                 Upgrade for unlimited saves
-              </a>
+              </Link>
             </div>
           </motion.div>
         )}

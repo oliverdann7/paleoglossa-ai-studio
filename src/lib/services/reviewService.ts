@@ -62,6 +62,34 @@ export interface ReviewSessionSummary {
   nextDueEstimate: string | null;
 }
 
+/** Map a `users/{uid}/vocabulary` document into the shape the review screen consumes. */
+function toReviewItem(id: string, data: any, languageId: string | undefined, now: string): ReviewItem {
+  return {
+    id,
+    term: data.term,
+    languageId: data.languageId || languageId || 'unknown',
+    userGloss: data.userGloss,
+    contexts: data.contexts,
+    notes: data.notes,
+    status: data.status,
+    srs: {
+      interval: data.interval || 0,
+      ease: data.ease || 2.5,
+      step: data.step || 0,
+      lastReviewed: data.lastReviewed || null,
+      nextReview: data.nextReview || now,
+      fsrsStability: data.fsrsStability ?? undefined,
+      fsrsDifficulty: data.fsrsDifficulty ?? undefined,
+    },
+    surface: data.surface,
+    morphology: data.morphology,
+    transliteration: data.transliteration,
+    textId: data.textId,
+    sentenceIndex: data.sentenceIndex,
+    sentenceTranslation: data.sentenceTranslation,
+  };
+}
+
 export class ReviewService {
   static async getDueItems(
     userId: string,
@@ -72,38 +100,13 @@ export class ReviewService {
     const now = new Date().toISOString();
     const REVIEWABLE = [WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN];
 
-    const toItem = (id: string, data: any): ReviewItem => ({
-      id,
-      term: data.term,
-      languageId: data.languageId || languageId || 'unknown',
-      userGloss: data.userGloss,
-      contexts: data.contexts,
-      notes: data.notes,
-      status: data.status,
-      srs: {
-        interval: data.interval || 0,
-        ease: data.ease || 2.5,
-        step: data.step || 0,
-        lastReviewed: data.lastReviewed || null,
-        nextReview: data.nextReview || now,
-        fsrsStability: data.fsrsStability ?? undefined,
-        fsrsDifficulty: data.fsrsDifficulty ?? undefined,
-      },
-      surface: data.surface,
-      morphology: data.morphology,
-      transliteration: data.transliteration,
-      textId: data.textId,
-      sentenceIndex: data.sentenceIndex,
-      sentenceTranslation: data.sentenceTranslation,
-    });
-
     const collect = (snap: any, filterLang: boolean): ReviewItem[] => {
       const items: ReviewItem[] = [];
       snap.forEach((d: any) => {
         const data = d.data();
         if (!REVIEWABLE.includes(data.status)) return;
         if (filterLang && languageId && data.languageId !== languageId) return;
-        items.push(toItem(d.id, data));
+        items.push(toReviewItem(d.id, data, languageId, now));
       });
       return items;
     };
@@ -139,6 +142,54 @@ export class ReviewService {
       return collect(snap, true).slice(0, count);
     } catch (e) {
       console.error('Error fetching due items', e);
+      return [];
+    }
+  }
+
+  /**
+   * Every reviewable word (LEARNING / FAMILIAR / KNOWN) regardless of its due
+   * date — the "practice ahead" queue offered when nothing is due yet. Words
+   * that are actually due are listed first so a short session still covers them.
+   */
+  static async getReviewableItems(
+    userId: string,
+    count: number = 50,
+    languageId?: string
+  ): Promise<ReviewItem[]> {
+    const vocabRef = collection(db, `users/${userId}/vocabulary`);
+    const now = new Date().toISOString();
+    const REVIEWABLE: string[] = [WordState.LEARNING, WordState.FAMILIAR, WordState.KNOWN];
+
+    const collect = (snap: any, filterLang: boolean): ReviewItem[] => {
+      const items: ReviewItem[] = [];
+      snap.forEach((d: any) => {
+        const data = d.data();
+        if (!REVIEWABLE.includes(data.status)) return;
+        if (filterLang && languageId && data.languageId !== languageId) return;
+        items.push(toReviewItem(d.id, data, languageId, now));
+      });
+      return items.sort((a, b) => a.srs.nextReview.localeCompare(b.srs.nextReview));
+    };
+
+    // Equality-only filters (== and `in`) are served by merged single-field
+    // indexes, so this path needs no composite index and never hits the
+    // FAILED_PRECONDITION the due-items query can. Filtering on status server-
+    // side matters: the collection also holds NEW/SEEN docs, which would
+    // otherwise crowd reviewable words out of the limited page.
+    try {
+      const snap = languageId
+        ? await getDocs(
+            query(
+              vocabRef,
+              where('languageId', '==', languageId),
+              where('status', 'in', REVIEWABLE),
+              limit(count * 3)
+            )
+          )
+        : await getDocs(query(vocabRef, where('status', 'in', REVIEWABLE), limit(count * 3)));
+      return collect(snap, false).slice(0, count);
+    } catch (e) {
+      console.error('Error fetching reviewable items', e);
       return [];
     }
   }
