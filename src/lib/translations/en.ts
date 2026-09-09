@@ -612,7 +612,6 @@ export const en = {
       'Reviews are built from the words you mark while reading. Open a text, tap a word and choose Learning or Known — it will show up here on its schedule.',
     'review.openLibrary': 'Open the Library',
     'review.seeWords': 'See my words',
-    'review.nothingYet': 'Nothing to review yet',
     'review.sessionComplete': 'Session Complete!',
     'review.greatWork': 'Great work! You reviewed {{count}} cards.',
     'review.correct': 'Correct',
