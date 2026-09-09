@@ -45,7 +45,7 @@ import { LanguageOptionGrid } from '../components/ActiveLanguagePicker.js';
 export const Settings = () => {
   const navigate = useNavigate();
   const { settings, updateSettings } = useSettings();
-  const { exportData, stats } = useKnowledge();
+  const { exportData, stats, knowledge } = useKnowledge();
   const { subscription, setDesiredSecondLanguage } = useSubscription();
   const allLanguages = getAvailableLanguages();
   const { user, profile, refreshProfile } = useAuth();
@@ -230,7 +230,7 @@ export const Settings = () => {
               </>
             )}
           </p>
-          <LanguageOptionGrid />
+          <LanguageOptionGrid knowledge={knowledge} />
         </section>
 
         {/* ── Privacy ────────────────────────────────────────────────────── */}

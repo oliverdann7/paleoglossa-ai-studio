@@ -600,6 +600,10 @@ export const en = {
     'review.nothingDueDesc':
       'You have {{count}} words in your schedule. Spaced repetition waits until a memory starts to fade, but you can practice ahead whenever you like.',
     'review.nextDue': 'Next review: {{when}}',
+    'review.dueWithinHour': 'within the hour',
+    'review.dueInHours': 'in {{count}} hours',
+    'review.dueTomorrow': 'tomorrow',
+    'review.dueInDays': 'in {{count}} days',
     'review.practiceAhead': 'Practice ahead',
     'review.practicingAhead': 'Practicing ahead of schedule',
     'review.backToDue': 'Only due words',

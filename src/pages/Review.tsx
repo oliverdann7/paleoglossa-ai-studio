@@ -81,15 +81,17 @@ function formatDuration(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
+type Translate = (key: string, fallback: string, options?: Record<string, unknown>) => string;
+
 /** Human-readable "when is the next card due" for the empty start screen. */
-function formatNextDue(date: Date): string {
+function formatNextDue(date: Date, t: Translate): string {
   const diffMs = date.getTime() - Date.now();
   const hours = Math.ceil(diffMs / 3_600_000);
-  if (hours <= 1) return 'within the hour';
-  if (hours < 24) return `in ${hours} hours`;
+  if (hours <= 1) return t('review.dueWithinHour', 'within the hour');
+  if (hours < 24) return t('review.dueInHours', 'in {{count}} hours', { count: hours });
   const days = Math.round(hours / 24);
-  if (days === 1) return 'tomorrow';
-  if (days < 14) return `in ${days} days`;
+  if (days === 1) return t('review.dueTomorrow', 'tomorrow');
+  if (days < 14) return t('review.dueInDays', 'in {{count}} days', { count: days });
   return date.toLocaleDateString();
 }
 
@@ -111,7 +113,12 @@ export const Review = () => {
   const [searchParams] = useSearchParams();
   const { user, isDemoMode } = useAuth();
   const { activeLanguageId } = useActiveLanguage();
-  const { knowledge, updateWordSRS, recordReviewSession } = useKnowledge(activeLanguageId);
+  const {
+    knowledge,
+    updateWordSRS,
+    recordReviewSession,
+    isLoading: knowledgeLoading,
+  } = useKnowledge(activeLanguageId);
   const { t } = useTranslation();
   const { awardXP } = useXP();
 
@@ -165,6 +172,9 @@ export const Review = () => {
   // Offered on the start screen when the due queue is empty so the tab is
   // never a dead end for a learner who has words but no fading memories yet.
   const [practiceAhead, setPracticeAhead] = useState(false);
+  // Bumped when a session ends so the next start screen reloads the queue
+  // against the updated schedule instead of re-offering the cards just rated.
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Local view of the schedule for the active language — drives the empty
   // states (nothing due vs. no words at all) without another Firestore read.
@@ -262,7 +272,6 @@ export const Review = () => {
               if (!info.srs?.nextReview) return true;
               return new Date(toDateStr(info.srs.nextReview)) <= new Date();
             })
-            .slice(0, settings.maxCards)
             .map(([lemma, info]) => {
               const srs: SRSState = info.srs
                 ? {
@@ -298,6 +307,7 @@ export const Review = () => {
           if (textFilter) {
             items = items.filter((item) => textFilter.lemmas.has(item.term));
           }
+          items = items.slice(0, settings.maxCards);
         }
 
         const cards = generateReviewCards(items, {
@@ -315,7 +325,7 @@ export const Review = () => {
       }
     };
     loadQueue();
-  }, [user, isDemoMode, activeLanguageId, settings, textFilter, practiceAhead]);
+  }, [user, isDemoMode, activeLanguageId, settings, textFilter, practiceAhead, reloadKey]);
 
   // The resumable snapshot offered on the start screen. Derived (not state) so
   // it stays in sync with the active language without a setState-in-effect; a
@@ -632,6 +642,9 @@ export const Review = () => {
     // Practice-ahead sessions start from the loaded queue; scheduled sessions
     // from the due count, matching the previous behaviour.
     const canStart = practiceAhead ? queue.length > 0 : dueCount > 0;
+    // The empty-state cards read the local schedule; hold them until both the
+    // Firestore summary and the vocabulary map are in, or they flash "no words".
+    const scheduleReady = !isLoading && !!reviewSummary && !knowledgeLoading;
     return (
       <div className="p-6 md:p-12 pt-safe-page max-w-2xl mx-auto font-sans min-h-screen">
         <div className="flex items-center justify-between mb-8">
@@ -775,7 +788,7 @@ export const Review = () => {
         )}
 
         {/* Empty-queue guidance: the tab must never be a dead end. */}
-        {!isLoading && reviewSummary && dueCount === 0 && !practiceAhead && scheduled.count > 0 && (
+        {scheduleReady && dueCount === 0 && !practiceAhead && scheduled.count > 0 && (
           <div
             className="card p-5 mb-6 border border-bdr bg-parch2/40"
             data-testid="review-nothing-due"
@@ -796,7 +809,7 @@ export const Review = () => {
                 {scheduled.nextDue && (
                   <p className="text-[12px] text-muted mt-2">
                     {t('review.nextDue', 'Next review: {{when}}', {
-                      when: formatNextDue(scheduled.nextDue),
+                      when: formatNextDue(scheduled.nextDue, t),
                     })}
                   </p>
                 )}
@@ -805,7 +818,7 @@ export const Review = () => {
           </div>
         )}
 
-        {!isLoading && reviewSummary && dueCount === 0 && scheduled.count === 0 && (
+        {scheduleReady && dueCount === 0 && scheduled.count === 0 && (
           <div
             className="card p-5 mb-6 border border-bdr bg-parch2/40"
             data-testid="review-no-words"
@@ -869,7 +882,7 @@ export const Review = () => {
             : practiceAhead
               ? t('review.practiceWithCount', 'Practice {{count}} cards', { count: queue.length })
               : dueCount === 0
-                ? scheduled.count > 0
+                ? scheduled.count > 0 || knowledgeLoading
                   ? t('review.allCaughtUp', 'All caught up!')
                   : t('review.nothingYet', 'Nothing to review yet')
                 : t('review.startWithCount', 'Start Review ({{count}} cards)', {
@@ -877,7 +890,7 @@ export const Review = () => {
                   })}
         </button>
 
-        {!isLoading && dueCount === 0 && !practiceAhead && scheduled.count > 0 && (
+        {scheduleReady && dueCount === 0 && !practiceAhead && scheduled.count > 0 && (
           <button
             onClick={() => setPracticeAhead(true)}
             data-testid="review-practice-ahead"
@@ -955,6 +968,8 @@ export const Review = () => {
               setQueue([]);
               setCurrentCardIndex(0);
               setSessionResults([]);
+              setPracticeAhead(false);
+              setReloadKey((k) => k + 1);
             }}
             className="w-full py-4 bg-blue text-white font-bold rounded-2xl hover:bg-blue/90 active:scale-[0.98] transition-all shadow-lg"
           >

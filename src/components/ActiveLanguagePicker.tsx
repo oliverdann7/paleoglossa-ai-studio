@@ -6,11 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
-import { useVocabulary } from '../lib/hooks/useVocabulary.js';
 import { countTrackedWords } from '../lib/hooks/useVocabLimit.js';
 import { isLanguageUnlocked, FREE_LANGUAGE_WORD_LIMIT } from '../lib/constants/plans.js';
 import { getLanguageIcon } from '../lib/constants/languages.js';
 import type { Language } from '../lib/constants/languages.js';
+import type { KnowledgeMap } from '../lib/services/vocabularyService.js';
 
 /**
  * Study-language selection, shared by every surface that lets the user switch
@@ -41,14 +41,20 @@ function corpusStatusLabel(status: Language['corpusStatus'], t: (k: string, d: s
 interface LanguageOptionGridProps {
   /** Called after the active language has been changed. */
   onSelected?: (languageId: string) => void;
+  /**
+   * The host page's already-loaded vocabulary map, used only to show the
+   * per-language "n/25 words saved" hint on capped plans. Passed in rather
+   * than loaded here so opening the picker never triggers a second fetch of
+   * the whole collection; omit it and the hint is simply not shown.
+   */
+  knowledge?: KnowledgeMap;
   className?: string;
 }
 
-export function LanguageOptionGrid({ onSelected, className }: LanguageOptionGridProps) {
+export function LanguageOptionGrid({ onSelected, knowledge, className }: LanguageOptionGridProps) {
   const { t } = useTranslation();
   const { activeLanguageId, setActiveLanguageId, availableLanguages } = useActiveLanguage();
   const { subscription } = useSubscription();
-  const { knowledge } = useVocabulary();
 
   return (
     <div
@@ -63,7 +69,7 @@ export function LanguageOptionGrid({ onSelected, className }: LanguageOptionGrid
           subscription.selectedLanguageIds,
           lang.id
         );
-        const saved = unlocked ? 0 : countTrackedWords(knowledge, lang.id);
+        const saved = unlocked || !knowledge ? 0 : countTrackedWords(knowledge, lang.id);
         const comingSoon = lang.corpusStatus === 'coming_soon';
 
         return (
@@ -125,9 +131,10 @@ export function LanguageOptionGrid({ onSelected, className }: LanguageOptionGrid
 interface LanguagePickerSheetProps {
   open: boolean;
   onClose: () => void;
+  knowledge?: KnowledgeMap;
 }
 
-export function LanguagePickerSheet({ open, onClose }: LanguagePickerSheetProps) {
+export function LanguagePickerSheet({ open, onClose, knowledge }: LanguagePickerSheetProps) {
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -191,7 +198,7 @@ export function LanguagePickerSheet({ open, onClose }: LanguagePickerSheetProps)
               </button>
             </div>
             <div className="overflow-y-auto p-4 pb-safe">
-              <LanguageOptionGrid onSelected={onClose} />
+              <LanguageOptionGrid onSelected={onClose} knowledge={knowledge} />
             </div>
           </motion.div>
         </div>
@@ -204,10 +211,15 @@ export function LanguagePickerSheet({ open, onClose }: LanguagePickerSheetProps)
 interface ActiveLanguageChipProps {
   /** `chip` — compact pill (Home header). `row` — full-width list row (More page). */
   variant?: 'chip' | 'row';
+  knowledge?: KnowledgeMap;
   className?: string;
 }
 
-export function ActiveLanguageChip({ variant = 'chip', className }: ActiveLanguageChipProps) {
+export function ActiveLanguageChip({
+  variant = 'chip',
+  knowledge,
+  className,
+}: ActiveLanguageChipProps) {
   const { t } = useTranslation();
   const { activeLanguageId, currentLanguage } = useActiveLanguage();
   const [open, setOpen] = useState(false);
@@ -262,7 +274,7 @@ export function ActiveLanguageChip({ variant = 'chip', className }: ActiveLangua
           </span>
         </button>
       )}
-      <LanguagePickerSheet open={open} onClose={() => setOpen(false)} />
+      <LanguagePickerSheet open={open} onClose={() => setOpen(false)} knowledge={knowledge} />
     </>
   );
 }

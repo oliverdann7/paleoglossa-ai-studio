@@ -328,8 +328,21 @@ export const Dashboard = () => {
             </p>
             {/* Mobile: the study language is switchable right from the greeting.
                 Desktop has the sidebar switcher, so this is hidden there. */}
-            <div className="mt-3 md:hidden">
-              <ActiveLanguageChip />
+            <div className="mt-3 md:hidden flex flex-wrap items-center gap-2">
+              <ActiveLanguageChip knowledge={knowledge} />
+              {/* The streak-freeze control used to live in the mobile stat strip;
+                  keep it reachable on phones now that the strip is gone. */}
+              {canSabbatical && (
+                <button
+                  onClick={handleSabbatical}
+                  title={t('dashboard.sabbaticalTitle', 'Declare a sabbatical day')}
+                  aria-label={t('dashboard.sabbaticalTitle', 'Declare a sabbatical day')}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white border border-bdr text-blue/80 text-[11px] font-bold shadow-sm active:scale-[0.98] transition-transform tabular-nums"
+                >
+                  <Snowflake className="w-3.5 h-3.5" aria-hidden />
+                  {freezesAvailable}/{stats.freezesTotal ?? 2}
+                </button>
+              )}
             </div>
           </div>
 
