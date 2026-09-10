@@ -181,6 +181,7 @@ export const Review = () => {
   const scheduled = useMemo(() => {
     const now = new Date();
     let count = 0;
+    let due = 0;
     let nextDue: Date | null = null;
     for (const info of Object.values(knowledge)) {
       if (!info || typeof info !== 'object') continue;
@@ -191,12 +192,15 @@ export const Review = () => {
       if (lang && lang !== activeLanguageId) continue;
       count++;
       const next = (info as WordInfo).srs?.nextReview;
-      if (next) {
-        const d = new Date(toDateStr(next));
-        if (d > now && (!nextDue || d < nextDue)) nextDue = d;
+      if (!next) {
+        due++;
+        continue;
       }
+      const d = new Date(toDateStr(next));
+      if (d <= now) due++;
+      else if (!nextDue || d < nextDue) nextDue = d;
     }
-    return { count, nextDue };
+    return { count, due, nextDue };
   }, [knowledge, activeLanguageId]);
 
   const sessionStartRef = useRef<number>(0);
@@ -213,33 +217,38 @@ export const Review = () => {
     { cardType: string; failRate: number; count: number }[]
   >([]);
 
-  // Load analytics on mount
+  // Demo / guest mode: the summary is the local schedule. It is derived from
+  // the reactive knowledge map (not a ref read at mount) because the
+  // vocabulary loads asynchronously — reading the ref once left the due count
+  // at 0 for guests who did have words due.
+  const isLocalMode = !user || isDemoMode;
   useEffect(() => {
-    if (!user || isDemoMode) {
-      // Demo mode: compute from local knowledge
-      const due = Object.entries(knowledgeRef.current).filter(([, info]: [string, WordInfo]) => {
-        const state = typeof info === 'string' ? info : info.state;
-        if (state === WordState.NEW || state === WordState.IGNORED) return false;
-        const lang = typeof info === 'object' ? info.languageId || '' : '';
-        if (lang && lang !== activeLanguageId) return false;
-        if (!info.srs?.nextReview) return true;
-        return new Date(toDateStr(info.srs.nextReview)) <= new Date();
-      });
-      setReviewSummary({
-        dueCount: due.length,
-        reviewedToday: 0,
-        lastAccuracy: null,
-        avgResponseMs: null,
-      });
-      return;
-    }
+    if (!isLocalMode) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReviewSummary({
+      dueCount: scheduled.due,
+      reviewedToday: 0,
+      lastAccuracy: null,
+      avgResponseMs: null,
+    });
+  }, [isLocalMode, scheduled.due]);
+
+  // Signed-in: analytics come from Firestore once per language.
+  useEffect(() => {
+    if (!user || isDemoMode) return;
     ReviewService.getReviewSummary(user.uid, activeLanguageId).then(setReviewSummary);
     ReviewService.getWeakLemmas(user.uid, activeLanguageId).then(setWeakLemmas);
     ReviewService.getWeakCardTypes(user.uid, activeLanguageId).then(setWeakCardTypes);
   }, [user, isDemoMode, activeLanguageId]);
 
+  // In local mode the queue is built from the knowledge map, so hold the load
+  // until that map is in. For signed-in users the queue comes from Firestore
+  // directly, so this is a constant `true` and never re-triggers the load.
+  const localQueueReady = !isLocalMode || !knowledgeLoading;
+
   // Load Review Queue
   useEffect(() => {
+    if (!localQueueReady) return;
     const loadQueue = async () => {
       setIsLoading(true);
       try {
@@ -325,7 +334,16 @@ export const Review = () => {
       }
     };
     loadQueue();
-  }, [user, isDemoMode, activeLanguageId, settings, textFilter, practiceAhead, reloadKey]);
+  }, [
+    user,
+    isDemoMode,
+    activeLanguageId,
+    settings,
+    textFilter,
+    practiceAhead,
+    reloadKey,
+    localQueueReady,
+  ]);
 
   // The resumable snapshot offered on the start screen. Derived (not state) so
   // it stays in sync with the active language without a setState-in-effect; a
@@ -645,6 +663,7 @@ export const Review = () => {
     // The empty-state cards read the local schedule; hold them until both the
     // Firestore summary and the vocabulary map are in, or they flash "no words".
     const scheduleReady = !isLoading && !!reviewSummary && !knowledgeLoading;
+    const pageLoading = isLoading || (isLocalMode && knowledgeLoading);
     return (
       <div className="p-6 md:p-12 pt-safe-page max-w-2xl mx-auto font-sans min-h-screen">
         <div className="flex items-center justify-between mb-8">
@@ -873,18 +892,16 @@ export const Review = () => {
 
         <button
           onClick={handleStart}
-          disabled={isLoading || !canStart}
+          disabled={pageLoading || !canStart}
           data-testid="review-start"
           className="w-full py-4 bg-blue text-white font-bold rounded-2xl text-[16px] hover:bg-blue/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
-          {isLoading
+          {pageLoading
             ? t('review.loading', 'Loading…')
             : practiceAhead
               ? t('review.practiceWithCount', 'Practice {{count}} cards', { count: queue.length })
               : dueCount === 0
-                ? scheduled.count > 0 || knowledgeLoading
-                  ? t('review.allCaughtUp', 'All caught up!')
-                  : t('review.nothingYet', 'Nothing to review yet')
+                ? t('review.allCaughtUp', 'All caught up!')
                 : t('review.startWithCount', 'Start Review ({{count}} cards)', {
                     count: queue.length,
                   })}
@@ -1048,7 +1065,10 @@ export const Review = () => {
           </p>
         )}
         <div className="flex items-start gap-3 mb-6">
-          <h3 className="text-[28px] font-serif font-bold text-ink leading-snug flex-1">
+          <h3
+            data-testid="card-front"
+            className="text-[28px] font-serif font-bold text-ink leading-snug flex-1"
+          >
             {currentCard.question}
           </h3>
           {isReviewAudioSupported(currentCard.languageId) &&

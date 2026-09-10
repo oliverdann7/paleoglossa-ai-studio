@@ -42,7 +42,10 @@ test.describe('SRS review session', () => {
     await expect(page.getByText(/review/i).first()).toBeVisible({ timeout: 10_000 });
 
     // Start button is enabled and shows the card count
-    const startButton = page.getByRole('button').filter({ hasText: /start review/i }).first();
+    const startButton = page
+      .getByRole('button')
+      .filter({ hasText: /start review/i })
+      .first();
     await expect(startButton).toBeVisible({ timeout: 10_000 });
     await expect(startButton).toBeEnabled();
   });
@@ -54,7 +57,10 @@ test.describe('SRS review session', () => {
     await page.goto('/app/review');
 
     // Start the session
-    const startButton = page.getByRole('button').filter({ hasText: /start review/i }).first();
+    const startButton = page
+      .getByRole('button')
+      .filter({ hasText: /start review/i })
+      .first();
     await expect(startButton).toBeEnabled({ timeout: 10_000 });
     await startButton.click();
 
@@ -63,7 +69,10 @@ test.describe('SRS review session', () => {
     await expect(cardFace).toBeVisible({ timeout: 10_000 });
 
     // "Show Answer" button is present before reveal
-    const showAnswerBtn = page.getByRole('button').filter({ hasText: /show answer/i }).first();
+    const showAnswerBtn = page
+      .getByRole('button')
+      .filter({ hasText: /show answer/i })
+      .first();
     await expect(showAnswerBtn).toBeVisible({ timeout: 10_000 });
     await showAnswerBtn.click();
 
@@ -78,22 +87,34 @@ test.describe('SRS review session', () => {
 
     await page.goto('/app/review');
 
-    const startButton = page.getByRole('button').filter({ hasText: /start review/i }).first();
+    const startButton = page
+      .getByRole('button')
+      .filter({ hasText: /start review/i })
+      .first();
     await expect(startButton).toBeEnabled({ timeout: 10_000 });
     await startButton.click();
 
     // Show answer
-    const showAnswerBtn = page.getByRole('button').filter({ hasText: /show answer/i }).first();
+    const showAnswerBtn = page
+      .getByRole('button')
+      .filter({ hasText: /show answer/i })
+      .first();
     await expect(showAnswerBtn).toBeVisible({ timeout: 10_000 });
     await showAnswerBtn.click();
 
     // Click the first rating button (e.g. "Easy" or "Good")
-    const firstRatingBtn = page.getByRole('button').filter({ hasText: /easy|good/i }).first();
+    const firstRatingBtn = page
+      .getByRole('button')
+      .filter({ hasText: /easy|good/i })
+      .first();
     await expect(firstRatingBtn).toBeVisible({ timeout: 10_000 });
     await firstRatingBtn.click();
 
     // After rating the only card, should show either another card or the finished screen
-    const finishedOrNextCard = page.getByText(/session complete|great work|all caught up|show answer/i);
+    // The finished screen is the scribal colophon ("Explicit feliciter" / "Review Again").
+    const finishedOrNextCard = page.getByText(
+      /session complete|great work|all caught up|show answer|explicit feliciter|review again/i
+    );
     await expect(finishedOrNextCard.first()).toBeVisible({ timeout: 10_000 });
   });
 
