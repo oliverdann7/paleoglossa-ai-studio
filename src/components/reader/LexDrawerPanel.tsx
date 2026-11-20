@@ -276,9 +276,15 @@ export const LexDrawerPanel = memo(
     const glossTimerRef = useRef<number>(0);
     const noteSavedTimerRef = useRef<number>(0);
 
-    // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
+    // Compute once per selected word — avoids 5+ lookups in JSX. Read from the
+    // `knowledge` state itself: getWordInfo() reads a ref that is only synced
+    // in an effect, so during the render triggered by an edit it still returns
+    // the previous entry — which made the controlled gloss input drop input.
     const wordInfo = useMemo(
-      () => (selectedWord ? getWordInfo(selectedWord.lemma) : null),
+      () =>
+        selectedWord
+          ? (knowledge[normalizeLemmaKey(selectedWord.lemma)] ?? getWordInfo(selectedWord.lemma))
+          : null,
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [selectedWord?.lemma, knowledge]
     );
@@ -505,7 +511,8 @@ export const LexDrawerPanel = memo(
           label: sourceMeaning.sourceLabel,
           url: sourceMeaning.sourceUrl,
           aiGenerated: sourceMeaning.aiGenerated,
-          alreadyLocalized: !!sourceMeaning.localizedTo && sourceMeaning.localizedTo === uiGlossLang,
+          alreadyLocalized:
+            !!sourceMeaning.localizedTo && sourceMeaning.localizedTo === uiGlossLang,
         };
       }
       if (definitionLookup?.definition && definitionLookup.source !== GLOSS_SOURCES.USER_GLOSS) {
@@ -545,7 +552,8 @@ export const LexDrawerPanel = memo(
       t,
     ]);
 
-    const shouldLocalize = !!baseMeaning && !baseMeaning.isUserGloss && !baseMeaning.alreadyLocalized;
+    const shouldLocalize =
+      !!baseMeaning && !baseMeaning.isUserGloss && !baseMeaning.alreadyLocalized;
     const localizedMeaning = useLocalizedGloss(
       shouldLocalize ? selectedWord?.lemma : undefined,
       langId,

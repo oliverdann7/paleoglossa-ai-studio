@@ -1073,9 +1073,13 @@ const ReaderInner = () => {
   const handleWordClick = useCallback(
     (token: ReaderToken, sentenceText: string, sentenceIndex: number) => {
       setSelectedSentence(null);
-      setSelectedWord({ ...token, sentenceText, sentenceIndex });
-      incrementEncounter(token.lemma, currentLanguageId);
-      setWordContext(token.lemma, sentenceText, currentLanguageId);
+      // Served corpus tokens can lack a lemma (headings, unlemmatised words).
+      // Fall back to the surface form so their knowledge state and gloss are
+      // keyed per word instead of all collapsing onto the empty key.
+      const lemma = token.lemma || token.text;
+      setSelectedWord({ ...token, lemma, sentenceText, sentenceIndex });
+      incrementEncounter(lemma, currentLanguageId);
+      setWordContext(lemma, sentenceText, currentLanguageId);
       if (readingMode === 'page') setSentenceIndex(sentenceIndex);
       trackEvent(ANALYTICS_EVENTS.WORD_CLICKED, {
         languageId: currentLanguageId,
@@ -1554,11 +1558,15 @@ const ReaderInner = () => {
         <WordContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          lemma={contextMenu.token.lemma}
+          lemma={contextMenu.token.lemma || contextMenu.token.text}
           surface={contextMenu.token.text}
-          currentState={getWordInfo(contextMenu.token.lemma).state}
+          currentState={getWordInfo(contextMenu.token.lemma || contextMenu.token.text).state}
           onSetState={(state) => {
-            const saved = setWordState(contextMenu.token.lemma, state, currentLanguageId);
+            const saved = setWordState(
+              contextMenu.token.lemma || contextMenu.token.text,
+              state,
+              currentLanguageId
+            );
             if (!saved) {
               addToast(
                 `You've reached the ${vocabLimit.limit}-word save limit for this language. Upgrade for unlimited saves.`,
