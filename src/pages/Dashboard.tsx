@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
+import { displayLemma } from '../lib/services/vocabularyService.js';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
@@ -123,8 +124,9 @@ export const Dashboard = () => {
     let review = 0;
     const activeEntries: [string, any][] = [];
 
-    for (const [lemma, info] of Object.entries(knowledge)) {
+    for (const [key, info] of Object.entries(knowledge)) {
       if (info == null) continue;
+      const lemma = displayLemma(key, info as any);
       const i = typeof info === 'object' ? (info as any) : { state: info };
       const state: WordState = normalizeWordState(i.state);
       if (!state) continue;

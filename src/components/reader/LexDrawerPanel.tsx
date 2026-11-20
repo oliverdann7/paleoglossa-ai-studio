@@ -62,7 +62,7 @@ import {
 import { resolveMeaning, type ResolvedMeaning } from '@/lib/services/dictionaryResolver';
 import { getGrammarReference } from '@/lib/grammar/references';
 import { useNotebook } from '@/lib/hooks/useNotebook';
-import { normalizeLemmaKey } from '@/lib/utils/lemmaUtils';
+import { vocabKey } from '@/lib/vocabulary/identity';
 import { frequencyTier } from '@/lib/utils/frequencyTier';
 import { isUsefulGloss } from '@/lib/utils/lexicalHelper';
 import { getSourceTrust, type SourceTrustInfo } from '@/lib/utils/sourceTrust';
@@ -970,7 +970,7 @@ export const LexDrawerPanel = memo(
                       normalizedWordState === state ||
                       (normalizedWordState === WordState.NEW &&
                         state === WordState.NEW &&
-                        !knowledge[normalizeLemmaKey(selectedWord.lemma)]);
+                        !knowledge[vocabKey(selectedWord.lemma, textLanguageId)]);
 
                     return (
                       <button

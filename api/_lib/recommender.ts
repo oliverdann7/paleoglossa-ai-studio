@@ -10,7 +10,7 @@
  */
 
 import { CorpusDB } from '../../src/data/corpus.js';
-import { normalizeLemmaKey } from '../../src/lib/utils/lemmaUtils.js';
+import { normalizeLemma } from '../../src/lib/vocabulary/identity.js';
 import { WordState } from '../../src/lib/constants/wordStates.js';
 import { buildProfileFromSentences } from '../../src/lib/recommender/textProfiles.js';
 import {
@@ -142,7 +142,10 @@ export async function getKnownLemmas(
       (typeof data.normalizedTerm === 'string' && data.normalizedTerm) ||
       (typeof data.term === 'string' && data.term) ||
       '';
-    const key = normalizeLemmaKey(String(lemmaSource));
+    const key = normalizeLemma(
+      String(lemmaSource),
+      typeof data.languageId === 'string' ? data.languageId : languageId
+    );
     if (!key) return;
     if (role.known) known.add(key);
     else if (role.learning) learning.add(key);

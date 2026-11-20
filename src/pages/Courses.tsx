@@ -37,6 +37,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ImportService } from '../lib/services/importService.js';
 import { WordState } from '../lib/constants/wordStates.js';
 import { KnowledgeMap } from '../lib/services/vocabularyService.js';
+import { vocabKey } from '../lib/vocabulary/identity.js';
 import { CourseQuizModal } from '../components/courses/CourseQuizModal.js';
 import { PreDrillModal, DrillLemma } from '../components/courses/PreDrillModal.js';
 import { StatsService } from '../lib/services/statsService.js';
@@ -579,14 +580,14 @@ function CourseDetail({
       }
       const unknown = tokens.filter((t) => {
         if (!t.lemma) return true;
-        const info = knowledge[t.lemma.toLowerCase()];
+        const info = knowledge[vocabKey(t.lemma, course.languageId)];
         const state = info?.state ?? WordState.NEW;
         return state === WordState.NEW || state === WordState.SEEN;
       });
       result[assignment.textId] = Math.round((unknown.length / tokens.length) * 100);
     }
     return result;
-  }, [course.texts, importData, knowledge]);
+  }, [course.texts, course.languageId, importData, knowledge]);
 
   // Find the recommended next text: first incomplete with density <= 30% (or just first incomplete)
   const sortedTexts = course.texts.slice().sort((a, b) => a.order - b.order);
@@ -624,7 +625,7 @@ function CourseDetail({
       for (const s of imp.sentences) {
         for (const t of s.tokens) {
           if (t.type !== 'word' || !t.lemma || lemmaMap.has(t.lemma)) continue;
-          const info = knowledge[t.lemma.toLowerCase()];
+          const info = knowledge[vocabKey(t.lemma, course.languageId)];
           const state = (info?.state as WordState | undefined) ?? WordState.NEW;
           if (state !== WordState.KNOWN && state !== WordState.IGNORED) {
             lemmaMap.set(t.lemma, { lemma: t.lemma, gloss: (t as any).gloss || '', state });

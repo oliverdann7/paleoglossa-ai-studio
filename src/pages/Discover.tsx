@@ -10,7 +10,7 @@ import { getLanguageDisplayName } from '../lib/constants/languages.js';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '../components/Skeleton.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
-import { normalizeLemmaKey } from '../lib/utils/lemmaUtils.js';
+import { vocabKey } from '../lib/vocabulary/identity.js';
 import { WordState, normalizeWordState } from '../lib/constants/wordStates.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 
@@ -22,15 +22,14 @@ function computeKnownPct(text: ImportedText, knownSet: Set<string>): number {
   for (const sentence of text.sentences ?? []) {
     for (const token of sentence.tokens ?? []) {
       if (token.type === 'word') {
-        const key = normalizeLemmaKey(token.lemma || token.text || '');
-        if (key) lemmas.add(key);
+        const lemma = token.lemma || token.text || '';
+        if (lemma) lemmas.add(vocabKey(lemma, text.languageId));
       }
     }
   }
   if (lemmas.size === 0 && text.rawContent) {
     for (const word of text.rawContent.split(/[\s\p{P}]+/u)) {
-      const key = normalizeLemmaKey(word);
-      if (key.length > 1) lemmas.add(key);
+      if (word.length > 1) lemmas.add(vocabKey(word, text.languageId));
     }
   }
   if (lemmas.size === 0) return 0;
@@ -235,9 +234,9 @@ export function Discover() {
   const knownSet = useMemo<Set<string>>(() => {
     const s = new Set<string>();
     if (!knowledge) return s;
-    for (const [lemma, entry] of Object.entries(knowledge)) {
+    for (const [key, entry] of Object.entries(knowledge)) {
       const state = normalizeWordState(entry.state);
-      if (state !== WordState.NEW) s.add(normalizeLemmaKey(lemma));
+      if (state !== WordState.NEW) s.add(key);
     }
     return s;
   }, [knowledge]);

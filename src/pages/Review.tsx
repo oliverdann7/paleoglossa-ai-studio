@@ -35,7 +35,7 @@ import {
   type SavedReviewSession,
 } from '../lib/review/reviewSession.js';
 import { useTranslation } from 'react-i18next';
-import type { WordInfo } from '../lib/services/vocabularyService.js';
+import { displayLemma, type WordInfo } from '../lib/services/vocabularyService.js';
 import { Timestamp } from 'firebase/firestore';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 import { useXP } from '../lib/hooks/useXP.js';
@@ -281,7 +281,8 @@ export const Review = () => {
               if (!info.srs?.nextReview) return true;
               return new Date(toDateStr(info.srs.nextReview)) <= new Date();
             })
-            .map(([lemma, info]) => {
+            .map(([key, info]) => {
+              const lemma = displayLemma(key, info);
               const srs: SRSState = info.srs
                 ? {
                     interval: info.srs.interval,
@@ -298,7 +299,7 @@ export const Review = () => {
                     nextReview: new Date().toISOString(),
                   };
               return {
-                id: lemma,
+                id: key,
                 term: lemma,
                 languageId: info.languageId || activeLanguageId || 'unknown',
                 userGloss: info.userGloss,

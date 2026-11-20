@@ -135,9 +135,12 @@ describe('demo/guest mode — userId null', () => {
       );
       await VocabularyService.updateGloss(null, 'λόγος', 'word', 'grc');
 
+      // Guest entries are keyed by (language, lemma), like Firestore documents.
       const stored = JSON.parse(localStorage.getItem('paleoglossa_knowledge') ?? '{}');
-      expect(stored['λόγος'].userGloss).toBe('word');
-      expect(stored['λόγος'].state).toBe('SEEN');
+      expect(stored['grc:λογος'].userGloss).toBe('word');
+      expect(stored['grc:λογος'].state).toBe('SEEN');
+      expect(stored['grc:λογος'].lemma).toBe('λόγος');
+      expect(stored['λόγος']).toBeUndefined();
       expect(mockBatchSet).not.toHaveBeenCalled();
       expect(mockBatchCommit).not.toHaveBeenCalled();
     });
@@ -147,8 +150,8 @@ describe('demo/guest mode — userId null', () => {
       await VocabularyService.updateGloss(null, 'νέος', 'new', 'grc');
 
       const stored = JSON.parse(localStorage.getItem('paleoglossa_knowledge') ?? '{}');
-      expect(stored['νέος'].userGloss).toBe('new');
-      expect(stored['νέος'].languageId).toBe('grc');
+      expect(stored['grc:νεος'].userGloss).toBe('new');
+      expect(stored['grc:νεος'].languageId).toBe('grc');
     });
 
     it('returns empty map when localStorage is empty', async () => {

@@ -33,7 +33,7 @@ import { ImportedSentence } from '../types/firestore.js';
 import { LANGUAGES } from '../lib/constants/languages.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
-import { normalizeLemmaKey } from '../lib/utils/lemmaUtils.js';
+import { vocabKey } from '../lib/vocabulary/identity.js';
 import { computeAnalysisQuality } from '../lib/utils/analysisQuality.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
 
@@ -114,7 +114,7 @@ export const Import = () => {
     let newWords = 0;
 
     uniqueLemmas.forEach((lemma) => {
-      const info = knowledge[normalizeLemmaKey(lemma)];
+      const info = knowledge[vocabKey(lemma, languageId)];
       if (info) {
         const state = typeof info === 'string' ? info : info.state;
         if (state === WordState.KNOWN) knownWords++;
