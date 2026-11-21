@@ -16,10 +16,7 @@ test('library → reader → mark word', async ({ page }) => {
   await page.goto('/app/library');
 
   // The "Curated Library" tab is active by default; wait for a clickable text card
-  const firstTextCard = page
-    .locator('div.cursor-pointer')
-    .filter({ hasText: /.+/ })
-    .first();
+  const firstTextCard = page.locator('div.cursor-pointer').filter({ hasText: /.+/ }).first();
 
   await expect(firstTextCard).toBeVisible({ timeout: 10_000 });
 
@@ -47,7 +44,11 @@ test('library → reader → mark word', async ({ page }) => {
   await expect(seenButton).toBeVisible({ timeout: 10_000 });
   await seenButton.click();
 
-  // After marking, the button should become visually active (scale-105 class applied)
+  // A successful save closes the drawer (LexDrawerPanel calls setSelectedWord(null))
+  await expect(lexDrawer.getByText('Your Knowledge')).toBeHidden({ timeout: 10_000 });
+
+  // ── Step 6: Reopen the word → saved state is shown ──────────────────────
+  // The Seen button is now visually active (scale-105 class applied)
+  await firstWord.click();
   await page.waitForSelector('[data-testid="state-button-SEEN"].scale-105', { timeout: 10_000 });
 });
-

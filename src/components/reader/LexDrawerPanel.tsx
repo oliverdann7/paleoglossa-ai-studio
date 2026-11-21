@@ -274,6 +274,11 @@ export const LexDrawerPanel = memo(
 
     const [glossSaved, setGlossSaved] = useState(false);
     const glossTimerRef = useRef<number>(0);
+    // What the learner has typed into the gloss input, held locally. wordInfo
+    // comes from getWordInfo(), which reads a ref that only catches up after
+    // commit, so feeding the input from it alone reverted each edit to the
+    // previous value and dropped typed text.
+    const [glossDraft, setGlossDraft] = useState<{ lemma: string; value: string } | null>(null);
     const noteSavedTimerRef = useRef<number>(0);
 
     // Compute once per selected word — avoids 5+ getWordInfo calls in JSX
@@ -505,7 +510,8 @@ export const LexDrawerPanel = memo(
           label: sourceMeaning.sourceLabel,
           url: sourceMeaning.sourceUrl,
           aiGenerated: sourceMeaning.aiGenerated,
-          alreadyLocalized: !!sourceMeaning.localizedTo && sourceMeaning.localizedTo === uiGlossLang,
+          alreadyLocalized:
+            !!sourceMeaning.localizedTo && sourceMeaning.localizedTo === uiGlossLang,
         };
       }
       if (definitionLookup?.definition && definitionLookup.source !== GLOSS_SOURCES.USER_GLOSS) {
@@ -545,7 +551,8 @@ export const LexDrawerPanel = memo(
       t,
     ]);
 
-    const shouldLocalize = !!baseMeaning && !baseMeaning.isUserGloss && !baseMeaning.alreadyLocalized;
+    const shouldLocalize =
+      !!baseMeaning && !baseMeaning.isUserGloss && !baseMeaning.alreadyLocalized;
     const localizedMeaning = useLocalizedGloss(
       shouldLocalize ? selectedWord?.lemma : undefined,
       langId,
@@ -562,6 +569,7 @@ export const LexDrawerPanel = memo(
     const handleSaveAsTranslation = () => {
       if (!selectedWord || !displayMeaningText) return;
       updateGloss(selectedWord.lemma, displayMeaningText, langId);
+      setGlossDraft({ lemma: selectedWord.lemma, value: displayMeaningText });
       setGlossSaved(true);
       trackEvent(ANALYTICS_EVENTS.WORD_GLOSS_SAVED, {
         languageId: langId,
@@ -936,8 +944,13 @@ export const LexDrawerPanel = memo(
                   data-testid="gloss-input"
                   className="w-full bg-white border border-bdr/50 rounded-lg px-3 py-2 text-sm focus:border-blue outline-none"
                   placeholder={t('reader.yourGlossPlaceholder', 'Enter your own gloss...')}
-                  value={wordInfo?.userGloss || ''}
+                  value={
+                    glossDraft?.lemma === selectedWord.lemma
+                      ? glossDraft.value
+                      : wordInfo?.userGloss || ''
+                  }
                   onChange={(e) => {
+                    setGlossDraft({ lemma: selectedWord.lemma, value: e.target.value });
                     updateGloss(selectedWord.lemma, e.target.value, langId);
                     setGlossSaved(true);
                     trackEvent(ANALYTICS_EVENTS.WORD_GLOSS_SAVED, {

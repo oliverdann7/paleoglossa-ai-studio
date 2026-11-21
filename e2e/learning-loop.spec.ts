@@ -36,13 +36,28 @@ test('core learning loop', async ({ page }) => {
   // 7. User can mark word state as Seen/Known/Learning.
   const learningButton = page.getByTestId('state-button-LEARNING');
   await learningButton.click();
-  await page.waitForSelector('[data-testid="state-button-LEARNING"].scale-105', { timeout: 10_000 });
+  // A successful save closes the drawer; reopen the word to see the saved state
+  // (and that the gloss was kept).
+  await expect(learningButton).toBeHidden({ timeout: 10_000 });
+  await wordTokens.first().click();
+  await expect(glossInput).toHaveValue('Test Gloss');
+  await page.waitForSelector('[data-testid="state-button-LEARNING"].scale-105', {
+    timeout: 10_000,
+  });
 
   // 8. Review page shows a meaningful empty state or due-review state without crashing.
   await page.goto('/app/review');
-  await expect(page.getByText(/review/i)).toBeVisible();
+  //    Scope to <main>: the nav also says "Review", which made a bare text
+  //    match ambiguous. The word just marked Learning is due immediately.
+  const main = page.locator('main#main-content');
+  await expect(
+    main
+      .getByRole('button')
+      .filter({ hasText: /start review/i })
+      .first()
+  ).toBeVisible({ timeout: 10_000 });
 
   // 9. Statistics page loads and shows progress UI without crashing.
   await page.goto('/app/statistics');
-  await expect(page.getByText(/statistics/i)).toBeVisible();
+  await expect(main.getByText('Progress Analytics')).toBeVisible({ timeout: 10_000 });
 });

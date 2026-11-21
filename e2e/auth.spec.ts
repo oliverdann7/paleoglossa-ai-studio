@@ -20,7 +20,9 @@ test.describe('auth flows', () => {
   });
 
   test('auth page renders sign-in form', async ({ page }) => {
-    await page.goto('/auth');
+    // The sign-in form lives at /auth/login — bare /auth has no route and
+    // falls through to the landing page.
+    await page.goto('/auth/login');
 
     // Email and password inputs are present
     const emailInput = page.locator('input[type="email"]');
@@ -38,7 +40,7 @@ test.describe('auth flows', () => {
   });
 
   test('auth page has "continue as guest" option', async ({ page }) => {
-    await page.goto('/auth');
+    await page.goto('/auth/login');
 
     const guestButton = page
       .getByRole('button')

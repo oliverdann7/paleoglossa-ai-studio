@@ -549,7 +549,7 @@ export function ReadingPane({
                         sentenceIndex={sIdx}
                         readingMode={readingMode}
                         fontSize={fontSize}
-                        wordInfo={getWordInfo(token.lemma)}
+                        wordInfo={getWordInfo(token.lemma || token.text)}
                         isAudioActive={isAudioActive}
                         maskKnown={isFocusMode ? false : maskKnown}
                         highlightIntensity={highlightIntensity}
