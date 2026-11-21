@@ -81,6 +81,8 @@ interface Props {
   onNextPage: () => void;
   onNextChapter: () => void;
   onBackToLibrary: () => void;
+  /** Rendered once the reader reaches the end of the whole text (e.g. a next-reading card). */
+  endOfTextSlot?: React.ReactNode;
   onSwipe: (direction: 'left' | 'right') => void;
   currentScrollPage: number;
   totalPages: number;
@@ -326,6 +328,7 @@ export function ReadingPane({
   onNextPage,
   onNextChapter,
   onBackToLibrary,
+  endOfTextSlot,
   onSwipe,
   currentScrollPage,
   totalPages,
@@ -674,6 +677,9 @@ export function ReadingPane({
                       </h4>
                     </div>
                   )}
+                  {currentScrollPage >= totalPages - 1 &&
+                    currentChapterIndex >= totalChapters - 1 &&
+                    endOfTextSlot}
                   <div className="flex gap-4 flex-wrap justify-center">
                     <button
                       onClick={() => onMarkPageKnown()}
@@ -723,6 +729,12 @@ export function ReadingPane({
                 </div>
               </>
             )}
+            {readingMode === 'page' &&
+              endOfTextSlot &&
+              currentChapterIndex >= totalChapters - 1 &&
+              currentSentenceIndex >= sentences.length - 1 && (
+                <div className="mt-10 flex justify-center pb-16">{endOfTextSlot}</div>
+              )}
           </div>
         </div>
 

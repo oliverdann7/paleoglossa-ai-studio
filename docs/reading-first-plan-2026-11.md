@@ -81,3 +81,18 @@ are the reason to choose it, and Scholar view should lead with them.
 | 5 | Read / Study / Scholar switch over existing panels; translation mode control | |
 | 6 | "Next reading" after a section; goals; pathways for Koine, Latin, Hebrew | |
 | 7 | Import: confidence, corrections, status | |
+
+## Progress (2026-11-21)
+
+| Step | State |
+|---|---|
+| Vocabulary identity | Merged (#375) |
+| Stale Playwright specs, gloss input | Merged (#376) |
+| Corpus lemmas for Greek and Latin | Done — `scripts/corpus/lemmatize-served.ts`, see `docs/vocabulary-identity.md` |
+| Pathways (Koine, Latin, Hebrew) with a chosen destination | Done — `src/lib/reading/pathways.ts`, dashboard `PathwayCard` |
+| Next reading at the end of a text | Done — `src/lib/reading/nextReading.ts`, reader `NextReadingCard` |
+
+Pathway order is editorial and lives in one file. The chosen destination is stored per
+device (`paleoglossa_reading_goals`), not synced. Next-reading uses level, author and
+genre off the path; it does not yet use vocabulary coverage, because served texts carry
+no bundled tokens to measure against.

@@ -3,6 +3,9 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { TEXT_ID_REDIRECTS } from '../lib/constants/textRedirects.js';
 import { useTranslation } from 'react-i18next';
 import { CorpusDB } from '../data/corpus.js';
+import { pickNextReading } from '../lib/reading/nextReading.js';
+import { getReadingGoal } from '../lib/hooks/useReadingGoal.js';
+import { NextReadingCard } from '../components/reader/NextReadingCard.js';
 import { corpusService } from '../lib/services/corpusService.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useSettings } from '../lib/hooks/useSettings.js';
@@ -220,6 +223,7 @@ const ReaderInner = () => {
     incrementEncounter,
     updateGloss,
     getWordInfo: getWordInfoIn,
+    getAllProgress,
     fetchTextProgress,
     saveTextProgress,
     setWordContext,
@@ -727,6 +731,54 @@ const ReaderInner = () => {
       'Egyptian Hieroglyphs',
     ].includes(text?.language || '');
   const currentLanguageId = textLanguageId;
+
+  // What to offer when this text ends: the next pathway step, a text already
+  // begun, or the closest match. Corpus texts only — an import has no neighbours.
+  const [textProgress, setTextProgress] = useState<{ finished: Set<string>; started: Set<string> }>(
+    () => ({ finished: new Set(), started: new Set() })
+  );
+  useEffect(() => {
+    let active = true;
+    getAllProgress()
+      .then((items) => {
+        if (!active) return;
+        const finished = new Set<string>();
+        const started = new Set<string>();
+        for (const p of items ?? []) {
+          if (p.completed || (p.lastPosition ?? 0) >= 95) finished.add(p.textId);
+          else started.add(p.textId);
+        }
+        setTextProgress({ finished, started });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [getAllProgress, textId]);
+
+  const nextReading = useMemo(() => {
+    if (!text || sourceKind === 'import') return null;
+    const current = CorpusDB.getText(text.id);
+    if (!current) return null;
+    const candidates = CorpusDB.getTexts().filter((c) => !c.libraryHidden);
+    return pickNextReading(current, candidates, {
+      ...textProgress,
+      goalTextId: getReadingGoal(current.language),
+    });
+  }, [text, sourceKind, textProgress]);
+
+  const openNextReading = useCallback(
+    (id: string) => {
+      trackEvent(ANALYTICS_EVENTS.NEXT_READING_OPENED, {
+        languageId: textLanguageId,
+        fromTextId: textId,
+        toTextId: id,
+        reason: nextReading?.reason,
+      });
+      navigate(`/app/reader/${encodeURIComponent(id)}`);
+    },
+    [navigate, textLanguageId, textId, nextReading]
+  );
 
   // Track reader opened when text + chapters are first available
   const prevTrackedTextRef = useRef<string | null>(null);
@@ -1394,6 +1446,9 @@ const ReaderInner = () => {
           onNextPage={handleNextPage}
           onNextChapter={handleNextChapter}
           onBackToLibrary={onBack}
+          endOfTextSlot={
+            nextReading ? <NextReadingCard next={nextReading} onOpen={openNextReading} /> : undefined
+          }
           currentScrollPage={currentScrollPage}
           totalPages={totalPages}
           currentChapterIndex={currentChapterIndex}
