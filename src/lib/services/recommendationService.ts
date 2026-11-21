@@ -1,5 +1,6 @@
 import { LibraryText } from './libraryService.js';
 import { KnowledgeMap } from './vocabularyService.js';
+import { vocabKey } from '../vocabulary/identity.js';
 
 export interface RecommendedText extends LibraryText {
   recommendationScore: number;
@@ -223,9 +224,7 @@ export function pickDashboardRecommendation(
 ): { id: string; title: string; percentKnown: number } | null {
   const knownLemmas = new Set<string>();
   for (const [key, info] of Object.entries(knowledge)) {
-    if (info.state === 'KNOWN' || info.state === 'FAMILIAR') {
-      knownLemmas.add(key.toLowerCase());
-    }
+    if (info.state === 'KNOWN' || info.state === 'FAMILIAR') knownLemmas.add(key);
   }
 
   let best: { id: string; title: string; percentKnown: number; score: number } | null = null;
@@ -239,8 +238,8 @@ export function pickDashboardRecommendation(
 
     const lemmas = new Set<string>();
     for (const t of tokens) {
-      const l = (t.lemma || t.text || '').toLowerCase();
-      if (l) lemmas.add(l);
+      const l = t.lemma || t.text || '';
+      if (l) lemmas.add(vocabKey(l, text.language));
     }
     if (lemmas.size === 0) continue;
 

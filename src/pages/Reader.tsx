@@ -160,7 +160,10 @@ const ReaderInner = () => {
           tokens: (s.tokens ?? []).map((tok: any) => ({
             id: tok.id,
             text: tok.surface,
-            lemma: tok.lemma,
+            // Un-lemmatized tokens fall back to their surface form (the same
+            // convention imports and coverage use). An empty lemma would give
+            // every such word one shared vocabulary entry.
+            lemma: tok.lemma || tok.surface,
             gloss: tok.gloss,
             morphology:
               typeof tok.morphology === 'string'
@@ -216,12 +219,19 @@ const ReaderInner = () => {
     setWordNote,
     incrementEncounter,
     updateGloss,
-    getWordInfo,
+    getWordInfo: getWordInfoIn,
     fetchTextProgress,
     saveTextProgress,
     setWordContext,
     vocabLimit,
   } = useKnowledge(activeLanguageId);
+  // Word states are looked up in the language of the text on screen, which is
+  // not always the active language (deep links, cross-language recommendations).
+  const textLanguageId = text?.language || text?.languageId || 'unknown';
+  const getWordInfo = useCallback(
+    (lemma: string) => getWordInfoIn(lemma, textLanguageId),
+    [getWordInfoIn, textLanguageId]
+  );
 
   // Wrapped version that shows a paywall toast when the vocab limit blocks a save.
   // Returns true when the save was accepted/queued, false when blocked by the limit.
@@ -463,7 +473,7 @@ const ReaderInner = () => {
           tokens: s.tokens.map((t: any) => ({
             id: t.id,
             text: t.surface,
-            lemma: t.lemma,
+            lemma: t.lemma || t.surface,
             gloss: t.gloss,
             morphology:
               typeof t.morphology === 'string'
@@ -707,7 +717,7 @@ const ReaderInner = () => {
       'egy',
       'Egyptian Hieroglyphs',
     ].includes(text?.language || '');
-  const currentLanguageId = text?.language || text?.languageId || 'unknown';
+  const currentLanguageId = textLanguageId;
 
   // Track reader opened when text + chapters are first available
   const prevTrackedTextRef = useRef<string | null>(null);

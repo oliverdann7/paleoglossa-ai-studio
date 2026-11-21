@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { apiFetch } from '../lib/services/apiFetch.js';
 import { WordState, normalizeWordState } from '../lib/constants/wordStates.js';
-import type { KnowledgeMap } from '../lib/services/vocabularyService.js';
+import { displayLemma, type KnowledgeMap } from '../lib/services/vocabularyService.js';
 import { logSilentFailure } from '../lib/utils/logSilent.js';
 
 interface FreqEntry {
@@ -59,8 +59,9 @@ export function VocabFrequencyGoals({ knowledge, languageId }: Props) {
   // Build a set of lemmas the user actively knows (KNOWN, FAMILIAR, LEARNING)
   const knownLemmas = useMemo(() => {
     const s = new Set<string>();
-    for (const [lemma, info] of Object.entries(knowledge)) {
+    for (const [key, info] of Object.entries(knowledge)) {
       if (!info || typeof info !== 'object') continue;
+      const lemma = displayLemma(key, info);
       const wordInfo = info as { state?: string; languageId?: string };
       if (wordInfo.languageId && wordInfo.languageId !== languageId) continue;
       const state = normalizeWordState(wordInfo.state);

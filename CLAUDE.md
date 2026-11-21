@@ -88,6 +88,7 @@ var on in dev to work on them; promote a surface out of the gate once its conten
 - **React 19** — `react-hooks/exhaustive-deps` warnings are treated as errors in CI intent.
 - **No new top-level API files** — add routes as modules in `api/_routes/` and register in `api/index.ts`.
 - **Canonical types**: `src/types/corpus.ts` and `src/types/firestore.ts`. `src/types/library.ts` is legacy — do not add to it.
+- **Vocabulary identity**: read and write the user's vocabulary only through `vocabKey` / `vocabDocId` (`src/lib/vocabulary/identity.ts`), always with the language. `KnowledgeMap` keys are not displayable — show `info.lemma`. Never key by a bare lemma.
 - **Search before create**: always `find`/`grep` before adding a new service, hook, component, or type — duplicates are a recurring problem in this codebase.
 
 ---
@@ -193,6 +194,8 @@ For full morphology in bundled samples: use the richly-tokenized format (see `ca
 |------|---------|
 | `docs/PALEOGLOSSA_ROADMAP.md` | Technical roadmap; § 11 is the current audit-driven plan (2026-06) |
 | `docs/product-audit-2026-06.md` | Full product/engineering audit: scores, confirmed + refuted findings, quick wins |
+| `docs/vocabulary-identity.md` | How a vocabulary item is identified (language + normalized lemma), per-language rules, document IDs, repair/migration |
+| `docs/reading-first-plan-2026-11.md` | Review of the reading-first plan against current code; gap table and PR order |
 | `docs/reader-architecture.md` | Reader internals, token pipeline, knowledge state transitions |
 | `docs/ai-coding-guardrails.md` | AI safety, forbidden patterns, deployment checklist |
 | `docs/repo-health-audit.md` | Codebase quality assessment |

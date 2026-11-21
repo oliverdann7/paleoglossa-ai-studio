@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { displayLemma } from '../lib/services/vocabularyService.js';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '../components/ui/index.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
@@ -14,9 +15,10 @@ export const Notes = () => {
 
   const notesList = useMemo(() => {
     return Object.keys(knowledge)
-      .filter((lemma) => typeof knowledge[lemma] === 'object' && (knowledge[lemma] as any).notes)
-      .map((lemma) => {
-        const info = knowledge[lemma] as any;
+      .filter((key) => typeof knowledge[key] === 'object' && (knowledge[key] as any).notes)
+      .map((key) => {
+        const info = knowledge[key] as any;
+        const lemma = displayLemma(key, info);
         const dict = getTokenInfo(lemma);
         return {
           lemma,

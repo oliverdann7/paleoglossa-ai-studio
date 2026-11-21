@@ -9,7 +9,7 @@ import { useAuth } from './useAuth.js';
 import { useVocabLimit } from './useVocabLimit.js';
 import { isTrackedWordState } from '../constants/plans.js';
 import { usePublishVocabLimit } from '../contexts/VocabLimitContext.js';
-import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
+import { vocabKey } from '../vocabulary/identity.js';
 import type { ReadingContext } from '../review/readingContext.js';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './useToast.js';
@@ -71,7 +71,7 @@ export const useKnowledge = (languageId?: string) => {
       context?: string,
       extra?: Partial<ReadingContext>
     ): boolean => {
-      const previousState = vocab.getWordInfo(lemma).state;
+      const previousState = vocab.getWordInfo(lemma, langId).state;
 
       // Guard: block new tracked-word saves when the free-language limit is full.
       // Only blocks when ALL conditions hold:
@@ -129,8 +129,7 @@ export const useKnowledge = (languageId?: string) => {
         if (!token.lemma) return false;
         const lang = token.languageId || token.language || 'unknown';
         if (lang !== vocabLimit.languageId) return true; // non-current-language tokens pass through
-        const normKey = normalizeLemmaKey(token.lemma);
-        const existing = vocab.knowledge[normKey];
+        const existing = vocab.knowledge[vocabKey(token.lemma, lang)];
         return existing && isTrackedWordState(existing.state); // only already-tracked words
       });
       if (allowed.length > 0) vocab.markPageAsSeen(allowed);
@@ -138,10 +137,18 @@ export const useKnowledge = (languageId?: string) => {
     [vocab, vocabLimit]
   );
 
+  // Bound to this hook's language so callers reading one language's text can
+  // keep passing just the lemma; pass a language explicitly to look elsewhere.
+  const rawGetWordInfo = vocab.getWordInfo;
+  const getWordInfo = useCallback(
+    (lemma: string, langId?: string | null) => rawGetWordInfo(lemma, langId ?? languageId),
+    [rawGetWordInfo, languageId]
+  );
+
   return {
     knowledge: vocab.knowledge,
     knowledgeVersion: vocab.knowledgeVersion,
-    getWordInfo: vocab.getWordInfo,
+    getWordInfo,
     setWordState: setWordStateWithStats,
     updateWordSRS: vocab.updateWordSRS,
     setWordNote: vocab.setWordNote,

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
-import { WordInfo } from '../lib/services/vocabularyService.js';
+import { WordInfo, displayLemma } from '../lib/services/vocabularyService.js';
 import { WordState, normalizeWordState, safeStateLabel } from '../lib/constants/wordStates.js';
 import { getTokenInfo, getGlossWithFallbacks } from '../lib/data/dictionary.js';
 import { useTranslation } from 'react-i18next';
@@ -156,8 +156,9 @@ export const Vocabulary = () => {
         const state = normalizeWordState(typeof info === 'object' ? (info as any).state : info);
         return state !== WordState.NEW;
       })
-      .map(([lemma, info]) => {
+      .map(([key, info]) => {
         const wordInfo = typeof info === 'object' ? (info as WordInfo) : ({ state: info } as unknown as WordInfo);
+        const lemma = displayLemma(key, wordInfo);
         const nextReview = wordInfo.srs?.nextReview ? new Date(wordInfo.srs.nextReview as any) : new Date();
         const tokenInfo = getTokenInfo(lemma);
         const langId = wordInfo.languageId || tokenInfo?.language || '';
@@ -171,7 +172,7 @@ export const Vocabulary = () => {
         const langDisplay = langId ? getLanguageDisplayName(langId) || langId : getLanguageDisplayName('grc') || 'Greek';
 
         return {
-          id: lemma,
+          id: key,
           term: lemma,
           definition,
           translit: tokenInfo?.transliteration || '',
@@ -222,13 +223,14 @@ export const Vocabulary = () => {
     return () => { stale = true; };
   }, [selectedLang, availableLanguages]);
 
-  const handleDelete = (id: string) => setWordState(id, WordState.NEW);
+  const handleDelete = (term: string, languageId?: string) =>
+    setWordState(term, WordState.NEW, languageId || 'unknown');
 
   const handleCycleState = useCallback(
-    (id: string, currentState: WordState, languageId?: string) => {
+    (term: string, currentState: WordState, languageId?: string) => {
       const idx = STATE_CYCLE.indexOf(currentState);
       const nextState = STATE_CYCLE[(idx + 1) % STATE_CYCLE.length];
-      const saved = setWordState(id, nextState, languageId ?? 'unknown');
+      const saved = setWordState(term, nextState, languageId || 'unknown');
       if (!saved && !limitToastShown.current) {
         limitToastShown.current = true;
         addToast(
@@ -554,7 +556,7 @@ export const Vocabulary = () => {
               <div className="flex items-center gap-3 flex-shrink-0 md:pl-2">
                 {/* Inline state toggle */}
                 <button
-                  onClick={() => handleCycleState(word.id, word.rawState, word.languageId)}
+                  onClick={() => handleCycleState(word.term, word.rawState, word.languageId)}
                   className={cn(
                     'pill px-2.5 py-1 text-[10.5px] font-bold shadow-sm cursor-pointer hover:opacity-80 transition-opacity active:scale-95',
                     STATE_CLASSES[word.status] || ''
@@ -581,7 +583,7 @@ export const Vocabulary = () => {
                     <ExternalLink className="w-4 h-4" aria-hidden />
                   </button>
                   <button
-                    onClick={() => handleDelete(word.id)}
+                    onClick={() => handleDelete(word.term, word.languageId)}
                     className="p-2 md:p-1.5 rounded text-ruby/40 hover:text-ruby hover:bg-ruby/5 transition-colors"
                     title={t('vocab.removeWord', 'Remove from vocabulary')}
                     aria-label={t('vocab.removeWord', 'Remove from vocabulary')}

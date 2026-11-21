@@ -1,4 +1,5 @@
 import { getLangForLemma } from '../lib/data/dictionary.js';
+import { displayLemma } from '../lib/services/vocabularyService.js';
 import { format, subDays, parseISO } from 'date-fns';
 import { lazy, Suspense, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -200,8 +201,9 @@ export const Statistics = () => {
       egy: { label: 'Egyptian Hieroglyphs', known: 0, learning: 0, new: 0 },
     };
 
-    Object.entries(knowledge).forEach(([lemma, info]) => {
+    Object.entries(knowledge).forEach(([key, info]) => {
       const i = typeof info === 'object' ? info : { state: info };
+      const lemma = displayLemma(key, info as any);
       const dictLang = getLangForLemma(lemma);
       let lang = dictLang !== 'Unknown' ? dictLang : 'grc-koine';
       if (dictLang === 'Unknown') {

@@ -8,7 +8,7 @@ import {
 } from '../services/vocabularyService.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
 import { useAuth } from './useAuth.js';
-import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
+import { isIdentifiableLemma, vocabKey } from '../vocabulary/identity.js';
 import type { ReadingContext } from '../review/readingContext.js';
 
 // Stable singleton returned for any lemma not yet in the vocabulary.
@@ -45,8 +45,6 @@ export const useVocabulary = () => {
       // never prevents the vocabulary from loading.
       if (userId) {
         try {
-          await VocabularyService.migrateToLemmaKeys(userId);
-
           const localKnowledge = localStorage.getItem(STORAGE_KEYS.KNOWLEDGE);
           if (localKnowledge) {
             const hasData = Object.keys(JSON.parse(localKnowledge)).length > 0;
@@ -62,6 +60,15 @@ export const useVocabulary = () => {
 
       try {
         const dbVocab = await VocabularyService.getVocabulary(userId);
+        if (userId) {
+          // Storage-only: the map above is already keyed correctly. Awaited so
+          // no edit can race the move, and never allowed to block the load.
+          try {
+            await VocabularyService.repairVocabularyIdentity(userId);
+          } catch (repairErr) {
+            console.error('[useVocabulary] identity repair error (non-fatal):', repairErr);
+          }
+        }
         if (!active) return;
         setKnowledge(dbVocab);
       } catch (e: any) {
@@ -79,7 +86,8 @@ export const useVocabulary = () => {
 
   const setWordState = useCallback(
     (lemma: string, state: WordState, languageId: string = 'unknown', context?: string, extra?: Partial<ReadingContext>) => {
-      const normKey = normalizeLemmaKey(lemma);
+      if (!isIdentifiableLemma(lemma)) return;
+      const normKey = vocabKey(lemma, languageId);
       const current = knowledgeRef.current[normKey];
 
       // Compute initial SRS here so we can pass it to VocabularyService (Firestore
@@ -97,7 +105,7 @@ export const useVocabulary = () => {
 
       setKnowledge((prev) => {
         const curr = prev[normKey] || { addedAt: new Date().toISOString() };
-        const info: WordInfo = { ...curr, state, languageId };
+        const info: WordInfo = { ...curr, state, languageId, lemma: curr.lemma || lemma };
         if (context && (!info.contexts || !info.contexts.includes(context))) {
           info.contexts = [...(info.contexts || []), context].slice(-5);
         }
@@ -121,9 +129,9 @@ export const useVocabulary = () => {
 
   const updateWordSRS = useCallback(
     (lemma: string, srs: SRSData, state: WordState, languageId: string = 'unknown') => {
-      const normKey = normalizeLemmaKey(lemma);
+      const normKey = vocabKey(lemma, languageId);
       setKnowledge((prev) => {
-        const current = prev[normKey] || { addedAt: new Date().toISOString() };
+        const current = prev[normKey] || { addedAt: new Date().toISOString(), lemma };
         return { ...prev, [normKey]: { ...current, srs, state, languageId } };
       });
       bumpVersion();
@@ -136,15 +144,17 @@ export const useVocabulary = () => {
   // Stable reference — safe to pass as a prop or dep without causing re-renders.
   // Returns the same object reference per lemma unless that word's state changed,
   // so memo(ReaderToken) skips re-renders for unchanged words.
-  const getWordInfo = useCallback((lemma: string): WordInfo => {
-    return knowledgeRef.current[normalizeLemmaKey(lemma)] ?? NEW_WORD_INFO;
+  // The language is part of a word's identity: the same spelling in Hebrew
+  // and Aramaic, or Attic and Koine, is two vocabulary items.
+  const getWordInfo = useCallback((lemma: string, languageId?: string | null): WordInfo => {
+    return knowledgeRef.current[vocabKey(lemma, languageId)] ?? NEW_WORD_INFO;
   }, []);
 
   const markPageAsSeen = useCallback(
     (tokens: any[]) => {
       const newTokens = tokens.filter((token) => {
-        if (!token.lemma) return false;
-        const info = knowledgeRef.current[normalizeLemmaKey(token.lemma)];
+        if (!isIdentifiableLemma(token.lemma)) return false;
+        const info = knowledgeRef.current[vocabKey(token.lemma, token.languageId)];
         const state = info
           ? typeof info === 'object'
             ? (info as any).state
@@ -157,8 +167,8 @@ export const useVocabulary = () => {
       setKnowledge((prev) => {
         const next = { ...prev };
         newTokens.forEach((token) => {
-          const normKey = normalizeLemmaKey(token.lemma);
-          const current = next[normKey] || { addedAt: new Date().toISOString() };
+          const normKey = vocabKey(token.lemma, token.languageId);
+          const current = next[normKey] || { addedAt: new Date().toISOString(), lemma: token.lemma };
           next[normKey] = {
             ...current,
             state: WordState.KNOWN,
@@ -183,12 +193,13 @@ export const useVocabulary = () => {
 
   const setWordNote = useCallback(
     (lemma: string, notes: string, languageId: string = 'unknown') => {
-      const normKey = normalizeLemmaKey(lemma);
+      const normKey = vocabKey(lemma, languageId);
       setKnowledge((prev) => {
         const current = prev[normKey] || {
           state: WordState.NEW,
           addedAt: new Date().toISOString(),
           languageId,
+          lemma,
         };
         return { ...prev, [normKey]: { ...current, notes } };
       });
@@ -201,12 +212,13 @@ export const useVocabulary = () => {
 
   const setWordContext = useCallback(
     (lemma: string, context: string, languageId: string = 'unknown') => {
-      const normKey = normalizeLemmaKey(lemma);
+      const normKey = vocabKey(lemma, languageId);
       setKnowledge((prev) => {
         const current = prev[normKey] || {
           state: WordState.NEW,
           addedAt: new Date().toISOString(),
           languageId,
+          lemma,
         };
         const contexts = current.contexts || [];
         if (contexts.includes(context)) return prev;
@@ -228,12 +240,13 @@ export const useVocabulary = () => {
 
   const updateGloss = useCallback(
     (lemma: string, gloss: string, languageId: string = 'unknown') => {
-      const normKey = normalizeLemmaKey(lemma);
+      const normKey = vocabKey(lemma, languageId);
       setKnowledge((prev) => {
         const current = prev[normKey] || {
           state: WordState.NEW,
           addedAt: new Date().toISOString(),
           languageId,
+          lemma,
         };
         return { ...prev, [normKey]: { ...current, userGloss: gloss } as any };
       });

@@ -3,13 +3,13 @@
  *
  * Pure: no I/O, no caching. Callers cache the result.
  *
- * Lemma normalisation mirrors the vocabulary path (normalizeLemmaKey from
- * `lib/utils/lemmaUtils`) so a token tagged with lemma "λέγω" matches a user
+ * Lemma normalisation mirrors the vocabulary path (normalizeLemma from
+ * `lib/vocabulary/identity`, language-aware) so a token tagged with lemma "λέγω" matches a user
  * who marked "Λέγω" as known. When a token has no lemma, the normalized
  * surface form is used as a fall-back — same convention vocab uses.
  */
 
-import { normalizeLemmaKey } from '../utils/lemmaUtils.js';
+import { normalizeLemma } from '../vocabulary/identity.js';
 import type { Text, Token } from '../../types/corpus.js';
 import type { ImportedText, ImportedToken } from '../../types/firestore.js';
 import type { TextVocabProfile } from './score.js';
@@ -21,13 +21,14 @@ function isWordToken(t: { type?: string; surface?: string; text?: string }): boo
 }
 
 function tokenLemma(
-  t: Pick<Token, 'lemma' | 'normalized' | 'surface'> & Partial<ImportedToken>
+  t: Pick<Token, 'lemma' | 'normalized' | 'surface'> & Partial<ImportedToken>,
+  languageId?: string
 ): string {
   const raw =
     (t.lemma && t.lemma.length > 0 ? t.lemma : null) ??
     (t.normalized && t.normalized.length > 0 ? t.normalized : null) ??
     (t.surface ?? (t as any).text ?? '');
-  return normalizeLemmaKey(String(raw));
+  return normalizeLemma(String(raw), languageId);
 }
 
 /**
@@ -47,7 +48,7 @@ export function buildProfileFromSentences(
   for (const sentence of sentences) {
     for (const tok of sentence.tokens) {
       if (!isWordToken(tok as any)) continue;
-      const lemma = tokenLemma(tok as any);
+      const lemma = tokenLemma(tok as any, meta.languageId);
       if (!lemma) continue;
       lemmaCounts[lemma] = (lemmaCounts[lemma] ?? 0) + 1;
       totalTokens++;

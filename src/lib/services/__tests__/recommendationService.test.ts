@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { vocabKey } from '../../vocabulary/identity.js';
 import {
   computeRecommendations,
   getTopRecommendation,
@@ -25,7 +26,12 @@ function makeText(overrides: Partial<LibraryText> & { id: string }): LibraryText
 function makeKnowledge(entries: Array<{ key: string; lang: string; state: string }>): KnowledgeMap {
   const map: KnowledgeMap = {};
   for (const e of entries) {
-    map[e.key] = { state: e.state as any, languageId: e.lang, addedAt: '2026-01-01' };
+    map[vocabKey(e.key, e.lang)] = {
+      state: e.state as any,
+      lemma: e.key,
+      languageId: e.lang,
+      addedAt: '2026-01-01',
+    };
   }
   return map;
 }
@@ -117,6 +123,19 @@ describe('getTopRecommendation', () => {
 });
 
 describe('pickDashboardRecommendation', () => {
+  it('does not count words known in another language toward a text', () => {
+    const texts = [{ id: 'koine', title: 'Koine', language: 'grc-koine', sectionsPreview: [] }];
+    // Every lemma of the text is known — but in Attic, not Koine.
+    const knowledge = makeKnowledge(
+      Array.from({ length: 90 }, (_, i) => ({ key: `word${i}`, lang: 'grc', state: 'KNOWN' }))
+    );
+    const getTokens = () =>
+      Array.from({ length: 100 }, (_, i) => ({ lemma: `word${i}`, text: `word${i}` }));
+    expect(
+      pickDashboardRecommendation(texts, knowledge, 'grc-koine', new Set(), getTokens)
+    ).toBeNull();
+  });
+
   it('picks the text closest to the sweet spot', () => {
     const texts = [
       { id: 't1', title: 'Text 1', language: 'grc', sectionsPreview: [] },

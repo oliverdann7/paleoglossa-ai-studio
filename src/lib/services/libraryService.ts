@@ -372,11 +372,13 @@ export class LibraryService {
    */
   static computeCoverage(
     rawTexts: LibraryText[],
-    getWordInfo: (lemma: string) => any
+    lookupWordInfo: (lemma: string, languageId?: string) => any
   ): Map<string, CoverageResult> {
     const map = new Map<string, CoverageResult>();
 
     rawTexts.forEach((tx) => {
+      // Coverage is measured against the vocabulary of the text's own language.
+      const getWordInfo = (lemma: string) => lookupWordInfo(lemma, tx.language);
       let totalWords = tx.totalWords;
       let knownCount = 0;
       let learningCount = 0;
