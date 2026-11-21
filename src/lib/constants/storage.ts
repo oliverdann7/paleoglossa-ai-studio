@@ -11,4 +11,5 @@ export const STORAGE_KEYS = {
   DAILY_GOAL_CELEBRATED: 'paleoglossa_daily_goal_celebrated',
   DAY_ONE_LESSON_COMPLETED: 'paleoglossa_day_one_lesson_completed',
   DEMO_PERSIST_NUDGE_SHOWN: 'paleoglossa_demo_persist_nudge_shown',
+  READING_GOALS: 'paleoglossa_reading_goals',
 } as const;

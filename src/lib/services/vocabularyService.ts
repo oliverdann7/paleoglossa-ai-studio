@@ -45,6 +45,9 @@ export interface WordInfo {
   textId?: string;
   sentenceIndex?: number;
   sentenceTranslation?: string;
+  /** 'phrase' for a multi-word item saved from the reader. */
+  kind?: 'phrase';
+  memberLemmas?: string[];
 }
 
 /**
@@ -476,6 +479,8 @@ export class VocabularyService {
           textId: data.textId,
           sentenceIndex: data.sentenceIndex,
           sentenceTranslation: data.sentenceTranslation,
+          kind: data.kind === 'phrase' ? 'phrase' : undefined,
+          memberLemmas: Array.isArray(data.memberLemmas) ? data.memberLemmas : undefined,
         };
 
         const existing = map[mapKey];

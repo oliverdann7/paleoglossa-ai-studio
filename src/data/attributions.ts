@@ -156,6 +156,37 @@ export const ATTRIBUTIONS: Record<string, SourceAttribution> = {
     notes:
       'Single TSV carries surface+lemma+gloss+full morphology → fully complete with no AI. Used by sources/macula.ts.',
   },
+  'perseus-treebanks': {
+    id: 'perseus-treebanks',
+    sourceName: 'Perseus Ancient Greek and Latin Dependency Treebanks (AGDT / LDT) v2.1',
+    sourceUrl: 'https://github.com/PerseusDL/treebank_data',
+    dataType: 'morphology',
+    licenseName: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+    attributionText:
+      'Lemmas and morphology from the Perseus Ancient Greek and Latin Dependency Treebanks, Perseus Digital Library.',
+    requiresAttribution: true,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: true,
+    notes:
+      'Token-aligned morphology (apply-agdt-morphology.ts) and form→lemma tables for the lemma backfill (lemmatize-served.ts; tokens stamped lemmaSource agdt-form-index / ldt-form-index).',
+  },
+  'whitaker-words': {
+    id: 'whitaker-words',
+    sourceName: "Whitaker's WORDS — Latin dictionary and inflections",
+    sourceUrl: 'https://github.com/mk270/whitakers-words',
+    dataType: 'lexicon',
+    licenseName: 'Free for any use (W. A. Whitaker)',
+    attributionText:
+      "Latin lemmas and short glosses derived from WORDS by William A. Whitaker (1936–2010).",
+    requiresAttribution: false,
+    allowsCommercialUse: true,
+    allowsModification: true,
+    shareAlike: false,
+    notes:
+      'Licence: "Permission is hereby freely given for any and all use of program and data." Used by lemmatize-served.ts for Latin forms the treebank does not attest; tokens stamped lemmaSource/glossSource whitaker-words.',
+  },
   'macula-hebrew': {
     id: 'macula-hebrew',
     sourceName: 'Macula Hebrew (Clear Bible)',
