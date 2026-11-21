@@ -228,8 +228,17 @@ const ReaderInner = () => {
   // Word states are looked up in the language of the text on screen, which is
   // not always the active language (deep links, cross-language recommendations).
   const textLanguageId = text?.language || text?.languageId || 'unknown';
+  //
+  // `surface` is a fallback for vocabulary saved before a token had a lemma:
+  // those words were stored under their surface form, and must not appear to
+  // lose their state when the corpus gains real lemmas.
   const getWordInfo = useCallback(
-    (lemma: string) => getWordInfoIn(lemma, textLanguageId),
+    (lemma: string, surface?: string) => {
+      const info = getWordInfoIn(lemma, textLanguageId);
+      if (info.state !== WordState.NEW || !surface || surface === lemma) return info;
+      const legacy = getWordInfoIn(surface, textLanguageId);
+      return legacy.state !== WordState.NEW ? legacy : info;
+    },
     [getWordInfoIn, textLanguageId]
   );
 
@@ -615,7 +624,7 @@ const ReaderInner = () => {
     );
     if (contentTokens.length === 0) return null;
     const knownCount = contentTokens.filter((t: ReaderToken) => {
-      const info = getWordInfo(t.lemma || t.text);
+      const info = getWordInfo(t.lemma || t.text, t.text);
       return info.state === WordState.KNOWN || info.state === WordState.FAMILIAR;
     }).length;
     return Math.round((knownCount / contentTokens.length) * 100);
@@ -631,7 +640,7 @@ const ReaderInner = () => {
     );
     if (content.length === 0) return null;
     const unknown = content.filter((t: ReaderToken) => {
-      const info = getWordInfo(t.lemma || t.text);
+      const info = getWordInfo(t.lemma || t.text, t.text);
       return info.state === WordState.NEW || info.state === WordState.SEEN;
     }).length;
     const known = content.length - unknown;

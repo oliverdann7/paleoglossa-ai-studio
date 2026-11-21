@@ -63,6 +63,14 @@ export interface Token {
   treebankSource?: string;
   /** Set to 'ai-generated' when morphology was filled by the offline AI stage (never overwrites treebank data). */
   morphSource?: string;
+  /**
+   * Set when `lemma` was resolved automatically from a form table rather than
+   * taken from the source edition or a treebank alignment: 'corpus-form-index',
+   * 'agdt-form-index', 'ldt-form-index', 'whitaker-words'. Absent = from source.
+   */
+  lemmaSource?: string;
+  /** Set when `gloss` was filled by the same pass (currently 'whitaker-words'). */
+  glossSource?: string;
 }
 
 export interface Sentence {
@@ -117,6 +125,11 @@ export interface Text {
   hasAudio?: boolean;
   hasSyntax?: boolean;
   sourceStatus?: SourceStatus;
+  /**
+   * Served texts only: 'source' when lemmas come from the edition or a treebank,
+   * 'derived' when they were resolved automatically (see `Token.lemmaSource`).
+   */
+  lemmaQuality?: 'source' | 'derived';
   isComplete?: boolean;
   isSample?: boolean;
   sentenceCount?: number;

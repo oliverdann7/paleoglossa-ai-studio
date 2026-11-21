@@ -44,7 +44,8 @@ interface Props {
   currentSentenceIndex: number;
   fontSize: number;
   highlightIntensity: 'subtle' | 'normal' | 'strong';
-  getWordInfo: (lemma: string) => WordInfo;
+  /** `surface` lets the caller fall back to state saved under the surface form. */
+  getWordInfo: (lemma: string, surface?: string) => WordInfo;
   knowledgeVersion: number;
   selectedWordId?: string;
   showTranslit: boolean;
@@ -381,7 +382,7 @@ export function ReadingPane({
       const content = s.tokens.filter((t) => t.type !== 'whitespace' && t.type !== 'punctuation');
       if (content.length === 0) return 0;
       const unknown = content.filter((t) => {
-        const info = getWordInfo(t.lemma || t.text);
+        const info = getWordInfo(t.lemma || t.text, t.text);
         const state = normalizeWordState(
           info ? (typeof info === 'object' ? (info as any).state : info) : WordState.NEW
         );
@@ -549,7 +550,7 @@ export function ReadingPane({
                         sentenceIndex={sIdx}
                         readingMode={readingMode}
                         fontSize={fontSize}
-                        wordInfo={getWordInfo(token.lemma || token.text)}
+                        wordInfo={getWordInfo(token.lemma || token.text, token.text)}
                         isAudioActive={isAudioActive}
                         maskKnown={isFocusMode ? false : maskKnown}
                         highlightIntensity={highlightIntensity}
