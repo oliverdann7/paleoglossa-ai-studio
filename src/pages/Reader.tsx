@@ -3,6 +3,14 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { TEXT_ID_REDIRECTS } from '../lib/constants/textRedirects.js';
 import { useTranslation } from 'react-i18next';
 import { CorpusDB } from '../data/corpus.js';
+import {
+  MAX_PHRASE_WORDS,
+  phrasePattern,
+  phraseTokenIndices,
+  selectPhrase,
+  type PhraseSelection,
+} from '../lib/reading/phrases.js';
+import { PhraseBar } from '../components/reader/PhraseBar.js';
 import { pickNextReading } from '../lib/reading/nextReading.js';
 import { getReadingGoal } from '../lib/hooks/useReadingGoal.js';
 import { NextReadingCard } from '../components/reader/NextReadingCard.js';
@@ -1141,8 +1149,80 @@ const ReaderInner = () => {
     settings,
   ]);
 
+  // ── Phrase selection ─────────────────────────────────────────────────────
+  // A phrase is a run of words in one sentence. It starts from an anchor word
+  // (the selected word on shift-click, or "Select phrase from here" in the
+  // word menu) and ends at the next word chosen.
+  // Both are tagged with the section they belong to and ignored elsewhere, so
+  // turning to another section drops a half-made selection.
+  const phraseScope = `${textId}:${currentChapterIndex}`;
+  const [phraseAnchorState, setPhraseAnchorState] = useState<{
+    scope: string;
+    sentenceIndex: number;
+    tokenId: string;
+    text: string;
+  } | null>(null);
+  const [phraseState, setPhraseState] = useState<
+    (PhraseSelection & { scope: string; sentenceIndex: number; sentenceText: string }) | null
+  >(null);
+  const phraseAnchor = phraseAnchorState?.scope === phraseScope ? phraseAnchorState : null;
+  const phrase = phraseState?.scope === phraseScope ? phraseState : null;
+  const cancelPhrase = useCallback(() => {
+    setPhraseAnchorState(null);
+    setPhraseState(null);
+  }, []);
+
+  const savedPhraseTokens = useMemo(() => {
+    const out = new Map<number, Set<number>>();
+    const patterns = Object.values(knowledge)
+      .filter(
+        (info) =>
+          info.kind === 'phrase' &&
+          info.languageId === textLanguageId &&
+          info.lemma &&
+          info.state !== WordState.NEW &&
+          info.state !== WordState.IGNORED
+      )
+      .map((info) => phrasePattern(info.lemma as string, textLanguageId));
+    if (patterns.length === 0) return out;
+    (chapter?.sentences ?? []).forEach((s: ReaderSentence, i: number) => {
+      const hit = phraseTokenIndices(s.tokens ?? [], patterns, textLanguageId);
+      if (hit.size > 0) out.set(i, hit);
+    });
+    return out;
+  }, [knowledge, chapter, textLanguageId]);
+
   const handleWordClick = useCallback(
-    (token: ReaderToken, sentenceText: string, sentenceIndex: number) => {
+    (token: ReaderToken, sentenceText: string, sentenceIndex: number, extend?: boolean) => {
+      // Completing a phrase: an armed anchor, or shift-click from the selected word.
+      const anchor =
+        phraseAnchor ??
+        (extend && selectedWord && selectedWord.sentenceIndex === sentenceIndex
+          ? { sentenceIndex, tokenId: selectedWord.id, text: selectedWord.text }
+          : null);
+      if (anchor) {
+        const tokens = chapter?.sentences?.[sentenceIndex]?.tokens ?? [];
+        const picked =
+          anchor.sentenceIndex === sentenceIndex
+            ? selectPhrase(tokens, anchor.tokenId, token.id)
+            : null;
+        if (picked) {
+          setPhraseState({ ...picked, scope: phraseScope, sentenceIndex, sentenceText });
+          setPhraseAnchorState(null);
+          setSelectedWord(null);
+        } else if (anchor.tokenId !== token.id) {
+          addToast(
+            t(
+              'reader.phrase.invalid',
+              'A phrase is 2–{{max}} words from one sentence.',
+              { max: MAX_PHRASE_WORDS }
+            ),
+            'info'
+          );
+        }
+        return;
+      }
+      setPhraseState(null);
       setSelectedSentence(null);
       // Served corpus tokens can lack a lemma (headings, unlemmatised words).
       // Fall back to the surface form so their knowledge state and gloss are
@@ -1169,6 +1249,75 @@ const ReaderInner = () => {
       setSentenceIndex,
       getWordInfo,
       textId,
+      phraseAnchor,
+      phraseScope,
+      selectedWord,
+      chapter,
+      addToast,
+      t,
+    ]
+  );
+
+  const startPhraseAt = useCallback(
+    (token: ReaderToken) => {
+      const sentenceIndex = (chapter?.sentences ?? []).findIndex((s: ReaderSentence) =>
+        (s.tokens ?? []).some((tk: ReaderToken) => tk.id === token.id)
+      );
+      if (sentenceIndex < 0) return;
+      setSelectedWord(null);
+      setPhraseState(null);
+      setPhraseAnchorState({
+        scope: phraseScope,
+        sentenceIndex,
+        tokenId: token.id,
+        text: token.text,
+      });
+    },
+    [chapter, phraseScope]
+  );
+
+  const savePhrase = useCallback(
+    (meaning: string) => {
+      if (!phrase) return;
+      const sentence = chapter?.sentences?.[phrase.sentenceIndex];
+      const saved = setWordState(phrase.text, WordState.LEARNING, currentLanguageId, phrase.sentenceText, {
+        surface: phrase.text,
+        textId: text?.id,
+        sentenceIndex: phrase.sentenceIndex,
+        sentenceTranslation: (sentence && aiTranslations[sentence.id]) || sentence?.translation,
+        kind: 'phrase',
+        memberLemmas: phrase.memberLemmas,
+      });
+      if (!saved) {
+        addToast(
+          `You've reached the ${vocabLimit.limit}-word save limit for this language. Upgrade for unlimited saves.`,
+          'info'
+        );
+        return;
+      }
+      if (meaning) updateGloss(phrase.text, meaning, currentLanguageId);
+      trackEvent(ANALYTICS_EVENTS.PHRASE_SAVED, {
+        languageId: currentLanguageId,
+        words: phrase.wordCount,
+        hasMeaning: !!meaning,
+        textId,
+      });
+      addToast(t('reader.phrase.saved', 'Phrase saved for review'), 'success');
+      cancelPhrase();
+    },
+    [
+      phrase,
+      chapter,
+      setWordState,
+      updateGloss,
+      currentLanguageId,
+      text,
+      aiTranslations,
+      addToast,
+      t,
+      vocabLimit.limit,
+      textId,
+      cancelPhrase,
     ]
   );
 
@@ -1449,6 +1598,8 @@ const ReaderInner = () => {
           endOfTextSlot={
             nextReading ? <NextReadingCard next={nextReading} onOpen={openNextReading} /> : undefined
           }
+          phraseSelection={phrase}
+          savedPhraseTokens={savedPhraseTokens}
           currentScrollPage={currentScrollPage}
           totalPages={totalPages}
           currentChapterIndex={currentChapterIndex}
@@ -1653,7 +1804,18 @@ const ReaderInner = () => {
               `/app/lemma/${encodeURIComponent(currentLanguageId)}/${encodeURIComponent(lemma)}`
             );
           }}
+          onStartPhrase={() => startPhraseAt(contextMenu.token)}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+      {(phrase || phraseAnchor) && (
+        <PhraseBar
+          key={phrase?.text ?? 'anchor'}
+          phrase={phrase?.text ?? null}
+          anchor={phraseAnchor?.text}
+          direction={isRtl ? 'rtl' : 'ltr'}
+          onSave={savePhrase}
+          onCancel={cancelPhrase}
         />
       )}
     </div>

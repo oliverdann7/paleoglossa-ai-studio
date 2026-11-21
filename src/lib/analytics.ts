@@ -22,6 +22,7 @@ export const ANALYTICS_EVENTS = {
   REVIEW_COMPLETED: 'review_completed',
   KNOWN_WORD_MILESTONE: 'known_word_milestone',
   NEXT_READING_OPENED: 'next_reading_opened',
+  PHRASE_SAVED: 'phrase_saved',
   READING_GOAL_SET: 'reading_goal_set',
   IMPORT_STARTED: 'import_started',
   IMPORT_COMPLETED: 'import_completed',

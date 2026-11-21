@@ -30,7 +30,7 @@ auto-merge). Four corrections:
 | Single-tap glossary, optimistic state | Present | `LexDrawerPanel`, `useVocabulary.setWordState`; saving closes the drawer |
 | Expandable morphology / philology | Present | `LexDrawerPanel`, `ParadigmModal`, `SentenceAnalysisPanel` |
 | Multi-token phrase selection | **Missing.** "Save phrase" saves the whole sentence as one term | `Reader.tsx` `handleSavePhrase` |
-| Read / Study / Scholar views | **Missing.** `ReadingMode` is `scroll \| page`; focus mode and scholar annotations are separate toggles | `types/reader.ts` |
+| Read / Study / Scholar views | Present under other names: `DisplayMode` is `scholar \| focus \| morphology \| interlinear \| parallel`, switched from the reader toolbar. *(The first version of this table wrongly listed it as missing; only `ReadingMode` had been checked.)* | `types/reader.ts`, `ReaderToolbar.tsx` |
 | Interlinear | Present | `ReaderToolbar`, `ReadingPane` |
 | Literal vs idiomatic translation | Server prompts only; no reader control | `api/_lib/aiPrompts.ts` |
 | Token / lemma / sense separation | Partial. No sense level: one gloss per lemma | `WordInfo` |
@@ -78,7 +78,7 @@ are the reason to choose it, and Scholar view should lead with them.
 | 2 | Repair the three stale Playwright specs; correct `normalizeTimestamp` SRS default; fix `CLAUDE.md` collections table | Next |
 | 3 | Corpus lemmatization backfill for served texts (ingestion pipeline) | Largest learner-visible gain |
 | 4 | Phrase selection: token ranges as phrase vocabulary | |
-| 5 | Read / Study / Scholar switch over existing panels; translation mode control | |
+| 5 | ~~Read / Study / Scholar switch~~ — already exists as display modes; dropped | — |
 | 6 | "Next reading" after a section; goals; pathways for Koine, Latin, Hebrew | |
 | 7 | Import: confidence, corrections, status | |
 
@@ -91,8 +91,18 @@ are the reason to choose it, and Scholar view should lead with them.
 | Corpus lemmas for Greek and Latin | Done — `scripts/corpus/lemmatize-served.ts`, see `docs/vocabulary-identity.md` |
 | Pathways (Koine, Latin, Hebrew) with a chosen destination | Done — `src/lib/reading/pathways.ts`, dashboard `PathwayCard` |
 | Next reading at the end of a text | Done — `src/lib/reading/nextReading.ts`, reader `NextReadingCard` |
+| Phrase selection | Done — `src/lib/reading/phrases.ts`, reader `PhraseBar` |
+| Read / Study / Scholar switch | Dropped — the reader already has five display modes |
 
 Pathway order is editorial and lives in one file. The chosen destination is stored per
 device (`paleoglossa_reading_goals`), not synced. Next-reading uses level, author and
 genre off the path; it does not yet use vocabulary coverage, because served texts carry
 no bundled tokens to measure against.
+
+Phrases: shift-click (or Shift+Enter) a second word in the sentence of the selected word,
+or use "Select phrase from here" in the word menu (right-click or long-press) and then
+choose the last word. A phrase is 2–12 words of one sentence, saved as one vocabulary item
+with `kind: 'phrase'` and its member lemmas, and reviewed like any other item. Saved
+phrases are underlined wherever the same words recur. "Save as Phrase" on a sentence, which
+saved the whole sentence, is now labelled "Save sentence". Not done: selecting across
+sentences, dragging to select, and an AI-suggested meaning.

@@ -117,6 +117,8 @@ export const useVocabulary = () => {
           if (extra.textId) info.textId = extra.textId;
           if (extra.sentenceIndex !== undefined) info.sentenceIndex = extra.sentenceIndex;
           if (extra.sentenceTranslation) info.sentenceTranslation = extra.sentenceTranslation;
+          if (extra.kind) info.kind = extra.kind;
+          if (extra.memberLemmas) info.memberLemmas = extra.memberLemmas;
         }
         return { ...prev, [normKey]: info };
       });
