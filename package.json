@@ -16,6 +16,7 @@
     "lint": "eslint \"src/**/*.{ts,tsx}\" \"api/**/*.{ts,tsx}\" \"e2e/**/*.ts\" vite.config.ts server.ts",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"api/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"api/**/*.ts\"",
     "audit:corpus": "tsx scripts/audit-corpus-quality.ts",
     "audit:corpus:check": "tsx scripts/audit-corpus-quality.ts --check",
     "corpus:clean": "tsx scripts/corpus/clean-served-corpus.ts",
