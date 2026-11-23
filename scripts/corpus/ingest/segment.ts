@@ -12,7 +12,7 @@
  */
 
 import { tokenizeSentence } from '../../../src/data/corpus/helpers/textHelpers.js';
-import { isJunkToken } from './clean.js';
+import { cleanSections, isJunkToken } from './clean.js';
 import type { Sentence, TextSection, WorkInput } from './types.js';
 
 /** Tokenise one raw sentence into a canonical, not-yet-annotated `Sentence`. */
@@ -42,15 +42,16 @@ export function segmentSentence(
 
 /** Segment an entire work into canonical (un-annotated) sections. */
 export function segmentWork(work: WorkInput): TextSection[] {
-  return work.sections.map((section) => ({
+  const sections: TextSection[] = work.sections.map((section) => ({
     id: section.id,
     textId: work.textId,
     sequence: section.sequence,
     label: section.label,
     nextSectionId: section.nextSectionId,
     previousSectionId: section.previousSectionId,
-    sentences: section.sentences
-      .map((s) => segmentSentence(s.id, s.src, s.translation, work.language))
-      .filter((s) => s.tokens.length > 0),
+    sentences: section.sentences.map((s) => segmentSentence(s.id, s.src, s.translation, work.language)),
   }));
+  // Whole-section rules (page titles and footers, mis-decoded text) and empty sentences.
+  cleanSections(sections, work.language);
+  return sections;
 }

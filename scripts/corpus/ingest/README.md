@@ -138,7 +138,8 @@ corpus already weighs ~330 MB — for new bulk texts prefer Firestore (option A)
 rather than growing the repo and the native app payloads further.
 
 After hand-editing or regenerating any served JSON, run the maintenance pass
-(`npx tsx scripts/corpus/clean-served-corpus.ts`) — it strips junk tokens,
+(`npx tsx scripts/corpus/clean-served-corpus.ts`) — it strips junk tokens and
+Latin Library page furniture, restores mis-decoded UTF-8,
 recomputes the `hasMorphology`/`hasTranslation` capability flags from the
 actual tokens, and rebuilds `index.json`.
 
