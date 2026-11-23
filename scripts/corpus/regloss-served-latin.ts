@@ -1,17 +1,15 @@
 /**
- * Phase-2 gloss/lemma recovery for the served Latin corpus (zero AI).
+ * Gloss recovery for the served Latin corpus (zero AI).
  *
- * Latin has no Macula equivalent, but two in-repo/licensed sources combine
- * into a useful lookup chain:
- *   1. a form→lemma table built from the Perseus Latin Dependency Treebank
- *      files already downloaded for morphology (CC BY-SA 3.0) — most-frequent
- *      lemma per surface form, u/v i/j folded;
- *   2. the bundled `LAT_DICTIONARY` (2.2k curated lemma→gloss entries, macron
- *      keys stripped for matching).
+ * For every Latin token with an empty gloss, look its lemma up in the bundled
+ * `LAT_DICTIONARY` (2.2k curated lemma→gloss entries, macron keys stripped for
+ * matching, u/v i/j folded). A token without a lemma is glossed only when its
+ * own form is a dictionary headword. Fill-only — existing glosses are never
+ * overwritten.
  *
- * For every Latin token with an empty gloss: resolve a lemma (its own, else
- * the LDT form table), then look the lemma up in the dictionary. Fill-only —
- * existing annotations are never overwritten.
+ * Lemmas are not this script's business: `lemmatize-served.ts` assigns them,
+ * with rules for ambiguous forms and proper names that a most-frequent-lemma
+ * guess here used to bypass. Run that first, then this.
  *
  * Usage: npx tsx scripts/corpus/regloss-served-latin.ts [--dry-run]
  */
@@ -19,7 +17,6 @@ import { readdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { LAT_DICTIONARY } from '../../src/lib/data/dictionaries/lat.js';
 
-const LDT_DIR = 'scripts/corpus/ingest/.sources/ldt';
 const DIR = 'public/corpus-data';
 const dryRun = process.argv.includes('--dry-run');
 
@@ -34,41 +31,15 @@ function key(s: string): string {
     .replace(/[^a-z]/g, '');
 }
 
-// 1. Dictionary: lemma key → { gloss, displayLemma }.
-const dict = new Map<string, { gloss: string; lemma: string }>();
+// Dictionary: lemma key → gloss.
+const dict = new Map<string, string>();
 for (const [lemma, gloss] of Object.entries(LAT_DICTIONARY)) {
   const k = key(lemma);
-  if (k && !dict.has(k)) dict.set(k, { gloss, lemma });
+  if (k && !dict.has(k)) dict.set(k, gloss);
 }
+console.log(`Latin lookup: ${dict.size} dictionary lemmas`);
 
-// 2. LDT form → most-frequent lemma.
-const formTally = new Map<string, Map<string, number>>();
-for (const file of readdirSync(LDT_DIR)) {
-  if (!file.endsWith('.xml')) continue;
-  const xml = readFileSync(join(LDT_DIR, file), 'utf-8');
-  for (const tag of xml.match(/<word [^>]*\/>/g) ?? []) {
-    if (tag.includes('artificial=') || tag.includes('insertion_id=')) continue;
-    const form = /\bform="([^"]*)"/.exec(tag)?.[1] ?? '';
-    const lemma = (/\blemma="([^"]*)"/.exec(tag)?.[1] ?? '').replace(/\d+$/, '');
-    const postag = /\bpostag="([^"]*)"/.exec(tag)?.[1] ?? '';
-    if (!form || !lemma || postag[0] === 'u') continue;
-    const fk = key(form);
-    if (!fk) continue;
-    let t = formTally.get(fk);
-    if (!t) formTally.set(fk, (t = new Map()));
-    t.set(lemma, (t.get(lemma) ?? 0) + 1);
-  }
-}
-const formToLemma = new Map<string, string>();
-for (const [fk, t] of formTally) {
-  let best = '';
-  let n = -1;
-  for (const [lemma, c] of t) if (c > n) ((best = lemma), (n = c));
-  formToLemma.set(fk, best);
-}
-console.log(`Latin lookup: ${dict.size} dictionary lemmas, ${formToLemma.size} treebank forms`);
-
-// 3. Fill pass.
+// Fill pass.
 interface ServedToken {
   surface: string;
   normalized: string;
@@ -96,20 +67,9 @@ for (const file of readdirSync(DIR).sort()) {
         tokens++;
         if (token.gloss && token.gloss.trim() !== '') continue;
         empty++;
-        // Resolve a lemma: token's own → treebank form table → bare normalized.
-        const lemma =
-          (token.lemma && token.lemma.trim()) ||
-          formToLemma.get(key(token.normalized)) ||
-          formToLemma.get(key(token.surface)) ||
-          '';
-        const hit = (lemma && dict.get(key(lemma))) || dict.get(key(token.normalized));
-        if (!hit) {
-          // Even without a gloss, record a confidently-resolved lemma.
-          if (!token.lemma && lemma) token.lemma = lemma;
-          continue;
-        }
-        token.gloss = hit.gloss;
-        if (!token.lemma || token.lemma.trim() === '') token.lemma = lemma || hit.lemma;
+        const gloss = dict.get(key(token.lemma?.trim() || token.normalized));
+        if (!gloss) continue;
+        token.gloss = gloss;
         filled++;
       }
     }

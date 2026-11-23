@@ -34,8 +34,8 @@ export const TEXT_AUGUSTINE_CONFESSIONES: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 3994,
-  wordCount: 79268,
+  sentenceCount: 3904,
+  wordCount: 78771,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-augustine-confessiones-full-1', label: 'Confessiones — Liber 1' },
@@ -74,8 +74,8 @@ export const TEXT_TERTULLIAN_APOLOGETICUM: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 1431,
-  wordCount: 20554,
+  sentenceCount: 1382,
+  wordCount: 19984,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-tertullian-apologeticum-full-1', label: "Part 1" },
@@ -111,8 +111,8 @@ export const TEXT_JEROME_VITA_PAULI: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 163,
-  wordCount: 2455,
+  sentenceCount: 155,
+  wordCount: 2372,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-jerome-vita-pauli-full-1', label: 'Vita S. Pauli' },
@@ -139,8 +139,8 @@ export const TEXT_JEROME_VITA_MALCHI: Text = {
   sourceStatus: 'partial',
   isComplete: false,
   isSample: false,
-  sentenceCount: 174,
-  wordCount: 2034,
+  sentenceCount: 172,
+  wordCount: 2023,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-jerome-vita-malchi-full-1', label: 'Vita Malchi' },
