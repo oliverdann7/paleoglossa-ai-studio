@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { BookOpen, GraduationCap, Eye, EyeOff, Check } from 'lucide-react';
+import { BookOpen, GraduationCap, Eye, EyeOff, Check, Link2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState } from '@/lib/constants/wordStates';
 
@@ -11,6 +11,8 @@ export interface WordContextMenuProps {
   currentState: WordState;
   onSetState: (state: WordState) => void;
   onOpenDictionary: (lemma: string) => void;
+  /** Start a multi-word phrase at this word; the next word chosen ends it. */
+  onStartPhrase?: () => void;
   onClose: () => void;
 }
 
@@ -49,6 +51,7 @@ export function WordContextMenu({
   currentState,
   onSetState,
   onOpenDictionary,
+  onStartPhrase,
   onClose,
 }: WordContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -140,6 +143,20 @@ export function WordContextMenu({
           <BookOpen className="w-3.5 h-3.5" />
           <span>Dictionary entry</span>
         </button>
+        {onStartPhrase && (
+          <button
+            role="menuitem"
+            data-testid="start-phrase"
+            onClick={() => {
+              onStartPhrase();
+              onClose();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-parch3 transition-colors text-left text-ink2"
+          >
+            <Link2 className="w-3.5 h-3.5" />
+            <span>Select phrase from here</span>
+          </button>
+        )}
       </div>
     </div>
   );

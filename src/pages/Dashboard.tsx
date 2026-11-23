@@ -36,6 +36,7 @@ import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useStreakNotifications } from '../lib/hooks/useStreakNotifications.js';
 import { StudyPlanWidget } from '../components/StudyPlanWidget.js';
 import { ReadyToReadRail } from '../components/dashboard/ReadyToReadRail.js';
+import { PathwayCard } from '../components/dashboard/PathwayCard.js';
 import { pickDashboardRecommendation } from '../lib/services/recommendationService.js';
 import { StudyHeatmap } from '../components/StudyHeatmap.js';
 import { VocabFrequencyGoals } from '../components/VocabFrequencyGoals.js';
@@ -468,6 +469,9 @@ export const Dashboard = () => {
       )}
 
       {/* ── Ready to Read (lemma-based, comprehension-banded picks) ── */}
+      {/* ── Curated pathway toward a chosen destination (Koine, Latin, Hebrew) ── */}
+      <PathwayCard activeLanguageId={activeLanguageId} readingProgress={readingProgress} />
+
       <ReadyToReadRail activeLanguageId={activeLanguageId} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">

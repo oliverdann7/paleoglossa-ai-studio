@@ -75,5 +75,36 @@ add up, contexts/notes/gloss are kept).
 - `reviewLogs.vocabItemId` in historical logs keeps the old ID of moved documents.
 - `grc` and `grc-koine` remain separate vocabularies, as they always were in Firestore.
   Sharing them is a product decision, not made here.
-- Un-lemmatized tokens are tracked by surface form, so each inflected form is its own item.
-  The real fix is lemmatizing the corpus (see the plan document).
+- Tokens with no resolvable lemma are tracked by surface form, so each inflected form is
+  its own item. See "Corpus lemmas" below.
+
+## Corpus lemmas
+
+`scripts/corpus/lemmatize-served.ts` gives served Greek and Latin tokens a real lemma where
+one can be resolved without guessing. It covers two cases: an empty `lemma`, and a
+*pseudo-lemma* that merely copies the surface form (80–100% of "lemmas" in Xenophon, Plato,
+the LXX, the Apostolic Fathers and most Latin texts, against ~35% in the lemmatized New
+Testament). Resolved tokens carry `lemmaSource`; real lemmas are never overwritten.
+Each text records whether its lemmas are `source` or `derived` (`text.lemmaQuality`), which
+also makes the pass idempotent.
+
+| Source | Licence | Used for | Measured agreement |
+|---|---|---|---|
+| The corpus's own properly lemmatized Greek texts | as each text | Greek forms | — |
+| Perseus AGDT v2.1 | CC BY-SA 3.0 | Greek forms | 94.7% against New Testament lemmas it never saw (answers 72%) |
+| Perseus LDT v2.1 | CC BY-SA 3.0 | Latin forms | — |
+| Whitaker's WORDS | free for any use | Latin forms the treebank lacks, plus a short gloss | 91.3% against the hand-annotated LDT (answers 68%) |
+
+Part of each disagreement is convention (`ac` → `ac` vs `atque`, `primum` → adverb vs
+`primus`), so real precision is somewhat higher, but some resolved lemmas are wrong: treat
+`lemmaSource` as "automatic". Not used, because their licences forbid commercial use:
+Celano's lemmatized Greek texts, the Gorman trees, PROIEL.
+
+Result (2026-11): Greek 242,000 tokens given a real lemma (plus 165,000 respelled with
+their diacritics), Latin 164,000 lemmas and 79,000 glosses. Still unresolved: about 80,000
+Greek and 28,000 Latin empty tokens, and all of Aramaic, Coptic and Sanskrit, for which no
+commercially usable form table was found.
+
+A learner who saved a word before it had a lemma has it stored under its surface form. The
+reader therefore looks a token up by lemma first and falls back to its surface form, so
+those marks still show; a new mark is saved under the lemma.

@@ -44,7 +44,8 @@ interface Props {
   currentSentenceIndex: number;
   fontSize: number;
   highlightIntensity: 'subtle' | 'normal' | 'strong';
-  getWordInfo: (lemma: string) => WordInfo;
+  /** `surface` lets the caller fall back to state saved under the surface form. */
+  getWordInfo: (lemma: string, surface?: string) => WordInfo;
   knowledgeVersion: number;
   selectedWordId?: string;
   showTranslit: boolean;
@@ -67,7 +68,16 @@ interface Props {
   glossTooltipForKnown?: boolean;
   interlinearMode?: boolean;
   displayMode?: DisplayMode;
-  onWordClick: (token: ReaderToken, sentenceText: string, sentenceIndex: number) => void;
+  onWordClick: (
+    token: ReaderToken,
+    sentenceText: string,
+    sentenceIndex: number,
+    extend?: boolean
+  ) => void;
+  /** The phrase currently being selected, if any (token indices, inclusive). */
+  phraseSelection?: { sentenceIndex: number; start: number; end: number } | null;
+  /** Per sentence index: token indices that belong to a saved phrase. */
+  savedPhraseTokens?: Map<number, Set<number>>;
   onWordContextMenu: (token: ReaderToken, x: number, y: number) => void;
   onAITranslate: (sentenceId: string, tokens: ReaderToken[]) => void;
   onSavePhrase: (sentence: ReaderSentence) => void;
@@ -80,6 +90,8 @@ interface Props {
   onNextPage: () => void;
   onNextChapter: () => void;
   onBackToLibrary: () => void;
+  /** Rendered once the reader reaches the end of the whole text (e.g. a next-reading card). */
+  endOfTextSlot?: React.ReactNode;
   onSwipe: (direction: 'left' | 'right') => void;
   currentScrollPage: number;
   totalPages: number;
@@ -144,6 +156,7 @@ const ReaderToken = memo(function ReaderToken({
   maskKnown,
   highlightIntensity,
   isSelected,
+  phraseMark,
   showTranslit,
   interlinearMode,
   displayMode,
@@ -167,9 +180,16 @@ const ReaderToken = memo(function ReaderToken({
   wordInfo: WordInfo | WordState | null;
   isAudioActive: boolean;
   isSelected: boolean;
+  /** 'selecting' = in the phrase being chosen; 'saved' = part of a saved phrase. */
+  phraseMark?: 'selecting' | 'saved';
   showGlossTooltip?: boolean;
   glossTooltipForKnown?: boolean;
-  onWordClick: (token: ReaderToken, sentenceText: string, sentenceIndex: number) => void;
+  onWordClick: (
+    token: ReaderToken,
+    sentenceText: string,
+    sentenceIndex: number,
+    extend?: boolean
+  ) => void;
   onWordHover: (token: ReaderToken, x: number, y: number) => void;
   onWordLeave: () => void;
   onWordContextMenu: (token: ReaderToken, x: number, y: number) => void;
@@ -248,13 +268,15 @@ const ReaderToken = memo(function ReaderToken({
         role="button"
         tabIndex={0}
         aria-label={gloss ? `${token.text} — ${gloss}` : token.text}
-        onClick={() => onWordClick(token, sentenceText, sentenceIndex)}
+        // Shift extends a phrase from the selected word to this one.
+        onClick={(e) => onWordClick(token, sentenceText, sentenceIndex, e.shiftKey)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onWordClick(token, sentenceText, sentenceIndex);
+            onWordClick(token, sentenceText, sentenceIndex, e.shiftKey);
           }
         }}
+        data-phrase={phraseMark}
         onContextMenu={handleContextMenu}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -262,7 +284,13 @@ const ReaderToken = memo(function ReaderToken({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={onWordLeave}
         className="cursor-pointer px-1.5 md:px-1 rounded-sm inline-flex flex-col items-center align-top leading-none min-h-[28px] md:min-h-0 focus:outline-none focus:ring-2 focus:ring-blue/50 focus:rounded"
-        style={tokenStyle}
+        style={
+          phraseMark === 'selecting'
+            ? { ...tokenStyle, backgroundColor: 'rgba(30, 61, 110, 0.14)', borderBottomColor: '#1E3D6E' }
+            : phraseMark === 'saved'
+              ? { ...tokenStyle, borderBottom: '2px dotted #B8860B' }
+              : tokenStyle
+        }
       >
         <bdi className="leading-tight mb-1">{token.text}</bdi>
         {showTranslit && token.translit && (
@@ -325,6 +353,9 @@ export function ReadingPane({
   onNextPage,
   onNextChapter,
   onBackToLibrary,
+  endOfTextSlot,
+  phraseSelection,
+  savedPhraseTokens,
   onSwipe,
   currentScrollPage,
   totalPages,
@@ -381,7 +412,7 @@ export function ReadingPane({
       const content = s.tokens.filter((t) => t.type !== 'whitespace' && t.type !== 'punctuation');
       if (content.length === 0) return 0;
       const unknown = content.filter((t) => {
-        const info = getWordInfo(t.lemma || t.text);
+        const info = getWordInfo(t.lemma || t.text, t.text);
         const state = normalizeWordState(
           info ? (typeof info === 'object' ? (info as any).state : info) : WordState.NEW
         );
@@ -549,11 +580,21 @@ export function ReadingPane({
                         sentenceIndex={sIdx}
                         readingMode={readingMode}
                         fontSize={fontSize}
-                        wordInfo={getWordInfo(token.lemma || token.text)}
+                        wordInfo={getWordInfo(token.lemma || token.text, token.text)}
                         isAudioActive={isAudioActive}
                         maskKnown={isFocusMode ? false : maskKnown}
                         highlightIntensity={highlightIntensity}
                         isSelected={selectedWordId === token.id}
+                        phraseMark={
+                          phraseSelection &&
+                          phraseSelection.sentenceIndex === sIdx &&
+                          tIdx >= phraseSelection.start &&
+                          tIdx <= phraseSelection.end
+                            ? 'selecting'
+                            : savedPhraseTokens?.get(sIdx)?.has(tIdx)
+                              ? 'saved'
+                              : undefined
+                        }
                         showTranslit={isFocusMode ? false : showTranslit}
                         interlinearMode={interlinearMode}
                         displayMode={displayMode}
@@ -673,6 +714,9 @@ export function ReadingPane({
                       </h4>
                     </div>
                   )}
+                  {currentScrollPage >= totalPages - 1 &&
+                    currentChapterIndex >= totalChapters - 1 &&
+                    endOfTextSlot}
                   <div className="flex gap-4 flex-wrap justify-center">
                     <button
                       onClick={() => onMarkPageKnown()}
@@ -722,6 +766,12 @@ export function ReadingPane({
                 </div>
               </>
             )}
+            {readingMode === 'page' &&
+              endOfTextSlot &&
+              currentChapterIndex >= totalChapters - 1 &&
+              currentSentenceIndex >= sentences.length - 1 && (
+                <div className="mt-10 flex justify-center pb-16">{endOfTextSlot}</div>
+              )}
           </div>
         </div>
 
@@ -774,7 +824,7 @@ export function ReadingPane({
                         className="text-sm font-sans flex items-center justify-center gap-1.5 px-3 py-1 bg-amber/5 text-amber font-medium rounded-lg hover:bg-amber/10 transition-colors mt-1"
                       >
                         <Repeat className="w-3.5 h-3.5" />
-                        Save as Phrase
+                        {t('reader.saveSentence', 'Save sentence')}
                       </button>
                       {onAnalyzeSentence && (
                         <button

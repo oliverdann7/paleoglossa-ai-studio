@@ -5,6 +5,10 @@ export interface ReadingContext {
   textId?: string;
   sentenceIndex?: number;
   sentenceTranslation?: string;
+  /** 'phrase' for a multi-word item; absent for a single word. */
+  kind?: 'phrase';
+  /** Lemmas of a phrase's member words, in order. */
+  memberLemmas?: string[];
 }
 
 export const READING_CONTEXT_FIELDS = [
@@ -14,6 +18,8 @@ export const READING_CONTEXT_FIELDS = [
   'textId',
   'sentenceIndex',
   'sentenceTranslation',
+  'kind',
+  'memberLemmas',
 ] as const;
 
 export function sanitizeReadingExtra(
