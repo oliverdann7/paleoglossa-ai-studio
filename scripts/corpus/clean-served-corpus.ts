@@ -3,9 +3,11 @@
  *
  * Applies the 2026-08 corpus-audit fixes to the emitted JSON in place:
  *   1. Language remap — retires the phantom `grc-class` code (merged into `grc`).
- *   2. Junk-token removal — apparatus sigla, un-decoded escapes, bare verse
- *      numbers (shared rules in `ingest/clean.ts`; the ingest pipeline now
- *      applies them at segmentation, this script retrofits existing emits).
+ *   2. Junk removal and repair — apparatus sigla, un-decoded escapes, bare and
+ *      bracketed section numbers, mis-decoded UTF-8, and the Latin Library's
+ *      title lines and English footers (shared rules in `ingest/clean.ts`; the
+ *      ingest pipeline applies them at segmentation, this script retrofits
+ *      existing emits).
  *   3. Truthful capability flags — `hasMorphology`/`hasTranslation` recomputed
  *      from the actual tokens (same thresholds as `ingest/assemble.ts`).
  *   4. Quarantine — removes texts whose token streams are beyond repair
@@ -106,7 +108,7 @@ for (const file of readdirSync(LOCAL_CORPUS_DIR).sort()) {
     sentences > 0 && translated / sentences >= CAPABILITY_COVERAGE_THRESHOLD;
 
   const changed =
-    stats.tokensRemoved > 0 || stats.sentencesRemoved > 0 || before !== JSON.stringify(record.text);
+    stats.tokensRemoved > 0 || stats.sentencesRemoved > 0 || stats.tokensRepaired > 0 || before !== JSON.stringify(record.text);
 
   reports.push({
     id: record.text.id,
@@ -130,7 +132,7 @@ const changedReports = reports.filter((r) => r.changed);
 console.log(`\n${reports.length} texts scanned, ${changedReports.length} changed${dryRun ? ' (dry run — nothing written)' : ''}.`);
 for (const r of changedReports) {
   console.log(
-    `${r.id} [${r.language}] -${r.tokensRemoved} tokens, -${r.sentencesRemoved} sentences → ` +
+    `${r.id} [${r.language}] -${r.tokensRemoved} tokens, -${r.sentencesRemoved} sentences, ${r.tokensRepaired} repaired → ` +
       `${r.sentenceCount} sentences / ${r.wordCount} words, ` +
       `hasMorphology=${r.hasMorphology}, hasTranslation=${r.hasTranslation}`
   );

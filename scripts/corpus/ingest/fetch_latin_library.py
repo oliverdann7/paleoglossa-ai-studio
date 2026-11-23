@@ -15,6 +15,7 @@ Usage: python3 scripts/corpus/ingest/fetch_latin_library.py
 import html
 import re
 import sys
+import unicodedata
 import urllib.request
 from pathlib import Path
 
@@ -51,11 +52,23 @@ WORKS = [
 NAV = re.compile(r"(?i)(the latin library|the classics page|^latin$|thelatinlibrary)")
 
 
+def decode(body: bytes) -> str:
+    """Most pages are Latin-1, a few are UTF-8 (aen1, cat3). Reading those as
+    Latin-1 turned every macron and dash into two or three junk characters."""
+    try:
+        text = body.decode("utf-8")
+    except UnicodeDecodeError:
+        return body.decode("latin-1")
+    # The UTF-8 pages macronise a few lines of otherwise plain texts: match the rest.
+    plain = unicodedata.normalize("NFD", text).replace("\u0304", "").replace("\u0306", "")
+    return unicodedata.normalize("NFC", plain)
+
+
 def fetch(url: str) -> str:
     try:
         req = urllib.request.Request(url, headers=UA)
         with urllib.request.urlopen(req, timeout=30) as r:
-            return r.read().decode("latin-1")
+            return decode(r.read())
     except Exception as e:  # noqa
         print(f"  ! {url}: {e}", file=sys.stderr)
         return ""
