@@ -175,6 +175,7 @@ interface CleanableToken {
   lemma?: string;
   lemmaSource?: string;
   gloss?: string;
+  glossSource?: string;
   punctAfter?: string;
 }
 interface CleanableSentence {
@@ -200,6 +201,7 @@ function respell(token: CleanableToken, surface: string): void {
   if (token.lemma !== undefined) token.lemma = '';
   if (token.gloss !== undefined) token.gloss = '';
   delete token.lemmaSource;
+  delete token.glossSource;
 }
 
 /**

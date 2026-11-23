@@ -57,7 +57,7 @@ describe('cleanSections — mis-decoded tokens', () => {
           tokens: [
             // What the tokenizer made of `ōrīs`: `«` taken for punctuation, a lemma guessed from `ara«s`.
             { surface: misdecode('ōrīs'), normalized: 'ara«s', lemma: 'ara', gloss: 'altar', lemmaSource: 'whitaker', punctAfter: ' ' },
-            { surface: misdecode('quī'), normalized: 'qua', lemma: 'qua', gloss: 'where', punctAfter: '« ' },
+            { surface: misdecode('quī'), normalized: 'qua', lemma: 'qua', gloss: 'where', glossSource: 'whitaker-words', punctAfter: '« ' },
             { surface: misdecode('canō,'), normalized: 'cana', lemma: '', gloss: '', punctAfter: ', ' },
             { surface: 'Arma', normalized: 'arma', lemma: 'arma', gloss: 'arms', punctAfter: ' ' },
           ],
