@@ -446,7 +446,10 @@ export class VocabularyService {
         if (!isIdentifiableLemma(lemma)) return;
         const languageId = data.languageId || UNKNOWN_LANGUAGE;
         stale.push({ id: doc.id, data });
-        const nextReview = normalizeTimestamp(data.nextReview);
+        // A word that was never scheduled has no nextReview. Leave it unset rather
+        // than defaulting to "now": a phantom SRS record stops useVocabulary from
+        // writing the first real one when the word enters LEARNING.
+        const nextReview = data.nextReview ? normalizeTimestamp(data.nextReview) : undefined;
         const addedAt = normalizeTimestamp(data.createdAt);
 
         // Key by (language, lemma) — different inflected forms of one lemma
@@ -472,7 +475,7 @@ export class VocabularyService {
           addedAt: addedAt || new Date().toISOString(),
           languageId,
           encounterCount: data.encounterCount ?? 0,
-          lastSeenAt: normalizeTimestamp(data.lastSeenAt) || undefined,
+          lastSeenAt: data.lastSeenAt ? normalizeTimestamp(data.lastSeenAt) : undefined,
           surface: data.surface,
           morphology: data.morphology,
           transliteration: data.transliteration,
