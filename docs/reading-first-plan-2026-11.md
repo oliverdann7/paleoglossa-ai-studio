@@ -74,8 +74,8 @@ are the reason to choose it, and Scholar view should lead with them.
 
 | PR | Scope | Status |
 |---|---|---|
-| 1 | Vocabulary identity: language scoping, normalization, document IDs, self-healing repair, empty-lemma fix | This PR |
-| 2 | Repair the three stale Playwright specs; correct `normalizeTimestamp` SRS default; fix `CLAUDE.md` collections table | Next |
+| 1 | Vocabulary identity: language scoping, normalization, document IDs, self-healing repair, empty-lemma fix | Done |
+| 2 | Repair the three stale Playwright specs; correct `normalizeTimestamp` SRS default; fix `CLAUDE.md` collections table | Done |
 | 3 | Corpus lemmatization backfill for served texts (ingestion pipeline) | Largest learner-visible gain |
 | 4 | Phrase selection: token ranges as phrase vocabulary | |
 | 5 | Read / Study / Scholar switch over existing panels; translation mode control | |

@@ -21,7 +21,7 @@ npm run build        # vite build — must succeed
 Formatting:
 ```bash
 npm run format       # prettier --write
-npm run format:check # prettier --check (CI mode)
+npm run format:check # prettier --check (not yet a CI gate — much of the tree predates it)
 ```
 
 Dev server:
@@ -98,8 +98,8 @@ var on in dev to work on them; promote a surface out of the gate once its conten
 | Collection | Purpose |
 |-----------|---------|
 | `users/{uid}` | Profile, settings, subscription plan |
-| `users/{uid}/vocabulary` | Word knowledge states (NEW/SEEN/LEARNING/KNOWN) |
-| `users/{uid}/reviews` | SM-2 review queue items |
+| `users/{uid}/vocabulary` | Word knowledge states (NEW/SEEN/LEARNING/FAMILIAR/KNOWN/IGNORED) plus FSRS scheduling (`nextReview`, `interval`, …) — the review queue is a query on this collection |
+| `users/{uid}/reviewLogs` | One log entry per review answer |
 | `users/{uid}/readingProgress` | Per-text progress (lastSentence, completionPct) |
 | `users/{uid}/notebooks` | Research notebooks |
 | `users/{uid}/notes` | Per-word/per-text notes |

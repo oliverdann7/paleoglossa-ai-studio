@@ -124,6 +124,29 @@ describe('getVocabulary — language-scoped identity', () => {
   });
 });
 
+describe('getVocabulary — review schedule', () => {
+  it('gives a never-scheduled word no SRS record, and keeps a real schedule intact', async () => {
+    seed(vocabDocId('λόγος', 'grc'), vocabDoc('λόγος', 'grc', { status: 'SEEN' }));
+    seed(
+      vocabDocId('θεός', 'grc'),
+      vocabDoc('θεός', 'grc', {
+        status: 'LEARNING',
+        nextReview: '2026-12-01T00:00:00.000Z',
+        lastSeenAt: '2026-11-20T00:00:00.000Z',
+        interval: 3,
+      })
+    );
+
+    const map = await VocabularyService.getVocabulary(uid);
+
+    expect(map[vocabKey('λόγος', 'grc')].srs).toBeUndefined();
+    expect(map[vocabKey('λόγος', 'grc')].lastSeenAt).toBeUndefined();
+    expect(map[vocabKey('θεός', 'grc')].srs?.nextReview).toBe('2026-12-01T00:00:00.000Z');
+    expect(map[vocabKey('θεός', 'grc')].srs?.interval).toBe(3);
+    expect(map[vocabKey('θεός', 'grc')].lastSeenAt).toBe('2026-11-20T00:00:00.000Z');
+  });
+});
+
 describe('repairVocabularyIdentity', () => {
   it('moves a document stored under a truncated ID and keeps its review schedule', async () => {
     const sentence = 'καὶ εἶπεν αὐτοῖς ὁ Ἰησοῦς Δεῦτε ὀπίσω μου';
