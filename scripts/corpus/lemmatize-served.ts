@@ -24,7 +24,8 @@
  * Gorman trees (CC BY-NC-SA), PROIEL (CC BY-NC-SA).
  *
  * Fetch the sources into scripts/corpus/ingest/.sources/ (git-ignored):
- *   agdt/, ldt/   https://github.com/PerseusDL/treebank_data  v2.1/{Greek,Latin}/texts/*.tb.xml
+ *   agdt/, ldt/   https://github.com/PerseusDL/treebank_data  v2.1/{Greek,Latin}/texts/*.xml
+ *                 (33 Greek and 12 Latin files at bf4334f — all of them; Petronius is not named *.tb.xml)
  *   whitaker/     https://github.com/mk270/whitakers-words     DICTLINE.GEN, INFLECTS.LAT
  *
  * Usage: npx tsx scripts/corpus/lemmatize-served.ts [--dry-run] [--evaluate]
@@ -95,14 +96,22 @@ function* treebankWords(dir: string): Generator<{ form: string; lemma: string }>
   if (!existsSync(dir)) return;
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.xml'))) {
     const xml = readFileSync(join(dir, file), 'utf8');
+    // A word split across verse lines is annotated as `τοκεῦ` (XSEG) + `-` + `σιν`,
+    // with the lemma on the last piece. That piece is not a form of the lemma.
+    let segmentOpen = false;
+    let afterSegmentDash = false;
     for (const m of xml.matchAll(/<word\b[^>]*>/g)) {
       const tag = m[0];
       const form = /\bform="([^"]*)"/.exec(tag)?.[1];
       const lemma = /\blemma="([^"]*)"/.exec(tag)?.[1];
       const postag = /\bpostag="([^"]*)"/.exec(tag)?.[1] ?? '';
+      const continuation = afterSegmentDash;
+      afterSegmentDash = segmentOpen && form === '-';
+      segmentOpen = /\brelation="XSEG"/.test(tag);
+      if (continuation) continue;
       if (!form || !lemma || postag.startsWith('u')) continue;
-      // Treebank lemmas carry homograph indices (λέγω1, edo#2).
-      const clean = lemma.replace(/[#\d]+$/, '').trim();
+      // Treebank lemmas carry homograph indices (λέγω1, edo#2); a few start with a stray breathing mark.
+      const clean = lemma.replace(/[#\d]+$/, '').replace(/^[\u0300-\u036f]+/, '').trim();
       if (!/\p{L}/u.test(clean) || !/\p{L}/u.test(form)) continue;
       yield { form, lemma: clean };
     }
@@ -291,7 +300,14 @@ const LATIN: Resolver[] = [
   resolveLatinWords,
 ];
 
+/**
+ * A lone Greek consonant (`π`, `π΄`) is a numeral or an apparatus siglum. Without
+ * this it matches the elided `π'` of the treebanks and becomes ἐπί.
+ */
+const LONE_CONSONANT = /^[βγδζθκλμνξπρσςτφχψ]$/;
+
 function resolve(surface: string, chain: Resolver[]): Resolution | null {
+  if (LONE_CONSONANT.test(surface.toLowerCase().replace(/[^\p{L}'’ʼ᾽᾿]/gu, ''))) return null;
   for (const r of chain) {
     const hit = r(surface);
     if (hit) return hit;

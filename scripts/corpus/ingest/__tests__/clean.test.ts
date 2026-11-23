@@ -24,13 +24,13 @@ function clean(...sentences: string[]): string[] {
 
 describe('isJunkToken', () => {
   it('drops section numbers however they are wrapped', () => {
-    for (const s of ['12', '[1]', '[5.6]', '(18)', '24;', '3.', '5)', '[F3]', '22a']) {
+    for (const s of ['12', '[1]', '[5.6]', '(18)', '24;', '3.', '5)', '[F3]', '22a', 'l0.']) {
       expect(isJunkToken(s, 'lat'), s).toBe(true);
     }
   });
 
   it('keeps words, bracketed words and numerals written as words', () => {
-    for (const s of ['[vero]', '(nam', 'est),', 'qu[i]a', 'XII', 'L.', 'es1']) {
+    for (const s of ['[vero]', '(nam', 'est),', 'qu[i]a', 'XII', 'L.', 'es1', 'O', 'lO']) {
       expect(isJunkToken(s, 'lat'), s).toBe(false);
     }
   });
@@ -86,6 +86,13 @@ describe('cleanSections — mis-decoded tokens', () => {
       'inhonoratis me. Ego autem',
       'Abraham vidisti?" Dixit eis',
     ]);
+  });
+
+  it('corrects a known misprint of the source', () => {
+    const s = section('tamen hanc sufferre molestum es1');
+    s.sentences[0].tokens[4].lemma = 'es1';
+    expect(cleanSections([s], 'lat').tokensRepaired).toBe(1);
+    expect(s.sentences[0].tokens[4]).toMatchObject({ surface: 'est', normalized: 'est', lemma: '' });
   });
 
   it('does not strip macrons from text that was decoded correctly', () => {

@@ -31,6 +31,9 @@ const WRAPPING = /^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu;
 /** Verse-line label (`22a`, `23b`) — digits first, so never a word. */
 const LINE_LABEL = /^\d+[a-z]$/;
 
+/** A number mistyped with letters that look like digits (`l0` for `10`, `1O`). */
+const LOOKALIKE_NUMBER = /^(?=.*\d)[\dlO]+$/;
+
 /** Bracketed fragment number (`[F3]`, the Fuldense fragment of Tertullian). */
 const FRAGMENT_NUMBER = /^\[[A-Z]\d+\]$/;
 
@@ -62,7 +65,7 @@ export function isJunkToken(surface: string, languageId: string): boolean {
   if (PUNCT_ONLY.test(s)) return true;
   if (DIGIT_ONLY.test(s)) return true;
   const core = s.replace(WRAPPING, '');
-  if (DIGIT_ONLY.test(core) || LINE_LABEL.test(core) || FRAGMENT_NUMBER.test(s)) return true;
+  if (DIGIT_ONLY.test(core) || LINE_LABEL.test(core) || LOOKALIKE_NUMBER.test(core) || FRAGMENT_NUMBER.test(s)) return true;
   if (UNDECODED_ESCAPE.test(s)) return true;
   const script = PRIMARY_SCRIPT[languageId];
   if (script && !script.test(s)) return true;
@@ -95,6 +98,14 @@ const DASH_ONLY = /^[–—]+$/;
 
 /** A verse or note number run onto the end of a word: `me.50`, `vidisti?"58`. */
 const GLUED_NUMBER = /^(.*\p{L}.*[.?!;:,"'”’])\d+$/u;
+
+/**
+ * Misprints in the Latin Library source, corrected by hand. Keyed by the exact
+ * token, each one a string that is not a Latin word, so nothing real can match.
+ */
+const SOURCE_MISPRINTS: Record<string, string> = {
+  es1: 'est', // Disticha Catonis 2.13: "tamen hanc sufferre molestum est"
+};
 
 // ── Latin Library page furniture ─────────────────────────────────────────────
 
@@ -215,7 +226,7 @@ function repairTokens(sentence: CleanableSentence, languageId: string, stats: Cl
   for (const token of sentence.tokens) {
     let surface = repairMojibake(token.surface);
     if (surface !== token.surface && languageId === 'lat') surface = stripMacrons(surface);
-    if (languageId === 'lat') surface = surface.replace(GLUED_NUMBER, '$1');
+    if (languageId === 'lat') surface = SOURCE_MISPRINTS[surface] ?? surface.replace(GLUED_NUMBER, '$1');
     if (surface === token.surface) {
       kept.push(token);
       continue;
