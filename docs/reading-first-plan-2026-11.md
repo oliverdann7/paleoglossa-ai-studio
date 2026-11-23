@@ -93,6 +93,7 @@ are the reason to choose it, and Scholar view should lead with them.
 | Next reading at the end of a text | Done — `src/lib/reading/nextReading.ts`, reader `NextReadingCard` |
 | Phrase selection | Done — `src/lib/reading/phrases.ts`, reader `PhraseBar` |
 | Next reading by vocabulary coverage | Done — `src/lib/reading/coverage.ts`, served lemma profiles |
+| Hebrew lemma consistency between samples and served text | Done — see `docs/vocabulary-identity.md`, "Biblical Hebrew" |
 | Read / Study / Scholar switch | Dropped — the reader already has five display modes |
 
 Pathway order is editorial and lives in one file. The chosen destination is stored per

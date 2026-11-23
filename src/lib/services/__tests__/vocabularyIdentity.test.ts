@@ -300,6 +300,22 @@ describe('writes use the same identity as reads', () => {
   });
 });
 
+describe('Biblical Hebrew words saved under an old sample lemma', () => {
+  it('become the dictionary-form item, merging with one saved from the served text', async () => {
+    // Saved from a bundled sample before the samples used dictionary forms…
+    seed(legacyVocabDocId('היה', 'hbo'), vocabDoc('היה', 'hbo', { status: 'KNOWN' }));
+    // …and the same verb met again in the served Genesis.
+    seed(vocabDocId('הָיָה', 'hbo'), vocabDoc('הָיָה', 'hbo', { status: 'LEARNING' }));
+
+    const { map, moved } = await loadAndRepair();
+    expect(moved).toBe(1);
+    expect(map[vocabKey('הָיָה', 'hbo')].state).toBe(WordState.KNOWN);
+    expect(stored().map((d) => d.id)).toEqual([vocabDocId('הָיָה', 'hbo')]);
+
+    expect((await loadAndRepair()).moved).toBe(0);
+  });
+});
+
 describe('un-lemmatized tokens', () => {
   it('refuses an empty lemma, which would be one entry shared by every such word', async () => {
     await VocabularyService.setWordState(uid, '', WordState.LEARNING, 'grc');
