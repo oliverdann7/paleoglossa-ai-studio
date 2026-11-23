@@ -76,7 +76,7 @@ are the reason to choose it, and Scholar view should lead with them.
 |---|---|---|
 | 1 | Vocabulary identity: language scoping, normalization, document IDs, self-healing repair, empty-lemma fix | Done |
 | 2 | Repair the three stale Playwright specs; correct `normalizeTimestamp` SRS default; fix `CLAUDE.md` collections table | Done |
-| 3 | Corpus lemmatization backfill for served texts (ingestion pipeline) | Largest learner-visible gain |
+| 3 | Corpus lemmatization backfill for served texts (ingestion pipeline) | **Latin and Classical Greek done** (`scripts/corpus/lemmatize/README.md`, `reports/lemma-backfill.md`). Remaining: Koine LXX/patristics, Coptic, Aramaic, Sanskrit; carrying saved surface-form words over to their lemma |
 | 4 | Phrase selection: token ranges as phrase vocabulary | |
 | 5 | Read / Study / Scholar switch over existing panels; translation mode control | |
 | 6 | "Next reading" after a section; goals; pathways for Koine, Latin, Hebrew | |

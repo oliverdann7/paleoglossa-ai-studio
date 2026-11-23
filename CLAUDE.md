@@ -175,6 +175,7 @@ first a11y test (`src/components/ui/__tests__/EmptyState.a11y.test.tsx`).
 2. Drop the source file in `.sources/` and run `npx tsx scripts/corpus/ingest/run-manifest.ts --only <textId> --emit-local` (static JSON in `public/corpus-data/`) or push to Firestore
 3. Add a bundled `remoteSections` metadata stub (see `src/data/corpus/*-full.ts`) — its `sentenceCount`/`wordCount` are locked against the served JSON by `validation.test.ts`
 4. After regenerating served JSON, run `npx tsx scripts/corpus/clean-served-corpus.ts` (junk-token strip, truthful capability flags, index rebuild)
+5. For Latin or Classical Greek text-only sources, run `npx tsx scripts/corpus/lemmatize-served.ts` to give tokens real lemmas (`scripts/corpus/lemmatize/README.md`)
 
 **Small curated samples** (beginner excerpts, hand-annotated) live in the bundle:
 

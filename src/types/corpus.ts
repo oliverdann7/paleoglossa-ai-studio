@@ -63,6 +63,12 @@ export interface Token {
   treebankSource?: string;
   /** Set to 'ai-generated' when morphology was filled by the offline AI stage (never overwrites treebank data). */
   morphSource?: string;
+  /**
+   * Set when the lemma was looked up from the surface form rather than annotated
+   * in context: 'form-table' (treebank form table) or 'whitaker' (Whitaker's
+   * WORDS). Absent = source annotation. See scripts/corpus/lemmatize-served.ts.
+   */
+  lemmaSource?: string;
 }
 
 export interface Sentence {

@@ -77,3 +77,9 @@ add up, contexts/notes/gloss are kept).
   Sharing them is a product decision, not made here.
 - Un-lemmatized tokens are tracked by surface form, so each inflected form is its own item.
   The real fix is lemmatizing the corpus (see the plan document).
+- That fix has run for served Latin and Classical Greek (2026-11,
+  `scripts/corpus/lemmatize-served.ts`). It also replaced placeholder lemmas that were a copy
+  of the surface (`τον` for `τὸν`, `mihi` for `mihi`). A word a learner saved from one of
+  those tokens is still in their vocabulary under the old form, but the reader now asks for
+  the lemma, so the token reads as new until it is marked again. Nothing is deleted; there
+  is no automatic carry-over yet.
