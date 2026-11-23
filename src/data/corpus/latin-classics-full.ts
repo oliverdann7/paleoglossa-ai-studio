@@ -242,7 +242,7 @@ export const TEXT_DISTICHA_CATONIS_FULL: Text = {
   isComplete: false,
   isSample: false,
   sentenceCount: 144,
-  wordCount: 2088,
+  wordCount: 2087,
   remoteSections: true,
   sectionsPreview: [
     { id: 'lat-disticha-catonis-full-1', label: 'Liber I' },

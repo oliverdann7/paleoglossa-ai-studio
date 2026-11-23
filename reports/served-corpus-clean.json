@@ -638,35 +638,35 @@
   {
     "id": "lat-augustine-confessiones-full",
     "language": "lat",
-    "tokensRemoved": 497,
-    "sentencesRemoved": 90,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
     "tokensRepaired": 0,
     "sentenceCount": 3904,
     "wordCount": 78771,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-cicero-in-catilinam-full",
     "language": "lat",
-    "tokensRemoved": 162,
-    "sentencesRemoved": 18,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
     "tokensRepaired": 0,
     "sentenceCount": 744,
     "wordCount": 12581,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-disticha-catonis-full",
     "language": "lat",
-    "tokensRemoved": 2,
+    "tokensRemoved": 1,
     "sentencesRemoved": 0,
-    "tokensRepaired": 0,
+    "tokensRepaired": 1,
     "sentenceCount": 144,
-    "wordCount": 2088,
+    "wordCount": 2087,
     "hasMorphology": false,
     "hasTranslation": false,
     "changed": true
@@ -674,110 +674,110 @@
   {
     "id": "lat-jerome-vita-malchi-full",
     "language": "lat",
-    "tokensRemoved": 11,
-    "sentencesRemoved": 2,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
     "tokensRepaired": 0,
     "sentenceCount": 172,
     "wordCount": 2023,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-jerome-vita-pauli-full",
     "language": "lat",
-    "tokensRemoved": 83,
-    "sentencesRemoved": 8,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
     "tokensRepaired": 0,
     "sentenceCount": 155,
     "wordCount": 2372,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-livy-ab-urbe-condita-full",
     "language": "lat",
-    "tokensRemoved": 353,
-    "sentencesRemoved": 5,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
     "tokensRepaired": 0,
     "sentenceCount": 6424,
     "wordCount": 87628,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-ovid-metamorphoses-full",
     "language": "lat",
-    "tokensRemoved": 112,
-    "sentencesRemoved": 26,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
     "tokensRepaired": 0,
     "sentenceCount": 2912,
     "wordCount": 77966,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-sallust-catilinae-full",
     "language": "lat",
-    "tokensRemoved": 66,
-    "sentencesRemoved": 1,
-    "tokensRepaired": 1,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
+    "tokensRepaired": 0,
     "sentenceCount": 807,
     "wordCount": 10666,
     "hasMorphology": true,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-tacitus-annals-full",
     "language": "lat",
-    "tokensRemoved": 424,
-    "sentencesRemoved": 13,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
     "tokensRepaired": 0,
     "sentenceCount": 3361,
     "wordCount": 48216,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-tertullian-apologeticum-full",
     "language": "lat",
-    "tokensRemoved": 570,
-    "sentencesRemoved": 49,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
     "tokensRepaired": 0,
     "sentenceCount": 1382,
     "wordCount": 19984,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-vergil-aeneid-full",
     "language": "lat",
-    "tokensRemoved": 84,
-    "sentencesRemoved": 22,
-    "tokensRepaired": 115,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
+    "tokensRepaired": 0,
     "sentenceCount": 3017,
     "wordCount": 63715,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "lat-vulgate-john-full",
     "language": "lat",
-    "tokensRemoved": 28,
-    "sentencesRemoved": 1,
-    "tokensRepaired": 4,
+    "tokensRemoved": 0,
+    "sentencesRemoved": 0,
+    "tokensRepaired": 0,
     "sentenceCount": 1314,
     "wordCount": 14049,
     "hasMorphology": false,
     "hasTranslation": false,
-    "changed": true
+    "changed": false
   },
   {
     "id": "san-bhagavad-gita-full",
