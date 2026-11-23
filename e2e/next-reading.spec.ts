@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import { test, expect } from '@playwright/test';
 import { enableDemoMode } from './helpers/demoMode';
 
@@ -33,6 +34,48 @@ test('finishing a text off the pathway still offers something to read in that la
   await expect(card).toContainText('More by John');
   await page.getByTestId('next-reading-open').click();
   await expect(page).toHaveURL(/\/app\/reader\/grc-koine-/);
+});
+
+test('a learner with vocabulary is offered a text within reach, with their coverage of it', async ({
+  page,
+}) => {
+  // Know the 1,500 commonest Koine lemmas of the served corpus.
+  const profile = JSON.parse(
+    readFileSync('public/corpus-data/lemma-profiles/grc-koine.json', 'utf-8')
+  ) as { lemmas: string[]; texts: Record<string, { counts: number[] }> };
+  const totals = new Array<number>(profile.lemmas.length).fill(0);
+  for (const { counts } of Object.values(profile.texts)) {
+    for (let i = 0; i + 1 < counts.length; i += 2) totals[counts[i]] += counts[i + 1];
+  }
+  const known = profile.lemmas
+    .map((lemma, at) => ({ lemma, total: totals[at] }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 1500);
+  await page.addInitScript(
+    (lemmas: string[]) => {
+      const map: Record<string, object> = {};
+      for (const lemma of lemmas) {
+        map[`grc-koine:${lemma}`] = {
+          state: 'KNOWN',
+          lemma,
+          languageId: 'grc-koine',
+          addedAt: '2026-01-01T00:00:00.000Z',
+        };
+      }
+      localStorage.setItem('paleoglossa_knowledge', JSON.stringify(map));
+    },
+    known.map((k) => k.lemma)
+  );
+
+  await page.goto('/app/reader/grc-koine-3-john-full');
+  await expect(page.getByTestId('word-token').first()).toBeVisible({ timeout: 15_000 });
+
+  const coverage = page.getByTestId('next-reading-coverage');
+  await expect(coverage).toBeVisible({ timeout: 15_000 });
+  const percent = Number((await coverage.textContent())?.match(/(\d+)%/)?.[1]);
+  expect(percent).toBeGreaterThanOrEqual(85);
+  expect(percent).toBeLessThanOrEqual(98);
+  await expect(page.getByTestId('next-reading')).toContainText('Within reach');
 });
 
 test('dashboard shows the pathway for the active language and lets the learner pick a goal', async ({

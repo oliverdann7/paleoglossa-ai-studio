@@ -92,12 +92,24 @@ are the reason to choose it, and Scholar view should lead with them.
 | Pathways (Koine, Latin, Hebrew) with a chosen destination | Done — `src/lib/reading/pathways.ts`, dashboard `PathwayCard` |
 | Next reading at the end of a text | Done — `src/lib/reading/nextReading.ts`, reader `NextReadingCard` |
 | Phrase selection | Done — `src/lib/reading/phrases.ts`, reader `PhraseBar` |
+| Next reading by vocabulary coverage | Done — `src/lib/reading/coverage.ts`, served lemma profiles |
 | Read / Study / Scholar switch | Dropped — the reader already has five display modes |
 
 Pathway order is editorial and lives in one file. The chosen destination is stored per
-device (`paleoglossa_reading_goals`), not synced. Next-reading uses level, author and
-genre off the path; it does not yet use vocabulary coverage, because served texts carry
-no bundled tokens to measure against.
+device (`paleoglossa_reading_goals`), not synced.
+
+Next-reading uses the learner's vocabulary (2026-11-23). Served texts bundle no tokens,
+so each language ships a lemma profile — `public/corpus-data/lemma-profiles/<language>.json`,
+written by `scripts/corpus/build-lemma-profiles.ts` and locked against the served JSON by
+`scripts/corpus/lemmaProfiles.test.ts`: the distinct vocabulary keys of every served text
+with their counts (18 KB for Coptic to 1 MB for classical Greek, fetched once per language
+when a corpus text is opened). `src/lib/reading/coverage.ts` turns a profile, or a bundled
+text's own tokens, into "known running words" and "lemmas never met". Off the path, a text
+with 85–98% known words is preferred and offered as "Within reach of the words you know";
+a text already begun still comes first, and the pathway still comes before both. The card
+shows the coverage of whatever it suggests. Known means KNOWN or FAMILIAR, as in the
+reader's own percentage. Not done: coverage on the dashboard pathway card and in the
+library for served texts, which could read the same profiles.
 
 Phrases: shift-click (or Shift+Enter) a second word in the sentence of the selected word,
 or use "Select phrase from here" in the word menu (right-click or long-press) and then

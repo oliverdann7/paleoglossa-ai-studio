@@ -12,9 +12,17 @@ import {
 } from '../lib/reading/phrases.js';
 import { PhraseBar } from '../components/reader/PhraseBar.js';
 import { pickNextReading } from '../lib/reading/nextReading.js';
+import {
+  countLemmas,
+  coverageFromProfile,
+  coverageOf,
+  type LemmaProfileFile,
+  type TextCoverage,
+} from '../lib/reading/coverage.js';
+import { parseVocabKey } from '../lib/vocabulary/identity.js';
 import { getReadingGoal } from '../lib/hooks/useReadingGoal.js';
 import { NextReadingCard } from '../components/reader/NextReadingCard.js';
-import { corpusService } from '../lib/services/corpusService.js';
+import { corpusService, loadLemmaProfile } from '../lib/services/corpusService.js';
 import { useKnowledge } from '../lib/hooks/useKnowledge.js';
 import { useSettings } from '../lib/hooks/useSettings.js';
 import { useReaderState } from '../lib/contexts/ReaderContext.js';
@@ -59,6 +67,24 @@ export const Reader = () => {
   }
   return <ReaderInner />;
 };
+
+/** Lemma counts of a bundled text, by text ID. Bundled tokens never change at runtime. */
+const bundledCounts = new Map<string, Map<string, number>>();
+function bundledLemmaCounts(text: {
+  id: string;
+  language: string;
+  sectionsPreview?: { id: string }[];
+}): Map<string, number> {
+  let counts = bundledCounts.get(text.id);
+  if (!counts) {
+    const tokens = (text.sectionsPreview ?? []).flatMap(
+      (preview) => CorpusDB.getSection(preview.id)?.sentences.flatMap((s) => s.tokens) ?? []
+    );
+    counts = countLemmas(tokens, text.language);
+    bundledCounts.set(text.id, counts);
+  }
+  return counts;
+}
 
 const ReaderInner = () => {
   const { textId } = useParams();
@@ -764,6 +790,46 @@ const ReaderInner = () => {
     };
   }, [getAllProgress, textId]);
 
+  // How much of each candidate the learner already knows. Served texts are
+  // measured from the language's lemma profile; `undefined` while it loads, so
+  // that bundled and served texts are only ever compared on equal terms.
+  const isCorpusText = !!text && sourceKind !== 'import';
+  const [lemmaProfile, setLemmaProfile] = useState<
+    { languageId: string; file: LemmaProfileFile | null } | undefined
+  >(undefined);
+  useEffect(() => {
+    if (!isCorpusText) return;
+    let active = true;
+    loadLemmaProfile(textLanguageId).then((file) => {
+      if (active) setLemmaProfile({ languageId: textLanguageId, file });
+    });
+    return () => {
+      active = false;
+    };
+  }, [isCorpusText, textLanguageId]);
+
+  const candidateCoverage = useMemo(() => {
+    if (!isCorpusText || !lemmaProfile || lemmaProfile.languageId !== textLanguageId) {
+      return undefined;
+    }
+    const states = new Map<string, string>();
+    for (const [key, info] of Object.entries(knowledge)) {
+      const { languageId, normalized } = parseVocabKey(key);
+      if (languageId === textLanguageId) states.set(normalized, info.state);
+    }
+    if (states.size === 0) return undefined;
+    const stateOf = (lemma: string) => states.get(lemma) ?? WordState.NEW;
+    const coverage: Map<string, TextCoverage> = lemmaProfile.file
+      ? coverageFromProfile(lemmaProfile.file, stateOf)
+      : new Map();
+    for (const candidate of CorpusDB.getTextsByLanguage(textLanguageId)) {
+      if (coverage.has(candidate.id) || candidate.remoteSections) continue;
+      const measured = coverageOf(bundledLemmaCounts(candidate), stateOf);
+      if (measured) coverage.set(candidate.id, measured);
+    }
+    return coverage;
+  }, [isCorpusText, lemmaProfile, textLanguageId, knowledge]);
+
   const nextReading = useMemo(() => {
     if (!text || sourceKind === 'import') return null;
     const current = CorpusDB.getText(text.id);
@@ -772,8 +838,9 @@ const ReaderInner = () => {
     return pickNextReading(current, candidates, {
       ...textProgress,
       goalTextId: getReadingGoal(current.language),
+      coverage: candidateCoverage,
     });
-  }, [text, sourceKind, textProgress]);
+  }, [text, sourceKind, textProgress, candidateCoverage]);
 
   const openNextReading = useCallback(
     (id: string) => {

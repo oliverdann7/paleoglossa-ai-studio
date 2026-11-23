@@ -1,4 +1,5 @@
 import { apiFetch } from './apiFetch.js';
+import { LEMMA_PROFILE_VERSION, type LemmaProfileFile } from '../reading/coverage.js';
 
 export interface CorpusSectionPreview {
   id: string;
@@ -88,6 +89,27 @@ async function localRecord(textId: string): Promise<LocalRecord | null> {
   }
   _localRecordCache.set(textId, rec);
   return rec;
+}
+
+const _lemmaProfiles = new Map<string, Promise<LemmaProfileFile | null>>();
+
+/**
+ * The lemma profile of a language's served texts (see lib/reading/coverage.ts),
+ * or null when the language has none. Fetched once per language.
+ */
+export function loadLemmaProfile(languageId: string): Promise<LemmaProfileFile | null> {
+  let pending = _lemmaProfiles.get(languageId);
+  if (!pending) {
+    pending = fetch(staticUrl(`lemma-profiles/${encodeURIComponent(languageId)}.json`))
+      .then(async (res) => {
+        if (!res.ok) return null;
+        const file = (await res.json()) as LemmaProfileFile;
+        return file?.version === LEMMA_PROFILE_VERSION ? file : null;
+      })
+      .catch(() => null);
+    _lemmaProfiles.set(languageId, pending);
+  }
+  return pending;
 }
 
 export const corpusService = {
