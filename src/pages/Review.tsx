@@ -43,7 +43,11 @@ import { XP_REWARDS } from '../lib/services/xpService.js';
 import { ReviewTutorial } from '../components/review/ReviewTutorial.js';
 import { checkAndUnlock } from '../lib/services/achievementService.js';
 import { ReviewAudioButton } from '../components/review/ReviewAudioButton.js';
-import { isReviewAudioSupported } from '../components/review/reviewAudioSupport.js';
+import { AudioService } from '../lib/services/audioService.js';
+import {
+  isReviewAudioSupported,
+  reviewCardAudio,
+} from '../components/review/reviewAudioSupport.js';
 import { logSilentFailure } from '../lib/utils/logSilent.js';
 
 interface ReviewSettings {
@@ -51,6 +55,8 @@ interface ReviewSettings {
   maxCards: number;
   includeMorphology: boolean;
   cardWeighting: CardWeighting;
+  /** Speak each card as it appears, and the answer when it is revealed. */
+  autoPlayAudio: boolean;
 }
 
 const DEFAULT_SETTINGS: ReviewSettings = {
@@ -65,6 +71,7 @@ const DEFAULT_SETTINGS: ReviewSettings = {
   maxCards: 30,
   includeMorphology: true,
   cardWeighting: 'adaptive',
+  autoPlayAudio: false,
 };
 
 const SETTINGS_KEY = 'paleoglossa_review_settings';
@@ -513,6 +520,25 @@ export const Review = () => {
   }, [isStarted, isFinished, isRevealed, handleRate]);
 
   const currentCard = queue[currentCardIndex];
+  // What this card can pronounce, in languages that have a recorded voice.
+  const cardAudio =
+    currentCard && isReviewAudioSupported(currentCard.languageId)
+      ? reviewCardAudio(currentCard)
+      : {};
+
+  // With auto-play on, fetch this card's answer and the next card's question
+  // ahead of time, so the voice starts with the card instead of after it.
+  useEffect(() => {
+    if (!settings.autoPlayAudio || !isStarted || isFinished) return;
+    const current = queue[currentCardIndex];
+    const next = queue[currentCardIndex + 1];
+    const ahead: [string | undefined, string][] = [];
+    if (current) ahead.push([reviewCardAudio(current).back, current.languageId]);
+    if (next) ahead.push([reviewCardAudio(next).front, next.languageId]);
+    for (const [text, languageId] of ahead) {
+      if (text && isReviewAudioSupported(languageId)) void AudioService.generateTTS(text, languageId);
+    }
+  }, [settings.autoPlayAudio, isStarted, isFinished, queue, currentCardIndex]);
   const progress = queue.length > 0 ? (currentCardIndex / queue.length) * 100 : 0;
   const correctCount = sessionResults.filter((r) => r.rating !== 'AGAIN').length;
   const accuracy = sessionResults.length > 0 ? correctCount / sessionResults.length : 0;
@@ -649,6 +675,31 @@ export const Review = () => {
                 {t('review.includeMorphology', 'Include morphology/parsing cards')}
               </span>
             </label>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                data-testid="review-autoplay-audio"
+                checked={settings.autoPlayAudio}
+                onChange={() => {
+                  const updated = { ...settings, autoPlayAudio: !settings.autoPlayAudio };
+                  setSettings(updated);
+                  saveSettings(updated);
+                }}
+                className="w-4 h-4 accent-blue"
+              />
+              <span className="text-[14px] text-ink2">
+                {t('review.autoPlayAudio', 'Play audio automatically')}
+              </span>
+            </label>
+            <p className="text-[12px] text-ink2 mt-1.5 leading-snug">
+              {t(
+                'review.autoPlayAudioHelp',
+                'Each card is read aloud as it appears, and the answer when you reveal it. Available for Greek, Latin, Hebrew and Syriac.'
+              )}
+            </p>
           </div>
         </div>
       </div>
@@ -1072,11 +1123,11 @@ export const Review = () => {
           >
             {currentCard.question}
           </h3>
-          {isReviewAudioSupported(currentCard.languageId) &&
-            currentCard.question === currentCard.term && (
+          {cardAudio.front && (
               <ReviewAudioButton
-                text={currentCard.term}
+                text={cardAudio.front}
                 languageId={currentCard.languageId}
+                autoPlay={settings.autoPlayAudio}
                 label={t('review.hearPronunciation', 'Hear pronunciation')}
                 className="inline-flex items-center justify-center w-10 h-10 rounded-full text-blue bg-blue/10 hover:bg-blue/20 active:scale-95 transition-all shrink-0 mt-1"
               />
@@ -1104,14 +1155,14 @@ export const Review = () => {
                   <p className="text-[20px] font-serif font-medium text-jade">
                     {currentCard.answer}
                   </p>
-                  {isReviewAudioSupported(currentCard.languageId) &&
-                    currentCard.answer === currentCard.term && (
-                      <ReviewAudioButton
-                        text={currentCard.term}
-                        languageId={currentCard.languageId}
-                        label={t('review.hearPronunciation', 'Hear pronunciation')}
-                      />
-                    )}
+                  {cardAudio.back && (
+                    <ReviewAudioButton
+                      text={cardAudio.back}
+                      languageId={currentCard.languageId}
+                      autoPlay={settings.autoPlayAudio}
+                      label={t('review.hearPronunciation', 'Hear pronunciation')}
+                    />
+                  )}
                 </div>
               </motion.div>
             )}
