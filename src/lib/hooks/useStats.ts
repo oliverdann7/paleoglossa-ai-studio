@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { StatsService, ReadingStats } from '../services/statsService.js';
 import { useAuth } from './useAuth.js';
 import { STORAGE_KEYS } from '../constants/storage.js';
+import { checkAndUnlock } from '../services/achievementService.js';
 
 export const useStats = (languageId?: string) => {
   const { user } = useAuth();
@@ -112,6 +113,8 @@ export const useStats = (languageId?: string) => {
             currentStats.freezesTotal = freezesTotal;
             currentStats.freezesUsed = freezesUsed;
             currentStats.lastActive = new Date().toISOString();
+            // Fire-and-forget: the streak just changed (signed-in users only).
+            if (userId) checkAndUnlock(userId, 'streak_updated', { streak: newStreak });
           }
         }
 

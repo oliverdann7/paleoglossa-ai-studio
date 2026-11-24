@@ -9,6 +9,7 @@ import {
   orderBy,
   limit,
   writeBatch,
+  getCountFromServer,
 } from 'firebase/firestore';
 import { calculateSM2, SRSState, Rating } from '../srs/sm2.js';
 import { calculateFSRS, FSRSState, FSRRating } from '../srs/fsrs.js';
@@ -17,6 +18,13 @@ import { markPendingWrite, markWriteSuccess, markWriteFailure } from '../sync/sy
 import { reportPersistenceError } from '../errors/persistenceReporter.js';
 import { classifyFirestoreError } from '../errors/firestoreErrors.js';
 import { recordMilestone } from '../hooks/useBeginnerProgress.js';
+import { checkAndUnlock } from './achievementService.js';
+
+/** Palimpsestus threshold — mirrors the `word_reviewed` case in achievementService. */
+const REPEATED_REVIEW_THRESHOLD = 5;
+// Users for whom a word has already reached the threshold in this page load:
+// the achievement is settled either way, so later reviews skip the count query.
+const repeatedReviewSettled = new Set<string>();
 
 // Toggle to use FSRS algorithm
 const USE_FSRS = true;
@@ -307,7 +315,29 @@ export class ReviewService {
       recordMilestone(milestoneLang, 'firstReviewCompleted');
     }
 
+    // Fire-and-forget achievement check: how often has this word been reviewed?
+    void this.checkRepeatedReview(userId, item.id);
+
     return nextState;
+  }
+
+  /** Number of review answers logged for one vocabulary item (this one included). */
+  static async getWordReviewCount(userId: string, vocabItemId: string): Promise<number> {
+    const snap = await getCountFromServer(
+      query(collection(db, `users/${userId}/reviewLogs`), where('vocabItemId', '==', vocabItemId))
+    );
+    return snap.data().count;
+  }
+
+  private static async checkRepeatedReview(userId: string, vocabItemId: string): Promise<void> {
+    if (!userId || repeatedReviewSettled.has(userId)) return;
+    try {
+      const reviewCount = await this.getWordReviewCount(userId, vocabItemId);
+      if (reviewCount >= REPEATED_REVIEW_THRESHOLD) repeatedReviewSettled.add(userId);
+      await checkAndUnlock(userId, 'word_reviewed', { reviewCount });
+    } catch {
+      // Non-critical (offline, count unavailable) — the next review asks again.
+    }
   }
 
   private static determineNewStatus(
