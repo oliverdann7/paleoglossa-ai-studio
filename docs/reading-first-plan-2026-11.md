@@ -94,6 +94,7 @@ are the reason to choose it, and Scholar view should lead with them.
 | Phrase selection | Done — `src/lib/reading/phrases.ts`, reader `PhraseBar` |
 | Next reading by vocabulary coverage | Done — `src/lib/reading/coverage.ts`, served lemma profiles |
 | Hebrew lemma consistency between samples and served text | Done — see `docs/vocabulary-identity.md`, "Biblical Hebrew" |
+| Import: status, confidence, corrections | Done — `src/lib/imports/`, see below |
 | Read / Study / Scholar switch | Dropped — the reader already has five display modes |
 
 Pathway order is editorial and lives in one file. The chosen destination is stored per
@@ -119,3 +120,36 @@ with `kind: 'phrase'` and its member lemmas, and reviewed like any other item. S
 phrases are underlined wherever the same words recur. "Save as Phrase" on a sentence, which
 saved the whole sentence, is now labelled "Save sentence". Not done: selecting across
 sentences, dragging to select, and an AI-suggested meaning.
+
+Import (2026-11-24). Three things were found broken before anything was added:
+
+- **An import could not be opened.** New imports get the ID `imp_<timestamp>`, but the
+  reader recognized only `imp-` and `import-`, so "Open in Reader" led to an empty page.
+  `isImportId` (`src/lib/imports/status.ts`) is now the one test for it.
+- **Spaces were words.** The reader dropped each imported token's `type`, so whitespace
+  tokens were clickable words and counted in the known-word percentage.
+- **A retry used the wrong language**: the one selected on the page, not the import's.
+
+Status. `describeImport` reads `status`, `analysisStatus`, the sentences and the error log
+into one phase: analyzed, saved without analysis, analyzing, stalled (marked as running
+but silent for five minutes — a closed tab), or failed. The result screen no longer says
+"Processing Complete" over a text that was only split into words, and offers the analysis
+again on the spot. The history is available to guests too, shows the phase and the last
+error, lets any import with sentences be opened, and lets anything but a finished or
+running analysis be retried. A retry that throws leaves the import retryable.
+
+Confidence. The analysis already stored a confidence per token; it was shown only as a
+figure in the morphology panel. A word below 0.6 that nobody has checked now has a dashed
+underline in the reader and a note in the word panel, and the result screen counts them.
+
+Corrections. In an imported text the word panel offers "Correct the dictionary form".
+The correction applies to every token with the same surface form and the same current
+lemma (`applyLemmaCorrection`), is saved on the import, clears the uncertainty mark, and
+carries the word's existing knowledge state to the corrected lemma, under which it is
+tracked from then on.
+
+Not done: remembering a correction for later imports of the same form; corrections to
+gloss or morphology on the import itself (a personal gloss is already kept with the
+vocabulary item); and the analysis prompt, which was not touched, so how often the
+service really reports low confidence has not been measured here.
+

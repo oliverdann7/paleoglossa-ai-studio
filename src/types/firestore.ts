@@ -62,6 +62,8 @@ export interface ImportedToken {
   morphology?: Record<string, string>;
   confidence?: number;
   aiGenerated?: boolean;
+  /** The learner corrected this token's lemma; it is no longer the analysis's guess. */
+  corrected?: boolean;
 }
 
 export interface ImportedSentence {

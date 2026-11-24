@@ -156,7 +156,7 @@ See `.env.example` for the full list. Required for local dev:
 These areas have no tests — add them when touching the feature:
 - Stripe webhook handling (`api/_routes/billing.ts`; only the mappers are tested)
 - Gemini quota-exceeded fallback paths (rate limiter + usage tracking are tested)
-- PDF/DOCX import edge cases (`src/lib/importers/`)
+- PDF/DOCX import edge cases (`src/lib/importers/`; import status and lemma corrections are tested in `src/lib/imports/__tests__/` and `e2e/import.spec.ts`)
 - Service worker itself (offline service + sync status have unit tests)
 - Marketplace, Community/Challenges, and AudioLab pages
 

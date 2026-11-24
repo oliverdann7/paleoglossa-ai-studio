@@ -36,6 +36,8 @@ import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { vocabKey } from '../lib/vocabulary/identity.js';
 import { computeAnalysisQuality } from '../lib/utils/analysisQuality.js';
 import { trackEvent, ANALYTICS_EVENTS } from '../lib/analytics.js';
+import { describeImport, type ImportPhase } from '../lib/imports/status.js';
+import { countUncertain } from '../lib/imports/corrections.js';
 
 export const Import = () => {
   const navigate = useNavigate();
@@ -101,7 +103,7 @@ export const Import = () => {
     return candidate.length > 80 ? candidate.slice(0, 80) + '…' : candidate;
   };
 
-  const calculateStats = (sentences: ImportedSentence[]) => {
+  const calculateStats = (sentences: ImportedSentence[], langId: string) => {
     const allTokens = sentences.flatMap((s) => s.tokens).filter((t) => t.type === 'word');
     const totalWords = allTokens.length;
     const uniqueLemmas = Array.from(
@@ -114,7 +116,7 @@ export const Import = () => {
     let newWords = 0;
 
     uniqueLemmas.forEach((lemma) => {
-      const info = knowledge[vocabKey(lemma, languageId)];
+      const info = knowledge[vocabKey(lemma, langId)];
       if (info) {
         const state = typeof info === 'string' ? info : info.state;
         if (state === WordState.KNOWN) knownWords++;
@@ -281,7 +283,13 @@ export const Import = () => {
     return sentences;
   }
 
-  const runAIAnalysis = async (rawText: string, importId: string, userId: string | null) => {
+  const runAIAnalysis = async (
+    rawText: string,
+    importId: string,
+    userId: string | null,
+    // The language of the import, which on a retry need not be the one selected now.
+    langId: string
+  ) => {
     let sentences: ImportedSentence[];
     let analysisStatus: 'analyzed' | 'raw' = 'analyzed';
     const errorLog: string[] = [];
@@ -290,7 +298,7 @@ export const Import = () => {
     const MAX_RETRIES = 3;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        const result = await AIClient.analyzeText(languageId, rawText);
+        const result = await AIClient.analyzeText(langId, rawText);
         sentences = result.sentences;
         analysisStatus = result.analysisStatus === 'analyzed' ? 'analyzed' : 'raw';
         break;
@@ -306,7 +314,7 @@ export const Import = () => {
       }
     }
 
-    const stats = calculateStats(sentences!);
+    const stats = calculateStats(sentences!, langId);
     const finalStatus =
       analysisStatus === 'analyzed' ? ('complete' as const) : ('partial' as const);
     const analysisQuality = computeAnalysisQuality(sentences!, analysisStatus);
@@ -436,11 +444,8 @@ export const Import = () => {
     setProcessingStep(t('import.linguisticAnalysis', 'Linguistic analysis...'));
 
     try {
-      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } = await runAIAnalysis(
-        text,
-        importId,
-        user?.uid || null
-      );
+      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } =
+        await runAIAnalysis(text, importId, user?.uid || null, languageId);
 
       if (errorLog.length > 0) setAnalysisError(errorLog[errorLog.length - 1]);
 
@@ -451,6 +456,7 @@ export const Import = () => {
         status,
         analysisStatus,
         analysisQuality,
+        errorLog: errorLog.length > 0 ? errorLog : undefined,
         updatedAt: new Date().toISOString(),
       };
 
@@ -478,42 +484,93 @@ export const Import = () => {
     setProcessingStep('');
   };
 
+  // Run the analysis again on a saved import: one that was only split into
+  // words, one that failed, or one whose analysis never reported back.
   const handleRetry = async (importItem: ImportedText) => {
-    if (!user || !importItem.id) return;
-    setRetryingId(importItem.id);
+    if (!importItem.id || retryingId) return;
+    const id = importItem.id;
+    const userId = user?.uid ?? null;
+    const patchLocal = (patch: Partial<ImportedText>) => {
+      setImportHistory((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+      setResult((current) => (current?.id === id ? { ...current, ...patch } : current));
+    };
+    setRetryingId(id);
+    trackEvent(ANALYTICS_EVENTS.IMPORT_RETRIED, {
+      languageId: importItem.languageId,
+      from: describeImport(importItem).phase,
+    });
     try {
-      await ImportService.updateImport(user.uid, importItem.id, {
-        status: 'processing',
-        errorLog: [],
-      });
-      const { sentences, stats, status, analysisStatus, analysisQuality, errorLog } = await runAIAnalysis(
+      if (userId) {
+        await ImportService.updateImport(userId, id, { status: 'processing', errorLog: [] });
+      }
+      const analysed = await runAIAnalysis(
         importItem.rawContent,
-        importItem.id,
-        user.uid
+        id,
+        userId,
+        importItem.languageId
       );
-      setImportHistory((prev) =>
-        prev.map((i) =>
-          i.id === importItem.id ? { ...i, sentences, stats, status, analysisStatus, analysisQuality, errorLog } : i
-        )
+      const patch: Partial<ImportedText> = {
+        sentences: analysed.sentences,
+        stats: analysed.stats,
+        status: analysed.status,
+        analysisStatus: analysed.analysisStatus,
+        analysisQuality: analysed.analysisQuality,
+        errorLog: analysed.errorLog.length > 0 ? analysed.errorLog : undefined,
+        updatedAt: new Date().toISOString(),
+      };
+      if (!userId) await ImportService.saveImport(null, { ...importItem, ...patch });
+      patchLocal(patch);
+      setAnalysisError(
+        analysed.errorLog.length > 0 ? analysed.errorLog[analysed.errorLog.length - 1] : null
       );
+      refreshImports();
     } catch (err: any) {
-      console.error('Retry failed:', err);
+      // Nothing was analysed and the record could not be updated: say so, and
+      // leave the import retryable rather than "processing" for ever.
+      const message = err?.message || 'Unexpected error';
+      const patch: Partial<ImportedText> = {
+        status: importItem.sentences?.length ? 'partial' : 'failed',
+        errorLog: [...(importItem.errorLog ?? []), message],
+        updatedAt: new Date().toISOString(),
+      };
+      patchLocal(patch);
+      try {
+        if (userId) await ImportService.updateImport(userId, id, patch);
+        else await ImportService.saveImport(null, { ...importItem, ...patch });
+      } catch {
+        // The failure is shown; storing it is best effort.
+      }
+      addToast(t('import.retryFailed', 'The analysis could not be run') + ': ' + message, 'error');
     } finally {
       setRetryingId(null);
     }
   };
 
   const loadHistory = async () => {
-    if (!user) return;
-    const imports = await ImportService.getImports(user.uid);
+    const imports = await ImportService.getImports(user?.uid ?? null);
     setImportHistory(
-      imports.sort(
+      [...imports].sort(
         (a, b) =>
           new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime()
       )
     );
     setShowHistory(true);
   };
+
+  const resultView = result ? describeImport(result) : null;
+  const resultAnalyzed = resultView?.phase === 'analyzed';
+  const resultUncertain = result ? countUncertain(result.sentences ?? []) : 0;
+
+  const phaseLabel = (phase: ImportPhase) =>
+    phase === 'analyzed'
+      ? t('import.phase.analyzed', 'Analyzed')
+      : phase === 'unanalyzed'
+        ? t('import.phase.unanalyzed', 'Saved without analysis')
+        : phase === 'analyzing'
+          ? t('import.phase.analyzing', 'Analyzing…')
+          : phase === 'stalled'
+            ? t('import.phase.stalled', 'Analysis did not finish')
+            : t('import.phase.failed', 'Analysis failed');
 
   const handleSample = (sample: string, langId: string) => {
     setText(sample);
@@ -981,70 +1038,93 @@ export const Import = () => {
               )}
             </button>
 
-            {user && (
-              <button
-                onClick={showHistory ? () => setShowHistory(false) : loadHistory}
-                className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-muted hover:text-ink transition-colors"
-              >
-                {showHistory ? 'Hide Import History' : 'View Import History'}
-              </button>
+            <button
+              data-testid="import-history-toggle"
+              onClick={showHistory ? () => setShowHistory(false) : loadHistory}
+              className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-muted hover:text-ink transition-colors"
+            >
+              {showHistory
+                ? t('import.hideHistory', 'Hide Import History')
+                : t('import.viewHistory', 'View Import History')}
+            </button>
+
+            {showHistory && importHistory.length === 0 && (
+              <p className="mt-4 text-center text-[12px] text-muted">
+                {t('import.historyEmpty', 'Nothing imported yet.')}
+              </p>
             )}
 
             {showHistory && importHistory.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {importHistory.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 p-3 bg-parch3/60 rounded-xl border border-bdr/30"
-                  >
+              <div className="mt-4 space-y-2" data-testid="import-history">
+                {importHistory.map((item) => {
+                  const view = describeImport(item);
+                  const busy = retryingId === item.id || view.phase === 'analyzing';
+                  return (
                     <div
-                      className={cn(
-                        'w-2 h-2 rounded-full shrink-0',
-                        item.status === 'complete'
-                          ? 'bg-green-500'
-                          : item.status === 'partial'
-                            ? 'bg-amber-500'
-                            : item.status === 'failed'
-                              ? 'bg-red-500'
-                              : item.status === 'processing'
-                                ? 'bg-blue animate-pulse'
-                                : 'bg-gray-400'
-                      )}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-medium text-ink truncate">{item.title}</div>
-                      <div className="text-[10px] text-muted">
-                        {item.status} · {item.analysisStatus} ·{' '}
-                        {new Date(item.createdAt as string).toLocaleDateString()}
+                      key={item.id}
+                      data-testid="import-history-row"
+                      data-phase={view.phase}
+                      className="flex items-center gap-3 p-3 bg-parch3/60 rounded-xl border border-bdr/30"
+                    >
+                      <div
+                        aria-hidden
+                        className={cn(
+                          'w-2 h-2 rounded-full shrink-0',
+                          busy
+                            ? 'bg-blue animate-pulse'
+                            : view.phase === 'analyzed'
+                              ? 'bg-green-500'
+                              : view.phase === 'unanalyzed'
+                                ? 'bg-amber-500'
+                                : 'bg-red-500'
+                        )}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[12px] font-medium text-ink truncate">
+                          {item.title}
+                        </div>
+                        <div className="text-[10px] text-muted">
+                          {retryingId === item.id
+                            ? phaseLabel('analyzing')
+                            : phaseLabel(view.phase)}{' '}
+                          · {new Date(item.createdAt as string).toLocaleDateString()}
+                        </div>
+                        {view.lastError && view.phase !== 'analyzed' && (
+                          <div className="text-[10px] text-ruby truncate" title={view.lastError}>
+                            {view.lastError}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-1.5 shrink-0">
+                        {view.canRetry && (
+                          <button
+                            data-testid="import-retry"
+                            onClick={() => handleRetry(item)}
+                            disabled={retryingId !== null}
+                            className="text-[10px] font-bold px-2 py-1 bg-amber/10 text-amber rounded hover:bg-amber/20 transition-colors disabled:opacity-50"
+                          >
+                            {retryingId === item.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : view.phase === 'unanalyzed' ? (
+                              t('import.analyze', 'Analyze')
+                            ) : (
+                              t('import.retry', 'Retry')
+                            )}
+                          </button>
+                        )}
+                        {view.canOpen && (
+                          <button
+                            data-testid="import-open"
+                            onClick={() => navigate(`/app/reader/${item.id}`)}
+                            className="text-[10px] font-bold px-2 py-1 bg-blue/10 text-blue rounded hover:bg-blue/20 transition-colors"
+                          >
+                            {t('import.open', 'Open')}
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      {(item.status === 'partial' ||
-                        item.status === 'failed' ||
-                        item.analysisStatus === 'raw') && (
-                        <button
-                          onClick={() => handleRetry(item)}
-                          disabled={retryingId === item.id}
-                          className="text-[10px] font-bold px-2 py-1 bg-amber/10 text-amber rounded hover:bg-amber/20 transition-colors disabled:opacity-50"
-                        >
-                          {retryingId === item.id ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            'Retry'
-                          )}
-                        </button>
-                      )}
-                      {item.status === 'complete' && (
-                        <button
-                          onClick={() => navigate(`/app/reader/${item.id}`)}
-                          className="text-[10px] font-bold px-2 py-1 bg-blue/10 text-blue rounded hover:bg-blue/20 transition-colors"
-                        >
-                          Open
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1055,14 +1135,37 @@ export const Import = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="card overflow-hidden"
         >
-            <div className="bg-green-50 p-12 text-center border-b border-green-100">
-              <div className="w-20 h-20 bg-white shadow-sm border border-green-200 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-10 h-10" />
+            <div
+              data-testid="import-result"
+              data-phase={resultView?.phase}
+              className={cn(
+                'p-12 text-center border-b',
+                resultAnalyzed ? 'bg-green-50 border-green-100' : 'bg-amber/10 border-amber/20'
+              )}
+            >
+              <div
+                className={cn(
+                  'w-20 h-20 bg-white shadow-sm border rounded-full flex items-center justify-center mx-auto mb-6',
+                  resultAnalyzed ? 'border-green-200 text-green-500' : 'border-amber/30 text-amber'
+                )}
+              >
+                {resultAnalyzed ? (
+                  <CheckCircle className="w-10 h-10" />
+                ) : (
+                  <AlertCircle className="w-10 h-10" />
+                )}
               </div>
               <h3 className="text-[28px] font-serif font-bold text-ink mb-1">
-                {t('import.complete', 'Processing Complete')}
+                {resultAnalyzed
+                  ? t('import.complete', 'Processing Complete')
+                  : t('import.savedUnanalyzed', 'Saved, but not analyzed')}
               </h3>
-              <p className="text-green-700 font-bold text-[14px] flex items-center justify-center gap-2">
+              <p
+                className={cn(
+                  'font-bold text-[14px] flex items-center justify-center gap-2',
+                  resultAnalyzed ? 'text-green-700' : 'text-ink2'
+                )}
+              >
                 {result.title}
                 <TextQualityBadge
                   text={{
@@ -1077,10 +1180,10 @@ export const Import = () => {
             </div>
 
           <div className="p-10">
-            {analysisError && (
+            {!resultAnalyzed && (
               <div className="mb-8 p-4 bg-amber/10 border border-amber/20 rounded-xl flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-amber shrink-0 mt-0.5" />
-                <div>
+                <div className="flex-1 min-w-0">
                   <div className="font-bold text-amber text-[13px] mb-1">
                     {t('reader.aiAnalysisUnavailable', 'AI analysis unavailable')}
                   </div>
@@ -1088,9 +1191,47 @@ export const Import = () => {
                     {t(
                       'import.analysisFallback',
                       'Your text was saved with basic tokenization only — no morphology or glosses.'
+                    )}{' '}
+                    {t(
+                      'import.analysisFallbackNext',
+                      'You can read it as it is, and run the analysis again now or later from your import history.'
                     )}
                   </p>
+                  {(analysisError || resultView?.lastError) && (
+                    <p className="mt-1 text-[11px] text-muted break-words">
+                      {analysisError || resultView?.lastError}
+                    </p>
+                  )}
                 </div>
+                {resultView?.canRetry && (
+                  <button
+                    data-testid="import-result-retry"
+                    onClick={() => handleRetry(result)}
+                    disabled={retryingId !== null}
+                    className="shrink-0 rounded-lg bg-amber/20 px-3 py-2 text-[12px] font-bold text-amber hover:bg-amber/30 disabled:opacity-50"
+                  >
+                    {retryingId === result.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      t('import.analyzeAgain', 'Try the analysis again')
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+            {resultAnalyzed && resultUncertain > 0 && (
+              <div
+                data-testid="import-uncertain"
+                className="mb-8 p-4 bg-parch3/60 border border-bdr/40 rounded-xl flex items-start gap-3"
+              >
+                <AlertCircle className="w-5 h-5 text-amber shrink-0 mt-0.5" />
+                <p className="text-[12px] text-ink3 leading-relaxed">
+                  {t(
+                    'import.uncertainWords',
+                    'The analysis was unsure of {{count}} of {{total}} words. They are underlined with a dashed line in the reader, where you can correct their dictionary form.',
+                    { count: resultUncertain, total: result.stats.totalWords }
+                  )}
+                </p>
               </div>
             )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">

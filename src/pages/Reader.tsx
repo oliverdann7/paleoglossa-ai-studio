@@ -45,6 +45,9 @@ import { useReaderTTS } from '../lib/hooks/useReaderTTS.js';
 
 import { AIClient } from '../lib/services/aiClient.js';
 import { ImportService } from '../lib/services/importService.js';
+import { isImportId } from '../lib/imports/status.js';
+import type { ImportedSentence } from '../types/firestore.js';
+import { applyLemmaCorrection } from '../lib/imports/corrections.js';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
@@ -104,7 +107,7 @@ const ReaderInner = () => {
     let active = true;
 
     const tObj = CorpusDB.getText(textId);
-    if (!tObj && (textId.startsWith('import-') || textId.startsWith('imp-'))) {
+    if (!tObj && isImportId(textId)) {
       ImportService.getImports(user ? user.uid : null).then((imports) => {
         if (!active) return;
         const match = imports.find((item: any) => item.id === textId);
@@ -149,7 +152,7 @@ const ReaderInner = () => {
     }
 
     // Synchronous offline fallback for import texts (no async path running)
-    if (!tObj && !textId.startsWith('import-') && !textId.startsWith('imp-')) {
+    if (!tObj && !isImportId(textId)) {
       // Handled in the Firestore branch above
     } else if (!tObj) {
       OfflineService.getOfflinePayload(textId).then((offline) => {
@@ -579,6 +582,10 @@ const ReaderInner = () => {
                     )
                   : undefined,
               confidence: tok.confidence ?? undefined,
+              corrected: tok.corrected || undefined,
+              // Without the type, the spaces between words are words too.
+              type:
+                tok.type === 'whitespace' || tok.type === 'punctuation' ? tok.type : 'word',
               punctBefore: '',
               punctAfter:
                 tok.type === 'whitespace'
@@ -637,7 +644,7 @@ const ReaderInner = () => {
     if (!text) return 'complete';
     if (
       typeof textId === 'string' &&
-      (textId.startsWith('import-') || textId.startsWith('imp-')) &&
+      isImportId(textId) &&
       !CorpusDB.getText(textId)
     )
       return 'import';
@@ -841,6 +848,56 @@ const ReaderInner = () => {
       coverage: candidateCoverage,
     });
   }, [text, sourceKind, textProgress, candidateCoverage]);
+
+  // A learner's correction of an imported word's lemma: applies to every
+  // occurrence of the form in this import, is saved with it, and from here on
+  // the word is tracked under the corrected lemma.
+  const handleCorrectLemma = useCallback(
+    async (token: ReaderToken, newLemma: string): Promise<boolean> => {
+      const lemma = newLemma.trim();
+      if (sourceKind !== 'import' || !text?.id || !Array.isArray(text.sentences) || !lemma) {
+        return false;
+      }
+      const { sentences, changed } = applyLemmaCorrection(
+        text.sentences as ImportedSentence[],
+        { surface: token.text, lemma: token.lemma },
+        lemma
+      );
+      if (changed === 0) return false;
+
+      // What the learner already knew about this word goes with it.
+      const before = getWordInfoIn(token.lemma, textLanguageId);
+      if (
+        before.state !== WordState.NEW &&
+        getWordInfoIn(lemma, textLanguageId).state === WordState.NEW
+      ) {
+        setWordState(lemma, before.state, textLanguageId);
+      }
+
+      setLocalText({ ...text, sentences });
+      setSelectedWord((current) =>
+        current && current.id === token.id ? { ...current, lemma, corrected: true } : current
+      );
+      trackEvent(ANALYTICS_EVENTS.IMPORT_LEMMA_CORRECTED, {
+        languageId: textLanguageId,
+        occurrences: changed,
+      });
+      try {
+        if (user) await ImportService.updateImport(user.uid, text.id, { sentences });
+        else if (text.rawContent) await ImportService.saveImport(null, { ...text, sentences });
+      } catch {
+        addToast(
+          t(
+            'reader.correction.saveFailed',
+            'The correction is shown here, but could not be saved.'
+          ),
+          'error'
+        );
+      }
+      return true;
+    },
+    [sourceKind, text, getWordInfoIn, textLanguageId, setWordState, user, addToast, t]
+  );
 
   const openNextReading = useCallback(
     (id: string) => {
@@ -1572,9 +1629,7 @@ const ReaderInner = () => {
                     translation: s.translation || null,
                   })),
                   source:
-                    textId?.startsWith('import-') || textId?.startsWith('imp-')
-                      ? 'import'
-                      : 'corpus',
+                    isImportId(textId) ? 'import' : 'corpus',
                 });
               }
               addToast(t('reader.availableOffline', 'Available offline'), 'success');
@@ -1787,6 +1842,7 @@ const ReaderInner = () => {
           setWordState={setWordStateWithFeedback}
           setWordNote={setWordNote}
           updateGloss={updateGloss}
+          onCorrectLemma={sourceKind === 'import' ? handleCorrectLemma : undefined}
           getWordInfo={getWordInfo}
           showTranslit={showTranslit}
           isHebrewFont={isHebrewFont}

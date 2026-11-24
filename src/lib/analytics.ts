@@ -26,6 +26,8 @@ export const ANALYTICS_EVENTS = {
   READING_GOAL_SET: 'reading_goal_set',
   IMPORT_STARTED: 'import_started',
   IMPORT_COMPLETED: 'import_completed',
+  IMPORT_LEMMA_CORRECTED: 'import_lemma_corrected',
+  IMPORT_RETRIED: 'import_retried',
   IMPORT_LIMIT_BLOCKED: 'import_limit_blocked',
   AI_GLOSS_CACHE_HIT: 'ai_gloss_cache_hit',
   AI_GLOSS_CACHE_MISS: 'ai_gloss_cache_miss',
