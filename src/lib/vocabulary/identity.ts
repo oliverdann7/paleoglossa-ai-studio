@@ -18,6 +18,8 @@
  * Pure module: no Firebase, no React. Safe to import from `api/`.
  */
 
+import { HEBREW_LEGACY_LEMMAS } from './hebrewLegacyLemmas.js';
+
 export const UNKNOWN_LANGUAGE = 'unknown';
 
 /** Combining Diacritical Marks block (accents, breathings, macrons, …). */
@@ -103,6 +105,14 @@ const GREEK_DISTINCT_HOMOGRAPHS: ReadonlySet<string> = new Set(
 /** Exposed for tests and documentation. */
 export const GREEK_DISTINCT_HOMOGRAPH_FORMS: readonly string[] = [...GREEK_DISTINCT_HOMOGRAPHS];
 
+function hebrewKey(lemma: string): string {
+  return tidy(legacyLemmaKey(lemma.replace(HEBREW_NON_LEXICAL, '')));
+}
+
+const HEBREW_LEGACY: ReadonlyMap<string, string> = new Map(
+  Object.entries(HEBREW_LEGACY_LEMMAS).map(([old, current]) => [hebrewKey(old), hebrewKey(current)])
+);
+
 /**
  * Normalize a lemma for identity within one language.
  * The result is stable, idempotent, and never empty for a non-empty input.
@@ -117,7 +127,11 @@ export function normalizeLemma(lemma: string, languageId: string = UNKNOWN_LANGU
   }
 
   if (HEBREW_SCRIPT.has(languageId)) {
-    return tidy(legacyLemmaKey(input.replace(HEBREW_NON_LEXICAL, '')));
+    const key = hebrewKey(input);
+    // Biblical Hebrew only: an old sample lemma is the same item as its
+    // dictionary form (see hebrewLegacyLemmas.ts). Aramaic shares the script
+    // but not the lexicon.
+    return languageId === 'hbo' ? (HEBREW_LEGACY.get(key) ?? key) : key;
   }
 
   if (languageId === 'lat') {

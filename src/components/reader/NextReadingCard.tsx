@@ -19,11 +19,13 @@ export function NextReadingCard({ next, onOpen }: Props) {
         : t('reader.nextReading.pathOnward', 'Next on your reading path')
       : reason === 'resume'
         ? t('reader.nextReading.resume', 'You have already begun this one')
-        : reason === 'sameAuthor'
-          ? t('reader.nextReading.sameAuthor', 'More by {{author}}', { author: text.author })
-          : reason === 'nextLevel'
-            ? t('reader.nextReading.nextLevel', 'A step up from what you just read')
-            : t('reader.nextReading.sameLevel', 'At the level you just read');
+        : reason === 'readable'
+          ? t('reader.nextReading.readable', 'Within reach of the words you know')
+          : reason === 'sameAuthor'
+            ? t('reader.nextReading.sameAuthor', 'More by {{author}}', { author: text.author })
+            : reason === 'nextLevel'
+              ? t('reader.nextReading.nextLevel', 'A step up from what you just read')
+              : t('reader.nextReading.sameLevel', 'At the level you just read');
 
   return (
     <section
@@ -43,6 +45,15 @@ export function NextReadingCard({ next, onOpen }: Props) {
       {text.author && <p className="mt-0.5 text-[13px] text-muted">{text.author}</p>}
       <p className="mt-3 text-[13px] text-ink2">{reasonLine}</p>
       {next.why && <p className="mt-1 text-[13px] text-muted">{next.why}</p>}
+      {next.coverage && (
+        <p data-testid="next-reading-coverage" className="mt-1 text-[13px] text-muted">
+          {t(
+            'reader.nextReading.coverage',
+            'You know {{percent}}% of its words · {{count}} new to you',
+            { percent: next.coverage.percentKnown, count: next.coverage.newLemmas }
+          )}
+        </p>
+      )}
       <button
         type="button"
         data-testid="next-reading-open"

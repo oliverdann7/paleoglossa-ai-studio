@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { HEBREW_LEGACY_LEMMAS } from '../hebrewLegacyLemmas.js';
 import {
   GREEK_DISTINCT_HOMOGRAPH_FORMS,
   MAX_SHORT_DOC_ID,
@@ -121,6 +122,32 @@ describe('Hebrew and Aramaic', () => {
     const dageshFirst = 'דָּבר';
     const vowelFirst = 'דָּבר';
     expect(vocabKey(dageshFirst, 'hbo')).toBe(vocabKey(vowelFirst, 'hbo'));
+  });
+});
+
+describe('Biblical Hebrew legacy lemmas', () => {
+  it('identifies an old sample lemma with its dictionary form', () => {
+    expect(vocabKey('היה', 'hbo')).toBe(vocabKey('הָיָה', 'hbo'));
+    expect(vocabKey('הלך', 'hbo')).toBe(vocabKey('הָלַךְ', 'hbo'));
+    expect(vocabDocId('אמר', 'hbo')).toBe(vocabDocId('אָמַר', 'hbo'));
+    // The key is the dictionary form, with its points.
+    expect(normalizeLemma('היה', 'hbo')).toBe(normalizeLemma('הָיָה', 'hbo'));
+    expect(normalizeLemma('היה', 'hbo')).not.toBe('היה');
+  });
+
+  it('leaves Aramaic alone, and lexemes that differ only by pointing apart', () => {
+    expect(vocabKey('אמר', 'arc')).not.toBe(vocabKey('אָמַר', 'arc'));
+    expect(vocabKey('דֶּבֶר', 'hbo')).not.toBe(vocabKey('דָּבָר', 'hbo'));
+  });
+
+  it('never chains: no dictionary form is itself a legacy form, and the key is stable', () => {
+    const legacy = new Set(Object.keys(HEBREW_LEGACY_LEMMAS).map((l) => l.normalize('NFC')));
+    for (const [old, current] of Object.entries(HEBREW_LEGACY_LEMMAS)) {
+      expect(legacy.has(current.normalize('NFC')), `${old} → ${current}`).toBe(false);
+      const key = normalizeLemma(old, 'hbo');
+      expect(normalizeLemma(key, 'hbo')).toBe(key);
+      expect(key).toBe(normalizeLemma(current, 'hbo'));
+    }
   });
 });
 

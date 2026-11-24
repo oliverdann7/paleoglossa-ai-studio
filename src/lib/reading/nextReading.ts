@@ -5,10 +5,12 @@
  *   1. the next unfinished step on the learner's pathway, when the text just
  *      finished is on it (or the learner has chosen a goal);
  *   2. a text already begun in the same language — finish what was started;
- *   3. the closest match by level, author and genre.
+ *   3. the closest match by level, author and genre — and, where the
+ *      learner's coverage of a text is known, by how readable it is now.
  *
  * Pure: takes plain metadata, returns a suggestion with the reason for it.
  */
+import type { TextCoverage } from './coverage.js';
 import { getPathway, pathwayPosition } from './pathways.js';
 
 export interface ReadingCandidate {
@@ -21,7 +23,13 @@ export interface ReadingCandidate {
   sentenceCount?: number;
 }
 
-export type NextReadingReason = 'pathway' | 'resume' | 'sameAuthor' | 'nextLevel' | 'sameLevel';
+export type NextReadingReason =
+  | 'pathway'
+  | 'resume'
+  | 'readable'
+  | 'sameAuthor'
+  | 'nextLevel'
+  | 'sameLevel';
 
 export interface NextReading {
   text: ReadingCandidate;
@@ -29,6 +37,22 @@ export interface NextReading {
   /** For 'pathway': why the step sits where it does, and the destination. */
   why?: string;
   goal?: string;
+  /** How much of the suggested text the learner already knows, when measured. */
+  coverage?: TextCoverage;
+}
+
+/**
+ * Known running words, in percent. From about 85% a text can be read with
+ * help on the remaining words; above 98% there is little left to learn.
+ */
+export const READABLE_MIN = 85;
+export const READABLE_MAX = 98;
+
+/** Up to 30 points — as much as an exact level match. */
+function coverageScore(percentKnown: number): number {
+  if (percentKnown > READABLE_MAX) return 18;
+  if (percentKnown >= READABLE_MIN) return 30;
+  return Math.round((percentKnown / READABLE_MIN) * 20);
 }
 
 const LEVELS = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -44,6 +68,8 @@ export interface NextReadingOptions {
   started?: ReadonlySet<string>;
   /** The learner's chosen pathway destination for this language. */
   goalTextId?: string | null;
+  /** The learner's coverage of candidate texts, by text ID. May be partial. */
+  coverage?: ReadonlyMap<string, TextCoverage>;
 }
 
 export function pickNextReading(
@@ -75,6 +101,7 @@ export function pickNextReading(
         reason: 'pathway',
         why: step.why,
         goal: position?.next ? position.goal.goal : undefined,
+        coverage: options.coverage?.get(text.id),
       };
     }
   }
@@ -100,6 +127,13 @@ export function pickNextReading(
       reason = 'sameAuthor';
     }
     if (text.genre && text.genre === current.genre) score += 6;
+    const coverage = options.coverage?.get(text.id);
+    if (coverage) {
+      score += coverageScore(coverage.percentKnown);
+      const readable =
+        coverage.percentKnown >= READABLE_MIN && coverage.percentKnown <= READABLE_MAX;
+      if (readable) reason = 'readable';
+    }
     if (started.has(text.id)) {
       score += 40;
       reason = 'resume';
@@ -115,5 +149,5 @@ export function pickNextReading(
       a.text.id.localeCompare(b.text.id)
   );
   const best = scored[0];
-  return { text: best.text, reason: best.reason };
+  return { text: best.text, reason: best.reason, coverage: options.coverage?.get(best.text.id) };
 }

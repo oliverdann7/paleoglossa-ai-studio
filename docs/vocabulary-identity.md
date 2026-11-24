@@ -105,6 +105,33 @@ their diacritics), Latin 164,000 lemmas and 79,000 glosses. Still unresolved: ab
 Greek and 28,000 Latin empty tokens, and all of Aramaic, Coptic and Sanskrit, for which no
 commercially usable form table was found.
 
+### Biblical Hebrew (2026-11-23)
+
+The served Hebrew Bible (Macula Hebrew) always had real lemmas: every token carries one,
+in pointed dictionary form (`הָיָה`). The gap was elsewhere. The bundled Hebrew samples
+named verbs by unpointed root (`היה`) and a few nouns by a variant pointing, and because
+vowel points are part of Hebrew identity, a word learned in a sample was a different
+vocabulary item in the served text. Of the tokens in the Genesis, Jonah and Ruth samples,
+57–68% shared a lemma with the served books they are excerpted from; it is now 97–99%.
+
+- `src/lib/vocabulary/hebrewLegacyLemmas.ts` lists the 159 old forms with their dictionary
+  form. Verbs were resolved against Macula's own lemmas by consonants and part of speech; 23
+  that occur in none of the three served books, or whose pointing had to be chosen, were set
+  by hand. A form that is the dictionary form of another word (`דֶּבֶר` plague, beside `דָּבָר`
+  word) is deliberately not in the table.
+- The bundled samples now carry the dictionary form (578 tokens).
+- `normalizeLemma` maps an old form to its dictionary form for `hbo` only, so vocabulary
+  saved under an old form is the same item as the new one: local data is re-keyed on read,
+  and the identity repair moves and merges the Firestore document on the next load.
+- Macula itself spells six verbs both ways (`הלך` 107 times, `הָלַךְ` 38).
+  `scripts/corpus/canonicalize-hebrew-lemmas.ts` gives the served tokens the dictionary form
+  (132 tokens); run it, then `build-lemma-profiles.ts`, after re-ingesting Hebrew.
+
+Limits: an imported, unpointed Hebrew text whose surface form equals one of the old roots
+is now identified with that verb. One token of the bundled Aramaic Genesis sample
+(`וִיהֵי`) takes its lemma from the Hebrew table by accident and changed with it. Aramaic
+is otherwise untouched, and still 79% without lemmas in the served Targum.
+
 A learner who saved a word before it had a lemma has it stored under its surface form. The
 reader therefore looks a token up by lemma first and falls back to its surface form, so
 those marks still show; a new mark is saved under the lemma.

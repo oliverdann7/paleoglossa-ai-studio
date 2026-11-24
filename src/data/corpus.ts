@@ -3656,7 +3656,7 @@ export const PSALM_23_1: TextSection = {
           id: "p1",
           surface: "יְהוָה",
           normalized: "יהוה",
-          lemma: "יְהוָה",
+          lemma: "יהוה",
           gloss: "the Lord",
           morphology: { partOfSpeech: "proper noun" },
           punctBefore: "",
