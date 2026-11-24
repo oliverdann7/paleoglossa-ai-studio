@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useDragControls, type PanInfo } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { isUncertain } from '@/lib/imports/corrections';
 import {
   BookOpen,
   BookMarked,
@@ -76,6 +77,107 @@ import { VariantApparatusSection } from './VariantApparatusSection.js';
 
 type SelectedWord = ReaderToken & { sentenceText?: string; sentenceIndex?: number };
 
+/**
+ * Imported texts are analysed automatically. This says when the analysis was
+ * unsure of the word, or when the learner has already set its lemma, and lets
+ * them set it.
+ */
+function LemmaCorrection({
+  token,
+  isHebrewFont,
+  onCorrect,
+}: {
+  token: SelectedWord;
+  isHebrewFont: boolean;
+  onCorrect: (token: ReaderToken, lemma: string) => Promise<boolean>;
+}) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const uncertain = isUncertain(token);
+
+  const save = async () => {
+    const lemma = (draft ?? '').trim();
+    if (!lemma || lemma === token.lemma) {
+      setDraft(null);
+      return;
+    }
+    setSaving(true);
+    await onCorrect(token, lemma);
+    setSaving(false);
+    setDraft(null);
+  };
+
+  if (draft !== null) {
+    return (
+      <form
+        data-testid="lemma-correction-form"
+        className="mt-1 flex items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void save();
+        }}
+      >
+        <input
+          data-testid="lemma-correction-input"
+          autoFocus
+          dir="auto"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setDraft(null);
+          }}
+          aria-label={t('reader.correction.inputLabel', 'Dictionary form of this word')}
+          className={cn(
+            'w-44 rounded-lg border border-bdr bg-white px-3 py-1.5 text-[15px] text-ink focus:outline-none focus:ring-2 focus:ring-blue/40',
+            isHebrewFont ? 'font-hebrew' : 'font-serif'
+          )}
+        />
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-lg bg-blue px-3 py-1.5 text-[12px] font-bold text-white disabled:opacity-50"
+        >
+          {t('common.save', 'Save')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setDraft(null)}
+          className="text-[12px] font-bold text-muted hover:text-ink"
+        >
+          {t('common.cancel', 'Cancel')}
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <div className="mt-1 flex flex-col items-center gap-1 font-sans">
+      {uncertain && (
+        <span
+          data-testid="lemma-uncertain"
+          className="rounded-full bg-amber/15 px-2.5 py-0.5 text-[11px] font-semibold text-amber"
+        >
+          {t('reader.correction.uncertain', 'The analysis is unsure of this word')}
+        </span>
+      )}
+      {token.corrected && (
+        <span data-testid="lemma-corrected" className="text-[11px] font-semibold text-muted">
+          {t('reader.correction.corrected', 'Dictionary form set by you')}
+        </span>
+      )}
+      <button
+        type="button"
+        data-testid="lemma-correction-open"
+        onClick={() => setDraft(token.lemma ?? '')}
+        className="text-[11px] font-bold uppercase tracking-widest text-muted underline-offset-2 hover:text-blue hover:underline"
+      >
+        {t('reader.correction.open', 'Correct the dictionary form')}
+      </button>
+    </div>
+  );
+}
+
 interface LemmaSentenceEntry {
   sentence: {
     tokens: (Pick<ReaderToken, 'lemma' | 'punctBefore' | 'punctAfter'> & { surface?: string })[];
@@ -98,6 +200,11 @@ interface LexDrawerPanelProps {
   ) => boolean | void;
   setWordNote: (lemma: string, notes: string) => void;
   updateGloss: (lemma: string, gloss: string, languageId: string) => void;
+  /**
+   * Imports only: set the lemma of this word (and of every occurrence of the
+   * same form in the text). Resolves false when nothing changed.
+   */
+  onCorrectLemma?: (token: ReaderToken, lemma: string) => Promise<boolean>;
   getWordInfo: (lemma: string) => WordInfo;
   showTranslit: boolean;
   isHebrewFont: boolean;
@@ -179,6 +286,7 @@ export const LexDrawerPanel = memo(
     setWordState,
     setWordNote,
     updateGloss,
+    onCorrectLemma,
     getWordInfo,
     showTranslit,
     isHebrewFont,
@@ -746,6 +854,14 @@ export const LexDrawerPanel = memo(
                     From '
                     <bdi className={isHebrewFont ? 'font-hebrew' : ''}>{selectedWord.lemma}</bdi>'
                   </span>
+                )}
+                {onCorrectLemma && (
+                  <LemmaCorrection
+                    key={selectedWord.id}
+                    token={selectedWord}
+                    isHebrewFont={isHebrewFont}
+                    onCorrect={onCorrectLemma}
+                  />
                 )}
                 {wordFrequency !== null &&
                   wordFrequency > 0 &&

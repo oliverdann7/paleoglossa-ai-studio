@@ -17,7 +17,10 @@ export interface ReaderToken {
   type?: 'word' | 'punctuation' | 'whitespace';
   normalized?: string;
   pos?: string;
+  /** How sure the automatic analysis was, 0–1 (imports only). */
   confidence?: number;
+  /** The learner set this token's lemma (imports only). */
+  corrected?: boolean;
 }
 
 export interface ReaderSentence {

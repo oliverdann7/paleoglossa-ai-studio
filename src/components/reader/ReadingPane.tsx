@@ -1,5 +1,6 @@
 import { memo, useRef, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isUncertain } from '@/lib/imports/corrections';
 import { Sparkles, Repeat, StickyNote, Bookmark, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WordState, STATE_COLORS, normalizeWordState } from '@/lib/constants/wordStates';
@@ -195,6 +196,8 @@ const ReaderToken = memo(function ReaderToken({
   onWordContextMenu: (token: ReaderToken, x: number, y: number) => void;
 }) {
   const isMorphologyMode = displayMode === 'morphology';
+  // Imports only: the analysis flagged this word as a guess.
+  const uncertain = isUncertain(token);
   const state = normalizeWordState(
     wordInfo ? (typeof wordInfo === 'object' ? wordInfo.state : wordInfo) : WordState.NEW
   );
@@ -277,6 +280,7 @@ const ReaderToken = memo(function ReaderToken({
           }
         }}
         data-phrase={phraseMark}
+        data-uncertain={uncertain || undefined}
         onContextMenu={handleContextMenu}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -289,7 +293,9 @@ const ReaderToken = memo(function ReaderToken({
             ? { ...tokenStyle, backgroundColor: 'rgba(30, 61, 110, 0.14)', borderBottomColor: '#1E3D6E' }
             : phraseMark === 'saved'
               ? { ...tokenStyle, borderBottom: '2px dotted #B8860B' }
-              : tokenStyle
+              : uncertain
+                ? { ...tokenStyle, borderBottom: '2px dashed #C2410C' }
+                : tokenStyle
         }
       >
         <bdi className="leading-tight mb-1">{token.text}</bdi>
