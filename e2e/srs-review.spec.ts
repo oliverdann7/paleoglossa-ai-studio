@@ -129,3 +129,90 @@ test.describe('SRS review session', () => {
     await expect(caughtUp).toBeDisabled();
   });
 });
+
+test.describe('review card audio', () => {
+  /** Answer the speech endpoint ourselves and count what the page asks for and plays. */
+  async function stubSpeech(page: any) {
+    const requested: string[] = [];
+    await page.route('**/api/audio/tts', async (route: any) => {
+      requested.push(route.request().postDataJSON().text);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ audioUrl: 'data:audio/mpeg;base64,AAAA', supported: true }),
+      });
+    });
+    await page.addInitScript(() => {
+      (window as any).__played = 0;
+      HTMLMediaElement.prototype.play = function () {
+        (window as any).__played += 1;
+        return Promise.resolve();
+      };
+    });
+    return requested;
+  }
+
+  const startSession = async (page: any, autoPlayAudio: boolean) => {
+    await page.addInitScript((auto: boolean) => {
+      localStorage.setItem(
+        'paleoglossa_review_settings',
+        // One card type, so the question is always the word itself.
+        JSON.stringify({ enabledTypes: ['FORM_TO_MEANING'], autoPlayAudio: auto })
+      );
+    }, autoPlayAudio);
+    await page.goto('/app/review');
+    await page
+      .locator('button')
+      .filter({ hasText: /start review/i })
+      .first()
+      .click();
+    await expect(page.getByTestId('card-front')).toHaveText('λόγος', { timeout: 10_000 });
+  };
+
+  test('with auto-play on, the card is read aloud as it appears', async ({ page }) => {
+    await enableDemoMode(page);
+    await seedDueWord(page);
+    const requested = await stubSpeech(page);
+    await startSession(page, true);
+
+    await expect.poll(() => requested).toContain('λόγος');
+    await expect.poll(() => page.evaluate(() => (window as any).__played)).toBeGreaterThan(0);
+  });
+
+  test('with auto-play off, nothing is fetched or played until the button is tapped', async ({
+    page,
+  }) => {
+    await enableDemoMode(page);
+    await seedDueWord(page);
+    const requested = await stubSpeech(page);
+    await startSession(page, false);
+
+    await page.waitForTimeout(1000);
+    expect(requested).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__played)).toBe(0);
+
+    await page.getByRole('button', { name: 'Hear pronunciation' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__played)).toBe(1);
+    expect(requested).toEqual(['λόγος']);
+  });
+
+  test('the setting is offered in review settings and remembered', async ({ page }) => {
+    await enableDemoMode(page);
+    await seedDueWord(page);
+    // The consent banner would otherwise sit on top of the last setting.
+    await page.addInitScript(() => localStorage.setItem('paleoglossa_cookie_consent', 'declined'));
+    await page.goto('/app/review');
+    await page
+      .locator('button')
+      .filter({ hasText: /settings/i })
+      .first()
+      .click();
+    const toggle = page.getByTestId('review-autoplay-audio');
+    await expect(toggle).not.toBeChecked();
+    await toggle.check();
+    const stored = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem('paleoglossa_review_settings') ?? '{}')
+    );
+    expect(stored.autoPlayAudio).toBe(true);
+  });
+});
