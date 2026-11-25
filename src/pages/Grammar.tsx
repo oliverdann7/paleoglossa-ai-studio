@@ -1024,12 +1024,15 @@ export const Grammar = () => {
 
   return (
     <div className="p-6 md:p-12 pt-safe-page max-w-4xl mx-auto font-sans min-h-screen">
-      <header className="mb-6 flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue">
+      {/* Below the lg breakpoint the title and the controls each get their own
+          row. Side by side on a phone they squeezed the title into a two-line
+          column and pushed the view switcher off the screen. */}
+      <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue shrink-0">
             <GraduationCap className="w-5 h-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-[28px] font-serif font-light text-ink tracking-tight">
               {t('grammar.title', 'Grammar Atlas')}
             </h2>
@@ -1038,7 +1041,7 @@ export const Grammar = () => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {(() => {
             const due = mastery.getDueConcepts(activeLang).length;
             if (due === 0) return null;
