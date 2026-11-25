@@ -58,5 +58,5 @@ Ages 13+ (general audiences; not directed at children under 13).
 
 ## Review-compliance notes (do not paste into the listing)
 - Do not mention web subscriptions, pricing, or paleoglossa.com as a place to pay anywhere in the description, screenshots, or "What's New" — both stores treat that as steering to an outside payment method.
-- Privacy answers (App Privacy / Data safety) must include: email, name, user ID, product interaction, crash data, audio recordings, photos (profile picture, pages photographed for import), and other user content (notes, notebooks, imported texts). None is used for tracking. State that user content is shared with Google (Gemini) for app functionality.
+- Privacy answers (App Privacy / Data safety) must include: email, name, user ID, product interaction, crash data, audio recordings, photos (profile picture, pages photographed for import), other user content (notes, notebooks, imported texts), and — once in-app purchase is switched on — purchase history. None is used for tracking. State that user content is shared with Google (Gemini) for app functionality.
 - AI-generated content: the tutor has an in-app "Report this answer" control; reports are stored in the `aiContentReports` Firestore collection.

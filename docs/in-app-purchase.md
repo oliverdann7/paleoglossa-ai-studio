@@ -153,5 +153,7 @@ device (installed from the internal testing track). Run the list on each.
   together with the app version.
 - **Google:** declare purchase history in the Data safety form, and give
   reviewers a test account under App content → App access.
-- **Both:** add purchase history to the privacy answers (and to
-  `ios/App/App/PrivacyInfo.xcprivacy`) before switching purchases on.
+- **Both:** add purchase history to the privacy answers (App Privacy on
+  Apple, Data safety on Google) before switching purchases on: linked to the
+  user, not used for tracking, purpose "app functionality". The iOS privacy
+  manifest (`ios/App/App/PrivacyInfo.xcprivacy`) already declares it.
