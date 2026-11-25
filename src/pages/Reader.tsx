@@ -11,6 +11,7 @@ import {
   type PhraseSelection,
 } from '../lib/reading/phrases.js';
 import { PhraseBar } from '../components/reader/PhraseBar.js';
+import { useVisibleMinutes } from '../lib/hooks/useVisibleMinutes.js';
 import { pickNextReading } from '../lib/reading/nextReading.js';
 import { useReadSessionAchievements } from '../lib/hooks/useReadSessionAchievements.js';
 import {
@@ -256,7 +257,7 @@ const ReaderInner = () => {
     markPageAsSeen,
     stats,
     addReadWords,
-    // incrementReadingTime,
+    incrementReadingTime,
     setWordNote,
     incrementEncounter,
     updateGloss,
@@ -307,6 +308,10 @@ const ReaderInner = () => {
     },
     [setWordState, addToast, vocabLimit.limit]
   );
+
+  // Reading minutes for the stats pages: one per visible minute with a text open.
+  // This re-renders the Reader once a minute, like any other stats update.
+  useVisibleMinutes(() => incrementReadingTime(1), !!text);
 
   const { settings } = useSettings();
 
