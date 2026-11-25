@@ -934,5 +934,25 @@ export const pt = {
     'aiReport.cancel': 'Cancelar',
     'aiReport.thanks': 'Denúncia enviada — obrigado.',
     'account.verifyNone': 'Toque em “Eliminar Conta” para eliminar sua conta permanentemente.',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn': 'Entre para assinar, para que seu plano fique vinculado à sua conta.',
+    'sub.iapPaidElsewhere': 'Seu plano já está ativo nesta conta.',
+    'sub.iapPurchased': 'Obrigado — seu plano já está ativo.',
+    'sub.iapPurchaseFailed':
+      'Não foi possível concluir a compra. Você não foi cobrado duas vezes — toque em “Restaurar compras” se o seu plano não aparecer.',
+    'sub.iapProcessing': 'Processando…',
+    'sub.iapRestore': 'Restaurar compras',
+    'sub.iapRestored': 'Suas compras foram restauradas.',
+    'sub.iapNothingToRestore': 'Nenhuma assinatura ativa foi encontrada para este ID Apple.',
+    'sub.iapRestoreFailed': 'Não foi possível restaurar as compras. Tente novamente.',
+    'sub.iapManage': 'Gerenciar assinatura',
+    'sub.iapNoProducts': 'Os planos não estão disponíveis para compra no momento.',
+    'sub.iapLoadFailed':
+      'Não foi possível conectar à App Store. Verifique sua conexão e tente novamente.',
+    'sub.iapTerms':
+      'As assinaturas são renovadas automaticamente pelo preço exibido, mensal ou anualmente, até serem canceladas. O pagamento é cobrado no seu ID Apple na confirmação da compra. Cancele pelo menos 24 horas antes do fim do período nos ajustes de assinaturas do seu ID Apple para evitar a renovação.',
+    'sub.iapTermsLink': 'Termos de Uso',
+    'sub.iapPrivacyLink': 'Política de Privacidade',
   },
 };

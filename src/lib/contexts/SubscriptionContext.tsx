@@ -18,6 +18,8 @@ interface UserSubscription {
   selectedLanguageIds: string[];
   subscriptionStatus: SubscriptionStatus;
   stripeCustomerId?: string;
+  /** Which store granted the paid plan: the App Store (in-app purchase) or Stripe (web). */
+  subscriptionSource?: 'app_store' | 'stripe';
   trialEnd?: string;
   /** The language a free user wants to unlock as their second slot when upgrading to Duo. */
   desiredSecondLanguageId?: string;
@@ -42,6 +44,8 @@ interface SubscriptionContextValue {
     billingCycle?: 'monthly' | 'yearly'
   ) => Promise<string | null>;
   createPortalSession: () => Promise<string | null>;
+  /** Re-read the plan from the server (after an in-app purchase or restore). */
+  refreshSubscription: () => void;
 }
 
 const DEFAULT_SUBSCRIPTION: UserSubscription = {
@@ -63,6 +67,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const isAdmin = !!claims?.admin || (!!user?.email && ADMIN_EMAILS.includes(user.email));
   const [subscription, setSubscription] = useState<UserSubscription>(DEFAULT_SUBSCRIPTION);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const refreshSubscription = useCallback(() => setReloadKey((k) => k + 1), []);
 
   // Load subscription: trust Firestore for paid plans, fall back to localStorage for free.
   useEffect(() => {
@@ -81,6 +87,25 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
                 currentPlan: plan,
                 selectedLanguageIds: (data.selectedLanguageIds as string[]) || [],
                 subscriptionStatus: (data.subscriptionStatus as SubscriptionStatus) || 'free',
+                stripeCustomerId: (data.stripeCustomerId as string | undefined) || undefined,
+                subscriptionSource:
+                  data.subscriptionSource === 'app_store'
+                    ? 'app_store'
+                    : data.stripeCustomerId
+                      ? 'stripe'
+                      : undefined,
+                desiredSecondLanguageId: desiredSecond,
+              });
+              setIsLoaded(true);
+              return;
+            }
+            // A plan that just ended on the server (in-app subscription expired)
+            // must not linger in memory after a refresh.
+            if (reloadKey > 0) {
+              setSubscription({
+                currentPlan: 'free',
+                selectedLanguageIds: (data.selectedLanguageIds as string[]) || [],
+                subscriptionStatus: 'free',
                 desiredSecondLanguageId: desiredSecond,
               });
               setIsLoaded(true);
@@ -126,7 +151,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setIsLoaded(true);
     };
     load();
-  }, [user]);
+  }, [user, reloadKey]);
 
   // Save selectedLanguageIds to localStorage only (guest/demo).
   // The server (Stripe webhook) is the authority for paid subscription fields.
@@ -312,6 +337,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         isOnTrial,
         createCheckoutSession,
         createPortalSession,
+        refreshSubscription,
       }}
     >
       {children}

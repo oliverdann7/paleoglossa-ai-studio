@@ -991,5 +991,24 @@ export const en = {
     'aiReport.cancel': 'Cancel',
     'aiReport.thanks': 'Reported — thank you.',
     'account.verifyNone': 'Press Delete Account to permanently delete your account.',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn': 'Sign in to subscribe, so your plan follows your account.',
+    'sub.iapPaidElsewhere': 'Your plan is already active on this account.',
+    'sub.iapPurchased': 'Thank you — your plan is now active.',
+    'sub.iapPurchaseFailed':
+      'The purchase could not be completed. You have not been charged twice — tap Restore Purchases if your plan does not appear.',
+    'sub.iapProcessing': 'Processing…',
+    'sub.iapRestore': 'Restore Purchases',
+    'sub.iapRestored': 'Your purchases have been restored.',
+    'sub.iapNothingToRestore': 'No active subscription was found for this Apple ID.',
+    'sub.iapRestoreFailed': 'Could not restore purchases. Please try again.',
+    'sub.iapManage': 'Manage Subscription',
+    'sub.iapNoProducts': 'Plans are not available to purchase right now.',
+    'sub.iapLoadFailed': 'Could not reach the App Store. Check your connection and try again.',
+    'sub.iapTerms':
+      'Subscriptions renew automatically at the price shown, monthly or yearly, until cancelled. Payment is charged to your Apple ID at confirmation of purchase. Cancel at least 24 hours before the end of the period in your Apple ID subscription settings to avoid renewal.',
+    'sub.iapTermsLink': 'Terms of Use',
+    'sub.iapPrivacyLink': 'Privacy Policy',
   },
 };

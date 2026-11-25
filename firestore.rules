@@ -32,7 +32,7 @@ service cloud.firestore {
     function serverControlledFields() {
       return ['currentPlan', 'subscriptionStatus', 'stripeCustomerId',
               'stripeSubscriptionId', 'selectedLanguageIds', 'trialEnd',
-              'subscriptionUpdatedAt'];
+              'subscriptionUpdatedAt', 'subscriptionSource'];
     }
 
     // Returns true if the incoming write touches any server-controlled field.

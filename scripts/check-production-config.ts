@@ -196,7 +196,13 @@ function checkNative(): void {
       name: 'VITE_ENABLE_MOBILE_PURCHASES',
       severity: 'warning',
       consequence:
-        'In-app purchase flag unset — Stripe checkout may be shown incorrectly on iOS/Android.',
+        'In-app purchase flag unset — the iOS app shows no prices or purchase buttons.',
+    },
+    {
+      name: 'VITE_REVENUECAT_IOS_API_KEY',
+      severity: 'warning',
+      consequence:
+        'RevenueCat iOS key unset — in-app purchase stays off on iOS even when VITE_ENABLE_MOBILE_PURCHASES=true.',
     },
     {
       name: 'VITE_ENABLE_COMMUNITY',

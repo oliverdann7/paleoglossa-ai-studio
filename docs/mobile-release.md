@@ -216,8 +216,10 @@ Subscriptions in the native app are **web-managed only**:
 - The Stripe Billing Portal button is hidden.
 - A neutral notice reads: "Subscription management is currently available on the web."
 - Existing paid users retain full entitlement access after logging in.
-- To enable in-app purchases (future), set `VITE_ENABLE_MOBILE_PURCHASES=true`
-  and integrate StoreKit / Google Play Billing.
+- iOS can sell plans through the App Store instead: see
+  [ios-in-app-purchase.md](ios-in-app-purchase.md). It is off until
+  `VITE_ENABLE_MOBILE_PURCHASES=true` and `VITE_REVENUECAT_IOS_API_KEY` are set.
+  Android has no purchase UI yet.
 
 ### Internal testing checklist
 
@@ -571,9 +573,10 @@ OAuth client ID is required from the Google Cloud Console.
 
 To comply with App Store and Play Store guidelines regarding in-app purchases:
 
-- By default, Stripe checkout is disabled for native iOS/Android builds.
-- To enable it, set `VITE_ENABLE_MOBILE_PURCHASES=true` in your production environment variables.
-- When disabled (default):
+- Stripe checkout is never shown in the native iOS/Android builds.
+- `VITE_ENABLE_MOBILE_PURCHASES=true` (with `VITE_REVENUECAT_IOS_API_KEY`) turns on
+  App Store in-app purchase on iOS — see [ios-in-app-purchase.md](ios-in-app-purchase.md).
+- When disabled (default), and always on Android:
   - Paid plan buttons are disabled.
   - The Stripe Billing Portal button is hidden.
   - A neutral message is shown, directing users to the web for subscription management.

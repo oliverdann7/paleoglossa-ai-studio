@@ -821,5 +821,27 @@ export const de = {
     'aiReport.cancel': 'Abbrechen',
     'aiReport.thanks': 'Gemeldet – vielen Dank.',
     'account.verifyNone': 'Tippen Sie auf „Konto löschen“, um Ihr Konto dauerhaft zu löschen.',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn':
+      'Melden Sie sich an, um ein Abo abzuschließen, damit Ihr Tarif mit Ihrem Konto verknüpft ist.',
+    'sub.iapPaidElsewhere': 'Ihr Tarif ist für dieses Konto bereits aktiv.',
+    'sub.iapPurchased': 'Vielen Dank – Ihr Tarif ist jetzt aktiv.',
+    'sub.iapPurchaseFailed':
+      'Der Kauf konnte nicht abgeschlossen werden. Sie wurden nicht doppelt belastet – tippen Sie auf „Käufe wiederherstellen“, falls Ihr Tarif nicht erscheint.',
+    'sub.iapProcessing': 'Wird verarbeitet …',
+    'sub.iapRestore': 'Käufe wiederherstellen',
+    'sub.iapRestored': 'Ihre Käufe wurden wiederhergestellt.',
+    'sub.iapNothingToRestore': 'Für diese Apple-ID wurde kein aktives Abo gefunden.',
+    'sub.iapRestoreFailed':
+      'Käufe konnten nicht wiederhergestellt werden. Bitte versuchen Sie es erneut.',
+    'sub.iapManage': 'Abo verwalten',
+    'sub.iapNoProducts': 'Die Tarife können derzeit nicht gekauft werden.',
+    'sub.iapLoadFailed':
+      'Der App Store ist nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
+    'sub.iapTerms':
+      'Abos verlängern sich automatisch zum angezeigten Preis, monatlich oder jährlich, bis sie gekündigt werden. Die Zahlung wird bei Kaufbestätigung Ihrer Apple-ID belastet. Kündigen Sie mindestens 24 Stunden vor Ende des Zeitraums in den Abo-Einstellungen Ihrer Apple-ID, um die Verlängerung zu vermeiden.',
+    'sub.iapTermsLink': 'Nutzungsbedingungen',
+    'sub.iapPrivacyLink': 'Datenschutzerklärung',
   },
 };

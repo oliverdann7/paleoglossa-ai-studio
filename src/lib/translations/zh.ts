@@ -789,5 +789,23 @@ export const zh = {
     'aiReport.cancel': '取消',
     'aiReport.thanks': '已举报，谢谢。',
     'account.verifyNone': '点击“删除账户”即可永久删除您的账户。',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn': '请登录后订阅，以便套餐与您的账户绑定。',
+    'sub.iapPaidElsewhere': '此账户的套餐已处于有效状态。',
+    'sub.iapPurchased': '谢谢，您的套餐现已生效。',
+    'sub.iapPurchaseFailed': '购买未能完成。您不会被重复扣费；如果套餐未显示，请点击“恢复购买”。',
+    'sub.iapProcessing': '处理中…',
+    'sub.iapRestore': '恢复购买',
+    'sub.iapRestored': '您的购买已恢复。',
+    'sub.iapNothingToRestore': '未找到此 Apple ID 的有效订阅。',
+    'sub.iapRestoreFailed': '无法恢复购买，请重试。',
+    'sub.iapManage': '管理订阅',
+    'sub.iapNoProducts': '目前无法购买套餐。',
+    'sub.iapLoadFailed': '无法连接 App Store，请检查网络后重试。',
+    'sub.iapTerms':
+      '订阅将按所示价格按月或按年自动续订，直至取消。款项在确认购买时从您的 Apple ID 账户扣除。如需避免续订，请在当前订阅期结束前至少 24 小时，在 Apple ID 的订阅设置中取消。',
+    'sub.iapTermsLink': '使用条款',
+    'sub.iapPrivacyLink': '隐私政策',
   },
 };

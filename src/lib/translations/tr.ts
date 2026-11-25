@@ -874,5 +874,24 @@ export const tr = {
     'aiReport.cancel': 'İptal',
     'aiReport.thanks': 'Bildirildi — teşekkürler.',
     'account.verifyNone': 'Hesabınızı kalıcı olarak silmek için “Hesabı Sil”e dokunun.',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn': 'Abone olmak için oturum açın; böylece planınız hesabınıza bağlanır.',
+    'sub.iapPaidElsewhere': 'Planınız bu hesapta zaten etkin.',
+    'sub.iapPurchased': 'Teşekkürler — planınız artık etkin.',
+    'sub.iapPurchaseFailed':
+      'Satın alma tamamlanamadı. Sizden iki kez ücret alınmadı — planınız görünmüyorsa “Satın Alımları Geri Yükle”ye dokunun.',
+    'sub.iapProcessing': 'İşleniyor…',
+    'sub.iapRestore': 'Satın Alımları Geri Yükle',
+    'sub.iapRestored': 'Satın alımlarınız geri yüklendi.',
+    'sub.iapNothingToRestore': 'Bu Apple Kimliği için etkin bir abonelik bulunamadı.',
+    'sub.iapRestoreFailed': 'Satın alımlar geri yüklenemedi. Lütfen tekrar deneyin.',
+    'sub.iapManage': 'Aboneliği Yönet',
+    'sub.iapNoProducts': 'Planlar şu anda satın alınamıyor.',
+    'sub.iapLoadFailed': "App Store'a ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.",
+    'sub.iapTerms':
+      'Abonelikler, iptal edilene kadar gösterilen fiyattan aylık veya yıllık olarak otomatik yenilenir. Ödeme, satın alma onaylandığında Apple Kimliğinizden tahsil edilir. Yenilemeyi önlemek için dönem bitiminden en az 24 saat önce Apple Kimliği abonelik ayarlarınızdan iptal edin.',
+    'sub.iapTermsLink': 'Kullanım Koşulları',
+    'sub.iapPrivacyLink': 'Gizlilik Politikası',
   },
 };
