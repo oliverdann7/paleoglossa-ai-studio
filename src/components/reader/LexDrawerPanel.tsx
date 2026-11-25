@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { features } from '../../lib/features.js';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 import { ScholarAnnotations } from './ScholarAnnotations.js';
 import { CognateLinksSection } from './CognateLinksSection.js';
 import { ConceptSummarySection } from './ConceptSummarySection.js';
@@ -1432,6 +1433,15 @@ export const LexDrawerPanel = memo(
                 <p className="text-[14px] text-ink2 leading-relaxed whitespace-pre-wrap">
                   {aiWordInsight}
                 </p>
+                {aiWordInsight && (
+                  <ReportAiContentButton
+                    key={aiWordInsight}
+                    surface="explanation"
+                    content={aiWordInsight}
+                    prompt={selectedWord.text || selectedWord.lemma}
+                    languageId={langId}
+                  />
+                )}
               </div>
             )}
 

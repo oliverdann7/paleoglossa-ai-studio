@@ -7,6 +7,7 @@ import { DependencyTree } from './DependencyTree.js';
 import type { DepToken } from './DependencyTree.js';
 import { DiscussionPanel } from './DiscussionPanel.js';
 import { features } from '../../lib/features.js';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 
 interface WordParsing {
   text: string;
@@ -460,6 +461,16 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
                 </div>
               )}
             </div>
+          )}
+
+          {analysis && !loading && activeTab !== 'discuss' && (
+            <ReportAiContentButton
+              key={sentence.text}
+              surface="sentence-analysis"
+              content={JSON.stringify(analysis)}
+              prompt={sentence.text}
+              languageId={language}
+            />
           )}
 
           {activeTab === 'discuss' && (

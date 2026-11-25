@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Flag, Check, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../lib/services/apiFetch.js';
+import { useAuth } from '../lib/hooks/useAuth.js';
 
 type Reason = 'offensive' | 'inaccurate' | 'other';
 
@@ -22,6 +23,7 @@ interface Props {
  */
 export const ReportAiContentButton = ({ surface, content, prompt, languageId }: Props) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [state, setState] = useState<'idle' | 'choosing' | 'sending' | 'sent' | 'error'>('idle');
 
   const reasons: { id: Reason; label: string }[] = [
@@ -35,6 +37,8 @@ export const ReportAiContentButton = ({ surface, content, prompt, languageId }: 
     try {
       await apiFetch('/api/reports/ai-content', {
         method: 'POST',
+        // Guests can read and use AI too; attach the account only when there is one.
+        skipAuth: !user,
         body: { surface, reason, content, prompt, languageId },
       });
       setState('sent');

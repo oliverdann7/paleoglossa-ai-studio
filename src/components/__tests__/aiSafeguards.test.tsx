@@ -7,6 +7,10 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
 }));
 vi.mock('../../lib/platform.js', () => ({ isCapacitor: () => true }));
+let signedIn = true;
+vi.mock('../../lib/hooks/useAuth.js', () => ({
+  useAuth: () => ({ user: signedIn ? { uid: 'u1' } : null }),
+}));
 const apiFetch = vi.fn();
 vi.mock('../../lib/services/apiFetch.js', () => ({
   apiFetch: (...args: unknown[]) => apiFetch(...args),
@@ -57,6 +61,7 @@ describe('ReportAiContentButton', () => {
     await waitFor(() => expect(screen.getByRole('status')).toBeTruthy());
     expect(apiFetch).toHaveBeenCalledWith('/api/reports/ai-content', {
       method: 'POST',
+      skipAuth: false,
       body: {
         surface: 'tutor',
         reason: 'offensive',
@@ -65,5 +70,16 @@ describe('ReportAiContentButton', () => {
         languageId: 'grc',
       },
     });
+  });
+
+  it('still sends for a guest, without requiring sign-in', async () => {
+    signedIn = false;
+    apiFetch.mockResolvedValue({ ok: true });
+    render(<ReportAiContentButton surface="explanation" content="odd gloss" />);
+    fireEvent.click(screen.getByTestId('ai-report-button'));
+    fireEvent.click(screen.getByText('Wrong or misleading'));
+    await waitFor(() => expect(screen.getByRole('status')).toBeTruthy());
+    expect(apiFetch.mock.calls[0][1]).toMatchObject({ skipAuth: true });
+    signedIn = true;
   });
 });
