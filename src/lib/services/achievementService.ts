@@ -6,6 +6,8 @@ import {
   collection,
   getDocs,
 } from 'firebase/firestore';
+import { WordState } from '../constants/wordStates.js';
+import { UNKNOWN_LANGUAGE, parseVocabKey, vocabKey } from '../vocabulary/identity.js';
 
 // ─── Catalog ────────────────────────────────────────────────────────────────
 
@@ -33,7 +35,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     id: 'polyglottos',
     name: 'Πολύγλωσσος',
     transliteration: 'Polyglottos',
-    description: 'Marked 50 words as known across 5 different ancient languages.',
+    description: 'Marked 50 words as known in each of 5 different ancient languages.',
     hint: 'Many tongues, one mind…',
   },
   {
@@ -103,15 +105,32 @@ export async function getUnlocked(userId: string): Promise<UnlockedAchievement[]
   return snap.docs.map((d) => ({ id: d.id, unlockedAt: d.data().unlockedAt as string }));
 }
 
+// Achievements never re-lock, so one confirmed unlock per page load is enough.
+// Without this, a learner past a threshold (1,000 known words, a 10-day
+// streak) would pay a Firestore read on every later trigger.
+const knownUnlocked = new Map<string, Set<string>>();
+
+function rememberUnlocked(userId: string, id: string): void {
+  let ids = knownUnlocked.get(userId);
+  if (!ids) {
+    ids = new Set();
+    knownUnlocked.set(userId, ids);
+  }
+  ids.add(id);
+}
+
 async function isUnlocked(userId: string, id: string): Promise<boolean> {
+  if (knownUnlocked.get(userId)?.has(id)) return true;
   const ref = doc(db, 'users', userId, 'achievements', id);
   const snap = await getDoc(ref);
+  if (snap.exists()) rememberUnlocked(userId, id);
   return snap.exists();
 }
 
 async function unlock(userId: string, id: string): Promise<void> {
   const ref = doc(db, 'users', userId, 'achievements', id);
   await setDoc(ref, { unlockedAt: new Date().toISOString() });
+  rememberUnlocked(userId, id);
 }
 
 // ─── Trigger context types ───────────────────────────────────────────────────
@@ -156,6 +175,69 @@ export type AchievementContext =
   | StreakContext
   | WordReviewedContext
   | Record<string, never>;
+
+// ─── Context helpers ─────────────────────────────────────────────────────────
+
+/** Polyglottos: this many known words in a language make it count. */
+export const POLYGLOT_WORDS_PER_LANGUAGE = 50;
+
+interface KnownEntry {
+  state?: unknown;
+  languageId?: string;
+}
+
+/**
+ * Context for `word_known`, counted over the whole vocabulary (every
+ * language), not the active language's stats.
+ *
+ * `newlyKnown` are words being marked known right now: the caller's map is
+ * still the one from before the change, so they are added here.
+ */
+export function wordKnownContext(
+  knowledge: Record<string, KnownEntry | undefined>,
+  newlyKnown: { lemma: string; languageId?: string | null }[] = []
+): WordKnownContext {
+  const perLanguage = new Map<string, number>();
+  const counted = new Set<string>();
+  let totalKnown = 0;
+
+  const add = (key: string, languageId: string) => {
+    if (counted.has(key)) return;
+    counted.add(key);
+    totalKnown++;
+    perLanguage.set(languageId, (perLanguage.get(languageId) ?? 0) + 1);
+  };
+
+  for (const [key, info] of Object.entries(knowledge)) {
+    if (info?.state !== WordState.KNOWN) continue;
+    add(key, info.languageId || parseVocabKey(key).languageId);
+  }
+  for (const word of newlyKnown) {
+    add(vocabKey(word.lemma, word.languageId), word.languageId || UNKNOWN_LANGUAGE);
+  }
+
+  let languageCount = 0;
+  for (const [languageId, count] of perLanguage) {
+    if (languageId !== UNKNOWN_LANGUAGE && count >= POLYGLOT_WORDS_PER_LANGUAGE) languageCount++;
+  }
+  return { totalKnown, languageCount };
+}
+
+/**
+ * How many different texts the learner has read to the end. `alsoFinished`
+ * is the text finished just now, whose saved progress may not be written yet.
+ */
+export function countTextsRead(
+  progress: { textId: string; completed?: boolean; lastPosition?: number }[],
+  alsoFinished?: string | null
+): number {
+  const finished = new Set<string>();
+  for (const p of progress) {
+    if (p.textId && (p.completed || (p.lastPosition ?? 0) >= 95)) finished.add(p.textId);
+  }
+  if (alsoFinished) finished.add(alsoFinished);
+  return finished.size;
+}
 
 // ─── checkAndUnlock ──────────────────────────────────────────────────────────
 

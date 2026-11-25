@@ -12,6 +12,7 @@ import {
 } from '../lib/reading/phrases.js';
 import { PhraseBar } from '../components/reader/PhraseBar.js';
 import { pickNextReading } from '../lib/reading/nextReading.js';
+import { useReadSessionAchievements } from '../lib/hooks/useReadSessionAchievements.js';
 import {
   countLemmas,
   coverageFromProfile,
@@ -412,12 +413,16 @@ const ReaderInner = () => {
   const scrollProgressRef = useRef(0);
   const currentSentenceIndexRef = useRef(0);
   const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // The text read to its end — once set, saved progress keeps `completed: true`.
+  const completedTextRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!textId) return;
     const loadProgress = async () => {
       const prog = await fetchTextProgress(textId);
       if (prog) {
+        // A finished text stays finished when it is reopened at the top.
+        if (prog.completed || (prog.lastPosition ?? 0) >= 95) completedTextRef.current = textId;
         if (readingMode === 'scroll' && prog.lastPosition) {
           const scrollContainer = document.getElementById('reading-area-scroll');
           if (scrollContainer) {
@@ -449,7 +454,7 @@ const ReaderInner = () => {
         textId,
         lastPosition: scrollProgressRef.current,
         sentenceIndex: currentSentenceIndexRef.current,
-        completed: scrollProgressRef.current > 95,
+        completed: scrollProgressRef.current > 95 || completedTextRef.current === textId,
         lastReadAt: new Date().toISOString(),
       });
     }, 5000);
@@ -734,6 +739,20 @@ const ReaderInner = () => {
   const effectiveInterlinear = displayMode === 'interlinear' ? true : interlinearMode;
 
   const totalPages = Math.ceil((chapter?.sentences?.length || 0) / SENTENCES_PER_PAGE);
+
+  // The learner is at the end of the text: last chapter, and its last
+  // sentence (page mode) or the bottom of its last page (scroll mode).
+  const reachedEndOfText =
+    !!chapter &&
+    text?.id === textId &&
+    currentChapterIndex >= chapters.length - 1 &&
+    (readingMode === 'page'
+      ? currentSentenceIndex >= (chapter.sentences?.length ?? 0) - 1
+      : currentScrollPage >= totalPages - 1 && scrollProgress > 95);
+  useEffect(() => {
+    if (reachedEndOfText && textId) completedTextRef.current = textId;
+  }, [reachedEndOfText, textId]);
+  useReadSessionAchievements(user ? user.uid : null, textId, reachedEndOfText);
   const sentenceSliceStart = readingMode === 'page' ? 0 : currentScrollPage * SENTENCES_PER_PAGE;
   const sentenceSliceEnd =
     readingMode === 'page'

@@ -9,7 +9,8 @@ import { useAuth } from './useAuth.js';
 import { useVocabLimit } from './useVocabLimit.js';
 import { isTrackedWordState } from '../constants/plans.js';
 import { usePublishVocabLimit } from '../contexts/VocabLimitContext.js';
-import { vocabKey } from '../vocabulary/identity.js';
+import { isIdentifiableLemma, vocabKey } from '../vocabulary/identity.js';
+import { checkAndUnlock, wordKnownContext } from '../services/achievementService.js';
 import type { ReadingContext } from '../review/readingContext.js';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './useToast.js';
@@ -107,34 +108,62 @@ export const useKnowledge = (languageId?: string) => {
           );
           trackEvent(ANALYTICS_EVENTS.KNOWN_WORD_MILESTONE, { languageId: langId, milestone });
         }
+        // Fire-and-forget achievement check (signed-in users only). Counted over
+        // the whole vocabulary — every language — plus the word just marked.
+        if (userId && isIdentifiableLemma(lemma)) {
+          checkAndUnlock(
+            userId,
+            'word_known',
+            wordKnownContext(vocab.knowledge, [{ lemma, languageId: langId }])
+          );
+        }
       } else if (state !== WordState.KNOWN && previousState === WordState.KNOWN) {
         statsHook.updateStatsState((s) => ({ ...s, totalKnown: Math.max(0, s.totalKnown - 1) }));
       }
       return true;
     },
-    [vocab, statsHook, vocabLimit, addToast, t]
+    [vocab, statsHook, vocabLimit, addToast, t, userId]
   );
 
   // Guarded markPageAsSeen: filters out words that would exceed the free-language
   // vocab limit before delegating to the underlying vocabulary hook.
   const markPageAsSeenGuarded = useCallback(
     (tokens: any[]) => {
-      if (!vocabLimit.isEnabled || !vocabLimit.isFull) {
-        vocab.markPageAsSeen(tokens);
-        return;
+      let allowed = tokens;
+      if (vocabLimit.isEnabled && vocabLimit.isFull) {
+        // Limit is full: only allow tokens already tracked (state changes on known words are fine),
+        // and skip new-tracked writes for the free language.
+        allowed = tokens.filter((token) => {
+          if (!token.lemma) return false;
+          const lang = token.languageId || token.language || 'unknown';
+          if (lang !== vocabLimit.languageId) return true; // non-current-language tokens pass through
+          const existing = vocab.knowledge[vocabKey(token.lemma, lang)];
+          return existing && isTrackedWordState(existing.state); // only already-tracked words
+        });
       }
-      // Limit is full: only allow tokens already tracked (state changes on known words are fine),
-      // and skip new-tracked writes for the free language.
-      const allowed = tokens.filter((token) => {
-        if (!token.lemma) return false;
-        const lang = token.languageId || token.language || 'unknown';
-        if (lang !== vocabLimit.languageId) return true; // non-current-language tokens pass through
-        const existing = vocab.knowledge[vocabKey(token.lemma, lang)];
-        return existing && isTrackedWordState(existing.state); // only already-tracked words
+      if (allowed.length === 0) return;
+      vocab.markPageAsSeen(allowed);
+
+      // markPageAsSeen turns every still-NEW word KNOWN — the same event as
+      // marking one word known, so it gets the same achievement check.
+      if (!userId) return;
+      const newlyKnown = allowed.filter((token) => {
+        if (!isIdentifiableLemma(token.lemma)) return false;
+        const existing = vocab.knowledge[vocabKey(token.lemma, token.languageId)];
+        return !existing || existing.state === WordState.NEW;
       });
-      if (allowed.length > 0) vocab.markPageAsSeen(allowed);
+      if (newlyKnown.length > 0) {
+        checkAndUnlock(
+          userId,
+          'word_known',
+          wordKnownContext(
+            vocab.knowledge,
+            newlyKnown.map((token) => ({ lemma: token.lemma, languageId: token.languageId }))
+          )
+        );
+      }
     },
-    [vocab, vocabLimit]
+    [vocab, vocabLimit, userId]
   );
 
   // Bound to this hook's language so callers reading one language's text can
