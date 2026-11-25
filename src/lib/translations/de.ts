@@ -797,5 +797,29 @@ export const de = {
     'rec.newGenre': '{{genre}} erkunden',
     'rec.newWords_reason': '{{count}} neue Wörter zu lernen',
     'rec.expand': 'Erweitern Sie Ihren Wortschatz',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': 'KI-Funktionen erlauben?',
+    'aiConsent.body':
+      'Worterklärungen, der Tutor, die Satzanalyse, der Fotoimport und das Aussprache-Feedback werden von Google Gemini erzeugt, einem KI-Dienst eines Drittanbieters.',
+    'aiConsent.dataShared':
+      'Wenn Sie diese Funktionen nutzen, wird das, was Sie übermitteln – der Text, den Sie lesen oder importieren, Ihre Fragen, Fotos von Seiten und Sprachaufnahmen – an Google gesendet, um die Antwort zu erzeugen.',
+    'aiConsent.changeLater':
+      'Sie können dies jederzeit unter Einstellungen → Datenschutz ändern. Lesen, Wortschatz und Wiederholungen funktionieren auch ohne.',
+    'aiConsent.privacyLink': 'Datenschutzerklärung',
+    'aiConsent.decline': 'Nicht jetzt',
+    'aiConsent.allow': 'Erlauben',
+    'settings.aiProcessing': 'KI-Funktionen (Google Gemini)',
+    'settings.aiProcessingDesc':
+      'Die von Ihnen übermittelten Texte, Fragen, Fotos und Aufnahmen an Google Gemini senden, um Erklärungen, Tutor-Antworten und Feedback zu erzeugen.',
+    'aiReport.report': 'Diese Antwort melden',
+    'aiReport.why': 'Was stimmt mit dieser Antwort nicht?',
+    'aiReport.failed': 'Die Meldung konnte nicht gesendet werden. Versuchen Sie es erneut:',
+    'aiReport.offensive': 'Anstößig oder schädlich',
+    'aiReport.inaccurate': 'Falsch oder irreführend',
+    'aiReport.other': 'Etwas anderes',
+    'aiReport.cancel': 'Abbrechen',
+    'aiReport.thanks': 'Gemeldet – vielen Dank.',
+    'account.verifyNone': 'Tippen Sie auf „Konto löschen“, um Ihr Konto dauerhaft zu löschen.',
   },
 };

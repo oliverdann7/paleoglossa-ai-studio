@@ -800,5 +800,29 @@ export const es = {
     'rec.newGenre': 'Explorar {{genre}}',
     'rec.newWords_reason': '{{count}} palabras nuevas para aprender',
     'rec.expand': 'Amplía tu vocabulario',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': '¿Permitir las funciones de IA?',
+    'aiConsent.body':
+      'Las explicaciones de palabras, el tutor, el análisis de oraciones, la importación de fotos y los comentarios de pronunciación los genera Google Gemini, un servicio de IA de terceros.',
+    'aiConsent.dataShared':
+      'Cuando las usas, lo que envías —el texto que estás leyendo o importando, tus preguntas, las fotos de páginas y las grabaciones de voz— se envía a Google para generar la respuesta.',
+    'aiConsent.changeLater':
+      'Puedes cambiarlo en cualquier momento en Ajustes → Privacidad. La lectura, el vocabulario y los repasos funcionan sin ello.',
+    'aiConsent.privacyLink': 'Política de privacidad',
+    'aiConsent.decline': 'Ahora no',
+    'aiConsent.allow': 'Permitir',
+    'settings.aiProcessing': 'Funciones de IA (Google Gemini)',
+    'settings.aiProcessingDesc':
+      'Enviar a Google Gemini los textos, preguntas, fotos y grabaciones que envíes para generar explicaciones, respuestas del tutor y comentarios.',
+    'aiReport.report': 'Denunciar esta respuesta',
+    'aiReport.why': '¿Qué problema tiene esta respuesta?',
+    'aiReport.failed': 'No se pudo enviar la denuncia. Inténtalo de nuevo:',
+    'aiReport.offensive': 'Ofensiva o dañina',
+    'aiReport.inaccurate': 'Incorrecta o engañosa',
+    'aiReport.other': 'Otro motivo',
+    'aiReport.cancel': 'Cancelar',
+    'aiReport.thanks': 'Denuncia enviada. Gracias.',
+    'account.verifyNone': 'Pulsa «Eliminar cuenta» para eliminar tu cuenta de forma permanente.',
   },
 };

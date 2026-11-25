@@ -800,5 +800,30 @@ export const fr = {
     'rec.newGenre': 'Explorer {{genre}}',
     'rec.newWords_reason': '{{count}} nouveaux mots à apprendre',
     'rec.expand': 'Enrichissez votre vocabulaire',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': 'Autoriser les fonctions d’IA ?',
+    'aiConsent.body':
+      'Les explications de mots, le tuteur, l’analyse de phrases, l’import de photos et les retours sur la prononciation sont générés par Google Gemini, un service d’IA tiers.',
+    'aiConsent.dataShared':
+      'Lorsque vous les utilisez, ce que vous soumettez — le texte que vous lisez ou importez, vos questions, les photos de pages et les enregistrements vocaux — est envoyé à Google pour produire la réponse.',
+    'aiConsent.changeLater':
+      'Vous pouvez modifier ce choix à tout moment dans Paramètres → Confidentialité. La lecture, le vocabulaire et les révisions fonctionnent sans cela.',
+    'aiConsent.privacyLink': 'Politique de confidentialité',
+    'aiConsent.decline': 'Pas maintenant',
+    'aiConsent.allow': 'Autoriser',
+    'settings.aiProcessing': 'Fonctions d’IA (Google Gemini)',
+    'settings.aiProcessingDesc':
+      'Envoyer à Google Gemini les textes, questions, photos et enregistrements que vous soumettez afin de générer des explications, des réponses du tuteur et des retours.',
+    'aiReport.report': 'Signaler cette réponse',
+    'aiReport.why': 'Quel est le problème avec cette réponse ?',
+    'aiReport.failed': 'Impossible d’envoyer le signalement. Réessayez :',
+    'aiReport.offensive': 'Offensante ou nuisible',
+    'aiReport.inaccurate': 'Fausse ou trompeuse',
+    'aiReport.other': 'Autre chose',
+    'aiReport.cancel': 'Annuler',
+    'aiReport.thanks': 'Signalement envoyé — merci.',
+    'account.verifyNone':
+      'Appuyez sur « Supprimer le compte » pour supprimer définitivement votre compte.',
   },
 };

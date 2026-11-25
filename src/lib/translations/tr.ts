@@ -312,8 +312,7 @@ export const tr = {
     'studyPlan.dailyGoalSub': 'Günlük hedefin %{{pct}} tamamlandı',
     'studyPlan.readMore': 'Daha Fazla Oku',
     'studyPlan.allDone': 'Bugünün planı tamamlandı!',
-    'studyPlan.allDoneDesc':
-      'Günlük hedefine ulaştın. Yarın tekrar gel ya da keşfetmeye devam et.',
+    'studyPlan.allDoneDesc': 'Günlük hedefine ulaştın. Yarın tekrar gel ya da keşfetmeye devam et.',
     'studyPlan.goalComplete': 'Günlük okuma hedefi',
     'studyPlan.goalCompleteSub': 'Bugün {{count}} kelime okundu ✓',
     'dashboard.cardsDue': 'Vadesi Gelen Kartlar',
@@ -851,5 +850,29 @@ export const tr = {
     'rec.newGenre': '{{genre}} keşfedin',
     'rec.newWords_reason': 'Öğrenilecek {{count}} yeni kelime',
     'rec.expand': 'Kelime dağarcığınızı genişletin',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': 'Yapay zekâ özelliklerine izin verilsin mi?',
+    'aiConsent.body':
+      'Kelime açıklamaları, eğitmen, cümle çözümlemesi, fotoğraftan içe aktarma ve telaffuz geri bildirimi, üçüncü taraf bir yapay zekâ hizmeti olan Google Gemini tarafından üretilir.',
+    'aiConsent.dataShared':
+      "Bu özellikleri kullandığınızda gönderdikleriniz — okuduğunuz veya içe aktardığınız metin, sorularınız, sayfa fotoğrafları ve ses kayıtları — yanıtı üretmek için Google'a gönderilir.",
+    'aiConsent.changeLater':
+      'Bunu istediğiniz zaman Ayarlar → Gizlilik bölümünden değiştirebilirsiniz. Okuma, kelime dağarcığı ve tekrarlar bu olmadan da çalışır.',
+    'aiConsent.privacyLink': 'Gizlilik Politikası',
+    'aiConsent.decline': 'Şimdi değil',
+    'aiConsent.allow': 'İzin ver',
+    'settings.aiProcessing': 'Yapay zekâ özellikleri (Google Gemini)',
+    'settings.aiProcessingDesc':
+      "Gönderdiğiniz metinleri, soruları, fotoğrafları ve kayıtları açıklamalar, eğitmen yanıtları ve geri bildirim üretmek için Google Gemini'ye gönder.",
+    'aiReport.report': 'Bu yanıtı bildir',
+    'aiReport.why': 'Bu yanıtta sorun nedir?',
+    'aiReport.failed': 'Bildirim gönderilemedi. Tekrar deneyin:',
+    'aiReport.offensive': 'Saldırgan veya zararlı',
+    'aiReport.inaccurate': 'Yanlış veya yanıltıcı',
+    'aiReport.other': 'Başka bir şey',
+    'aiReport.cancel': 'İptal',
+    'aiReport.thanks': 'Bildirildi — teşekkürler.',
+    'account.verifyNone': 'Hesabınızı kalıcı olarak silmek için “Hesabı Sil”e dokunun.',
   },
 };
