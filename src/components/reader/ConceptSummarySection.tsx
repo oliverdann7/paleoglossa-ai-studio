@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Sparkles, Loader2, ChevronDown } from 'lucide-react';
 import { AIClient } from '../../lib/services/aiClient.js';
 import { cn } from '@/lib/utils';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 
 interface Props {
   lemma: string;
@@ -70,6 +71,15 @@ export function ConceptSummarySection({ lemma, languageId, gloss, context, aiEna
         >
           {summary}
         </div>
+      )}
+      {summary !== null && expanded && (
+        <ReportAiContentButton
+          key={summary}
+          surface="explanation"
+          content={summary}
+          prompt={lemma}
+          languageId={languageId}
+        />
       )}
     </div>
   );

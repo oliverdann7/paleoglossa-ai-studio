@@ -1907,7 +1907,17 @@ If no significant variants are known for this specific lemma in this language, s
 // filing a report must not count against the AI rate limit or consent gate.
 
 const AI_REPORT_REASONS = ['offensive', 'inaccurate', 'other'] as const;
-const AI_REPORT_SURFACES = ['tutor', 'explanation', 'sentence-analysis', 'other'] as const;
+const AI_REPORT_SURFACES = [
+  'tutor',
+  'explanation',
+  'sentence-analysis',
+  'paradigm',
+  'quiz',
+  'pronunciation',
+  'context',
+  'translation',
+  'other',
+] as const;
 const clip = (value: unknown, max: number): string | null =>
   typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : null;
 

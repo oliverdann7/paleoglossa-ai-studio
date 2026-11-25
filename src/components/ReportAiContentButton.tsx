@@ -8,7 +8,16 @@ type Reason = 'offensive' | 'inaccurate' | 'other';
 
 interface Props {
   /** Which AI surface produced the content. */
-  surface: 'tutor' | 'explanation' | 'sentence-analysis' | 'other';
+  surface:
+    | 'tutor'
+    | 'explanation'
+    | 'sentence-analysis'
+    | 'paradigm'
+    | 'quiz'
+    | 'pronunciation'
+    | 'context'
+    | 'translation'
+    | 'other';
   /** The AI-generated text being reported. */
   content: string;
   /** The user message that produced it, when there is one. */
@@ -20,6 +29,9 @@ interface Props {
  * "Report" control for a piece of AI-generated content. Sends the content and
  * a reason to the developer without leaving the app (Google Play's
  * AI-Generated Content policy).
+ *
+ * Renders only phrasing content (spans/buttons) so it can sit inside running
+ * text such as the reader's inline translations.
  */
 export const ReportAiContentButton = ({ surface, content, prompt, languageId }: Props) => {
   const { t } = useTranslation();
@@ -49,10 +61,10 @@ export const ReportAiContentButton = ({ surface, content, prompt, languageId }: 
 
   if (state === 'sent') {
     return (
-      <p className="mt-2 flex items-center gap-1 text-[11px] text-muted" role="status">
+      <span className="mt-2 flex items-center gap-1 text-[11px] text-muted" role="status">
         <Check className="w-3 h-3" />
         {t('aiReport.thanks', 'Reported — thank you.')}
-      </p>
+      </span>
     );
   }
 
@@ -71,13 +83,13 @@ export const ReportAiContentButton = ({ surface, content, prompt, languageId }: 
   }
 
   return (
-    <div className="mt-2 text-[11px] text-muted" data-testid="ai-report-reasons">
-      <p className="mb-1.5">
+    <span className="mt-2 block text-[11px] text-muted" data-testid="ai-report-reasons">
+      <span className="mb-1.5 block">
         {state === 'error'
           ? t('aiReport.failed', 'Could not send the report. Try again:')
           : t('aiReport.why', 'What is wrong with this answer?')}
-      </p>
-      <div className="flex flex-wrap items-center gap-1.5">
+      </span>
+      <span className="flex flex-wrap items-center gap-1.5">
         {reasons.map((r) => (
           <button
             key={r.id}
@@ -100,7 +112,7 @@ export const ReportAiContentButton = ({ surface, content, prompt, languageId }: 
             {t('aiReport.cancel', 'Cancel')}
           </button>
         )}
-      </div>
-    </div>
+      </span>
+    </span>
   );
 };

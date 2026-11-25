@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { AIClient } from '../../lib/services/aiClient.js';
 import { useAuth } from '../../lib/hooks/useAuth.js';
 import { apiFetch } from '../../lib/services/apiFetch.js';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 
 interface ParadigmModalProps {
   isOpen: boolean;
@@ -117,6 +118,15 @@ export const ParadigmModal: React.FC<ParadigmModalProps> = ({
               ) : (
                 <div className="markdown-body">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{paradigm || ''}</ReactMarkdown>
+                  {source === 'ai' && paradigm && (
+                    <ReportAiContentButton
+                      key={paradigm}
+                      surface="paradigm"
+                      content={paradigm}
+                      prompt={lemma}
+                      languageId={languageId}
+                    />
+                  )}
                 </div>
               )}
             </div>

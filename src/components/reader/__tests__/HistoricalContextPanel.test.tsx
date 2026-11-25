@@ -12,6 +12,8 @@ vi.mock('react-i18next', () => {
 });
 
 const fetchHistoricalContext = vi.fn();
+// The report control pulls in auth/Firebase; it has its own tests.
+vi.mock('../../ReportAiContentButton.js', () => ({ ReportAiContentButton: () => null }));
 vi.mock('../../../lib/services/historicalContextService.js', () => ({
   fetchHistoricalContext: (...args: unknown[]) => fetchHistoricalContext(...args),
 }));

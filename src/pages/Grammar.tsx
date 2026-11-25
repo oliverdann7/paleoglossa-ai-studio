@@ -33,6 +33,7 @@ import { useGrammarMastery } from '../lib/hooks/useGrammarMastery.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
 import { logSilentFailure } from '../lib/utils/logSilent.js';
+import { ReportAiContentButton } from '../components/ReportAiContentButton.js';
 
 interface Paradigm {
   caption: string;
@@ -323,6 +324,11 @@ function MorphologyQuiz({ concept, onQuizResult }: { concept: Concept; onQuizRes
                 <RefreshCw className="w-3.5 h-3.5" />
                 Next question
               </button>
+              <ReportAiContentButton
+                key={question.question}
+                surface="quiz"
+                content={JSON.stringify(question)}
+              />
             </div>
           )}
         </div>

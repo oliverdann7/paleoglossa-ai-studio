@@ -4,6 +4,7 @@ import {
   fetchHistoricalContext,
   type HistoricalContext,
 } from '../../lib/services/historicalContextService.js';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 
 interface Props {
   textId?: string;
@@ -191,6 +192,17 @@ export const HistoricalContextPanel = ({
       {/* Footer attribution */}
       <div className="px-4 py-2 border-t border-bdr/40 text-xs text-ink/40 text-center">
         {t('historicalContext.aiGenerated', 'AI-generated — verify with primary sources')}
+        {context && (
+          <div className="flex justify-center">
+            <ReportAiContentButton
+              key={textId}
+              surface="context"
+              content={JSON.stringify(context)}
+              prompt={title}
+              languageId={languageId}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
