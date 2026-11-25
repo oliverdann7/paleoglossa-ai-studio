@@ -2,20 +2,41 @@ import {
   getAuth,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  GoogleAuthProvider,
   signOut,
 } from 'firebase/auth';
 import { getAnalytics, setUserId } from 'firebase/analytics';
 import { getApiUrl } from './apiBaseUrl.js';
+import { reauthenticateWithProvider } from './authService.js';
 
 export interface ReauthOptions {
   password?: string; // For email/password users
 }
 
+/** How the current user must confirm their identity before deletion. */
+export type ReauthMethod = 'password' | 'google.com' | 'apple.com' | 'none';
+
+/**
+ * Picks the re-authentication method from the providers actually linked to
+ * the account. A password is only ever asked of accounts that have one —
+ * having an email address does not imply it (Google and Apple accounts carry
+ * an email too).
+ */
+export function getReauthMethod(
+  user: { providerData?: ReadonlyArray<{ providerId: string }> } | null | undefined
+): ReauthMethod {
+  const ids = new Set((user?.providerData ?? []).map((p) => p.providerId));
+  if (ids.has('password')) return 'password';
+  if (ids.has('google.com')) return 'google.com';
+  if (ids.has('apple.com')) return 'apple.com';
+  return 'none';
+}
+
 /**
  * Reauthenticate the current user before deletion.
- * For email/password: requires password
- * For social: uses popup/redirect flow
+ * Email/password accounts confirm with their password; Google and Apple
+ * accounts confirm through their provider (popup on web, native sheet in the
+ * iOS/Android apps). Accounts with no linked provider need no extra step —
+ * the server still requires a valid session and the typed confirmation.
  */
 export async function reauthenticateUser(options: ReauthOptions): Promise<void> {
   const auth = getAuth();
@@ -25,50 +46,22 @@ export async function reauthenticateUser(options: ReauthOptions): Promise<void> 
     throw new Error('No user signed in');
   }
 
-  // Check if user has password auth
-  const hasPasswordAuth =
-    currentUser.providerData.some((provider) => provider.providerId === 'password') ||
-    currentUser.email;
+  const method = getReauthMethod(currentUser);
 
-  if (hasPasswordAuth && !options.password) {
-    throw new Error('Password required for email/password accounts');
-  }
-
-  // Reauthenticate with email/password
-  if (hasPasswordAuth && options.password) {
+  if (method === 'password') {
+    if (!options.password) {
+      throw new Error('Password required for email/password accounts');
+    }
     if (!currentUser.email) {
       throw new Error('User email not found');
     }
-
     const credential = EmailAuthProvider.credential(currentUser.email, options.password);
     await reauthenticateWithCredential(currentUser, credential);
     return;
   }
 
-  // For social auth, user must reauthenticate through provider
-  // Client should handle this with GoogleAuthProvider.getCredential() or similar
-  const hasGoogleAuth = currentUser.providerData.some(
-    (provider) => provider.providerId === 'google.com'
-  );
-
-  if (hasGoogleAuth) {
-    const provider = new GoogleAuthProvider();
-    provider.addScope('profile');
-    provider.addScope('email');
-
-    try {
-      const result = await (currentUser as any).reauthenticateWithPopup(provider);
-      if (!result) {
-        throw new Error('Google reauthentication failed');
-      }
-    } catch (error: any) {
-      if (error.code === 'auth/popup-blocked') {
-        throw new Error('Sign-in popup was blocked. Please enable popups and try again.', {
-          cause: error,
-        });
-      }
-      throw error;
-    }
+  if (method === 'google.com' || method === 'apple.com') {
+    await reauthenticateWithProvider(method);
   }
 }
 

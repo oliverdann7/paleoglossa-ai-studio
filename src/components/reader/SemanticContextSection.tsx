@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { fetchSemanticContext, type SemanticContext } from '../../lib/services/semanticContextService.js';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 
 interface Props {
   lemma: string;
@@ -128,6 +129,13 @@ export const SemanticContextSection = ({ lemma, languageId, gloss }: Props) => {
       <p className="mt-3 text-[10px] text-ink/30">
         {t('semantic.aiGenerated', 'AI-generated — verify with scholarly sources')}
       </p>
+      <ReportAiContentButton
+        key={lemma}
+        surface="context"
+        content={JSON.stringify(data)}
+        prompt={lemma}
+        languageId={languageId}
+      />
     </div>
   );
 };

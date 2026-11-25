@@ -28,10 +28,12 @@ import {
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
+import { aiFetch } from '../lib/services/aiConsent.js';
 import { useGrammarMastery } from '../lib/hooks/useGrammarMastery.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
 import { logSilentFailure } from '../lib/utils/logSilent.js';
+import { ReportAiContentButton } from '../components/ReportAiContentButton.js';
 
 interface Paradigm {
   caption: string;
@@ -201,8 +203,7 @@ function MorphologyQuiz({ concept, onQuizResult }: { concept: Concept; onQuizRes
     setQuestion(null);
     setSelected(null);
     try {
-      const url = getApiUrl('/api/ai/quiz');
-      const res = await fetch(url, {
+      const res = await aiFetch('/api/ai/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -323,6 +324,11 @@ function MorphologyQuiz({ concept, onQuizResult }: { concept: Concept; onQuizRes
                 <RefreshCw className="w-3.5 h-3.5" />
                 Next question
               </button>
+              <ReportAiContentButton
+                key={question.question}
+                surface="quiz"
+                content={JSON.stringify(question)}
+              />
             </div>
           )}
         </div>
@@ -1018,12 +1024,15 @@ export const Grammar = () => {
 
   return (
     <div className="p-6 md:p-12 pt-safe-page max-w-4xl mx-auto font-sans min-h-screen">
-      <header className="mb-6 flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue">
+      {/* Below the lg breakpoint the title and the controls each get their own
+          row. Side by side on a phone they squeezed the title into a two-line
+          column and pushed the view switcher off the screen. */}
+      <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 bg-blue/10 rounded-lg flex items-center justify-center text-blue shrink-0">
             <GraduationCap className="w-5 h-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-[28px] font-serif font-light text-ink tracking-tight">
               {t('grammar.title', 'Grammar Atlas')}
             </h2>
@@ -1032,7 +1041,7 @@ export const Grammar = () => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {(() => {
             const due = mastery.getDueConcepts(activeLang).length;
             if (due === 0) return null;

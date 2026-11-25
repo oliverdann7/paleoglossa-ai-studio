@@ -3,6 +3,7 @@ import { Scroll, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
 import { getVariantEntries, type TextualVariantEntry } from '../../lib/data/textualVariants.js';
 import { AIClient } from '../../lib/services/aiClient.js';
 import { cn } from '@/lib/utils';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 
 interface Props {
   lemma: string;
@@ -148,6 +149,15 @@ function AIApparatusNotes({
         >
           {notes}
         </div>
+      )}
+      {notes !== null && open && (
+        <ReportAiContentButton
+          key={notes}
+          surface="explanation"
+          content={notes}
+          prompt={lemma}
+          languageId={languageId}
+        />
       )}
     </div>
   );

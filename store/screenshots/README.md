@@ -1,49 +1,59 @@
 # App Store & Play Store screenshots
 
-Branded marketing screenshots for Paleoglossa — six hero panels showing the core
-reading-and-learning loop, rendered inside device frames on the brand navy/parchment
-palette with the real product type (Cormorant Garamond / Crimson Pro / DM Mono).
+Real captures of the app, one set per store size. Each image is the app's own
+UI at that device's logical size and pixel ratio — nothing is drawn or mocked.
 
-## Output
+## Screens
 
-| Panel | Headline | Screen shown |
-|-------|----------|--------------|
-| `01-reader`    | Read the ancient world, word by word | Word-by-word reader with the Iliad proem + word inspector (lemma, morphology, AI note) |
-| `02-tutor`     | Your own philology tutor             | AI tutor chat, six difficulty modes, follow-up suggestions |
-| `03-review`    | Never forget a word                  | FSRS-5 spaced-repetition review card with Again/Hard/Good/Easy |
-| `04-library`   | A library of the classics            | Curated corpus grid across Greek, Latin, Hebrew, Sanskrit, Akkadian |
-| `05-audio`     | Hear it the way it sounded           | AudioLab: waveform, IPA, restored/Erasmian/modern traditions |
-| `06-languages` | Eleven ancient languages             | Language picker with native script samples for all 11 |
+| File | Screen |
+|------|--------|
+| `01-reader`   | Reader — the opening of the *Iliad* from the curated library |
+| `02-word`     | Word analysis — Μῆνιν: lemma, meaning, knowledge state |
+| `03-review`   | Spaced-repetition review card with Again / Hard / Good / Easy |
+| `04-library`  | Curated library |
+| `05-audio`    | Pronunciation Lab |
+| `06-language` | Language overview (Ancient Greek) |
 
-Each panel is produced at the sizes App Store Connect and Play Console accept:
+## Sizes
 
-- **`ios-6.7/*.png`** — 1284 × 2778 px (iPhone 6.7" display) — iPhone 17 Pro Max frame.
-- **`ios-6.5/*.png`** — 1242 × 2688 px (iPhone 6.5" display) — iPhone 17 Pro Max frame.
-- **`ipad-13/*.png`** — 2064 × 2752 px (iPad 13" display) — iPad Pro frame, tablet layouts.
-- **`ipad-12.9/*.png`** — 2048 × 2732 px (iPad 12.9" display) — iPad Pro frame, tablet layouts.
-- **`android/*.png`** — 1080 × 2400 px (9:20 portrait phone).
+| Folder | Pixels | Store slot |
+|--------|--------|------------|
+| `ios-6.7/`   | 1290 × 2796 | iPhone 6.7" / 6.9" |
+| `ios-6.5/`   | 1242 × 2688 | iPhone 6.5" |
+| `ipad-13/`   | 2064 × 2752 | iPad 13" |
+| `ipad-12.9/` | 2048 × 2732 | iPad 12.9" |
+| `android/`   | 1080 × 2400 | Google Play phone |
 
-The iPad panels are not the phone screens scaled up — they use genuine tablet layouts
-(reader + inspector split, tutor reading/chat split, library filter rail + 3-column grid,
-review stats rail, AudioLab word list + detail).
+Files are JPEG (quality 92), which both stores accept. Upload them as they are.
 
-Drop the PNGs straight into App Store Connect (Media Manager) and Google Play Console
-(Store listing → Phone screenshots). Both stores want 2–10 images; all six per platform
-are upload-ready as-is.
-
-## Regenerate
+## How they are made
 
 ```bash
-node store/screenshots/generate.mjs   # writes the HTML panels into ios/ and android/
-bash store/screenshots/capture.sh     # renders each to PNG with headless Chrome
+npm run dev                         # http://localhost:3000, in another terminal
+node store/screenshots/capture.cjs  # all sizes; add a folder name for just one
 ```
 
-- `generate.mjs` is the single source of truth — palette, copy, and every screen mockup
-  live there. Edit a caption or UI detail and re-run both commands.
-- `capture.sh` uses the system Google Chrome in `--headless` mode. Override the binary
-  with `CHROME=/path/to/chrome bash store/screenshots/capture.sh` if needed.
-- Brand serif/script fonts (Cormorant Garamond, Crimson Pro, DM Mono, Noto Serif Hebrew /
-  Devanagari, Noto Sans Coptic / Syriac / Cuneiform / Egyptian Hieroglyphs) load from
-  Google Fonts at render time, so capturing requires a network connection.
+`capture.cjs` drives the app with a headless browser in guest ("Try Demo")
+mode: it opens the *Iliad* from the library, saves the dictionary meaning of
+five words and marks them Learning with the reader's own buttons, then opens
+the review session the app schedules for them.
 
-The HTML panels are intermediate build artifacts; only the PNGs are the deliverable.
+If the project's Playwright has no browser downloaded, either run
+`npx playwright install chromium` or set `CHROMIUM_PATH` to a Chrome/Chromium
+binary.
+
+## What to know before uploading
+
+- **Rendered in a browser, not on a device.** The apps show the same web UI
+  inside a WebView, but these have no status bar and were rendered by
+  Chromium, not by iOS's WebKit. For pixel-exact store images, re-take them in
+  the iOS Simulator and an Android emulator.
+- **Guest session.** The amber "Demo mode" banner is hidden and the web cookie
+  notice is answered before the first screen, because a signed-in user of the
+  store build sees neither. The tablet layouts still show the sidebar's
+  "Demo mode" pill and a "Guest · Free" account chip.
+- **No AI or audio screens.** The AI tutor, AI explanations and text-to-speech
+  need an account and server keys, so they are not captured. Take those on a
+  device from a signed-in production build if you want them in the listing.
+- **No marketing captions.** These are plain screens. Add framing or captions
+  in a design tool if you want them; keep the screen content unaltered.

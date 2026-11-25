@@ -106,6 +106,7 @@ var on in dev to work on them; promote a surface out of the gate once its conten
 | `importedTexts/{uid}/texts` | User-imported texts |
 | `courses/{courseId}` | Classroom courses |
 | `aiUsage/{uid}` | AI quota tracking per user |
+| `aiContentReports/{id}` | User reports of AI-generated answers (Admin SDK only; written by `POST /api/reports/ai-content`) |
 
 Schema details: `firebase-blueprint.json`, `src/types/firestore.ts`.
 
@@ -123,7 +124,8 @@ See `.env.example` for the full list. Required for local dev:
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Server-side Admin SDK (base64 or JSON string) |
 | `GEMINI_API_KEY` | AI analysis, translation, tutor (required) |
 | `GOOGLE_TTS_API_KEY` | AudioLab TTS |
-| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | Billing |
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | Billing (web) |
+| `REVENUECAT_SECRET_API_KEY` + `REVENUECAT_WEBHOOK_AUTH` | Billing (iOS/Android in-app purchase) |
 
 ---
 
@@ -197,6 +199,7 @@ For full morphology in bundled samples: use the richly-tokenized format (see `ca
 | `docs/product-audit-2026-06.md` | Full product/engineering audit: scores, confirmed + refuted findings, quick wins |
 | `docs/vocabulary-identity.md` | How a vocabulary item is identified (language + normalized lemma), per-language rules, document IDs, repair/migration |
 | `docs/reading-first-plan-2026-11.md` | Review of the reading-first plan against current code; gap table and PR order |
+| `docs/in-app-purchase.md` | In-app purchase (App Store + Google Play) via RevenueCat: flow, product IDs, setup, test lists |
 | `docs/reader-architecture.md` | Reader internals, token pipeline, knowledge state transitions |
 | `docs/ai-coding-guardrails.md` | AI safety, forbidden patterns, deployment checklist |
 | `docs/repo-health-audit.md` | Codebase quality assessment |

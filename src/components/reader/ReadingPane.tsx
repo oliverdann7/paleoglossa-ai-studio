@@ -8,6 +8,7 @@ import type { WordInfo } from '@/lib/services/vocabularyService';
 import { GlossTooltip } from './GlossTooltip.js';
 import { MorphologyTooltip } from './MorphologyTooltip.js';
 import type { DisplayMode, ReaderToken, ReaderSentence } from '@/types/reader';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 
 /** POS-based token color for Morphology mode. Returns undefined for unknowns. */
 function getPosStyle(token: ReaderToken): React.CSSProperties | undefined {
@@ -676,6 +677,13 @@ export function ReadingPane({
                         (translatingId === sentence.id
                           ? '…'
                           : t('reader.noTranslation', 'No translation available'))}
+                      {aiTranslations[sentence.id] && (
+                        <ReportAiContentButton
+                          surface="translation"
+                          content={aiTranslations[sentence.id]}
+                          prompt={sentence.tokens.map((tok) => tok.text).join(' ')}
+                        />
+                      )}
                     </span>
                   )}
                 </span>
@@ -811,7 +819,14 @@ export function ReadingPane({
                   )}
                 >
                   {aiTranslations[sentence.id] ? (
-                    aiTranslations[sentence.id]
+                    <>
+                      {aiTranslations[sentence.id]}
+                      <ReportAiContentButton
+                        surface="translation"
+                        content={aiTranslations[sentence.id]}
+                        prompt={sentence.tokens.map((tok) => tok.text).join(' ')}
+                      />
+                    </>
                   ) : (
                     <div className="flex flex-col gap-1 items-start">
                       {sentence.parallel && !sentence.parallel.includes('No parallel text') && (

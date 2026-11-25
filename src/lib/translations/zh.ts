@@ -765,5 +765,51 @@ export const zh = {
     'rec.newGenre': '探索{{genre}}',
     'rec.newWords_reason': '{{count}} 个新词待学习',
     'rec.expand': '扩大您的词汇量',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': '允许使用 AI 功能？',
+    'aiConsent.body':
+      '单词讲解、导师、句子分析、拍照导入和发音反馈由第三方 AI 服务 Google Gemini 生成。',
+    'aiConsent.dataShared':
+      '使用这些功能时，您提交的内容（正在阅读或导入的文本、您的提问、书页照片和语音录音）会发送给 Google 以生成回答。',
+    'aiConsent.changeLater':
+      '您可以随时在“设置 → 隐私”中更改此选项。阅读、词汇和复习功能无需开启也可使用。',
+    'aiConsent.privacyLink': '隐私政策',
+    'aiConsent.decline': '暂不',
+    'aiConsent.allow': '允许',
+    'settings.aiProcessing': 'AI 功能（Google Gemini）',
+    'settings.aiProcessingDesc':
+      '将您提交的文本、提问、照片和录音发送给 Google Gemini，以生成讲解、导师回答和反馈。',
+    'aiReport.report': '举报此回答',
+    'aiReport.why': '这个回答有什么问题？',
+    'aiReport.failed': '举报发送失败，请重试：',
+    'aiReport.offensive': '冒犯性或有害',
+    'aiReport.inaccurate': '错误或具有误导性',
+    'aiReport.other': '其他问题',
+    'aiReport.cancel': '取消',
+    'aiReport.thanks': '已举报，谢谢。',
+    'account.verifyNone': '点击“删除账户”即可永久删除您的账户。',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn': '请登录后订阅，以便套餐与您的账户绑定。',
+    'sub.iapPaidElsewhere': '此账户的套餐已处于有效状态。',
+    'sub.iapPurchased': '谢谢，您的套餐现已生效。',
+    'sub.iapPurchaseFailed': '购买未能完成。您不会被重复扣费；如果套餐未显示，请点击“恢复购买”。',
+    'sub.iapProcessing': '处理中…',
+    'sub.iapRestore': '恢复购买',
+    'sub.iapRestored': '您的购买已恢复。',
+    'sub.iapNothingToRestore': '未找到此 Apple ID 的有效订阅。',
+    'sub.iapRestoreFailed': '无法恢复购买，请重试。',
+    'sub.iapManage': '管理订阅',
+    'sub.iapNoProducts': '目前无法购买套餐。',
+    'sub.iapLoadFailed': '无法连接 App Store，请检查网络后重试。',
+    'sub.iapTerms':
+      '订阅将按所示价格按月或按年自动续订，直至取消。款项在确认购买时从您的 Apple ID 账户扣除。如需避免续订，请在当前订阅期结束前至少 24 小时，在 Apple ID 的订阅设置中取消。',
+    'sub.iapNothingToRestoreAndroid': '未找到此 Google 账号的有效订阅。',
+    'sub.iapLoadFailedAndroid': '无法连接 Google Play，请检查网络后重试。',
+    'sub.iapTermsAndroid':
+      '订阅将按所示价格按月或按年自动续订，直至取消。款项在确认购买时从您的 Google Play 账号扣除。您可以随时在 Google Play →“付款和订阅”中取消；在已付费周期结束前仍可继续使用。',
+    'sub.iapTermsLink': '使用条款',
+    'sub.iapPrivacyLink': '隐私政策',
   },
 };

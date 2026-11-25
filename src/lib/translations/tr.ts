@@ -312,8 +312,7 @@ export const tr = {
     'studyPlan.dailyGoalSub': 'Günlük hedefin %{{pct}} tamamlandı',
     'studyPlan.readMore': 'Daha Fazla Oku',
     'studyPlan.allDone': 'Bugünün planı tamamlandı!',
-    'studyPlan.allDoneDesc':
-      'Günlük hedefine ulaştın. Yarın tekrar gel ya da keşfetmeye devam et.',
+    'studyPlan.allDoneDesc': 'Günlük hedefine ulaştın. Yarın tekrar gel ya da keşfetmeye devam et.',
     'studyPlan.goalComplete': 'Günlük okuma hedefi',
     'studyPlan.goalCompleteSub': 'Bugün {{count}} kelime okundu ✓',
     'dashboard.cardsDue': 'Vadesi Gelen Kartlar',
@@ -851,5 +850,53 @@ export const tr = {
     'rec.newGenre': '{{genre}} keşfedin',
     'rec.newWords_reason': 'Öğrenilecek {{count}} yeni kelime',
     'rec.expand': 'Kelime dağarcığınızı genişletin',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': 'Yapay zekâ özelliklerine izin verilsin mi?',
+    'aiConsent.body':
+      'Kelime açıklamaları, eğitmen, cümle çözümlemesi, fotoğraftan içe aktarma ve telaffuz geri bildirimi, üçüncü taraf bir yapay zekâ hizmeti olan Google Gemini tarafından üretilir.',
+    'aiConsent.dataShared':
+      "Bu özellikleri kullandığınızda gönderdikleriniz — okuduğunuz veya içe aktardığınız metin, sorularınız, sayfa fotoğrafları ve ses kayıtları — yanıtı üretmek için Google'a gönderilir.",
+    'aiConsent.changeLater':
+      'Bunu istediğiniz zaman Ayarlar → Gizlilik bölümünden değiştirebilirsiniz. Okuma, kelime dağarcığı ve tekrarlar bu olmadan da çalışır.',
+    'aiConsent.privacyLink': 'Gizlilik Politikası',
+    'aiConsent.decline': 'Şimdi değil',
+    'aiConsent.allow': 'İzin ver',
+    'settings.aiProcessing': 'Yapay zekâ özellikleri (Google Gemini)',
+    'settings.aiProcessingDesc':
+      "Gönderdiğiniz metinleri, soruları, fotoğrafları ve kayıtları açıklamalar, eğitmen yanıtları ve geri bildirim üretmek için Google Gemini'ye gönder.",
+    'aiReport.report': 'Bu yanıtı bildir',
+    'aiReport.why': 'Bu yanıtta sorun nedir?',
+    'aiReport.failed': 'Bildirim gönderilemedi. Tekrar deneyin:',
+    'aiReport.offensive': 'Saldırgan veya zararlı',
+    'aiReport.inaccurate': 'Yanlış veya yanıltıcı',
+    'aiReport.other': 'Başka bir şey',
+    'aiReport.cancel': 'İptal',
+    'aiReport.thanks': 'Bildirildi — teşekkürler.',
+    'account.verifyNone': 'Hesabınızı kalıcı olarak silmek için “Hesabı Sil”e dokunun.',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn': 'Abone olmak için oturum açın; böylece planınız hesabınıza bağlanır.',
+    'sub.iapPaidElsewhere': 'Planınız bu hesapta zaten etkin.',
+    'sub.iapPurchased': 'Teşekkürler — planınız artık etkin.',
+    'sub.iapPurchaseFailed':
+      'Satın alma tamamlanamadı. Sizden iki kez ücret alınmadı — planınız görünmüyorsa “Satın Alımları Geri Yükle”ye dokunun.',
+    'sub.iapProcessing': 'İşleniyor…',
+    'sub.iapRestore': 'Satın Alımları Geri Yükle',
+    'sub.iapRestored': 'Satın alımlarınız geri yüklendi.',
+    'sub.iapNothingToRestore': 'Bu Apple Kimliği için etkin bir abonelik bulunamadı.',
+    'sub.iapRestoreFailed': 'Satın alımlar geri yüklenemedi. Lütfen tekrar deneyin.',
+    'sub.iapManage': 'Aboneliği Yönet',
+    'sub.iapNoProducts': 'Planlar şu anda satın alınamıyor.',
+    'sub.iapLoadFailed': "App Store'a ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.",
+    'sub.iapTerms':
+      'Abonelikler, iptal edilene kadar gösterilen fiyattan aylık veya yıllık olarak otomatik yenilenir. Ödeme, satın alma onaylandığında Apple Kimliğinizden tahsil edilir. Yenilemeyi önlemek için dönem bitiminden en az 24 saat önce Apple Kimliği abonelik ayarlarınızdan iptal edin.',
+    'sub.iapNothingToRestoreAndroid': 'Bu Google hesabı için etkin bir abonelik bulunamadı.',
+    'sub.iapLoadFailedAndroid':
+      "Google Play'e ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.",
+    'sub.iapTermsAndroid':
+      'Abonelikler, iptal edilene kadar gösterilen fiyattan aylık veya yıllık olarak otomatik yenilenir. Ödeme, satın alma onaylandığında Google Play hesabınızdan tahsil edilir. Google Play → Ödemeler ve abonelikler bölümünden istediğiniz zaman iptal edebilirsiniz; erişim, ödenen dönemin sonuna kadar devam eder.',
+    'sub.iapTermsLink': 'Kullanım Koşulları',
+    'sub.iapPrivacyLink': 'Gizlilik Politikası',
   },
 };

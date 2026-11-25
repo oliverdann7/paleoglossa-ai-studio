@@ -70,6 +70,7 @@
     "@capacitor/status-bar": "^8.0.3",
     "@capgo/capacitor-social-login": "^8.3.34",
     "@google/genai": "^2.0.1",
+    "@revenuecat/purchases-capacitor": "14.1.2",
     "@sentry/node": "^10.54.0",
     "@sentry/react": "^10.53.1",
     "clsx": "^2.1.1",

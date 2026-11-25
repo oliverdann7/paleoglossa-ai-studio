@@ -14,10 +14,20 @@ import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 import { useSubscription } from '../lib/contexts/SubscriptionContext.js';
 import { PLANS, getPlanById } from '../lib/constants/plans.js';
 import { LANGUAGES, getLanguageIcon } from '../lib/constants/languages.js';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isCapacitor } from '../lib/platform.js';
-import { features } from '../lib/features.js';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import {
+  isIapAvailable,
+  loadIapOffers,
+  purchaseIapOffer,
+  restoreIapPurchases,
+  IapCancelledError,
+  iapStore,
+  manageSubscriptionsUrl,
+  type IapOffer,
+} from '../lib/services/iapService.js';
 
 /** Translation keys for each plan's features, in order. */
 const PLAN_FEATURE_KEYS: Record<string, string[]> = {
@@ -45,14 +55,46 @@ export const Subscription = () => {
     canAddLanguage: canAdd,
     createCheckoutSession,
     createPortalSession,
+    refreshSubscription,
   } = useSubscription();
+  const { user } = useAuth();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [searchParams] = useSearchParams();
 
-  const isNative = isCapacitor() && !features.isMobilePurchaseEnabled();
+  // The native apps sell through their own store (App Store / Google Play). A
+  // native build without in-app purchase configured has no purchase UI at all
+  // — Stripe checkout is web-only.
+  const iap = isIapAvailable();
+  const store = iapStore();
+  const onPlay = store === 'play_store';
+  const isNative = isCapacitor() && !iap;
+  const [iapOffers, setIapOffers] = useState<Record<string, IapOffer> | null>(null);
+  const [iapLoadFailed, setIapLoadFailed] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [iapNotice, setIapNotice] = useState<string | null>(null);
+  // A plan bought on the web or in the other store is managed there; never
+  // sell a second one on top.
+  const paidElsewhere =
+    iap && subscription.currentPlan !== 'free' && subscription.subscriptionSource !== store;
+  const uid = user?.uid;
+
+  useEffect(() => {
+    if (!iap || !uid) return;
+    let cancelled = false;
+    loadIapOffers(uid)
+      .then((offers) => {
+        if (!cancelled) setIapOffers(offers);
+      })
+      .catch(() => {
+        if (!cancelled) setIapLoadFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [iap, uid]);
   const currentPlan = getPlanById(subscription.currentPlan);
   const success = searchParams.get('success');
 
@@ -71,7 +113,31 @@ export const Subscription = () => {
 
     setLoadingPlan(planId);
     setCheckoutError(null);
+    setIapNotice(null);
     trackEvent(ANALYTICS_EVENTS.CHECKOUT_STARTED, { planId, billingCycle });
+
+    if (iap) {
+      const offer = iapOffers?.[`${planId}:${billingCycle}`];
+      try {
+        if (!uid || !offer) return;
+        await purchaseIapOffer(uid, offer);
+        refreshSubscription();
+        setIapNotice(t('sub.iapPurchased', 'Thank you — your plan is now active.'));
+      } catch (err) {
+        if (!(err instanceof IapCancelledError)) {
+          setCheckoutError(
+            t(
+              'sub.iapPurchaseFailed',
+              'The purchase could not be completed. You have not been charged twice — tap Restore Purchases if your plan does not appear.'
+            )
+          );
+        }
+      } finally {
+        setLoadingPlan(null);
+      }
+      return;
+    }
+
     try {
       const url = await createCheckoutSession(planId as any, billingCycle);
       if (url) {
@@ -82,6 +148,33 @@ export const Subscription = () => {
       setCheckoutError(msg || t('sub.checkoutFailed', 'Could not start checkout. Please try again.'));
     } finally {
       setLoadingPlan(null);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!uid) return;
+    setRestoring(true);
+    setCheckoutError(null);
+    setIapNotice(null);
+    try {
+      const plan = await restoreIapPurchases(uid);
+      refreshSubscription();
+      setIapNotice(
+        plan
+          ? t('sub.iapRestored', 'Your purchases have been restored.')
+          : onPlay
+            ? t(
+                'sub.iapNothingToRestoreAndroid',
+                'No active subscription was found for this Google account.'
+              )
+            : t('sub.iapNothingToRestore', 'No active subscription was found for this Apple ID.')
+      );
+    } catch {
+      setCheckoutError(
+        t('sub.iapRestoreFailed', 'Could not restore purchases. Please try again.')
+      );
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -122,6 +215,29 @@ export const Subscription = () => {
         </div>
       )}
 
+      {iap && !user && (
+        <div className="mb-8 p-4 bg-parch2 border border-bdr rounded-xl text-ink2 text-[14px] text-center">
+          {t('sub.iapSignIn', 'Sign in to subscribe, so your plan follows your account.')}{' '}
+          <Link to="/auth/login" className="text-blue font-bold underline">
+            {t('auth.signIn', 'Sign in')}
+          </Link>
+        </div>
+      )}
+      {paidElsewhere && (
+        <div className="mb-8 p-4 bg-parch2 border border-bdr rounded-xl text-ink2 text-[14px] flex items-center justify-center gap-3">
+          <Info className="w-5 h-5 text-ink3" />
+          {t('sub.iapPaidElsewhere', 'Your plan is already active on this account.')}
+        </div>
+      )}
+      {iapNotice && (
+        <div
+          className="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-[14px] font-medium text-center"
+          role="status"
+        >
+          {iapNotice}
+        </div>
+      )}
+
       <header className="mb-12 text-center max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-amberxl text-amber border border-amber/20 rounded-full font-mono text-[10px] uppercase tracking-widest mb-6">
           <Crown className="w-3.5 h-3.5" />
@@ -157,9 +273,12 @@ export const Subscription = () => {
             )}
           >
             {t('sub.yearly')}
-            <span className="bg-jadexl text-jade px-1.5 py-0.5 rounded text-[10px] font-bold">
-              {t('sub.saveYearly')}
-            </span>
+            {/* The saving is computed from web prices; App Store prices may differ. */}
+            {!iap && (
+              <span className="bg-jadexl text-jade px-1.5 py-0.5 rounded text-[10px] font-bold">
+                {t('sub.saveYearly')}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -175,7 +294,10 @@ export const Subscription = () => {
               : plan.monthlyPriceUsd;
           const label = billingCycle === 'yearly' ? '/year' : '/month';
           const isLoading = loadingPlan === plan.id;
-          const isDisabled = isNative || isLoading || isCurrent;
+          const offer = iap ? iapOffers?.[`${plan.id}:${billingCycle}`] : undefined;
+          // In-app: a plan can only be bought when the App Store returned it.
+          const iapUnavailable = iap && (!user || !offer || paidElsewhere);
+          const isDisabled = isNative || isLoading || isCurrent || iapUnavailable;
 
           return (
             <div
@@ -194,9 +316,16 @@ export const Subscription = () => {
 
               <div className="mb-4 mt-1">
                 <h3 className="font-serif text-[20px] font-medium text-ink mb-1">{plan.name}</h3>
-                {!isNative && (
+                {!isNative && !iap && (
                   <div className="flex items-baseline gap-1">
                     <span className="text-[28px] font-serif">${price}</span>
+                    <span className="text-muted font-sans text-sm">{label}</span>
+                  </div>
+                )}
+                {/* In-app: always the App Store's own localized price. */}
+                {iap && offer && (
+                  <div className="flex items-baseline gap-1" data-testid={`iap-price-${plan.id}`}>
+                    <span className="text-[28px] font-serif">{offer.priceString}</span>
                     <span className="text-muted font-sans text-sm">{label}</span>
                   </div>
                 )}
@@ -235,7 +364,8 @@ export const Subscription = () => {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> {t('sub.redirecting')}
+                    <Loader2 className="w-4 h-4 animate-spin" />{' '}
+                    {iap ? t('sub.iapProcessing', 'Processing…') : t('sub.redirecting')}
                   </>
                 ) : isCurrent ? (
                   t('sub.current')
@@ -256,10 +386,76 @@ export const Subscription = () => {
         </div>
       )}
 
+      {/* In-app purchase: restore, manage, and the disclosures App Store
+          guideline 3.1.2 requires next to the purchase buttons. */}
+      {iap && (
+        <div className="max-w-2xl mx-auto mb-12 text-center space-y-4" data-testid="iap-footer">
+          {user && iapOffers && Object.keys(iapOffers).length === 0 && (
+            <p className="text-[13px] text-ink2">
+              {t('sub.iapNoProducts', 'Plans are not available to purchase right now.')}
+            </p>
+          )}
+          {iapLoadFailed && (
+            <p className="text-[13px] text-ink2">
+              {onPlay
+                ? t(
+                    'sub.iapLoadFailedAndroid',
+                    'Could not reach Google Play. Check your connection and try again.'
+                  )
+                : t(
+                    'sub.iapLoadFailed',
+                    'Could not reach the App Store. Check your connection and try again.'
+                  )}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={handleRestore}
+              disabled={!user || restoring}
+              className="inline-flex items-center gap-2 px-5 py-2.5 border border-bdr/60 rounded-xl text-[13px] font-bold text-ink hover:bg-parch2 transition-all disabled:opacity-50"
+              data-testid="iap-restore"
+            >
+              {restoring && <Loader2 className="w-4 h-4 animate-spin" />}
+              {t('sub.iapRestore', 'Restore Purchases')}
+            </button>
+            {subscription.currentPlan !== 'free' && subscription.subscriptionSource === store && (
+              <button
+                type="button"
+                onClick={() => window.open(manageSubscriptionsUrl(), '_system')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 border border-bdr/60 rounded-xl text-[13px] font-bold text-ink hover:bg-parch2 transition-all"
+              >
+                <ExternalLink className="w-4 h-4" />
+                {t('sub.iapManage', 'Manage Subscription')}
+              </button>
+            )}
+          </div>
+          <p className="text-[11px] text-muted leading-relaxed">
+            {onPlay
+              ? t(
+                  'sub.iapTermsAndroid',
+                  'Subscriptions renew automatically at the price shown, monthly or yearly, until cancelled. Payment is charged to your Google Play account at confirmation of purchase. Cancel any time in Google Play → Payments & subscriptions; access continues until the end of the paid period.'
+                )
+              : t(
+                  'sub.iapTerms',
+                  'Subscriptions renew automatically at the price shown, monthly or yearly, until cancelled. Payment is charged to your Apple ID at confirmation of purchase. Cancel at least 24 hours before the end of the period in your Apple ID subscription settings to avoid renewal.'
+                )}{' '}
+            <Link to="/terms" className="underline">
+              {t('sub.iapTermsLink', 'Terms of Use')}
+            </Link>
+            {' · '}
+            <Link to="/privacy" className="underline">
+              {t('sub.iapPrivacyLink', 'Privacy Policy')}
+            </Link>
+          </p>
+        </div>
+      )}
+
       {/* Manage Billing */}
       {subscription.subscriptionStatus === 'active' &&
         subscription.stripeCustomerId &&
-        !isNative && (
+        !isNative &&
+        !iap && (
           <div className="text-center mb-12">
             <button
               onClick={handleManageBilling}
@@ -332,7 +528,8 @@ export const Subscription = () => {
       </div>
 
       {/* Dev Notice — shown when running without Stripe */}
-      {!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY && (
+      {/* Never in the native apps: it is a developer hint and names Stripe. */}
+      {!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY && !isCapacitor() && (
         <div className="mt-8 max-w-3xl mx-auto p-4 bg-amber/5 border border-amber/20 rounded-xl text-center">
           <p className="text-[13px] text-ink3">
             {t('sub.devMode')} Set{' '}

@@ -23,6 +23,8 @@ import {
   X,
 } from 'lucide-react';
 import { DiscussionPanel } from './DiscussionPanel.js';
+import { features } from '../../lib/features.js';
+import { ReportAiContentButton } from '../ReportAiContentButton.js';
 import { ScholarAnnotations } from './ScholarAnnotations.js';
 import { CognateLinksSection } from './CognateLinksSection.js';
 import { ConceptSummarySection } from './ConceptSummarySection.js';
@@ -1431,6 +1433,15 @@ export const LexDrawerPanel = memo(
                 <p className="text-[14px] text-ink2 leading-relaxed whitespace-pre-wrap">
                   {aiWordInsight}
                 </p>
+                {aiWordInsight && (
+                  <ReportAiContentButton
+                    key={aiWordInsight}
+                    surface="explanation"
+                    content={aiWordInsight}
+                    prompt={selectedWord.text || selectedWord.lemma}
+                    languageId={langId}
+                  />
+                )}
               </div>
             )}
 
@@ -1563,8 +1574,8 @@ export const LexDrawerPanel = memo(
               </button>
             </div>
 
-            {/* Scholar Annotations */}
-            {selectedWord?.lemma && (
+            {/* Scholar Annotations — user-generated, so community-gated */}
+            {features.isCommunityEnabled() && selectedWord?.lemma && (
               <ScholarAnnotations
                 lemma={selectedWord.lemma}
                 wordText={selectedWord.text || selectedWord.lemma}
@@ -1574,7 +1585,7 @@ export const LexDrawerPanel = memo(
             )}
 
             {/* Community Discussion */}
-            {text?.id && (
+            {features.isCommunityEnabled() && text?.id && (
               <DiscussionPanel
                 textId={text.id}
                 languageId={langId}

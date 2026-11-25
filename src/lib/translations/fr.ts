@@ -800,5 +800,57 @@ export const fr = {
     'rec.newGenre': 'Explorer {{genre}}',
     'rec.newWords_reason': '{{count}} nouveaux mots à apprendre',
     'rec.expand': 'Enrichissez votre vocabulaire',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': 'Autoriser les fonctions d’IA ?',
+    'aiConsent.body':
+      'Les explications de mots, le tuteur, l’analyse de phrases, l’import de photos et les retours sur la prononciation sont générés par Google Gemini, un service d’IA tiers.',
+    'aiConsent.dataShared':
+      'Lorsque vous les utilisez, ce que vous soumettez — le texte que vous lisez ou importez, vos questions, les photos de pages et les enregistrements vocaux — est envoyé à Google pour produire la réponse.',
+    'aiConsent.changeLater':
+      'Vous pouvez modifier ce choix à tout moment dans Paramètres → Confidentialité. La lecture, le vocabulaire et les révisions fonctionnent sans cela.',
+    'aiConsent.privacyLink': 'Politique de confidentialité',
+    'aiConsent.decline': 'Pas maintenant',
+    'aiConsent.allow': 'Autoriser',
+    'settings.aiProcessing': 'Fonctions d’IA (Google Gemini)',
+    'settings.aiProcessingDesc':
+      'Envoyer à Google Gemini les textes, questions, photos et enregistrements que vous soumettez afin de générer des explications, des réponses du tuteur et des retours.',
+    'aiReport.report': 'Signaler cette réponse',
+    'aiReport.why': 'Quel est le problème avec cette réponse ?',
+    'aiReport.failed': 'Impossible d’envoyer le signalement. Réessayez :',
+    'aiReport.offensive': 'Offensante ou nuisible',
+    'aiReport.inaccurate': 'Fausse ou trompeuse',
+    'aiReport.other': 'Autre chose',
+    'aiReport.cancel': 'Annuler',
+    'aiReport.thanks': 'Signalement envoyé — merci.',
+    'account.verifyNone':
+      'Appuyez sur « Supprimer le compte » pour supprimer définitivement votre compte.',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn':
+      'Connectez-vous pour vous abonner, afin que votre formule soit liée à votre compte.',
+    'sub.iapPaidElsewhere': 'Votre formule est déjà active sur ce compte.',
+    'sub.iapPurchased': 'Merci — votre formule est maintenant active.',
+    'sub.iapPurchaseFailed':
+      'L’achat n’a pas pu être finalisé. Vous n’avez pas été débité deux fois — touchez « Restaurer les achats » si votre formule n’apparaît pas.',
+    'sub.iapProcessing': 'Traitement…',
+    'sub.iapRestore': 'Restaurer les achats',
+    'sub.iapRestored': 'Vos achats ont été restaurés.',
+    'sub.iapNothingToRestore': 'Aucun abonnement actif n’a été trouvé pour cet identifiant Apple.',
+    'sub.iapRestoreFailed': 'Impossible de restaurer les achats. Veuillez réessayer.',
+    'sub.iapManage': 'Gérer l’abonnement',
+    'sub.iapNoProducts': 'Les formules ne sont pas disponibles à l’achat pour le moment.',
+    'sub.iapLoadFailed':
+      'Impossible de joindre l’App Store. Vérifiez votre connexion et réessayez.',
+    'sub.iapTerms':
+      'Les abonnements se renouvellent automatiquement au prix indiqué, chaque mois ou chaque année, jusqu’à leur résiliation. Le paiement est débité de votre identifiant Apple à la confirmation de l’achat. Résiliez au moins 24 heures avant la fin de la période dans les réglages d’abonnement de votre identifiant Apple pour éviter le renouvellement.',
+    'sub.iapNothingToRestoreAndroid':
+      'Aucun abonnement actif n’a été trouvé pour ce compte Google.',
+    'sub.iapLoadFailedAndroid':
+      'Impossible de joindre Google Play. Vérifiez votre connexion et réessayez.',
+    'sub.iapTermsAndroid':
+      'Les abonnements se renouvellent automatiquement au prix indiqué, chaque mois ou chaque année, jusqu’à leur résiliation. Le paiement est débité de votre compte Google Play à la confirmation de l’achat. Vous pouvez résilier à tout moment dans Google Play → Paiements et abonnements ; l’accès reste actif jusqu’à la fin de la période payée.',
+    'sub.iapTermsLink': 'Conditions d’utilisation',
+    'sub.iapPrivacyLink': 'Politique de confidentialité',
   },
 };

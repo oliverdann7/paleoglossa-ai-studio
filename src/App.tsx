@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { features } from './lib/features.js';
 import { UpdatePrompt } from './components/UpdatePrompt.js';
+import { AiConsentDialog } from './components/AiConsentDialog.js';
 import { NativeAppBridge } from './components/NativeAppBridge.js';
 import { isCapacitor } from './lib/platform.js';
 
@@ -180,6 +181,7 @@ export default function App() {
       {!isCapacitor() && <UpdatePrompt />}
       <BrowserRouter>
         {isCapacitor() && <NativeAppBridge />}
+        <AiConsentDialog />
         <Routes>
           {/* Marketing (Public) */}
           <Route path="/" element={<Landing />} />

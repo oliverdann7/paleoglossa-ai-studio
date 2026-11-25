@@ -800,5 +800,55 @@ export const es = {
     'rec.newGenre': 'Explorar {{genre}}',
     'rec.newWords_reason': '{{count}} palabras nuevas para aprender',
     'rec.expand': 'Amplía tu vocabulario',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': '¿Permitir las funciones de IA?',
+    'aiConsent.body':
+      'Las explicaciones de palabras, el tutor, el análisis de oraciones, la importación de fotos y los comentarios de pronunciación los genera Google Gemini, un servicio de IA de terceros.',
+    'aiConsent.dataShared':
+      'Cuando las usas, lo que envías —el texto que estás leyendo o importando, tus preguntas, las fotos de páginas y las grabaciones de voz— se envía a Google para generar la respuesta.',
+    'aiConsent.changeLater':
+      'Puedes cambiarlo en cualquier momento en Ajustes → Privacidad. La lectura, el vocabulario y los repasos funcionan sin ello.',
+    'aiConsent.privacyLink': 'Política de privacidad',
+    'aiConsent.decline': 'Ahora no',
+    'aiConsent.allow': 'Permitir',
+    'settings.aiProcessing': 'Funciones de IA (Google Gemini)',
+    'settings.aiProcessingDesc':
+      'Enviar a Google Gemini los textos, preguntas, fotos y grabaciones que envíes para generar explicaciones, respuestas del tutor y comentarios.',
+    'aiReport.report': 'Denunciar esta respuesta',
+    'aiReport.why': '¿Qué problema tiene esta respuesta?',
+    'aiReport.failed': 'No se pudo enviar la denuncia. Inténtalo de nuevo:',
+    'aiReport.offensive': 'Ofensiva o dañina',
+    'aiReport.inaccurate': 'Incorrecta o engañosa',
+    'aiReport.other': 'Otro motivo',
+    'aiReport.cancel': 'Cancelar',
+    'aiReport.thanks': 'Denuncia enviada. Gracias.',
+    'account.verifyNone': 'Pulsa «Eliminar cuenta» para eliminar tu cuenta de forma permanente.',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn': 'Inicia sesión para suscribirte y que tu plan quede vinculado a tu cuenta.',
+    'sub.iapPaidElsewhere': 'Tu plan ya está activo en esta cuenta.',
+    'sub.iapPurchased': 'Gracias: tu plan ya está activo.',
+    'sub.iapPurchaseFailed':
+      'No se pudo completar la compra. No se te ha cobrado dos veces; pulsa «Restaurar compras» si tu plan no aparece.',
+    'sub.iapProcessing': 'Procesando…',
+    'sub.iapRestore': 'Restaurar compras',
+    'sub.iapRestored': 'Tus compras se han restaurado.',
+    'sub.iapNothingToRestore': 'No se encontró ninguna suscripción activa para este Apple ID.',
+    'sub.iapRestoreFailed': 'No se pudieron restaurar las compras. Inténtalo de nuevo.',
+    'sub.iapManage': 'Gestionar suscripción',
+    'sub.iapNoProducts': 'Los planes no se pueden comprar en este momento.',
+    'sub.iapLoadFailed':
+      'No se pudo conectar con el App Store. Comprueba tu conexión e inténtalo de nuevo.',
+    'sub.iapTerms':
+      'Las suscripciones se renuevan automáticamente al precio indicado, cada mes o cada año, hasta que se cancelen. El pago se carga a tu Apple ID al confirmar la compra. Cancela al menos 24 horas antes del final del periodo en los ajustes de suscripciones de tu Apple ID para evitar la renovación.',
+    'sub.iapNothingToRestoreAndroid':
+      'No se encontró ninguna suscripción activa para esta cuenta de Google.',
+    'sub.iapLoadFailedAndroid':
+      'No se pudo conectar con Google Play. Comprueba tu conexión e inténtalo de nuevo.',
+    'sub.iapTermsAndroid':
+      'Las suscripciones se renuevan automáticamente al precio indicado, cada mes o cada año, hasta que se cancelen. El pago se carga a tu cuenta de Google Play al confirmar la compra. Puedes cancelar en cualquier momento en Google Play → Pagos y suscripciones; el acceso continúa hasta el final del periodo pagado.',
+    'sub.iapTermsLink': 'Condiciones de uso',
+    'sub.iapPrivacyLink': 'Política de privacidad',
   },
 };

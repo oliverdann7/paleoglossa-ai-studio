@@ -5,6 +5,8 @@ import type { AuthenticatedRequest } from '../_lib/auth.js';
 import { sendPaymentReceiptEmail, sendPaymentFailedEmail } from '../_lib/email.js';
 import { buildSubscriptionWrite } from '../_lib/billingMappers.js';
 import type { Firestore } from 'firebase-admin/firestore';
+import { timingSafeEqual } from 'node:crypto';
+import { syncUserFromRevenueCat, uidsFromWebhookEvent } from '../_lib/revenueCat.js';
 
 const router = Router();
 
@@ -397,6 +399,73 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
   } catch (err: any) {
     console.error('Stripe webhook error:', err);
     res.status(400).json({ error: err.message });
+  }
+});
+
+// ─── In-app purchase: App Store + Google Play (RevenueCat) ───────────────────
+// The iOS app buys through StoreKit and the Android app through Play Billing,
+// both via RevenueCat. Both routes below resolve
+// to the same operation — read the subscriber's state from RevenueCat and
+// write it to the user document — so the client never tells us what it bought.
+
+/**
+ * Called by the iOS/Android app right after a purchase or restore so the plan is
+ * active immediately, without waiting for the webhook.
+ */
+router.post('/api/iap/sync', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {
+  const secretKey = process.env.REVENUECAT_SECRET_API_KEY;
+  const adminDb_ = getAdminDb();
+  if (!secretKey || !adminDb_) {
+    return res
+      .status(503)
+      .json({ error: 'In-app purchase is not configured', code: 'IAP_NOT_CONFIGURED' });
+  }
+  try {
+    const entitlement = await syncUserFromRevenueCat(adminDb_, req.user!.uid, secretKey);
+    res.status(200).json({
+      currentPlan: entitlement?.planId ?? null,
+      subscriptionStatus: entitlement?.status ?? null,
+    });
+  } catch (err: any) {
+    console.error('[iap] sync failed:', err?.message);
+    res.status(502).json({ error: 'Could not verify the purchase', code: 'IAP_SYNC_FAILED' });
+  }
+});
+
+function matchesSecret(provided: unknown, expected: string): boolean {
+  if (typeof provided !== 'string') return false;
+  const a = Buffer.from(provided.replace(/^Bearer\s+/i, ''));
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+/**
+ * RevenueCat server notifications (renewals, expirations, refunds, billing
+ * issues, transfers). Authenticated by the shared secret configured as the
+ * webhook's Authorization header in the RevenueCat dashboard.
+ */
+router.post('/api/revenuecat/webhook', async (req: any, res: any) => {
+  const expected = process.env.REVENUECAT_WEBHOOK_AUTH;
+  const secretKey = process.env.REVENUECAT_SECRET_API_KEY;
+  if (!expected || !secretKey) {
+    return res.status(503).json({ error: 'Webhook not configured' });
+  }
+  if (!matchesSecret(req.headers.authorization, expected)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const adminDb_ = getAdminDb();
+  if (!adminDb_) {
+    // 5xx so RevenueCat retries once the database is reachable again.
+    return res.status(503).json({ error: 'Database unavailable' });
+  }
+  try {
+    for (const uid of uidsFromWebhookEvent(req.body?.event)) {
+      await syncUserFromRevenueCat(adminDb_, uid, secretKey);
+    }
+    res.status(200).json({ received: true });
+  } catch (err: any) {
+    console.error('[iap] webhook sync failed:', err?.message);
+    res.status(500).json({ error: 'Sync failed' });
   }
 });
 

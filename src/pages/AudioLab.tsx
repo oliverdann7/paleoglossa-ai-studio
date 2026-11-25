@@ -16,6 +16,8 @@ import {
 import { cn } from '@/lib/utils';
 import { LANGUAGES, getLanguageById } from '../lib/constants/languages.js';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
+import { aiFetch } from '../lib/services/aiConsent.js';
+import { ReportAiContentButton } from '../components/ReportAiContentButton.js';
 
 interface TTSStatus {
   audioUrl: string | null;
@@ -519,7 +521,7 @@ export const AudioLab = () => {
     setIsLoadingGuide(true);
     setGuideResult(null);
     try {
-      const res = await fetch(getApiUrl('/api/ai/pronunciation'), {
+      const res = await aiFetch('/api/ai/pronunciation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -725,6 +727,12 @@ export const AudioLab = () => {
           {/* Guide result */}
           {guideResult && (
             <div className="space-y-3">
+              <ReportAiContentButton
+                key={JSON.stringify(guideResult)}
+                surface="pronunciation"
+                content={JSON.stringify(guideResult)}
+                languageId={selectedLang}
+              />
               {guideResult.guide && (
                 <div className="p-4 bg-blue/5 rounded-xl">
                   <h4 className="font-bold text-[13px] text-ink mb-1">Guide</h4>

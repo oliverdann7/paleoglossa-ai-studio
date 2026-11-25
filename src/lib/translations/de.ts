@@ -797,5 +797,56 @@ export const de = {
     'rec.newGenre': '{{genre}} erkunden',
     'rec.newWords_reason': '{{count}} neue Wörter zu lernen',
     'rec.expand': 'Erweitern Sie Ihren Wortschatz',
+
+    // AI consent, AI answer reporting, account deletion
+    'aiConsent.title': 'KI-Funktionen erlauben?',
+    'aiConsent.body':
+      'Worterklärungen, der Tutor, die Satzanalyse, der Fotoimport und das Aussprache-Feedback werden von Google Gemini erzeugt, einem KI-Dienst eines Drittanbieters.',
+    'aiConsent.dataShared':
+      'Wenn Sie diese Funktionen nutzen, wird das, was Sie übermitteln – der Text, den Sie lesen oder importieren, Ihre Fragen, Fotos von Seiten und Sprachaufnahmen – an Google gesendet, um die Antwort zu erzeugen.',
+    'aiConsent.changeLater':
+      'Sie können dies jederzeit unter Einstellungen → Datenschutz ändern. Lesen, Wortschatz und Wiederholungen funktionieren auch ohne.',
+    'aiConsent.privacyLink': 'Datenschutzerklärung',
+    'aiConsent.decline': 'Nicht jetzt',
+    'aiConsent.allow': 'Erlauben',
+    'settings.aiProcessing': 'KI-Funktionen (Google Gemini)',
+    'settings.aiProcessingDesc':
+      'Die von Ihnen übermittelten Texte, Fragen, Fotos und Aufnahmen an Google Gemini senden, um Erklärungen, Tutor-Antworten und Feedback zu erzeugen.',
+    'aiReport.report': 'Diese Antwort melden',
+    'aiReport.why': 'Was stimmt mit dieser Antwort nicht?',
+    'aiReport.failed': 'Die Meldung konnte nicht gesendet werden. Versuchen Sie es erneut:',
+    'aiReport.offensive': 'Anstößig oder schädlich',
+    'aiReport.inaccurate': 'Falsch oder irreführend',
+    'aiReport.other': 'Etwas anderes',
+    'aiReport.cancel': 'Abbrechen',
+    'aiReport.thanks': 'Gemeldet – vielen Dank.',
+    'account.verifyNone': 'Tippen Sie auf „Konto löschen“, um Ihr Konto dauerhaft zu löschen.',
+
+    // In-app purchase (iOS)
+    'sub.iapSignIn':
+      'Melden Sie sich an, um ein Abo abzuschließen, damit Ihr Tarif mit Ihrem Konto verknüpft ist.',
+    'sub.iapPaidElsewhere': 'Ihr Tarif ist für dieses Konto bereits aktiv.',
+    'sub.iapPurchased': 'Vielen Dank – Ihr Tarif ist jetzt aktiv.',
+    'sub.iapPurchaseFailed':
+      'Der Kauf konnte nicht abgeschlossen werden. Sie wurden nicht doppelt belastet – tippen Sie auf „Käufe wiederherstellen“, falls Ihr Tarif nicht erscheint.',
+    'sub.iapProcessing': 'Wird verarbeitet …',
+    'sub.iapRestore': 'Käufe wiederherstellen',
+    'sub.iapRestored': 'Ihre Käufe wurden wiederhergestellt.',
+    'sub.iapNothingToRestore': 'Für diese Apple-ID wurde kein aktives Abo gefunden.',
+    'sub.iapRestoreFailed':
+      'Käufe konnten nicht wiederhergestellt werden. Bitte versuchen Sie es erneut.',
+    'sub.iapManage': 'Abo verwalten',
+    'sub.iapNoProducts': 'Die Tarife können derzeit nicht gekauft werden.',
+    'sub.iapLoadFailed':
+      'Der App Store ist nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
+    'sub.iapTerms':
+      'Abos verlängern sich automatisch zum angezeigten Preis, monatlich oder jährlich, bis sie gekündigt werden. Die Zahlung wird bei Kaufbestätigung Ihrer Apple-ID belastet. Kündigen Sie mindestens 24 Stunden vor Ende des Zeitraums in den Abo-Einstellungen Ihrer Apple-ID, um die Verlängerung zu vermeiden.',
+    'sub.iapNothingToRestoreAndroid': 'Für dieses Google-Konto wurde kein aktives Abo gefunden.',
+    'sub.iapLoadFailedAndroid':
+      'Google Play ist nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
+    'sub.iapTermsAndroid':
+      'Abos verlängern sich automatisch zum angezeigten Preis, monatlich oder jährlich, bis sie gekündigt werden. Die Zahlung wird bei Kaufbestätigung Ihrem Google-Play-Konto belastet. Sie können jederzeit unter Google Play → Zahlungen & Abos kündigen; der Zugang bleibt bis zum Ende des bezahlten Zeitraums bestehen.',
+    'sub.iapTermsLink': 'Nutzungsbedingungen',
+    'sub.iapPrivacyLink': 'Datenschutzerklärung',
   },
 };

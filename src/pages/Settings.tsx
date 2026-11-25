@@ -36,11 +36,13 @@ import {
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { uploadAvatar, updateUserProfile } from '../lib/services/profileService.js';
 import { privacyService } from '../lib/services/privacyService.js';
+import { isAiProcessingAllowed, setAiConsent } from '../lib/services/aiConsent.js';
 import { optInAnalytics, optOutAnalytics } from '../lib/analytics.js';
 import { setErrorReportingEnabled } from '../lib/sentry.js';
 import { downloadFile } from '../lib/services/downloadService.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { LanguageOptionGrid } from '../components/ActiveLanguagePicker.js';
+import { DeleteAccountModal } from '../components/ui/DeleteAccountModal.js';
 
 export const Settings = () => {
   const navigate = useNavigate();
@@ -71,6 +73,8 @@ export const Settings = () => {
 
   // ── Language slot state ──────────────────────────────────────────────────
   const [showDesiredPicker, setShowDesiredPicker] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [aiAllowed, setAiAllowed] = useState(isAiProcessingAllowed());
 
   // ── Gemini API key (stored in localStorage only — never synced to Firestore) ─
   const [geminiApiKey, setGeminiApiKey] = useState(
@@ -264,6 +268,42 @@ export const Settings = () => {
                   className={cn(
                     'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform',
                     analyticsEnabled && 'translate-x-5'
+                  )}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h4 className="font-bold text-[14px] text-ink">
+                  {t('settings.aiProcessing', 'AI features (Google Gemini)')}
+                </h4>
+                <p className="text-[12px] text-muted">
+                  {t(
+                    'settings.aiProcessingDesc',
+                    'Send the text, questions, photos and recordings you submit to Google Gemini to generate explanations, tutor answers and feedback.'
+                  )}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={aiAllowed}
+                aria-label={t('settings.aiProcessing', 'AI features (Google Gemini)')}
+                data-testid="settings-ai-consent"
+                onClick={() => {
+                  setAiConsent(!aiAllowed);
+                  setAiAllowed(!aiAllowed);
+                }}
+                className={cn(
+                  'relative w-11 h-6 rounded-full transition-colors shrink-0',
+                  aiAllowed ? 'bg-blue' : 'bg-parch3 border border-bdr'
+                )}
+              >
+                <span
+                  className={cn(
+                    'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform',
+                    aiAllowed && 'translate-x-5'
                   )}
                 />
               </button>
@@ -1070,6 +1110,30 @@ export const Settings = () => {
             </button>
           )}
         </section>
+
+        {/* ── Danger Zone: account deletion ──────────────────────────────── */}
+        {user && (
+          <section className="card p-8 border-red-200" data-testid="settings-danger-zone">
+            <h2 className="text-lg font-serif font-semibold text-red-700 mb-1">
+              {t('account.dangerZone', 'Danger Zone')}
+            </h2>
+            <p className="text-[13px] text-muted mb-5">
+              {t(
+                'account.deleteAccountInfo',
+                'Permanently delete your account and all associated data.'
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowDeleteAccount(true)}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-red-600 text-white text-[14px] font-bold hover:bg-red-700 transition-colors"
+              data-testid="settings-delete-account"
+            >
+              {t('account.deleteAccount', 'Delete Account')}
+            </button>
+          </section>
+        )}
+        <DeleteAccountModal isOpen={showDeleteAccount} onClose={() => setShowDeleteAccount(false)} />
 
         {/* ── Footer Links ───────────────────────────────────────────────── */}
         <section className="flex justify-center gap-6 text-[13px] text-muted pb-12">
