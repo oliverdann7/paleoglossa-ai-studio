@@ -1,5 +1,6 @@
 /**
- * RevenueCat (App Store in-app purchase) → Paleoglossa subscription state.
+ * RevenueCat (App Store / Google Play in-app purchase) → Paleoglossa
+ * subscription state.
  *
  * One rule for every entry point (post-purchase sync and webhook): fetch the
  * subscriber's current state from RevenueCat and write what it says. We never
@@ -18,13 +19,20 @@ export interface RevenueCatSubscriber {
       expires_date?: string | null;
       billing_issues_detected_at?: string | null;
       refunded_at?: string | null;
+      /** "app_store", "play_store", "promotional", … */
+      store?: string | null;
     }
   >;
 }
 
+/** The stores that grant a plan through in-app purchase. */
+export type IapStore = 'app_store' | 'play_store';
+const IAP_STORES: readonly string[] = ['app_store', 'play_store'];
+
 export interface IapEntitlement {
   planId: 'basic_1' | 'duo_2' | 'full_all';
   status: 'active' | 'past_due';
+  store: IapStore;
 }
 
 /**
@@ -45,7 +53,13 @@ export function entitlementFromSubscriber(
   const planId = bestPlanForIapProducts(live.map(([productId]) => productId));
   if (!planId) return null;
   const billingIssue = live.some(([, sub]) => !!sub.billing_issues_detected_at);
-  return { planId, status: billingIssue ? 'past_due' : 'active' };
+  // The store of the subscription that grants the winning plan.
+  const winner = live.find(([productId]) => bestPlanForIapProducts([productId]) === planId);
+  return {
+    planId,
+    status: billingIssue ? 'past_due' : 'active',
+    store: winner?.[1].store === 'play_store' ? 'play_store' : 'app_store',
+  };
 }
 
 /**
@@ -54,9 +68,9 @@ export function entitlementFromSubscriber(
  *
  * - Entitled: set the plan. Languages are reset to the plan default only when
  *   the plan actually changes, so renewals never clobber the user's choices.
- * - Not entitled: downgrade to free only if the App Store is what granted the
+ * - Not entitled: downgrade to free only if an app store is what granted the
  *   current plan — a web (Stripe) subscriber must not lose access because
- *   they have no App Store purchase.
+ *   they have no in-app purchase.
  */
 export function buildIapUserUpdate(
   entitlement: IapEntitlement | null,
@@ -66,14 +80,18 @@ export function buildIapUserUpdate(
     const update: Record<string, unknown> = {
       currentPlan: entitlement.planId,
       subscriptionStatus: entitlement.status,
-      subscriptionSource: 'app_store',
+      subscriptionSource: entitlement.store,
     };
     if (existing?.currentPlan !== entitlement.planId) {
       update.selectedLanguageIds = languagesForPlan(entitlement.planId);
     }
     return update;
   }
-  if (existing?.subscriptionSource === 'app_store' && existing.currentPlan !== 'free') {
+  if (
+    existing?.subscriptionSource &&
+    IAP_STORES.includes(existing.subscriptionSource) &&
+    existing.currentPlan !== 'free'
+  ) {
     return { currentPlan: 'free', subscriptionStatus: 'canceled' };
   }
   return null;
@@ -121,7 +139,7 @@ export async function fetchRevenueCatSubscriber(
 
 /**
  * Bring `users/{uid}` in line with RevenueCat. Returns the entitlement that
- * was found (null when the user has no live App Store subscription).
+ * was found (null when the user has no live in-app subscription).
  */
 export async function syncUserFromRevenueCat(
   adminDb: Firestore,

@@ -842,6 +842,12 @@ export const es = {
       'No se pudo conectar con el App Store. Comprueba tu conexión e inténtalo de nuevo.',
     'sub.iapTerms':
       'Las suscripciones se renuevan automáticamente al precio indicado, cada mes o cada año, hasta que se cancelen. El pago se carga a tu Apple ID al confirmar la compra. Cancela al menos 24 horas antes del final del periodo en los ajustes de suscripciones de tu Apple ID para evitar la renovación.',
+    'sub.iapNothingToRestoreAndroid':
+      'No se encontró ninguna suscripción activa para esta cuenta de Google.',
+    'sub.iapLoadFailedAndroid':
+      'No se pudo conectar con Google Play. Comprueba tu conexión e inténtalo de nuevo.',
+    'sub.iapTermsAndroid':
+      'Las suscripciones se renuevan automáticamente al precio indicado, cada mes o cada año, hasta que se cancelen. El pago se carga a tu cuenta de Google Play al confirmar la compra. Puedes cancelar en cualquier momento en Google Play → Pagos y suscripciones; el acceso continúa hasta el final del periodo pagado.',
     'sub.iapTermsLink': 'Condiciones de uso',
     'sub.iapPrivacyLink': 'Política de privacidad',
   },

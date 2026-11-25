@@ -20,6 +20,11 @@ describe('IAP product ids', () => {
       planId: 'duo_2',
       cycle: 'yearly',
     });
+    // Google Play reports `subscriptionId:basePlanId`.
+    expect(planForIapProduct(`${IAP_PRODUCT_IDS.full_all.monthly}:monthly`)).toEqual({
+      planId: 'full_all',
+      cycle: 'monthly',
+    });
     expect(planForIapProduct('com.someone.else.product')).toBeNull();
     expect(planForIapProduct(undefined)).toBeNull();
     const all = Object.values(IAP_PRODUCT_IDS).flatMap((c) => Object.values(c));
@@ -41,7 +46,20 @@ describe('entitlementFromSubscriber', () => {
         { subscriptions: { [IAP_PRODUCT_IDS.basic_1.monthly]: { expires_date: future } } },
         NOW
       )
-    ).toEqual({ planId: 'basic_1', status: 'active' });
+    ).toEqual({ planId: 'basic_1', status: 'active', store: 'app_store' });
+  });
+
+  it('reads a Google Play subscription and records its store', () => {
+    expect(
+      entitlementFromSubscriber(
+        {
+          subscriptions: {
+            [IAP_PRODUCT_IDS.duo_2.yearly]: { expires_date: future, store: 'play_store' },
+          },
+        },
+        NOW
+      )
+    ).toEqual({ planId: 'duo_2', status: 'active', store: 'play_store' });
   });
 
   it('grants nothing once expired, refunded, or for unknown products', () => {
@@ -81,7 +99,7 @@ describe('entitlementFromSubscriber', () => {
         },
         NOW
       )
-    ).toEqual({ planId: 'duo_2', status: 'past_due' });
+    ).toEqual({ planId: 'duo_2', status: 'past_due', store: 'app_store' });
   });
 
   it('ignores an expired lower plan next to a live higher one', () => {
@@ -95,12 +113,12 @@ describe('entitlementFromSubscriber', () => {
         },
         NOW
       )
-    ).toEqual({ planId: 'basic_1', status: 'active' });
+    ).toEqual({ planId: 'basic_1', status: 'active', store: 'app_store' });
   });
 });
 
 describe('buildIapUserUpdate', () => {
-  const active = { planId: 'duo_2', status: 'active' } as const;
+  const active = { planId: 'duo_2', status: 'active', store: 'app_store' } as const;
 
   it('sets the plan and default languages on a new plan', () => {
     expect(buildIapUserUpdate(active, { currentPlan: 'free' })).toEqual({
@@ -123,6 +141,15 @@ describe('buildIapUserUpdate', () => {
   it('downgrades an App Store subscriber whose subscription ended', () => {
     expect(
       buildIapUserUpdate(null, { currentPlan: 'duo_2', subscriptionSource: 'app_store' })
+    ).toEqual({ currentPlan: 'free', subscriptionStatus: 'canceled' });
+  });
+
+  it('records Google Play as the source and downgrades when it ends', () => {
+    expect(
+      buildIapUserUpdate({ planId: 'basic_1', status: 'active', store: 'play_store' }, undefined)
+    ).toMatchObject({ currentPlan: 'basic_1', subscriptionSource: 'play_store' });
+    expect(
+      buildIapUserUpdate(null, { currentPlan: 'basic_1', subscriptionSource: 'play_store' })
     ).toEqual({ currentPlan: 'free', subscriptionStatus: 'canceled' });
   });
 

@@ -24,7 +24,8 @@ import {
   purchaseIapOffer,
   restoreIapPurchases,
   IapCancelledError,
-  APPLE_MANAGE_SUBSCRIPTIONS_URL,
+  iapStore,
+  manageSubscriptionsUrl,
   type IapOffer,
 } from '../lib/services/iapService.js';
 
@@ -63,17 +64,21 @@ export const Subscription = () => {
   const [portalLoading, setPortalLoading] = useState(false);
   const [searchParams] = useSearchParams();
 
-  // iOS sells through the App Store (in-app purchase). Any other native build
-  // has no purchase UI at all — Stripe checkout is web-only.
+  // The native apps sell through their own store (App Store / Google Play). A
+  // native build without in-app purchase configured has no purchase UI at all
+  // — Stripe checkout is web-only.
   const iap = isIapAvailable();
+  const store = iapStore();
+  const onPlay = store === 'play_store';
   const isNative = isCapacitor() && !iap;
   const [iapOffers, setIapOffers] = useState<Record<string, IapOffer> | null>(null);
   const [iapLoadFailed, setIapLoadFailed] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [iapNotice, setIapNotice] = useState<string | null>(null);
-  // A plan bought on the web is managed there; never sell a second one on top.
+  // A plan bought on the web or in the other store is managed there; never
+  // sell a second one on top.
   const paidElsewhere =
-    iap && subscription.currentPlan !== 'free' && subscription.subscriptionSource !== 'app_store';
+    iap && subscription.currentPlan !== 'free' && subscription.subscriptionSource !== store;
   const uid = user?.uid;
 
   useEffect(() => {
@@ -157,7 +162,12 @@ export const Subscription = () => {
       setIapNotice(
         plan
           ? t('sub.iapRestored', 'Your purchases have been restored.')
-          : t('sub.iapNothingToRestore', 'No active subscription was found for this Apple ID.')
+          : onPlay
+            ? t(
+                'sub.iapNothingToRestoreAndroid',
+                'No active subscription was found for this Google account.'
+              )
+            : t('sub.iapNothingToRestore', 'No active subscription was found for this Apple ID.')
       );
     } catch {
       setCheckoutError(
@@ -387,10 +397,15 @@ export const Subscription = () => {
           )}
           {iapLoadFailed && (
             <p className="text-[13px] text-ink2">
-              {t(
-                'sub.iapLoadFailed',
-                'Could not reach the App Store. Check your connection and try again.'
-              )}
+              {onPlay
+                ? t(
+                    'sub.iapLoadFailedAndroid',
+                    'Could not reach Google Play. Check your connection and try again.'
+                  )
+                : t(
+                    'sub.iapLoadFailed',
+                    'Could not reach the App Store. Check your connection and try again.'
+                  )}
             </p>
           )}
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -404,10 +419,10 @@ export const Subscription = () => {
               {restoring && <Loader2 className="w-4 h-4 animate-spin" />}
               {t('sub.iapRestore', 'Restore Purchases')}
             </button>
-            {subscription.subscriptionSource === 'app_store' && (
+            {subscription.currentPlan !== 'free' && subscription.subscriptionSource === store && (
               <button
                 type="button"
-                onClick={() => window.open(APPLE_MANAGE_SUBSCRIPTIONS_URL, '_system')}
+                onClick={() => window.open(manageSubscriptionsUrl(), '_system')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 border border-bdr/60 rounded-xl text-[13px] font-bold text-ink hover:bg-parch2 transition-all"
               >
                 <ExternalLink className="w-4 h-4" />
@@ -416,10 +431,15 @@ export const Subscription = () => {
             )}
           </div>
           <p className="text-[11px] text-muted leading-relaxed">
-            {t(
-              'sub.iapTerms',
-              'Subscriptions renew automatically at the price shown, monthly or yearly, until cancelled. Payment is charged to your Apple ID at confirmation of purchase. Cancel at least 24 hours before the end of the period in your Apple ID subscription settings to avoid renewal.'
-            )}{' '}
+            {onPlay
+              ? t(
+                  'sub.iapTermsAndroid',
+                  'Subscriptions renew automatically at the price shown, monthly or yearly, until cancelled. Payment is charged to your Google Play account at confirmation of purchase. Cancel any time in Google Play → Payments & subscriptions; access continues until the end of the paid period.'
+                )
+              : t(
+                  'sub.iapTerms',
+                  'Subscriptions renew automatically at the price shown, monthly or yearly, until cancelled. Payment is charged to your Apple ID at confirmation of purchase. Cancel at least 24 hours before the end of the period in your Apple ID subscription settings to avoid renewal.'
+                )}{' '}
             <Link to="/terms" className="underline">
               {t('sub.iapTermsLink', 'Terms of Use')}
             </Link>

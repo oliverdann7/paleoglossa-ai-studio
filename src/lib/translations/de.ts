@@ -841,6 +841,11 @@ export const de = {
       'Der App Store ist nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
     'sub.iapTerms':
       'Abos verlängern sich automatisch zum angezeigten Preis, monatlich oder jährlich, bis sie gekündigt werden. Die Zahlung wird bei Kaufbestätigung Ihrer Apple-ID belastet. Kündigen Sie mindestens 24 Stunden vor Ende des Zeitraums in den Abo-Einstellungen Ihrer Apple-ID, um die Verlängerung zu vermeiden.',
+    'sub.iapNothingToRestoreAndroid': 'Für dieses Google-Konto wurde kein aktives Abo gefunden.',
+    'sub.iapLoadFailedAndroid':
+      'Google Play ist nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
+    'sub.iapTermsAndroid':
+      'Abos verlängern sich automatisch zum angezeigten Preis, monatlich oder jährlich, bis sie gekündigt werden. Die Zahlung wird bei Kaufbestätigung Ihrem Google-Play-Konto belastet. Sie können jederzeit unter Google Play → Zahlungen & Abos kündigen; der Zugang bleibt bis zum Ende des bezahlten Zeitraums bestehen.',
     'sub.iapTermsLink': 'Nutzungsbedingungen',
     'sub.iapPrivacyLink': 'Datenschutzerklärung',
   },

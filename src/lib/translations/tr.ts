@@ -891,6 +891,11 @@ export const tr = {
     'sub.iapLoadFailed': "App Store'a ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.",
     'sub.iapTerms':
       'Abonelikler, iptal edilene kadar gösterilen fiyattan aylık veya yıllık olarak otomatik yenilenir. Ödeme, satın alma onaylandığında Apple Kimliğinizden tahsil edilir. Yenilemeyi önlemek için dönem bitiminden en az 24 saat önce Apple Kimliği abonelik ayarlarınızdan iptal edin.',
+    'sub.iapNothingToRestoreAndroid': 'Bu Google hesabı için etkin bir abonelik bulunamadı.',
+    'sub.iapLoadFailedAndroid':
+      "Google Play'e ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.",
+    'sub.iapTermsAndroid':
+      'Abonelikler, iptal edilene kadar gösterilen fiyattan aylık veya yıllık olarak otomatik yenilenir. Ödeme, satın alma onaylandığında Google Play hesabınızdan tahsil edilir. Google Play → Ödemeler ve abonelikler bölümünden istediğiniz zaman iptal edebilirsiniz; erişim, ödenen dönemin sonuna kadar devam eder.',
     'sub.iapTermsLink': 'Kullanım Koşulları',
     'sub.iapPrivacyLink': 'Gizlilik Politikası',
   },

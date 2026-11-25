@@ -1008,6 +1008,10 @@ export const en = {
     'sub.iapLoadFailed': 'Could not reach the App Store. Check your connection and try again.',
     'sub.iapTerms':
       'Subscriptions renew automatically at the price shown, monthly or yearly, until cancelled. Payment is charged to your Apple ID at confirmation of purchase. Cancel at least 24 hours before the end of the period in your Apple ID subscription settings to avoid renewal.',
+    'sub.iapNothingToRestoreAndroid': 'No active subscription was found for this Google account.',
+    'sub.iapLoadFailedAndroid': 'Could not reach Google Play. Check your connection and try again.',
+    'sub.iapTermsAndroid':
+      'Subscriptions renew automatically at the price shown, monthly or yearly, until cancelled. Payment is charged to your Google Play account at confirmation of purchase. Cancel any time in Google Play → Payments & subscriptions; access continues until the end of the paid period.',
     'sub.iapTermsLink': 'Terms of Use',
     'sub.iapPrivacyLink': 'Privacy Policy',
   },

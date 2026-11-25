@@ -18,8 +18,8 @@ interface UserSubscription {
   selectedLanguageIds: string[];
   subscriptionStatus: SubscriptionStatus;
   stripeCustomerId?: string;
-  /** Which store granted the paid plan: the App Store (in-app purchase) or Stripe (web). */
-  subscriptionSource?: 'app_store' | 'stripe';
+  /** Which store granted the paid plan: App Store / Google Play (in-app) or Stripe (web). */
+  subscriptionSource?: 'app_store' | 'play_store' | 'stripe';
   trialEnd?: string;
   /** The language a free user wants to unlock as their second slot when upgrading to Duo. */
   desiredSecondLanguageId?: string;
@@ -89,8 +89,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
                 subscriptionStatus: (data.subscriptionStatus as SubscriptionStatus) || 'free',
                 stripeCustomerId: (data.stripeCustomerId as string | undefined) || undefined,
                 subscriptionSource:
-                  data.subscriptionSource === 'app_store'
-                    ? 'app_store'
+                  data.subscriptionSource === 'app_store' ||
+                  data.subscriptionSource === 'play_store'
+                    ? data.subscriptionSource
                     : data.stripeCustomerId
                       ? 'stripe'
                       : undefined,

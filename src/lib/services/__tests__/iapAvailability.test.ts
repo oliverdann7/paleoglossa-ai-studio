@@ -8,10 +8,16 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
  */
 vi.mock('../apiFetch.js', () => ({ apiFetch: vi.fn() }));
 
-async function load(opts: { platform: 'ios' | 'android' | null; flag?: string; key?: string }) {
+async function load(opts: {
+  platform: 'ios' | 'android' | null;
+  flag?: string;
+  key?: string;
+  androidKey?: string;
+}) {
   vi.resetModules();
   vi.stubEnv('VITE_ENABLE_MOBILE_PURCHASES', opts.flag ?? '');
   vi.stubEnv('VITE_REVENUECAT_IOS_API_KEY', opts.key ?? '');
+  vi.stubEnv('VITE_REVENUECAT_ANDROID_API_KEY', opts.androidKey ?? '');
   vi.doMock('../../platform.js', () => ({
     isCapacitor: () => opts.platform !== null,
     capacitorPlatform: () => opts.platform,
@@ -34,8 +40,17 @@ describe('isIapAvailable', () => {
     expect(await load({ platform: 'ios', flag: 'true', key: '' })).toBe(false);
   });
 
-  it('is off on Android and on the web even when fully configured', async () => {
+  it('turns on per platform, each by its own key', async () => {
+    // An iOS key alone must not switch Android on, and vice versa.
     expect(await load({ platform: 'android', flag: 'true', key: 'appl_x' })).toBe(false);
-    expect(await load({ platform: null, flag: 'true', key: 'appl_x' })).toBe(false);
+    expect(await load({ platform: 'ios', flag: 'true', androidKey: 'goog_x' })).toBe(false);
+    expect(await load({ platform: 'android', flag: 'true', androidKey: 'goog_x' })).toBe(true);
+    expect(await load({ platform: 'android', flag: 'false', androidKey: 'goog_x' })).toBe(false);
+  });
+
+  it('is always off on the web', async () => {
+    expect(await load({ platform: null, flag: 'true', key: 'appl_x', androidKey: 'goog_x' })).toBe(
+      false
+    );
   });
 });

@@ -1,9 +1,10 @@
 /**
- * App Store subscription products, shared by the iOS client and the API.
+ * In-app subscription products, shared by the iOS/Android clients and the API.
  *
  * These identifiers must exist verbatim in App Store Connect (one
- * subscription group, six auto-renewable products) and be attached to the
- * current offering in RevenueCat. Changing one here without changing it there
+ * subscription group, six auto-renewable products) and in Google Play Console
+ * (six subscriptions, one base plan each), and be attached to the current
+ * offering in RevenueCat. Changing one here without changing it in the stores
  * makes that plan unpurchasable.
  */
 import type { PlanId } from './plans.js';
@@ -29,10 +30,20 @@ export const IAP_PRODUCT_IDS: Record<PaidPlanId, Record<BillingCycle, string>> =
 /** Higher rank wins when a user briefly holds two products (plan change). */
 const PLAN_RANK: Record<PaidPlanId, number> = { basic_1: 1, duo_2: 2, full_all: 3 };
 
+/**
+ * Google Play reports a subscription as `subscriptionId:basePlanId`; the part
+ * before the colon is the id we share with the App Store.
+ */
+export function baseIapProductId(productId: string): string {
+  const colon = productId.indexOf(':');
+  return colon === -1 ? productId : productId.slice(0, colon);
+}
+
 export function planForIapProduct(
-  productId: string | null | undefined
+  rawProductId: string | null | undefined
 ): { planId: PaidPlanId; cycle: BillingCycle } | null {
-  if (!productId) return null;
+  if (!rawProductId) return null;
+  const productId = baseIapProductId(rawProductId);
   for (const planId of Object.keys(IAP_PRODUCT_IDS) as PaidPlanId[]) {
     for (const cycle of ['monthly', 'yearly'] as const) {
       if (IAP_PRODUCT_IDS[planId][cycle] === productId) return { planId, cycle };

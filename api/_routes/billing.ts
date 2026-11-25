@@ -402,13 +402,14 @@ router.post('/api/stripe/webhook', async (req: any, res: any) => {
   }
 });
 
-// ─── App Store in-app purchase (RevenueCat) ──────────────────────────────────
-// The iOS app buys through StoreKit via RevenueCat. Both routes below resolve
+// ─── In-app purchase: App Store + Google Play (RevenueCat) ───────────────────
+// The iOS app buys through StoreKit and the Android app through Play Billing,
+// both via RevenueCat. Both routes below resolve
 // to the same operation — read the subscriber's state from RevenueCat and
 // write it to the user document — so the client never tells us what it bought.
 
 /**
- * Called by the iOS app right after a purchase or restore so the plan is
+ * Called by the iOS/Android app right after a purchase or restore so the plan is
  * active immediately, without waiting for the webhook.
  */
 router.post('/api/iap/sync', requireAuth as any, async (req: AuthenticatedRequest, res: any) => {

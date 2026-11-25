@@ -844,6 +844,12 @@ export const fr = {
       'Impossible de joindre l’App Store. Vérifiez votre connexion et réessayez.',
     'sub.iapTerms':
       'Les abonnements se renouvellent automatiquement au prix indiqué, chaque mois ou chaque année, jusqu’à leur résiliation. Le paiement est débité de votre identifiant Apple à la confirmation de l’achat. Résiliez au moins 24 heures avant la fin de la période dans les réglages d’abonnement de votre identifiant Apple pour éviter le renouvellement.',
+    'sub.iapNothingToRestoreAndroid':
+      'Aucun abonnement actif n’a été trouvé pour ce compte Google.',
+    'sub.iapLoadFailedAndroid':
+      'Impossible de joindre Google Play. Vérifiez votre connexion et réessayez.',
+    'sub.iapTermsAndroid':
+      'Les abonnements se renouvellent automatiquement au prix indiqué, chaque mois ou chaque année, jusqu’à leur résiliation. Le paiement est débité de votre compte Google Play à la confirmation de l’achat. Vous pouvez résilier à tout moment dans Google Play → Paiements et abonnements ; l’accès reste actif jusqu’à la fin de la période payée.',
     'sub.iapTermsLink': 'Conditions d’utilisation',
     'sub.iapPrivacyLink': 'Politique de confidentialité',
   },

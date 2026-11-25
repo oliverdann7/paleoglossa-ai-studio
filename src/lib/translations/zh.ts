@@ -805,6 +805,10 @@ export const zh = {
     'sub.iapLoadFailed': '无法连接 App Store，请检查网络后重试。',
     'sub.iapTerms':
       '订阅将按所示价格按月或按年自动续订，直至取消。款项在确认购买时从您的 Apple ID 账户扣除。如需避免续订，请在当前订阅期结束前至少 24 小时，在 Apple ID 的订阅设置中取消。',
+    'sub.iapNothingToRestoreAndroid': '未找到此 Google 账号的有效订阅。',
+    'sub.iapLoadFailedAndroid': '无法连接 Google Play，请检查网络后重试。',
+    'sub.iapTermsAndroid':
+      '订阅将按所示价格按月或按年自动续订，直至取消。款项在确认购买时从您的 Google Play 账号扣除。您可以随时在 Google Play →“付款和订阅”中取消；在已付费周期结束前仍可继续使用。',
     'sub.iapTermsLink': '使用条款',
     'sub.iapPrivacyLink': '隐私政策',
   },

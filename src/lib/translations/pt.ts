@@ -952,6 +952,12 @@ export const pt = {
       'Não foi possível conectar à App Store. Verifique sua conexão e tente novamente.',
     'sub.iapTerms':
       'As assinaturas são renovadas automaticamente pelo preço exibido, mensal ou anualmente, até serem canceladas. O pagamento é cobrado no seu ID Apple na confirmação da compra. Cancele pelo menos 24 horas antes do fim do período nos ajustes de assinaturas do seu ID Apple para evitar a renovação.',
+    'sub.iapNothingToRestoreAndroid':
+      'Nenhuma assinatura ativa foi encontrada para esta conta do Google.',
+    'sub.iapLoadFailedAndroid':
+      'Não foi possível conectar ao Google Play. Verifique sua conexão e tente novamente.',
+    'sub.iapTermsAndroid':
+      'As assinaturas são renovadas automaticamente pelo preço exibido, mensal ou anualmente, até serem canceladas. O pagamento é cobrado na sua conta do Google Play na confirmação da compra. Cancele a qualquer momento em Google Play → Pagamentos e assinaturas; o acesso continua até o fim do período pago.',
     'sub.iapTermsLink': 'Termos de Uso',
     'sub.iapPrivacyLink': 'Política de Privacidade',
   },
