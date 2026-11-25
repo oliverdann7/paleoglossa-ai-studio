@@ -42,6 +42,7 @@ export const ReviewTutorial = () => {
           onClick={dismiss}
           className="absolute top-4 right-4 text-muted hover:text-ink"
           aria-label={t('common.dismiss', 'Dismiss')}
+          data-testid="tutorial-close"
         >
           <X className="w-4 h-4" />
         </button>

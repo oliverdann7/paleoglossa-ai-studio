@@ -1213,7 +1213,7 @@ export const Review = () => {
                 onClick={() => handleRate('GOOD')}
                 aria-label={t('review.rateGood', 'Good — recalled correctly (press 3)')}
                 aria-keyshortcuts="3"
-                className="py-4 md:py-3 bg-jade-500 hover:bg-jade-600 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
+                className="py-4 md:py-3 bg-jade hover:bg-jade/90 text-white font-bold rounded-2xl text-[13px] active:scale-95 transition-all flex flex-col items-center gap-1 min-h-[56px]"
               >
                 <span>{t('review.good', 'Good')}</span>
                 <span className="text-[10px] opacity-60 hidden md:block" aria-hidden>

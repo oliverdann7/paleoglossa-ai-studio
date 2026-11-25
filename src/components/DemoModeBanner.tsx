@@ -51,7 +51,10 @@ export function DemoModeBanner() {
   if (!isDemoMode) return null;
 
   return (
-    <div className="bg-amber text-white text-[13px] font-sans relative z-50">
+    <div
+      className="bg-amber text-white text-[13px] font-sans relative z-50"
+      data-testid="demo-mode-banner"
+    >
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-center sm:text-left">
           <span className="hidden sm:inline text-white/80 text-[15px]">🔒</span>

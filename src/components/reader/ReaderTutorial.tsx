@@ -51,7 +51,11 @@ export const ReaderTutorial = ({
           drawerOpen && 'hidden md:block'
         )}
       >
-        <button onClick={onDismiss} className="absolute top-4 right-4 text-muted hover:text-ink">
+        <button
+          onClick={onDismiss}
+          className="absolute top-4 right-4 text-muted hover:text-ink"
+          data-testid="tutorial-close"
+        >
           <X className="w-4 h-4" />
         </button>
 

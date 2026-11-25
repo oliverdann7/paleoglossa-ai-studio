@@ -90,8 +90,12 @@ Play Console requires:
 | 7" tablet | 1200×1920 |
 | 10" tablet | 1600×2560 |
 
-Capture via Xcode simulator (`Cmd+S`) or Android Studio AVD
-(`Cmd+S` in the emulator). At least 3 screenshots per size are required.
+A set of real captures at these sizes is already in `store/screenshots/`
+(see its README for how they were made and their limits — they are rendered
+in a browser from a guest session, without the AI or audio screens). To
+replace them with device captures, use the Xcode simulator (`Cmd+S`) or an
+Android Studio AVD (`Cmd+S` in the emulator). At least 3 screenshots per size
+are required.
 
 ## 6. Public legal URLs
 
