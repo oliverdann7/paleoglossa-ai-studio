@@ -109,17 +109,22 @@ To launch one platform first, leave the other platform's key empty.
 firebase deploy --only firestore:rules --project paleoglossa-reader
 ```
 
-## Known Android caveat: activity launch mode
+## Android activity launch mode
 
-`MainActivity` uses `android:launchMode="singleTask"` (the Capacitor
-default). RevenueCat warns that with this mode a purchase can be cancelled
-if Google Play sends the user to another app mid-purchase (for example a
-banking app for payment verification) and they return to Paleoglossa. Their
-recommendation is `singleTop`. It has been left unchanged here because the
-launch mode also governs how `paleoglossa://` deep links re-enter the app,
-and that could not be tested without a device. Test a purchase that requires
-bank verification; if it is cancelled, switch to `singleTop` and re-test the
-password-reset deep link.
+`MainActivity` uses `android:launchMode="singleTop"` instead of Capacitor's
+default `singleTask`. RevenueCat requires `standard` or `singleTop`: with
+`singleTask`, a purchase is cancelled if Google Play sends the user to another
+app mid-purchase (for example a banking app for payment verification) and
+they return to Paleoglossa.
+
+The launch mode also governs how `paleoglossa://` deep links re-enter the
+app, and the change was made without a device to test on. Check both on a
+real Android device:
+
+- [ ] A purchase that requires bank verification completes after returning
+      to the app.
+- [ ] A password-reset link opens the already-running app on the right
+      screen, without starting a second copy of it.
 
 ## Testing
 
