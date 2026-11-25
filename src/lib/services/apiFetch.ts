@@ -1,5 +1,6 @@
 import { auth } from '../firebase.js';
 import { getApiUrl } from './apiBaseUrl.js';
+import { ensureAiConsent } from './aiConsent.js';
 
 export class ApiError extends Error {
   status: number;
@@ -47,6 +48,11 @@ export interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
  */
 export async function apiFetch<T = any>(url: string, options: ApiFetchOptions = {}): Promise<T> {
   const { body, skipAuth, ...fetchOptions } = options;
+
+  // AI endpoints forward user content to a third-party model: ask first.
+  if (url.startsWith('/api/ai/')) {
+    await ensureAiConsent();
+  }
 
   const headers: Record<string, string> = {
     ...(fetchOptions.headers as Record<string, string>),

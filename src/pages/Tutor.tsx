@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { apiFetch } from '../lib/services/apiFetch.js';
+import { ReportAiContentButton } from '../components/ReportAiContentButton.js';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Message {
@@ -418,6 +419,14 @@ export const Tutor = () => {
                         <span key={j}>{w}</span>
                       ))}
                     </div>
+                  )}
+                  {msg.role !== 'user' && (
+                    <ReportAiContentButton
+                      surface="tutor"
+                      content={msg.content}
+                      prompt={messages[i - 1]?.role === 'user' ? messages[i - 1].content : undefined}
+                      languageId={activeLanguageId}
+                    />
                   )}
                 </div>
               </div>

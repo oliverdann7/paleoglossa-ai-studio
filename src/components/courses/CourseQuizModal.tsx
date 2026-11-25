@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Loader2, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getApiUrl } from '../../lib/services/apiBaseUrl.js';
+import { aiFetch } from '../../lib/services/aiConsent.js';
 import { gradeQuiz } from '../../lib/courses/quizScoring.js';
 
 interface QuizQuestion {
@@ -33,7 +33,7 @@ export function CourseQuizModal({ textTitle, textSnippet, languageId, onClose }:
   useState(() => {
     (async () => {
       try {
-        const res = await fetch(getApiUrl('/api/ai/course-quiz'), {
+        const res = await aiFetch('/api/ai/course-quiz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: textSnippet, languageId, questionCount: 5 }),

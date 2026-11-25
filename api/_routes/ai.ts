@@ -1900,4 +1900,55 @@ If no significant variants are known for this specific lemma in this language, s
   }
 );
 
+// ─── Report AI-generated content ─────────────────────────────────
+// Google Play's AI-Generated Content policy requires an in-app way to flag
+// offensive or wrong AI output. Reports land in `aiContentReports` (Admin SDK
+// only) for the developer to review. Lives outside `/api/ai/*` on purpose:
+// filing a report must not count against the AI rate limit or consent gate.
+
+const AI_REPORT_REASONS = ['offensive', 'inaccurate', 'other'] as const;
+const AI_REPORT_SURFACES = ['tutor', 'explanation', 'sentence-analysis', 'other'] as const;
+const clip = (value: unknown, max: number): string | null =>
+  typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : null;
+
+router.post(
+  '/api/reports/ai-content',
+  optionalAuth as any,
+  async (req: AuthenticatedRequest, res: any) => {
+    const { surface, reason, content, prompt, languageId, details } = req.body ?? {};
+
+    const reportedContent = clip(content, 8000);
+    if (!reportedContent) {
+      return res.status(400).json({ error: 'content is required', code: 'INVALID_INPUT' });
+    }
+    if (!AI_REPORT_REASONS.includes(reason)) {
+      return res.status(400).json({ error: 'Invalid reason', code: 'INVALID_INPUT' });
+    }
+
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+      return res.status(503).json({ error: 'Service unavailable', code: 'SERVICE_UNAVAILABLE' });
+    }
+
+    try {
+      const { FieldValue } = await import('firebase-admin/firestore');
+      await adminDb.collection('aiContentReports').add({
+        surface: AI_REPORT_SURFACES.includes(surface) ? surface : 'other',
+        reason,
+        content: reportedContent,
+        prompt: clip(prompt, 4000),
+        details: clip(details, 1000),
+        languageId: clip(languageId, 40),
+        reporterUid: req.user?.uid ?? null,
+        status: 'open',
+        createdAt: FieldValue.serverTimestamp(),
+      });
+      res.status(201).json({ ok: true });
+    } catch (e: any) {
+      console.error('[ai-report] Failed to store report:', e.message);
+      res.status(500).json({ error: 'Failed to submit report', code: 'INTERNAL_ERROR' });
+    }
+  }
+);
+
 export default router;

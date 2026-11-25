@@ -1,5 +1,5 @@
 import { apiFetch } from './apiFetch.js';
-import { getApiUrl } from './apiBaseUrl.js';
+import { aiFetch } from './aiConsent.js';
 
 export interface PronunciationGuide {
   word: string;
@@ -65,7 +65,7 @@ export class AudioService {
     languageId: string
   ): Promise<PronunciationGuide | null> {
     try {
-      const response = await fetch(getApiUrl('/api/ai/pronunciation'), {
+      const response = await aiFetch('/api/ai/pronunciation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ languageId, text }),

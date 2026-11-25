@@ -106,6 +106,7 @@ var on in dev to work on them; promote a surface out of the gate once its conten
 | `importedTexts/{uid}/texts` | User-imported texts |
 | `courses/{courseId}` | Classroom courses |
 | `aiUsage/{uid}` | AI quota tracking per user |
+| `aiContentReports/{id}` | User reports of AI-generated answers (Admin SDK only; written by `POST /api/reports/ai-content`) |
 
 Schema details: `firebase-blueprint.json`, `src/types/firestore.ts`.
 

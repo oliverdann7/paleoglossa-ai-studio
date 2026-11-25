@@ -36,6 +36,7 @@ import {
 import { useAuth } from '../lib/hooks/useAuth.js';
 import { uploadAvatar, updateUserProfile } from '../lib/services/profileService.js';
 import { privacyService } from '../lib/services/privacyService.js';
+import { isAiProcessingAllowed, setAiConsent } from '../lib/services/aiConsent.js';
 import { optInAnalytics, optOutAnalytics } from '../lib/analytics.js';
 import { setErrorReportingEnabled } from '../lib/sentry.js';
 import { downloadFile } from '../lib/services/downloadService.js';
@@ -73,6 +74,7 @@ export const Settings = () => {
   // ── Language slot state ──────────────────────────────────────────────────
   const [showDesiredPicker, setShowDesiredPicker] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [aiAllowed, setAiAllowed] = useState(isAiProcessingAllowed());
 
   // ── Gemini API key (stored in localStorage only — never synced to Firestore) ─
   const [geminiApiKey, setGeminiApiKey] = useState(
@@ -266,6 +268,42 @@ export const Settings = () => {
                   className={cn(
                     'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform',
                     analyticsEnabled && 'translate-x-5'
+                  )}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h4 className="font-bold text-[14px] text-ink">
+                  {t('settings.aiProcessing', 'AI features (Google Gemini)')}
+                </h4>
+                <p className="text-[12px] text-muted">
+                  {t(
+                    'settings.aiProcessingDesc',
+                    'Send the text, questions, photos and recordings you submit to Google Gemini to generate explanations, tutor answers and feedback.'
+                  )}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={aiAllowed}
+                aria-label={t('settings.aiProcessing', 'AI features (Google Gemini)')}
+                data-testid="settings-ai-consent"
+                onClick={() => {
+                  setAiConsent(!aiAllowed);
+                  setAiAllowed(!aiAllowed);
+                }}
+                className={cn(
+                  'relative w-11 h-6 rounded-full transition-colors shrink-0',
+                  aiAllowed ? 'bg-blue' : 'bg-parch3 border border-bdr'
+                )}
+              >
+                <span
+                  className={cn(
+                    'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform',
+                    aiAllowed && 'translate-x-5'
                   )}
                 />
               </button>

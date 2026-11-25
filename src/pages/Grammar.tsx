@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
+import { aiFetch } from '../lib/services/aiConsent.js';
 import { useGrammarMastery } from '../lib/hooks/useGrammarMastery.js';
 import { useXP } from '../lib/hooks/useXP.js';
 import { XP_REWARDS } from '../lib/services/xpService.js';
@@ -201,8 +202,7 @@ function MorphologyQuiz({ concept, onQuizResult }: { concept: Concept; onQuizRes
     setQuestion(null);
     setSelected(null);
     try {
-      const url = getApiUrl('/api/ai/quiz');
-      const res = await fetch(url, {
+      const res = await aiFetch('/api/ai/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

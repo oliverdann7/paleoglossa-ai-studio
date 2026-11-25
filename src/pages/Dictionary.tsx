@@ -23,6 +23,7 @@ import { getLanguageDisplayName, isRtlLanguage } from '@/lib/constants/languages
 import { KWICPanel } from '../components/corpus/KWICPanel.js';
 import { frequencyTier } from '../lib/utils/frequencyTier.js';
 import { getApiUrl } from '../lib/services/apiBaseUrl.js';
+import { aiFetch } from '../lib/services/aiConsent.js';
 
 const entryPath = (entry: DictionaryEntry) =>
   `/app/dictionary/${encodeURIComponent(entry.languageId)}/${encodeURIComponent(entry.lemma)}`;
@@ -55,7 +56,7 @@ function AiParadigmFallback({ entry }: { entry: DictionaryEntry }) {
   const generate = () => {
     setLoadingAi(true);
     setAiError(null);
-    fetch(getApiUrl('/api/ai/explain'), {
+    aiFetch('/api/ai/explain', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
