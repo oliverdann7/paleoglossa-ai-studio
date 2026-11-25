@@ -41,6 +41,7 @@ import { setErrorReportingEnabled } from '../lib/sentry.js';
 import { downloadFile } from '../lib/services/downloadService.js';
 import { useActiveLanguage } from '../lib/hooks/useActiveLanguage.js';
 import { LanguageOptionGrid } from '../components/ActiveLanguagePicker.js';
+import { DeleteAccountModal } from '../components/ui/DeleteAccountModal.js';
 
 export const Settings = () => {
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ export const Settings = () => {
 
   // ── Language slot state ──────────────────────────────────────────────────
   const [showDesiredPicker, setShowDesiredPicker] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
   // ── Gemini API key (stored in localStorage only — never synced to Firestore) ─
   const [geminiApiKey, setGeminiApiKey] = useState(
@@ -1070,6 +1072,30 @@ export const Settings = () => {
             </button>
           )}
         </section>
+
+        {/* ── Danger Zone: account deletion ──────────────────────────────── */}
+        {user && (
+          <section className="card p-8 border-red-200" data-testid="settings-danger-zone">
+            <h2 className="text-lg font-serif font-semibold text-red-700 mb-1">
+              {t('account.dangerZone', 'Danger Zone')}
+            </h2>
+            <p className="text-[13px] text-muted mb-5">
+              {t(
+                'account.deleteAccountInfo',
+                'Permanently delete your account and all associated data.'
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowDeleteAccount(true)}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-red-600 text-white text-[14px] font-bold hover:bg-red-700 transition-colors"
+              data-testid="settings-delete-account"
+            >
+              {t('account.deleteAccount', 'Delete Account')}
+            </button>
+          </section>
+        )}
+        <DeleteAccountModal isOpen={showDeleteAccount} onClose={() => setShowDeleteAccount(false)} />
 
         {/* ── Footer Links ───────────────────────────────────────────────── */}
         <section className="flex justify-center gap-6 text-[13px] text-muted pb-12">

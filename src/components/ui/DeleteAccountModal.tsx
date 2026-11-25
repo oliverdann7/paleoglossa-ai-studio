@@ -4,8 +4,10 @@ import { useTranslation } from 'react-i18next';
 import {
   reauthenticateUser,
   deleteUserAccount,
+  getReauthMethod,
   ReauthOptions,
 } from '@/lib/services/accountDeletionService.js';
+import { ReauthCancelledError } from '@/lib/services/authService.js';
 import { useAuth } from '@/lib/hooks/useAuth.js';
 import { cn } from '@/lib/utils';
 
@@ -27,9 +29,8 @@ export const DeleteAccountModal = ({ isOpen, onClose }: DeleteAccountModalProps)
   const [isLoading, setIsLoading] = useState(false);
 
   const isConfirmValid = confirmText.toUpperCase() === 'DELETE';
-  const hasPasswordAuth = user?.providerData?.some(
-    (provider) => provider.providerId === 'password'
-  );
+  const reauthMethod = getReauthMethod(user);
+  const hasPasswordAuth = reauthMethod === 'password';
   const isPasswordValid = !hasPasswordAuth || password.length >= 6;
 
   const handleProceedToReauth = () => {
@@ -59,7 +60,11 @@ export const DeleteAccountModal = ({ isOpen, onClose }: DeleteAccountModalProps)
         window.location.href = '/';
       }, 1000);
     } catch (err: any) {
-      setError(err.message ?? 'Authentication failed');
+      // Dismissing the provider sheet is not an error — just let them retry.
+      setError(
+        err instanceof ReauthCancelledError ? null : (err.message ?? 'Authentication failed')
+      );
+      setStep('reauthenticate');
       setIsLoading(false);
 
       // Reset to reauth step for retry
@@ -162,10 +167,15 @@ export const DeleteAccountModal = ({ isOpen, onClose }: DeleteAccountModalProps)
                     'account.verifyPassword',
                     'For your security, please enter your password to continue.'
                   )
-                : t(
-                    'account.verifySocial',
-                    "You'll be asked to sign in with your social account provider."
-                  )}
+                : reauthMethod === 'none'
+                  ? t(
+                      'account.verifyNone',
+                      'Press Delete Account to permanently delete your account.'
+                    )
+                  : t(
+                      'account.verifySocial',
+                      "You'll be asked to sign in with your social account provider."
+                    )}
             </p>
 
             {hasPasswordAuth && (

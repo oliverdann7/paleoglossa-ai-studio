@@ -2,9 +2,12 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   signInWithCredential,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
   signOut as firebaseSignOut,
   GoogleAuthProvider,
   OAuthProvider,
+  type AuthCredential,
 } from 'firebase/auth';
 import { auth, appleProvider } from '../firebase.js';
 import { isCapacitor, capacitorPlatform } from '../platform.js';
@@ -230,14 +233,24 @@ export async function signInWithGoogle(promptAccountSelect = false): Promise<Aut
   }
 }
 
-async function signInWithGoogleNative(): Promise<AuthResult> {
+/** A native provider sheet either yields a Firebase credential or a failure. */
+type NativeCredential = { credential: AuthCredential } | { failure: AuthResult };
+
+/**
+ * Runs the native Google Sign-In sheet and returns a Firebase credential for
+ * the chosen account, without signing in — shared by sign-in and by
+ * re-authentication (account deletion).
+ */
+async function nativeGoogleCredential(): Promise<NativeCredential> {
   if (!isGoogleSignInAvailable()) {
     // Build shipped without this platform's client id — the button is hidden
     // in this case, so this is only reachable programmatically.
     return {
-      success: false,
-      errorCode: 'auth/operation-not-allowed',
-      error: 'auth.providerUnavailable',
+      failure: {
+        success: false,
+        errorCode: 'auth/operation-not-allowed',
+        error: 'auth.providerUnavailable',
+      },
     };
   }
 
@@ -253,21 +266,28 @@ async function signInWithGoogleNative(): Promise<AuthResult> {
   } catch (err: any) {
     // User-cancelled the native sheet — not an error worth surfacing.
     if (isUserCancellation(err)) {
-      return { success: false };
+      return { failure: { success: false } };
     }
     throw err;
   }
 
   if (!idToken) {
     return {
-      success: false,
-      errorCode: 'auth/invalid-credential',
-      error: 'auth.invalidCredentials',
+      failure: {
+        success: false,
+        errorCode: 'auth/invalid-credential',
+        error: 'auth.invalidCredentials',
+      },
     };
   }
 
-  const credential = GoogleAuthProvider.credential(idToken);
-  await withAuthTimeout(signInWithCredential(auth, credential));
+  return { credential: GoogleAuthProvider.credential(idToken) };
+}
+
+async function signInWithGoogleNative(): Promise<AuthResult> {
+  const native = await nativeGoogleCredential();
+  if ('failure' in native) return native.failure;
+  await withAuthTimeout(signInWithCredential(auth, native.credential));
   return { success: true };
 }
 
@@ -293,14 +313,20 @@ export async function signInWithApple(): Promise<AuthResult> {
   }
 }
 
-async function signInWithAppleNative(): Promise<AuthResult> {
+/**
+ * Runs Apple's native authorization sheet and returns a Firebase credential,
+ * without signing in — shared by sign-in and by re-authentication.
+ */
+async function nativeAppleCredential(): Promise<NativeCredential> {
   if (!isAppleSignInAvailable()) {
     // Android: no Apple web-flow configured — the button is hidden there, so
     // this is only reachable programmatically.
     return {
-      success: false,
-      errorCode: 'auth/operation-not-allowed',
-      error: 'auth.providerUnavailable',
+      failure: {
+        success: false,
+        errorCode: 'auth/operation-not-allowed',
+        error: 'auth.providerUnavailable',
+      },
     };
   }
   const SocialLogin = await getSocialLogin();
@@ -318,23 +344,85 @@ async function signInWithAppleNative(): Promise<AuthResult> {
   } catch (err: any) {
     // User-cancelled the native sheet — not an error worth surfacing.
     if (isUserCancellation(err)) {
-      return { success: false };
+      return { failure: { success: false } };
     }
     throw err;
   }
 
   if (!identityToken) {
     return {
-      success: false,
-      errorCode: 'auth/invalid-credential',
-      error: 'auth.invalidCredentials',
+      failure: {
+        success: false,
+        errorCode: 'auth/invalid-credential',
+        error: 'auth.invalidCredentials',
+      },
     };
   }
 
   const provider = new OAuthProvider('apple.com');
-  const credential = provider.credential({ idToken: identityToken, rawNonce: raw });
-  await withAuthTimeout(signInWithCredential(auth, credential));
+  return { credential: provider.credential({ idToken: identityToken, rawNonce: raw }) };
+}
+
+async function signInWithAppleNative(): Promise<AuthResult> {
+  const native = await nativeAppleCredential();
+  if ('failure' in native) return native.failure;
+  await withAuthTimeout(signInWithCredential(auth, native.credential));
   return { success: true };
+}
+
+/** Thrown when the user dismisses the provider sheet/popup during re-auth. */
+export class ReauthCancelledError extends Error {
+  constructor() {
+    super('Sign-in was cancelled.');
+    this.name = 'ReauthCancelledError';
+  }
+}
+
+/**
+ * Re-authenticates the *current* user with their social provider, as a
+ * confirmation step before a sensitive action (account deletion).
+ *
+ * Web uses the provider popup. Native cannot (providers block embedded
+ * WebViews), so it runs the native sheet and re-authenticates with the
+ * resulting credential. Either way Firebase rejects a different account with
+ * `auth/user-mismatch` instead of switching the session to it.
+ */
+export async function reauthenticateWithProvider(
+  providerId: 'google.com' | 'apple.com'
+): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('No user signed in');
+
+  if (isCapacitor()) {
+    const native =
+      providerId === 'google.com' ? await nativeGoogleCredential() : await nativeAppleCredential();
+    if ('failure' in native) {
+      if (!native.failure.errorCode) throw new ReauthCancelledError();
+      throw Object.assign(new Error('This sign-in method is not available on this device.'), {
+        code: native.failure.errorCode,
+      });
+    }
+    await withAuthTimeout(reauthenticateWithCredential(user, native.credential));
+    return;
+  }
+
+  try {
+    await reauthenticateWithPopup(
+      user,
+      providerId === 'google.com' ? new GoogleAuthProvider() : appleProvider
+    );
+  } catch (err) {
+    const code = (err as { code?: unknown } | null)?.code;
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+      throw new ReauthCancelledError();
+    }
+    if (code === 'auth/popup-blocked') {
+      throw new Error('Sign-in popup was blocked. Please enable popups and try again.', {
+        cause: err,
+      });
+    }
+    throw err;
+  }
 }
 
 /**

@@ -6,6 +6,7 @@ import { getApiUrl } from '../../lib/services/apiBaseUrl.js';
 import { DependencyTree } from './DependencyTree.js';
 import type { DepToken } from './DependencyTree.js';
 import { DiscussionPanel } from './DiscussionPanel.js';
+import { features } from '../../lib/features.js';
 
 interface WordParsing {
   text: string;
@@ -53,6 +54,10 @@ const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'translation', label: 'Translation', icon: Languages },
   { id: 'discuss', label: 'Discuss', icon: MessageSquare },
 ];
+
+// The Discuss tab is user-generated content: it ships only when community
+// features (and their moderation) are enabled.
+const VISIBLE_TABS = TABS.filter((tab) => tab.id !== 'discuss' || features.isCommunityEnabled());
 
 const POS_COLORS: Record<string, string> = {
   verb: 'bg-amber-100 text-amber-800',
@@ -195,7 +200,7 @@ export function SentenceAnalysisPanel({ sentence, language, mode, onClose, isRtl
 
         {/* Tabs */}
         <div className="flex border-b border-bdr/40 bg-parch/50 overflow-x-auto no-scrollbar">
-          {TABS.map((tab) => {
+          {VISIBLE_TABS.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
