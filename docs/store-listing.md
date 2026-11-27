@@ -53,10 +53,9 @@ KEY FEATURES
   encountered while reading.
 - AI philology tutor with six difficulty modes — from absolute
   beginner to graduate-level discussion.
-- Full morphology engine with paradigm tables, dependency syntax
-  trees (PROIEL / Gorman), and Logeion / Sefaria / Wiktionary
-  lookups.
-- Import your own PDFs, EPUBs, and pasted text. The app tokenizes,
+- Full morphology engine with paradigm tables and Logeion / Sefaria /
+  Wiktionary lookups.
+- Import your own PDFs, Word documents, TEI XML, and pasted text. The app tokenizes,
   lemmatizes, and aligns the translation automatically.
 - AudioLab: TTS for ancient languages with multiple pronunciation
   traditions (Restored Classical, Erasmian, Modern, Tiberian Hebrew).

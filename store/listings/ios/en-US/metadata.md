@@ -25,7 +25,7 @@ KEY FEATURES
 • Grammar pathways — tiered progression through morphology, syntax, and rhetoric with prerequisite tracking.
 • Pronunciation lab — restored, Erasmian, and modern reading traditions with audio playback.
 • Research notebooks — capture cross-text notes with backlinks, export to Markdown or PDF.
-• Imports — paste, file, URL, or OCR; supports PDF, EPUB, plain text, and TEI XML.
+• Imports — paste, file, URL, or OCR; supports PDF, DOCX, plain text, and TEI XML.
 • Multi-device sync — Firebase-backed, picks up where you left off across web, iPad, and iPhone.
 • Eight UI languages — English, Spanish, German, Portuguese, French, Russian, Chinese, Turkish.
 
